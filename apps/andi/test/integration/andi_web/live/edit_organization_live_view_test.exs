@@ -111,7 +111,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       form_data = %{"orgTitle" => "some great org name"}
 
-      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
+      render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
 
       html = render_change(view, "validate_unique_org_name")
 

@@ -6,7 +6,6 @@ defmodule AndiWeb.ExtractHttpStepTest do
   import Checkov
 
   alias Andi.Services.UrlTest
-  alias AndiWeb.InputSchemas.UrlFormSchema
 
   @moduletag shared_data_connection: true
 
@@ -16,7 +15,6 @@ defmodule AndiWeb.ExtractHttpStepTest do
   import FlokiHelpers,
     only: [
       get_attributes: 3,
-      get_value: 2,
       get_values: 2,
       get_text: 2,
       find_elements: 2

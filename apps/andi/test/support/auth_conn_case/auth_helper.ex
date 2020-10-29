@@ -9,6 +9,7 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
     curator_jwt = TestHelper.valid_jwt()
     public_jwt = TestHelper.valid_public_jwt()
     unauthorized_jwt = TestHelper.valid_jwt_unauthorized_roles()
+    revocable_jwt = TestHelper.revocable_jwt()
 
     curator_conn =
       Phoenix.ConnTest.build_conn()
@@ -25,11 +26,17 @@ defmodule Andi.Test.AuthConnCase.AuthHelper do
       |> Plug.Test.init_test_session(%{})
       |> TokenHandler.put_session_token(unauthorized_jwt)
 
+    revocable_conn =
+      Phoenix.ConnTest.build_conn()
+      |> Plug.Test.init_test_session(%{})
+      |> TokenHandler.put_session_token(revocable_jwt)
+
     [
       conn: curator_conn,
       curator_conn: curator_conn,
       public_conn: public_conn,
       unauthorized_conn: unauthorized_conn,
+      revocable_conn: revocable_conn,
       curator_subject: TestHelper.valid_jwt_sub(),
       public_subject: TestHelper.valid_public_sub()
     ]

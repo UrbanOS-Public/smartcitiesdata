@@ -22,4 +22,8 @@ defmodule AndiWeb.AuthController do
     |> TokenHandler.put_session_token(auth.credentials.token)
     |> redirect(to: "/")
   end
+
+  def logout(conn, _params) do
+    TokenHandler.log_out(conn)
+  end
 end

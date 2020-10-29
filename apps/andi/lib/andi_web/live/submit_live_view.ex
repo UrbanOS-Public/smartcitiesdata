@@ -1,5 +1,6 @@
 defmodule AndiWeb.SubmitLiveView do
   use AndiWeb, :live_view
+  use AndiWeb.HeaderLiveView
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
@@ -13,11 +14,8 @@ defmodule AndiWeb.SubmitLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= header_render(@socket, @is_curator) %>
     <div class="edit-page" id="dataset-edit-page">
-      <div class="page-header">
-        <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
-      </div>
-
       <div class="preamble">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vulputate fermentum felis eu consequat. Suspendisse porta ligula non urna accumsan interdum. Praesent venenatis egestas leo eget cursus. Vivamus metus ipsum, blandit eu congue ut, elementum id mi. Suspendisse quis eros non elit egestas egestas. Aenean ac ipsum nisi. Nam luctus libero ac eros mollis, ut tristique nulla convallis. Integer maximus, est quis porttitor tristique, elit libero suscipit libero, ut aliquam magna leo at ipsum. Cras a quam nec massa faucibus euismod sed et eros. Ut scelerisque lobortis dui eu vulputate. Suspendisse venenatis augue eleifend dui auctor tristique. Nulla nec mattis nisl, sed vehicula risus.</div
 
       <%= f = form_for @changeset, "" %>
