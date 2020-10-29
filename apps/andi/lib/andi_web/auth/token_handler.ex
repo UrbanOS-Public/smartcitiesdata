@@ -53,7 +53,7 @@ defmodule AndiWeb.Auth.TokenHandler do
   defp log_in_url(conn) do
     base_url =
       Ueberauth.Strategy.Helpers.request_url(conn)
-      |> String.replace(~r|"/auth/auth0.*"|, "")
+      |> String.replace(~r|/auth/auth0.*$|, "")
 
     base_url <> "/auth/auth0"
   end
