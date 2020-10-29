@@ -46,7 +46,8 @@ config :andi, AndiWeb.Endpoint,
   server: true,
   check_origin: false
 
-if File.exists?("priv/cert/selfsigned.pem") do
+project_name = Mix.Project.config() |> Keyword.get(:app)
+if project_name == :andi do
   config :andi, AndiWeb.Endpoint,
     https: [
       port: 4443,
