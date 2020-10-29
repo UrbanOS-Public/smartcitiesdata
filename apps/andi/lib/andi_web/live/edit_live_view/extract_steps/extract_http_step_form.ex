@@ -236,10 +236,10 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     new_validation_status = get_new_validation_status(socket.assigns.changeset)
 
     changes_to_save =
-    socket.assigns.changeset
-    |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
-    |> Map.put(:id, socket.assigns.extract_step_id)
-    |> ExtractSteps.update(ExtractHttpStep)
+      socket.assigns.changeset
+      |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
+      |> Map.put(:id, socket.assigns.extract_step_id)
+      |> ExtractSteps.update(ExtractHttpStep)
 
     send(socket.parent_pid, {:validation_status, new_validation_status})
 

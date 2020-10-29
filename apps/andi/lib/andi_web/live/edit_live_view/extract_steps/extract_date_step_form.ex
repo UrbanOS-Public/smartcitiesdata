@@ -8,7 +8,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractDateStep
-  alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
@@ -47,7 +46,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
             <%= hidden_input(f, :technical_id) %>
 
             <div class="extract-step-form__type">
-            <h3>Date</h3>
+              <h3>Date</h3>
             </div>
 
             <div class="component-edit-section--<%= @visibility %>">
@@ -79,32 +78,23 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     """
   end
 
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
+    form_data
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> ExtractDateStep.changeset()
+    |> complete_validation(socket)
+  end
+
+  def handle_event("validate", _, socket) do
+    send(socket.parent_pid, :page_error)
+
+    {:noreply, socket}
+  end
+
   defp get_time_units(), do: []
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
-
-  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
-  defp status_class(%{status: _}), do: "test-status__code--bad"
-  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "shown")
-
-  defp status_tooltip(%{status: status}, modifier \\ "shown") do
-    assigns = %{
-      description: HttpStatusDescriptions.get(status),
-      modifier: modifier
-    }
-
-    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
-  end
-
-  defp key_values_to_keyword_list(form_data, field) do
-    form_data
-    |> Map.get(field, [])
-    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  end
-
-  defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
-  defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)

@@ -4,7 +4,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractStepTest do
 
   alias Andi.InputSchemas.Datasets.ExtractStep
 
-
   test "fails for empty context" do
     changes = %{
       type: "http",

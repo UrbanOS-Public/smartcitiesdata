@@ -104,7 +104,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
     |> cast_assoc(:sourceHeaders, with: &Header.changeset_for_draft/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset_for_draft/2)
-    |> cast_assoc(:extractSteps, with: &ExtractSteps.changeset_for_draft/2)
+    |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> foreign_key_constraint(:dataset_id)
   end
 

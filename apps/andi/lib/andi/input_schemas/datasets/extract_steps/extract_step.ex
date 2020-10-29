@@ -4,7 +4,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.StructTools
 
-  @cast_fields [:context, :type, :technical_id]
+  @cast_fields [:id, :context, :type, :technical_id]
   @required_fields [:type, :context]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -28,16 +28,26 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     |> validate_context()
   end
 
+  def changeset_for_draft(extract_step, changes) do
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
+
+    extract_step
+    |> cast(changes_with_id, @cast_fields)
+  end
+
   def validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date"] do
     changeset
   end
+
   def validate_type(changeset), do: add_error(changeset, :type, "invalid type")
 
   def validate_context(%{changes: %{context: nil}} = changeset), do: changeset
+
   def validate_context(%{changes: %{type: type, context: context}} = changeset) do
     case step_module(type) do
       :invalid_type ->
         changeset
+
       step_module ->
         validated_context = step_module.changeset(context)
         merged_errors = validated_context.errors ++ changeset.errors
@@ -45,6 +55,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
         Map.put(changeset, :errors, merged_errors)
     end
   end
+
   def validate_context(changeset), do: changeset
 
   def step_module("http"), do: Andi.InputSchemas.Datasets.ExtractHttpStep

@@ -77,7 +77,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     put_change(changeset, :format, "{ISO:Extended}")
   end
 
-  defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset) when unit in ["microseconds", "milliseconds", "seconds", "minutes", "hours", "days", "weeks", "months", "years", ""], do: changeset
+  defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset)
+       when unit in ["microseconds", "milliseconds", "seconds", "minutes", "hours", "days", "weeks", "months", "years", ""],
+       do: changeset
 
   defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset), do: add_error(changeset, :deltaTimeUnit, "invalid time unit")
 

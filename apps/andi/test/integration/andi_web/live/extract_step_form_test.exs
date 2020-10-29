@@ -34,6 +34,7 @@ defmodule AndiWeb.ExtractStepFormTest do
         url: "example.com"
       }
     }
+
     date_extract_step = %{
       type: "date",
       context: %{
@@ -43,10 +44,12 @@ defmodule AndiWeb.ExtractStepFormTest do
         format: "{ISO:Extended}"
       }
     }
+
     extract_steps = [
       default_extract_step,
       date_extract_step
     ]
+
     smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
@@ -88,7 +91,10 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
-  test "given an previously invalid extract step, and its made valid, the section shows a valid status", %{andi_dataset: dataset, view: view} do
+  test "given an previously invalid extract step, and its made valid, the section shows a valid status", %{
+    andi_dataset: dataset,
+    view: view
+  } do
     extract_step_id = get_extract_step_id(dataset, 0)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
     extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)

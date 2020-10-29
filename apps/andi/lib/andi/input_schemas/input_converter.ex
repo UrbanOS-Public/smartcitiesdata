@@ -23,9 +23,9 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   def smrt_dataset_to_full_changeset(%Dataset{} = andi_dataset, smrt_dataset) do
-    changes = prepare_smrt_dataset_for_casting(smrt_dataset) |> IO.inspect(label: "input_converter.ex:26")
+    changes = prepare_smrt_dataset_for_casting(smrt_dataset)
 
-    Dataset.full_validation_changeset(andi_dataset, changes) |> IO.inspect(label: "input_converter.ex:28")
+    Dataset.full_validation_changeset(andi_dataset, changes)
   end
 
   def smrt_dataset_to_changeset(smrt_dataset) do
@@ -217,8 +217,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn step ->
       step
       |> Map.delete(:id)
-      |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
-      |> Map.update(:headers, nil, &convert_key_value_to_map/1)
       |> decode_andi_extract_step_body()
     end)
   end

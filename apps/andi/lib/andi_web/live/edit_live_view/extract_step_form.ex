@@ -43,7 +43,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         "expanded" -> "MINIMIZE"
       end
 
-
     ~L"""
       <div id="extract-step-form" class="form-component">
         <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
@@ -132,7 +131,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     new_extract_step = create_new_extract_step(step_type, technical_id)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
-    {:noreply, assign(socket, extract_steps:  all_steps_for_technical)}
+    {:noreply, assign(socket, extract_steps: all_steps_for_technical)}
   end
 
   defp create_new_extract_step("http", technical_id) do

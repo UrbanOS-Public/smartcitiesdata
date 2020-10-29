@@ -44,15 +44,15 @@ defmodule Andi.InputSchemas.InputConverterTest do
               %{
                 type: "http",
                 context: %{
-                  headers: %{"key" => "value"},
-                  queryParams: %{"key" => "val"},
+                  headers: %{key: "value"},
+                  queryParams: %{key: "val"},
                   action: "POST",
                   body: %{
-                    "url" => "http://www.something.com/",
-                    "action" => "Add",
-                    "params" => %{
-                      "intA" => 3,
-                      "intB" => 6
+                    url: "http://www.something.com/",
+                    action: "Add",
+                    params: %{
+                      intA: 3,
+                      intB: 6
                     }
                   },
                   protocol: ["http1"],
