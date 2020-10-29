@@ -104,6 +104,7 @@ defmodule Andi.MixProject do
     ]
   end
 
+
   defp ensure_generated_certs(tasks) do
     if File.exists?("priv/cert/selfsigned.pem") do
       tasks
