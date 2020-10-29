@@ -10,6 +10,8 @@ function _list_apps {
     mix compile >/dev/null 2>&1
 )
 
+git fetch --tags
+
 for app in $(_list_apps); do
     (
         cd $app
