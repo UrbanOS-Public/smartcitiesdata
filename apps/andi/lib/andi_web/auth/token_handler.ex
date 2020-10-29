@@ -51,8 +51,10 @@ defmodule AndiWeb.Auth.TokenHandler do
   end
 
   defp log_in_url(conn) do
-    Plug.Conn.request_url(conn)
-    |> String.replace(~r|/logout.*$|, "")
+    base_url = Ueberauth.Strategy.Helpers.request_url(conn)
+    |> String.replace(~r|"/auth/auth0.*"|, "")
+
+    base_url <> "/auth/auth0"
   end
 
   defp client_id() do
