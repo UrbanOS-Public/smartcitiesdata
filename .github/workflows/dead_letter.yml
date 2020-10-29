@@ -1,0 +1,37 @@
+name: dead_letter
+on:
+  push:
+    branches:
+      - master
+    paths:
+    - 'apps/dead_letter/**'
+    - 'mix.lock'
+  pull_request:
+    branches:
+      - master
+    paths:
+    - 'apps/dead_letter/**'
+    - 'mix.lock'
+
+jobs:
+  ci:
+    name: Verify Application
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.2.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.8.2
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
+      - name: Run integration tests
+        run: |
+          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}

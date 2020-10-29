@@ -393,7 +393,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_view = find_child(view, "extract_step_form_editor")
 
       url_form_data = %{"sourceUrl" => ""}
-      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+      extract_form_data = %{"type" => "http", "action" => "GET", "url" => "cam.com"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
       render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
@@ -421,7 +421,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_view = find_child(view, "extract_step_form_editor")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
-      extract_form_data = %{"type" => "http", "method" => "GET", "url" => ""}
+      extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
       render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
@@ -449,7 +449,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_view = find_child(view, "extract_step_form_editor")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
-      extract_form_data = %{"type" => "http", "method" => "GET", "url" => "cam.com"}
+      extract_form_data = %{"type" => "http", "action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
       render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
@@ -463,6 +463,7 @@ defmodule AndiWeb.EditLiveViewTest do
         {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
         assert dataset_sent != nil
         assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+        assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
       end)
     end
   end

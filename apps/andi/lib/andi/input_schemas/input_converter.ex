@@ -169,12 +169,32 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp convert_smrt_extract_steps(extract_steps) do
     extract_steps
-    |> Enum.map(fn step ->
-      step
-      |> Map.update(:queryParams, [], &to_key_value_list/1)
-      |> Map.update(:headers, [], &to_key_value_list/1)
+    |> Enum.map(fn
+      %{type: "http"} = http_step ->
+        http_step
+        |> unwrap_extract_context()
+        |> encode_extract_step_body_as_json()
+        |> Map.update(:queryParams, [], &to_key_value_list/1)
+        |> Map.update(:headers, [], &to_key_value_list/1)
+
+      step ->
+        step
     end)
   end
+
+  defp unwrap_extract_context(smrt_extract_step) do
+    step_context = smrt_extract_step.context
+
+    smrt_extract_step
+    |> Map.merge(step_context)
+    |> Map.delete(:context)
+  end
+
+  defp encode_extract_step_body_as_json(%{type: "http", body: body} = smrt_extract_step) when body != nil do
+    Map.put(smrt_extract_step, :body, Jason.encode!(body))
+  end
+
+  defp encode_extract_step_body_as_json(smrt_extract_step), do: smrt_extract_step
 
   defp add_dataset_id(schema, dataset_id, parent_bread_crumb \\ "") do
     bread_crumb = parent_bread_crumb <> schema.name
@@ -194,11 +214,43 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> Map.update(:sourceQueryParams, nil, &convert_key_value_to_map/1)
       |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
+      |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
       |> Map.update(:schema, nil, fn schema ->
         Enum.map(schema, &drop_fields_from_dictionary_item/1)
       end)
     end)
   end
+
+  defp convert_andi_extract_steps(andi_extract_steps) do
+    andi_extract_steps
+    |> Enum.map(fn step ->
+      step
+      |> Map.delete(:id)
+      |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
+      |> Map.update(:headers, nil, &convert_key_value_to_map/1)
+      |> decode_andi_extract_step_body()
+      |> wrap_step_context()
+    end)
+  end
+
+  defp wrap_step_context(andi_extract_step) do
+    smrt_extract_step_context =
+      andi_extract_step
+      |> Map.delete(:type)
+      |> Map.delete(:assigns)
+
+    %{
+      type: andi_extract_step.type,
+      assigns: andi_extract_step.assigns,
+      context: smrt_extract_step_context
+    }
+  end
+
+  defp decode_andi_extract_step_body(%{type: "http", body: body} = andi_extract_step) when body != nil do
+    Map.put(andi_extract_step, :body, Jason.decode!(body))
+  end
+
+  defp decode_andi_extract_step_body(andi_extract_step), do: andi_extract_step
 
   defp drop_fields_from_dictionary_item(schema) do
     schema

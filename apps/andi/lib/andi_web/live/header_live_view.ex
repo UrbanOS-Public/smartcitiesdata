@@ -9,7 +9,7 @@ defmodule AndiWeb.HeaderLiveView do
     <header class="root__header page-header">
       <span class="page-header__primary datasets-link" phx-click="show-datasets">
         <span class="datasets-link__icon material-icons">home</span>
-        <span class="datasets-link__text">Dataset Ingestion Interface</span>
+        <span class="datasets-link__text"><%= header_text(@is_curator) %></span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
@@ -68,4 +68,7 @@ defmodule AndiWeb.HeaderLiveView do
   def __redirect__(socket, location) do
     {:noreply, redirect(socket, to: location)}
   end
+
+  defp header_text(true = _is_curator), do: "Dataset Ingestion Interface"
+  defp header_text(false = _is_curator), do: "Dataset Submission Interface"
 end

@@ -6,11 +6,12 @@ defmodule Andi.Migration.Owner do
 
   def transfer_all_datasets_to_owner(owner) do
     Datasets.get_all()
-    |> Enum.map(fn dataset -> Repo.preload(dataset, [:owner]) end)
     |> Enum.each(fn dataset -> update_owner(dataset, owner) end)
   end
 
   def update_owner(dataset, owner) do
+    dataset = Repo.preload(dataset, [:owner])
+
     new_changeset =
       Dataset.changeset_for_draft(
         dataset,

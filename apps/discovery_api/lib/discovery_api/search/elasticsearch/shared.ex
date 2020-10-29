@@ -2,6 +2,10 @@ defmodule DiscoveryApi.Search.Elasticsearch.Shared do
   @moduledoc """
   Shared functionality across the suite of Elasticsearch modules.
   """
+  use Properties, otp_app: :discovery_api
+
+  getter(:elasticsearch, generic: true)
+
   def url() do
     Map.fetch!(configuration(), :url)
   end
@@ -21,7 +25,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Shared do
   end
 
   defp configuration() do
-    Application.get_env(:discovery_api, :elasticsearch)
+    elasticsearch()
     |> Map.new()
   end
 

@@ -23,6 +23,10 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 	- port 4443 can be swapped for the port used in the https configuration defined in `integration.exs` under `AndiWeb.Endpoint`
     - `MIX_ENV=integration mix start` will automatically generate the self-signed certificate for HTTPS. Review the output it gives for directions on how to allow the self-signed cert on your dev machine for ONLY localhost
 
+- NOTE:
+  - If this page `https://127.0.0.1.xip.io:4443/datasets` is not loading on the browser after successful start of the server (This may happen in LINUX OS).
+    - Consider adding `127.0.0.1       127.0.0.1.xip.io` at the end of file `/etc/hosts`. Using `sudo vim /etc/hosts`
+
 ###
 
 These two commands can be run within an `MIX_ENV=integration iex -S mix start` to create sample data for testing things like the datasets list page.

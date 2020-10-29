@@ -1,8 +1,8 @@
-name: VersionChecker
+name: version_checker
 on: [pull_request_target]
 
 jobs:
-  check-mix-version:
+  check-apps-for-update:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,6 +13,9 @@ jobs:
           elixir-version: 1.9
           otp-version: 22.2
           runs-on: ubuntu-latest
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
       - name: Git Stuff
         id: git
         run: |
@@ -20,12 +23,11 @@ jobs:
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Check App versions
         run: |
-          export MESSAGE=$(elixir -r scripts/version_differ.exs -e 'VersionDiffer.cli')
-          echo ::set-output name=pr_message::$MESSAGE
+          export MESSAGE=$(bash scripts/gh-action-check-version.sh)
+          echo -e "${MESSAGE:-No app changes detected}" > comment-updates.txt
         id: differ
       - name: Comment PR
         uses: marocchino/sticky-pull-request-comment@v1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: |
-            ${{ steps.differ.outputs.pr_message }}
+          path: comment-updates.txt

@@ -37,10 +37,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "test.com",
-                queryParams: %{"bar" => "biz", "blah" => "dah"},
-                headers: %{"barl" => "biz", "yar" => "har"}
+                context: %{
+                  action: "GET",
+                  url: "test.com",
+                  queryParams: %{"bar" => "biz", "blah" => "dah"},
+                  headers: %{"barl" => "biz", "yar" => "har"}
+                }
               }
             ]
           }
@@ -146,10 +148,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -237,10 +241,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -272,10 +278,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -305,10 +313,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
             extractSteps: [
               %{
                 type: "http",
-                method: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
+                context: %{
+                  action: "GET",
+                  url: "123.com",
+                  queryParams: %{"x" => "y"},
+                  headers: %{"api-key" => "to-my-heart"}
+                }
               }
             ]
           }
@@ -340,10 +350,12 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "GET",
-              url: "123.com",
-              queryParams: %{"x" => "y"},
-              headers: %{"api-key" => "to-my-heart"}
+              context: %{
+                action: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
             }
           ]
         }
@@ -370,10 +382,13 @@ defmodule AndiWeb.ExtractHttpStepTest do
           extractSteps: [
             %{
               type: "http",
-              method: "GET",
-              url: "123.com",
-              queryParams: %{"x" => "y"},
-              headers: %{"api-key" => "to-my-heart"}
+              context: %{
+                action: "POST",
+                url: "123.com",
+                body: "",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
             }
           ]
         }
@@ -384,24 +399,48 @@ defmodule AndiWeb.ExtractHttpStepTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{field => %{"0" => %{"key" => "", "value" => "where's my key"}}}
+    form_data = %{field => value, "action" => "POST", "type" => "http", "url" => "example.com"}
 
     html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
 
-    assert get_text(html, "##{field}-error-msg") == "Please enter valid key(s)."
+    assert get_text(html, "##{field}-error-msg") == error
 
-    where(field: ["queryParams", "headers"])
+    where([
+      [:field, :value, :error],
+      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
+      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
+      ["body", "this is invalid json", "Please enter a valid body."]
+    ])
   end
 
-  test "given a url with at least one invalid query param it marks the dataset as invalid" do
-    form_data = %{"url" => "https://source.url.example.com?=oops&a=b"} |> FormTools.adjust_extract_query_params_for_url()
+  test "body passes validation with valid json", %{conn: conn} do
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              context: %{
+                action: "POST",
+                url: "123.com",
+                body: "",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            }
+          ]
+        }
+      })
 
-    changeset = ExtractHttpStep.changeset_from_form_data(form_data)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
 
-    refute changeset.valid?
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    extract_step_form_view = find_child(view, "extract_step_form_editor")
 
-    assert {:queryParams, {"has invalid format", [validation: :format]}} in changeset.errors
+    form_data = %{"body" => "[{\"bob\": 1}]", "action" => "POST"}
 
-    assert %{queryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
+    html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
+
+    assert get_text(html, "#body-error-msg") == ""
   end
 end

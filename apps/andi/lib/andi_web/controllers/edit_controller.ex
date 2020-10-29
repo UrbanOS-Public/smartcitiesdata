@@ -14,7 +14,11 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       dataset ->
-        live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset, "is_curator" => is_curator})
+        if is_curator do
+          live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
+        else
+          live_render(conn, AndiWeb.SubmitLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
+        end
     end
   end
 

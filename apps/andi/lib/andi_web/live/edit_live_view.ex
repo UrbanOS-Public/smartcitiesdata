@@ -20,7 +20,7 @@ defmodule AndiWeb.EditLiveView do
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
-        <%= hidden_input(f, :owner_id) %>
+        <%= hidden_input(f, :owner_id) # TODO: remove me if possible %>
         <%= hidden_input(business, :authorEmail) %>
         <%= hidden_input(business, :authorName) %>
         <%= hidden_input(business, :categories) %>
@@ -45,7 +45,7 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :systemName) %>
 
         <div class="metadata-form-component">
-          <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset}) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -104,6 +104,7 @@ defmodule AndiWeb.EditLiveView do
        changeset: new_changeset,
        dataset: dataset,
        dataset_id: dataset.id,
+       is_curator: is_curator,
        has_validation_errors: false,
        new_field_initial_render: false,
        page_error: false,
