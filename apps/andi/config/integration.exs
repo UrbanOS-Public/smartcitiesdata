@@ -47,6 +47,7 @@ config :andi, AndiWeb.Endpoint,
   check_origin: false
 
 project_name = Mix.Project.config() |> Keyword.get(:app)
+
 if project_name == :andi do
   config :andi, AndiWeb.Endpoint,
     https: [

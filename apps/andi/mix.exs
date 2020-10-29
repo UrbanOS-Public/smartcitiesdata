@@ -91,14 +91,16 @@ defmodule Andi.MixProject do
   defp aliases do
     [
       verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
-      start: ensure_generated_certs([
-        "ecto.create --quiet",
-        "ecto.migrate",
-        "phx.server"
-      ]),
-      "test.integration": ensure_generated_certs([
-        "test.integration"
-      ])
+      start:
+        ensure_generated_certs([
+          "ecto.create --quiet",
+          "ecto.migrate",
+          "phx.server"
+        ]),
+      "test.integration":
+        ensure_generated_certs([
+          "test.integration"
+        ])
     ]
   end
 
