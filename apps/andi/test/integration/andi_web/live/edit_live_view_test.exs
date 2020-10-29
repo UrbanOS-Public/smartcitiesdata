@@ -467,7 +467,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "fails to publish if invalid extract steps are found", %{conn: conn} do
-      extract_steps = [%{type: "http", method: "GET", url: "example.com"}, %{type: "http", method: "GET", url: "example2.com"}]
+      extract_steps = [%{type: "http", context: %{action: "GET", url: "example.com"}}, %{type: "http", context: %{action: "GET", url: "example2.com"}}]
       smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -478,7 +478,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_view = find_child(view, "extract_step_form_editor")
       extract_http_step_form_view = find_child(extract_step_view, extract_step_id)
 
-      extract_form_data = %{"type" => "http", "method" => "GET", "url" => ""}
+      extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
       render_change(extract_http_step_form_view, :validate, %{"form_data" => extract_form_data})
 

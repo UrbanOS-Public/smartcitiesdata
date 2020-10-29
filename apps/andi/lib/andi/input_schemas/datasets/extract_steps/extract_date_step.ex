@@ -3,6 +3,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Timex.Format.DateTime.Formatter
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
@@ -31,6 +32,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> foreign_key_constraint(:technical_id)
     |> validate_required(@required_fields, message: "is required")
+    |> validate_time_unit()
+    |> validate_format()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -56,6 +59,29 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   end
 
   def preload(struct), do: struct
+
+  defp validate_format(%{changes: %{format: format}} = changeset) do
+    case Formatter.validate(format) do
+      :ok ->
+        changeset
+
+      {:error, %RuntimeError{message: error_msg}} ->
+        add_error(changeset, :format, error_msg)
+
+      {:error, err} ->
+        add_error(changeset, :format, err)
+    end
+  end
+
+  defp validate_format(changeset) do
+    put_change(changeset, :format, "{ISO:Extended}")
+  end
+
+  defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset) when unit in ["microseconds", "milliseconds", "seconds", "minutes", "hours", "days", "weeks", "months", "years", ""], do: changeset
+
+  defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset), do: add_error(changeset, :deltaTimeUnit, "invalid time unit")
+
+  defp validate_time_unit(changeset), do: changeset
 
   defp clear_field_errors(changset, field) do
     Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
