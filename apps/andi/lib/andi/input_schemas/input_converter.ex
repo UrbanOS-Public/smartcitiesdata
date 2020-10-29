@@ -23,9 +23,9 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   def smrt_dataset_to_full_changeset(%Dataset{} = andi_dataset, smrt_dataset) do
-    changes = prepare_smrt_dataset_for_casting(smrt_dataset)
+    changes = prepare_smrt_dataset_for_casting(smrt_dataset) |> IO.inspect(label: "input_converter.ex:26")
 
-    Dataset.full_validation_changeset(andi_dataset, changes)
+    Dataset.full_validation_changeset(andi_dataset, changes) |> IO.inspect(label: "input_converter.ex:28")
   end
 
   def smrt_dataset_to_changeset(smrt_dataset) do
@@ -172,7 +172,6 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn
       %{type: "http"} = http_step ->
         http_step
-        |> unwrap_extract_context()
         |> encode_extract_step_body_as_json()
         |> Map.update(:queryParams, [], &to_key_value_list/1)
         |> Map.update(:headers, [], &to_key_value_list/1)
@@ -180,14 +179,6 @@ defmodule Andi.InputSchemas.InputConverter do
       step ->
         step
     end)
-  end
-
-  defp unwrap_extract_context(smrt_extract_step) do
-    step_context = smrt_extract_step.context
-
-    smrt_extract_step
-    |> Map.merge(step_context)
-    |> Map.delete(:context)
   end
 
   defp encode_extract_step_body_as_json(%{type: "http", body: body} = smrt_extract_step) when body != nil do
@@ -229,21 +220,7 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
       |> Map.update(:headers, nil, &convert_key_value_to_map/1)
       |> decode_andi_extract_step_body()
-      |> wrap_step_context()
     end)
-  end
-
-  defp wrap_step_context(andi_extract_step) do
-    smrt_extract_step_context =
-      andi_extract_step
-      |> Map.delete(:type)
-      |> Map.delete(:assigns)
-
-    %{
-      type: andi_extract_step.type,
-      assigns: andi_extract_step.assigns,
-      context: smrt_extract_step_context
-    }
   end
 
   defp decode_andi_extract_step_body(%{type: "http", body: body} = andi_extract_step) when body != nil do

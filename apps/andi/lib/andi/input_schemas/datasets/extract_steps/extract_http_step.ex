@@ -8,47 +8,41 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
-  @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "extract_http_step" do
-    field(:assigns, :map)
+  embedded_schema do
     field(:body, :string)
     field(:action, :string)
-    field(:type, :string)
     field(:protocol, {:array, :string})
     field(:url, :string)
-    has_many(:headers, ExtractHeader, on_replace: :delete)
-    has_many(:queryParams, ExtractQueryParam, on_replace: :delete)
-    belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
+    embeds_many(:headers, ExtractHeader)
+    embeds_many(:queryParams, ExtractQueryParam)
   end
 
   use Accessible
 
-  @cast_fields [:id, :type, :action, :protocol, :url, :body, :assigns, :technical_id]
-  @required_fields [:type, :action, :url, :assigns]
+  @cast_fields [:action, :protocol, :url, :body]
+  @required_fields [:action, :url]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:headers, with: &ExtractHeader.changeset/2)
-    |> cast_assoc(:queryParams, with: &ExtractQueryParam.changeset/2)
-    |> foreign_key_constraint(:technical_id)
+    |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
+    |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
     |> validate_key_value_parameters()
   end
 
   def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:headers, with: &ExtractHeader.changeset_for_draft/2)
-    |> cast_assoc(:queryParams, with: &ExtractQueryParam.changeset_for_draft/2)
-    |> foreign_key_constraint(:technical_id)
+    |> cast_embed(:headers, with: &ExtractHeader.changeset_for_draft/2)
+    |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset_for_draft/2)
   end
 
   def changeset_from_form_data(form_data) do
@@ -61,9 +55,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     changeset(form_data_as_params)
   end
 
-  def changeset_from_andi_step(nil, technical_id), do: changeset(%{type: "http", technical_id: technical_id, assigns: %{}})
+  def changeset_from_andi_step(nil), do: changeset(%{})
 
-  def changeset_from_andi_step(dataset_http_step, _technical_id) do
+  def changeset_from_andi_step(dataset_http_step) do
     dataset_http_step
     |> StructTools.to_map()
     |> changeset()

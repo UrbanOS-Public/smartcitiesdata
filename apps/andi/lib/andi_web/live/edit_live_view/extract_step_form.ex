@@ -129,10 +129,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_event("add-extract-step", %{"step_type" => step_type}, socket) do
     technical_id = socket.assigns.technical_id
-    new_extract_step = create_new_extract_step(step_type, technical_id) |> IO.inspect(label: "new step")
+    new_extract_step = create_new_extract_step(step_type, technical_id)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
-    {:noreply, assign(socket, extract_steps:  all_steps_for_technical |> IO.inspect(label: "all steps"))}
+    {:noreply, assign(socket, extract_steps:  all_steps_for_technical)}
   end
 
   defp create_new_extract_step("http", technical_id) do

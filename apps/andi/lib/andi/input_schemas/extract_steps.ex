@@ -47,4 +47,12 @@ defmodule Andi.InputSchemas.ExtractSteps do
     update(from_step, changes)
   end
 
+  def changeset_for_draft(extract_steps) when is_list(extract_steps) do
+    extract_steps
+    |> Enum.map(fn step -> changeset_for_draft(step) end)
+  end
+
+  def changeset_for_draft(%struct{} = extract_step) do
+    struct.changeset_for_draft(extract_step)
+  end
 end

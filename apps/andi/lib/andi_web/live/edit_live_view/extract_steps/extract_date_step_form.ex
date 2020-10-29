@@ -7,21 +7,20 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
-  alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.ExtractHttpSteps
+  alias Andi.InputSchemas.ExtractDateSteps
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"extract_step" => extract_step, "dataset_id" => dataset_id, "technical_id" => technical_id}, socket) do
     new_changeset =
       extract_step
       |> Andi.InputSchemas.StructTools.to_map()
-      |> ExtractHttpStep.changeset_from_andi_step(technical_id)
+      |> ExtractDateStep.changeset_from_andi_step(technical_id)
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -53,40 +52,25 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-step-form-edit-section form-grid">
-
-                <div class="extract-step-form__method">
-                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-                  <%= ErrorHelpers.error_tag(f, :action) %>
+                <div class="extract-step-form__destination">
+                  <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required") %>
+                  <%= text_input(f, :destination, id: "date_destination", class: "extract-step-form__destination input") %>
+                  <%= ErrorHelpers.error_tag(f, :destination) %>
                 </div>
-
-                <div class="extract-step-form__url">
-                  <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
-                  <%= text_input(f, :url, class: "input full-width", disabled: @testing) %>
-                  <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
+                <div class="extract-step-form__deltaTimeUnit">
+                  <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label label--required") %>
+                  <%= select(f, :deltaTimeUnit, get_time_units(), id: "date_delta_time_unit", class: "extract-step-form__delta_time_unit select") %>
+                  <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
                 </div>
-
-                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_queryParams" <> @extract_step_id, css_label: "source-query-params", form: f, field: :queryParams ) %>
-
-                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_headers" <> @extract_step_id, css_label: "source-headers", form: f, field: :headers ) %>
-
-                <%= if input_value(f, :action) == "POST" do %>
-                  <div class="extract-step-form__body">
-                    <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
-                    <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
-                    <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
-                  </div>
-                <% end %>
-
-                <div class="extract-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
-                  <%= if @test_results do %>
-                    <div class="test-status">
-                    Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
-                    <%= status_tooltip(@test_results) %>
-                    Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
-                    </div>
-                  <% end %>
+                <div class="extract-step-form__deltaTimeValue">
+                  <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label label--required") %>
+                  <%= text_input(f, :deltaTimeValue, id: "date_delta_time_value", class: "extract-step-form__delta_time_value input") %>
+                  <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
+                </div>
+                <div class="extract-step-form__format">
+                  <%= label(f, :format, DisplayNames.get(:format), class: "label label--required") %>
+                  <%= text_input(f, :format, id: "date_format", class: "extract-step-form__format input") %>
+                  <%= ErrorHelpers.error_tag(f, :format) %>
                 </div>
               </div>
             </div>
@@ -94,6 +78,8 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
         </div>
     """
   end
+
+  defp get_time_units(), do: []
 
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
