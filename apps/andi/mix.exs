@@ -15,7 +15,8 @@ defmodule Andi.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      description: "Dataset curation interface for Datastillery"
     ]
   end
 
@@ -103,7 +104,6 @@ defmodule Andi.MixProject do
         ])
     ]
   end
-
 
   defp ensure_generated_certs(tasks) do
     if File.exists?("priv/cert/selfsigned.pem") do
