@@ -24,7 +24,7 @@ jobs:
       - name: Check App versions
         run: |
           export MESSAGE=$(bash scripts/gh-action-check-version.sh)
-          if [[ -z "${MESSAGE}" ]; then
+          if [ -z "${MESSAGE}" ]; then
             echo "No app changes detected"
             exit 0
           else
