@@ -7,7 +7,9 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   import Phoenix.HTML.Form
   require Logger
 
+  alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
@@ -21,7 +23,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     new_changeset =
       extract_step
       |> Andi.InputSchemas.StructTools.to_map()
-      |> ExtractHttpStep.changeset_from_andi_step(technical_id)
+      |> ExtractHttpStep.changeset_from_andi_step()
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -127,17 +129,17 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
 
-    ExtractSteps.update(current_changes, ExtractHttpStep)
+    ExtractSteps.update(current_changes)
 
     current_step_id = current_changes.id
     {:ok, _dataset} = ExtractSteps.add_extract_query_param(current_step_id)
 
     new_changes =
       current_step_id
-      |> ExtractSteps.get(ExtractHttpStep)
+      |> ExtractSteps.get()
       |> StructTools.to_map()
 
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
+    changeset = ExtractStep.changeset(new_changes)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -147,17 +149,17 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       socket.assigns.changeset
       |> Ecto.Changeset.apply_changes()
 
-    ExtractSteps.update(current_changes, ExtractHttpStep)
+    # ExtractSteps.update(current_changes)
 
     current_step_id = current_changes.id
     {:ok, _dataset} = ExtractSteps.add_extract_header(current_step_id)
 
     new_changes =
       current_step_id
-      |> ExtractSteps.get(ExtractHttpStep)
+      |> ExtractSteps.get()
       |> StructTools.to_map()
 
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
+    changeset = ExtractStep.changeset(new_changes)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -170,10 +172,10 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
     new_changes =
       current_step_id
-      |> ExtractSteps.get(ExtractHttpStep)
+      |> ExtractSteps.get()
       |> StructTools.to_map()
 
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
+    changeset = ExtractStep.changeset(new_changes)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -186,10 +188,10 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
     new_changes =
       current_step_id
-      |> ExtractSteps.get(ExtractHttpStep)
+      |> ExtractSteps.get()
       |> StructTools.to_map()
 
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
+    changeset = ExtractStep.changeset(new_changes)
 
     {:noreply, assign(socket, changeset: changeset)}
   end
@@ -237,9 +239,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
     changes_to_save =
       socket.assigns.changeset
-      |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
-      |> Map.put(:id, socket.assigns.extract_step_id)
-      |> ExtractSteps.update(ExtractHttpStep)
+      |> InputConverter.form_changes_from_changeset()
+      |> ExtractSteps.update()
 
     send(socket.parent_pid, {:validation_status, new_validation_status})
 

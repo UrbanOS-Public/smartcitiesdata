@@ -7,6 +7,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   import Phoenix.HTML.Form
   require Logger
 
+  alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
@@ -19,7 +20,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     new_changeset =
       extract_step
       |> Andi.InputSchemas.StructTools.to_map()
-      |> ExtractDateStep.changeset_from_andi_step(technical_id)
+      |> ExtractStep.changeset()
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")

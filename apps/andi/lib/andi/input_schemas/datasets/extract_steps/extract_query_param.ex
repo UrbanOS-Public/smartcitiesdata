@@ -28,10 +28,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
   end
 
   defp common_changeset_operations(query_param, changes) do
-    changes_with_id = StructTools.ensure_id(query_param, changes)
-
-    query_param
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    cast(query_param, changes, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct

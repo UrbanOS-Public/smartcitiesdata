@@ -28,10 +28,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
   end
 
   defp common_changeset_operations(header, changes) do
-    changes_with_id = StructTools.ensure_id(header, changes)
-
-    header
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    cast(header, changes, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct

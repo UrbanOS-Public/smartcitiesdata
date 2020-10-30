@@ -35,30 +35,53 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     |> cast(changes_with_id, @cast_fields)
   end
 
-  def validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date"] do
+  def changeset_from_form_data(form_data) do
+    form_data_as_params =
+      form_data
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> wrap_context()
+
+    changeset(form_data_as_params)
+  end
+
+  def preload(struct), do: struct
+
+  defp validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date"] do
     changeset
   end
 
-  def validate_type(changeset), do: add_error(changeset, :type, "invalid type")
+  defp validate_type(changeset), do: add_error(changeset, :type, "invalid type")
 
-  def validate_context(%{changes: %{context: nil}} = changeset), do: changeset
+  defp validate_context(%{changes: %{context: nil}} = changeset), do: changeset
 
-  def validate_context(%{changes: %{type: type, context: context}} = changeset) do
+  defp validate_context(%{changes: %{type: type, context: context}} = changeset) do
     case step_module(type) do
       :invalid_type ->
         changeset
 
       step_module ->
         validated_context = step_module.changeset(context)
-        merged_errors = validated_context.errors ++ changeset.errors
 
-        Map.put(changeset, :errors, merged_errors)
+        updated_changeset =
+          Enum.reduce(validated_context.errors, changeset, fn {key, {message, _}}, acc ->
+            Ecto.Changeset.add_error(acc, key, message)
+          end)
+
+        updated_changeset
     end
   end
 
-  def validate_context(changeset), do: changeset
+  defp validate_context(changeset), do: changeset
 
-  def step_module("http"), do: Andi.InputSchemas.Datasets.ExtractHttpStep
-  def step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
-  def step_module(_invalid_type), do: :invalid_type
+  defp step_module("http"), do: Andi.InputSchemas.Datasets.ExtractHttpStep
+  defp step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
+  defp step_module(_invalid_type), do: :invalid_type
+
+  defp wrap_context(form_data) do
+    context =
+      form_data
+      |> Map.delete(:type)
+
+    %{type: form_data.type, context: context}
+  end
 end

@@ -26,10 +26,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
-
     extract_step
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast(changes, @cast_fields, empty_values: [])
     |> foreign_key_constraint(:technical_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_time_unit()
@@ -37,10 +35,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   end
 
   def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes) |> Map.put(:assigns, %{})
-
     extract_step
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast(changes, @cast_fields, empty_values: [])
     |> foreign_key_constraint(:technical_id)
   end
 

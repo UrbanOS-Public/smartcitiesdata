@@ -1,4 +1,4 @@
-defmodule AndiWeb.ExtractHttpStepTest do
+defmodule AndiWeb.ExtractHttpStepFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
@@ -65,13 +65,13 @@ defmodule AndiWeb.ExtractHttpStepTest do
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
 
-      html = render_click(extract_http_step_form_view, "add", %{"field" => Atom.to_string(field)})
+      html = render_click(extract_http_step_form_view, "add", %{"field" => field})
 
       assert html |> find_elements(key_class) |> length() == 3
       assert html |> find_elements(value_class) |> length() == 3
 
       where(
-        field: [:queryParams, :headers],
+        field: ["queryParams", "headers"],
         key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
         value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )

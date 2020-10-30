@@ -128,29 +128,29 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_event("add-extract-step", %{"step_type" => step_type}, socket) do
     technical_id = socket.assigns.technical_id
-    new_extract_step = create_new_extract_step(step_type, technical_id)
+    new_extract_step = ExtractSteps.create(step_type, technical_id)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
     {:noreply, assign(socket, extract_steps: all_steps_for_technical)}
   end
 
-  defp create_new_extract_step("http", technical_id) do
-    new_extract_step =
-      ExtractHttpStep.changeset_from_andi_step(nil, technical_id)
-      |> Ecto.Changeset.apply_changes()
-      |> Andi.InputSchemas.StructTools.to_map()
+  # defp create_new_extract_step("http", technical_id) do
+  #   new_extract_step =
+  #     ExtractHttpStep.changeset_from_andi_step(nil, technical_id)
+  #     |> Ecto.Changeset.apply_changes()
+  #     |> Andi.InputSchemas.StructTools.to_map()
 
-    ExtractSteps.update(new_extract_step, ExtractHttpStep)
-  end
+  #   ExtractSteps.update(new_extract_step, ExtractHttpStep)
+  # end
 
-  defp create_new_extract_step("date", technical_id) do
-    new_extract_step =
-      ExtractDateStep.changeset_from_andi_step(nil, technical_id)
-      |> Ecto.Changeset.apply_changes()
-      |> Andi.InputSchemas.StructTools.to_map()
+  # defp create_new_extract_step("date", technical_id) do
+  #   new_extract_step =
+  #     ExtractDateStep.changeset_from_andi_step(nil, technical_id)
+  #     |> Ecto.Changeset.apply_changes()
+  #     |> Andi.InputSchemas.StructTools.to_map()
 
-    ExtractSteps.update(new_extract_step, ExtractDateStep)
-  end
+  #   ExtractSteps.update(new_extract_step, ExtractDateStep)
+  # end
 
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
