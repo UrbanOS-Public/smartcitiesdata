@@ -13,13 +13,19 @@ An application for reading data off kafka topics, batching it up and sending it 
 ## To run inside a container(from the root directory):
   * `docker build . -t <image_name:tag>`
 
-## Running Locally
-
-You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependencies locally using docker and docker-compose.
-
-```bash
-MIX_ENV=integration mix docker.start
-MIX_ENV=integration iex -S mix
+### To run locally:
+  * To startup external dependancies in docker:
+    ```bash
+    `MIX_ENV=integration mix docker.start`
+    ```
+  * To run a single instance with no data in it:
+    ```bash
+    `MIX_ENV=integration iex -S mix`
+    ```
+  * To kill the docker:
+    ```bash
+    `MIX_ENV=integration mix docker.kill`
+    ```
 ```
 
 ## Jobs

@@ -51,14 +51,9 @@ websocat wss://streams.smartcolumbusos.com/socket/websocket
 | SECRET_KEY_BASE | Pheonix uses this to verify cookies. Generate with `mix phx.gen.secret` or pass in your own | |
 
 
-## Running Tests
+### To run the tests
 
-Unit Tests:
-```bash
-mix test
-```
-
-Integration Tests:
-```bash
-mix test.integration
-```
+  * Run `mix test` to run the tests a single time
+  * Run `mix test.watch` to re-run the tests when a file changes
+  * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
+  * Run `mix test.integration` to run the integration tests

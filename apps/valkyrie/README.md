@@ -6,6 +6,28 @@ Validates data by evaluating each message and verifying that it has the required
 
   * Run `mix deps.get` to install dependencies
 
+### To run locally:
+  * To startup external dependancies in docker:
+    ```bash
+    `MIX_ENV=integration mix docker.start`
+    ```
+  * To run a single instance with no data in it:
+    ```bash
+    `MIX_ENV=integration iex -S mix`
+    ```
+  * To run a single instance with test data added to it:
+    ```bash
+    `MIX_ENV=integration iex -S mix test --no-start`
+    ```
+  * To stop the docker:
+    ```bash
+    `MIX_ENV=integration mix docker.stop`
+    ```
+  * To kill the docker:
+    ```bash
+    `MIX_ENV=integration mix docker.kill`
+    ```
+
 ### To run the tests
 
   * Run `mix test` to run the tests a single time
