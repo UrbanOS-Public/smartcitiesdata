@@ -86,9 +86,14 @@ defmodule Pipeline.Writer.TopicWriterTest do
 
       assert :ok = TopicWriter.init(config)
 
-      [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
-      Process.monitor(pid)
-      assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
+      # [{_, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+      # Process.monitor(pid)
+      # assert_receive {:DOWN, _, _, ^pid, :normal}, 2_000
+
+      eventually(fn ->
+        assert Elsa.topic?(@brokers, @topic)
+        assert {:ok, @topic} = Registry.meta(Pipeline.Registry, :"pipeline-#{@producer}")
+      end)
 
       assert :ok = TopicWriter.write(["foo"], instance: :pipeline, producer_name: @producer)
       assert :ok = TopicWriter.write(["bar", "baz"], instance: :pipeline, producer_name: @producer)

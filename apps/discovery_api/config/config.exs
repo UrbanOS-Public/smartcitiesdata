@@ -5,6 +5,9 @@ config :prestige, :session_opts,
   catalog: "hive",
   schema: "default"
 
+idle_timeout_hours = 24
+idle_timeout = 3_600 * 1_000 * idle_timeout_hours
+
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   secret_key_base: "7Qfvr6quFJ6Qks3FGiLMnm/eNV8K66yMVpkU46lCZ2rKj0YR9ksjxsB+SX3qHZre",
   render_errors: [view: DiscoveryApiWeb.ErrorView, accepts: ~w(json)],
@@ -13,7 +16,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [
     port: 4000,
     stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h],
-    protocol_options: [idle_timeout: 7_200_000]
+    protocol_options: [idle_timeout: idle_timeout]
   ]
 
 config :logger, :console,

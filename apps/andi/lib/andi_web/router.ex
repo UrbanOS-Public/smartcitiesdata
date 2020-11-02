@@ -38,12 +38,17 @@ defmodule AndiWeb.Router do
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :root}, session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
     get "/datasets/:id", EditController, :show_dataset
+
+    get "/auth/auth0/logout", AuthController, :logout
   end
 
   scope "/", AndiWeb do
     pipe_through [:browser, :auth, :curator]
 
-    live "/organizations", OrganizationLiveView, layout: {AndiWeb.LayoutView, :root}
+    live "/organizations", OrganizationLiveView,
+      layout: {AndiWeb.LayoutView, :root},
+      session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
+
     get "/organizations/:id", EditController, :show_organization
   end
 

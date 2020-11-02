@@ -1,5 +1,6 @@
 defmodule AndiWeb.EditOrganizationLiveView do
   use AndiWeb, :live_view
+  use AndiWeb.HeaderLiveView
 
   import Phoenix.HTML.Form
   import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0]
@@ -17,15 +18,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= header_render(@socket, @is_curator) %>
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
-      <div class="page-header">
-        <a phx-click="show-datasets">Dataset Ingestion Interface</a>
-        <div class="organization-link" phx-click="show-organizations">
-          <div class="organization-link__icon"></div>
-          <div class="organization-link__text">ORGANIZATIONS</div>
-        </div>
-      </div>
-
       <div class="edit-organization-title">
         <h2 class="component-title-text">Edit Organization </h2>
       </div>
@@ -107,7 +101,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
     """
   end
 
-  def mount(_params, %{"organization" => org}, socket) do
+  def mount(_params, %{"organization" => org, "is_curator" => is_curator}, socket) do
     changeset = Organization.changeset(org, %{}) |> Map.put(:errors, [])
 
     org_exists =
@@ -134,7 +128,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
        publish_success_modal_visibility: "hidden",
        order: %{"data_title" => "asc"},
        params: %{},
-       harvested_datasets: harvested_datasets
+       harvested_datasets: harvested_datasets,
+       is_curator: is_curator
      )}
   end
 
@@ -170,13 +165,12 @@ defmodule AndiWeb.EditOrganizationLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event(redirect_event, _, %{assigns: %{unsaved_changes: true}} = socket)
-      when redirect_event in ["cancel-edit", "show-organizations"] do
-    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/organizations")}
+  def handle_event("cancel-edit", _, %{assigns: %{unsaved_changes: true}} = socket) do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: header_organizations_path())}
   end
 
   def handle_event("cancel-edit", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
+    {:noreply, redirect(socket, to: header_organizations_path())}
   end
 
   def handle_event("force-cancel-edit", _, socket) do
@@ -223,18 +217,6 @@ defmodule AndiWeb.EditOrganizationLiveView do
         Organizations.update_harvested_dataset_include(id, true)
         {:noreply, socket}
     end
-  end
-
-  def handle_event("show-organizations", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
-  end
-
-  def handle_event("show-datasets", _, %{assigns: %{unsaved_changes: true}} = socket) do
-    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: "/datasets")}
-  end
-
-  def handle_event("show-datasets", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
   end
 
   def handle_event("reload-page", _, socket) do

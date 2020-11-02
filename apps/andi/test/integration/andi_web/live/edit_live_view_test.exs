@@ -177,6 +177,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "saving form as draft does not send brook event", %{conn: conn} do
+      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
       smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
 
@@ -336,7 +337,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert "new dataset title" != Datasets.get(dataset.id) |> get_in([:business, :dataTitle])
 
-      assert_redirect(view, "/")
+      assert_redirect(view, "/datasets")
     end
 
     test "successfully publishing presents modal", %{conn: conn} do

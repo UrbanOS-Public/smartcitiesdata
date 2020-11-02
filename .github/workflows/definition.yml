@@ -1,24 +1,21 @@
-name: odo
+name: definition
 on:
   push:
     branches:
       - master
     paths:
-    - 'apps/odo/**'
+    - 'apps/definition/**'
     - 'mix.lock'
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/odo/**'
+    - 'apps/definition/**'
     - 'mix.lock'
-  workflow_dispatch:
-    branches:
-      - master
 
 jobs:
   ci:
-    name: Verify Application
+    name: Verify Library
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -35,10 +32,3 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
-      - name: Publish development image
-        run: |
-          bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

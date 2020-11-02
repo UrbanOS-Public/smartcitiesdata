@@ -1,5 +1,6 @@
 defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
+  use AndiWeb.HeaderLiveView
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
@@ -13,17 +14,8 @@ defmodule AndiWeb.EditLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= header_render(@socket, @is_curator) %>
     <div class="edit-page" id="dataset-edit-page">
-      <div class="page-header">
-        <button type="button" phx-click="cancel-edit" class="return-home-button btn btn--large"><div class="home-icon"></div>HOME</button>
-        <%= if @is_curator do %>
-        <div class="organization-link" phx-click="show-organizations">
-          <div class="organization-link__icon"></div>
-          <div class="organization-link__text">ORGANIZATIONS</div>
-        </div>
-        <% end %>
-      </div>
-
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>
         <% [technical] = inputs_for(f, :technical) %>
@@ -121,10 +113,11 @@ defmodule AndiWeb.EditLiveView do
        test_results: nil,
        finalize_form_data: nil,
        unsaved_changes: false,
-       unsaved_changes_link: "/",
+       unsaved_changes_link: header_datasets_path(),
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
-       delete_dataset_modal_visibility: "hidden"
+       delete_dataset_modal_visibility: "hidden",
+       is_curator: is_curator
      )}
   end
 
@@ -136,17 +129,10 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
   end
 
-  def handle_event("show-organizations", _, socket) do
-    case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/organizations", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/organizations")}
-    end
-  end
-
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -162,11 +148,11 @@ defmodule AndiWeb.EditLiveView do
     case DatasetStore.get(id) do
       {:ok, nil} ->
         Datasets.delete(id)
-        {:noreply, redirect(socket, to: "/")}
+        {:noreply, redirect(socket, to: header_datasets_path())}
 
       {:ok, smrt_dataset} ->
         Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset)
-        {:noreply, redirect(socket, to: "/")}
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -242,8 +228,8 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: "/", unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: "/")}
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
