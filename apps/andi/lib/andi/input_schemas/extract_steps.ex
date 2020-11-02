@@ -58,16 +58,16 @@ defmodule Andi.InputSchemas.ExtractSteps do
   end
 
   def add_extract_header(extract_http_step_id) do
-    from_extract_step = get(extract_http_step_id) |> IO.inspect(label: "extract_steps.ex:59")
+    from_extract_step = get(extract_http_step_id)
 
     added =
       Map.update(from_extract_step, :context, %{}, fn context ->
         Map.update(context, "headers", [@default_key_value], fn extract_headers ->
-          extract_headers ++ [@default_key_value] |> IO.inspect(label: "extract_steps.ex:64")
+          extract_headers ++ [@default_key_value]
         end)
       end)
 
-    update(from_extract_step |> IO.inspect(label: "extract_steps.ex:68"), added)
+    update(from_extract_step, added)
   end
 
   def add_extract_query_param(extract_http_step_id) do
@@ -84,12 +84,13 @@ defmodule Andi.InputSchemas.ExtractSteps do
   end
 
   def remove_extract_query_param(extract_step_id, extract_query_param_id) do
-    # Repo.delete(%ExtractQueryParam{id: extract_query_param_id})
     from_extract_step = get(extract_step_id)
+    updated_query_params =
+      from_extract_step.context["queryParams"]
 
     updated =
       Map.update(from_extract_step, :url, [], fn url ->
-        Andi.URI.update_url_with_params(url, from_extract_step.queryParams)
+        Andi.URI.update_url_with_params(url, updated_query_params)
       end)
 
     update(from_extract_step, updated)
@@ -98,14 +99,4 @@ defmodule Andi.InputSchemas.ExtractSteps do
       Logger.error("attempted to remove a source query param (id: #{extract_query_param_id}) that does not exist.")
       {:ok, get(extract_step_id)}
   end
-
-  # def remove_extract_header(extract_step_id, extract_header_id) do
-  #   Repo.delete(%ExtractHeader{id: extract_header_id})
-
-  #   {:ok, get(extract_step_id)}
-  # rescue
-  #   _e in Ecto.StaleEntryError ->
-  #     Logger.error("attempted to remove a source query param (id: #{extract_header_id}) that does not exist.")
-  #     {:ok, get(extract_step_id)}
-  # end
 end

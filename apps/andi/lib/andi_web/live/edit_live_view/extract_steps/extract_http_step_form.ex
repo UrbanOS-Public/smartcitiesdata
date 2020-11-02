@@ -140,38 +140,26 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, assign(socket, changeset: new_changes)}
   end
 
-  def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
-    # save_draft(socket)
-    IO.inspect(socket.assigns.changeset, label: "changeset")
+  def handle_event("remove", %{"id" => query_param_id, "field" => "queryParams"}, socket) do
+    updated_query_params =
+      socket.assigns.changeset
+      |> Ecto.Changeset.get_field(:queryParams)
+      |> remove_key_value(query_param_id)
 
-    id |> IO.inspect(label: "extract_http_step_form.ex:146")
+    new_changset = Ecto.Changeset.put_embed(socket.assigns.changeset, :queryParams, updated_query_params)
 
-    {:ok, _dataset} = ExtractSteps.remove_extract_query_param(1, id)
-
-    # new_changes =
-    #   current_step_id
-    #   |> ExtractSteps.get()
-    #   |> StructTools.to_map()
-
-    # changeset = ExtractStep.changeset(new_changes)
-
-    {:noreply, socket}
+    {:noreply, assign(socket, changeset: new_changset)}
   end
 
-  def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
+  def handle_event("remove", %{"id" => header_id, "field" => "headers"}, socket) do
+    updated_headers =
+      socket.assigns.changeset
+      |> Ecto.Changeset.get_field(:headers)
+      |> remove_key_value(header_id)
 
-    {:ok, _dataset} = ExtractSteps.remove_extract_header(current_step_id, id)
+    new_changset = Ecto.Changeset.put_embed(socket.assigns.changeset, :headers, updated_headers)
 
-    new_changes =
-      current_step_id
-      |> ExtractSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractStep.changeset(new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
+    {:noreply, assign(socket, changeset: new_changset)}
   end
 
   def handle_event("test_url", _, socket) do
@@ -225,6 +213,15 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     send(socket.parent_pid, {:validation_status, new_validation_status})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
+
+  defp remove_key_value(key_value_list, id) do
+    Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
+      case key_value.id == id do
+        true -> {:halt, List.delete(key_value_list, key_value)}
+        false -> {:cont, acc}
+      end
+    end)
   end
 
   defp disabled?(true), do: "disabled"

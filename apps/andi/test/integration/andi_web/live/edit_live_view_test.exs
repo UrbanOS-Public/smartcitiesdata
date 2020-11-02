@@ -438,20 +438,23 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
       url_view = find_child(view, "url_form_editor")
       extract_step_view = find_child(view, "extract_step_form_editor")
+      extract_http_step_view = find_child(extract_step_view, extract_step_id)
 
       url_form_data = %{"sourceUrl" => "cam.com"}
       extract_form_data = %{"type" => "http", "action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+      render_change(extract_http_step_view, :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -461,6 +464,7 @@ defmodule AndiWeb.EditLiveViewTest do
       eventually(fn ->
         {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
         assert dataset_sent != nil
+        assert dataset_sent.technical.extractSteps != []
         assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
         assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
       end)

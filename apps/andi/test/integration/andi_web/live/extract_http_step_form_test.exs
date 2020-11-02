@@ -150,6 +150,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       url_with_no_query_params =
         dataset.technical.extractSteps
         |> hd()
+        |> Map.get(:context)
         |> Map.get(:url)
         |> Andi.URI.clear_query_params()
 
