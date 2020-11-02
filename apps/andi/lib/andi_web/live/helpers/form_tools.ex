@@ -109,6 +109,8 @@ defmodule AndiWeb.Helpers.FormTools do
     |> Map.update(:technical, %{}, &convert_form_technical/1)
   end
 
+  def documentation_root(), do: Application.get_env(:andi, :documentation_root)
+
   defp convert_form_business(business) do
     business
     |> Map.update(:keywords, nil, &Enum.join(&1, ", "))
