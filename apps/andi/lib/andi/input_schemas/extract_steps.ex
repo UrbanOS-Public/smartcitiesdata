@@ -3,12 +3,16 @@ defmodule Andi.InputSchemas.ExtractSteps do
   alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Datasets.ExtractQueryParam
   alias Andi.Repo
   alias Andi.InputSchemas.StructTools
 
   import Ecto.Query, only: [from: 2]
 
   require Logger
+
+  @default_key_value %{"key" => nil, "value" => nil}
 
   # TODO test this
   def create(step_type, technical_id) do
@@ -54,42 +58,46 @@ defmodule Andi.InputSchemas.ExtractSteps do
   end
 
   def add_extract_header(extract_http_step_id) do
-    from_extract_step = get(extract_http_step_id) |> IO.inspect()
+    from_extract_step = get(extract_http_step_id) |> IO.inspect(label: "extract_steps.ex:59")
 
-    # added =
-    #   Map.update(from_extract_step, :headers, [%ExtractHeader{}], fn extract_headers ->
-    #     extract_headers ++ [%ExtractHeader{}]
-    #   end)
+    added =
+      Map.update(from_extract_step, :context, %{}, fn context ->
+        Map.update(context, "headers", [@default_key_value], fn extract_headers ->
+          extract_headers ++ [@default_key_value] |> IO.inspect(label: "extract_steps.ex:64")
+        end)
+      end)
 
-    # update(from_extract_step, added)
+    update(from_extract_step |> IO.inspect(label: "extract_steps.ex:68"), added)
   end
 
   def add_extract_query_param(extract_http_step_id) do
-    from_extract_step = get(extract_http_step_id) |> IO.inspect()
+    from_extract_step = get(extract_http_step_id)
 
-    # added =
-    #   Map.update(from_extract_step, :queryParams, [%ExtractQueryParam{}], fn extract_query_params ->
-    #     extract_query_params ++ [%ExtractQueryParam{}]
-    #   end)
+    added =
+      Map.update(from_extract_step, :context, %{}, fn context ->
+        Map.update(context, "queryParams", [@default_key_value], fn extract_query_params ->
+          extract_query_params ++ [@default_key_value]
+        end)
+      end)
 
-    # update(from_extract_step, added)
+    update(from_extract_step, added)
   end
 
-  # def remove_extract_query_param(extract_step_id, extract_query_param_id) do
-  #   Repo.delete(%ExtractQueryParam{id: extract_query_param_id})
-  #   from_extract_step = get(extract_step_id)
+  def remove_extract_query_param(extract_step_id, extract_query_param_id) do
+    # Repo.delete(%ExtractQueryParam{id: extract_query_param_id})
+    from_extract_step = get(extract_step_id)
 
-  #   updated =
-  #     Map.update(from_extract_step, :url, [], fn url ->
-  #       Andi.URI.update_url_with_params(url, from_extract_step.queryParams)
-  #     end)
+    updated =
+      Map.update(from_extract_step, :url, [], fn url ->
+        Andi.URI.update_url_with_params(url, from_extract_step.queryParams)
+      end)
 
-  #   update(from_extract_step, updated)
-  # rescue
-  #   _e in Ecto.StaleEntryError ->
-  #     Logger.error("attempted to remove a source query param (id: #{extract_query_param_id}) that does not exist.")
-  #     {:ok, get(extract_step_id)}
-  # end
+    update(from_extract_step, updated)
+  rescue
+    _e in Ecto.StaleEntryError ->
+      Logger.error("attempted to remove a source query param (id: #{extract_query_param_id}) that does not exist.")
+      {:ok, get(extract_step_id)}
+  end
 
   # def remove_extract_header(extract_step_id, extract_header_id) do
   #   Repo.delete(%ExtractHeader{id: extract_header_id})

@@ -5,6 +5,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Datasets.ExtractQueryParam
+  alias Andi.InputSchemas.Datasets.ExtractHeader
 
   describe "body validation" do
     setup do
@@ -59,7 +61,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
 
     assert {:queryParams, {"has invalid format", [validation: :format]}} in changeset.errors
 
-    assert %{queryParams: [%{key: "", value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
+    assert %{queryParams: [%{key: nil, value: "oops"}, %{key: "a", value: "b"}]} = Ecto.Changeset.apply_changes(changeset)
   end
 
   data_test "given changes with valid #{field} map, properly casts" do
@@ -108,13 +110,13 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
       }
     }
 
-    changeset = ExtractHttpStep.changeset_from_andi_step(andi_extract_step)
+    changeset = ExtractHttpStep.changeset_from_andi_step(andi_extract_step.context)
     changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
     changeset_query_params = Ecto.Changeset.get_field(changeset, :queryParams)
 
     assert changeset.errors[:queryParams] == nil
     assert changeset.errors[:headers] == nil
-    assert changeset_query_params == [%{key: "key1", value: "value1"}]
-    assert changeset_headers == [%{key: "key2", value: "value2"}]
+    assert [%{key: "key1", value: "value1"}] = changeset_query_params
+    assert [%{key: "key2", value: "value2"}] = changeset_headers
   end
 end

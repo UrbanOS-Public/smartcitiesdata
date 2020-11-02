@@ -44,8 +44,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
               %{
                 type: "http",
                 context: %{
-                  headers: %{key: "value"},
-                  queryParams: %{key: "val"},
+                  headers: %{"key" => "value"},
+                  queryParams: %{"key" => "val"},
                   action: "POST",
                   body: %{
                     url: "http://www.something.com/",

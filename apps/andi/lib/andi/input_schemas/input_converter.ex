@@ -173,12 +173,17 @@ defmodule Andi.InputSchemas.InputConverter do
       %{type: "http"} = http_step ->
         http_step
         |> encode_extract_step_body_as_json()
-        |> Map.update(:queryParams, [], &to_key_value_list/1)
-        |> Map.update(:headers, [], &to_key_value_list/1)
+        |> Map.update(:context, %{}, &update_http_key_values/1)
 
       step ->
         step
     end)
+  end
+
+  defp update_http_key_values(http_context) do
+    http_context
+    |> Map.update(:queryParams, [], &to_key_value_list/1)
+    |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
   defp encode_extract_step_body_as_json(%{type: "http", body: body} = smrt_extract_step) when body != nil do
@@ -218,7 +223,14 @@ defmodule Andi.InputSchemas.InputConverter do
       step
       |> Map.delete(:id)
       |> decode_andi_extract_step_body()
+      |> Map.update(:context, nil, &update_context/1)
     end)
+  end
+
+  defp update_context(context) do
+    context
+    |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
+    |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
   defp decode_andi_extract_step_body(%{type: "http", body: body} = andi_extract_step) when body != nil do

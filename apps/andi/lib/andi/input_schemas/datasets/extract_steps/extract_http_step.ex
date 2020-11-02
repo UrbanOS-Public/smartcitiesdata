@@ -8,18 +8,21 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
+  @primary_key false
   embedded_schema do
     field(:body, :string)
     field(:action, :string)
     field(:protocol, {:array, :string})
     field(:url, :string)
-    field(:headers, {:array, :map})
-    field(:queryParams, {:array, :map})
+    # field(:headers, {:array, :map})
+    # field(:queryParams, {:array, :map})
+    embeds_many :headers, ExtractHeader, on_replace: :delete
+    embeds_many :queryParams, ExtractQueryParam, on_replace: :delete
   end
 
   use Accessible
 
-  @cast_fields [:action, :protocol, :url, :body, :headers, :queryParams]
+  @cast_fields [:action, :protocol, :url, :body]
   @required_fields [:action, :url]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
@@ -27,6 +30,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   def changeset(extract_step, changes) do
     extract_step
     |> cast(changes, @cast_fields, empty_values: [])
+    |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
+    |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
     |> validate_key_value_set(:headers)
@@ -58,7 +63,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     dataset_extract_step
     |> StructTools.to_map()
     |> AtomicMap.convert(safe: false, underscore: false)
-    |> unwrap_context()
+    # |> unwrap_context()
     |> changeset()
   end
 

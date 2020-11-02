@@ -9,6 +9,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Datasets.ExtractQueryParam
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
@@ -23,6 +25,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     new_changeset =
       extract_step
       |> Andi.InputSchemas.StructTools.to_map()
+      |> Map.get(:context)
       |> ExtractHttpStep.changeset_from_andi_step()
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
@@ -31,6 +34,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:ok,
      assign(socket,
        extract_step_id: extract_step.id,
+       extract_step: extract_step,
        changeset: new_changeset,
        testing: false,
        test_results: nil,
@@ -45,10 +49,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     ~L"""
         <div class="form-section extract-step-container extract-http-step-form">
           <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
-            <%= hidden_input(f, :id) %>
-            <%= hidden_input(f, :type) %>
-            <%= hidden_input(f, :technical_id) %>
-
             <div class="extract-step-form__type">
               <h3>HTTP</h3>
             </div>
@@ -124,60 +124,38 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("add", %{"field" => "queryParams"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    ExtractSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractSteps.add_extract_query_param(current_step_id)
-
+  def handle_event("add", %{"field" => "queryParams"}, %{assigns: %{changeset: changeset}} = socket) do
     new_changes =
-      current_step_id
-      |> ExtractSteps.get()
-      |> StructTools.to_map()
+      changeset
+      |> Ecto.Changeset.put_embed(:queryParams, changeset.changes.queryParams ++ [%ExtractQueryParam{}])
 
-    changeset = ExtractStep.changeset(new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
+    {:noreply, assign(socket, changeset: new_changes)}
   end
 
-  def handle_event("add", %{"field" => "headers"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    # ExtractSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractSteps.add_extract_header(current_step_id)
-
+  def handle_event("add", %{"field" => "headers"}, %{assigns: %{changeset: changeset}} = socket) do
     new_changes =
-      current_step_id
-      |> ExtractSteps.get()
-      |> StructTools.to_map()
+      changeset
+      |> Ecto.Changeset.put_embed(:headers, changeset.changes.headers ++ [%ExtractHeader{}])
 
-    changeset = ExtractStep.changeset(new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
+    {:noreply, assign(socket, changeset: new_changes)}
   end
 
   def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
+    # save_draft(socket)
+    IO.inspect(socket.assigns.changeset, label: "changeset")
 
-    {:ok, _dataset} = ExtractSteps.remove_extract_query_param(current_step_id, id)
+    id |> IO.inspect(label: "extract_http_step_form.ex:146")
 
-    new_changes =
-      current_step_id
-      |> ExtractSteps.get()
-      |> StructTools.to_map()
+    {:ok, _dataset} = ExtractSteps.remove_extract_query_param(1, id)
 
-    changeset = ExtractStep.changeset(new_changes)
+    # new_changes =
+    #   current_step_id
+    #   |> ExtractSteps.get()
+    #   |> StructTools.to_map()
 
-    {:noreply, assign(socket, changeset: changeset)}
+    # changeset = ExtractStep.changeset(new_changes)
+
+    {:noreply, socket}
   end
 
   def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
@@ -240,6 +218,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     changes_to_save =
       socket.assigns.changeset
       |> InputConverter.form_changes_from_changeset()
+
+      Map.put(socket.assigns.extract_step, :context, changes_to_save)
       |> ExtractSteps.update()
 
     send(socket.parent_pid, {:validation_status, new_validation_status})
