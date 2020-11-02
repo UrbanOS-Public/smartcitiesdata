@@ -129,7 +129,7 @@ defmodule AndiWeb.Views.Options do
 
   def extract_step_type() do
     %{
-      "HTTP" => "HTTP"
+      "http" => "HTTP"
     }
   end
 
