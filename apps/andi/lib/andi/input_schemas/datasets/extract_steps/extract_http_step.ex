@@ -14,8 +14,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     field(:action, :string)
     field(:protocol, {:array, :string})
     field(:url, :string)
-    embeds_many :headers, ExtractHeader, on_replace: :delete
-    embeds_many :queryParams, ExtractQueryParam, on_replace: :delete
+    embeds_many(:headers, ExtractHeader, on_replace: :delete)
+    embeds_many(:queryParams, ExtractQueryParam, on_replace: :delete)
   end
 
   use Accessible

@@ -85,8 +85,7 @@ defmodule Andi.InputSchemas.ExtractSteps do
 
   def remove_extract_query_param(extract_step_id, extract_query_param_id) do
     from_extract_step = get(extract_step_id)
-    updated_query_params =
-      from_extract_step.context["queryParams"]
+    updated_query_params = from_extract_step.context["queryParams"]
 
     updated =
       Map.update(from_extract_step, :url, [], fn url ->

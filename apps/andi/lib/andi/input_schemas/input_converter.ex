@@ -222,19 +222,19 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn step ->
       step
       |> Map.delete(:id)
-      |> decode_andi_extract_step_body()
       |> Map.update(:context, nil, &update_context/1)
     end)
   end
 
   defp update_context(context) do
     context
+    |> decode_andi_extract_step_body()
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
-  defp decode_andi_extract_step_body(%{type: "http", body: body} = andi_extract_step) when body != nil do
-    Map.put(andi_extract_step, :body, Jason.decode!(body))
+  defp decode_andi_extract_step_body(%{body: body} = http_extract_step) when body != nil do
+    Map.put(http_extract_step, :body, Jason.decode!(body))
   end
 
   defp decode_andi_extract_step_body(andi_extract_step), do: andi_extract_step

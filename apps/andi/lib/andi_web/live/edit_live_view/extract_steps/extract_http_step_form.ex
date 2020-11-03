@@ -207,8 +207,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       socket.assigns.changeset
       |> InputConverter.form_changes_from_changeset()
 
-      Map.put(socket.assigns.extract_step, :context, changes_to_save)
-      |> ExtractSteps.update()
+    Map.put(socket.assigns.extract_step, :context, changes_to_save)
+    |> ExtractSteps.update()
 
     send(socket.parent_pid, {:validation_status, new_validation_status})
 

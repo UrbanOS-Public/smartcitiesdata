@@ -451,7 +451,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_http_step_view = find_child(extract_step_view, extract_step_id)
 
       url_form_data = %{"sourceUrl" => "cam.com"}
-      extract_form_data = %{"type" => "http", "action" => "POST", "url" => "cam.com", "body" => "[]"}
+      extract_form_data = %{"action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
       render_change(extract_http_step_view, :validate, %{"form_data" => extract_form_data})
