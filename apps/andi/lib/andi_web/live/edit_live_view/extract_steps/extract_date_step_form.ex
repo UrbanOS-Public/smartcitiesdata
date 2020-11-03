@@ -87,7 +87,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> ExtractDateStep.changeset()
-    |> IO.inspect(label: "extract_date_step_form.ex:90")
     |> complete_validation(socket)
   end
 
@@ -125,10 +124,9 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
       |> InputConverter.form_changes_from_changeset()
 
     Map.put(socket.assigns.extract_step, :context, changes_to_save)
-    |> IO.inspect(label: "extract_date_step_form.ex:129")
     |> ExtractSteps.update()
 
-    send(socket.parent_pid, {:validation_status, new_validation_status})
+    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step_id, new_validation_status}})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
@@ -145,7 +143,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     new_status = get_new_validation_status(socket.assigns.changeset)
-    send(socket.parent_pid, {:validation_status, new_status})
+    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step_id, new_status}})
     assign(socket, validation_status: new_status)
   end
 

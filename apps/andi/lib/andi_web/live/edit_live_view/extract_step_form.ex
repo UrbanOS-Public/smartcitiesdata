@@ -182,7 +182,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       case Enum.any?(new_map, fn {id, status} -> status == "invalid" end) do
         false -> "valid"
         true -> "invalid"
-      end |> IO.inspect(label: "extract_step_form.ex:185")
+      end
 
     {:noreply, assign(socket, validation_map: new_map, validation_status: new_status)}
   end
