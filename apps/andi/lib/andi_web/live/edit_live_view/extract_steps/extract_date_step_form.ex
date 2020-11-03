@@ -9,18 +9,21 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
 
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractDateStep
+  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.ExtractDateSteps
+  alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"extract_step" => extract_step, "dataset_id" => dataset_id, "technical_id" => technical_id}, socket) do
     new_changeset =
       extract_step
       |> Andi.InputSchemas.StructTools.to_map()
-      |> ExtractStep.changeset()
+      |> Map.get(:context)
+      |> ExtractDateStep.changeset_from_andi_step()
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -28,6 +31,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     {:ok,
      assign(socket,
        extract_step_id: extract_step.id,
+       extract_step: extract_step,
        changeset: new_changeset,
        testing: false,
        test_results: nil,
@@ -83,6 +87,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> ExtractDateStep.changeset()
+    |> IO.inspect(label: "extract_date_step_form.ex:90")
     |> complete_validation(socket)
   end
 
@@ -90,6 +95,42 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     send(socket.parent_pid, :page_error)
 
     {:noreply, socket}
+  end
+
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
+    save_draft(socket)
+  end
+
+  # This handle_info takes care of all exceptions in a generic way.
+  # Expected errors should be handled in specific handlers.
+  # Flags should be reset here.
+  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
+    send(socket.parent_pid, :page_error)
+    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
+  end
+
+  def handle_info(message, socket) do
+    Logger.debug(inspect(message))
+    {:noreply, socket}
+  end
+
+  defp save_draft(socket) do
+    new_validation_status = get_new_validation_status(socket.assigns.changeset)
+
+    changes_to_save =
+      socket.assigns.changeset
+      |> InputConverter.form_changes_from_changeset()
+
+    Map.put(socket.assigns.extract_step, :context, changes_to_save)
+    |> IO.inspect(label: "extract_date_step_form.ex:129")
+    |> ExtractSteps.update()
+
+    send(socket.parent_pid, {:validation_status, new_validation_status})
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   defp get_time_units(), do: []

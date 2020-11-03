@@ -8,27 +8,23 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   alias Andi.InputSchemas.StructTools
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "extract_date_step" do
-    field(:type, :string)
-    field(:assigns, :map)
+  embedded_schema do
     field(:destination, :string)
     field(:deltaTimeUnit, :string)
     field(:deltaTimeValue, :integer)
     field(:format, :string)
-    belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
   end
 
   use Accessible
 
-  @cast_fields [:id, :type, :format, :deltaTimeValue, :deltaTimeUnit, :assigns, :destination, :technical_id]
-  @required_fields [:type, :format, :assigns]
+  @cast_fields [:id, :format, :deltaTimeValue, :deltaTimeUnit, :destination]
+  @required_fields [:format, :destination]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
     extract_step
     |> cast(changes, @cast_fields, empty_values: [])
-    |> foreign_key_constraint(:technical_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_time_unit()
     |> validate_format()
@@ -37,7 +33,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   def changeset_for_draft(extract_step, changes) do
     extract_step
     |> cast(changes, @cast_fields, empty_values: [])
-    |> foreign_key_constraint(:technical_id)
   end
 
   def changeset_from_form_data(form_data) do
@@ -46,9 +41,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     changeset(form_data_as_params)
   end
 
-  def changeset_from_andi_step(nil, technical_id), do: changeset(%{type: "date", technical_id: technical_id, assigns: %{}})
+  def changeset_from_andi_step(nil), do: changeset(%{})
 
-  def changeset_from_andi_step(dataset_date_step, _technical_id) do
+  def changeset_from_andi_step(dataset_date_step) do
     dataset_date_step
     |> StructTools.to_map()
     |> changeset()

@@ -29,6 +29,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   setup %{conn: conn} do
     default_extract_step = %{
       type: "http",
+      id: UUID.uuid4(),
       context: %{
         action: "GET",
         url: "example.com"
@@ -37,6 +38,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     date_extract_step = %{
       type: "date",
+      id: UUID.uuid4(),
       context: %{
         destination: "bob_field",
         deltaTimeUnit: "Year",
@@ -91,6 +93,27 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
+  # destination: "bob_field",
+  #         deltaTimeUnit: "Year",
+  #         deltaTimeValue: 5,
+  #         format: "frankly this is invalid"
+
+  test "given an invalid extract date step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
+    extract_step_id = get_extract_step_id(dataset, 1)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
+
+    form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
+    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+
+    render_change(extract_steps_form_view, "save")
+
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert Enum.empty?(find_elements(html, ".component-number--invalid")) == false
+    end)
+  end
+
   test "given an previously invalid extract step, and its made valid, the section shows a valid status", %{
     andi_dataset: dataset,
     view: view
@@ -99,17 +122,18 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
     extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
-    form_data = %{"type" => "http", "action" => "GET", "url" => ""}
+    form_data = %{"action" => "GET", "url" => ""}
     render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
-    form_data = %{"type" => "http", "action" => "GET", "url" => "bob.com"}
+    form_data = %{"action" => "GET", "url" => "bob.com"}
     render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
 
-    html = render(extract_steps_form_view)
-
-    refute Enum.empty?(find_elements(html, ".component-number--valid"))
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert Enum.empty?(find_elements(html, ".component-number--valid")) == true
+    end)
   end
 
   defp get_extract_step_id(dataset, index) do

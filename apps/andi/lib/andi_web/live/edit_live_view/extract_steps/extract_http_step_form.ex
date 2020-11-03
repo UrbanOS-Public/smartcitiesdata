@@ -202,6 +202,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   defp save_draft(socket) do
     new_validation_status = get_new_validation_status(socket.assigns.changeset)
+    step_id = socket.assigns.extract_step.id
 
     changes_to_save =
       socket.assigns.changeset
@@ -210,9 +211,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     Map.put(socket.assigns.extract_step, :context, changes_to_save)
     |> ExtractSteps.update()
 
-    send(socket.parent_pid, {:validation_status, new_validation_status})
+    status_tuple = {step_id, new_validation_status}
 
-    {:noreply, assign(socket, validation_status: new_validation_status)}
+    send(socket.parent_pid, {:validation_status, status_tuple})
+
+    {:noreply, assign(socket, validation_status: status_tuple)}
   end
 
   defp remove_key_value(key_value_list, id) do

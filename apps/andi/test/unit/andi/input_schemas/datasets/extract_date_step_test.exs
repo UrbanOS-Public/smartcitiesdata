@@ -7,7 +7,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
   describe "changeset validation" do
     test "fails for invalid format" do
       changes = %{
-        type: "date",
         format: "invalid format goes here"
       }
 
@@ -28,7 +27,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
 
     test "requires an positive or negative integer for deltaTimeValue" do
       changes = %{
-        type: "date",
         deltaTimeValue: 53.6
       }
 

@@ -31,6 +31,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        test_results: nil,
        visibility: "expanded",
        validation_status: "collapsed",
+       validation_map: %{},
        dataset_id: dataset.id,
        technical_id: dataset.technical.id
      )}
@@ -171,8 +172,19 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_info({:validation_status, validation_status}, socket) do
-    {:noreply, assign(socket, validation_status: validation_status)}
+  def handle_info(
+        {:validation_status, {step_id, status}},
+        %{assigns: %{validation_status: old_status, validation_map: validation_map}} = socket
+      ) do
+    new_map = Map.put(validation_map, step_id, status)
+
+    new_status =
+      case Enum.any?(new_map, fn {id, status} -> status == "invalid" end) do
+        false -> "valid"
+        true -> "invalid"
+      end |> IO.inspect(label: "extract_step_form.ex:185")
+
+    {:noreply, assign(socket, validation_map: new_map, validation_status: new_status)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.

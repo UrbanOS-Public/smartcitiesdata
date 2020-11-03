@@ -25,7 +25,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStepTest do
     assert changeset.errors[:type] != nil
   end
 
-  describe "context validation" do
+  describe "context validation (http)" do
     test "required http step field" do
       changes = %{
         type: "http",
@@ -65,6 +65,36 @@ defmodule Andi.InputSchemas.Datasets.ExtractStepTest do
 
       assert changeset.errors[:url] == nil
       assert changeset.changes.context.url == "www.example.com"
+    end
+  end
+
+  describe "context validation (date)" do
+    test "required date step field" do
+      changes = %{
+        type: "date",
+        context: %{
+          format: ""
+        }
+      }
+
+      changeset = ExtractStep.changeset(changes)
+
+      assert changeset.errors[:format] != nil
+      assert changeset.changes.context != nil
+    end
+
+    test "valid date step field" do
+      changes = %{
+        type: "date",
+        context: %{
+          deltaTimeValue: "bob"
+        }
+      }
+
+      changeset = ExtractStep.changeset(changes)
+
+      assert changeset.errors[:deltaTimeValue] != nil
+      assert changeset.changes.context != nil
     end
   end
 end

@@ -172,21 +172,21 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn
       %{type: "http"} = http_step ->
         http_step
-        |> encode_extract_step_body_as_json()
-        |> Map.update(:context, %{}, &update_http_key_values/1)
+        |> Map.update(:context, %{}, &update_http_context/1)
 
       step ->
         step
     end)
   end
 
-  defp update_http_key_values(http_context) do
+  defp update_http_context(http_context) do
     http_context
+    |> encode_extract_step_body_as_json()
     |> Map.update(:queryParams, [], &to_key_value_list/1)
     |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
-  defp encode_extract_step_body_as_json(%{type: "http", body: body} = smrt_extract_step) when body != nil do
+  defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body != nil do
     Map.put(smrt_extract_step, :body, Jason.encode!(body))
   end
 
