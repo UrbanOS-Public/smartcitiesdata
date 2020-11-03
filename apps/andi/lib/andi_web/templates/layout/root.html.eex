@@ -11,8 +11,8 @@
     <title>Andi · Data Curator Interface</title>
   </head>
   <body>
-    <div class="root">
-        <main role="main" class="root__main">
+      <div class="root">
+      <main role="main" class="root__main">
         <%= @inner_content %>
       </main>
     </div>

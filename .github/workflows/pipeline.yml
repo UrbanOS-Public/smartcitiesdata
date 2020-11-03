@@ -1,4 +1,4 @@
-name: Pipeline
+name: pipeline
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ on:
 
 jobs:
   ci:
-    name: Integration Tests
+    name: Verify Application
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -25,10 +25,11 @@ jobs:
           elixir-version: 1.8.2
       - name: Get dependencies
         run: |
-          mix local.rebar --force
-          mix local.hex --force
-          mix deps.get
+          bash scripts/gh-action-get-deps.sh
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
       - name: Run integration tests
         run: |
-          bash scripts/gh-action-test.sh pipeline
+          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
 

@@ -38,6 +38,9 @@ defmodule Reaper.FullTest do
   @xml_file_name "xml_sample.xml"
   @json_file_name_subpath "json_subpath.json"
 
+  @host to_charlist(System.get_env("HOST"))
+  @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
+
   setup_all do
     Temp.track!()
     Application.put_env(:reaper, :download_dir, Temp.mkdir!())
@@ -440,6 +443,64 @@ defmodule Reaper.FullTest do
         fn ->
           results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
 
+          assert [%{payload: %{"col1" => "1", "col2" => "Austin", "col3" => "Spot"}} | _] = results
+        end,
+        1_000,
+        60
+      )
+    end
+
+    @tag timeout: 120_000
+    test "cadence of once is only processed once, extract steps sftp", %{bypass: bypass} do
+      dataset_id = "only-once-extract-steps-sftp"
+      topic = "#{@output_topic_prefix}-#{dataset_id}"
+
+      allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+        return: {:ok, %{"username" => @sftp.user, "password" => @sftp.password}}
+      )
+
+      {:ok, connection} =
+        SftpEx.connect(
+          host: @sftp.host,
+          port: @sftp.port,
+          user: @sftp.user,
+          password: @sftp.password
+        )
+
+      File.stream!("./test/support/random_stuff.csv")
+      |> Stream.into(SftpEx.stream!(connection, "/upload/random_stuff.csv"))
+      |> Stream.run()
+
+      csv_dataset =
+        TDG.create_dataset(%{
+          id: dataset_id,
+          technical: %{
+            cadence: "once",
+            sourceUrl: "",
+            extractSteps: [
+              %{
+                type: "sftp",
+                context: %{
+                  url: "sftp://{{host}}:{{port}}{{path}}"
+                },
+                assigns: %{
+                  path: "/upload/random_stuff.csv",
+                  host: "#{@host}",
+                  port: "#{@sftp.port}"
+                }
+              }
+            ],
+            sourceFormat: "csv",
+            sourceType: "ingest",
+            schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}]
+          }
+        })
+
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+
+      eventually(
+        fn ->
+          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
           assert [%{payload: %{"col1" => "1", "col2" => "Austin", "col3" => "Spot"}} | _] = results
         end,
         1_000,

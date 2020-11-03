@@ -1,5 +1,7 @@
 defmodule AndiWeb.DatasetLiveView do
   use Phoenix.LiveView
+  use AndiWeb.HeaderLiveView
+
   import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.Router.Helpers, as: Routes
@@ -9,17 +11,8 @@ defmodule AndiWeb.DatasetLiveView do
 
   def render(assigns) do
     ~L"""
+    <%= header_render(@socket, @is_curator) %>
     <div class="datasets-view">
-      <div class="page-header">
-        <a href="/datasets"><%= header_text(@is_curator) %></a>
-        <%= if @is_curator do %>
-        <div class="organization-link" phx-click="show-organizations">
-          <div class="organization-link__icon"></div>
-          <div class="organization-link__text">ORGANIZATIONS</div>
-        </div>
-        <% end %>
-      </div>
-
       <div class="datasets-index">
         <div class="datasets-index__header">
           <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
@@ -58,7 +51,7 @@ defmodule AndiWeb.DatasetLiveView do
     """
   end
 
-  def mount(_params, %{"user_id" => user_id, "roles" => roles, "is_curator" => is_curator} = _session, socket) do
+  def mount(_params, %{"user_id" => user_id, "is_curator" => is_curator} = _session, socket) do
     {:ok,
      assign(socket,
        datasets: nil,
@@ -123,10 +116,6 @@ defmodule AndiWeb.DatasetLiveView do
     search_params = Map.merge(socket.assigns.params, %{"include-remotes" => !current_include_remotes})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
-  end
-
-  def handle_event("show-organizations", _, socket) do
-    {:noreply, redirect(socket, to: "/organizations")}
   end
 
   defp filter_on_search_change(search_value, include_remotes, socket) do
@@ -195,7 +184,4 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp action_text(true = _is_curator), do: "ADD DATASET"
   defp action_text(false = _is_curator), do: "SUBMIT NEW DATASET"
-
-  defp header_text(true = _is_curator), do: "Dataset Ingestion Interface"
-  defp header_text(false = _is_curator), do: "Dataset Submission Interface"
 end

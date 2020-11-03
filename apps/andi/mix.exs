@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.55.1",
+      version: "0.55.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -15,7 +15,8 @@ defmodule Andi.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: aliases()
+      aliases: aliases(),
+      description: "Dataset curation interface for Datastillery"
     ]
   end
 
@@ -83,6 +84,7 @@ defmodule Andi.MixProject do
       {:timex, "~> 3.6"},
       {:tzdata, "~> 1.0"},
       {:ueberauth_auth0, "~> 0.8.1"},
+      {:x509, "~> 0.8.1", only: [:dev, :integration]},
       {:web, in_umbrella: true}
     ]
   end
@@ -90,7 +92,24 @@ defmodule Andi.MixProject do
   defp aliases do
     [
       verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
-      start: ["ecto.create --quiet", "ecto.migrate", "phx.server"]
+      start:
+        ensure_generated_certs([
+          "ecto.create --quiet",
+          "ecto.migrate",
+          "phx.server"
+        ]),
+      "test.integration":
+        ensure_generated_certs([
+          "test.integration"
+        ])
     ]
+  end
+
+  defp ensure_generated_certs(tasks) do
+    if File.exists?("priv/cert/selfsigned.pem") do
+      tasks
+    else
+      ["x509.gen.selfsigned localhost 127.0.0.1.xip.io" | tasks]
+    end
   end
 end
