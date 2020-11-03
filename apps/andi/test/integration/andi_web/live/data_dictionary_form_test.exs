@@ -23,6 +23,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Helpers.FormTools
 
@@ -762,6 +763,24 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
+    end
+  end
+
+  describe "non curators have a limited view of the data dictionary form" do
+    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      [public_user: public_user]
+    end
+
+    test "users aren't able to access the upload feature for data dictionary in the ssui", %{public_conn: conn, public_user: public_user} do
+      blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{sourceFormat: "application/json"}, business: %{}}
+
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
   end
 end
