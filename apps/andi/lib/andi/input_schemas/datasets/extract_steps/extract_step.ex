@@ -1,6 +1,7 @@
 defmodule Andi.InputSchemas.Datasets.ExtractStep do
   @moduledoc """
   Generic schema for all types of extract steps. The `context` field is validated differently based on the type of step
+
   """
   use Ecto.Schema
   import Ecto.Changeset
@@ -45,6 +46,15 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
       |> wrap_context()
 
     changeset(form_data_as_params)
+  end
+
+  def form_changeset_from_andi_extract_step(extract_step) do
+    step_module = step_module(extract_step.type)
+
+    extract_step
+    |> Andi.InputSchemas.StructTools.to_map()
+    |> Map.get(:context)
+    |> step_module.changeset_from_andi_step()
   end
 
   def preload(struct), do: struct

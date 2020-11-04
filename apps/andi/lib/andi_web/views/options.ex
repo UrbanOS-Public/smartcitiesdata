@@ -129,6 +129,8 @@ defmodule AndiWeb.Views.Options do
 
   def extract_step_type() do
     %{
+      "" => "",
+      "date" => "Date",
       "http" => "HTTP"
     }
   end

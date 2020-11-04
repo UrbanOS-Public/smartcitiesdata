@@ -2,7 +2,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   @moduledoc """
   LiveComponent for an extract step with type HTTP
   """
-  use Phoenix.LiveView
+  use Phoenix.LiveComponent
   import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
@@ -21,34 +21,23 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
 
-  def mount(_, %{"extract_step" => extract_step, "dataset_id" => dataset_id, "technical_id" => technical_id}, socket) do
-    new_changeset =
-      extract_step
-      |> Andi.InputSchemas.StructTools.to_map()
-      |> Map.get(:context)
-      |> ExtractHttpStep.changeset_from_andi_step()
-
+  def mount(socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok,
      assign(socket,
-       extract_step_id: extract_step.id,
-       extract_step: extract_step,
-       changeset: new_changeset,
        testing: false,
        test_results: nil,
        visibility: "expanded",
-       validation_status: "collapsed",
-       dataset_id: dataset_id,
-       technical_id: technical_id
+       validation_status: "collapsed"
      )}
   end
 
   def render(assigns) do
     ~L"""
-        <div class="form-section extract-step-container extract-http-step-form">
-          <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+        <div id="step-<%= @id %>" class="form-section extract-step-container extract-http-step-form">
+          <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
             <div class="extract-step-form__type">
               <h3>HTTP</h3>
             </div>
@@ -68,9 +57,9 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                   <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
                 </div>
 
-                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_queryParams" <> @extract_step_id, css_label: "source-query-params", form: f, field: :queryParams ) %>
+                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_queryParams" <> @extract_step.id, css_label: "source-query-params", form: f, field: :queryParams, target: "step-#{@id}") %>
 
-                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_headers" <> @extract_step_id, css_label: "source-headers", form: f, field: :headers ) %>
+                <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
 
                 <%= if input_value(f, :action) == "POST" do %>
                   <div class="extract-step-form__body">
@@ -81,7 +70,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 <% end %>
 
                 <div class="extract-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
+                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target=<%= @myself %> <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
@@ -125,17 +114,23 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def handle_event("add", %{"field" => "queryParams"}, %{assigns: %{changeset: changeset}} = socket) do
+    query_params = Ecto.Changeset.get_field(changeset, :queryParams, [])
+    new_query_param = ExtractQueryParam.changeset(%{})
+
     new_changes =
       changeset
-      |> Ecto.Changeset.put_embed(:queryParams, changeset.changes.queryParams ++ [%ExtractQueryParam{}])
+      |> Ecto.Changeset.put_embed(:queryParams, query_params ++ [new_query_param])
 
     {:noreply, assign(socket, changeset: new_changes)}
   end
 
   def handle_event("add", %{"field" => "headers"}, %{assigns: %{changeset: changeset}} = socket) do
+    headers = Ecto.Changeset.get_field(changeset, :queryParams, [])
+    new_header = ExtractHeader.changeset(%{})
+
     new_changes =
       changeset
-      |> Ecto.Changeset.put_embed(:headers, changeset.changes.headers ++ [%ExtractHeader{}])
+      |> Ecto.Changeset.put_embed(:headers, headers ++ [new_header])
 
     {:noreply, assign(socket, changeset: new_changes)}
   end
@@ -259,7 +254,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     new_status = get_new_validation_status(socket.assigns.changeset)
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step_id, new_status}})
+    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_status}})
     assign(socket, validation_status: new_status)
   end
 

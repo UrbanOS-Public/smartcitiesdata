@@ -53,10 +53,9 @@ defmodule AndiWeb.ExtractDateFormTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       extract_steps_form_view = find_child(view, "extract_step_form_editor")
-      extract_date_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
       form_data = %{"format" => "frankly this is invalid too"}
-      html = render_change(extract_date_step_form_view, "validate", %{"form_data" => form_data})
+      html = render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
 
       error_text = get_text(html, "#format-error-msg")
       assert error_text != ""

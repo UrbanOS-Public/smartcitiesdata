@@ -59,13 +59,12 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       extract_step_id: extract_step_id
     } do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
 
-      html = render_click(extract_http_step_form_view, "add", %{"field" => field})
+      html = render_click([extract_steps_form_view, extract_step_id], "add", %{"field" => field})
 
       assert html |> find_elements(key_class) |> length() == 3
       assert html |> find_elements(value_class) |> length() == 3
@@ -83,8 +82,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       extract_step_id: extract_step_id
     } do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
@@ -93,7 +91,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         get_attributes(html, btn_class, "phx-value-id")
         |> hd()
 
-      html = render_click(extract_http_step_form_view, "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      html = render_click([extract_steps_form_view, extract_step_id], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
 
       [key_input] = html |> get_attributes(key_class, "class")
       refute btn_id =~ key_input
@@ -115,10 +113,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       extract_step_id = get_extract_step_id(andi_dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
-      html = render(extract_http_step_form_view)
+      html = render([extract_steps_form_view, extract_step_id])
 
       assert html |> find_elements(key_class) |> Enum.empty?()
       assert html |> find_elements(value_class) |> Enum.empty?()
@@ -132,16 +129,15 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     test "url is updated when query params are removed", %{conn: conn, dataset: dataset, extract_step_id: extract_step_id} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
-      html = render(extract_http_step_form_view)
+      html = render([extract_steps_form_view, extract_step_id])
 
       assert html |> find_elements(".url-form__source-query-params-delete-btn") |> length() == 2
 
       get_attributes(html, ".url-form__source-query-params-delete-btn", "phx-value-id")
       |> Enum.each(fn btn_id ->
-        render_click(extract_http_step_form_view, "remove", %{
+        render_click([extract_steps_form_view, extract_step_id], "remove", %{
           "id" => btn_id,
           "field" => Atom.to_string(:queryParams)
         })
@@ -154,7 +150,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         |> Map.get(:url)
         |> Andi.URI.clear_query_params()
 
-      assert render(extract_step_form_view) |> get_values(".extract-step-form__url input") == [url_with_no_query_params]
+      assert render(extract_steps_form_view) |> get_values(".extract-step-form__url input") == [url_with_no_query_params]
     end
   end
 
@@ -186,8 +182,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       extract_steps_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
-      render_change(extract_http_step_form_view, :test_url, %{})
+      render_change([extract_steps_form_view, extract_step_id], :test_url, %{})
 
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
     end
@@ -200,12 +195,11 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       extract_steps_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
       form_data = %{"url" => url}
 
       html =
-        render_change(extract_http_step_form_view, :validate, %{
+        render_change([extract_steps_form_view, extract_step_id], :validate, %{
           "form_data" => form_data,
           "_target" => ["form_data", "url"]
         })
@@ -230,13 +224,12 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = get_extract_step_id(dataset, 0)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       form_data = %{"queryParams" => queryParams, "url" => initialSourceUrl}
 
       html =
-        render_change(extract_http_step_form_view, :validate, %{
+        render_change([extract_steps_form_view, extract_step_id], :validate, %{
           "form_data" => form_data,
           "_target" => ["form_data", "queryParams"]
         })
@@ -284,16 +277,15 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = get_extract_step_id(dataset, 0)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       assert get_text(html, ".test-status__code") == ""
       assert get_text(html, ".test-status__time") == ""
 
-      render_change(extract_http_step_form_view, :test_url, %{})
+      render_change([extract_steps_form_view, extract_step_id], :test_url, %{})
 
       eventually(fn ->
-        html = render(extract_http_step_form_view)
+        html = render([extract_steps_form_view, extract_step_id])
         assert get_text(html, ".test-status__code") == "Success"
         assert get_text(html, ".test-status__time") == "1000"
       end)
@@ -323,15 +315,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = get_extract_step_id(dataset, 0)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       assert get_text(html, ".test-status__code--good") == ""
 
-      render_change(extract_http_step_form_view, :test_url, %{})
+      render_change([extract_steps_form_view, extract_step_id], :test_url, %{})
 
       eventually(fn ->
-        html = render(extract_http_step_form_view)
+        html = render([extract_steps_form_view, extract_step_id])
         assert get_text(html, ".test-status__code--good") == "Success"
       end)
     end
@@ -360,15 +351,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = get_extract_step_id(dataset, 0)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_child(view, "extract_step_form_editor")
-      extract_http_step_form_view = find_child(extract_step_form_view, extract_step_id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       assert get_text(html, ".test-status__code--bad") == ""
 
-      render_change(extract_http_step_form_view, :test_url, %{})
+      render_change([extract_steps_form_view, extract_step_id], :test_url, %{})
 
       eventually(fn ->
-        html = render(extract_http_step_form_view)
+        html = render([extract_steps_form_view, extract_step_id])
         assert get_text(html, ".test-status__code--bad") == "Error"
         assert get_text(html, ".test-status__code--good") != "Error"
       end)
@@ -401,11 +391,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{"url" => ""}
 
-    html = render_change(extract_http_step_form_view, :validate, %{"form_data" => form_data})
+    html = render_change([extract_steps_form_view, extract_step_id], :validate, %{"form_data" => form_data})
 
     assert get_text(html, "#url-error-msg") == "Please enter a valid url."
   end
@@ -435,11 +424,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{field => value, "action" => "POST", "type" => "http", "url" => "example.com"}
 
-    html = render_change(extract_http_step_form_view, :validate, %{"form_data" => form_data})
+    html = render_change([extract_steps_form_view, extract_step_id], :validate, %{"form_data" => form_data})
 
     assert get_text(html, "##{field}-error-msg") == error
 
@@ -473,11 +461,11 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    extract_step_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     form_data = %{"body" => "[{\"bob\": 1}]", "action" => "POST"}
 
-    html = render_change(extract_step_form_view, :validate, %{"form_data" => form_data})
+    html = render_change(extract_steps_form_view, :validate, %{"form_data" => form_data})
 
     assert get_text(html, "#body-error-msg") == ""
   end

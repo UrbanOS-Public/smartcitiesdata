@@ -2,7 +2,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   @moduledoc """
   LiveComponent for an extract step with type HTTP
   """
-  use Phoenix.LiveView
+  use Phoenix.LiveComponent
   import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
@@ -18,34 +18,23 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
 
-  def mount(_, %{"extract_step" => extract_step, "dataset_id" => dataset_id, "technical_id" => technical_id}, socket) do
-    new_changeset =
-      extract_step
-      |> Andi.InputSchemas.StructTools.to_map()
-      |> Map.get(:context)
-      |> ExtractDateStep.changeset_from_andi_step()
-
+  def mount(socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
     {:ok,
      assign(socket,
-       extract_step_id: extract_step.id,
-       extract_step: extract_step,
-       changeset: new_changeset,
        testing: false,
        test_results: nil,
        visibility: "expanded",
-       validation_status: "collapsed",
-       dataset_id: dataset_id,
-       technical_id: technical_id
+       validation_status: "collapsed"
      )}
   end
 
   def render(assigns) do
     ~L"""
-        <div class="form-section extract-step-container extract-date-step-form">
-          <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
+    <div id="step-<%= @id %>" class="form-section extract-step-container extract-date-step-form">
+          <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
             <%= hidden_input(f, :id) %>
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
@@ -84,6 +73,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
+    IO.inspect("goooood")
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> ExtractDateStep.changeset()
@@ -91,6 +81,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   def handle_event("validate", _, socket) do
+    IO.inspect("bad")
     send(socket.parent_pid, :page_error)
 
     {:noreply, socket}
@@ -126,7 +117,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     Map.put(socket.assigns.extract_step, :context, changes_to_save)
     |> ExtractSteps.update()
 
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step_id, new_validation_status}})
+    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_validation_status}})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
   end
@@ -143,7 +134,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     new_status = get_new_validation_status(socket.assigns.changeset)
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step_id, new_status}})
+    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_status}})
     assign(socket, validation_status: new_status)
   end
 

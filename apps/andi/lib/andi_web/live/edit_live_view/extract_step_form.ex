@@ -7,6 +7,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   import Phoenix.HTML.Form
   require Logger
 
+  alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias AndiWeb.EditLiveView.KeyValueEditor
@@ -33,7 +34,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        validation_status: "collapsed",
        validation_map: %{},
        dataset_id: dataset.id,
-       technical_id: dataset.technical.id
+       technical_id: dataset.technical.id,
+       new_step_type: ""
      )}
   end
 
@@ -60,14 +62,16 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
-       <form phx-submit="add-extract-step">
-          <%= select(:form, :step_type, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-          <button type="submit" class="btn">Add Step</button>
-        </form>
+        <div>
+          <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+          <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+        </div>
 
         <%= for extract_step <- @extract_steps do %>
-          <% module_to_render = render_extract_step_form(extract_step) %>
-          <%= live_render(@socket, module_to_render, id: extract_step.id, session: %{"extract_step" => extract_step, "technical_id" => @technical_id, "dataset_id" => @dataset_id}) %>
+          <% component_module_to_render = render_extract_step_form(extract_step) %>
+          <% step_changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step) %>
+
+          <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
         <% end %>
 
         <div class="edit-button-group form-grid">
@@ -127,9 +131,21 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("add-extract-step", %{"step_type" => step_type}, socket) do
+  def handle_event("update_new_step_type", %{"value" => value}, socket) do
+    IO.inspect(value, label: "update step type to")
+    {:noreply, assign(socket, new_step_type: value)}
+  end
+
+  def handle_event("add-extract-step", _, %{assigns: %{new_step_type: ""}} = socket) do
+    IO.inspect("other eevent handler")
+    {:noreply, socket}
+  end
+
+  def handle_event("add-extract-step", _, socket) do
+    IO.inspect("good event handler")
+    step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    new_extract_step = ExtractSteps.create(step_type, technical_id)
+    new_extract_step = ExtractSteps.create(step_type, technical_id) |> IO.inspect(label: "creating this step")
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
     {:noreply, assign(socket, extract_steps: all_steps_for_technical)}
@@ -227,7 +243,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
-  defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)

@@ -80,10 +80,9 @@ defmodule AndiWeb.ExtractStepFormTest do
   test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
     extract_step_id = get_extract_step_id(dataset, 0)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -96,10 +95,9 @@ defmodule AndiWeb.ExtractStepFormTest do
   test "given an invalid extract date step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
     extract_step_id = get_extract_step_id(dataset, 1)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    extract_date_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
-    render_change(extract_date_step_form_view, "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -115,15 +113,14 @@ defmodule AndiWeb.ExtractStepFormTest do
   } do
     extract_step_id = get_extract_step_id(dataset, 0)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    extract_http_step_form_view = find_child(extract_steps_form_view, extract_step_id)
 
     form_data = %{"action" => "GET", "url" => ""}
-    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
     form_data = %{"action" => "GET", "url" => "bob.com"}
-    render_change(extract_http_step_form_view, "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
 
     eventually(fn ->
       html = render(extract_steps_form_view)
