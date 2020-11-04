@@ -26,8 +26,10 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
+
     extract_step
-    |> cast(changes, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
     |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> validate_body_format()
@@ -37,8 +39,10 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
   end
 
   def changeset_for_draft(extract_step, changes) do
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
+
     extract_step
-    |> cast(changes, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_embed(:headers, with: &ExtractHeader.changeset_for_draft/2)
     |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset_for_draft/2)
   end

@@ -20,16 +20,24 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.Helpers.FormTools
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
+  alias Andi.InputSchemas.InputConverter
 
   def mount(params, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
+    extract_steps = get_in(dataset, [:technical, :extractSteps])
+    extract_step_changesets =
+      Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
+        changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
+        Map.put(acc, extract_step.id, changeset)
+      end)
+
     {:ok,
      assign(socket,
-       extract_steps: get_in(dataset, [:technical, :extractSteps]),
+       extract_steps: extract_steps,
+       extract_step_changesets: extract_step_changesets,
        testing: false,
-       test_results: nil,
        visibility: "expanded",
        validation_status: "collapsed",
        validation_map: %{},
@@ -69,7 +77,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
         <%= for extract_step <- @extract_steps do %>
           <% component_module_to_render = render_extract_step_form(extract_step) %>
-          <% step_changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step) %>
+          <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
 
           <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
         <% end %>
@@ -87,19 +95,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         </div>
       </div>
     """
-  end
-
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> ExtractHttpStep.changeset()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", _, socket) do
-    send(socket.parent_pid, :page_error)
-
-    {:noreply, socket}
   end
 
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
@@ -125,49 +120,37 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
 
-  def handle_event("save", _, socket) do
+  def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
 
-    {:noreply, socket}
+    Enum.each(extract_step_changesets, fn {id, changeset} ->
+      changes = InputConverter.form_changes_from_changeset(changeset)
+
+      id
+      |> ExtractSteps.get()
+      |> Map.put(:context, changes)
+      |> ExtractSteps.update()
+    end)
+
+    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
 
   def handle_event("update_new_step_type", %{"value" => value}, socket) do
-    IO.inspect(value, label: "update step type to")
     {:noreply, assign(socket, new_step_type: value)}
   end
 
   def handle_event("add-extract-step", _, %{assigns: %{new_step_type: ""}} = socket) do
-    IO.inspect("other eevent handler")
     {:noreply, socket}
   end
 
   def handle_event("add-extract-step", _, socket) do
-    IO.inspect("good event handler")
     step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    new_extract_step = ExtractSteps.create(step_type, technical_id) |> IO.inspect(label: "creating this step")
+    new_extract_step = ExtractSteps.create(step_type, technical_id)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
     {:noreply, assign(socket, extract_steps: all_steps_for_technical)}
   end
-
-  # defp create_new_extract_step("http", technical_id) do
-  #   new_extract_step =
-  #     ExtractHttpStep.changeset_from_andi_step(nil, technical_id)
-  #     |> Ecto.Changeset.apply_changes()
-  #     |> Andi.InputSchemas.StructTools.to_map()
-
-  #   ExtractSteps.update(new_extract_step, ExtractHttpStep)
-  # end
-
-  # defp create_new_extract_step("date", technical_id) do
-  #   new_extract_step =
-  #     ExtractDateStep.changeset_from_andi_step(nil, technical_id)
-  #     |> Ecto.Changeset.apply_changes()
-  #     |> Andi.InputSchemas.StructTools.to_map()
-
-  #   ExtractSteps.update(new_extract_step, ExtractDateStep)
-  # end
 
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
@@ -186,6 +169,15 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_info(%{topic: "toggle-component-visibility"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info({:step_update, step_id, new_changeset}, socket) do
+    updated_extract_step_changesets =
+      socket.assigns.extract_step_changesets
+      |> Map.put(step_id, new_changeset)
+      |> IO.inspect()
+
+    {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
   end
 
   def handle_info(
@@ -250,15 +242,15 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))
+    assign(socket, validation_status: get_new_validation_status(socket.assigns.extract_step_changesets))
   end
 
   defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
-  defp get_new_validation_status(changeset) do
-    case changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
+  defp get_new_validation_status(step_changesets) do
+    case Enum.any?(step_changesets, fn {id, changeset} -> not changeset.valid? end) do
+      true -> "invalid"
+      false -> "valid"
     end
   end
 

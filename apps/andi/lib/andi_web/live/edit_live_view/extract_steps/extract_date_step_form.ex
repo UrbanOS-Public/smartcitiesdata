@@ -19,9 +19,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   alias AndiWeb.Helpers.FormTools
 
   def mount(socket) do
-    AndiWeb.Endpoint.subscribe("toggle-visibility")
-    AndiWeb.Endpoint.subscribe("form-save")
-
     {:ok,
      assign(socket,
        testing: false,
@@ -73,7 +70,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    IO.inspect("goooood")
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> ExtractDateStep.changeset()
@@ -81,7 +77,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   def handle_event("validate", _, socket) do
-    IO.inspect("bad")
     send(socket.parent_pid, :page_error)
 
     {:noreply, socket}
@@ -150,6 +145,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
     send(socket.parent_pid, :form_update)
+    send(self(), {:step_update, socket.assigns.id, new_changeset})
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end

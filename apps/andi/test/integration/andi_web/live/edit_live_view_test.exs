@@ -454,7 +454,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_form_data = %{"action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, extract_step_id], :validate, %{"form_data" => extract_form_data})
+      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -487,7 +487,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
-      render_change([extract_step_view, extract_step_id], :validate, %{"form_data" => extract_form_data})
+      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)

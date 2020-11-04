@@ -70,7 +70,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 <% end %>
 
                 <div class="extract-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target=<%= @myself %> <%= disabled?(@testing) %>>Test</button>
+                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-#{@id}" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
@@ -125,7 +125,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def handle_event("add", %{"field" => "headers"}, %{assigns: %{changeset: changeset}} = socket) do
-    headers = Ecto.Changeset.get_field(changeset, :queryParams, [])
+    headers = Ecto.Changeset.get_field(changeset, :headers, [])
     new_header = ExtractHeader.changeset(%{})
 
     new_changes =
@@ -270,6 +270,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
     send(socket.parent_pid, :form_update)
+    send(self(), {:step_update, socket.assigns.id, new_changeset})
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end

@@ -41,7 +41,7 @@ defmodule AndiWeb.ExtractStepFormTest do
       id: UUID.uuid4(),
       context: %{
         destination: "bob_field",
-        deltaTimeUnit: "Year",
+        deltaTimeUnit: "year",
         deltaTimeValue: 5,
         format: "{ISO:Extended}"
       }
@@ -82,7 +82,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -97,7 +97,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
-    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -115,12 +115,12 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     form_data = %{"action" => "GET", "url" => ""}
-    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
     form_data = %{"action" => "GET", "url" => "bob.com"}
-    render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
     eventually(fn ->
       html = render(extract_steps_form_view)

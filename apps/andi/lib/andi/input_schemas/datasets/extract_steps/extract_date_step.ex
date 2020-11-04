@@ -23,16 +23,20 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
+
     extract_step
-    |> cast(changes, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_time_unit()
     |> validate_format()
   end
 
   def changeset_for_draft(extract_step, changes) do
+    changes_with_id = StructTools.ensure_id(extract_step, changes)
+
     extract_step
-    |> cast(changes, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
   end
 
   def changeset_from_form_data(form_data) do
