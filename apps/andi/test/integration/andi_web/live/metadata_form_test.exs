@@ -615,19 +615,13 @@ defmodule AndiWeb.MetadataFormTest do
 
     test "dataset owner lists all the users in the system by email", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
-      User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com"})
-      User.create_or_update("4f52658b-7064-464e-93d0-9e2ccf1436ef", %{email: "test@test.com"})
+      {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com"})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      assert [
-               {"", ""},
-               {"bob@example.com", _},
-               {"hello@world.com", _},
-               {"test@test.com", _}
-             ] = get_all_select_options(html, ".metadata-form__dataset-owner")
+      assert {"hello@world.com", user.id} in get_all_select_options(html, ".metadata-form__dataset-owner")
     end
   end
 

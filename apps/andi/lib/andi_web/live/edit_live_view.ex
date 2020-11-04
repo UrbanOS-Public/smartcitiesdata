@@ -49,7 +49,7 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <div class="data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset}) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
 
         <div class="extract-steps-form-component">
