@@ -36,22 +36,22 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   def render(assigns) do
     ~L"""
-        <div id="step-<%= @id %>" class="form-section extract-step-container extract-http-step-form">
+        <div id="step-<%= @id %>" class="extract-step-container extract-http-step-form">
           <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-            <div class="extract-step-form__type">
+            <div class="extract-http-step-form__type">
               <h3>HTTP</h3>
             </div>
 
             <div class="component-edit-section--<%= @visibility %>">
-              <div class="extract-step-form-edit-section form-grid">
+              <div class="extract-http-step-form-edit-section form-grid">
 
-                <div class="extract-step-form__method">
+                <div class="extract-http-step-form__method">
                   <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
+                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-http-step-form__method select") %>
                   <%= ErrorHelpers.error_tag(f, :action) %>
                 </div>
 
-                <div class="extract-step-form__url">
+                <div class="extract-http-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
                   <%= text_input(f, :url, class: "input full-width", disabled: @testing) %>
                   <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
@@ -62,14 +62,14 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 <%= live_component(@socket, KeyValueEditor, id: "key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
 
                 <%= if input_value(f, :action) == "POST" do %>
-                  <div class="extract-step-form__body">
+                  <div class="extract-http-step-form__body">
                     <%= label(f, :body, DisplayNames.get(:body),  class: "label") %>
                     <%= textarea(f, :body, class: "input full-width", phx_hook: "prettify", disabled: @testing) %>
                     <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
                   </div>
                 <% end %>
 
-                <div class="extract-step-form__test-section">
+                <div class="extract-http-step-form__test-section">
                   <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-<%= @id %>" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">

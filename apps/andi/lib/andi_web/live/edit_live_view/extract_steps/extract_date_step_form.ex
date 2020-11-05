@@ -29,44 +29,49 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
      )}
   end
 
+  def update(assigns, socket) do
+    updated_assigns = Map.put_new(assigns, :example_output, get_example_output(assigns.changeset))
+    {:ok, assign(socket, updated_assigns)}
+  end
+
   def render(assigns) do
     ~L"""
-    <div id="step-<%= @id %>" class="form-section extract-step-container extract-date-step-form">
+    <div id="step-<%= @id %>" class="extract-step-container extract-date-step-form">
           <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
             <%= hidden_input(f, :id) %>
             <%= hidden_input(f, :type) %>
             <%= hidden_input(f, :technical_id) %>
 
-            <div class="extract-step-form__type">
+            <div class="extract-date-step-form__type">
               <h3>Date</h3>
             </div>
 
             <div class="component-edit-section--<%= @visibility %>">
-              <div class="extract-step-form-edit-section form-grid">
+              <div class="extract-date-step-form-edit-section form-grid">
                 <div class="extract-date-step-form__destination">
                   <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required") %>
-                  <%= text_input(f, :destination, id: "date_destination", class: "extract-step-form__destination input") %>
+                  <%= text_input(f, :destination, id: "date_destination", class: "extract-date-step-form__destination input") %>
                   <%= ErrorHelpers.error_tag(f, :destination) %>
                 </div>
 
                 <div class="extract-date-step-form__deltaTimeUnit">
                   <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label label--required") %>
-                  <%= select(f, :deltaTimeUnit, get_time_units(), id: "date_delta_time_unit", class: "extract-step-form__delta_time_unit select") %>
+                  <%= select(f, :deltaTimeUnit, get_time_units(), id: "date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
                   <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
                 </div>
 
                 <div class="extract-date-step-form__deltaTimeValue">
                   <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label label--required") %>
-                  <%= text_input(f, :deltaTimeValue, id: "date_delta_time_value", class: "extract-step-form__delta_time_value input") %>
+                  <%= text_input(f, :deltaTimeValue, id: "date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
                   <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
                 </div>
 
                 <div class="extract-date-step-form__format">
-                  <div class="format-label">
+                  <div class="help-text-label">
                     <%= label(f, :format, "Format", class: "label label--required") %>
                     <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
                   </div>
-                  <%= text_input(f, :format, id: "date_format", class: "extract-step-form__format input") %>
+                  <%= text_input(f, :format, id: "date_format", class: "extract-date-step-form__format input") %>
                   <%= ErrorHelpers.error_tag(f, :format) %>
                 </div>
 
@@ -165,7 +170,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     send(self(), {:step_update, socket.assigns.id, new_changeset})
 
     updated_example_output = get_example_output(new_changeset)
-    {:noreply, assign(socket, changeset: new_changeset, example_output: updated_example_output) |> update_validation_status()}
+    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 
   defp get_example_output(%{valid?: false} = changeset), do: nil
