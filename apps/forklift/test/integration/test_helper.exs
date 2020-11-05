@@ -5,6 +5,8 @@ ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
 Faker.start()
 
 defmodule Helper do
+  use Properties, otp_app: :forklift
+
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
@@ -12,7 +14,7 @@ defmodule Helper do
   alias Pipeline.Writer.S3Writer
   require ExUnit.Assertions
 
-  @bucket Application.get_env(:forklift, :s3_writer_bucket)
+  getter(:s3_writer_bucket, generic: true)
 
   def make_kafka_message(value, topic) do
     %{
@@ -44,7 +46,12 @@ defmodule Helper do
 
   def write_records(dataset, count) do
     data = 1..count |> Enum.map(fn _ -> TDG.create_data(%{payload: payload()}) end)
-    S3Writer.write(data, bucket: @bucket, table: dataset.technical.systemName, schema: dataset.technical.schema)
+
+    S3Writer.write(data,
+      bucket: s3_writer_bucket(),
+      table: dataset.technical.systemName,
+      schema: dataset.technical.schema
+    )
   end
 
   def write_partitioned_records(dataset, count, partition) do

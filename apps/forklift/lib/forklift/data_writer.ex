@@ -6,6 +6,8 @@ defmodule Forklift.DataWriter do
   @behaviour Pipeline.Writer
 
   use Retry
+  use Properties, otp_app: :forklift
+
   alias SmartCity.Data
   alias Forklift.DataWriter.Compaction
 
@@ -15,17 +17,25 @@ defmodule Forklift.DataWriter do
 
   @instance_name Forklift.instance_name()
 
-  @topic_writer Application.get_env(:forklift, :topic_writer)
-  @table_writer Application.get_env(:forklift, :table_writer)
-  @max_wait Application.get_env(:forklift, :retry_max_wait)
-  @retry_count Application.get_env(:forklift, :retry_count)
+  getter(:topic_writer, generic: true)
+  getter(:table_writer, generic: true)
+  getter(:retry_max_wait, generic: true)
+  getter(:retry_count, generic: true)
+  getter(:elsa_brokers, generic: true)
+  getter(:input_topic_prefix, generic: true)
+  getter(:output_topic, generic: true)
+  getter(:max_outgoing_bytes, generic: true, default: 900_000)
+  getter(:producer_name, generic: true)
+  getter(:profiling_enabled, generic: true)
+  getter(:retry_initial_delay, generic: true)
+  getter(:s3_writer_bucket, generic: true)
 
   @impl Pipeline.Writer
   @doc """
   Ensures a table exists using `:table_writer` from Forklift's application environment.
   """
   def init(args) do
-    @table_writer.init(args)
+    table_writer().init(args)
   end
 
   @impl Pipeline.Writer
@@ -59,14 +69,13 @@ defmodule Forklift.DataWriter do
 
   @impl Pipeline.Writer
   def delete(dataset) do
-    endpoints = Application.get_env(:forklift, :elsa_brokers)
-    topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{dataset.id}"
+    topic = "#{input_topic_prefix()}-#{dataset.id}"
 
-    [endpoints: endpoints, topic: topic]
-    |> @topic_writer.delete()
+    [endpoints: elsa_brokers(), topic: topic]
+    |> topic_writer().delete()
 
     [dataset: dataset]
-    |> @table_writer.delete()
+    |> table_writer().delete()
   end
 
   @spec bootstrap() :: :ok | {:error, term()}
@@ -75,13 +84,13 @@ defmodule Forklift.DataWriter do
   output_topic is configured. Includes creating the topic if necessary.
   """
   def bootstrap do
-    case Application.get_env(:forklift, :output_topic) do
+    case output_topic() do
       nil ->
         :ok
 
       topic ->
         bootstrap_args(topic)
-        |> @topic_writer.init()
+        |> topic_writer().init()
     end
   end
 
@@ -135,7 +144,7 @@ defmodule Forklift.DataWriter do
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
 
-    retry with: exponential_backoff(100) |> cap(@max_wait) |> Stream.take(@retry_count) do
+    retry with: exponential_backoff(100) |> cap(retry_max_wait()) |> Stream.take(retry_count()) do
       write_to_table(started_data, dataset)
     after
       {:ok, write_timing} -> add_total_time(data, started_data, write_timing)
@@ -148,7 +157,7 @@ defmodule Forklift.DataWriter do
   defp write_to_table(data, %{technical: metadata}) do
     with write_start <- Data.Timing.current_time(),
          :ok <-
-           @table_writer.write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
+           table_writer().write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
          write_end <- Data.Timing.current_time(),
          write_timing <- Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
@@ -156,14 +165,13 @@ defmodule Forklift.DataWriter do
   end
 
   def write_to_topic(data) do
-    max_bytes = Application.get_env(:forklift, :max_outgoing_bytes, 900_000)
-    writer_args = [instance: @instance_name, producer_name: Application.get_env(:forklift, :producer_name)]
+    writer_args = [instance: @instance_name, producer_name: producer_name()]
 
     data
     |> Enum.map(fn datum -> {datum._metadata.kafka_key, Forklift.Util.remove_from_metadata(datum, :kafka_key)} end)
     |> Enum.map(fn {key, datum} -> {key, Jason.encode!(datum)} end)
-    |> Forklift.Util.chunk_by_byte_size(max_bytes, fn {key, value} -> byte_size(key) + byte_size(value) end)
-    |> Enum.each(fn msg_chunk -> @topic_writer.write(msg_chunk, writer_args) end)
+    |> Forklift.Util.chunk_by_byte_size(max_outgoing_bytes(), fn {key, value} -> byte_size(key) + byte_size(value) end)
+    |> Enum.each(fn msg_chunk -> topic_writer().write(msg_chunk, writer_args) end)
   end
 
   defp add_start_time(datum) do
@@ -171,7 +179,7 @@ defmodule Forklift.DataWriter do
   end
 
   defp add_total_time(data, started_data, write_timing) do
-    case Application.get_env(:forklift, :profiling_enabled) do
+    case profiling_enabled() do
       true ->
         Enum.map(started_data, &Data.add_timing(&1, write_timing))
         |> Enum.map(&add_timing/1)
@@ -192,15 +200,11 @@ defmodule Forklift.DataWriter do
   defp bootstrap_args(topic) do
     [
       instance: @instance_name,
-      endpoints: Application.get_env(:forklift, :elsa_brokers),
+      endpoints: elsa_brokers(),
       topic: topic,
-      producer_name: Application.get_env(:forklift, :producer_name),
-      retry_count: Application.get_env(:forklift, :retry_count),
-      retry_delay: Application.get_env(:forklift, :retry_initial_delay)
+      producer_name: producer_name(),
+      retry_count: retry_count(),
+      retry_delay: retry_initial_delay()
     ]
-  end
-
-  defp s3_writer_bucket() do
-    Application.get_env(:forklift, :s3_writer_bucket)
   end
 end

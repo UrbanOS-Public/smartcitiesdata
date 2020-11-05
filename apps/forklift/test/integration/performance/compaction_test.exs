@@ -2,6 +2,8 @@ defmodule Forklift.Performance.CompactionTest do
   use ExUnit.Case
   use Divo, auto_start: false
   use Retry
+  use Properties, otp_app: :forklift
+
   require Logger
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -10,7 +12,7 @@ defmodule Forklift.Performance.CompactionTest do
 
   @moduletag :compaction
 
-  @bucket Application.get_env(:forklift, :s3_writer_bucket)
+  getter(:s3_writer_bucket, generic: true)
 
   setup_all do
     Mix.Task.run("loadconfig", ["./config/performance.exs"])
@@ -153,7 +155,7 @@ defmodule Forklift.Performance.CompactionTest do
   defp load_file_to_s3(source_path, destination_path) do
     source_path
     |> S3.Upload.stream_file()
-    |> S3.upload(@bucket, destination_path)
+    |> S3.upload(s3_writer_bucket(), destination_path)
     |> ExAws.request!()
   end
 
@@ -161,7 +163,7 @@ defmodule Forklift.Performance.CompactionTest do
     table = dataset.technical.systemName
     schema = dataset.technical.schema
 
-    Forklift.DataWriter.init(table: table, schema: schema, bucket: @bucket)
+    Forklift.DataWriter.init(table: table, schema: schema, bucket: s3_writer_bucket())
   end
 
   defp drop_tables(dataset) do
