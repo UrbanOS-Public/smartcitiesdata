@@ -30,7 +30,7 @@ be found at [https://hexdocs.pm/estuary](https://hexdocs.pm/estuary).
     ```
   * To run a single instance with no data in it:
     ```bash
-    `MIX_ENV=integration iex -S mix phx.start`
+    `MIX_ENV=integration iex -S mix phx.server`
     ```
   * To kill the docker:
     ```bash
