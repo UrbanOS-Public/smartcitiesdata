@@ -2,9 +2,15 @@ defmodule Forklift.Application do
   @moduledoc false
 
   use Application
+  use Properties, otp_app: :forklift
+
   require Logger
 
   @instance_name Forklift.instance_name()
+
+  getter(:brook, generic: true)
+  getter(:table_writer, generic: true)
+  getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
     children =
@@ -13,14 +19,14 @@ defmodule Forklift.Application do
         redis(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
         Forklift.Quantum.Scheduler,
-        {Brook, Application.get_env(:forklift, :brook)},
+        {Brook, brook()},
         migrations(),
         Forklift.InitServer
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
-    if Application.get_env(:forklift, :table_writer) == Pipeline.Writer.S3Writer do
+    if table_writer() == Pipeline.Writer.S3Writer do
       fetch_and_set_s3_credentials()
     end
 
@@ -52,7 +58,7 @@ defmodule Forklift.Application do
   end
 
   defp fetch_and_set_s3_credentials() do
-    endpoint = Application.get_env(:forklift, :secrets_endpoint)
+    endpoint = secrets_endpoint()
 
     if is_nil(endpoint) || String.length(endpoint) == 0 do
       Logger.warn(
