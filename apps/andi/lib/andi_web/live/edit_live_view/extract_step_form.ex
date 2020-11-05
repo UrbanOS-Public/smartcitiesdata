@@ -123,14 +123,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
 
-    Enum.each(extract_step_changesets, fn {id, changeset} ->
-      changes = InputConverter.form_changes_from_changeset(changeset)
-
-      id
-      |> ExtractSteps.get()
-      |> Map.put(:context, changes)
-      |> ExtractSteps.update()
-    end)
+    save_step_changesets(extract_step_changesets)
 
     {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
@@ -146,10 +139,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_event("add-extract-step", _, socket) do
     step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    new_extract_step = ExtractSteps.create(step_type, technical_id)
+    {:ok, new_extract_step} = ExtractSteps.create(step_type, technical_id)
+    new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
+    updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
-    {:noreply, assign(socket, extract_steps: all_steps_for_technical)}
+    {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
   end
 
   def handle_info(
@@ -161,6 +156,14 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_info(%{topic: "toggle-visibility"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info(
+    %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+    %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
+  ) do
+    save_step_changesets(extract_step_changesets)
+    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
@@ -175,7 +178,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     updated_extract_step_changesets =
       socket.assigns.extract_step_changesets
       |> Map.put(step_id, new_changeset)
-      |> IO.inspect()
 
     {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
   end
@@ -202,6 +204,18 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     send(socket.parent_pid, :page_error)
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
+
+  defp save_step_changesets(extract_step_changesets) do
+    Enum.each(extract_step_changesets, fn {id, changeset} ->
+      changes = InputConverter.form_changes_from_changeset(changeset)
+
+      id
+      |> ExtractSteps.get()
+      |> Map.put(:context, changes)
+      |> ExtractSteps.update()
+    end)
+  end
+
 
   defp render_extract_step_form(%{type: "http"}), do: ExtractHttpStepForm
 

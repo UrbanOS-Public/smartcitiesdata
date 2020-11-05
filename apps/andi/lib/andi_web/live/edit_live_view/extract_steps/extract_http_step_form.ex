@@ -70,7 +70,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 <% end %>
 
                 <div class="extract-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-#{@id}" <%= disabled?(@testing) %>>Test</button>
+                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-<%= @id %>" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
@@ -163,11 +163,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     query_params = key_values_to_keyword_list(changes, :queryParams)
     headers = key_values_to_keyword_list(changes, :headers)
 
-    Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
-    end)
-
-    {:noreply, assign(socket, testing: true)}
+    # TODO
+    # Task.async(fn ->
+    #   {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
+    # end)
+    test_results = Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)
+    # {:noreply, assign(socket, testing: true)}
+    {:noreply, assign(socket, test_results: test_results)}
   end
 
   def handle_info(
@@ -178,7 +180,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def handle_info({_, {:test_results, results}}, socket) do
-    send(socket.parent_pid, {:test_results, results})
+    send(self(), {:test_results, results})
     {:noreply, assign(socket, test_results: results, testing: false)}
   end
 

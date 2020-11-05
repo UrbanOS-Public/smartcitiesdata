@@ -135,6 +135,18 @@ defmodule AndiWeb.Views.Options do
     }
   end
 
+  def time_units() do
+    %{
+      "years" => "Years",
+      "weeks" => "Weeks",
+      "months" => "Months",
+      "days" => "Days",
+      "hours" => "Hours",
+      "minutes" => "Minutes",
+      "seconds" => "Seconds"
+    }
+  end
+
   def organizations(stored_organizations) do
     case stored_organizations do
       {:ok, organizations} ->

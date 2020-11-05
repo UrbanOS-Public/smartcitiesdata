@@ -383,9 +383,10 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "allows publish of invalid url form with valid extract step form", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+      extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
@@ -396,7 +397,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => "cam.com"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -411,9 +412,10 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "allows publish of invalid extract form with valid url form", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+      extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
@@ -424,7 +426,7 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change(extract_step_view, :validate, %{"form_data" => extract_form_data})
+      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -442,7 +444,6 @@ defmodule AndiWeb.EditLiveViewTest do
       smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-
       extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)

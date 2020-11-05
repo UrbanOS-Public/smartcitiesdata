@@ -69,9 +69,11 @@ defmodule AndiWeb.ExtractStepFormTest do
   test "when the add step button is pressed, a new step is rendered", %{view: view} do
     editor = find_child(view, "extract_step_form_editor")
 
-    html = render_click(editor, "add-extract-step", %{"step_type" => "date"})
+    render_change(editor, "update_new_step_type", %{"value" => "date"})
+    render_click(editor, "add-extract-step")
 
     eventually(fn ->
+      html = render(editor)
       assert find_elements(html, ".extract-step-container") |> Enum.count() == 3
       assert Enum.count(find_elements(html, ".extract-date-step-form")) == 2
     end)

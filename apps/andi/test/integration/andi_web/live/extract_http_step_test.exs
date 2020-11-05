@@ -133,7 +133,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
       url_with_no_query_params =
         dataset.technical.extractSteps
         |> hd()
-        |> Map.get(:url)
+        |> get_in([:context, :url])
         |> Andi.URI.clear_query_params()
 
       assert render([extract_step_form_view, "#step-#{extract_step_id}"]) |> get_values(".extract-step-form__url input") == [url_with_no_query_params]
@@ -167,7 +167,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       extract_step_form_view = find_child(view, "extract_step_form_editor")
-      render_change(extract_step_form_view, :test_url, %{})
+      render_change([extract_step_form_view, "#step-#{extract_step_id}"], :test_url, %{})
 
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
 

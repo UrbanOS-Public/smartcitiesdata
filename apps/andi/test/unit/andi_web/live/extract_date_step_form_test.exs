@@ -5,7 +5,7 @@ defmodule AndiWeb.ExtractDateFormTest do
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [get_text: 2, get_values: 2]
+  import FlokiHelpers, only: [find_elements: 2, get_text: 2, get_values: 2]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -55,20 +55,53 @@ defmodule AndiWeb.ExtractDateFormTest do
       extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       form_data = %{"format" => "frankly this is invalid too"}
-      html = render_change([extract_steps_form_view, extract_step_id], "validate", %{"form_data" => form_data})
+      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
       error_text = get_text(html, "#format-error-msg")
       assert error_text != ""
     end
 
-    test "shows No Datasets when there are no rows to show", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [])
-      DatasetHelpers.replace_all_datasets_in_repo([])
+    test "displays example output when changeset is valid", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{}}]}})
 
-      assert {:ok, view, html} = live(conn, @url_path)
+      allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
 
-      assert get_text(html, ".datasets-index__title") =~ "All Datasets"
-      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
+      extract_step_id = get_extract_step_id(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+      form_data = %{"destination" => "dest", "deltaTimeValue" => 1, "deltaTimeUnit" => "days", "format" => "{YYYY}"}
+
+      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+
+      refute Enum.empty?(find_elements(html, ".example-output"))
     end
+
+    test "removes example output when changeset is invalid", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{}}]}})
+
+      allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
+
+      extract_step_id = get_extract_step_id(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+      form_data = %{"destination" => "dest", "deltaTimeValue" => 1, "deltaTimeUnit" => "days", "format" => "{YYYY}"}
+      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+
+      refute Enum.empty?(find_elements(html, ".example-output"))
+
+      form_data = %{"destination" => "", "deltaTimeValue" => 1, "deltaTimeUnit" => "days", "format" => "{YYYY}"}
+      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+
+      assert Enum.empty?(find_elements(html, ".example-output"))
+    end
+  end
+
+  defp get_extract_step_id(dataset) do
+    dataset
+    |> get_in([:technical, :extractSteps])
+    |> hd()
+    |> Map.get(:id)
   end
 end

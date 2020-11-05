@@ -459,13 +459,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       })
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
+    extract_step_id = get_extract_step_id(dataset, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     form_data = %{"body" => "[{\"bob\": 1}]", "action" => "POST"}
 
-    html = render_change(extract_steps_form_view, :validate, %{"form_data" => form_data})
+    html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => form_data})
 
     assert get_text(html, "#body-error-msg") == ""
   end
