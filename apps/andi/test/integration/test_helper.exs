@@ -1,2 +1,2 @@
-# Divo.Suite.start()
+Divo.Suite.start()
 ExUnit.start()

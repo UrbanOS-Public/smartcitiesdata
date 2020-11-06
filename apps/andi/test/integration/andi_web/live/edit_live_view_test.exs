@@ -480,7 +480,6 @@ defmodule AndiWeb.EditLiveViewTest do
       smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")

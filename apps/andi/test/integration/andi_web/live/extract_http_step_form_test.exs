@@ -227,11 +227,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       form_data = %{"queryParams" => queryParams, "url" => initialSourceUrl}
 
-      html =
-        render_change([extract_steps_form_view, "#step-#{extract_step_id}"], :validate, %{
-          "form_data" => form_data,
-          "_target" => ["form_data", "queryParams"]
-        })
+      render_change([extract_steps_form_view, "#step-#{extract_step_id}"], :validate, %{
+        "form_data" => form_data,
+        "_target" => ["form_data", "queryParams"]
+      })
 
       eventually(fn ->
         html = render([extract_steps_form_view, "#step-#{extract_step_id}"])

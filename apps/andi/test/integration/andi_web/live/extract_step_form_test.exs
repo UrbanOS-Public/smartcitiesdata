@@ -135,7 +135,11 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
-  test "pressing the down arrow on an extract step moves it down the list of extract steps", %{view: view, andi_dataset: dataset, html: html} do
+  test "pressing the down arrow on an extract step moves it down the list of extract steps", %{
+    view: view,
+    andi_dataset: dataset,
+    html: html
+  } do
     extract_step_id = get_extract_step_id(dataset, 0)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
     original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()

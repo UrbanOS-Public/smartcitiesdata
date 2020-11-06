@@ -48,13 +48,13 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
               </div>
 
               <div class="extract-date-step-form__deltaTimeUnit">
-                <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label label--required") %>
+                <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label") %>
                 <%= select(f, :deltaTimeUnit, get_time_units(), id: "date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
                 <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
               </div>
 
               <div class="extract-date-step-form__deltaTimeValue">
-                <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label label--required") %>
+                <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label") %>
                 <%= text_input(f, :deltaTimeValue, id: "date_delta_time_value", class: "extract-date-step-form__delta_time_value input", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
                 <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
               </div>

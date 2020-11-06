@@ -223,13 +223,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       |> ExtractStepHelpers.move_element(extract_step_index, target_index)
       |> Enum.with_index()
       |> Enum.map(fn {extract_step, index} ->
-      {:ok, updated_step} = ExtractSteps.update(extract_step, %{sequence: index})
-      updated_step
-    end)
+        {:ok, updated_step} = ExtractSteps.update(extract_step, %{sequence: index})
+        updated_step
+      end)
 
     {:noreply, assign(socket, extract_steps: updated_extract_steps)}
   end
-
 
   defp save_step_changesets(extract_step_changesets) do
     Enum.each(extract_step_changesets, fn {id, changeset} ->

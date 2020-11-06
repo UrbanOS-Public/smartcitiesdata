@@ -5,12 +5,8 @@ defmodule AndiWeb.SubmitLiveView do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.Services.DatasetStore
 
-  import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
   require Logger
-
-  @instance_name Andi.instance_name()
 
   def render(assigns) do
     ~L"""
@@ -19,8 +15,6 @@ defmodule AndiWeb.SubmitLiveView do
       <div class="preamble">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vulputate fermentum felis eu consequat. Suspendisse porta ligula non urna accumsan interdum. Praesent venenatis egestas leo eget cursus. Vivamus metus ipsum, blandit eu congue ut, elementum id mi. Suspendisse quis eros non elit egestas egestas. Aenean ac ipsum nisi. Nam luctus libero ac eros mollis, ut tristique nulla convallis. Integer maximus, est quis porttitor tristique, elit libero suscipit libero, ut aliquam magna leo at ipsum. Cras a quam nec massa faucibus euismod sed et eros. Ut scelerisque lobortis dui eu vulputate. Suspendisse venenatis augue eleifend dui auctor tristique. Nulla nec mattis nisl, sed vehicula risus.</div
 
       <%= f = form_for @changeset, "" %>
-        <% [business] = inputs_for(f, :business) %>
-        <% [technical] = inputs_for(f, :technical) %>
         <%= hidden_input(f, :id) %>
 
         <div class="metadata-form-component">
