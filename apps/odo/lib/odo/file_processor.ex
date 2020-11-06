@@ -4,6 +4,8 @@ defmodule Odo.FileProcessor do
   to another, uploads the new file to the cloud object store, and
   updates the data pipeline to be aware that the new file type is available.
   """
+  use Properties, otp_app: :odo
+
   require Logger
   import SmartCity.Event, only: [file_ingest_start: 0, file_ingest_end: 0, error_file_ingest: 0]
   use Retry
@@ -11,6 +13,9 @@ defmodule Odo.FileProcessor do
   alias SmartCity.{Helpers, HostedFile}
 
   @instance_name Odo.instance_name()
+
+  getter(:retry_delay, generic: true)
+  getter(:retry_backoff, generic: true)
 
   def process(%Odo.ConversionMap{
         bucket: bucket,
@@ -109,7 +114,4 @@ defmodule Odo.FileProcessor do
     File.Error ->
       Logger.warn("File removal failed")
   end
-
-  defp retry_delay(), do: Application.get_env(:odo, :retry_delay)
-  defp retry_backoff(), do: Application.get_env(:odo, :retry_backoff)
 end
