@@ -1,11 +1,14 @@
 defmodule Reaper.MigrationsTest do
   use ExUnit.Case
   use Divo, auto_start: false
+  use Properties, otp_app: :reaper
 
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
 
   @instance_name Reaper.instance_name()
+
+  getter(:brook, generic: true)
 
   describe "quantum job migration" do
     @tag :capture_log
@@ -55,7 +58,7 @@ defmodule Reaper.MigrationsTest do
 
       {:ok, brook} =
         Brook.start_link(
-          Application.get_env(:reaper, :brook)
+          brook()
           |> Keyword.delete(:driver)
           |> Keyword.put(:instance, @instance_name)
         )

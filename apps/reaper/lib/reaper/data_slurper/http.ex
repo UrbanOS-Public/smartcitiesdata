@@ -2,10 +2,14 @@ defmodule Reaper.DataSlurper.Http do
   @moduledoc """
   Downloads http/https files as stream to local filesystem
   """
+  use Properties, otp_app: :reaper
+
   @behaviour Reaper.DataSlurper
   alias Reaper.DataSlurper
   alias Reaper.Http.Downloader
   require Logger
+
+  getter(:http_download_timeout, generic: true, default: 7_200_000)
 
   defmodule HttpDownloadTimeoutError do
     defexception [:message]
@@ -32,18 +36,14 @@ defmodule Reaper.DataSlurper.Http do
 
   defp download(dataset_id, url, filename, headers, protocol, action, body) do
     Task.async(fn -> Downloader.download(url, headers, to: filename, protocol: protocol, action: action, body: body) end)
-    |> Task.await(download_timeout())
+    |> Task.await(http_download_timeout())
   catch
     :exit, {:timeout, _} ->
-      message = "Timed out downloading dataset #{dataset_id} at #{url} in #{download_timeout()} ms"
+      message = "Timed out downloading dataset #{dataset_id} at #{url} in #{http_download_timeout()} ms"
 
       raise HttpDownloadTimeoutError, message
 
     :exit, error ->
       reraise error, __STACKTRACE__
-  end
-
-  defp download_timeout do
-    Application.get_env(:reaper, :http_download_timeout, 7_200_000)
   end
 end

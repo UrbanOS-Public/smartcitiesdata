@@ -2,6 +2,7 @@ defmodule Reaper.DataSlurper do
   @moduledoc """
   Downloads data to the file system from various sources
   """
+  use Properties, otp_app: :reaper
 
   @type url :: String.t()
   @type dataset_id :: String.t()
@@ -18,6 +19,8 @@ defmodule Reaper.DataSlurper do
     Reaper.DataSlurper.S3
   ]
 
+  getter(:download_dir, generic: true, default: "")
+
   def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
     @implementations
     |> Enum.find(&handle?(&1, url))
@@ -25,7 +28,7 @@ defmodule Reaper.DataSlurper do
   end
 
   def determine_filename(dataset_id) do
-    Application.get_env(:reaper, :download_dir, "") <> dataset_id
+    download_dir() <> dataset_id
   end
 
   defp handle?(implementation, url) do
