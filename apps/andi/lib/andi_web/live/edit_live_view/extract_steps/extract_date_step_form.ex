@@ -29,6 +29,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
      )}
   end
 
+  #TODO do we want to  do this here
   def update(assigns, socket) do
     updated_assigns = Map.put_new(assigns, :example_output, get_example_output(assigns.changeset))
     {:ok, assign(socket, updated_assigns)}
@@ -177,8 +178,8 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
 
   defp get_example_output(changeset) do
     #TODO decide default values here?
-    delta_time_unit = Ecto.Changeset.get_field(changeset, :deltaTimeUnit, :days) |> String.to_atom()
-    delta_time_value = Ecto.Changeset.get_field(changeset, :deltaTimeValue, 0)
+    delta_time_unit = Ecto.Changeset.get_change(changeset, :deltaTimeUnit, "days") |> String.to_atom()
+    delta_time_value = Ecto.Changeset.get_change(changeset, :deltaTimeValue, 0)
     format = Ecto.Changeset.get_field(changeset, :format)
 
     Timex.now()

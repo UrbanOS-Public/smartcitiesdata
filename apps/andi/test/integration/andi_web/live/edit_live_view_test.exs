@@ -500,6 +500,39 @@ defmodule AndiWeb.EditLiveViewTest do
         assert dataset_sent == nil
       end)
     end
+
+    test "published extract steps have assigns and variables", %{conn: conn} do
+      extract_steps = [
+        %{type: "http", context: %{action: "GET", url: "example2.com"}}
+      ]
+
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+      extract_step_id = get_extract_step_id(dataset, 0)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+      extract_step_view = find_child(view, "extract_step_form_editor")
+
+      extract_form_data = %{"type" => "http", "action" => "GET", "url" => "example.com/{{variable_name}}"}
+
+      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+
+        dataset_http_extract_step = get_in(dataset_sent, [:technical, :extractSteps]) |> hd()
+        assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
+        assert dataset_http_extract_step["assigns"] != nil
+      end, 500, 50)
+    end
   end
 
   describe "delete dataset" do

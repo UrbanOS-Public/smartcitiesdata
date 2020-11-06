@@ -222,7 +222,9 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn step ->
       step
       |> Map.delete(:id)
+      |> Map.delete(:technical_id)
       |> Map.update(:context, nil, &update_context/1)
+      |> Map.put(:assigns, %{})
     end)
   end
 
