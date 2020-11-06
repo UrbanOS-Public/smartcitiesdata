@@ -21,7 +21,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       get_value: 2,
       get_values: 2,
       get_select: 2,
-      get_select_first_option: 2,
       get_text: 2,
       find_elements: 2
     ]
@@ -37,7 +36,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   @url_path "/datasets/"
 
   describe "create new dataset" do
-    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
@@ -45,7 +44,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
     test "generate dataName from data title", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
-      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -74,7 +73,9 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
         30
       )
 
-      andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id) |> Datasets.update(%{owner_id: public_user.id})
+      smrt_dataset.id
+      |> Andi.InputSchemas.Datasets.get()
+      |> Datasets.update(%{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
       metadata_view = find_child(view, "metadata_form_editor")
@@ -117,7 +118,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   end
 
   describe "enter form data" do
-    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       [public_user: public_user]
     end
@@ -267,7 +268,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   end
 
   describe "edit form data" do
-    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       [public_user: public_user]
     end
@@ -379,7 +380,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   end
 
   describe "can not edit" do
-    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       [public_user: public_user]
     end
@@ -389,7 +390,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end, 300, 100)
       andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
-      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
 
       refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))

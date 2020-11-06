@@ -57,7 +57,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
                   },
                   protocol: ["http1"],
                   url: "example.com"
-                }
+                },
+                assigns: %{}
               }
             ]
           }

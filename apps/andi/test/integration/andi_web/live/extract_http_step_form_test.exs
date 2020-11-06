@@ -21,9 +21,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   alias Andi.Services.UrlTest
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
-  alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -91,7 +89,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         get_attributes(html, btn_class, "phx-value-id")
         |> hd()
 
-      html = render_click([extract_steps_form_view, "#step-#{extract_step_id}"], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      html =
+        render_click([extract_steps_form_view, "#step-#{extract_step_id}"], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
 
       [key_input] = html |> get_attributes(key_class, "class")
       refute btn_id =~ key_input
@@ -150,7 +149,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         |> Map.get(:url)
         |> Andi.URI.clear_query_params()
 
-      assert render(extract_steps_form_view) |> get_values(".extract-step-form__url input") == [url_with_no_query_params]
+      assert render(extract_steps_form_view) |> get_values(".extract-http-step-form__url input") == [url_with_no_query_params]
     end
   end
 
@@ -218,7 +217,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "url is updated when query params are added", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http"}]}})
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -234,7 +233,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
           "_target" => ["form_data", "queryParams"]
         })
 
-      assert get_values(html, ".extract-step-form__url input") == [updatedUrl]
+      eventually(fn ->
+        html = render([extract_steps_form_view, "#step-#{extract_step_id}"])
+        assert get_values(html, ".extract-http-step-form__url input") == [updatedUrl]
+      end)
 
       where([
         [:initialSourceUrl, :queryParams, :updatedUrl],

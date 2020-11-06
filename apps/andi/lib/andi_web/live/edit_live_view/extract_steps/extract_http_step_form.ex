@@ -7,24 +7,17 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractHeader
   alias Andi.InputSchemas.Datasets.ExtractQueryParam
-  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
-  alias Andi.InputSchemas.StructTools
   alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.Helpers.FormTools
 
   def mount(socket) do
-    AndiWeb.Endpoint.subscribe("toggle-visibility")
-    AndiWeb.Endpoint.subscribe("form-save")
-
     {:ok,
      assign(socket,
        testing: false,
@@ -172,13 +165,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, assign(socket, test_results: test_results)}
   end
 
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
-      ) do
-    save_draft(socket)
-  end
-
   def handle_info({_, {:test_results, results}}, socket) do
     send(self(), {:test_results, results})
     {:noreply, assign(socket, test_results: results, testing: false)}
@@ -195,24 +181,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
-  end
-
-  defp save_draft(socket) do
-    new_validation_status = get_new_validation_status(socket.assigns.changeset)
-    step_id = socket.assigns.extract_step.id
-
-    changes_to_save =
-      socket.assigns.changeset
-      |> InputConverter.form_changes_from_changeset()
-
-    Map.put(socket.assigns.extract_step, :context, changes_to_save)
-    |> ExtractSteps.update()
-
-    status_tuple = {step_id, new_validation_status}
-
-    send(socket.parent_pid, {:validation_status, status_tuple})
-
-    {:noreply, assign(socket, validation_status: status_tuple)}
   end
 
   defp remove_key_value(key_value_list, id) do
@@ -246,7 +214,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
   end
 
-  defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
   defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
 
   defp map_to_dropdown_options(options) do

@@ -9,17 +9,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
-
-  import FlokiHelpers,
-    only: [
-      get_attributes: 3,
-      get_value: 2,
-      get_values: 2,
-      get_select: 2,
-      get_select_first_option: 2,
-      get_text: 2,
-      find_elements: 2
-    ]
+  import FlokiHelpers, only: [find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets

@@ -9,10 +9,12 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
   alias AndiWeb.Views.DisplayNames
 
   def render(assigns) do
-    event_handler_target = case assigns[:target] do
-               nil -> "#url-form"
-               extract_target -> "##{extract_target}"
-             end
+    event_handler_target =
+      case assigns[:target] do
+        nil -> "#url-form"
+        extract_target -> "##{extract_target}"
+      end
+
     ~L"""
     <div id="<%= @id %>" class="url-form__<%= @css_label %> url-form-table">
       <div class="url-form-table__title"><%= DisplayNames.get(@field) %></div>

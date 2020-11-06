@@ -5,8 +5,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.Datasets.ExtractStep
-  alias Andi.InputSchemas.Datasets.ExtractQueryParam
-  alias Andi.InputSchemas.Datasets.ExtractHeader
 
   describe "body validation" do
     setup do

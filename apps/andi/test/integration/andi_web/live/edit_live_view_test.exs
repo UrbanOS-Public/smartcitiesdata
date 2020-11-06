@@ -473,32 +473,23 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "fails to publish if invalid extract steps are found", %{conn: conn} do
       extract_steps = [
-        %{type: "http", context: %{action: "GET", url: "example.com"}},
+        %{type: "http", context: %{action: "GET", url: ""}},
         %{type: "http", context: %{action: "GET", url: "example2.com"}}
       ]
 
       smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 1)
+      extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_child(view, "finalize_form_editor")
-      extract_step_view = find_child(view, "extract_step_form_editor")
-
-      extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
-
       assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent == nil
-      end)
+      assert {:ok, nil} == DatasetStore.get(smrt_dataset.id)
     end
 
     test "published extract steps have assigns and variables", %{conn: conn} do
@@ -524,14 +515,18 @@ defmodule AndiWeb.EditLiveViewTest do
 
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent != nil
+      eventually(
+        fn ->
+          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+          assert dataset_sent != nil
 
-        dataset_http_extract_step = get_in(dataset_sent, [:technical, :extractSteps]) |> hd()
-        assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
-        assert dataset_http_extract_step["assigns"] != nil
-      end, 500, 50)
+          dataset_http_extract_step = get_in(dataset_sent, [:technical, :extractSteps]) |> hd()
+          assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
+          assert dataset_http_extract_step["assigns"] != nil
+        end,
+        500,
+        50
+      )
     end
   end
 

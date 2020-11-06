@@ -12,7 +12,7 @@ defmodule Andi.Harvest.HarvesterTest do
   alias Andi.Harvest.Harvester
 
   import SmartCity.Event, only: [dataset_harvest_start: 0, dataset_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   @instance_name Andi.instance_name()
 
@@ -92,7 +92,7 @@ defmodule Andi.Harvest.HarvesterTest do
       end)
 
       {:ok, data_json} = Jason.decode(data_json)
-      datasets = Harvester.map_data_json_to_dataset(data_json, org)
+      Harvester.map_data_json_to_dataset(data_json, org)
 
       Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
 

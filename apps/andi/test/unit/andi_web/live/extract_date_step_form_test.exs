@@ -5,7 +5,7 @@ defmodule AndiWeb.ExtractDateFormTest do
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [find_elements: 2, get_text: 2, get_values: 2]
+  import FlokiHelpers, only: [find_elements: 2, get_text: 2]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"

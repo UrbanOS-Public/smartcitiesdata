@@ -3,20 +3,13 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   LiveComponent for an extract step with type HTTP
   """
   use Phoenix.LiveComponent
-  import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.InputSchemas.Datasets.ExtractDateStep
-  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
-  alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.ExtractDateSteps
-  alias Andi.InputSchemas.ExtractSteps
-  alias AndiWeb.Helpers.FormTools
 
   def mount(socket) do
     {:ok,
@@ -29,11 +22,11 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
      )}
   end
 
-  #TODO do we want to  do this here
-  def update(assigns, socket) do
-    updated_assigns = Map.put_new(assigns, :example_output, get_example_output(assigns.changeset))
-    {:ok, assign(socket, updated_assigns)}
-  end
+  # TODO do we want to  do this here
+  # def update(assigns, socket) do
+  #   updated_assigns = Map.put_new(assigns, :example_output, get_example_output(assigns.changeset))
+  #   {:ok, assign(socket, updated_assigns)}
+  # end
 
   def render(assigns) do
     ~L"""
@@ -105,13 +98,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     {:noreply, socket}
   end
 
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
-      ) do
-    save_draft(socket)
-  end
-
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
@@ -125,25 +111,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     {:noreply, socket}
   end
 
-  defp save_draft(socket) do
-    new_validation_status = get_new_validation_status(socket.assigns.changeset)
-
-    changes_to_save =
-      socket.assigns.changeset
-      |> InputConverter.form_changes_from_changeset()
-
-    Map.put(socket.assigns.extract_step, :context, changes_to_save)
-    |> ExtractSteps.update()
-
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_validation_status}})
-
-    {:noreply, assign(socket, validation_status: new_validation_status)}
-  end
-
   defp get_time_units(), do: map_to_dropdown_options(Options.time_units())
-
-  defp disabled?(true), do: "disabled"
-  defp disabled?(_), do: ""
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
@@ -170,14 +138,15 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     send(socket.parent_pid, :form_update)
     send(self(), {:step_update, socket.assigns.id, new_changeset})
 
+    # TODO
     updated_example_output = get_example_output(new_changeset)
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
+    {:noreply, assign(socket, changeset: new_changeset, example_output: updated_example_output) |> update_validation_status()}
   end
 
-  defp get_example_output(%{valid?: false} = changeset), do: nil
+  defp get_example_output(%{valid?: false}), do: nil
 
   defp get_example_output(changeset) do
-    #TODO decide default values here?
+    # TODO decide default values here?
     delta_time_unit = Ecto.Changeset.get_change(changeset, :deltaTimeUnit, "days") |> String.to_atom()
     delta_time_value = Ecto.Changeset.get_change(changeset, :deltaTimeValue, 0)
     format = Ecto.Changeset.get_field(changeset, :format)

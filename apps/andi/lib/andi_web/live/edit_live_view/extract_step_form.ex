@@ -3,30 +3,22 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   LiveComponent for editing dataset extract steps
   """
   use Phoenix.LiveView
-  import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractStep
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
-  alias Andi.InputSchemas.Datasets.ExtractDateStep
-  alias AndiWeb.EditLiveView.KeyValueEditor
-  alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
-  alias AndiWeb.Views.DisplayNames
-  alias Andi.InputSchemas.StructTools
-  alias AndiWeb.Views.HttpStatusDescriptions
   alias Andi.InputSchemas.ExtractSteps
-  alias AndiWeb.Helpers.FormTools
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
   alias Andi.InputSchemas.InputConverter
 
-  def mount(params, %{"dataset" => dataset}, socket) do
+  def mount(_, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
     extract_steps = get_in(dataset, [:technical, :extractSteps])
+
     extract_step_changesets =
       Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
         changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
@@ -162,9 +154,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_info(
-    %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-    %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
-  ) do
+        %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
+        %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
+      ) do
     save_step_changesets(extract_step_changesets)
     {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
@@ -187,12 +179,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_info(
         {:validation_status, {step_id, status}},
-        %{assigns: %{validation_status: old_status, validation_map: validation_map}} = socket
+        %{assigns: %{validation_map: validation_map}} = socket
       ) do
     new_map = Map.put(validation_map, step_id, status)
 
     new_status =
-      case Enum.any?(new_map, fn {id, status} -> status == "invalid" end) do
+      case Enum.any?(new_map, fn {_, status} -> status == "invalid" end) do
         false -> "valid"
         true -> "invalid"
       end
@@ -208,6 +200,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
   end
 
+  def handle_info(message, socket) do
+    Logger.debug(inspect(message))
+    {:noreply, socket}
+  end
+
   defp save_step_changesets(extract_step_changesets) do
     Enum.each(extract_step_changesets, fn {id, changeset} ->
       changes = InputConverter.form_changes_from_changeset(changeset)
@@ -219,37 +216,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     end)
   end
 
-
   defp render_extract_step_form(%{type: "http"}), do: ExtractHttpStepForm
 
   defp render_extract_step_form(%{type: "date"}), do: ExtractDateStepForm
-
-  def handle_info(message, socket) do
-    Logger.debug(inspect(message))
-    {:noreply, socket}
-  end
-
-  defp disabled?(true), do: "disabled"
-  defp disabled?(_), do: ""
-
-  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
-  defp status_class(%{status: _}), do: "test-status__code--bad"
-  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "shown")
-
-  defp status_tooltip(%{status: status}, modifier \\ "shown") do
-    assigns = %{
-      description: HttpStatusDescriptions.get(status),
-      modifier: modifier
-    }
-
-    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
-  end
-
-  defp key_values_to_keyword_list(form_data, field) do
-    form_data
-    |> Map.get(field, [])
-    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  end
 
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
 
@@ -265,16 +234,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
   defp get_new_validation_status(step_changesets) do
-    case Enum.any?(step_changesets, fn {id, changeset} -> not changeset.valid? end) do
+    case Enum.any?(step_changesets, fn {_, changeset} -> not changeset.valid? end) do
       true -> "invalid"
       false -> "valid"
     end
-  end
-
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 end
