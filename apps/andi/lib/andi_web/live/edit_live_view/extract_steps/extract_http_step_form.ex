@@ -162,12 +162,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     query_params = key_values_to_keyword_list(changes, :queryParams)
     headers = key_values_to_keyword_list(changes, :headers)
 
-    # TODO
-    # Task.async(fn ->
-    #   {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
-    # end)
     test_results = Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)
-    # {:noreply, assign(socket, testing: true)}
     {:noreply, assign(socket, test_results: test_results)}
   end
 

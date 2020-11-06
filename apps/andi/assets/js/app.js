@@ -38,8 +38,6 @@ Hooks.prettify = {
     }
 }
 
-
-
 Hooks.readFile = {
     mounted() {
         this.el.addEventListener("change", e => {

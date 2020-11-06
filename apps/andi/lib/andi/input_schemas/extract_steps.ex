@@ -14,7 +14,6 @@ defmodule Andi.InputSchemas.ExtractSteps do
 
   @default_key_value %{"key" => nil, "value" => nil}
 
-  # TODO test this
   def create(step_type, technical_id) do
     changes =
       %{type: step_type, context: %{}, technical_id: technical_id}
