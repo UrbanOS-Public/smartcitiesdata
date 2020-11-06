@@ -1,10 +1,11 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
+defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
   @moduledoc """
     LiveComponent for a nested data dictionary tree view
   """
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
+  alias AndiWeb.Views.Options
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Helpers.DataDictionaryHelpers
 
@@ -59,26 +60,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
           <%= textarea(@form, :description, id: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
-        </div>
-        <div class="data-dictionary-field-editor__pii">
-          <%= label(@form, :pii, "P.I.I.", class: "label") %>
-          <%= select(@form, :pii, DataDictionaryHelpers.get_pii_types(), id: id <> "_pii", class: "data-dictionary-field-editor__pii select") %>
-        </div>
-        <div class="data-dictionary-field-editor__masked">
-          <%= label(@form, :masked, "De-Identified", class: "label") %>
-          <%= select(@form, :masked, DataDictionaryHelpers.get_masked_types(), id: id <> "_masked", class: "data-dictionary-field-editor__masked select") %>
-        </div>
-        <div class="data-dictionary-field-editor__demographic">
-          <%= label(@form, :demographic, "Demographic Traits", class: "label") %>
-          <%= select(@form, :demographic, DataDictionaryHelpers.get_demographic_traits(), id: id <> "_demographic", class: "data-dictionary-field-editor__demographic select") %>
-        </div>
-        <div class="data-dictionary-field-editor__biased">
-          <%= label(@form, :biased, "Potentially Biased", class: "label") %>
-          <%= select(@form, :biased, DataDictionaryHelpers.get_biased_types(), id: id <> "_biased", class: "data-dictionary-field-editor__biased select") %>
-        </div>
-        <div class="data-dictionary-field-editor__rationale">
-          <%= label(@form, :rationale, "Rationale", class: "label") %>
-          <%= text_input(@form, :rationale, id: id <> "_rationale", class: "data-dictionary-field-editor__rationale input", "phx-debounce": "1000") %>
         </div>
       </div>
     """

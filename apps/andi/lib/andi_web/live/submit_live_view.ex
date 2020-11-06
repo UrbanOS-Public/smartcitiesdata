@@ -20,6 +20,10 @@ defmodule AndiWeb.SubmitLiveView do
         <div class="metadata-form-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
+
+        <div class="data-dictionary-form-component">
+          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
+        </div>
       </form>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>

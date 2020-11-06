@@ -1,14 +1,18 @@
 defmodule Forklift.DataWriter.Compaction do
   @moduledoc false
 
+  use Properties, otp_app: :forklift
+
   require Logger
   alias SmartCity.Dataset
 
   @behaviour Pipeline.Writer
-  @writer Application.get_env(:forklift, :table_writer)
 
   @impl Pipeline.Writer
   @spec init(dataset: Dataset.t()) :: :ok | {:error, term()}
+
+  getter(:table_writer, generic: true)
+
   def init(args) do
     config = parse_args(args)
     Logger.info("#{config.table} compaction started")
@@ -39,7 +43,7 @@ defmodule Forklift.DataWriter.Compaction do
     config = parse_args(args)
 
     try do
-      case @writer.compact(table: config.table) do
+      case table_writer().compact(table: config.table) do
         :ok ->
           Logger.info("#{config.table} compacted successfully")
 

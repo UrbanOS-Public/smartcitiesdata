@@ -9,15 +9,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.EditLiveView.DataDictionaryTree
   alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
+  alias AndiWeb.SubmitLiveView.DataDictionaryFieldEditor
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.Helpers.FormTools
   alias Ecto.Changeset
 
-  def mount(_, %{"dataset" => dataset}, socket) do
+  def mount(_, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -37,7 +39,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        technical_id: dataset.technical.id,
        overwrite_schema_visibility: "hidden",
        pending_changeset: nil,
-       loading_schema: false
+       loading_schema: false,
+       is_curator: is_curator
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -76,9 +79,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         <% f = Map.put(f, :errors, @changeset.errors) %>
 
           <div class="component-edit-section--<%= @visibility %>">
+
+            <%= if not @is_curator do %>
+              <div class="section-help">
+                <a href="<%= FormTools.documentation_root() %>/data-dictionary-help.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
+              </div>
+            <% end %>
             <div class="data-dictionary-form-edit-section form-grid">
 
-              <%= if @sourceFormat in ["text/csv", "application/json"] do %>
+              <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
                 <div class="data-dictionary-form__file-upload">
                   <div class="file-input-button--<%= loader_visibility %>">
                     <div class="file-input-button">
@@ -110,7 +119,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
               </div>
 
               <div class="data-dictionary-form__edit-section">
-                <%= live_component(@socket, DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                <%= if @is_curator do %>
+                  <%= live_component(@socket, AndiWeb.EditLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                <% else %>
+                  <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                <% end %>
               </div>
             </div>
 

@@ -9,6 +9,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,
@@ -152,6 +153,33 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 
       assert Enum.empty?(find_elements(html, "#data-dictionary-field-editor > .error-msg"))
+    end
+  end
+
+  describe "certain fields in the data dictionary editor are unavaliable for non curator users" do
+    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      [public_user: public_user]
+    end
+
+    data_test "PII, Rationale, Demographics, Bias fields are removed", %{public_conn: conn, public_user: public_user} do
+      blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
+
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".#{selector_name}"))
+
+      where([
+        [:selector_name],
+        ["data-dictionary-field-editor__pii"],
+        ["data-dictionary-field-editor__masked"],
+        ["data-dictionary-field-editor__demographic"],
+        ["data-dictionary-field-editor__biased"],
+        ["data-dictionary-field-editor__rationale"]
+      ])
     end
   end
 
