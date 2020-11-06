@@ -26,6 +26,40 @@
     color: green;
 }
 
+.extract-step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .edit-buttons {
+        width: 6rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .extract-step-header__up {
+        width: 24px;
+        height: 24px;
+        background-image: url('/images/keyboard_arrow_up.svg');
+        cursor: pointer;
+    }
+
+    .extract-step-header__down {
+        width: 24px;
+        height: 24px;
+        background-image: url('/images/keyboard_arrow_down.svg');
+        cursor: pointer;
+    }
+
+    .extract-step-header__remove {
+        width: 1.5rem;
+        height: 24px;
+        background-image: url('/images/delete_field.svg');
+        cursor: pointer;
+    }
+}
+
+
 @include area(extract-http-step-form, type);
 @include area(extract-http-step-form, method);
 @include area(extract-http-step-form, url);

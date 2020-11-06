@@ -4,6 +4,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  use Checkov
 
   @moduletag shared_data_connection: true
 
@@ -120,11 +121,70 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
+  test "pressing the up arrow on an extract step moves it up the list of extract steps", %{view: view, andi_dataset: dataset, html: html} do
+    extract_step_id = get_extract_step_id(dataset, 1)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+    expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
+
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "-1"})
+
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
+    end)
+  end
+
+  test "pressing the down arrow on an extract step moves it down the list of extract steps", %{view: view, andi_dataset: dataset, html: html} do
+    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+    expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
+
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "1"})
+
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
+    end)
+  end
+
+  data_test "attempting to move an extract step out of index bounds does nothing", %{view: view, andi_dataset: dataset, html: html} do
+    extract_step_id = get_extract_step_id(dataset, original_index)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string})
+
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == original_extract_ids_from_html
+    end)
+
+    where([
+      [:original_index, :move_index_string],
+      [0, "-1"],
+      [1, "1"]
+    ])
+  end
+
   defp get_extract_step_id(dataset, index) do
     dataset
     |> Andi.InputSchemas.StructTools.to_map()
     |> get_in([:technical, :extractSteps])
     |> Enum.at(index)
     |> Map.get(:id)
+  end
+
+  defp get_extract_step_ids_from_html(html_list) do
+    Enum.map(html_list, fn {_, attributes, _} ->
+      extract_step_html_id =
+        attributes
+        |> Map.new()
+        |> Map.get("id")
+
+      "step-" <> extract_step_id = extract_step_html_id
+      extract_step_id
+    end)
   end
 end

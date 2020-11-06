@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
   alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.Helpers.ExtractStepHelpers
 
   def mount(_, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
@@ -142,6 +143,17 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
   end
 
+  def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
+    move_index = String.to_integer(move_index_string)
+    extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
+    target_index = extract_step_index + move_index
+
+    case target_index >= 0 && target_index < Enum.count(socket.assigns.extract_steps) do
+      true -> move_extract_step(socket, extract_step_index, target_index)
+      false -> {:noreply, socket}
+    end
+  end
+
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
         %{assigns: %{dataset_id: dataset_id}} = socket
@@ -204,6 +216,20 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     Logger.debug(inspect(message))
     {:noreply, socket}
   end
+
+  defp move_extract_step(socket, extract_step_index, target_index) do
+    updated_extract_steps =
+      socket.assigns.extract_steps
+      |> ExtractStepHelpers.move_element(extract_step_index, target_index)
+      |> Enum.with_index()
+      |> Enum.map(fn {extract_step, index} ->
+      {:ok, updated_step} = ExtractSteps.update(extract_step, %{sequence: index})
+      updated_step
+    end)
+
+    {:noreply, assign(socket, extract_steps: updated_extract_steps)}
+  end
+
 
   defp save_step_changesets(extract_step_changesets) do
     Enum.each(extract_step_changesets, fn {id, changeset} ->

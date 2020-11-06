@@ -8,13 +8,14 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.StructTools
 
-  @cast_fields [:id, :context, :type, :technical_id]
+  @cast_fields [:id, :context, :type, :technical_id, :sequence]
   @required_fields [:type, :context]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "extract_step" do
     field(:type, :string)
     field(:context, :map)
+    field(:sequence, :integer, read_after_writes: true)
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
   end
 

@@ -30,10 +30,16 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   def render(assigns) do
     ~L"""
         <div id="step-<%= @id %>" class="extract-step-container extract-http-step-form">
-          <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-            <div class="extract-http-step-form__type">
-              <h3>HTTP</h3>
+          <div class="extract-step-header full-width">
+            <h3>HTTP</h3>
+            <div class="edit-buttons">
+            <div class="extract-step-header__up" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="-1"></div>
+            <div class="extract-step-header__down" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="1"></div>
+              <div class="extract-step-header__remove"></div>
             </div>
+          </div>
+
+          <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-http-step-form-edit-section form-grid">

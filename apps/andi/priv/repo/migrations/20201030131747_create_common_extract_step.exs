@@ -7,7 +7,9 @@ defmodule Andi.Repo.Migrations.CreateCommonExtractStep do
       add(:type, :string)
       add(:context, :map)
       add :technical_id, references(:technical, type: :uuid, on_delete: :delete_all)
+      add :sequence, :serial
     end
+    execute "select setval(pg_get_serial_sequence('extract_step', 'sequence'), 1)"
 
     drop table(:extract_http_queryParams)
     drop table(:extract_http_headers)
