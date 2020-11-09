@@ -32,6 +32,12 @@ Hooks.showSnackbar = {
     }
 }
 
+Hooks.prettify = {
+    mounted() {
+        this.el.value =  prettifyJsonString(this.el.value);
+    }
+}
+
 Hooks.readFile = {
     mounted() {
         this.el.addEventListener("change", e => {
@@ -67,6 +73,16 @@ Hooks.addTooltip = {
         });
     }
 }
+
+const prettifyJsonString = (str) => {
+    try {
+        var json = JSON.parse(str);
+        var json_string = JSON.stringify(json, undefined, 4);
+        return json_string;
+    } catch (error) {
+        return str;
+    }
+};
 
 const fileToText = (file) => new Promise((resolve, reject) => {
     var fileInput = file["type"] == "text/csv" ? file.slice(0, 1500) : file

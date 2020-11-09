@@ -9,6 +9,12 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
   alias AndiWeb.Views.DisplayNames
 
   def render(assigns) do
+    event_handler_target =
+      case assigns[:target] do
+        nil -> "#url-form"
+        extract_target -> "##{extract_target}"
+      end
+
     ~L"""
     <div id="<%= @id %>" class="url-form__<%= @css_label %> url-form-table">
       <div class="url-form-table__title"><%= DisplayNames.get(@field) %></div>
@@ -28,7 +34,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
             <%= text_input(f, :value, class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}") %>
           </td>
           <td class="url-form-table__cell url-form-table__cell--delete">
-            <div class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
+            <div class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target=<%= event_handler_target %> phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
               <img src="/images/remove.svg" alt="Remove"/>
             </div>
           </td>
@@ -36,7 +42,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
         <% end %>
       <% end %>
       </table>
-      <div class="url-form__<%= @css_label %>-add-btn url-form-table__btn" style="margin-top: 0.8em;" phx-click="add" phx-value-field="<%= @field %>">
+      <div class="url-form__<%= @css_label %>-add-btn url-form-table__btn" style="margin-top: 0.8em;" phx-click="add" phx-target="<%= event_handler_target %>" phx-value-field="<%= @field %>">
         <img src="/images/add.svg" alt="Add"/>
       </div>
       <%= error_tag(@form, @field, bind_to_input: false) %>

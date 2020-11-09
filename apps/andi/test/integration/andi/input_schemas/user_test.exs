@@ -16,8 +16,8 @@ defmodule Andi.Schemas.UserTest do
       user_two_id = Ecto.UUID.generate()
       user_two_subject_id = Ecto.UUID.generate()
 
-      user_one = User.create_or_update(user_one_subject_id, %{id: user_one_id, email: "test@test.com"})
-      user_two = User.create_or_update(user_two_subject_id, %{id: user_two_id, email: "foo@foo.com"})
+      User.create_or_update(user_one_subject_id, %{id: user_one_id, email: "test@test.com"})
+      User.create_or_update(user_two_subject_id, %{id: user_two_id, email: "foo@foo.com"})
 
       assert [%{subject_id: user_one_subject_id}, %{subject_id: user_two_subject_id}] = User.get_all()
     end

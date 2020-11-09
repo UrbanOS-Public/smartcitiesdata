@@ -1,4 +1,4 @@
-.extract-step-form-edit-section {
+.extract-http-step-form-edit-section {
     grid-template-areas:
         "type ."
         "method ."
@@ -8,16 +8,62 @@
         "body body"
         "test-section .";
 
-    .extract-step-form__body textarea{
+    .extract-http-step-form__body textarea{
         height: 8rem;
         font-family: 'Courier New', Courier, monospace;
     }
 }
 
-@include area(extract-step-form, type);
-@include area(extract-step-form, method);
-@include area(extract-step-form, url);
-@include area(extract-step-form, body);
+.extract-step-container {
+    padding-left: 2rem;
+}
+
+.add-step {
+    margin-bottom: 2rem;
+}
+
+.example-output {
+    color: green;
+}
+
+.extract-step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .edit-buttons {
+        width: 6rem;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .extract-step-header__up {
+        width: 24px;
+        height: 24px;
+        color: $color-text-link;
+        cursor: pointer;
+    }
+
+    .extract-step-header__down {
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        color: $color-text-link;
+    }
+
+    .extract-step-header__remove {
+        width: 1.5rem;
+        height: 24px;
+        background-image: url('/images/delete_field.svg');
+        cursor: pointer;
+    }
+}
+
+
+@include area(extract-http-step-form, type);
+@include area(extract-http-step-form, method);
+@include area(extract-http-step-form, url);
+@include area(extract-http-step-form, body);
 @include area(url-form, source-query-params);
 @include area(url-form, source-headers);
-@include area(extract-step-form, test-section);
+@include area(extract-http-step-form, test-section);

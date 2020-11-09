@@ -43,7 +43,6 @@ defmodule Andi.InputSchemas.InputConverterTest do
             extractSteps: [
               %{
                 type: "http",
-                assigns: %{},
                 context: %{
                   headers: %{"key" => "value"},
                   queryParams: %{"key" => "val"},
@@ -58,7 +57,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
                   },
                   protocol: ["http1"],
                   url: "example.com"
-                }
+                },
+                assigns: %{}
               }
             ]
           }
