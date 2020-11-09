@@ -2,6 +2,8 @@ defmodule Reaper.FileIngest.Processor do
   @moduledoc """
   Downloads files for hosted datasets from their source and stores them in an S3 bucket
   """
+  use Properties, otp_app: :reaper
+
   require Logger
   import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
@@ -14,6 +16,8 @@ defmodule Reaper.FileIngest.Processor do
   }
 
   @instance_name Reaper.instance_name()
+
+  getter(:hosted_file_bucket, generic: true)
 
   @doc """
   Process a hosted dataset
@@ -42,7 +46,7 @@ defmodule Reaper.FileIngest.Processor do
   defp upload({:file, path}, filename) do
     path
     |> S3.Upload.stream_file()
-    |> S3.upload(bucket_name(), filename)
+    |> S3.upload(hosted_file_bucket(), filename)
     |> ExAws.request()
   end
 
@@ -51,15 +55,13 @@ defmodule Reaper.FileIngest.Processor do
       HostedFile.new(%{
         dataset_id: dataset.id,
         mime_type: dataset.technical.sourceFormat,
-        bucket: bucket_name(),
+        bucket: hosted_file_bucket(),
         key: filename
       })
 
     Logger.debug(fn -> "#{__MODULE__} : Sending event to event stream : #{inspect(file_upload)}" end)
     Brook.Event.send(@instance_name, file_ingest_end(), :reaper, file_upload)
   end
-
-  defp bucket_name, do: Application.get_env(:reaper, :hosted_file_bucket)
 
   defp get_filename(%SmartCity.Dataset{
          technical: %{orgName: org_name, dataName: data_name, sourceFormat: source_format}

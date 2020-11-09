@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.24.5",
+      version: "0.24.6",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -63,6 +63,7 @@ defmodule Reaper.MixProject do
       {:mint, "~> 0.4"},
       {:nimble_csv, "~> 0.6.0"},
       {:observer_cli, "~> 1.5"},
+      {:properties, in_umbrella: true},
       {:plug_cowboy, "~> 2.1"},
       {:protobuf, "~> 0.6"},
       {:quantum, "~> 2.4"},

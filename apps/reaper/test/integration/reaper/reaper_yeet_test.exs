@@ -2,20 +2,23 @@ defmodule Reaper.YeetTest do
   use ExUnit.Case
   use Divo
   use Tesla
+  use Properties, otp_app: :reaper
+
   require Logger
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [dataset_update: 0]
 
   @dataset_id "12345-6789"
-  @endpoints Application.get_env(:reaper, :elsa_brokers)
-  @success_topic Application.get_env(:reaper, :output_topic_prefix) <> "-" <> @dataset_id
   @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
   @instance_name Reaper.instance_name()
 
   @invalid_json_file "includes_invalid.json"
 
   @moduletag capture_log: true
+
+  getter(:elsa_brokers, generic: true)
+  getter(:output_topic_prefix, generic: true)
 
   setup_all do
     bypass = Bypass.open()
@@ -50,7 +53,7 @@ defmodule Reaper.YeetTest do
   describe "invalid data" do
     test "send failed messages to the DLQ topic" do
       eventually(fn ->
-        messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+        messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, elsa_brokers())
 
         assert [%{app: "reaper", dataset_id: @dataset_id} | _] = messages
       end)
@@ -58,7 +61,9 @@ defmodule Reaper.YeetTest do
 
     test "no messages go on to the output topic" do
       eventually(fn ->
-        result = TestUtils.get_data_messages_from_kafka(@success_topic, @endpoints)
+        result =
+          (output_topic_prefix() <> "-" <> @dataset_id)
+          |> TestUtils.get_data_messages_from_kafka(elsa_brokers())
 
         assert result == []
       end)

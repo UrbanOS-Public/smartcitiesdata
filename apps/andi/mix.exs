@@ -71,6 +71,7 @@ defmodule Andi.MixProject do
       {:plug_cowboy, "~> 2.1"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
+      {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
       {:simply_validate, ">= 0.2.0"},

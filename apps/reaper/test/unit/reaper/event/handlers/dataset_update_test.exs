@@ -1,6 +1,8 @@
 defmodule Reaper.Event.Handlers.DatasetUpdateTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
+
   import Checkov
   import ExUnit.CaptureLog
 
@@ -12,8 +14,10 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
   @instance_name Reaper.instance_name()
 
+  getter(:brook, generic: true)
+
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
+    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
     {:ok, scheduler} = Reaper.Scheduler.start_link()
 
     on_exit(fn ->
