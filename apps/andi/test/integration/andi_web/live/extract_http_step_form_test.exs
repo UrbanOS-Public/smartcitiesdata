@@ -436,7 +436,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       [:field, :value, :error],
       ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
       ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
-      ["body", "this is invalid json", "Please enter a valid body."]
+      ["body", "this is invalid json", "Please enter valid JSON"]
     ])
   end
 
