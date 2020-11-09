@@ -1,8 +1,9 @@
 defmodule Reaper.RunTask do
   @moduledoc false
   use GenServer, restart: :transient
+  use Properties, otp_app: :reaper
 
-  @delay_on_failure Application.get_env(:reaper, :task_delay_on_failure, 10_000)
+  getter(:task_delay_on_failure, generic: true, default: 10_000)
 
   def start_link(args) do
     name = Keyword.fetch!(args, :name)
@@ -19,7 +20,9 @@ defmodule Reaper.RunTask do
     {:stop, :normal, state}
   rescue
     e ->
-      Process.sleep(@delay_on_failure)
+      task_delay_on_failure()
+      |> Process.sleep()
+
       {:stop, e, state}
   end
 

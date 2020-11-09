@@ -2,16 +2,15 @@ defmodule Estuary.Datasets.DatasetSchema do
   @moduledoc """
   The schema information that estuary persists and references for a given dataset
   """
+  use Properties, otp_app: :estuary
+
+  getter(:table_name, generic: true)
 
   def table_schema() do
     [
       table: table_name(),
       schema: schema()
     ]
-  end
-
-  def table_name() do
-    Application.get_env(:estuary, :table_name)
   end
 
   def schema() do

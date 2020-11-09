@@ -3,6 +3,7 @@ defmodule Andi.DatasetControllerTest do
 
   use Andi.DataCase
   use Tesla
+  use Properties, otp_app: :andi
 
   @moduletag shared_data_connection: true
 
@@ -13,7 +14,7 @@ defmodule Andi.DatasetControllerTest do
   alias Andi.InputSchemas.Datasets
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
-  @kafka_broker Application.get_env(:andi, :kafka_broker)
+  getter(:kafka_broker, generic: true)
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
@@ -29,7 +30,7 @@ defmodule Andi.DatasetControllerTest do
 
       eventually(fn ->
         values =
-          Elsa.Fetch.fetch(@kafka_broker, "event-stream")
+          Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
             message.key == dataset_disable() && String.contains?(message.value, dataset.id)
@@ -54,7 +55,7 @@ defmodule Andi.DatasetControllerTest do
 
       eventually(fn ->
         values =
-          Elsa.Fetch.fetch(@kafka_broker, "event-stream")
+          Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
             message.key == dataset_delete() && String.contains?(message.value, dataset.id)
@@ -150,7 +151,7 @@ defmodule Andi.DatasetControllerTest do
 
       eventually(fn ->
         values =
-          Elsa.Fetch.fetch(@kafka_broker, "event-stream")
+          Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.map(fn message ->
             {:ok, brook_message} = Brook.Deserializer.deserialize(message.value)

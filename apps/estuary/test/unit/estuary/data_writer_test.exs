@@ -1,10 +1,14 @@
 defmodule Estuary.DataWriterTest do
   use ExUnit.Case
+  use Properties, otp_app: :estuary
+
   import Mox
 
   alias Estuary.Datasets.DatasetSchema
   alias Estuary.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
+
+  getter(:table_name, generic: true)
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -22,7 +26,6 @@ defmodule Estuary.DataWriterTest do
       :ok
     end)
 
-    table = DatasetSchema.table_name()
     schema = DatasetSchema.schema()
 
     event_a = %{
@@ -64,7 +67,7 @@ defmodule Estuary.DataWriterTest do
 
     expected = %{
       payload: payload,
-      table: table,
+      table: table_name(),
       schema: schema
     }
 
@@ -74,7 +77,7 @@ defmodule Estuary.DataWriterTest do
   @tag :capture_log
   test "should compact the table" do
     test = self()
-    table_name = Application.get_env(:estuary, :table_name)
+    table_name = table_name()
 
     stub(MockReader, :terminate, fn _ -> :ok end)
     stub(MockReader, :init, fn _ -> :ok end)
