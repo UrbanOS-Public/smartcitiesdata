@@ -1,12 +1,15 @@
 defmodule Odo.AngryCaseTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :odo
 
   import SmartCity.Event, only: [file_ingest_end: 0]
   alias SmartCity.HostedFile
   alias Odo.Support.TestEventHandler
 
   @instance_name Odo.instance_name()
+
+  getter(:working_dir, generic: true, default: :unset)
 
   test "Individual task failures do not stop others" do
     start_supervised!(TestEventHandler)
@@ -58,7 +61,7 @@ defmodule Odo.AngryCaseTest do
 
     allow(ExAws.request(any()), return: {:ok, :there})
 
-    old_path = Application.get_env(:odo, :working_dir, :unset)
+    old_path = working_dir()
 
     try do
       {:ok, dir_path} = Temp.mkdir(Temp.path())

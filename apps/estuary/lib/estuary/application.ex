@@ -1,6 +1,9 @@
 defmodule Estuary.Application do
   @moduledoc false
   use Application
+  use Properties, otp_app: :estuary
+
+  getter(:init_server, generic: true)
 
   def start(_type, _args) do
     [
@@ -20,7 +23,7 @@ defmodule Estuary.Application do
   end
 
   defp config_init_server(child) do
-    case Application.get_env(:estuary, :init_server) do
+    case init_server() do
       false -> child
       _ -> [{Estuary.InitServer, []} | child]
     end

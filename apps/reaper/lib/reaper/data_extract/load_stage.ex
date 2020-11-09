@@ -1,10 +1,16 @@
 defmodule Reaper.DataExtract.LoadStage do
   @moduledoc false
   use GenStage
+  use Properties, otp_app: :reaper
+
   require Logger
 
   alias SmartCity.Data
   alias Reaper.{Cache, Persistence}
+
+  getter(:batch_size_in_bytes, generic: true, default: 900_000)
+  getter(:output_topic_prefix, generic: true)
+  getter(:profiling_enabled, generic: true)
 
   def start_link(opts) do
     GenStage.start_link(__MODULE__, opts)
@@ -55,7 +61,7 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp fit_in_batch?(state, bytes) do
-    state.bytes + bytes <= batch_size()
+    state.bytes + bytes <= batch_size_in_bytes()
   end
 
   defp process_batch(%{batch: []}), do: nil
@@ -67,7 +73,7 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp send_to_kafka(%{dataset: dataset, batch: batch}) do
-    topic = "#{topic_prefix()}-#{dataset.id}"
+    topic = "#{output_topic_prefix()}-#{dataset.id}"
     :ok = Elsa.produce(:"#{topic}_producer", topic, Enum.reverse(batch), partition: 0)
   end
 
@@ -87,14 +93,6 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp cache_batch(_), do: nil
 
-  defp batch_size() do
-    Application.get_env(:reaper, :batch_size_in_bytes, 900_000)
-  end
-
-  defp topic_prefix() do
-    Application.get_env(:reaper, :output_topic_prefix)
-  end
-
   defp convert_to_data_message(payload, state) do
     data = %{
       dataset_id: state.dataset.id,
@@ -110,7 +108,7 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp add_timing(state) do
-    case Application.get_env(:reaper, :profiling_enabled) do
+    case profiling_enabled() do
       true ->
         start = format_date(state.start_time)
         stop = format_date(DateTime.utc_now())

@@ -3,10 +3,13 @@ defmodule Reaper.Migrations do
   Contains all migrations that run during bootup.
   """
   use GenServer, restart: :transient
+  use Properties, otp_app: :reaper
 
   require Logger
 
   @instance_name Reaper.instance_name()
+
+  getter(:brook, generic: true)
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
@@ -30,7 +33,7 @@ defmodule Reaper.Migrations do
 
   defp start_brook() do
     brook_config =
-      Application.get_env(:reaper, :brook)
+      brook()
       |> Keyword.put(:instance, @instance_name)
       |> Keyword.delete(:driver)
 

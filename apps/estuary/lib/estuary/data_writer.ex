@@ -2,6 +2,7 @@ defmodule Estuary.DataWriter do
   @moduledoc """
   Implementation of `Pipeline.Writer` for Estuary's edges.
   """
+  use Properties, otp_app: :estuary
 
   require Logger
 
@@ -10,7 +11,8 @@ defmodule Estuary.DataWriter do
 
   @behaviour Pipeline.Writer
 
-  @table_writer Application.get_env(:estuary, :table_writer)
+  getter(:table_writer, generic: true)
+  getter(:table_name, generic: true)
 
   @impl Pipeline.Writer
   @doc """
@@ -18,7 +20,7 @@ defmodule Estuary.DataWriter do
   Estuary's application environment.
   """
   def init(args) do
-    :ok = @table_writer.init(args)
+    :ok = table_writer().init(args)
   rescue
     e -> {:error, e, "Presto Error"}
   end
@@ -33,8 +35,8 @@ defmodule Estuary.DataWriter do
 
     case get_errors(payload) do
       [] ->
-        @table_writer.write(payload,
-          table: DatasetSchema.table_name(),
+        table_writer().write(payload,
+          table: table_name(),
           schema: DatasetSchema.schema()
         )
 
@@ -47,15 +49,15 @@ defmodule Estuary.DataWriter do
 
   @impl Pipeline.Writer
   def compact(_ \\ []) do
-    Logger.info("Beginning #{DatasetSchema.table_name()} compaction")
+    Logger.info("Beginning #{table_name()} compaction")
     DataReader.terminate()
-    @table_writer.compact(table: DatasetSchema.table_name())
+    table_writer().compact(table: table_name())
     DataReader.init()
-    Logger.info("Completed #{DatasetSchema.table_name()} compaction")
+    Logger.info("Completed #{table_name()} compaction")
     :ok
   rescue
     error ->
-      Logger.error("#{DatasetSchema.table_name()} failed to compact: #{inspect(error)}")
+      Logger.error("#{table_name()} failed to compact: #{inspect(error)}")
       {:error, error}
   end
 
