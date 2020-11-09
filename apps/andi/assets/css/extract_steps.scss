@@ -40,15 +40,15 @@
     .extract-step-header__up {
         width: 24px;
         height: 24px;
-        background-image: url('/images/keyboard_arrow_up.svg');
+        color: $color-text-link;
         cursor: pointer;
     }
 
     .extract-step-header__down {
         width: 24px;
         height: 24px;
-        background-image: url('/images/keyboard_arrow_down.svg');
         cursor: pointer;
+        color: $color-text-link;
     }
 
     .extract-step-header__remove {

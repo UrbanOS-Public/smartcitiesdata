@@ -20,20 +20,18 @@ defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(query_param, changes) do
-    changes_with_id = StructTools.ensure_id(query_param, changes)
-
-    common_changeset_operations(query_param, changes_with_id)
+    common_changeset_operations(query_param, changes)
     |> validate_required(@required_fields, message: "is required")
   end
 
   def changeset_for_draft(query_param, changes) do
-    changes_with_id = StructTools.ensure_id(query_param, changes)
-
-    common_changeset_operations(query_param, changes_with_id)
+    common_changeset_operations(query_param, changes)
   end
 
   defp common_changeset_operations(query_param, changes) do
-    cast(query_param, changes, @cast_fields, empty_values: [])
+    changes_with_id = StructTools.ensure_id(query_param, changes)
+
+    cast(query_param, changes_with_id, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct

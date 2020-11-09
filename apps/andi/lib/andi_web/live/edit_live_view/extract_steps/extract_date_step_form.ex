@@ -28,8 +28,8 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
         <div class="extract-step-header full-width">
           <h3>Date</h3>
           <div class="edit-buttons">
-            <div class="extract-step-header__up" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="-1"></div>
-            <div class="extract-step-header__down" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="1"></div>
+            <span class="extract-step-header__up material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="-1">keyboard_arrow_up</span>
+            <span class="extract-step-header__down material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="1">keyboard_arrow_down</span>
             <div class="extract-step-header__remove"></div>
           </div>
         </div>

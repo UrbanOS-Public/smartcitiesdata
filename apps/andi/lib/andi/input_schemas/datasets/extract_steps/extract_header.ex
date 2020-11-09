@@ -20,20 +20,18 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(header, changes) do
-    changes_with_id = StructTools.ensure_id(header, changes)
-
-    common_changeset_operations(header, changes_with_id)
+    common_changeset_operations(header, changes)
     |> validate_required(@required_fields, message: "is required")
   end
 
   def changeset_for_draft(header, changes) do
-    changes_with_id = StructTools.ensure_id(header, changes)
-
-    common_changeset_operations(header, changes_with_id)
+    common_changeset_operations(header, changes)
   end
 
   defp common_changeset_operations(header, changes) do
-    cast(header, changes, @cast_fields, empty_values: [])
+    changes_with_id = StructTools.ensure_id(header, changes)
+
+    cast(header, changes_with_id, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct
