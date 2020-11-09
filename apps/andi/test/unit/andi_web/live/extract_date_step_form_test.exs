@@ -61,7 +61,7 @@ defmodule AndiWeb.ExtractDateFormTest do
       assert error_text != ""
     end
 
-    test "displays example output when changeset is valid", %{conn: conn} do
+    test "displays example output with offsets when changeset is valid", %{conn: conn} do
       dataset = DatasetHelpers.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{}}]}})
 
       allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
@@ -71,6 +71,22 @@ defmodule AndiWeb.ExtractDateFormTest do
       extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
       form_data = %{"destination" => "dest", "deltaTimeValue" => 1, "deltaTimeUnit" => "days", "format" => "{YYYY}"}
+
+      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+
+      refute Enum.empty?(find_elements(html, ".example-output"))
+    end
+
+    test "displays example output when changeset is valid", %{conn: conn} do
+      dataset = DatasetHelpers.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{}}]}})
+
+      allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
+
+      extract_step_id = get_extract_step_id(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+      form_data = %{"destination" => "dest", "deltaTimeUnit" => "", "format" => "{YYYY}"}
 
       html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 

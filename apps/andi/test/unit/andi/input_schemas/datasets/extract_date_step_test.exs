@@ -35,6 +35,17 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
       assert changeset.errors[:deltaTimeValue] != nil
     end
 
+    test "accepts empty string as nil for deltaTimeValue" do
+      changes = %{
+        deltaTimeValue: ""
+      }
+
+      changeset = ExtractDateStep.changeset(changes)
+
+      assert changeset.errors[:deltaTimeValue] == nil
+      assert changeset.changes[:deltaTimeValue] == nil
+    end
+
     data_test "allowing \"#{time_unit}\" as deltaTimeUnit makes its validity #{invalid_time_unit?}" do
       changes = %{deltaTimeUnit: time_unit}
 

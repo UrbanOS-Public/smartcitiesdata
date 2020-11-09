@@ -137,6 +137,7 @@ defmodule AndiWeb.Views.Options do
 
   def time_units() do
     %{
+      "" => "",
       "years" => "Years",
       "weeks" => "Weeks",
       "months" => "Months",
