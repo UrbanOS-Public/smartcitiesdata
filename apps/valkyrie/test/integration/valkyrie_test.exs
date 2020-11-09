@@ -1,16 +1,19 @@
 defmodule ValkyrieTest do
   use ExUnit.Case
   use Divo
+  use Properties, otp_app: :valkyrie
+
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0]
   alias TelemetryEvent.Helper.TelemetryEventHelper
 
-  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
-  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
-  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
   @instance_name Valkyrie.instance_name()
+  @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
+
+  getter(:elsa_brokers, generic: true)
+  getter(:input_topic_prefix, generic: true)
+  getter(:output_topic_prefix, generic: true)
 
   setup_all do
     dataset =
@@ -54,20 +57,20 @@ defmodule ValkyrieTest do
       })
     ]
 
-    input_topic = "#{@input_topic_prefix}-#{dataset.id}"
-    output_topic = "#{@output_topic_prefix}-#{dataset.id}"
+    input_topic = "#{input_topic_prefix()}-#{dataset.id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
 
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
-    TestHelpers.wait_for_topic(@endpoints, input_topic)
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
-    TestHelpers.produce_messages(messages, input_topic, @endpoints)
+    TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
 
     {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message}}
   end
 
   test "valkyrie updates the operational struct", %{output_topic: output_topic} do
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, @endpoints)
+      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
 
       assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
     end
@@ -79,7 +82,7 @@ defmodule ValkyrieTest do
     invalid_message: invalid_message
   } do
     eventually fn ->
-      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
 
       assert messages -- [invalid_message] == output_messages
     end
@@ -91,7 +94,7 @@ defmodule ValkyrieTest do
     metrics_port = Application.get_env(:telemetry_event, :metrics_port)
 
     eventually fn ->
-      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, @endpoints)
+      messages = TestHelpers.get_dlq_messages_from_kafka(@dlq_topic, elsa_brokers())
 
       assert :ok =
                [

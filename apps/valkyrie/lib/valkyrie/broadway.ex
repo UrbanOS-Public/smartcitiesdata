@@ -4,6 +4,7 @@ defmodule Valkyrie.Broadway do
   """
   @producer_module Application.get_env(:valkyrie, :broadway_producer_module, OffBroadway.Kafka.Producer)
   use Broadway
+  use Properties, otp_app: :valkyrie
 
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_standardization_end: 0]
@@ -13,6 +14,12 @@ defmodule Valkyrie.Broadway do
 
   @instance_name Valkyrie.instance_name()
   @app_name "Valkyrie"
+
+  getter(:profiling_enabled, generic: true)
+  getter(:processor_stages, generic: true, default: 1)
+  getter(:batch_stages, generic: true, default: 1)
+  getter(:batch_size, generic: true, default: 1_000)
+  getter(:batch_timeout, generic: true, default: 2_000)
 
   def start_link(opts) do
     Broadway.start_link(__MODULE__, broadway_config(opts))
@@ -92,7 +99,7 @@ defmodule Valkyrie.Broadway do
   end
 
   defp add_timing(smart_city_data, start_time) do
-    case Application.get_env(:valkyrie, :profiling_enabled) do
+    case profiling_enabled() do
       true -> Data.add_timing(smart_city_data, create_timing(start_time))
       _ -> smart_city_data
     end
@@ -101,9 +108,4 @@ defmodule Valkyrie.Broadway do
   defp create_timing(start_time) do
     Data.Timing.new("valkyrie", "timing", start_time, Data.Timing.current_time())
   end
-
-  defp processor_stages(), do: Application.get_env(:valkyrie, :processor_stages, 1)
-  defp batch_stages(), do: Application.get_env(:valkyrie, :batch_stages, 1)
-  defp batch_size(), do: Application.get_env(:valkyrie, :batch_size, 1_000)
-  defp batch_timeout(), do: Application.get_env(:valkyrie, :batch_timeout, 2_000)
 end
