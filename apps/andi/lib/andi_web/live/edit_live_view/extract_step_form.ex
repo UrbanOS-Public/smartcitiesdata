@@ -31,7 +31,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        extract_steps: extract_steps,
        extract_step_changesets: extract_step_changesets,
        testing: false,
-       visibility: "expanded",
+       visibility: "collapsed",
        validation_status: "collapsed",
        validation_map: %{},
        dataset_id: dataset.id,
@@ -63,7 +63,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
-        <div class="form-section">
+        <div class="component-edit-section--<%= @visibility %> form-section">
           <div class="add-step">
             <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
             <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
@@ -94,7 +94,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status = get_new_validation_status(socket.assigns.changeset)
+    new_validation_status = get_new_validation_status(socket.assigns.extract_step_changesets)
 
     AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
       expand: next_component,
