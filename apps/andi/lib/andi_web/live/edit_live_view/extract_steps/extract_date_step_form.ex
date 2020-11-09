@@ -69,7 +69,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
               </div>
 
               <div class="extract-date-step-form__output">
-                <div class="label">Output</div>
+                <div class="label">Output <span class="label__subtext">All times are in UTC</span></div>
                 <%= if @example_output != nil do %>
                   <div class="example-output">
                     <%= @example_output %>
@@ -146,6 +146,13 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   defp get_example_output(%{valid?: false}), do: nil
+
+  defp get_example_output(%{changes: %{deltaTimeUnit: ""}} = changeset) do
+    format = Ecto.Changeset.get_field(changeset, :format)
+
+    Timex.now()
+    |> Timex.format!(format)
+  end
 
   defp get_example_output(changeset) do
     delta_time_unit = Ecto.Changeset.get_change(changeset, :deltaTimeUnit, "days") |> String.to_atom()

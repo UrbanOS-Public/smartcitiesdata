@@ -23,7 +23,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id = StructTools.ensure_id(extract_step, changes) |> scrub_time_value()
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
@@ -33,7 +33,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   end
 
   def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id = StructTools.ensure_id(extract_step, changes) |> scrub_time_value()
 
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
@@ -55,6 +55,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
 
   def preload(struct), do: struct
 
+  defp scrub_time_value(%{deltaTimeValue: ""} = changes), do: Map.put(changes, :deltaTimeValue, nil)
+  defp scrub_time_value(changes), do: changes
+
   defp validate_format(%{changes: %{format: format}} = changeset) do
     case Formatter.validate(format) do
       :ok ->
@@ -69,7 +72,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   end
 
   defp validate_format(changeset) do
-    put_change(changeset, :format, "{ISO:Extended}")
+    put_change(changeset, :format, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}")
   end
 
   defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset)
