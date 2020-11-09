@@ -3,6 +3,10 @@ defmodule Valkyrie.DatasetSupervisor do
   Supervisor for each dataset that supervises the elsa producer and broadway pipeline.
   """
   use Supervisor
+  use Properties, otp_app: :valkyrie
+
+  getter(:topic_subscriber_config, generic: true)
+  getter(:elsa_brokers, generic: true)
 
   def name(id), do: :"#{id}_supervisor"
 
@@ -53,7 +57,7 @@ defmodule Valkyrie.DatasetSupervisor do
   end
 
   defp elsa_producer(dataset, topic, producer) do
-    Supervisor.child_spec({Elsa.Supervisor, endpoints: endpoints(), connection: producer, producer: [topic: topic]},
+    Supervisor.child_spec({Elsa.Supervisor, endpoints: elsa_brokers(), connection: producer, producer: [topic: topic]},
       id: :"#{dataset.id}_elsa_producer"
     )
   end
@@ -67,17 +71,15 @@ defmodule Valkyrie.DatasetSupervisor do
       ],
       input: [
         connection: :"#{dataset.id}_elsa_consumer",
-        endpoints: endpoints(),
+        endpoints: elsa_brokers(),
         group_consumer: [
           group: "valkyrie-#{input_topic}",
           topics: [input_topic],
-          config: Application.get_env(:valkyrie, :topic_subscriber_config)
+          config: topic_subscriber_config()
         ]
       ]
     ]
 
     {Valkyrie.Broadway, config}
   end
-
-  defp endpoints(), do: Application.get_env(:valkyrie, :elsa_brokers)
 end
