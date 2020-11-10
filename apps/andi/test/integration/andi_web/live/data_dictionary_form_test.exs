@@ -3,6 +3,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
+  import Checkov
 
   @moduletag shared_data_connection: true
 
@@ -247,6 +248,26 @@ defmodule AndiWeb.DataDictionaryFormTest do
       html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    data_test "accepts common csv file type #{type}", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+
+      {:ok, _} = Datasets.update(dataset)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 10, "fileType" => type, "file" => csv_sample})
+
+      assert Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+
+      where([
+        [:type],
+        ["text/csv"],
+        ["application/vnd.ms-excel"]
+      ])
     end
 
     test "should throw error when empty csv file with `\n` is passed", %{conn: conn} do

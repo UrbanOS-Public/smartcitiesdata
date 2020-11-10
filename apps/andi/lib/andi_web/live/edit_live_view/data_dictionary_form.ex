@@ -161,7 +161,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, socket}
   end
 
-  def handle_event("file_upload", %{"fileType" => file_type}, socket) when file_type not in ["text/csv", "application/json"] do
+  def handle_event("file_upload", %{"fileType" => file_type}, socket)
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -179,7 +180,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
+  def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
+      when file_type in ["text/csv", "application/vnd.ms-excel"] do
     case validate_empty_csv(file) do
       {:ok, file} ->
         new_changeset =
