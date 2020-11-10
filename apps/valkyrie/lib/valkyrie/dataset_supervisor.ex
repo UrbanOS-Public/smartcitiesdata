@@ -12,10 +12,16 @@ defmodule Valkyrie.DatasetSupervisor do
 
   def ensure_started(start_options) do
     dataset = Keyword.fetch!(start_options, :dataset)
-    stop_dataset_supervisor(dataset.id)
 
-    {:ok, _pid} =
-      DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+    case Process.whereis(name(dataset.id)) do
+      nil ->
+        IO.inspect(dataset.id, label: "not started")
+        {:ok, _pid} =
+          DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
+      pid ->
+        IO.inspect(dataset.id, label: "already started")
+        {:ok, pid}
+    end
   end
 
   def ensure_stopped(dataset_id), do: stop_dataset_supervisor(dataset_id)
