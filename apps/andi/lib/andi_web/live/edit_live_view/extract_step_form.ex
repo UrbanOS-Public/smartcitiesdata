@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
 
   def mount(_, %{"dataset" => dataset}, socket) do
@@ -19,6 +20,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     AndiWeb.Endpoint.subscribe("form-save")
 
     extract_steps = get_in(dataset, [:technical, :extractSteps])
+    # technical = Map.get(dataset, :technical) |> StructTools.preload([:extractSteps])
+    # extract_steps = Map.get(technical, :extractSteps)
 
     extract_step_changesets =
       Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
@@ -237,6 +240,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       id
       |> ExtractSteps.get()
       |> Map.put(:context, changes)
+      |> IO.inspect(label: "changes")
       |> ExtractSteps.update()
     end)
   end
