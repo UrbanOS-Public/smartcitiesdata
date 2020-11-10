@@ -10,9 +10,5 @@ defmodule Andi.Repo.Migrations.CreateCommonExtractStep do
       add :sequence, :serial
     end
     execute "select setval(pg_get_serial_sequence('extract_step', 'sequence'), 1)"
-
-    drop table(:extract_http_queryParams)
-    drop table(:extract_http_headers)
-    drop table(:extract_http_step)
   end
 end
