@@ -20,8 +20,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     AndiWeb.Endpoint.subscribe("form-save")
 
     extract_steps = get_in(dataset, [:technical, :extractSteps])
-    # technical = Map.get(dataset, :technical) |> StructTools.preload([:extractSteps])
-    # extract_steps = Map.get(technical, :extractSteps)
 
     extract_step_changesets =
       Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
@@ -86,7 +84,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
               <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
-            <div class="edit-button-group__save-btn">
+            <div class="edit-button-group__save-btn" phx-hook="showSnackbar">
               <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
             </div>
@@ -120,11 +118,14 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
-
     save_step_changesets(extract_step_changesets)
 
-    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+
+    new_validation_status = get_new_validation_status(extract_step_changesets)
+    send(socket.parent_pid, {:update_save_message, new_validation_status})
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
   end
 
   def handle_event("update_new_step_type", %{"value" => value}, socket) do
@@ -240,7 +241,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
       id
       |> ExtractSteps.get()
       |> Map.put(:context, changes)
-      |> IO.inspect(label: "changes")
       |> ExtractSteps.update()
     end)
   end

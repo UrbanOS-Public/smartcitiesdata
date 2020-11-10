@@ -29,7 +29,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_time_unit()
-    |> validate_format()
+    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
+    |> validate_timex_format()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -58,7 +59,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   defp scrub_time_value(%{deltaTimeValue: ""} = changes), do: Map.put(changes, :deltaTimeValue, nil)
   defp scrub_time_value(changes), do: changes
 
-  defp validate_format(%{changes: %{format: format}} = changeset) do
+  defp validate_timex_format(%{changes: %{format: format}} = changeset) do
     case Formatter.validate(format) do
       :ok ->
         changeset
@@ -71,7 +72,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     end
   end
 
-  defp validate_format(changeset) do
+  defp validate_timex_format(changeset) do
     put_change(changeset, :format, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}")
   end
 

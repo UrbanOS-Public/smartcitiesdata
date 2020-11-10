@@ -58,7 +58,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     |> step_module.changeset_from_andi_step()
   end
 
-  def preload(struct), do: struct
+  def preload(struct), do: StructTools.preload(struct, [])
 
   defp validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date"] do
     changeset

@@ -30,7 +30,6 @@ defmodule Andi.InputSchemas.StructTools do
   def preload(nil, _fields), do: nil
 
   def preload(list, fields) when is_list(list) do
-    IO.inspect(fields, label: "whaaaaat")
     Enum.map(list, &preload(&1, fields)) |> sort_if_sequenced()
   end
 
@@ -46,11 +45,9 @@ defmodule Andi.InputSchemas.StructTools do
           {k, nil}
 
         {k, v} when is_list(v) ->
-          IO.inspect(k, label: "the list that were preloading")
           case k in fields do
             true ->
               [%v_type{} | _] = v
-              IO.inspect(v_type, label: "what are you")
               {k, v_type.preload(v)}
 
             false ->
@@ -75,11 +72,10 @@ defmodule Andi.InputSchemas.StructTools do
   end
 
   defp sort_if_sequenced([%{sequence: _sequence} | _] = list) do
-    IO.inspect(hd(list), label: "good")
     Enum.sort_by(list, &Map.get(&1, :sequence))
   end
 
-  defp sort_if_sequenced(list), do: list |> IO.inspect(label: "bad")
+  defp sort_if_sequenced(list), do: list
 
   def struct_to_map(struct) do
     waste_fields = [:__meta__]

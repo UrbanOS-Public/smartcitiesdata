@@ -69,5 +69,25 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
         ["lkdjfsldjgsl", true]
       ])
     end
+
+    data_test "destination \"#{destination}\" is #{if invalid?, do: "invalid", else: "valid"}" do
+      changes = %{destination: destination}
+
+      changeset = ExtractDateStep.changeset(changes)
+
+      assert Keyword.has_key?(changeset.errors, :destination) == invalid?
+
+      where([
+        [:destination, :invalid?],
+        ["a b c", true],
+        ["ab1c", true],
+        ["111", true],
+        ["a-b", true],
+        ["!@#$%^&*()", true],
+        ["abc", false],
+        ["aBc", false],
+        ["aB_c", false]
+      ])
+    end
   end
 end
