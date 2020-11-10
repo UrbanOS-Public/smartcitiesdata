@@ -89,5 +89,27 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
         ["aB_c", false]
       ])
     end
+
+    test "if deltaTimeUnit is set, then deltaTimeValue must be set" do
+      changes = %{deltaTimeUnit: "days", deltaTimeValue: nil}
+      changeset = ExtractDateStep.changeset(changes)
+
+      assert Keyword.has_key?(changeset.errors, :deltaTimeValue)
+    end
+
+    test "if deltaTimeValue is set, then deltaTimeUnit must be set" do
+      changes = %{deltaTimeValue: 1, deltaTimeUnit: ""}
+      changeset = ExtractDateStep.changeset(changes)
+
+      assert Keyword.has_key?(changeset.errors, :deltaTimeUnit)
+    end
+
+    test "does not add error if neither deltaTimeValue nor deltaTimeUnit are set" do
+      changes = %{deltaTimeValue: "", deltaTimeUnit: nil}
+      changeset = ExtractDateStep.changeset(changes)
+
+      refute Keyword.has_key?(changeset.errors, :deltaTimeUnit)
+      refute Keyword.has_key?(changeset.errors, :deltaTimeValue)
+    end
   end
 end
