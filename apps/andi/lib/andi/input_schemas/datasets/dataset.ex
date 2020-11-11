@@ -17,6 +17,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     field(:dlq_message, :map)
     field(:ingestedTime, :utc_datetime, default: nil)
     field(:version, :string)
+    field(:submission_status, Ecto.Enum, values: [:draft, :rejected, :submitted, :unsubmitted])
     belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)
@@ -25,7 +26,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime, :version, :dlq_message, :owner_id]
+  @cast_fields [:id, :ingestedTime, :version, :submission_status, :dlq_message, :owner_id]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 

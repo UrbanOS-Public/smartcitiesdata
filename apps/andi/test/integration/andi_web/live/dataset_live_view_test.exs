@@ -4,6 +4,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
 
+  import Checkov
+
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
@@ -66,19 +68,31 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "dataset status" do
-    test "is empty if the dataset has not been ingested", %{conn: conn} do
+    data_test "is #{inspect(submission_status)} if dataset has not been ingested", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
+
+      andi_dataset
+      |> Map.put(:submission_status, submission_status)
+      |> Datasets.update()
 
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert andi_dataset.dlq_message == nil
       table_row = get_dataset_table_row(html, dataset)
       {_, _, row_children} = table_row
-
       {_, _, status} = row_children |> List.first()
 
-      assert Enum.empty?(status)
+      status_modifier = Atom.to_string(submission_status)
+      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--#{status_modifier}"))
+
+      where([
+        [:submission_status],
+        [:draft],
+        [:rejected],
+        [:submitted],
+        [:unsubmitted]
+      ])
     end
 
     test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
