@@ -29,7 +29,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
     |> validate_time_unit()
-    |> validate_format()
+    |> validate_delta_change()
+    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
+    |> validate_timex_format()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -58,7 +60,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   defp scrub_time_value(%{deltaTimeValue: ""} = changes), do: Map.put(changes, :deltaTimeValue, nil)
   defp scrub_time_value(changes), do: changes
 
-  defp validate_format(%{changes: %{format: format}} = changeset) do
+  defp validate_timex_format(%{changes: %{format: format}} = changeset) do
     case Formatter.validate(format) do
       :ok ->
         changeset
@@ -71,7 +73,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
     end
   end
 
-  defp validate_format(changeset) do
+  defp validate_timex_format(changeset) do
     put_change(changeset, :format, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}")
   end
 
@@ -79,9 +81,25 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
        when unit in ["microseconds", "milliseconds", "seconds", "minutes", "hours", "days", "weeks", "months", "years", ""],
        do: changeset
 
-  defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset), do: add_error(changeset, :deltaTimeUnit, "invalid time unit")
+  defp validate_time_unit(%{changes: %{deltaTimeUnit: _unit}} = changeset), do: add_error(changeset, :deltaTimeUnit, "invalid time unit")
 
   defp validate_time_unit(changeset), do: changeset
+
+  defp validate_delta_change(%{changes: %{deltaTimeUnit: deltaTimeUnit}} = changeset) when deltaTimeUnit not in [nil, ""] do
+    case get_change(changeset, :deltaTimeValue) in [nil, ""] do
+      true -> add_error(changeset, :deltaTimeValue, "must be set when deltaTimeUnit is set")
+      false -> changeset
+    end
+  end
+
+  defp validate_delta_change(%{changes: %{deltaTimeValue: deltaTimeValue}} = changeset) when deltaTimeValue not in [nil, ""] do
+    case get_change(changeset, :deltaTimeUnit) in [nil, ""] do
+      true -> add_error(changeset, :deltaTimeUnit, "must be set when deltaTimeValue is set")
+      false -> changeset
+    end
+  end
+
+  defp validate_delta_change(changeset), do: changeset
 
   defp clear_field_errors(changset, field) do
     Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)

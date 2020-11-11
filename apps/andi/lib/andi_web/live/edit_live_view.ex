@@ -207,11 +207,7 @@ defmodule AndiWeb.EditLiveView do
       |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
 
-    success_message =
-      case new_changeset.valid? do
-        true -> "Saved successfully."
-        false -> "Saved successfully. You may need to fix errors before publishing."
-      end
+    success_message = save_message(new_changeset.valid?)
 
     {:noreply,
      assign(socket,
@@ -224,6 +220,12 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info({:update_save_message, status}, socket) do
+    message = save_message(status == "valid" && socket.assigns.changeset.valid?)
+
+    {:noreply, assign(socket, save_success: true, success_message: message)}
   end
 
   def handle_info(:cancel_edit, socket) do
@@ -254,4 +256,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
+
+  defp save_message(true = _valid?), do: "Saved successfully."
+  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 end
