@@ -6,6 +6,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   alias Timex.Format.DateTime.Formatter
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
+  alias AndiWeb.ExtractSteps.ExtractStepHeader
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   embedded_schema do

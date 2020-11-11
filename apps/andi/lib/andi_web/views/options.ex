@@ -131,7 +131,8 @@ defmodule AndiWeb.Views.Options do
     %{
       "" => "",
       "date" => "Date",
-      "http" => "HTTP"
+      "http" => "HTTP",
+      "secret" => "Secret"
     }
   end
 
