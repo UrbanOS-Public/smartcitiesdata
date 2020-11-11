@@ -4,18 +4,18 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   """
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
+  import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractDateStep
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.ExtractSteps.ExtractStepHeader
 
   def mount(socket) do
     {:ok,
      assign(socket,
-       testing: false,
-       test_results: nil,
        visibility: "expanded",
        validation_status: "collapsed",
        example_output: nil
@@ -25,14 +25,8 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   def render(assigns) do
     ~L"""
     <div id="step-<%= @id %>" class="extract-step-container extract-date-step-form">
-        <div class="extract-step-header full-width">
-          <h3>Date</h3>
-          <div class="edit-buttons">
-            <span class="extract-step-header__up material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="-1">keyboard_arrow_up</span>
-            <span class="extract-step-header__down material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="1">keyboard_arrow_down</span>
-            <div class="extract-step-header__remove"></div>
-          </div>
-        </div>
+
+        <%= live_component(@socket, ExtractStepHeader, step_name: "Date", step_id: @id) %>
 
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
           <%= hidden_input(f, :id) %>
@@ -85,10 +79,13 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> ExtractDateStep.changeset()
-    |> complete_validation(socket)
+    {updated_changeset, updated_socket} =
+      form_data
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> ExtractDateStep.changeset()
+      |> update_example_output(socket)
+
+    complete_validation(updated_changeset, updated_socket)
   end
 
   def handle_event("validate", _, socket) do
@@ -101,48 +98,10 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     {:noreply, assign(socket, example_output: get_example_output(socket.assigns.changeset))}
   end
 
-  # This handle_info takes care of all exceptions in a generic way.
-  # Expected errors should be handled in specific handlers.
-  # Flags should be reset here.
-  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
-    send(socket.parent_pid, :page_error)
-    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
-  end
-
-  def handle_info(message, socket) do
-    Logger.debug(inspect(message))
-    {:noreply, socket}
-  end
-
   defp get_time_units(), do: map_to_dropdown_options(Options.time_units())
 
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
-       when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    new_status = get_new_validation_status(socket.assigns.changeset)
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_status}})
-    assign(socket, validation_status: new_status)
-  end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
-
-  defp get_new_validation_status(changeset) do
-    case changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
-    end
-  end
-
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-    send(self(), {:step_update, socket.assigns.id, new_changeset})
-
-    updated_example_output = get_example_output(new_changeset)
-    {:noreply, assign(socket, changeset: new_changeset, example_output: updated_example_output) |> update_validation_status()}
+  defp update_example_output(changeset, socket) do
+    {changeset, assign(socket, example_output: get_example_output(changeset))}
   end
 
   defp get_example_output(%{valid?: false}), do: nil
