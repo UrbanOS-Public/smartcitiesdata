@@ -53,7 +53,8 @@ defmodule AndiWeb.Views.DisplayNames do
     type: "Type",
     url: "URL",
     week: "Week",
-    year: "Year"
+    year: "Year",
+    datasetLink: "Dataset Link"
   }
 
   def get(field_key) do

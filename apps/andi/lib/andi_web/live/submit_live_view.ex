@@ -30,6 +30,10 @@ defmodule AndiWeb.SubmitLiveView do
         <div class="data-dictionary-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
+
+        <div class="url-form-component">
+          <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
+        </div>
       </form>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
@@ -108,7 +112,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     new_changeset =
       andi_dataset
-      |> InputConverter.andi_dataset_to_full_ui_changeset()
+      |> InputConverter.andi_dataset_to_full_submission_ui_changeset()
       |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
 
