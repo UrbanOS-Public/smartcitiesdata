@@ -171,9 +171,34 @@ defmodule AndiWeb.DatasetLiveView do
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
-      "ingested_time" => dataset.ingestedTime,
-      "dlq_message" => dataset.dlq_message
+      "status" => status(dataset),
+      "ingested_time" => dataset.ingestedTime
     }
+  end
+
+  defp status(%{submission_status: :approved, ingestedTime: it} = dataset) when it != nil, do: ingest_status(dataset)
+  defp status(%{submission_status: nil}), do: nil
+  defp status(%{submission_status: status}), do: String.capitalize(Atom.to_string(status))
+
+  defp ingest_status(dataset) do
+    case has_recent_dlq_message?(dataset.dlq_message) do
+      true -> "Failure"
+      _ -> "Success"
+    end
+  end
+
+  defp has_recent_dlq_message?(nil), do: false
+
+  defp has_recent_dlq_message?(message) do
+    message_timestamp = message["timestamp"]
+    message_received_within?(message_timestamp, 7, :days)
+  end
+
+  defp message_received_within?(message_timestamp, length_of_time, interval) do
+    {:ok, message_datetime, _} = DateTime.from_iso8601(message_timestamp)
+    message_age = Timex.diff(DateTime.utc_now(), message_datetime, interval)
+
+    message_age <= length_of_time
   end
 
   def string_to_bool("true"), do: true

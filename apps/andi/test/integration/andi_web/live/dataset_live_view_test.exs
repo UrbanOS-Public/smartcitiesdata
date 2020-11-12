@@ -72,26 +72,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
 
-      andi_dataset
-      |> Map.put(:submission_status, submission_status)
-      |> Datasets.update()
+      Datasets.update_submission_status(dataset.id, submission_status)
 
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert andi_dataset.dlq_message == nil
       table_row = get_dataset_table_row(html, dataset)
-      {_, _, row_children} = table_row
-      {_, _, status} = row_children |> List.first()
 
       status_modifier = Atom.to_string(submission_status)
-      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--#{status_modifier}"))
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--#{status_modifier}"))
 
       where([
         [:submission_status],
-        [:draft],
+        [:approved],
         [:rejected],
         [:submitted],
-        [:unsubmitted]
+        [:draft]
       ])
     end
 
@@ -100,13 +96,14 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, andi_dataset} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
+      Datasets.update_submission_status(dataset.id, :approved)
 
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert andi_dataset.dlq_message == nil
       table_row = get_dataset_table_row(html, dataset)
 
-      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--success"))
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
     test "shows failure when there is a dlq message stored for a dataset", %{conn: conn} do
@@ -114,6 +111,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
+      Datasets.update_submission_status(dataset.id, :approved)
 
       dlq_time = DateTime.utc_now() |> Timex.shift(days: -3) |> DateTime.to_iso8601()
       dlq_message = %{"dataset_id" => dataset.id, "timestamp" => dlq_time}
@@ -131,7 +129,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 
-      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--failure"))
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--failure"))
     end
 
     test "shows success when the latest dlq meessage is older than seven days", %{conn: conn} do
@@ -139,6 +137,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
+      Datasets.update_submission_status(dataset.id, :approved)
 
       old_time = current_time |> Timex.shift(days: -8) |> DateTime.to_iso8601()
       dlq_message = %{"dataset_id" => dataset.id, "timestamp" => old_time}
@@ -151,7 +150,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 
-      refute Enum.empty?(Floki.find(table_row, ".datasets-table__ingested-cell--success"))
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
   end
 
