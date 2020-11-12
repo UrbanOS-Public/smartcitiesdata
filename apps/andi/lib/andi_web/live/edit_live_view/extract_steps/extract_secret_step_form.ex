@@ -12,12 +12,15 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ExtractSteps.ExtractStepHeader
   alias Andi.InputSchemas.Datasets.ExtractSecretStep
+  alias Phoenix.HTML.FormData
 
   def mount(socket) do
     {:ok,
      assign(socket,
        visibility: "expanded",
-       validation_status: "collapsed"
+       validation_status: "collapsed",
+       save_secret_message: "",
+       save_success: true
      )}
   end
 
@@ -39,17 +42,12 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
                 <%= ErrorHelpers.error_tag(f, :destination) %>
               </div>
 
-              <div class="extract-secret-step-form__name">
-                <%= label(f, :sub_key, DisplayNames.get(:sub_key), class: "label label--required") %>
-                <%= text_input(f, :sub_key, class: "extract-secret-step-form__name input", phx_target: "#step-#{@id}") %>
-                <%= ErrorHelpers.error_tag(f, :sub_key) %>
-              </div>
-
               <div class="extract-secret-step-form__value">
                 <%= label(f, :secret_value, DisplayNames.get(:secret_value), class: "label label--required") %>
                 <div class="secret_value_add">
                   <%= text_input(f, :secret_value, type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}", placeholder: "Secrets are not displayed after being saved") %>
-                  <button type="button" class="btn btn--action">Add</button>
+                  <button type="button" class="btn btn--action" phx-click="save_secret" <%= if !@changeset.valid?, do: "disabled" %> phx-target='<%="#step-#{@id}"%>' phx-value-secret=<%= FormData.input_value(nil, f, :secret_value) %>>Add</button>
+                  <span class="secret-status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
                 </div>
               </div>
             </div>
@@ -59,11 +57,12 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
     """
   end
 
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
+  def handle_event("validate", %{"form_data" => %{"destination" => destination} = form_data}, socket) do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.put(:sub_key, destination)
+    |> Map.put(:key, "#{socket.assigns.extract_step.id}___#{destination}")
     |> ExtractSecretStep.changeset()
-    |> IO.inspect()
     |> complete_validation(socket)
   end
 
@@ -72,4 +71,16 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
 
     {:noreply, socket}
   end
+
+  def handle_event("save_secret", %{"secret" => secret}, socket) do
+    key = socket.assigns.changeset.changes.sub_key
+    path = socket.assigns.changeset.changes.key
+    case Andi.SecretService.write(path, %{key => secret}) do
+      {:ok, _} -> {:noreply, assign(socket, save_success: true, save_secret_message: "Secret saved successfully!")}
+      {:error, _} -> {:noreply, assign(socket, save_success: false, save_secret_message: "Secret save failed, contact your system administrator.")}
+    end
+  end
+
+  defp save_success_class(true), do: "secret-save-success"
+  defp save_success_class(false), do: "secret-save-fail"
 end

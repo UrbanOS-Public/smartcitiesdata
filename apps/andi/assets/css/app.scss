@@ -51,6 +51,12 @@ body {
   &:active {
     background-color: lighten(black, 40%);
   }
+
+  &:disabled {
+    background-color: #7f7676;
+    border: none;
+    cursor: default;
+  }
 }
 
 .error-msg {

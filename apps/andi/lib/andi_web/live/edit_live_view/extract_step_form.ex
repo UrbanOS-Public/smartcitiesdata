@@ -38,8 +38,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        validation_map: %{},
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
-       new_step_type: "",
-       system_name: dataset.technical.systemName
+       new_step_type: ""
      )}
   end
 
@@ -141,7 +140,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_event("add-extract-step", _, socket) do
     step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    new_step_changes = %{type: step_type, context: %{}, technical_id: technical_id} |> initialize_context(socket)
+    new_step_changes = %{type: step_type, context: %{}, technical_id: technical_id}
 
     {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
@@ -224,13 +223,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     Logger.debug(inspect(message))
     {:noreply, socket}
   end
-
-  defp initialize_context(%{type: "secret"} = changes, socket) do
-    Map.put(changes, :context, %{key: socket.assigns.system_name})
-  end
-
-  defp initialize_context(changes, _), do: changes
-
 
   defp move_extract_step(socket, extract_step_index, target_index) do
     updated_extract_steps =
