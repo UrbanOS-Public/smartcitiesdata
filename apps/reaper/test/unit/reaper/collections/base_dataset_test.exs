@@ -1,6 +1,8 @@
 defmodule Reaper.Collections.BaseDatasetTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
+
   require Logger
 
   @instance_name Reaper.instance_name()
@@ -8,8 +10,10 @@ defmodule Reaper.Collections.BaseDatasetTest do
   alias Reaper.Collections.Extractions
   alias SmartCity.TestDataGenerator, as: TDG
 
+  getter(:brook, generic: true)
+
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
+    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
 
     Brook.Test.register(@instance_name)
 

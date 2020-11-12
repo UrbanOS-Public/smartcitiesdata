@@ -1,21 +1,24 @@
 defmodule Valkyrie.EndOfDataTest do
   use ExUnit.Case
   use Divo
+  use Properties, otp_app: :valkyrie
+
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0]
   import SmartCity.Data, only: [end_of_data: 0]
 
-  @endpoints Application.get_env(:valkyrie, :elsa_brokers)
-  @input_topic_prefix Application.get_env(:valkyrie, :input_topic_prefix)
-  @output_topic_prefix Application.get_env(:valkyrie, :output_topic_prefix)
   @instance_name Valkyrie.instance_name()
+
+  getter(:elsa_brokers, generic: true)
+  getter(:input_topic_prefix, generic: true)
+  getter(:output_topic_prefix, generic: true)
 
   test "Data is not processed after END_OF_DATA message" do
     dataset_id = Faker.UUID.v4()
 
-    input_topic = "#{@input_topic_prefix}-#{dataset_id}"
-    output_topic = "#{@output_topic_prefix}-#{dataset_id}"
+    input_topic = "#{input_topic_prefix()}-#{dataset_id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
 
     dataset =
       TDG.create_dataset(
@@ -40,24 +43,24 @@ defmodule Valkyrie.EndOfDataTest do
 
     Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
 
-    TestHelpers.wait_for_topic(@endpoints, input_topic)
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
-    TestHelpers.produce_message(data_message, input_topic, @endpoints)
-    Elsa.Producer.produce(@endpoints, input_topic, {"jerks", eod_message}, parition: 0)
+    TestHelpers.produce_message(data_message, input_topic, elsa_brokers())
+    Elsa.Producer.produce(elsa_brokers(), input_topic, {"jerks", eod_message}, parition: 0)
 
     Patiently.wait_for!(
       fn ->
-        data_standarization_end_event_fired("event-stream", @endpoints) &&
+        data_standarization_end_event_fired("event-stream", elsa_brokers()) &&
           dataset_supervisor_killed(dataset_id)
       end,
       dwell: 1000,
       max_tries: 20
     )
 
-    TestHelpers.produce_message(message_to_not_consume, input_topic, @endpoints)
+    TestHelpers.produce_message(message_to_not_consume, input_topic, elsa_brokers())
 
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka(output_topic, @endpoints)
+      messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
 
       assert messages == [data_message, eod_message]
     end

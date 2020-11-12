@@ -3,6 +3,8 @@ defmodule Reaper.FullTest do
   use Divo
   use Tesla
   use Placebo
+  use Properties, otp_app: :reaper
+
   import Checkov
 
   require Logger
@@ -22,9 +24,10 @@ defmodule Reaper.FullTest do
 
   alias Reaper.Collections.Extractions
 
-  @endpoints Application.get_env(:reaper, :elsa_brokers)
-  @brod_endpoints Enum.map(@endpoints, fn {host, port} -> {to_charlist(host), port} end)
-  @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
+  getter(:elsa_brokers, generic: true)
+  getter(:output_topic_prefix, generic: true)
+  getter(:hosted_file_bucket, generic: true)
+
   @instance_name Reaper.instance_name()
   @redix Reaper.Application.redis_client()
 
@@ -104,10 +107,10 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@pre_existing_dataset_id}"
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
         last_one = List.last(results)
 
         assert expected == last_one
@@ -160,11 +163,11 @@ defmodule Reaper.FullTest do
 
     @tag capture_log: true
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
-      topic = "#{@output_topic_prefix}-#{@partial_load_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@partial_load_dataset_id}"
 
       eventually(
         fn ->
-          result = :brod.resolve_offset(@brod_endpoints, topic, 0)
+          result = :brod.resolve_offset(brod_endpoints(), topic, 0)
           assert {:ok, 10_000} == result
         end,
         2_000,
@@ -176,7 +179,7 @@ defmodule Reaper.FullTest do
   describe "No pre-existing datasets" do
     test "configures and ingests a gtfs source", %{bypass: bypass} do
       dataset_id = "12345-6789"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       gtfs_dataset =
         TDG.create_dataset(%{
@@ -191,7 +194,7 @@ defmodule Reaper.FullTest do
       Brook.Event.send(@instance_name, dataset_update(), :reaper, gtfs_dataset)
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert [%{payload: %{"id" => "1004"}} | _] = results
       end)
@@ -199,7 +202,7 @@ defmodule Reaper.FullTest do
 
     test "configures and ingests a json source", %{bypass: bypass} do
       dataset_id = "23456-7891"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       json_dataset =
         TDG.create_dataset(%{
@@ -214,7 +217,7 @@ defmodule Reaper.FullTest do
       Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert [%{payload: %{"vehicle_id" => 51_127}} | _] = results
       end)
@@ -222,7 +225,7 @@ defmodule Reaper.FullTest do
 
     test "configures and ingests a json source using topLevelSelector", %{bypass: bypass} do
       dataset_id = "topLevelSelectorId"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       json_dataset =
         TDG.create_dataset(%{
@@ -238,7 +241,7 @@ defmodule Reaper.FullTest do
       Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert [%{payload: %{"name" => "Fred"}} | [%{payload: %{"name" => "Bob"}} | _]] = results
       end)
@@ -246,7 +249,7 @@ defmodule Reaper.FullTest do
 
     test "configures and ingests a csv source", %{bypass: bypass} do
       dataset_id = "34567-8912"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -263,7 +266,7 @@ defmodule Reaper.FullTest do
       Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert [%{payload: %{"name" => "Austin"}} | _] = results
         assert false == File.exists?(dataset_id)
@@ -290,7 +293,7 @@ defmodule Reaper.FullTest do
         expected = File.read!("test/support/#{@csv_file_name}")
 
         case ExAws.S3.get_object(
-               Application.get_env(:reaper, :hosted_file_bucket),
+               hosted_file_bucket(),
                "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.csv"
              )
              |> ExAws.request() do
@@ -303,7 +306,7 @@ defmodule Reaper.FullTest do
         end
       end)
 
-      {:ok, _, messages} = Elsa.fetch(@endpoints, "event-stream", partition: 0)
+      {:ok, _, messages} = Elsa.fetch(elsa_brokers(), "event-stream", partition: 0)
       assert Enum.any?(messages, fn %Elsa.Message{key: key} -> key == "file:ingest:end" end)
     end
   end
@@ -312,7 +315,7 @@ defmodule Reaper.FullTest do
     @tag timeout: 120_000
     test "cadence of once is only processed once", %{bypass: bypass} do
       dataset_id = "only-once"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -330,7 +333,7 @@ defmodule Reaper.FullTest do
 
       eventually(
         fn ->
-          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+          results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
           assert [%{payload: %{"name" => "Austin"}} | _] = results
         end,
@@ -352,7 +355,7 @@ defmodule Reaper.FullTest do
       allow Timex.now(), return: DateTime.from_naive!(~N[2018-01-01 13:26:08.003], "Etc/UTC")
 
       dataset_id = "only-once-extract-steps"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       csv_dataset =
         TDG.create_dataset(%{
@@ -394,7 +397,7 @@ defmodule Reaper.FullTest do
 
       eventually(
         fn ->
-          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+          results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
           assert [%{payload: %{"name" => "Austin"}} | _] = results
         end,
@@ -406,13 +409,11 @@ defmodule Reaper.FullTest do
     @tag timeout: 120_000
     test "cadence of once is only processed once, extract steps s3", %{bypass: bypass} do
       dataset_id = "only-once-extract-steps-s3"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
-
-      bucket = Application.get_env(:reaper, :hosted_file_bucket)
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       "./test/support/random_stuff.csv"
       |> ExAws.S3.Upload.stream_file()
-      |> ExAws.S3.upload(bucket, "fake_data")
+      |> ExAws.S3.upload(hosted_file_bucket(), "fake_data")
       |> ExAws.request!()
 
       csv_dataset =
@@ -425,7 +426,7 @@ defmodule Reaper.FullTest do
               %{
                 type: "s3",
                 context: %{
-                  url: "s3://#{bucket}/fake_data",
+                  url: "s3://#{hosted_file_bucket()}/fake_data",
                   headers: %{}
                 },
                 assigns: %{}
@@ -441,7 +442,7 @@ defmodule Reaper.FullTest do
 
       eventually(
         fn ->
-          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+          results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
           assert [%{payload: %{"col1" => "1", "col2" => "Austin", "col3" => "Spot"}} | _] = results
         end,
@@ -453,7 +454,7 @@ defmodule Reaper.FullTest do
     @tag timeout: 120_000
     test "cadence of once is only processed once, extract steps sftp", %{bypass: bypass} do
       dataset_id = "only-once-extract-steps-sftp"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
         return: {:ok, %{"username" => @sftp.user, "password" => @sftp.password}}
@@ -500,7 +501,7 @@ defmodule Reaper.FullTest do
 
       eventually(
         fn ->
-          results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+          results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
           assert [%{payload: %{"col1" => "1", "col2" => "Austin", "col3" => "Spot"}} | _] = results
         end,
         1_000,
@@ -512,7 +513,7 @@ defmodule Reaper.FullTest do
   describe "Schema Stage" do
     test "fills nested nils", %{bypass: bypass} do
       dataset_id = "alzenband"
-      topic = "#{@output_topic_prefix}-#{dataset_id}"
+      topic = "#{output_topic_prefix()}-#{dataset_id}"
 
       json_dataset =
         TDG.create_dataset(%{
@@ -541,7 +542,7 @@ defmodule Reaper.FullTest do
       Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert 3 == length(results)
 
@@ -592,10 +593,10 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{@output_topic_prefix}-#{@pre_existing_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@pre_existing_dataset_id}"
 
       eventually(fn ->
-        results = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
         last_one = List.last(results)
 
         assert expected == last_one
@@ -793,7 +794,7 @@ defmodule Reaper.FullTest do
 
   test "should delete the dataset and the view state when delete event is called" do
     dataset_id = Faker.UUID.v4()
-    output_topic = "#{@output_topic_prefix}-#{dataset_id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
 
     dataset =
       TDG.create_dataset(
@@ -809,7 +810,7 @@ defmodule Reaper.FullTest do
         assert nil != Reaper.Horde.Registry.lookup(dataset_id)
         assert nil != Reaper.Cache.Registry.lookup(dataset_id)
         assert dataset == Extractions.get_dataset!(dataset.id)
-        assert true == Elsa.Topic.exists?(@endpoints, output_topic)
+        assert true == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
       2_000,
       10
@@ -823,7 +824,7 @@ defmodule Reaper.FullTest do
         assert nil == Reaper.Horde.Registry.lookup(dataset_id)
         assert nil == Reaper.Cache.Registry.lookup(dataset_id)
         assert nil == Extractions.get_dataset!(dataset.id)
-        assert false == Elsa.Topic.exists?(@endpoints, output_topic)
+        assert false == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
       2_000,
       10
@@ -848,5 +849,10 @@ defmodule Reaper.FullTest do
       nil -> nil
       job -> job.name
     end
+  end
+
+  defp brod_endpoints() do
+    elsa_brokers()
+    |> Enum.map(fn {host, port} -> {to_charlist(host), port} end)
   end
 end

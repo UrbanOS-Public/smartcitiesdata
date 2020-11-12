@@ -82,7 +82,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
             <%= if not @is_curator do %>
               <div class="section-help">
-                <a href="<%= FormTools.documentation_root() %>/data-dictionary-help.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
+                <a href="<%= FormTools.documentation_root_value() %>/data-dictionary-help.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
               </div>
             <% end %>
             <div class="data-dictionary-form-edit-section form-grid">
@@ -136,7 +136,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
               <div class="edit-button-group__save-btn">
                 <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Next</a>
                 <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
-              </div>
+                </div>
             </div>
           </div>
         </form>
@@ -161,7 +161,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, socket}
   end
 
-  def handle_event("file_upload", %{"fileType" => file_type}, socket) when file_type not in ["text/csv", "application/json"] do
+  def handle_event("file_upload", %{"fileType" => file_type}, socket)
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -179,7 +180,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"file" => file, "fileType" => "text/csv"}, socket) do
+  def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
+      when file_type in ["text/csv", "application/vnd.ms-excel"] do
     case validate_empty_csv(file) do
       {:ok, file} ->
         new_changeset =

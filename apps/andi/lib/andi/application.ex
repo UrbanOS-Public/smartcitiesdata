@@ -2,10 +2,16 @@ defmodule Andi.Application do
   @moduledoc false
 
   use Application
+  use Properties, otp_app: :andi
 
   require Logger
 
   @instance_name Andi.instance_name()
+
+  getter(:brook, generic: true)
+  getter(:kafka_endpoints, generic: true)
+  getter(:dead_letter_topic, generic: true)
+  getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
     children =
@@ -13,7 +19,7 @@ defmodule Andi.Application do
         AndiWeb.Endpoint,
         ecto_repo(),
         guardian_db_sweeper(),
-        {Brook, Application.get_env(:andi, :brook)},
+        {Brook, brook()},
         Andi.DatasetCache,
         Andi.Migration.Migrations,
         Andi.Scheduler,
@@ -29,19 +35,19 @@ defmodule Andi.Application do
   end
 
   defp elsa() do
-    case Application.get_env(:andi, :kafka_endpoints) do
+    case kafka_endpoints() do
       nil ->
         []
 
       _ ->
         {Elsa.Supervisor,
-         endpoints: Application.get_env(:andi, :kafka_endpoints),
+         endpoints: kafka_endpoints(),
          name: :andi_elsa,
          connection: :andi_reader,
          group_consumer: [
            name: "andi_reader",
            group: "andi_reader_group",
-           topics: [Application.get_env(:andi, :dead_letter_topic)],
+           topics: [dead_letter_topic()],
            handler: Andi.MessageHandler,
            handler_init_args: [],
            config: [
@@ -67,7 +73,7 @@ defmodule Andi.Application do
   end
 
   def set_auth0_credentials() do
-    endpoint = Application.get_env(:andi, :secrets_endpoint)
+    endpoint = secrets_endpoint()
 
     if is_nil(endpoint) || String.length(endpoint) == 0 do
       Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")

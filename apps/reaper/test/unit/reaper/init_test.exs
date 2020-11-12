@@ -1,6 +1,7 @@
 defmodule Reaper.InitTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Reaper.Collections.{Extractions, FileIngestions}
@@ -8,10 +9,12 @@ defmodule Reaper.InitTest do
 
   @instance_name Reaper.instance_name()
 
+  getter(:brook, generic: true)
+
   setup do
     {:ok, horde_supervisor} = Horde.DynamicSupervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
+    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
 
     on_exit(fn ->
       kill(brook)

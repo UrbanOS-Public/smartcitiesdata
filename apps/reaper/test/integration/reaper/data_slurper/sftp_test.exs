@@ -2,15 +2,18 @@ defmodule Reaper.SftpExtractorTest do
   use ExUnit.Case
   use Divo
   use Placebo
+  use Properties, otp_app: :reaper
+
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
   import SmartCity.Event, only: [dataset_update: 0]
 
-  @endpoints Application.get_env(:reaper, :elsa_brokers)
-  @output_topic_prefix Application.get_env(:reaper, :output_topic_prefix)
   @host to_charlist(System.get_env("HOST"))
   @instance_name Reaper.instance_name()
   @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
+
+  getter(:elsa_brokers, generic: true)
+  getter(:output_topic_prefix, generic: true)
 
   setup do
     {:ok, conn} =
@@ -32,8 +35,8 @@ defmodule Reaper.SftpExtractorTest do
 
   test "reaps a json file from sftp" do
     dataset_id = "23456-7891"
-    topic = "#{@output_topic_prefix}-#{dataset_id}"
-    Elsa.create_topic(@endpoints, topic)
+    topic = "#{output_topic_prefix()}-#{dataset_id}"
+    Elsa.create_topic(elsa_brokers(), topic)
 
     allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
       return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
@@ -62,7 +65,7 @@ defmodule Reaper.SftpExtractorTest do
     }
 
     eventually(fn ->
-      result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+      result = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
       assert [%{payload: ^payload} | _] = result
     end)
@@ -70,8 +73,8 @@ defmodule Reaper.SftpExtractorTest do
 
   test "reaps a csv file from sftp" do
     dataset_id = "34567-8912"
-    topic = "#{@output_topic_prefix}-#{dataset_id}"
-    Elsa.create_topic(@endpoints, topic)
+    topic = "#{output_topic_prefix()}-#{dataset_id}"
+    Elsa.create_topic(elsa_brokers(), topic)
 
     allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
       return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
@@ -96,7 +99,7 @@ defmodule Reaper.SftpExtractorTest do
     payload = %{"sanctum" => "Bobbero", "datum" => "Alice"}
 
     eventually(fn ->
-      result = TestUtils.get_data_messages_from_kafka(topic, @endpoints)
+      result = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
       assert [%{payload: ^payload} | _] = result
     end)
   end

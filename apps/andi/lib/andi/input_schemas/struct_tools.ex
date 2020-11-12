@@ -102,6 +102,7 @@ defmodule Andi.InputSchemas.StructTools do
       changes
     else
       Map.put_new(changes, :id, Ecto.UUID.generate())
+      |> AtomicMap.convert(safe: false, underscore: false)
     end
   end
 end

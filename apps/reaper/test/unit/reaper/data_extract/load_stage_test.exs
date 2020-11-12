@@ -1,6 +1,7 @@
 defmodule Reaper.DataExtract.LoadStageTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
 
   alias Reaper.DataExtract.LoadStage
   alias Reaper.{Cache, Persistence}
@@ -11,6 +12,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
   @cache __MODULE__
 
   use TempEnv, reaper: [batch_size_in_bytes: 10 * @message_size, output_topic_prefix: "test"]
+
+  getter(:profiling_enabled, generic: true)
 
   setup do
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
@@ -146,7 +149,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
   end
 
   defp add_timing() do
-    case Application.get_env(:reaper, :profiling_enabled) do
+    case profiling_enabled() do
       true -> [%{app: "reaper", label: "Ingested", start_time: @iso_output, end_time: @iso_output}]
       _ -> []
     end

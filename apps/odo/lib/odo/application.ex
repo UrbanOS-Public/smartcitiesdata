@@ -3,14 +3,18 @@ defmodule Odo.Application do
 
   require Logger
   use Application
+  use Properties, otp_app: :odo
 
   @instance_name Odo.instance_name()
+
+  getter(:brook, generic: true)
+  getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
     children =
       [
         {Task.Supervisor, name: Odo.TaskSupervisor, max_restarts: 120, max_seconds: 60},
-        brook(),
+        brook_instance(),
         Odo.Init
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
@@ -22,16 +26,15 @@ defmodule Odo.Application do
     Supervisor.start_link(children, opts)
   end
 
-  defp brook() do
-    Application.get_env(:odo, :brook)
-    |> case do
+  defp brook_instance() do
+    case brook() do
       nil -> []
       config -> {Brook, Keyword.put(config, :instance, @instance_name)}
     end
   end
 
   defp fetch_and_set_hosted_file_credentials() do
-    endpoint = Application.get_env(:odo, :secrets_endpoint)
+    endpoint = secrets_endpoint()
 
     if is_nil(endpoint) || String.length(endpoint) == 0 do
       Logger.warn(

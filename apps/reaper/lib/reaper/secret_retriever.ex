@@ -2,9 +2,13 @@ defmodule Reaper.SecretRetriever do
   @moduledoc """
   Retrieves credentials for use in accessing restricted datasets.
   """
+  use Properties, otp_app: :reaper
+
   require Logger
 
   @root_path "secrets/smart_city/"
+
+  getter(:secrets_endpoint, generic: true)
 
   def retrieve_dataset_credentials(dataset_id) do
     retrieve("ingestion/#{dataset_id}")
@@ -39,13 +43,11 @@ defmodule Reaper.SecretRetriever do
     Vault.new(
       engine: Vault.Engine.KVV1,
       auth: Vault.Auth.Kubernetes,
-      host: get_secrets_endpoint(),
+      host: secrets_endpoint(),
       token_expires_at: set_login_ttl(20, :second)
     )
     |> Vault.auth(%{role: "reaper-role", jwt: token})
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
-
-  defp get_secrets_endpoint(), do: Application.get_env(:reaper, :secrets_endpoint)
 end

@@ -7,10 +7,9 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
-  schema "extract_http_headers" do
+  embedded_schema do
     field(:key, :string)
     field(:value, :string)
-    belongs_to(:extract_http_step, ExtractHttpStep, type: Ecto.UUID, foreign_key: :extract_http_step_id)
   end
 
   use Accessible
@@ -32,9 +31,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractHeader do
   defp common_changeset_operations(header, changes) do
     changes_with_id = StructTools.ensure_id(header, changes)
 
-    header
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> foreign_key_constraint(:extract_http_step_id)
+    cast(header, changes_with_id, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct

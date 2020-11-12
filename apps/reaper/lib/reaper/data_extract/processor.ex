@@ -2,6 +2,8 @@ defmodule Reaper.DataExtract.Processor do
   @moduledoc """
   This module processes a data source and sends its data to the output topic
   """
+  use Properties, otp_app: :reaper
+
   require Logger
 
   alias Reaper.{
@@ -21,6 +23,9 @@ defmodule Reaper.DataExtract.Processor do
   @doc """
   Downloads, decodes, and sends data to a topic
   """
+  getter(:elsa_brokers, generic: true)
+  getter(:output_topic_prefix, generic: true)
+
   @spec process(SmartCity.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
   def process(%SmartCity.Dataset{} = unprovisioned_dataset) do
     Process.flag(:trap_exit, true)
@@ -78,7 +83,7 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp validate_destination(dataset) do
-    topic = "#{topic_prefix()}-#{dataset.id}"
+    topic = "#{output_topic_prefix()}-#{dataset.id}"
     create_topic(topic)
     start_topic_producer(topic)
   end
@@ -107,9 +112,9 @@ defmodule Reaper.DataExtract.Processor do
 
   defp create_topic(topic) do
     retry with: exponential_backoff() |> randomize() |> cap(2_000) |> expiry(30_000), atoms: [false] do
-      Elsa.create_topic(endpoints(), topic)
+      Elsa.create_topic(elsa_brokers(), topic)
       Process.sleep(100)
-      Elsa.topic?(endpoints(), topic)
+      Elsa.topic?(elsa_brokers(), topic)
     after
       true -> true
     else
@@ -121,12 +126,8 @@ defmodule Reaper.DataExtract.Processor do
     connection_name = :"#{topic}_producer"
 
     {:ok, _pid} =
-      Elsa.Supervisor.start_link(connection: connection_name, endpoints: endpoints(), producer: [topic: topic])
+      Elsa.Supervisor.start_link(connection: connection_name, endpoints: elsa_brokers(), producer: [topic: topic])
 
     Elsa.Producer.ready?(connection_name)
   end
-
-  defp endpoints(), do: Application.get_env(:reaper, :elsa_brokers)
-
-  defp topic_prefix(), do: Application.get_env(:reaper, :output_topic_prefix)
 end

@@ -1,8 +1,12 @@
 defmodule AndiWeb.Helpers.FormTools do
   @moduledoc false
+  use Properties, otp_app: :andi
+
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.StructTools
   alias Andi.Services.OrgStore
+
+  getter(:documentation_root, generic: true)
 
   def adjust_source_url_for_query_params(form_data) do
     adjust_query_params(form_data, "sourceUrl", "sourceQueryParams")
@@ -109,7 +113,7 @@ defmodule AndiWeb.Helpers.FormTools do
     |> Map.update(:technical, %{}, &convert_form_technical/1)
   end
 
-  def documentation_root(), do: Application.get_env(:andi, :documentation_root)
+  def documentation_root_value(), do: documentation_root()
 
   defp convert_form_business(business) do
     business

@@ -6,6 +6,10 @@ defmodule Odo.ConversionMap do
   and the specific function to process the conversion.
   """
 
+  use Properties, otp_app: :odo
+
+  getter(:working_dir, generic: true)
+
   defstruct [:bucket, :original_key, :converted_key, :download_path, :converted_path, :conversion, :dataset_id]
   alias SmartCity.HostedFile
 
@@ -46,6 +50,4 @@ defmodule Odo.ConversionMap do
         {:error, "Unable to convert file; unsupported type"}
     end
   end
-
-  defp working_dir(), do: Application.get_env(:odo, :working_dir)
 end

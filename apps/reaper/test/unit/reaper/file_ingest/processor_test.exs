@@ -1,6 +1,7 @@
 defmodule Reaper.FileIngest.ProcessorTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
 
   alias Reaper.FileIngest.Processor
   alias SmartCity.HostedFile
@@ -10,12 +11,13 @@ defmodule Reaper.FileIngest.ProcessorTest do
   import Mox
 
   @dataset_id "12345"
-  @bucket Application.get_env(:reaper, :hosted_file_bucket)
   @instance_name Reaper.instance_name()
 
   @download_dir System.get_env("TMPDIR") || "/tmp/reaper/"
   @source_url "http://localhost/api/hosted"
   use TempEnv, reaper: [download_dir: @download_dir]
+
+  getter(:hosted_file_bucket, generic: true)
 
   setup do
     expect(ExAws.request(any()), return: {:ok, :done}, meck_options: [:passthrough])
@@ -60,7 +62,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
       expected_file_upload = %HostedFile{
         dataset_id: dataset.id,
         mime_type: "text/plain",
-        bucket: @bucket,
+        bucket: hosted_file_bucket(),
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
       }
 
@@ -104,7 +106,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
       expected_file_upload = %HostedFile{
         dataset_id: dataset.id,
         mime_type: "text/plain",
-        bucket: @bucket,
+        bucket: hosted_file_bucket(),
         key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
       }
 

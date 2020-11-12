@@ -3,40 +3,41 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   LiveComponent for editing dataset extract steps
   """
   use Phoenix.LiveView
-  import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
-  alias AndiWeb.EditLiveView.KeyValueEditor
-  alias AndiWeb.ErrorHelpers
+  alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.Views.Options
-  alias AndiWeb.Views.DisplayNames
+  alias Andi.InputSchemas.ExtractSteps
+  alias AndiWeb.ExtractSteps.ExtractDateStepForm
+  alias AndiWeb.ExtractSteps.ExtractHttpStepForm
+  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
-  alias AndiWeb.Views.HttpStatusDescriptions
-  alias Andi.InputSchemas.ExtractHttpSteps
-  alias AndiWeb.Helpers.FormTools
+  alias AndiWeb.Helpers.ExtractStepHelpers
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset =
-      dataset
-      |> get_in([:technical, :extractSteps])
-      |> Andi.InputSchemas.StructTools.to_map()
-      |> List.first()
-      |> ExtractHttpStep.changeset_from_andi_step(dataset.technical.id)
-
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
+    extract_steps = get_in(dataset, [:technical, :extractSteps])
+
+    extract_step_changesets =
+      Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
+        changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
+        Map.put(acc, extract_step.id, changeset)
+      end)
+
     {:ok,
      assign(socket,
-       changeset: new_changeset,
+       extract_steps: extract_steps,
+       extract_step_changesets: extract_step_changesets,
        testing: false,
-       test_results: nil,
        visibility: "collapsed",
        validation_status: "collapsed",
+       validation_map: %{},
        dataset_id: dataset.id,
-       technical_id: dataset.technical.id
+       technical_id: dataset.technical.id,
+       new_step_type: ""
      )}
   end
 
@@ -63,188 +64,38 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
+        <div class="component-edit-section--<%= @visibility %> form-section">
+          <div class="add-step">
+            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+            <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+          </div>
 
-        <div class="form-section">
-          <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
-            <%= hidden_input(f, :id) %>
-            <%= hidden_input(f, :type) %>
-            <%= hidden_input(f, :technical_id) %>
+          <%= for extract_step <- @extract_steps do %>
+            <% component_module_to_render = render_extract_step_form(extract_step) %>
+            <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
 
-            <div class="component-edit-section--<%= @visibility %>">
-              <div class="extract-step-form-edit-section form-grid">
-                <div class="extract-step-form__type">
-                  <%= label(f, :type, DisplayNames.get(:type), class: "label") %>
-                  <%= select(f, :type, get_extract_step_types(), id: "step_type", class: "extract-step-form__type select") %>
-                </div>
+            <hr>
+            <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
+          <% end %>
 
-                <div class="extract-step-form__method">
-                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :action, get_http_methods(), id: "http_method", class: "extract-step-form__method select") %>
-                  <%= ErrorHelpers.error_tag(f, :action) %>
-                </div>
-
-                <div class="extract-step-form__url">
-                  <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
-                  <%= text_input(f, :url, class: "input full-width", disabled: @testing) %>
-                  <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
-                </div>
-
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_queryParams, css_label: "source-query-params", form: f, field: :queryParams ) %>
-
-                <%= live_component(@socket, KeyValueEditor, id: :key_value_editor_headers, css_label: "source-headers", form: f, field: :headers ) %>
-
-                <%= if input_value(f, :action) == "POST" do %>
-                  <div class="extract-step-form__body">
-                    <%= label(f, :body, DisplayNames.get(:body), class: "label") %>
-                    <%= textarea(f, :body, class: "input full-width", disabled: @testing) %>
-                    <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
-                  </div>
-                <% end %>
-
-                <div class="extract-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" <%= disabled?(@testing) %>>Test</button>
-                  <%= if @test_results do %>
-                    <div class="test-status">
-                    Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
-                    <%= status_tooltip(@test_results) %>
-                    Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-
-              <div class="edit-button-group form-grid">
-                <div class="edit-button-group__cancel-btn">
-                  <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
-                  <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-                </div>
-
-                <div class="edit-button-group__save-btn">
-                  <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
-                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
-                </div>
-                </div>
+          <div class="edit-button-group form-grid">
+            <div class="edit-button-group__cancel-btn">
+              <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
+              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
-          </form>
+
+            <div class="edit-button-group__save-btn" phx-hook="showSnackbar">
+              <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
+              <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+            </div>
+          </div>
         </div>
       </div>
     """
   end
 
-  def handle_event("test_url", _, socket) do
-    changes = Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    url = Map.get(changes, :url) |> Andi.URI.clear_query_params()
-    query_params = key_values_to_keyword_list(changes, :queryParams)
-    headers = key_values_to_keyword_list(changes, :headers)
-
-    Task.async(fn ->
-      {:test_results, Andi.Services.UrlTest.test(url, query_params: query_params, headers: headers)}
-    end)
-
-    {:noreply, assign(socket, testing: true)}
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
-    form_data
-    |> FormTools.adjust_extract_query_params_for_url()
-    |> ExtractHttpStep.changeset_from_form_data()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
-    form_data
-    |> FormTools.adjust_extract_url_for_query_params()
-    |> ExtractHttpStep.changeset_from_form_data()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> ExtractHttpStep.changeset()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", _, socket) do
-    send(socket.parent_pid, :page_error)
-
-    {:noreply, socket}
-  end
-
-  def handle_event("add", %{"field" => "queryParams"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    ExtractHttpSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_query_param(current_step_id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("add", %{"field" => "headers"}, socket) do
-    current_changes =
-      socket.assigns.changeset
-      |> Ecto.Changeset.apply_changes()
-
-    ExtractHttpSteps.update(current_changes)
-
-    current_step_id = current_changes.id
-    {:ok, _dataset} = ExtractHttpSteps.add_extract_header(current_step_id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "queryParams"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
-
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_query_param(current_step_id, id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
-  def handle_event("remove", %{"id" => id, "field" => "headers"}, socket) do
-    current_step_id = Ecto.Changeset.get_field(socket.assigns.changeset, :id)
-    save_draft(socket)
-
-    {:ok, _dataset} = ExtractHttpSteps.remove_extract_header(current_step_id, id)
-
-    new_changes =
-      current_step_id
-      |> ExtractHttpSteps.get()
-      |> StructTools.to_map()
-
-    changeset = ExtractHttpStep.changeset(%ExtractHttpStep{}, new_changes)
-
-    {:noreply, assign(socket, changeset: changeset)}
-  end
-
   def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-    new_validation_status = get_new_validation_status(socket.assigns.changeset)
+    new_validation_status = get_new_validation_status(socket.assigns.extract_step_changesets)
 
     AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
       expand: next_component,
@@ -266,10 +117,45 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   end
 
-  def handle_event("save", _, socket) do
+  def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
+    save_step_changesets(extract_step_changesets)
+
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
 
-    save_draft(socket)
+    new_validation_status = get_new_validation_status(extract_step_changesets)
+    send(socket.parent_pid, {:update_save_message, new_validation_status})
+
+    {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
+
+  def handle_event("update_new_step_type", %{"value" => value}, socket) do
+    {:noreply, assign(socket, new_step_type: value)}
+  end
+
+  def handle_event("add-extract-step", _, %{assigns: %{new_step_type: ""}} = socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("add-extract-step", _, socket) do
+    step_type = socket.assigns.new_step_type
+    technical_id = socket.assigns.technical_id
+    {:ok, new_extract_step} = ExtractSteps.create(step_type, technical_id)
+    new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
+    updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
+
+    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
+    {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
+  end
+
+  def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
+    move_index = String.to_integer(move_index_string)
+    extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
+    target_index = extract_step_index + move_index
+
+    case target_index >= 0 && target_index < Enum.count(socket.assigns.extract_steps) do
+      true -> move_extract_step(socket, extract_step_index, target_index)
+      false -> {:noreply, socket}
+    end
   end
 
   def handle_info(
@@ -285,9 +171,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
+        %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
       ) do
-    save_draft(socket)
+    save_step_changesets(extract_step_changesets)
+    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
@@ -298,9 +185,27 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  def handle_info({_, {:test_results, results}}, socket) do
-    send(socket.parent_pid, {:test_results, results})
-    {:noreply, assign(socket, test_results: results, testing: false)}
+  def handle_info({:step_update, step_id, new_changeset}, socket) do
+    updated_extract_step_changesets =
+      socket.assigns.extract_step_changesets
+      |> Map.put(step_id, new_changeset)
+
+    {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
+  end
+
+  def handle_info(
+        {:validation_status, {step_id, status}},
+        %{assigns: %{validation_map: validation_map}} = socket
+      ) do
+    new_map = Map.put(validation_map, step_id, status)
+
+    new_status =
+      case Enum.any?(new_map, fn {_, status} -> status == "invalid" end) do
+        false -> "valid"
+        true -> "invalid"
+      end
+
+    {:noreply, assign(socket, validation_map: new_map, validation_status: new_status)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -316,69 +221,51 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     {:noreply, socket}
   end
 
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
+  defp move_extract_step(socket, extract_step_index, target_index) do
+    updated_extract_steps =
+      socket.assigns.extract_steps
+      |> ExtractStepHelpers.move_element(extract_step_index, target_index)
+      |> Enum.with_index()
+      |> Enum.map(fn {extract_step, index} ->
+        {:ok, updated_step} = ExtractSteps.update(extract_step, %{sequence: index})
+        updated_step
+      end)
 
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
+    {:noreply, assign(socket, extract_steps: updated_extract_steps)}
   end
 
-  defp disabled?(true), do: "disabled"
-  defp disabled?(_), do: ""
+  defp save_step_changesets(extract_step_changesets) do
+    Enum.each(extract_step_changesets, fn {id, changeset} ->
+      changes = InputConverter.form_changes_from_changeset(changeset)
 
-  defp status_class(%{status: status}) when status in 200..399, do: "test-status__code--good"
-  defp status_class(%{status: _}), do: "test-status__code--bad"
-  defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "shown")
-
-  defp status_tooltip(%{status: status}, modifier \\ "shown") do
-    assigns = %{
-      description: HttpStatusDescriptions.get(status),
-      modifier: modifier
-    }
-
-    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
+      id
+      |> ExtractSteps.get()
+      |> Map.put(:context, changes)
+      |> ExtractSteps.update()
+    end)
   end
 
-  defp key_values_to_keyword_list(form_data, field) do
-    form_data
-    |> Map.get(field, [])
-    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  end
+  defp render_extract_step_form(%{type: "http"}), do: ExtractHttpStepForm
+
+  defp render_extract_step_form(%{type: "date"}), do: ExtractDateStepForm
 
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
-  defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
   end
 
-  defp save_draft(socket) do
-    new_validation_status =
-      case socket.assigns.changeset.valid? do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    new_changes =
-      socket.assigns.changeset
-      |> Andi.InputSchemas.InputConverter.form_changes_from_changeset()
-
-    Andi.InputSchemas.Datasets.update_from_form(socket.assigns.dataset_id, %{extractSteps: [new_changes]})
-
-    {:noreply, assign(socket, validation_status: new_validation_status)}
-  end
-
   defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    assign(socket, validation_status: get_new_validation_status(socket.assigns.changeset))
+    assign(socket, validation_status: get_new_validation_status(socket.assigns.extract_step_changesets))
   end
 
   defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
 
-  defp get_new_validation_status(changeset) do
-    case changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
+  defp get_new_validation_status(step_changesets) do
+    case Enum.any?(step_changesets, fn {_, changeset} -> not changeset.valid? end) do
+      true -> "invalid"
+      false -> "valid"
     end
   end
 end

@@ -7,7 +7,7 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
+  alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.InputSchemas.UrlFormSchema
 
   import Ecto.Query, only: [from: 2]
@@ -281,7 +281,7 @@ defmodule Andi.InputSchemas.Datasets do
 
   defp extract_steps_valid?(extract_steps_changes) do
     Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->
-      step_changeset = ExtractHttpStep.changeset(step_changes)
+      step_changeset = ExtractStep.changeset(step_changes)
 
       case step_changeset.valid? do
         true -> {:cont, true}

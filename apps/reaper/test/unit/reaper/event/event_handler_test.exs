@@ -1,6 +1,8 @@
 defmodule Reaper.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :reaper
+
   require Logger
 
   import SmartCity.Event,
@@ -21,8 +23,10 @@ defmodule Reaper.Event.EventHandlerTest do
 
   @instance_name Reaper.instance_name()
 
+  getter(:brook, generic: true)
+
   setup do
-    {:ok, brook} = Brook.start_link(Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name))
+    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
     {:ok, horde_supervisor} = Horde.DynamicSupervisor.start_link(name: Reaper.Horde.Supervisor, strategy: :one_for_one)
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
     allow(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)

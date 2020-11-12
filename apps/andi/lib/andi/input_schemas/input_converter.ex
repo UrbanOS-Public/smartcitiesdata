@@ -178,25 +178,21 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn
       %{type: "http"} = http_step ->
         http_step
-        |> unwrap_extract_context()
-        |> encode_extract_step_body_as_json()
-        |> Map.update(:queryParams, [], &to_key_value_list/1)
-        |> Map.update(:headers, [], &to_key_value_list/1)
+        |> Map.update(:context, %{}, &update_http_context/1)
 
       step ->
         step
     end)
   end
 
-  defp unwrap_extract_context(smrt_extract_step) do
-    step_context = smrt_extract_step.context
-
-    smrt_extract_step
-    |> Map.merge(step_context)
-    |> Map.delete(:context)
+  defp update_http_context(http_context) do
+    http_context
+    |> encode_extract_step_body_as_json()
+    |> Map.update(:queryParams, [], &to_key_value_list/1)
+    |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
-  defp encode_extract_step_body_as_json(%{type: "http", body: body} = smrt_extract_step) when body != nil do
+  defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body != nil do
     Map.put(smrt_extract_step, :body, Jason.encode!(body))
   end
 
@@ -232,28 +228,21 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Enum.map(fn step ->
       step
       |> Map.delete(:id)
-      |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
-      |> Map.update(:headers, nil, &convert_key_value_to_map/1)
-      |> decode_andi_extract_step_body()
-      |> wrap_step_context()
+      |> Map.delete(:technical_id)
+      |> Map.update(:context, nil, &update_context/1)
+      |> Map.put(:assigns, %{})
     end)
   end
 
-  defp wrap_step_context(andi_extract_step) do
-    smrt_extract_step_context =
-      andi_extract_step
-      |> Map.delete(:type)
-      |> Map.delete(:assigns)
-
-    %{
-      type: andi_extract_step.type,
-      assigns: andi_extract_step.assigns,
-      context: smrt_extract_step_context
-    }
+  defp update_context(context) do
+    context
+    |> decode_andi_extract_step_body()
+    |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
+    |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
-  defp decode_andi_extract_step_body(%{type: "http", body: body} = andi_extract_step) when body != nil do
-    Map.put(andi_extract_step, :body, Jason.decode!(body))
+  defp decode_andi_extract_step_body(%{body: body} = http_extract_step) when body != nil do
+    Map.put(http_extract_step, :body, Jason.decode!(body))
   end
 
   defp decode_andi_extract_step_body(andi_extract_step), do: andi_extract_step

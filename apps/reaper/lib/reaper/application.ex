@@ -2,9 +2,14 @@ defmodule Reaper.Application do
   @moduledoc false
 
   use Application
+  use Properties, otp_app: :reaper
+
   require Logger
 
   @instance_name Reaper.instance_name()
+
+  getter(:brook, generic: true)
+  getter(:secrets_endpoint, generic: true)
 
   def redis_client(), do: :reaper_redix
 
@@ -19,7 +24,7 @@ defmodule Reaper.Application do
         Reaper.Cache.AuthCache,
         redis(),
         Reaper.Migrations,
-        brook(),
+        brook_instance(),
         Reaper.Scheduler.Supervisor,
         Reaper.Init
       ]
@@ -47,13 +52,13 @@ defmodule Reaper.Application do
     end
   end
 
-  defp brook() do
-    config = Application.get_env(:reaper, :brook) |> Keyword.put(:instance, @instance_name)
+  defp brook_instance() do
+    config = brook() |> Keyword.put(:instance, @instance_name)
     {Brook, config}
   end
 
   defp fetch_and_set_hosted_file_credentials do
-    endpoint = Application.get_env(:reaper, :secrets_endpoint)
+    endpoint = secrets_endpoint()
 
     if is_nil(endpoint) || String.length(endpoint) == 0 do
       Logger.warn("No secrets endpoint. Reaper will not be able to upload hosted files.")
