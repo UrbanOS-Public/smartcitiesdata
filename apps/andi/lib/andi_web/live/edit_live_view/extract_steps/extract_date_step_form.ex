@@ -29,9 +29,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
         <%= live_component(@socket, ExtractStepHeader, step_name: "Date", step_id: @id) %>
 
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-          <%= hidden_input(f, :id) %>
-          <%= hidden_input(f, :type) %>
-          <%= hidden_input(f, :technical_id) %>
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="extract-date-step-form-edit-section form-grid">

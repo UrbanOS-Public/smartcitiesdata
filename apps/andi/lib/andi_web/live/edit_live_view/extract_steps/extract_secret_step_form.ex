@@ -11,6 +11,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ExtractSteps.ExtractStepHeader
+  alias Andi.InputSchemas.Datasets.ExtractSecretStep
 
   def mount(socket) do
     {:ok,
@@ -27,9 +28,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
         <%= live_component(@socket, ExtractStepHeader, step_name: "Secret", step_id: @id) %>
 
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-          <%= hidden_input(f, :id) %>
-          <%= hidden_input(f, :type) %>
-          <%= hidden_input(f, :technical_id) %>
+          <%= hidden_input(f, :key) %>
 
           <div class="component-edit-section--<%= @visibility %>">
             <div class="extract-secret-step-form-edit-section form-grid">
@@ -49,7 +48,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
               <div class="extract-secret-step-form__value">
                 <%= label(f, :secret_value, DisplayNames.get(:secret_value), class: "label label--required") %>
                 <div class="secret_value_add">
-                  <%= text_input(f, :secret_value, type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}") %>
+                  <%= text_input(f, :secret_value, type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}", placeholder: "Secrets are not displayed after being saved") %>
                   <button type="button" class="btn btn--action">Add</button>
                 </div>
               </div>
@@ -61,15 +60,11 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    # {updated_changeset, updated_socket} =
-    #   form_data
-    #   |> AtomicMap.convert(safe: false, underscore: false)
-    #   |> ExtractDateStep.changeset()
-    #   |> update_example_output(socket)
-
-    # complete_validation(updated_changeset, updated_socket)
-
-    {:noreply, socket}
+    form_data
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> ExtractSecretStep.changeset()
+    |> IO.inspect()
+    |> complete_validation(socket)
   end
 
   def handle_event("validate", _, socket) do

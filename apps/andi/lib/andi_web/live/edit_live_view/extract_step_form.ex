@@ -38,7 +38,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        validation_map: %{},
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
-       new_step_type: ""
+       new_step_type: "",
+       system_name: dataset.technical.systemName
      )}
   end
 
@@ -85,7 +86,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
               <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
-            <div class="edit-button-group__save-btn" phx-hook="showSnackbar">
+            <div class="edit-button-group__save-btn">
               <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
             </div>
@@ -140,7 +141,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_event("add-extract-step", _, socket) do
     step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    {:ok, new_extract_step} = ExtractSteps.create(step_type, technical_id)
+    new_step_changes = %{type: step_type, context: %{}, technical_id: technical_id} |> initialize_context(socket)
+
+    {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
@@ -221,6 +224,13 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     Logger.debug(inspect(message))
     {:noreply, socket}
   end
+
+  defp initialize_context(%{type: "secret"} = changes, socket) do
+    Map.put(changes, :context, %{key: socket.assigns.system_name})
+  end
+
+  defp initialize_context(changes, _), do: changes
+
 
   defp move_extract_step(socket, extract_step_index, target_index) do
     updated_extract_steps =
