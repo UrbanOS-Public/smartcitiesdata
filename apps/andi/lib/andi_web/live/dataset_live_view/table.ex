@@ -28,7 +28,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
               <td class="datasets-table__cell datasets-table__cell--break dataset__status dataset__status--<%= status_modifier %>">
                 <div class="status">
                   <div class="status__icon"></div>
-                  <div class="status__message">#{status}</div>
+                  <div class="status__message"><%= status %></div>
                 </div>
               </td>
               <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= dataset["data_title"] %></td>

@@ -84,11 +84,40 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       where([
         [:submission_status],
+        [:published],
         [:approved],
         [:rejected],
         [:submitted],
         [:draft]
       ])
+    end
+
+    test "defaults submission status to draft", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert andi_dataset.dlq_message == nil
+      table_row = get_dataset_table_row(html, dataset)
+
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--draft"))
+    end
+
+    test "ingest status overrides submission status", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      Datasets.update_submission_status(dataset.id, :rejected)
+
+      current_time = DateTime.utc_now()
+      Datasets.update_ingested_time(dataset.id, current_time)
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert andi_dataset.dlq_message == nil
+      table_row = get_dataset_table_row(html, dataset)
+
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
     test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
@@ -106,7 +135,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
-    test "shows failure when there is a dlq message stored for a dataset", %{conn: conn} do
+    test "shows error when there is a dlq message stored for a dataset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
@@ -129,10 +158,10 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 
-      refute Enum.empty?(Floki.find(table_row, ".dataset__status--failure"))
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--error"))
     end
 
-    test "shows success when the latest dlq meessage is older than seven days", %{conn: conn} do
+    test "shows success when the latest dlq message is older than seven days", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()

@@ -17,7 +17,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     field(:dlq_message, :map)
     field(:ingestedTime, :utc_datetime, default: nil)
     field(:version, :string)
-    field(:submission_status, Ecto.Enum, values: [:approved, :rejected, :submitted, :draft])
+    field(:submission_status, Ecto.Enum, values: [:published, :approved, :rejected, :submitted, :draft], default: :draft)
     belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)

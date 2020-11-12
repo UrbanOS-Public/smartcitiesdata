@@ -3,7 +3,7 @@ defmodule Andi.Repo.Migrations.AddSubmissionStatusToDataset do
 
   def change do
     alter table(:datasets) do
-      add :submission_status, :string
+      add :submission_status, :string, default: "published", null: false
     end
   end
 end

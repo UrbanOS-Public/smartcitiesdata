@@ -176,13 +176,12 @@ defmodule AndiWeb.DatasetLiveView do
     }
   end
 
-  defp status(%{submission_status: :approved, ingestedTime: it} = dataset) when it != nil, do: ingest_status(dataset)
-  defp status(%{submission_status: nil}), do: nil
+  defp status(%{ingestedTime: it} = dataset) when it != nil, do: ingest_status(dataset)
   defp status(%{submission_status: status}), do: String.capitalize(Atom.to_string(status))
 
   defp ingest_status(dataset) do
     case has_recent_dlq_message?(dataset.dlq_message) do
-      true -> "Failure"
+      true -> "Error"
       _ -> "Success"
     end
   end
