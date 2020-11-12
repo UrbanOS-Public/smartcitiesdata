@@ -1,3 +1,2 @@
-Application.ensure_all_started(:andi)
-# Divo.Suite.start()
+Divo.Suite.start()
 ExUnit.start()
