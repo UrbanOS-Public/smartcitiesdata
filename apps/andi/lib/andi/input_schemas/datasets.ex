@@ -119,12 +119,20 @@ defmodule Andi.InputSchemas.Datasets do
       |> Changeset.get_field(:owner_id, nil)
       |> extract_owner_id(form_changes)
 
+    dataset_link =
+      changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+      |> Map.merge(form_changes)
+      |> Map.get(:datasetLink)
+
     case owner_id do
       nil ->
-        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id})
+        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, datasetLink: dataset_link})
 
       owner_id ->
-        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id})
+        existing_dataset
+        |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, datasetLink: dataset_link})
     end
   end
 
