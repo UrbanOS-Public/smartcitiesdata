@@ -11,8 +11,9 @@ defmodule AndiWeb.Helpers.SortingHelpersTest do
         %{"name" => "A", "age" => 3}
       ]
 
-      assert [1, 3, 2] == SortingHelpers.sort_list_by_field(list, "name")
-      |> Enum.map(&Map.get(&1, "age"))
+      assert [1, 3, 2] ==
+               SortingHelpers.sort_list_by_field(list, "name")
+               |> Enum.map(&Map.get(&1, "age"))
     end
 
     test "descending sort uses >=" do
@@ -22,8 +23,9 @@ defmodule AndiWeb.Helpers.SortingHelpersTest do
         %{"name" => "A", "age" => 3}
       ]
 
-      assert [2, 1, 3] == SortingHelpers.sort_list_by_field(list, "name", "desc")
-      |> Enum.map(&Map.get(&1, "age"))
+      assert [2, 1, 3] ==
+               SortingHelpers.sort_list_by_field(list, "name", "desc")
+               |> Enum.map(&Map.get(&1, "age"))
     end
 
     test "handles mixed datetimes and other values asc" do
@@ -37,8 +39,9 @@ defmodule AndiWeb.Helpers.SortingHelpersTest do
         %{"name" => "D", "birthday" => :acceptable}
       ]
 
-      assert ["A", "C", "D", "B"] == SortingHelpers.sort_list_by_field(list, "birthday")
-      |> Enum.map(&Map.get(&1, "name"))
+      assert ["A", "C", "D", "B"] ==
+               SortingHelpers.sort_list_by_field(list, "birthday")
+               |> Enum.map(&Map.get(&1, "name"))
     end
 
     test "handles mixed datetimes and other values desc" do
@@ -52,8 +55,9 @@ defmodule AndiWeb.Helpers.SortingHelpersTest do
         %{"name" => "D", "birthday" => :acceptable}
       ]
 
-      assert ["B", "D", "C", "A"] == SortingHelpers.sort_list_by_field(list, "birthday", "desc")
-      |> Enum.map(&Map.get(&1, "name"))
+      assert ["B", "D", "C", "A"] ==
+               SortingHelpers.sort_list_by_field(list, "birthday", "desc")
+               |> Enum.map(&Map.get(&1, "name"))
     end
   end
 end
