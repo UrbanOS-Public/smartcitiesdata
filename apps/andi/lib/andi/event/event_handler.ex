@@ -35,8 +35,6 @@ defmodule Andi.Event.EventHandler do
     Task.start(fn -> add_dataset_count() end)
     Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
-    Datasets.update_ingested_time(data.id, DateTime.utc_now())
-
     Datasets.update(data)
     DatasetStore.update(data)
   end
