@@ -9,6 +9,8 @@ defmodule AndiWeb.DatasetLiveView do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
+  import AndiWeb.Helpers.SortingHelpers
+
   def render(assigns) do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
@@ -72,7 +74,7 @@ defmodule AndiWeb.DatasetLiveView do
 
     view_models =
       filter_on_search_change(search_text, include_remotes, socket)
-      |> sort_by_dir(order_by, order_dir)
+      |> sort_list_by_field(order_by, order_dir)
 
     {:noreply,
      assign(socket,
@@ -157,23 +159,6 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp filter_remotes(datasets, true), do: datasets
-
-  defp sort_by_dir(models, order_by, order_dir) do
-    case order_dir do
-      "asc" -> Enum.sort_by(models, &sort_by_value(&1, order_by), &compare_asc/2)
-      "desc" -> Enum.sort_by(models, &sort_by_value(&1, order_by), &compare_desc/2)
-      _ -> models
-    end
-  end
-
-  defp sort_by_value(model, order_by) do
-    Map.get(model, order_by)
-  end
-
-  defp compare_asc(%DateTime{} = _value_one, value_two) when is_atom(value_two), do: true
-  defp compare_asc(value_one, %DateTime{} = _value_two) when is_atom(value_one), do: false
-  defp compare_asc(value_one, value_two), do: value_one < value_two
-  defp compare_desc(value_one, value_two), do: not compare_asc(value_one, value_two)
 
   defp to_view_model(dataset) do
     %{
