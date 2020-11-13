@@ -6,6 +6,12 @@
     "test-section .";
 }
 
+.url-form-header {
+  a {
+    color: #00aeef;
+  } 
+}
+
 .url-form-table {
     width: 100%;
     font-size: 0.8em;
@@ -95,6 +101,10 @@
 }
 .test-status__tooltip--hidden {
   display: none;
+}
+
+.header {
+  color: #7f7676;
 }
 
 @include area(url-form, source-url);

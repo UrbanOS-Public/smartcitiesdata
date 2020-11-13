@@ -348,6 +348,14 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       where(field_path: [[:technical, :sourceQueryParams], [:technical, :sourceHeaders]])
     end
+
+    test "dataset link is required for datasets submitted via the self service UI" do
+      changes = @valid_changes |> put_in([:datasetLink], nil)
+
+      changeset = Dataset.submission_changeset(changes)
+
+      refute Enum.empty?(changeset.errors)
+    end
   end
 
   defp accumulate_errors(changeset) do
