@@ -8,9 +8,6 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   import Phoenix.HTML.Form
   require Logger
   alias AndiWeb.ErrorHelpers
-  alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.InputSchemas.UrlFormSchema
-  alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
