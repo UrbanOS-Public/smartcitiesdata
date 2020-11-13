@@ -4,9 +4,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   import Ecto.Changeset
 
   alias Timex.Format.DateTime.Formatter
-  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
-  alias AndiWeb.ExtractSteps.ExtractStepHeader
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   embedded_schema do
@@ -101,8 +99,4 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
   end
 
   defp validate_delta_change(changeset), do: changeset
-
-  defp clear_field_errors(changset, field) do
-    Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
-  end
 end
