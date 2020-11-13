@@ -27,6 +27,7 @@ defmodule AndiWeb.ExtractSecretFormTest do
   describe "date extract step form" do
     setup %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
+
       secret_extract_step = %{
         type: "secret",
         context: %{
@@ -66,7 +67,10 @@ defmodule AndiWeb.ExtractSecretFormTest do
       refute get_attributes(html, ".btn", "disabled") |> Enum.empty?()
     end
 
-    test "displays success message when secret is saved", %{extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id} do
+    test "displays success message when secret is saved", %{
+      extract_steps_form_view: extract_steps_form_view,
+      extract_step_id: extract_step_id
+    } do
       expect(Andi.SecretService.write("#{extract_step_id}___bob", %{"bob" => "secret_value"}), return: {:ok, :na})
 
       render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})
@@ -76,7 +80,10 @@ defmodule AndiWeb.ExtractSecretFormTest do
       assert success_text == "Secret saved successfully!"
     end
 
-    test "displays error message when secret cannot be saved", %{extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id} do
+    test "displays error message when secret cannot be saved", %{
+      extract_steps_form_view: extract_steps_form_view,
+      extract_step_id: extract_step_id
+    } do
       expect(Andi.SecretService.write("#{extract_step_id}___bob", %{"bob" => "secret_value"}), return: {:error, :na})
 
       render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})

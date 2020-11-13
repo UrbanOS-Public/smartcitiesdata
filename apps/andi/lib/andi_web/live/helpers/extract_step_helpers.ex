@@ -16,7 +16,7 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
   end
 
   def update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
-       when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
+      when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     new_status = get_new_validation_status(socket.assigns.changeset)
     send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_status}})
     assign(socket, validation_status: new_status)

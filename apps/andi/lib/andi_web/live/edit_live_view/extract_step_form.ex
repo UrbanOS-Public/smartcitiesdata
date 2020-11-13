@@ -146,7 +146,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
-    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
+    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
     {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
   end
 
@@ -177,6 +177,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
       ) do
     save_step_changesets(extract_step_changesets)
+
     {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
 

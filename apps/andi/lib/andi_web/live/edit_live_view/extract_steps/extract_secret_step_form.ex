@@ -76,9 +76,13 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   def handle_event("save_secret", %{"secret" => secret}, socket) do
     key = socket.assigns.changeset.changes.sub_key
     path = socket.assigns.changeset.changes.key
+
     case Andi.SecretService.write(path, %{key => secret}) do
-      {:ok, _} -> {:noreply, assign(socket, save_success: true, save_secret_message: "Secret saved successfully!")}
-      {:error, _} -> {:noreply, assign(socket, save_success: false, save_secret_message: "Secret save failed, contact your system administrator.")}
+      {:ok, _} ->
+        {:noreply, assign(socket, save_success: true, save_secret_message: "Secret saved successfully!")}
+
+      {:error, _} ->
+        {:noreply, assign(socket, save_success: false, save_secret_message: "Secret save failed, contact your system administrator.")}
     end
   end
 
