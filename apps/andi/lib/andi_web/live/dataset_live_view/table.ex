@@ -1,6 +1,6 @@
 defmodule AndiWeb.DatasetLiveView.Table do
   @moduledoc """
-    LiveComponent for dataset table
+  LiveComponent for dataset table
   """
 
   use Phoenix.LiveComponent
@@ -10,11 +10,11 @@ defmodule AndiWeb.DatasetLiveView.Table do
     ~L"""
     <div id="<%= @id %>" class="datasets-index__table">
       <table class="datasets-table">
-      <thead>
-        <th class="datasets-table__th datasets-table__cell datasets-table__status-cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "ingested_time", "unsorted") %>" phx-click="order-by" phx-value-field="ingested_time">Status</th>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>
-        <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization </th>
-        <th class="datasets-table__th datasets-table__cell">Actions</th>
+        <thead>
+          <th class="datasets-table__th datasets-table__cell datasets-table__status-cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "status_sort", "unsorted") %>" phx-click="order-by" phx-value-field="status_sort">Status</th>
+          <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>
+          <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization </th>
+          <th class="datasets-table__th datasets-table__cell">Actions</th>
         </thead>
 
         <%= if @datasets == [] do %>

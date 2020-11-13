@@ -160,11 +160,20 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp sort_by_dir(models, order_by, order_dir) do
     case order_dir do
-      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
-      "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
+      "asc" -> Enum.sort_by(models, &sort_by_value(&1, order_by), &compare_asc/2)
+      "desc" -> Enum.sort_by(models, &sort_by_value(&1, order_by), &compare_desc/2)
       _ -> models
     end
   end
+
+  defp sort_by_value(model, order_by) do
+    Map.get(model, order_by)
+  end
+
+  defp compare_asc(%DateTime{} = _value_one, value_two) when is_atom(value_two), do: true
+  defp compare_asc(value_one, %DateTime{} = _value_two) when is_atom(value_one), do: false
+  defp compare_asc(value_one, value_two), do: value_one < value_two
+  defp compare_desc(value_one, value_two), do: not compare_asc(value_one, value_two)
 
   defp to_view_model(dataset) do
     %{
@@ -172,12 +181,15 @@ defmodule AndiWeb.DatasetLiveView do
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
       "status" => status(dataset),
-      "ingested_time" => dataset.ingestedTime
+      "status_sort" => status_sort(dataset)
     }
   end
 
-  defp status(%{ingestedTime: it} = dataset) when it != nil, do: ingest_status(dataset)
-  defp status(%{submission_status: status}), do: String.capitalize(Atom.to_string(status))
+  defp status(%{ingestedTime: nil, submission_status: status}), do: String.capitalize(Atom.to_string(status))
+  defp status(dataset), do: ingest_status(dataset)
+
+  defp status_sort(%{ingestedTime: nil, submission_status: status}), do: status
+  defp status_sort(%{ingestedTime: it}), do: it
 
   defp ingest_status(dataset) do
     case has_recent_dlq_message?(dataset.dlq_message) do
