@@ -36,6 +36,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
           <%= live_component(@socket, ExtractStepHeader, step_name: "HTTP", step_id: @id) %>
 
           <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
+            <%= hidden_input(f, :body) %>
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-http-step-form-edit-section form-grid">

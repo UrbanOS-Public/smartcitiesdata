@@ -236,12 +236,13 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context(context) do
     context
+    |> IO.inspect(label: "our context")
     |> decode_andi_extract_step_body()
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
-  defp decode_andi_extract_step_body(%{body: body} = http_extract_step) when body != nil do
+  defp decode_andi_extract_step_body(%{body: body} = http_extract_step) when body not in ["", nil] do
     Map.put(http_extract_step, :body, Jason.decode!(body))
   end
 
