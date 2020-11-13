@@ -12,7 +12,26 @@ defmodule AndiWeb.SubmitLiveView do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
     <div class="edit-page" id="dataset-edit-page">
-      <div class="preamble">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vulputate fermentum felis eu consequat. Suspendisse porta ligula non urna accumsan interdum. Praesent venenatis egestas leo eget cursus. Vivamus metus ipsum, blandit eu congue ut, elementum id mi. Suspendisse quis eros non elit egestas egestas. Aenean ac ipsum nisi. Nam luctus libero ac eros mollis, ut tristique nulla convallis. Integer maximus, est quis porttitor tristique, elit libero suscipit libero, ut aliquam magna leo at ipsum. Cras a quam nec massa faucibus euismod sed et eros. Ut scelerisque lobortis dui eu vulputate. Suspendisse venenatis augue eleifend dui auctor tristique. Nulla nec mattis nisl, sed vehicula risus.</div
+      <div class="preamble">
+      <p>You are about to submit a dataset to the Smart Columbus Operating System for review. If approved, your dataset will be made available to the public for download and consumption. The Smart Columbus Operating System currently does not allow any datasets that contain:</p>
+      <ul>
+        <li>Personally Identifiable Information (PII)</li>
+        <li>Data that may be harmful to any person, group, or organization</li>
+        <li>Data that may be considered critical of city infrastructure</li>
+      </ul>
+      <p>If your dataset contains any of the above, it will be rejected by the Data Curator. The Data Curator may also reject your dataset for reasons such as:</p>
+      <ul>
+        <li>Errors</li>
+        <li>Inaccurate data</li>
+        <li>Duplicate dataset</li>
+        <li>Incomplete data</li>
+        <li>Failure to complete metadata</li>
+      </ul>
+      <p>If your dataset is rejected, you will be notified by the Data Curator and be given an opportunity to make corrections, if applicable. After corrections are applied to the dataset (or its metadata), you as the contributor will need to re-submit the dataset for review.</p>
+      <p>On the following form you will be asked to submit the metadata, a data dictionary, and a link to your dataset. This is a critical part of the ingestion process so please ensure all fields are complete and accurate.</p>
+      <p>Click <a href="#" target="_blank">HERE</a> for more guidance on how to complete this form.</p>
+      
+      </div
 
       <%= f = form_for @changeset, "" %>
         <%= hidden_input(f, :id) %>
@@ -23,6 +42,10 @@ defmodule AndiWeb.SubmitLiveView do
 
         <div class="data-dictionary-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
+        </div>
+
+        <div class="url-form-component">
+          <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
         </div>
       </form>
 
@@ -102,7 +125,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     new_changeset =
       andi_dataset
-      |> InputConverter.andi_dataset_to_full_ui_changeset()
+      |> InputConverter.andi_dataset_to_full_submission_ui_changeset()
       |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
 
