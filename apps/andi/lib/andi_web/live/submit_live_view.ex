@@ -29,7 +29,7 @@ defmodule AndiWeb.SubmitLiveView do
       </ul>
       <p>If your dataset is rejected, you will be notified by the Data Curator and be given an opportunity to make corrections, if applicable. After corrections are applied to the dataset (or its metadata), you as the contributor will need to re-submit the dataset for review.</p>
       <p>On the following form you will be asked to submit the metadata, a data dictionary, and a link to your dataset. This is a critical part of the ingestion process so please ensure all fields are complete and accurate.</p>
-      <p>Click <a href="#" target="_blank">HERE</a> for more guidance on how to complete this form.</p>
+      <p>Click <a href="https://prod-os-public-data.s3-us-west-2.amazonaws.com/andi/instructions.pdf" target="_blank">HERE</a> for more guidance on how to complete this form.</p>
       
       </div
 
