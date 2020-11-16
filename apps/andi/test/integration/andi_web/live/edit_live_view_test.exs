@@ -522,7 +522,6 @@ defmodule AndiWeb.EditLiveViewTest do
           dataset_http_extract_step = get_in(dataset_sent, [:technical, :extractSteps]) |> hd()
           assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
           assert dataset_http_extract_step["assigns"] != nil
-          assert dataset_http_extract_step["body"] != nil
         end,
         500,
         50

@@ -84,14 +84,14 @@ defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
 
   defp validate_time_unit(changeset), do: changeset
 
-  defp validate_delta_change(%{changes: %{deltaTimeUnit: deltaTimeUnit}} = changeset) when deltaTimeUnit not in [nil, ""] do
+  defp validate_delta_change(%{changes: %{deltaTimeUnit: delta_time_unit}} = changeset) when delta_time_unit not in [nil, ""] do
     case get_change(changeset, :deltaTimeValue) in [nil, ""] do
       true -> add_error(changeset, :deltaTimeValue, "must be set when deltaTimeUnit is set")
       false -> changeset
     end
   end
 
-  defp validate_delta_change(%{changes: %{deltaTimeValue: deltaTimeValue}} = changeset) when deltaTimeValue not in [nil, ""] do
+  defp validate_delta_change(%{changes: %{deltaTimeValue: delta_time_value}} = changeset) when delta_time_value not in [nil, ""] do
     case get_change(changeset, :deltaTimeUnit) in [nil, ""] do
       true -> add_error(changeset, :deltaTimeUnit, "must be set when deltaTimeValue is set")
       false -> changeset
