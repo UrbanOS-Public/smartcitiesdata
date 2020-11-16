@@ -136,7 +136,7 @@ $icon-width: 30px;
 $error-icon-width: 16px;
 $error-icon-margin: ($icon-width - 16px) / 2;
 
-.dataset__status--error {
+.dataset__status--error, .dataset__status--rejected {
     color: red;
 
     .status__icon {
