@@ -48,7 +48,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
                   <%= text_input(f, :secret_value, type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}", placeholder: "Secrets are not displayed after being saved") %>
                   <% secret_value = FormData.input_value(nil, f, :secret_value) %>
                   <button type="button" class="btn btn--action" phx-click="save_secret" <%= disable_add_button(@changeset, secret_value) %> phx-target='<%="#step-#{@id}"%>' phx-value-secret=<%= secret_value %>>Add</button>
-                  <span class="secret-status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
+                  <span class="secret__status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
                 </div>
               </div>
             </div>
@@ -86,8 +86,8 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
     end
   end
 
-  defp save_success_class(true), do: "secret-save-success"
-  defp save_success_class(false), do: "secret-save-fail"
+  defp save_success_class(true), do: "secret__save-success"
+  defp save_success_class(false), do: "secret__save-fail"
 
   defp disable_add_button(_, secret_value) when secret_value in [nil, ""], do: "disabled"
   defp disable_add_button(%{valid?: false}, _), do: "disabled"

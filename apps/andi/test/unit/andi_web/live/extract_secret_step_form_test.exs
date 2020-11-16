@@ -76,7 +76,7 @@ defmodule AndiWeb.ExtractSecretFormTest do
       render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})
       html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "save_secret", %{"secret" => "secret_value"})
 
-      success_text = get_text(html, ".secret-status-msg")
+      success_text = get_text(html, ".secret__status-msg")
       assert success_text == "Secret saved successfully!"
     end
 
@@ -89,7 +89,7 @@ defmodule AndiWeb.ExtractSecretFormTest do
       render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})
       html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "save_secret", %{"secret" => "secret_value"})
 
-      success_text = get_text(html, ".secret-status-msg")
+      success_text = get_text(html, ".secret__status-msg")
       assert success_text == "Secret save failed, contact your system administrator."
     end
   end

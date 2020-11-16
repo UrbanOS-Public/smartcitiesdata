@@ -388,37 +388,51 @@ defmodule E2ETest do
 
   describe "extract steps" do
     test "from andi are executable by reaper" do
-      smrt_dataset = TDG.create_dataset(%{
-            technical: %{
-              extractSteps: [
-                %{
-                  type: "http",
-                  context: %{
-                    url: "http://test.com",
-                    action: "GET",
-                    headers: %{},
-                    queryParams: %{}
-                  },
-                  assigns: %{}
+      smrt_dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  url: "http://test.com",
+                  action: "GET",
+                  headers: %{},
+                  queryParams: %{}
                 },
-                %{
-                  type: "date",
-                  context: %{
-                    destination: "blah",
-                    format: "{YYYY}"
-                  },
-                  assigns: %{}
-                }
-              ]}})
+                assigns: %{}
+              },
+              %{
+                type: "date",
+                context: %{
+                  destination: "blah",
+                  format: "{YYYY}"
+                },
+                assigns: %{}
+              }
+            ]
+          }
+        })
 
       {:ok, andi_dataset} = Andi.InputSchemas.Datasets.update(smrt_dataset)
-      dataset_changeset = Andi.InputSchemas.InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
+
+      dataset_changeset =
+        Andi.InputSchemas.InputConverter.andi_dataset_to_full_ui_changeset_for_publish(
+          andi_dataset
+        )
+
       dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
-      {:ok, converted_smrt_dataset} = Andi.InputSchemas.InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+
+      {:ok, converted_smrt_dataset} =
+        Andi.InputSchemas.InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
 
       converted_extract_steps = get_in(converted_smrt_dataset, [:technical, :extractSteps])
 
-      assert %{output_file: _} = Reaper.DataExtract.ExtractStep.execute_extract_steps(converted_smrt_dataset, converted_extract_steps)
+      assert %{output_file: _} =
+               Reaper.DataExtract.ExtractStep.execute_extract_steps(
+                 converted_smrt_dataset,
+                 converted_extract_steps
+               )
     end
   end
 
