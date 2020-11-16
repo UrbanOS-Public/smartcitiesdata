@@ -135,6 +135,56 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
+    test "valid dataset's submission status is updated on publish", %{conn: conn} do
+      allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+      Datasets.update_submission_status(dataset.id, :approved)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      finalize_view = find_child(view, "finalize_form_editor")
+
+      form_data = %{"cadence" => "once"}
+
+      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
+
+      eventually(
+        fn ->
+          assert %{submission_status: :published} = Datasets.get(dataset.id)
+        end,
+        10,
+        1_000
+      )
+    end
+
+    test "invalid dataset's submission status is not updated on publish", %{conn: conn} do
+      allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
+      smrt_dataset = TDG.create_dataset(%{})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+      submission_status = :approved
+      Datasets.update_submission_status(dataset.id, submission_status)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      metadata_view = find_child(view, "metadata_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
+
+      form_data = %{"publishFrequency" => nil}
+
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
+      render_change(finalize_view, :publish)
+
+      eventually(
+        fn ->
+          assert %{submission_status: ^submission_status} = Datasets.get(dataset.id)
+        end,
+        10,
+        1_000
+      )
+    end
+
     test "invalid form data is saved on publish", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{

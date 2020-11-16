@@ -143,6 +143,12 @@ defmodule Andi.InputSchemas.Datasets do
     update(from_dataset, %{ingestedTime: iso_ingested_time})
   end
 
+  def update_submission_status(dataset_id, status) do
+    from_dataset = get(dataset_id)
+
+    update(from_dataset, %{submission_status: status})
+  end
+
   def update_cadence(dataset_id, cadence) do
     from_dataset = get(dataset_id) || %Dataset{id: dataset_id}
 
