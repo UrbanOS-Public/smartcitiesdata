@@ -11,6 +11,11 @@ defmodule AndiWeb.DatasetLiveView do
 
   import AndiWeb.Helpers.SortingHelpers
 
+  @default_filters [
+    include_remotes: false,
+    only_submitted: false
+  ]
+
   def render(assigns) do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
@@ -45,9 +50,14 @@ defmodule AndiWeb.DatasetLiveView do
             <input type="checkbox" phx-click="toggle_remotes" <%= if !@include_remotes, do: "checked" %>/>
             <span>Exclude Remote Datasets</span>
           </label>
+
+          <label class="checkbox">
+            <input type="checkbox" phx-click="toggle_submitted" <%= if @only_submitted, do: "checked" %>/>
+            <span>Show Submitted Datasets Only</span>
+          </label>
         </div>
 
-        <%= live_component(@socket, Table, id: :datasets_table, datasets: @datasets, order: @order) %>
+        <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order) %>
       </div>
     </div>
     """
@@ -59,7 +69,8 @@ defmodule AndiWeb.DatasetLiveView do
        datasets: nil,
        user_id: user_id,
        search_text: nil,
-       include_remotes: false,
+       include_remotes: default_for_filter(:include_remotes),
+       only_submitted: default_for_filter(:only_submitted),
        is_curator: is_curator,
        order: {"data_title", "asc"},
        params: %{}
@@ -70,19 +81,26 @@ defmodule AndiWeb.DatasetLiveView do
     order_by = Map.get(params, "order-by", "data_title")
     order_dir = Map.get(params, "order-dir", "asc")
     search_text = Map.get(params, "search", "")
-    include_remotes = Map.get(params, "include-remotes", "false") |> string_to_bool()
+    include_remotes = include_remotes?(params)
+    only_submitted = only_submitted?(params)
 
-    view_models =
-      filter_on_search_change(search_text, include_remotes, socket)
-      |> sort_list_by_field(order_by, order_dir)
+    datasets = query_on_search_change(search_text, socket)
+
+    view_models = datasets
+    |> filter_remotes(include_remotes)
+    |> filter_submitted(only_submitted)
+    |> convert_to_view_models()
+    |> sort_list_by_field(order_by, order_dir)
 
     {:noreply,
      assign(socket,
        search_text: search_text,
-       datasets: view_models,
+       view_models: view_models,
+       datasets: datasets,
        order: %{order_by => order_dir},
        params: params,
-       include_remotes: include_remotes
+       include_remotes: include_remotes,
+       only_submitted: only_submitted
      )}
   end
 
@@ -110,26 +128,31 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   def handle_event("toggle_remotes", _, socket) do
-    current_include_remotes =
-      socket.assigns.params
-      |> Map.get("include-remotes", "false")
-      |> string_to_bool()
+    current_include_remotes = include_remotes?(socket.assigns.params)
 
     search_params = Map.merge(socket.assigns.params, %{"include-remotes" => !current_include_remotes})
 
     {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
-  defp filter_on_search_change(search_value, include_remotes, socket) do
-    owner_id = socket.assigns.is_curator || socket.assigns.user_id
+  def handle_event("toggle_submitted", _, socket) do
+    current_only_submitted = only_submitted?(socket.assigns.params)
 
-    case search_value == socket.assigns.search_text and include_remotes == socket.assigns.include_remotes do
-      false -> refresh_datasets(search_value, include_remotes, owner_id)
-      _ -> socket.assigns.datasets
-    end
+    search_params = Map.merge(socket.assigns.params, %{"only-submitted" => !current_only_submitted})
+
+    {:noreply, push_patch(socket, to: Routes.live_path(socket, __MODULE__, search_params))}
   end
 
-  defp refresh_datasets(search_value, include_remotes, owner_id) do
+  defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
+    datasets
+  end
+  defp query_on_search_change(search_value, socket) do
+    owner_id = socket.assigns.is_curator || socket.assigns.user_id
+
+    refresh_datasets(search_value, owner_id)
+  end
+
+  defp refresh_datasets(search_value, owner_id) do
     search_string = "%#{search_value}%"
 
     query =
@@ -147,8 +170,6 @@ defmodule AndiWeb.DatasetLiveView do
     query
     |> filter_by_owner(owner_id)
     |> Andi.Repo.all()
-    |> filter_remotes(include_remotes)
-    |> Enum.map(&to_view_model/1)
   end
 
   def filter_by_owner(query, owner_id) when owner_id in [true, nil], do: query
@@ -159,12 +180,21 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp filter_remotes(datasets, true), do: datasets
+  defp filter_submitted(datasets, true) do
+    Enum.filter(datasets, fn dataset -> dataset.submission_status == :submitted end)
+  end
+  defp filter_submitted(datasets, false), do: datasets
+
+  defp convert_to_view_models(datasets) do
+    Enum.map(datasets, &to_view_model/1)
+  end
 
   defp to_view_model(dataset) do
     %{
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
+      "remote" => dataset.technical.sourceType == "remote",
       "status" => status(dataset),
       "status_sort" => status_sort(dataset)
     }
@@ -205,4 +235,25 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp action_text(true = _is_curator), do: "ADD DATASET"
   defp action_text(false = _is_curator), do: "SUBMIT NEW DATASET"
+
+  defp default_for_filter(name) do
+    Keyword.get(@default_filters, name)
+  end
+
+  defp default_for_filter_as_string(name) do
+    default_for_filter(name)
+    |> Atom.to_string()
+  end
+
+  defp include_remotes?(params) do
+    params
+    |> Map.get("include-remotes", default_for_filter_as_string(:include_remotes))
+    |> string_to_bool()
+  end
+
+  defp only_submitted?(params) do
+    params
+    |> Map.get("only-submitted", default_for_filter_as_string(:only_submitted))
+    |> string_to_bool()
+  end
 end

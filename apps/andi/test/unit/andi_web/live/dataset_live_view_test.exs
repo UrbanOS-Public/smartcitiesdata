@@ -146,5 +146,40 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
       assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
+
+  end
+
+  describe "Toggle submitted datasets checkbox" do
+    test "includes datasets that are not just submitted, by default", %{conn: conn} do
+      dataset_a = DatasetHelpers.create_dataset(%{})
+      |> Map.put(:submission_status, :approved)
+      dataset_b = DatasetHelpers.create_dataset(%{})
+      |> Map.put(:submission_status, :submitted)
+
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
+
+    test "toggles exclusion of non-submitted datasets when checked", %{conn: conn} do
+      dataset_a = DatasetHelpers.create_dataset(%{})
+      |> Map.put(:submission_status, :approved)
+      dataset_b = DatasetHelpers.create_dataset(%{})
+      |> Map.put(:submission_status, :submitted)
+
+      allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b])
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      html = render_click(view, :toggle_submitted)
+
+      refute get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
+    end
   end
 end
