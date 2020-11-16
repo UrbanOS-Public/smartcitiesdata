@@ -11,6 +11,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
+  alias AndiWeb.ExtractSteps.ExtractSecretStepForm
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
@@ -84,7 +85,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
               <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
             </div>
 
-            <div class="edit-button-group__save-btn" phx-hook="showSnackbar">
+            <div class="edit-button-group__save-btn">
               <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
             </div>
@@ -139,11 +140,13 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_event("add-extract-step", _, socket) do
     step_type = socket.assigns.new_step_type
     technical_id = socket.assigns.technical_id
-    {:ok, new_extract_step} = ExtractSteps.create(step_type, technical_id)
+    new_step_changes = %{type: step_type, context: %{}, technical_id: technical_id}
+
+    {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
-    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id)
+    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
     {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
   end
 
@@ -174,6 +177,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
         %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id}} = socket
       ) do
     save_step_changesets(extract_step_changesets)
+
     {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets))}
   end
 
@@ -248,6 +252,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp render_extract_step_form(%{type: "http"}), do: ExtractHttpStepForm
 
   defp render_extract_step_form(%{type: "date"}), do: ExtractDateStepForm
+
+  defp render_extract_step_form(%{type: "secret"}), do: ExtractSecretStepForm
 
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
 

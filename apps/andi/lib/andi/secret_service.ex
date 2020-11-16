@@ -1,4 +1,4 @@
-defmodule Andi.SecretRetriever do
+defmodule Andi.SecretService do
   @moduledoc """
   Retrieves credentials for auth0 configuration
   """
@@ -23,6 +23,20 @@ defmodule Andi.SecretRetriever do
       {:error, reason} ->
         Logger.error("Unable to retrieve auth credential: #{reason}")
         {:error, :retrieve_credential_failed}
+    end
+  end
+
+  def write(path, secret) do
+    vault_path = "#{@root_path}ingestion/#{path}"
+
+    with {:ok, jwt} <- get_kubernetes_token(),
+         {:ok, vault} <- instantiate_vault_conn(jwt),
+         {:ok, credentials} <- Vault.write(vault, vault_path, secret) do
+      {:ok, credentials}
+    else
+      {:error, reason} ->
+        Logger.error("Unable to write secret to path '#{path}': #{reason}")
+        {:error, :write_credential_failed}
     end
   end
 

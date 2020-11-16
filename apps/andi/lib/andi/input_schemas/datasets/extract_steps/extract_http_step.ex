@@ -65,7 +65,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
     dataset_extract_step
     |> StructTools.to_map()
     |> AtomicMap.convert(safe: false, underscore: false)
-    # |> unwrap_context()
     |> changeset()
   end
 

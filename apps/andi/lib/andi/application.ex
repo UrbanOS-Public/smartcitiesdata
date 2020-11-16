@@ -79,7 +79,7 @@ defmodule Andi.Application do
       Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")
       []
     else
-      case Andi.SecretRetriever.retrieve_auth0_credentials() do
+      case Andi.SecretService.retrieve_auth0_credentials() do
         {:ok, credentials} ->
           Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
             domain: System.get_env("AUTH0_DOMAIN"),
