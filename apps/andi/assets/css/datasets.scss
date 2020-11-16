@@ -101,32 +101,50 @@
   max-width: 30rem;
 }
 
-.ingestion-status {
+.datasets-table__status-cell {
+    width: 10%;
+}
+
+$icon-width: 30px;
+
+.dataset__status {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: left;
 
-    .ingestion-success-icon {
+    .status {
+        display: flex;
+        align-items: center;
+    }
+
+    .status__icon {
+        height: $icon-width;
+        width: $icon-width;
+    }
+}
+
+.dataset__status--success {
+    color: green;
+
+    .status__icon {
         background-image: url('/images/check.svg');
-        height: 30px;
-        width: 30px;
+        height: $icon-width;
+        width: $icon-width;
     }
+}
 
-    .ingestion-failure-icon {
+$error-icon-width: 16px;
+$error-icon-margin: ($icon-width - 16px) / 2;
+
+.dataset__status--error, .dataset__status--rejected {
+    color: red;
+
+    .status__icon {
         background-image: url('/images/X.svg');
-        height: 16px;
-        width: 16px;
-        margin-right: 0.5rem;
-    }
-
-    .ingestion-success-text {
-        align-self: center;
-        color: green;
-    }
-
-    .ingestion-failure-text {
-        align-self: center;
-        color: red;
+        height: $error-icon-width;
+        width: $error-icon-width;
+        margin-left: $error-icon-margin;
+        margin-right: $error-icon-margin;
     }
 }
 

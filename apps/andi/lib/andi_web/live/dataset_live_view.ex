@@ -9,6 +9,8 @@ defmodule AndiWeb.DatasetLiveView do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
+  import AndiWeb.Helpers.SortingHelpers
+
   def render(assigns) do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
@@ -72,7 +74,7 @@ defmodule AndiWeb.DatasetLiveView do
 
     view_models =
       filter_on_search_change(search_text, include_remotes, socket)
-      |> sort_by_dir(order_by, order_dir)
+      |> sort_list_by_field(order_by, order_dir)
 
     {:noreply,
      assign(socket,
@@ -158,22 +160,41 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp filter_remotes(datasets, true), do: datasets
 
-  defp sort_by_dir(models, order_by, order_dir) do
-    case order_dir do
-      "asc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end)
-      "desc" -> Enum.sort_by(models, fn model -> Map.get(model, order_by) end, &>=/2)
-      _ -> models
-    end
-  end
-
   defp to_view_model(dataset) do
     %{
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
-      "ingested_time" => dataset.ingestedTime,
-      "dlq_message" => dataset.dlq_message
+      "status" => status(dataset),
+      "status_sort" => status_sort(dataset)
     }
+  end
+
+  defp status(%{ingestedTime: nil, submission_status: status}), do: String.capitalize(Atom.to_string(status))
+  defp status(dataset), do: ingest_status(dataset)
+
+  defp status_sort(%{ingestedTime: nil, submission_status: status}), do: status
+  defp status_sort(%{ingestedTime: it}), do: it
+
+  defp ingest_status(dataset) do
+    case has_recent_dlq_message?(dataset.dlq_message) do
+      true -> "Error"
+      _ -> "Success"
+    end
+  end
+
+  defp has_recent_dlq_message?(nil), do: false
+
+  defp has_recent_dlq_message?(message) do
+    message_timestamp = message["timestamp"]
+    message_received_within?(message_timestamp, 7, :days)
+  end
+
+  defp message_received_within?(message_timestamp, length_of_time, interval) do
+    {:ok, message_datetime, _} = DateTime.from_iso8601(message_timestamp)
+    message_age = Timex.diff(DateTime.utc_now(), message_datetime, interval)
+
+    message_age <= length_of_time
   end
 
   def string_to_bool("true"), do: true
