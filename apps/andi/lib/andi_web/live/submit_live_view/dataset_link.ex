@@ -54,7 +54,7 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
             <div class="component-edit-section--<%= @visibility %>">
               <div class="url-form-header">
                 <h4><span class="header">Provide the link to where your dataset is hosted*</span></h4>
-                <h4>To prevent the potential ingestion of Personally Identifiable Information (PII) in the Smart Columbus Operating System, your dataset must be hosted in a cloud envinronment and sharable in order to allow our Data Curator to review. Suitable locations include <a href="#" target="_blank">Dropbox</a>, <a href="#" target="_blank">Google Drive</a>, <a href="#" target="_blank">Apple iCloud</a>, and <a href="#" target="_blank">Microsoft OneDrive</a>. Please copy the shareable link to your dataset (including any query parameters) and paste in the field below.</h4>
+                <h4>To prevent the potential ingestion of Personally Identifiable Information (PII) in the Smart Columbus Operating System, your dataset must be hosted in a cloud envinronment and sharable in order to allow our Data Curator to review. Suitable locations include <a href="http://dropbox.com/" target="_blank">Dropbox</a>, <a href="http://drive.google.com/" target="_blank">Google Drive</a>, <a href="http://icloud.com/" target="_blank">Apple iCloud</a>, and <a href="http://onedrive.com/" target="_blank">Microsoft OneDrive</a>. Please copy the shareable link to your dataset (including any query parameters) and paste in the field below.</h4>
               </div>
               <div class="url-form-edit-section form-grid">
                 <div class="url-form__source-url">

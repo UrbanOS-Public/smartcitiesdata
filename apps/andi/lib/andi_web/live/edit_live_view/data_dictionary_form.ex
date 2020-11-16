@@ -82,7 +82,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
             <%= if not @is_curator do %>
               <div class="section-help">
-                <a href="<%= FormTools.documentation_root_value() %>/data-dictionary-help.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
+                <a href="https://prod-os-public-data.s3-us-west-2.amazonaws.com/andi/instructions.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
               </div>
             <% end %>
             <div class="data-dictionary-form-edit-section form-grid">
