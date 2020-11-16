@@ -1,7 +1,7 @@
-defmodule Andi.SecretRetrieverTest do
+defmodule Andi.SecretServiceTest do
   use ExUnit.Case
   use Placebo
-  alias Andi.SecretRetriever
+  alias Andi.SecretService
   import ExUnit.CaptureLog
 
   describe "retrieve/1" do
@@ -25,14 +25,26 @@ defmodule Andi.SecretRetrieverTest do
       allow Vault.read(values.vault, "secrets/smart_city/auth0/andi"),
         return: {:ok, values.credentials}
 
-      assert SecretRetriever.retrieve_auth0_credentials() == {:ok, values.credentials}
+      assert SecretService.retrieve_auth0_credentials() == {:ok, values.credentials}
+    end
+
+    test "writes secrets", values do
+      test_secret = %{test: "secret"}
+      allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:ok, values.jwt}
+      allow Vault.new(any()), return: values.vault
+      allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}), return: {:ok, values.vault}
+
+      allow Vault.write(values.vault, "secrets/smart_city/ingestion/test-secret", any()),
+        return: {:ok, test_secret}
+
+      assert SecretService.write("test-secret", test_secret) == {:ok, test_secret}
     end
 
     test "returns error when kubernetes token file is not found" do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
-               assert SecretRetriever.retrieve_auth0_credentials() ==
+               assert SecretService.retrieve_auth0_credentials() ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
     end
@@ -48,7 +60,7 @@ defmodule Andi.SecretRetrieverTest do
         return: {:ok, values.credentials}
 
       assert capture_log(fn ->
-               assert SecretRetriever.retrieve_auth0_credentials() ==
+               assert SecretService.retrieve_auth0_credentials() ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
     end

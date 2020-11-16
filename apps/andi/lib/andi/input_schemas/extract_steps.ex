@@ -10,9 +10,9 @@ defmodule Andi.InputSchemas.ExtractSteps do
 
   @default_key_value %{"key" => nil, "value" => nil}
 
-  def create(step_type, technical_id) do
+  def create(new_step_changes) do
     changes =
-      %{type: step_type, context: %{}, technical_id: technical_id}
+      new_step_changes
       |> ExtractStep.changeset()
       |> Ecto.Changeset.apply_changes()
       |> StructTools.to_map()

@@ -14,6 +14,8 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.ExtractSteps
+  alias Andi.Services.DatasetStore
 
   @url_path "/datasets/"
 
@@ -67,6 +69,43 @@ defmodule AndiWeb.ExtractStepFormTest do
       html = render(editor)
       assert find_elements(html, ".extract-step-container") |> Enum.count() == 3
       assert Enum.count(find_elements(html, ".extract-date-step-form")) == 2
+    end)
+  end
+
+  test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: []}})
+    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
+
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
+    editor = find_child(view, "extract_step_form_editor")
+    finalize_editor = find_child(view, "finalize_form_editor")
+
+    render_change(editor, "update_new_step_type", %{"value" => "http"})
+
+    render_change(editor, "update_new_step_type", %{"value" => "http"})
+    render_click(editor, "add-extract-step")
+
+    render_click(editor, "save")
+
+    andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
+    extract_step_id = get_extract_step_id(andi_dataset, 0)
+
+    render_change([editor, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+
+    render_click(editor, "save")
+    render_click(finalize_editor, "publish")
+
+    eventually(fn ->
+      extract_step = ExtractSteps.all_for_technical(andi_dataset.technical.id) |> List.first()
+      assert extract_step != nil
+      assert Map.has_key?(extract_step.context, "body")
+
+      {:ok, smrt_dataset} = DatasetStore.get(andi_dataset.id)
+      assert nil != smrt_dataset
+
+      smrt_extract_step = get_in(smrt_dataset, [:technical, :extractSteps]) |> List.first()
+      assert smrt_extract_step |> Map.get("context") |> Map.get("body") != nil
     end)
   end
 

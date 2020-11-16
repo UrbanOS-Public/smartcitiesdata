@@ -14,15 +14,22 @@ defmodule AndiWeb.ErrorHelpers do
   def error_tag(form, _, _) when not is_map(form), do: []
 
   def error_tag(form, field, options) do
-    Enum.map(Keyword.get_values(form.errors, field), fn error ->
-      translated = error |> interpret_error(field) |> translate_error()
+    form.errors
+    |> Map.new()
+    |> Map.get(field)
+    |> generate_error_tag(field, form, options)
+  end
 
-      content_tag(:span, translated,
-        class: "error-msg",
-        id: "#{field}-error-msg",
-        data: get_additional_content_tag_data(form, field, options)
-      )
-    end)
+  defp generate_error_tag(nil, _, _, _), do: nil
+
+  defp generate_error_tag(error, field, form, options) do
+    translated = error |> interpret_error(field) |> translate_error()
+
+    content_tag(:span, translated,
+      class: "error-msg",
+      id: "#{field}-error-msg",
+      data: get_additional_content_tag_data(form, field, options)
+    )
   end
 
   # Fixes the bug with non text-input fields not rendering the error message when clearing a valid value

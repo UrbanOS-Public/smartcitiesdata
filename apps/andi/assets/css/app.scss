@@ -70,6 +70,12 @@ body {
   color: white;
   background-color: $color-text-link;
   border: 2px solid $color-text-link;
+
+  &:disabled {
+      background-color: #7f7676;
+      border: 2px solid #7f7676;
+      cursor: default;
+  }
 }
 
 .btn--save {

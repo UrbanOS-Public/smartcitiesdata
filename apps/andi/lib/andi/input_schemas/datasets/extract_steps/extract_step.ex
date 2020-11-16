@@ -60,7 +60,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
 
   def preload(struct), do: StructTools.preload(struct, [])
 
-  defp validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date"] do
+  defp validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date", "secret"] do
     changeset
   end
 
@@ -89,6 +89,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
 
   defp step_module("http"), do: Andi.InputSchemas.Datasets.ExtractHttpStep
   defp step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
+  defp step_module("secret"), do: Andi.InputSchemas.Datasets.ExtractSecretStep
   defp step_module(_invalid_type), do: :invalid_type
 
   defp wrap_context(form_data) do

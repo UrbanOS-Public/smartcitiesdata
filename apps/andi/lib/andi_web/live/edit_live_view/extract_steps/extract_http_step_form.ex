@@ -5,6 +5,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML
   import Phoenix.HTML.Form
+  import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractHttpStep
@@ -16,6 +17,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Views.HttpStatusDescriptions
   alias AndiWeb.Helpers.FormTools
+  alias AndiWeb.ExtractSteps.ExtractStepHeader
 
   def mount(socket) do
     {:ok,
@@ -30,16 +32,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   def render(assigns) do
     ~L"""
         <div id="step-<%= @id %>" class="extract-step-container extract-http-step-form">
-          <div class="extract-step-header full-width">
-            <h3>HTTP</h3>
-            <div class="edit-buttons">
-            <span class="extract-step-header__up material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="-1">keyboard_arrow_up</span>
-              <span class="extract-step-header__down material-icons" phx-click="move-extract-step" phx-value-id=<%= @id %> phx-value-move-index="1">keyboard_arrow_down</span>
-              <div class="extract-step-header__remove"></div>
-            </div>
-          </div>
+
+          <%= live_component(@socket, ExtractStepHeader, step_name: "HTTP", step_id: @id) %>
 
           <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
+            <% hidden_input(f, :body) %>
 
             <div class="component-edit-section--<%= @visibility %>">
               <div class="extract-http-step-form-edit-section form-grid">
@@ -166,24 +163,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, assign(socket, test_results: test_results)}
   end
 
-  def handle_info({_, {:test_results, results}}, socket) do
-    send(self(), {:test_results, results})
-    {:noreply, assign(socket, test_results: results, testing: false)}
-  end
-
-  # This handle_info takes care of all exceptions in a generic way.
-  # Expected errors should be handled in specific handlers.
-  # Flags should be reset here.
-  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
-    send(socket.parent_pid, :page_error)
-    {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
-  end
-
-  def handle_info(message, socket) do
-    Logger.debug(inspect(message))
-    {:noreply, socket}
-  end
-
   defp remove_key_value(key_value_list, id) do
     Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
       case key_value.id == id do
@@ -216,32 +195,4 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp get_http_methods(), do: map_to_dropdown_options(Options.http_method())
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
-  end
-
-  defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility}} = socket)
-       when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    new_status = get_new_validation_status(socket.assigns.changeset)
-    send(socket.parent_pid, {:validation_status, {socket.assigns.extract_step.id, new_status}})
-    assign(socket, validation_status: new_status)
-  end
-
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
-
-  defp get_new_validation_status(changeset) do
-    case changeset.valid? do
-      true -> "valid"
-      false -> "invalid"
-    end
-  end
-
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-    send(self(), {:step_update, socket.assigns.id, new_changeset})
-
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
-  end
 end

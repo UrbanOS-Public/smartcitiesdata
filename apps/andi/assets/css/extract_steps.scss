@@ -23,7 +23,19 @@
 }
 
 .example-output {
-    color: green;
+    color: $color-success;
+}
+
+.secret__status-msg {
+    margin-left: 1rem;
+}
+
+.secret__save-success {
+    color: $color-success;
+}
+
+.secret__save-fail {
+    color: $color-error;
 }
 
 .extract-step-header {
