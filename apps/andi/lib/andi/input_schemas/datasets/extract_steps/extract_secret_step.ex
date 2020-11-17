@@ -25,6 +25,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractSecretStep do
     extract_step
     |> cast(changes_with_id, @fields, empty_values: [])
     |> validate_required(@fields, message: "is required")
+    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
   end
 
   def changeset_for_draft(extract_step, changes) do
