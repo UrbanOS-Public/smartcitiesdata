@@ -51,10 +51,12 @@ defmodule AndiWeb.DatasetLiveView do
             <span>Exclude Remote Datasets</span>
           </label>
 
+          <%= if @is_curator do %>
           <label class="checkbox">
             <input type="checkbox" phx-click="toggle_submitted" <%= if @only_submitted, do: "checked" %>/>
             <span>Show Submitted Datasets Only</span>
           </label>
+          <% end %>
         </div>
 
         <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order) %>
@@ -198,7 +200,6 @@ defmodule AndiWeb.DatasetLiveView do
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
-      "remote" => dataset.technical.sourceType == "remote",
       "status" => status(dataset),
       "status_sort" => status_sort(dataset)
     }
