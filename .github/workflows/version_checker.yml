@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Elixir
-        uses: actions/setup-elixir@v1.2.0
+        uses: actions/setup-elixir@v1.5.0
         with:
           elixir-version: 1.9
           otp-version: 22.2
