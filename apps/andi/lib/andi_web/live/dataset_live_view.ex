@@ -86,11 +86,12 @@ defmodule AndiWeb.DatasetLiveView do
 
     datasets = query_on_search_change(search_text, socket)
 
-    view_models = datasets
-    |> filter_remotes(include_remotes)
-    |> filter_submitted(only_submitted)
-    |> convert_to_view_models()
-    |> sort_list_by_field(order_by, order_dir)
+    view_models =
+      datasets
+      |> filter_remotes(include_remotes)
+      |> filter_submitted(only_submitted)
+      |> convert_to_view_models()
+      |> sort_list_by_field(order_by, order_dir)
 
     {:noreply,
      assign(socket,
@@ -146,6 +147,7 @@ defmodule AndiWeb.DatasetLiveView do
   defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
     datasets
   end
+
   defp query_on_search_change(search_value, socket) do
     owner_id = socket.assigns.is_curator || socket.assigns.user_id
 
@@ -180,9 +182,11 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp filter_remotes(datasets, true), do: datasets
+
   defp filter_submitted(datasets, true) do
     Enum.filter(datasets, fn dataset -> dataset.submission_status == :submitted end)
   end
+
   defp filter_submitted(datasets, false), do: datasets
 
   defp convert_to_view_models(datasets) do
