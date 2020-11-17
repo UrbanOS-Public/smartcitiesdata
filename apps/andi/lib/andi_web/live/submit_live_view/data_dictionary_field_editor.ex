@@ -5,7 +5,6 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-  alias AndiWeb.Views.Options
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Helpers.DataDictionaryHelpers
 

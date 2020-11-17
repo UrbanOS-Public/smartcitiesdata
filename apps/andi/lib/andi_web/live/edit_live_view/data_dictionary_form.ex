@@ -8,15 +8,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.EditLiveView.DataDictionaryTree
-  alias AndiWeb.EditLiveView.DataDictionaryFieldEditor
-  alias AndiWeb.SubmitLiveView.DataDictionaryFieldEditor
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
-  alias AndiWeb.Helpers.FormTools
   alias Ecto.Changeset
 
   def mount(_, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do

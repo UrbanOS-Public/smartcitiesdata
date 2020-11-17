@@ -3,10 +3,9 @@ defmodule AndiWeb.ExtractSecretFormTest do
   use Phoenix.ConnTest
   use Placebo
   alias Andi.Schemas.User
-  alias Andi.InputSchemas.Datasets.ExtractSecretStep
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [find_elements: 2, get_text: 2, get_attributes: 3]
+  import FlokiHelpers, only: [get_text: 2, get_attributes: 3]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -92,12 +91,5 @@ defmodule AndiWeb.ExtractSecretFormTest do
       success_text = get_text(html, ".secret__status-msg")
       assert success_text == "Secret save failed, contact your system administrator."
     end
-  end
-
-  defp get_extract_step_id(dataset) do
-    dataset
-    |> get_in([:technical, :extractSteps])
-    |> hd()
-    |> Map.get(:id)
   end
 end

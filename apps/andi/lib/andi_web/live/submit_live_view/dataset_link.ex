@@ -4,11 +4,9 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   """
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: Andi.InputSchemas.Datasets.Dataset
-  import Phoenix.HTML
   import Phoenix.HTML.Form
   require Logger
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
   def mount(_, %{"dataset" => dataset}, socket) do

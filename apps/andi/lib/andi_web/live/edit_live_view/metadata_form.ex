@@ -5,15 +5,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
   import Phoenix.HTML.Form
-  import Phoenix.HTML.Link
+  import Phoenix.HTML.Link, only: [link: 2]
 
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias AndiWeb.Helpers.FormTools
-  alias Andi.Schemas.User
   alias AndiWeb.Helpers.MetadataFormHelpers
 
   def mount(_, %{"dataset" => dataset}, socket) do
