@@ -256,6 +256,7 @@ defmodule Andi.InputSchemas.InputConverter do
     context
     |> decode_andi_extract_step_body()
     |> Map.put_new(:body, %{})
+    |> Map.put_new(:encodeMethod, "json")
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 

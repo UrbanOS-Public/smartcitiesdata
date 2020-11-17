@@ -409,6 +409,15 @@ defmodule E2ETest do
                   format: "{YYYY}"
                 },
                 assigns: %{}
+              },
+              %{
+                type: "auth",
+                context: %{
+                  destination: "dest",
+                  url: "http://blah.com",
+                  path: ["a", "b", "c"],
+                  cacheTtl: 15_000
+                }
               }
             ]
           }
