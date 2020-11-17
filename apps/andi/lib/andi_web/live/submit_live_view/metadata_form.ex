@@ -5,12 +5,9 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
   import Phoenix.HTML.Form
-  import Phoenix.HTML.Link
 
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.MetadataFormSchema
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.Helpers.FormTools
