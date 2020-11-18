@@ -3,7 +3,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractSecretStep do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
   @primary_key false

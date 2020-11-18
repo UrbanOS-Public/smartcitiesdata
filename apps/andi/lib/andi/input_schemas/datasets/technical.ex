@@ -10,7 +10,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Andi.InputSchemas.Datasets.ExtractStep
-  alias Andi.InputSchemas.ExtractSteps
   alias Crontab.CronExpression
   alias AndiWeb.Views.Options
 

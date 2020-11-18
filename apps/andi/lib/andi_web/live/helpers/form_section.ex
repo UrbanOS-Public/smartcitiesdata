@@ -8,7 +8,6 @@ defmodule AndiWeb.FormSection do
 
     quote do
       import Phoenix.LiveView
-      alias Andi.InputSchemas.Datasets
 
       def handle_event("save", _, socket) do
         changeset =
@@ -73,7 +72,7 @@ defmodule AndiWeb.FormSection do
             false -> "invalid"
           end
 
-        {:ok, andi_dataset} = Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
+        {:ok, andi_dataset} = Andi.InputSchemas.Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
 
         new_changeset = apply(unquote(schema_module), :changeset_from_andi_dataset, [andi_dataset])
 

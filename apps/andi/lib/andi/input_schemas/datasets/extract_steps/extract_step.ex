@@ -5,8 +5,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   """
   use Ecto.Schema
   import Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Datasets.Technical
 
   @cast_fields [:id, :context, :type, :technical_id, :sequence]
   @required_fields [:type, :context]

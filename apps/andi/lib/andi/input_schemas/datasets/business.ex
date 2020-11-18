@@ -84,11 +84,6 @@ defmodule Andi.InputSchemas.Datasets.Business do
     :riskRating
   ]
 
-  @required_submission_fields [
-    :dataTitle,
-    :description
-  ]
-
   def changeset(business, %_struct{} = changes), do: changeset(business, Map.from_struct(changes))
 
   # Validations here are mirrored in lib/andi_web/input_schemas/metadata_form_schema.ex

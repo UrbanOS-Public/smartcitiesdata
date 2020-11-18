@@ -8,7 +8,6 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   require Logger
 
   alias AndiWeb.ErrorHelpers
-  alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ExtractSteps.ExtractStepHeader
   alias Andi.InputSchemas.Datasets.ExtractSecretStep
