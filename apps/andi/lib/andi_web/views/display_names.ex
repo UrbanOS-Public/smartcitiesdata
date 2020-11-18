@@ -5,6 +5,7 @@ defmodule AndiWeb.Views.DisplayNames do
     action: "Method",
     benefitRating: "Benefit",
     body: "Body",
+    cacheTtl: "Cache Duration",
     cadence: "Cadence",
     contactEmail: "Maintainer Email",
     datasetOwner: "Dataset Owner",

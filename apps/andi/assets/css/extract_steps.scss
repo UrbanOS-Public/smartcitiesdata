@@ -21,7 +21,8 @@
         "url url"
         "source-headers source-headers"
         "body body"
-        "path .";
+        "path ."
+        "cacheTtl .";
 
     .extract-auth-step-form__body textarea{
         height: 8rem;
@@ -88,6 +89,7 @@
 
 
 @include area(extract-auth-step-form, body);
+@include area(extract-auth-step-form, cacheTtl);
 @include area(extract-auth-step-form, destination);
 @include area(extract-auth-step-form, path);
 @include area(extract-auth-step-form, type);

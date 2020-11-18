@@ -90,7 +90,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStepTest do
     andi_extract_step = %ExtractStep{
       type: "auth",
       context: %{
-        queryParams: [%{key: "key1", value: "value1"}],
         headers: [%{key: "key2", value: "value2"}]
       }
     }
@@ -100,5 +99,27 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStepTest do
 
     assert changeset.errors[:headers] == nil
     assert [%{key: "key2", value: "value2"}] = changeset_headers
+  end
+
+  test "changeset requires path fields to not be empty" do
+    andi_extract_step1 = %ExtractStep{
+      type: "auth",
+      context: %{
+        path: ["", "ldkfjjalsdjg"]
+      }
+    }
+
+    andi_extract_step2 = %ExtractStep{
+      type: "auth",
+      context: %{
+        path: ["lsdjglsdj", nil]
+      }
+    }
+
+    changeset1 = ExtractAuthStep.changeset_from_andi_step(andi_extract_step1.context)
+    assert Keyword.has_key?(changeset1.errors, :path)
+
+    changeset2 = ExtractAuthStep.changeset_from_andi_step(andi_extract_step2.context)
+    assert Keyword.has_key?(changeset2.errors, :path)
   end
 end

@@ -62,7 +62,15 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
               <%= label(f, :path, DisplayNames.get(:path),  class: "label label--required") %>
               <% form_path = input_value(f, :path) %>
               <%= text_input(f, :path, class: "input", value: path_to_string(form_path)) %>
+              <span class="input__help-text">Separate response path keys with a period (.) (e.g. 'data.token' for response {"data": {"token": "abc123"}}) </span>
               <%= ErrorHelpers.error_tag(f, :path, bind_to_input: false) %>
+            </div>
+
+            <div class="extract-auth-step-form__cacheTtl">
+              <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl),  class: "label label--required") %>
+              <%= text_input(f, :cacheTtl, class: "input") %>
+              <span class="input__help-text">Time in milliseconds that credentials are stored (defaults to 15 minutes)</span>
+              <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false) %>
             </div>
 
           </div>

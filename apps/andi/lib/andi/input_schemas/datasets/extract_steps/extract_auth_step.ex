@@ -13,7 +13,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
     field(:url, :string)
     field(:destination, :string)
     field(:encode_method, :string)
-    field(:cacheTtl, :integer)
+    field(:cacheTtl, :integer, default: 900_000)
     field(:path, {:array, :string})
     embeds_many(:headers, ExtractHeader, on_replace: :delete)
   end
@@ -34,6 +34,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
     |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
     |> validate_key_value_set(:headers)
+    |> validate_path()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -84,6 +85,17 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
   end
 
   defp validate_body_format(changeset), do: changeset
+
+  defp validate_path(%{changes: %{path: []}} = changeset), do: add_error(changeset, :path, "is required")
+
+  defp validate_path(%{changes: %{path: path}} = changeset) do
+    case Enum.any?(path, fn path_field -> path_field in ["", nil] end) do
+      true -> add_error(changeset, :path, "path fields cannot be empty")
+      false -> changeset
+    end
+  end
+
+  defp validate_path(changeset), do: changeset
 
   defp unwrap_context(andi_step) do
     context = andi_step.context
