@@ -175,8 +175,9 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp convert_smrt_extract_steps(extract_steps) do
     Enum.map(extract_steps, fn step ->
-      updated_context = update_context_from_smrt_step(step.context, step.type)
-      Map.put(step, :context, updated_context)
+      Map.update(step, :context, %{}, fn context ->
+        update_context_from_smrt_step(context, step.type)
+      end)
     end)
   end
 
