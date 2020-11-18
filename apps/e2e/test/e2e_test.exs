@@ -61,6 +61,10 @@ defmodule E2ETest do
     bypass = Bypass.open()
     shapefile = File.read!("test/support/shapefile.zip")
 
+    Bypass.stub(bypass, "POST", "/path/to/the/auth.json", fn conn ->
+      Plug.Conn.resp(conn, 200, %{token: "3uthsveiruybaov78yr784bhruef"} |> Jason.encode!())
+    end)
+
     Bypass.stub(bypass, "GET", "/path/to/the/data.csv", fn conn ->
       Plug.Conn.resp(conn, 200, "true,foobar,10")
     end)
@@ -87,7 +91,12 @@ defmodule E2ETest do
       )
       |> TDG.create_dataset()
 
-    [dataset: dataset, streaming_dataset: streaming_dataset, geo_dataset: geo_dataset]
+    [
+      dataset: dataset,
+      streaming_dataset: streaming_dataset,
+      geo_dataset: geo_dataset,
+      bypass: bypass
+    ]
   end
 
   describe "creating an organization" do
@@ -387,26 +396,35 @@ defmodule E2ETest do
   end
 
   describe "extract steps" do
-    test "from andi are executable by reaper" do
+    test "from andi are executable by reaper", %{bypass: bypass} do
       smrt_dataset =
         TDG.create_dataset(%{
           technical: %{
             extractSteps: [
               %{
-                type: "http",
-                context: %{
-                  url: "http://test.com",
-                  action: "GET",
-                  headers: %{},
-                  queryParams: %{}
-                },
-                assigns: %{}
-              },
-              %{
                 type: "date",
                 context: %{
                   destination: "blah",
                   format: "{YYYY}"
+                },
+                assigns: %{}
+              },
+              %{
+                type: "auth",
+                context: %{
+                  destination: "dest",
+                  url: "http://localhost:#{bypass.port()}/path/to/the/auth.json",
+                  path: ["token"],
+                  cacheTtl: 15_000
+                }
+              },
+              %{
+                type: "http",
+                context: %{
+                  url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                  action: "GET",
+                  headers: %{},
+                  queryParams: %{}
                 },
                 assigns: %{}
               }

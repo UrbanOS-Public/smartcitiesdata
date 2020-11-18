@@ -163,6 +163,12 @@ body {
   color: $disabled-background;
 }
 
+.input__help-text {
+    margin-left: 1rem;
+    font-style: italic;
+    color: #7f7676;
+}
+
 .textarea {
   width: 100%;
   max-width: 35rem;
