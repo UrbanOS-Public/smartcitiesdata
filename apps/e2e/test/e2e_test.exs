@@ -91,7 +91,12 @@ defmodule E2ETest do
       )
       |> TDG.create_dataset()
 
-    [dataset: dataset, streaming_dataset: streaming_dataset, geo_dataset: geo_dataset, bypass: bypass]
+    [
+      dataset: dataset,
+      streaming_dataset: streaming_dataset,
+      geo_dataset: geo_dataset,
+      bypass: bypass
+    ]
   end
 
   describe "creating an organization" do
