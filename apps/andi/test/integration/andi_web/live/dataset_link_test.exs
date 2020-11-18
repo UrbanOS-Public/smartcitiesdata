@@ -40,7 +40,7 @@ defmodule AndiWeb.DatasetLinkTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      dataset_link_view = find_child(view, "dataset_link_editor")
+      dataset_link_view = find_live_child(view, "dataset_link_editor")
 
       html = render_change(dataset_link_view, :validate, %{"form_data" => form_data})
 

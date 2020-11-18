@@ -18,7 +18,7 @@ use Mix.Config
 config :logger, level: :info
 
 config :andi, AndiWeb.Endpoint,
-  pubsub: [name: AndiWeb.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: Andi.PubSub,
   http: [port: {:system, "PORT"}],
   server: true,
   root: ".",

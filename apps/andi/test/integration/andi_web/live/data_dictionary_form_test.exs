@@ -207,7 +207,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
       html = render(data_dictionary_view)
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
@@ -218,7 +218,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
       html = render(data_dictionary_view)
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
@@ -229,7 +229,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 200_000_001})
 
@@ -241,7 +241,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = ""
 
@@ -255,7 +255,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
 
@@ -275,7 +275,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "\n"
 
@@ -289,7 +289,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "CAM\nrules"
 
@@ -305,7 +305,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "CAM\nrules"
 
@@ -324,7 +324,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
 
@@ -354,7 +354,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       csv_sample = "string\r,i&^%$nt,fl\toat,bool---,date as multi word column\nabc,9,1.5,true,2020-07-22T21:24:40"
 
@@ -384,7 +384,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       json_sample =
         "header {\n  gtfs_realtime_version: \"2.0\"\n  incrementality: FULL_DATASET\n  timestamp: 1582913296\n}\nentity {\n  id: \"2551\"\n  vehicle {\n    trip {\n      trip_id: \"2290874_MRG_1\"\n      start_date: \"20200228\"\n      route_id: \"661\"\n    }\n"
@@ -401,7 +401,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       json_sample = "[]"
 
@@ -416,7 +416,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       json_sample = [%{list_field: [%{child_list_field: []}]}] |> Jason.encode!()
 
@@ -472,7 +472,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "adds field as a sub schema", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
 
@@ -508,7 +508,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "adds field as part of top level schema", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
 
@@ -546,7 +546,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "dictionary fields with changed types are eligible for adding a field to", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       updated_dataset_schema =
         dataset
@@ -587,7 +587,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "cancels back to modal not being visible", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
 
@@ -637,7 +637,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "removes non parent field from subschema", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -655,7 +655,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "removing a field selects the next sibling", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -673,7 +673,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       |> Datasets.update()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -701,7 +701,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       |> Datasets.update()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -720,7 +720,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "no field is selected when subschema is empty", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
@@ -753,7 +753,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       |> Datasets.update()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
@@ -765,7 +765,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
     test "shows error message when ecto delete fails", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      data_dictionary_view = find_child(view, "data_dictionary_form_editor")
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 

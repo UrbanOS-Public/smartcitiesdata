@@ -47,7 +47,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{
         "dataTitle" => "simpledatatitle"
@@ -78,7 +78,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       |> Datasets.update(%{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => "simpledatatitle", "dataName" => smrt_dataset.technical.dataName}
 
@@ -99,7 +99,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => title}
 
@@ -152,7 +152,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"language" => "spanish"}
 
@@ -195,7 +195,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       expected = Enum.join(dataset.business.keywords, ", ")
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
       subject = get_value(html, ".metadata-form__keywords input")
@@ -211,7 +211,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       form_data = %{"keywords" => "a , good ,  keyword   , is .... hard , to find"}
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
       subject = get_value(html, ".metadata-form__keywords input")
@@ -229,7 +229,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       form_data = %{"keywords" => expected}
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
       subject = get_value(html, ".metadata-form__keywords input")
@@ -283,7 +283,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
@@ -303,7 +303,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"sourceFormat" => ""}
 
@@ -327,7 +327,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       render_change(metadata_view, :validate, %{
         "form_data" => %{
@@ -363,7 +363,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"description" => nil}
 
