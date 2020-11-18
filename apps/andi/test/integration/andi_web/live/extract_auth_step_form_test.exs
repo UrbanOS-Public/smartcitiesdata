@@ -87,8 +87,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
         get_attributes(html, ".url-form__source-headers-delete-btn", "phx-value-id")
         |> hd()
 
-      html =
-        render_click([extract_steps_form_view, "#step-#{extract_step_id}"], "remove", %{"id" => btn_id, "field" => "headers"})
+      html = render_click([extract_steps_form_view, "#step-#{extract_step_id}"], "remove", %{"id" => btn_id, "field" => "headers"})
 
       [key_input] = html |> get_attributes(".url-form__source-headers-key-input", "class")
       refute btn_id =~ key_input
@@ -120,7 +119,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
             %{
               type: "auth",
               context: %{
-                url: "123.com",
+                url: "123.com"
               }
             }
           ]
@@ -180,7 +179,6 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       [:field, :value, :error],
       ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
       ["body", "this is invalid json", "Please enter valid JSON"]
-      #TODO probably add other validation stuff here and in unit test maybe
     ])
   end
 
@@ -215,10 +213,10 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   test "converts dot notation path for changeset", %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(
-      %{technical:
-        %{extractSteps:
-          [
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
             %{
               type: "auth",
               context: %{

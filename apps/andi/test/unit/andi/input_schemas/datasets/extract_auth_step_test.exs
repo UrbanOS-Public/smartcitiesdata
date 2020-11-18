@@ -101,5 +101,4 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStepTest do
     assert changeset.errors[:headers] == nil
     assert [%{key: "key2", value: "value2"}] = changeset_headers
   end
-
 end

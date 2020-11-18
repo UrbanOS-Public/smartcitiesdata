@@ -124,6 +124,5 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   end
 
   defp path_to_string(nil), do: nil
-  # defp path_to_string(empty_path) when empty_path in [nil, ""], do: empty_path
   defp path_to_string(path_array), do: Enum.join(path_array, ".")
 end
