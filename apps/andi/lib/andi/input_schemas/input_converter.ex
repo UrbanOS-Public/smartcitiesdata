@@ -89,12 +89,6 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(%Dataset{}, dataset_as_map)
   end
 
-  def andi_dataset_to_full_submission_ui_changeset(%Dataset{} = dataset) do
-    dataset_as_map = StructTools.to_map(dataset)
-
-    Dataset.full_submission_validation_changeset(%Dataset{}, dataset_as_map)
-  end
-
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
     dataset_as_map = StructTools.to_map(dataset)
 

@@ -3,14 +3,15 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   LiveComponent for editing dataset link in the self service UI
   """
   use Phoenix.LiveView
-  use AndiWeb.FormSection, schema_module: Andi.InputSchemas.Datasets.Dataset
+  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DatasetLinkFormSchema
   import Phoenix.HTML.Form
   require Logger
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.Datasets.Dataset
+  alias AndiWeb.InputSchemas.DatasetLinkFormSchema
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = Dataset.submission_changeset(dataset, %{})
+    new_changeset = DatasetLinkFormSchema.changeset(dataset, %{})
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -81,7 +82,7 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
-    |> Dataset.submission_changeset()
+    |> DatasetLinkFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 

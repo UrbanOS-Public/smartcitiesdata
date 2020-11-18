@@ -28,22 +28,12 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   use Accessible
 
   @cast_fields [:id, :ingestedTime, :version, :submission_status, :dlq_message, :owner_id, :datasetLink]
-  @required_fields [:datasetLink]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def submission_changeset(changes), do: submission_changeset(%__MODULE__{}, changes)
 
   def changeset(dataset, changes) do
     dataset
     |> cast(changes, @cast_fields)
-    |> cast_assoc(:technical, with: &Technical.changeset/2)
-    |> cast_assoc(:business, with: &Business.changeset/2)
-  end
-
-  def submission_changeset(dataset, changes) do
-    dataset
-    |> cast(changes, @cast_fields)
-    |> validate_required(@required_fields, message: "is required")
     |> cast_assoc(:technical, with: &Technical.changeset/2)
     |> cast_assoc(:business, with: &Business.changeset/2)
   end
@@ -63,25 +53,12 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
-  def changeset_from_andi_dataset(dataset) do
-    dataset = StructTools.to_map(dataset)
-
-    submission_changeset(dataset)
-  end
-
   def preload(struct), do: StructTools.preload(struct, [:technical, :business, :owner])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 
   def full_validation_changeset(schema, changes) do
     changeset(schema, changes)
-    |> validate_unique_system_name()
-  end
-
-  def full_submission_validation_changeset(changes), do: full_submission_validation_changeset(%__MODULE__{}, changes)
-
-  def full_submission_validation_changeset(schema, changes) do
-    submission_changeset(schema, changes)
     |> validate_unique_system_name()
   end
 
