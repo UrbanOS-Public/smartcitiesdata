@@ -3,17 +3,17 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
     LiveComponent for public submissions of dataset metadata
   """
   use Phoenix.LiveView
-  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.MetadataFormSchema
+  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.SubmissionMetadataFormSchema
   import Phoenix.HTML.Form
 
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ErrorHelpers
-  alias AndiWeb.InputSchemas.MetadataFormSchema
+  alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.Helpers.FormTools
 
   def mount(_, %{"dataset" => dataset}, socket) do
-    new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
+    new_metadata_changeset = SubmissionMetadataFormSchema.changeset_from_andi_dataset(dataset)
 
     dataset_exists =
       case Andi.Services.DatasetStore.get(dataset.id) do
@@ -150,13 +150,13 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
       ) do
     form_data
     |> FormTools.adjust_data_name()
-    |> MetadataFormSchema.submission_changeset_from_form_data()
+    |> SubmissionMetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
-    |> MetadataFormSchema.submission_changeset_from_form_data()
+    |> SubmissionMetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
