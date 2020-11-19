@@ -168,23 +168,27 @@ defmodule Andi.InputSchemas.InputConverter do
   defp convert_smrt_extract_steps(nil), do: []
 
   defp convert_smrt_extract_steps(extract_steps) do
-    extract_steps
-    |> Enum.map(fn
-      %{type: "http"} = http_step ->
-        http_step
-        |> Map.update(:context, %{}, &update_http_context/1)
-
-      step ->
-        step
+    Enum.map(extract_steps, fn step ->
+      Map.update(step, :context, %{}, fn context ->
+        update_context_from_smrt_step(context, step.type)
+      end)
     end)
   end
 
-  defp update_http_context(http_context) do
-    http_context
+  defp update_context_from_smrt_step(context, "http") do
+    context
     |> encode_extract_step_body_as_json()
     |> Map.update(:queryParams, [], &to_key_value_list/1)
     |> Map.update(:headers, [], &to_key_value_list/1)
   end
+
+  defp update_context_from_smrt_step(context, "auth") do
+    context
+    |> encode_extract_step_body_as_json()
+    |> Map.update(:headers, [], &to_key_value_list/1)
+  end
+
+  defp update_context_from_smrt_step(context, _), do: context
 
   defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body != nil do
     Map.put(smrt_extract_step, :body, Jason.encode!(body))
@@ -223,12 +227,12 @@ defmodule Andi.InputSchemas.InputConverter do
       step
       |> Map.delete(:id)
       |> Map.delete(:technical_id)
-      |> Map.update(:context, nil, fn context -> update_context(context, step.type) end)
+      |> Map.update(:context, nil, fn context -> update_context_from_andi_step(context, step.type) end)
       |> Map.put(:assigns, %{})
     end)
   end
 
-  defp update_context(context, "http") do
+  defp update_context_from_andi_step(context, "http") do
     context
     |> decode_andi_extract_step_body()
     |> Map.put_new(:body, %{})
@@ -237,13 +241,21 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
-  defp update_context(context, "date") do
+  defp update_context_from_andi_step(context, "date") do
     context
     |> Map.put_new(:deltaTimeValue, nil)
     |> Map.update(:deltaTimeUnit, nil, &ensure_nil_unit/1)
   end
 
-  defp update_context(context, _type), do: context
+  defp update_context_from_andi_step(context, "auth") do
+    context
+    |> decode_andi_extract_step_body()
+    |> Map.put_new(:body, %{})
+    |> Map.put_new(:encodeMethod, "json")
+    |> Map.update(:headers, nil, &convert_key_value_to_map/1)
+  end
+
+  defp update_context_from_andi_step(context, _type), do: context
 
   defp ensure_nil_unit(""), do: nil
   defp ensure_nil_unit(unit), do: unit

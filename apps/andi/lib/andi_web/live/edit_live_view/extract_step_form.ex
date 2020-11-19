@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
   alias AndiWeb.ExtractSteps.ExtractSecretStepForm
+  alias AndiWeb.ExtractSteps.ExtractAuthStepForm
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
@@ -254,6 +255,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp render_extract_step_form(%{type: "date"}), do: ExtractDateStepForm
 
   defp render_extract_step_form(%{type: "secret"}), do: ExtractSecretStepForm
+
+  defp render_extract_step_form(%{type: "auth"}), do: ExtractAuthStepForm
 
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
 
