@@ -77,6 +77,7 @@ $component-header-height: 7.5rem;
 .section-number {
     display: inline-flex;
     align-items: center;
+    position: relative;
 }
 
 .component-number {
@@ -117,14 +118,18 @@ $component-header-height: 7.5rem;
     background-image: url('/images/green-check.svg');
     height: 24px;
     width: 24px;
-    margin-left: -47%;
+    position: absolute;
+    top: 15px;
+    right: 20px;
 }
 
 .component-number-status--invalid {
     background-image: url('/images/red-x.svg');
     height: 24px;
     width: 24px;
-    margin-left: -47%;
+    position: absolute;
+    top: 15px;
+    right: 20px;
 }
 
 
