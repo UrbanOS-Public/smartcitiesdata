@@ -10,7 +10,6 @@ defmodule AndiWeb.SubmitLiveView.ReviewSubmission do
 
     {:ok,
      assign(socket,
-       changeset: %{valid?: true, changes: %{}},
        visibility: "collapsed",
        validation_status: "collapsed",
        dataset_id: dataset.id
