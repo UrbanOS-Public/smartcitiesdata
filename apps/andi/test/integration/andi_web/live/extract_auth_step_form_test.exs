@@ -271,7 +271,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     extract_step_id = get_extract_step_id(andi_dataset, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     assert get_value(html, ".extract-auth-step-form__cacheTtl input") == "15"

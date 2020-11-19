@@ -521,7 +521,7 @@ defmodule AndiWeb.EditLiveViewTest do
         assert dataset_sent.technical.extractSteps != []
         assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
         assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
-      end)
+      end, 500, 40)
     end
 
     test "fails to publish if invalid extract steps are found", %{conn: conn} do
