@@ -9,9 +9,12 @@ defmodule DiscoveryApiWeb.RenderError do
     render_error(conn, status_code, message: message)
   end
 
+  def render_error(conn, status_code, %_struct{} = assigns) do
+    render_error(conn, status_code, Map.from_struct(assigns))
+  end
   def render_error(conn, status_code, assigns) do
     conn
-    |> put_private(:phoenix_format, "json")
+    |> put_format("json")
     |> put_status(status_code)
     |> put_view(@error_module)
     |> render(@error_template, assigns)

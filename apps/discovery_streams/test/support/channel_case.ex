@@ -4,7 +4,7 @@ defmodule DiscoveryStreamsWeb.ChannelCase do
 
   using do
     quote do
-      use Phoenix.ChannelTest
+      import Phoenix.ChannelTest
 
       @endpoint DiscoveryStreamsWeb.Endpoint
     end

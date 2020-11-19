@@ -7,6 +7,7 @@ defmodule Estuary.Application do
 
   def start(_type, _args) do
     [
+      {Phoenix.PubSub, [name: Estuary.PubSub, adapter: Phoenix.PubSub.PG2]},
       EstuaryWeb.Endpoint,
       Estuary.Quantum.Scheduler
     ]
