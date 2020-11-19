@@ -30,7 +30,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
     ~L"""
     <div id="step-<%= @id %>" class="extract-step-container extract-auth-step-form">
 
-      <%= live_component(@socket, ExtractStepHeader, step_name: "Auth", step_id: @id) %>
+      <%= live_component(@socket, ExtractStepHeader, step_name: "Authorization", step_id: @id) %>
 
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
         <% hidden_input(f, :body) %>
@@ -68,8 +68,9 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
 
             <div class="extract-auth-step-form__cacheTtl">
               <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl),  class: "label label--required") %>
-              <%= text_input(f, :cacheTtl, class: "input") %>
-              <span class="input__help-text">Time in milliseconds that credentials are stored (defaults to 15 minutes)</span>
+              <% form_ttl = input_value(f, :cacheTtl) %>
+              <%= text_input(f, :cacheTtl, class: "input", value: milliseconds_to_minutes(form_ttl)) %>
+              <span class="input__help-text">Time in minutes that credentials are stored (defaults to 15 minutes)</span>
               <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false) %>
             </div>
 
@@ -84,6 +85,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
     |> Map.update(:path, "", &String.split(&1, "."))
+    |> convert_form_cache_ttl()
     |> ExtractAuthStep.changeset()
     |> complete_validation(socket)
   end
@@ -133,4 +135,19 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
 
   defp path_to_string(empty_path) when empty_path in [nil, ""], do: empty_path
   defp path_to_string(path_array), do: Enum.join(path_array, ".")
+
+  defp milliseconds_to_minutes(milliseconds) when milliseconds in [nil, ""], do: milliseconds
+  defp milliseconds_to_minutes(milliseconds) when is_integer(milliseconds), do: div(milliseconds, 60_000)
+  defp milliseconds_to_minutes(milliseconds), do: milliseconds
+
+  defp convert_form_cache_ttl(%{cacheTtl: nil} = form_data), do: nil
+
+  defp convert_form_cache_ttl(%{cacheTtl: form_cache_ttl} = form_data) do
+    case String.match?(form_cache_ttl, ~r/^[[:digit:]]+$/) do
+      true -> Map.put(form_data, :cacheTtl, String.to_integer(form_cache_ttl) * 60_000)
+      false -> form_data
+    end
+  end
+
+  defp convert_form_cache_ttl(form_data), do: form_data
 end

@@ -33,6 +33,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
     |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
     |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
+    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
     |> validate_key_value_set(:headers)
     |> validate_path()
   end
