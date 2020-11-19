@@ -241,7 +241,40 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     html = render_click(extract_steps_form_view, "save")
 
     eventually(fn ->
-      assert ExtractSteps.get(extract_step_id) |> IO.inspect() |> get_in([:context, "path"]) == ["x", "y", "z"]
+      assert ExtractSteps.get(extract_step_id) |> get_in([:context, "path"]) == ["x", "y", "z"]
+    end)
+  end
+
+  test "converts cacheTtl to minutes", %{conn: conn} do
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "auth",
+              context: %{
+                cacheTtl: 900_000
+              }
+            }
+          ]
+        }
+      })
+
+    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
+    extract_step_id = get_extract_step_id(andi_dataset, 0)
+
+    assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+    assert get_value(html, ".extract-auth-step-form__cacheTtl input") == "15"
+
+    form_data = %{"cacheTtl" => "20"}
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+
+    html = render_click(extract_steps_form_view, "save")
+
+    eventually(fn ->
+      assert ExtractSteps.get(extract_step_id) |> get_in([:context, "cacheTtl"]) == 1_200_000
     end)
   end
 
