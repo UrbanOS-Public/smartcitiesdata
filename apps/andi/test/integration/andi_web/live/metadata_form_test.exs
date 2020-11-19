@@ -166,7 +166,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
-      render_change(metadata_view, "validate_system_name", nil)
+      render_change(metadata_view, "validate_system_name", %{})
       html = render(metadata_view)
 
       assert Enum.empty?(find_elements(html, "#dataName-error-msg"))
@@ -186,7 +186,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
-      render_change(metadata_view, "validate_system_name", nil)
+      render_change(metadata_view, "validate_system_name", %{})
       html = render(metadata_view)
 
       refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
@@ -210,7 +210,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
-      render_change(metadata_view, "validate_system_name", nil)
+      render_change(metadata_view, "validate_system_name", %{})
       html = render(metadata_view)
 
       assert Enum.empty?(find_elements(html, "#dataName-error-msg"))

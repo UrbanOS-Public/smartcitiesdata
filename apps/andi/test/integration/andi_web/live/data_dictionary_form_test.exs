@@ -584,7 +584,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
       form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
       add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
 
-
       render_change(form, add_field_form_data)
       render(data_dictionary_view)
       render_click(add_button)
@@ -603,7 +602,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_click(data_dictionary_view, "add_data_dictionary_field", %{})
 
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "cancel", %{})
+      cancel_button = element(data_dictionary_view, "#data_dictionary_add_field_editor input.btn")
+      render_click(cancel_button)
 
       html = render(data_dictionary_view)
 
@@ -654,7 +654,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       html = render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
       html = render(data_dictionary_view)
       selected_field_name = "one"
 
@@ -671,7 +672,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
       html = render(data_dictionary_view)
 
       assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
@@ -692,13 +694,14 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "true"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
       html = render(data_dictionary_view)
 
       assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
                get_text(html, ".data-dicitionary-remove-field-editor__message")
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      render_click(delete_button)
       html = render(data_dictionary_view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
@@ -720,7 +723,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
       assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+
       html = render(data_dictionary_view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
@@ -737,18 +742,16 @@ defmodule AndiWeb.DataDictionaryFormTest do
       child_target = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target") |> List.last()
       child_id = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-value-field-id") |> List.last()
 
-      render_click([data_dictionary_view, child_target], "toggle_selected", %{
-        "field-id" => child_id,
-        "index" => nil,
-        "name" => nil,
-        "id" => nil
-      })
+      selectable = element(data_dictionary_view, ".data-dictionary-tree-field__text[phx-value-field-id='#{child_id}']")
+      render_click(selectable)
 
       html = render(data_dictionary_view)
 
       assert "two-one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+
       html = render(data_dictionary_view)
 
       assert "" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
@@ -789,7 +792,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
 
-      render_click([data_dictionary_view, "data_dictionary_remove_field_editor"], "remove_field", %{"parent" => "false"})
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+
       html = render(data_dictionary_view)
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))

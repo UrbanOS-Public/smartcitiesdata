@@ -35,8 +35,8 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
     test "public users cannot view or edit organizations", %{public_conn: conn, org: org} do
       assert {:error,
-              %{
-                redirect: %{
+              {
+                :redirect, %{
                   to: "/auth/auth0?prompt=login&error_message=Unauthorized"
                 }
               }} = live(conn, @url_path <> org.id)
@@ -201,7 +201,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-      html = render_click(view, "save", nil)
+      html = render_click(view, "save", %{})
 
       eventually(
         fn ->
@@ -224,7 +224,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       html = render_click(view, "validate", %{"form_data" => invalid_form_data})
       refute Enum.empty?(find_elements(html, "#description-error-msg"))
 
-      html = render_click(view, "save", nil)
+      html = render_click(view, "save", %{})
 
       refute Enum.empty?(find_elements(html, "#snackbar"))
     end
@@ -235,7 +235,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_org.id)
 
-      render_click(view, "cancel-edit", nil)
+      render_click(view, "cancel-edit", %{})
 
       assert_redirect(view, "/organizations")
     end
@@ -250,7 +250,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--hidden"))
 
-      html = render_click(view, event, nil)
+      html = render_click(view, event, %{})
 
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
 
