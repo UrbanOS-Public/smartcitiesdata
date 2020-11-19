@@ -55,7 +55,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2", only: [:test, :integration], override: true},
       {:phoenix, "~> 1.4"},
-      {:phoenix_pubsub, "~> 1.0"},
+      {:phoenix_pubsub, "~> 2.0"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:properties, in_umbrella: true},
