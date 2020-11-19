@@ -150,6 +150,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
         |> Andi.URI.clear_query_params()
 
       html = render(element(extract_step_form_view, "#step-#{extract_step_id}"))
+
       assert get_values(html, ".extract-http-step-form__url input") == [
                url_with_no_query_params
              ]

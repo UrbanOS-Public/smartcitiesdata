@@ -36,7 +36,8 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
     test "public users cannot view or edit organizations", %{public_conn: conn, org: org} do
       assert {:error,
               {
-                :redirect, %{
+                :redirect,
+                %{
                   to: "/auth/auth0?prompt=login&error_message=Unauthorized"
                 }
               }} = live(conn, @url_path <> org.id)

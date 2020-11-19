@@ -248,7 +248,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     render_click(extract_steps_form_view, "save")
 
     eventually(fn ->
-      assert ExtractSteps.get(extract_step_id) |> IO.inspect() |> get_in([:context, "path"]) == ["x", "y", "z"]
+      assert ExtractSteps.get(extract_step_id) |> get_in([:context, "path"]) == ["x", "y", "z"]
     end)
   end
 
