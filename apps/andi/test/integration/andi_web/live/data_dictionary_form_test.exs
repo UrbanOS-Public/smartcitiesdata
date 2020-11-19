@@ -496,9 +496,12 @@ defmodule AndiWeb.DataDictionaryFormTest do
         }
       }
 
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "validate", form_data)
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+      render_change(form, form_data)
       render(data_dictionary_view)
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "add_field", nil)
+      render_click(add_button)
       html = render(data_dictionary_view)
 
       assert "Natty" == get_text(html, "#data_dictionary_tree_one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
@@ -532,9 +535,12 @@ defmodule AndiWeb.DataDictionaryFormTest do
         }
       }
 
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "validate", form_data)
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+      render_change(form, form_data)
       render(data_dictionary_view)
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "add_field", nil)
+      render_click(add_button)
 
       html = render(data_dictionary_view)
 
@@ -575,9 +581,13 @@ defmodule AndiWeb.DataDictionaryFormTest do
         }
       }
 
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "validate", add_field_form_data)
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+
+      render_change(form, add_field_form_data)
       render(data_dictionary_view)
-      render_click([data_dictionary_view, "data_dictionary_add_field_editor"], "add_field", nil)
+      render_click(add_button)
 
       html = render(data_dictionary_view)
 

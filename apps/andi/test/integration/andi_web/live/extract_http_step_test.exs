@@ -63,13 +63,15 @@ defmodule AndiWeb.ExtractHttpStepTest do
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
 
-      html = render_click([extract_step_form_view, "#step-#{extract_step_id}"], "add", %{"field" => Atom.to_string(field)})
+      add_button = element(extract_step_form_view, "#step-#{extract_step_id} #{btn_class}")
+      html = render_click(add_button)
 
       assert html |> find_elements(key_class) |> length() == 3
       assert html |> find_elements(value_class) |> length() == 3
 
       where(
         field: [:queryParams, :headers],
+        btn_class: [".url-form__source-query-params-add-btn", ".url-form__source-headers-add-btn"],
         key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
         value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
       )
@@ -90,8 +92,11 @@ defmodule AndiWeb.ExtractHttpStepTest do
         get_attributes(html, btn_class, "phx-value-id")
         |> hd()
 
-      html =
-        render_click([extract_step_form_view, "#step-#{extract_step_id}"], "remove", %{"id" => btn_id, "field" => Atom.to_string(field)})
+      button_selector = "#step-#{extract_step_id} #{btn_class}[phx-value-id='#{btn_id}']"
+
+      del_button = element(extract_step_form_view, button_selector)
+
+      html = render_click(del_button)
 
       [key_input] = html |> get_attributes(key_class, "class")
       refute btn_id =~ key_input
@@ -127,14 +132,15 @@ defmodule AndiWeb.ExtractHttpStepTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
 
-      assert html |> find_elements(".url-form__source-query-params-delete-btn") |> length() == 2
+      btn_class = ".url-form__source-query-params-delete-btn"
+      assert html |> find_elements(btn_class) |> length() == 2
 
-      get_attributes(html, ".url-form__source-query-params-delete-btn", "phx-value-id")
+      get_attributes(html, btn_class, "phx-value-id")
       |> Enum.each(fn btn_id ->
-        render_click([extract_step_form_view, "#step-#{extract_step_id}"], "remove", %{
-          "id" => btn_id,
-          "field" => Atom.to_string(:queryParams)
-        })
+        button_selector = "#step-#{extract_step_id} #{btn_class}[phx-value-id='#{btn_id}']"
+        del_button = element(extract_step_form_view, button_selector)
+
+        render_click(del_button)
       end)
 
       url_with_no_query_params =
@@ -143,7 +149,8 @@ defmodule AndiWeb.ExtractHttpStepTest do
         |> get_in([:context, :url])
         |> Andi.URI.clear_query_params()
 
-      assert render([extract_step_form_view, "#step-#{extract_step_id}"]) |> get_values(".extract-http-step-form__url input") == [
+      html = render(element(extract_step_form_view, "#step-#{extract_step_id}"))
+      assert get_values(html, ".extract-http-step-form__url input") == [
                url_with_no_query_params
              ]
     end
@@ -285,7 +292,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
       render_click(test_url_button)
 
       eventually(fn ->
-        html = render([extract_step_form_view, "#step-#{extract_step_id}"])
+        html = render(element(extract_step_form_view, "#step-#{extract_step_id}"))
         assert get_text(html, ".test-status__code") == "Success"
         assert get_text(html, ".test-status__time") == "1000"
       end)
@@ -323,7 +330,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
       render_click(test_url_button)
 
       eventually(fn ->
-        html = render([extract_step_form_view, "#step-#{extract_step_id}"])
+        html = render(element(extract_step_form_view, "#step-#{extract_step_id}"))
         assert get_text(html, ".test-status__code--good") == "Success"
       end)
     end
@@ -360,7 +367,7 @@ defmodule AndiWeb.ExtractHttpStepTest do
       render_click(test_url_button)
 
       eventually(fn ->
-        html = render([extract_step_form_view, "#step-#{extract_step_id}"])
+        html = render(element(extract_step_form_view, "#step-#{extract_step_id}"))
         assert get_text(html, ".test-status__code--bad") == "Error"
         assert get_text(html, ".test-status__code--good") != "Error"
       end)
