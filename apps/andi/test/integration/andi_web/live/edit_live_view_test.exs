@@ -442,12 +442,13 @@ defmodule AndiWeb.EditLiveViewTest do
       finalize_view = find_live_child(view, "finalize_form_editor")
       url_view = find_live_child(view, "url_form_editor")
       extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => ""}
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => "cam.com"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -471,12 +472,13 @@ defmodule AndiWeb.EditLiveViewTest do
       finalize_view = find_live_child(view, "finalize_form_editor")
       url_view = find_live_child(view, "url_form_editor")
       extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -500,12 +502,13 @@ defmodule AndiWeb.EditLiveViewTest do
       finalize_view = find_live_child(view, "finalize_form_editor")
       url_view = find_live_child(view, "url_form_editor")
       extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
       extract_form_data = %{"action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -554,10 +557,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       finalize_view = find_live_child(view, "finalize_form_editor")
       extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => "example.com/{{variable_name}}"}
 
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
