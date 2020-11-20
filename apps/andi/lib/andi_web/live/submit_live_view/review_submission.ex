@@ -45,6 +45,14 @@ defmodule AndiWeb.SubmitLiveView.ReviewSubmission do
               <h4>Please ensure that there are no errors or omitted fields before submitting. Upon submission, the Data Curator will review your dataset for completeness, efficacy, and accuracy. You may check the status of your submission by returning to your submission portal homepage. If you have any questions, please contact the <a href="https://www.smartcolumbusos.com/contact-us" target="_blank">Data Curator</a></h4>
             </div>
 
+            <div class="edit-button-group form-grid">
+              <div class="edit-button-group__cancel-btn">
+                <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Back</a>
+                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+              </div>
+            </div>
+          </div>
+
 
         </div>
       </div>
@@ -62,7 +70,7 @@ defmodule AndiWeb.SubmitLiveView.ReviewSubmission do
     {:noreply, socket}
   end
 
-  def handle_event("toggle-component-visibility", _, socket) do
+  def handle_event("toggle-component-visibility", %{"component" => "review_submission"}, socket) do
     current_visibility = Map.get(socket.assigns, :visibility)
 
     new_visibility =
@@ -72,5 +80,14 @@ defmodule AndiWeb.SubmitLiveView.ReviewSubmission do
       end
 
     {:noreply, assign(socket, visibility: new_visibility, validation_status: "valid")}
+  end
+
+  def handle_event("toggle-component-visibility", %{"component-expand" => "url_form"}, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
+      expand: "url_form",
+      dataset_id: socket.assigns.dataset_id
+    })
+
+    {:noreply, assign(socket, visibility: "collapsed")}
   end
 end
