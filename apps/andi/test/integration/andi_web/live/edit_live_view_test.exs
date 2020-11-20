@@ -577,6 +577,26 @@ defmodule AndiWeb.EditLiveViewTest do
         50
       )
     end
+
+    data_test "does not publish when extract steps are invalid", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      extract_steps_form_view = find_child(view, "extract_step_form_editor")
+      finalize_view = find_child(view, "finalize_form_editor")
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      refute Enum.empty?(find_elements(html, "#extract-step-form .component-header .section-number .component-number-status--invalid"))
+
+      where([
+        extract_steps: [[], nil, [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]]
+      ])
+    end
   end
 
   describe "delete dataset" do

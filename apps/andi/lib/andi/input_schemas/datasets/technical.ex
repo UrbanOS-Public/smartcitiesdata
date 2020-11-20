@@ -186,11 +186,13 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
-    case extract_steps in [nil, []] do
+    case extract_steps in [nil, []] or has_no_http_steps?(extract_steps) do
       true -> add_error(changeset, :extractSteps, "cannot be empty")
       false -> changeset
     end
   end
+
+  defp has_no_http_steps?(extract_steps), do: Enum.all?(extract_steps, fn step -> step.type != "http" end)
 
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]
