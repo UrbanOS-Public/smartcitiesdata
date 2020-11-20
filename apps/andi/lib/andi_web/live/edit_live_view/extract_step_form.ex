@@ -162,6 +162,14 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     end
   end
 
+  def handle_event("remove-extract-step", %{"id" => extract_step_id}, %{assigns: %{technical_id: technical_id}} = socket) do
+    ExtractSteps.delete(extract_step_id)
+    updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
+    all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
+
+    {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map)}
+  end
+
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
         %{assigns: %{dataset_id: dataset_id}} = socket
