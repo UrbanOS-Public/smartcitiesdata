@@ -69,7 +69,7 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
                 </div>
 
                 <div class="edit-button-group__save-btn">
-                  <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
+                  <a href="#review_submission" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="review_submission">Next</a>
                   <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
                 </div>
                 </div>
