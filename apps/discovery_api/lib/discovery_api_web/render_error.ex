@@ -12,6 +12,7 @@ defmodule DiscoveryApiWeb.RenderError do
   def render_error(conn, status_code, %_struct{} = assigns) do
     render_error(conn, status_code, Map.from_struct(assigns))
   end
+
   def render_error(conn, status_code, assigns) do
     conn
     |> put_format("json")
