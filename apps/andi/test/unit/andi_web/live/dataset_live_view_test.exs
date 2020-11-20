@@ -1,6 +1,5 @@
 defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  use Phoenix.ConnTest
   use Placebo
   alias Andi.Schemas.User
 
@@ -78,7 +77,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       {:ok, view, _html} = live(conn, @url_path <> "?order-by=dataTitle&order-dir=asc")
 
       render_change(view, :search, %{"search-value" => "search"})
-      assert_redirect(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search")
+      assert_patch(view, @url_path <> "?order-by=dataTitle&order-dir=asc&search=search")
     end
   end
 
@@ -96,7 +95,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
                |> render_change(:search, %{"search-value" => search_text})
                |> get_values("input.datasets-index__search-input")
 
-      assert_redirect(view, @url_path <> "?search=" <> search_text)
+      assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
     end
   end
 
@@ -114,7 +113,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
                |> render_submit(:search, %{"search-value" => search_text})
                |> get_values("input.datasets-index__search-input")
 
-      assert_redirect(view, @url_path <> "?search=" <> search_text)
+      assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
     end
   end
 
@@ -186,5 +185,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
       assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
+  end
+
+  defp encoded(url) do
+    String.replace(url, " ", "+")
   end
 end

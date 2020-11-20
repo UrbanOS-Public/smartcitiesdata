@@ -47,7 +47,7 @@ defmodule AndiWeb.UrlFormTest do
 
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
@@ -66,7 +66,7 @@ defmodule AndiWeb.UrlFormTest do
 
     data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
       assert html |> find_elements(value_class) |> length() == 2
@@ -109,7 +109,7 @@ defmodule AndiWeb.UrlFormTest do
 
     test "source url is updated when source query params are removed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert html |> find_elements(".url-form__source-query-params-delete-btn") |> length() == 2
 
@@ -128,7 +128,7 @@ defmodule AndiWeb.UrlFormTest do
 
     test "source query params added by source url updates can be removed", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert html |> find_elements(".url-form__source-query-params-delete-btn") |> length() == 2
 
@@ -174,7 +174,7 @@ defmodule AndiWeb.UrlFormTest do
       allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
       render_change(url_form_view, :test_url, %{})
 
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
@@ -186,7 +186,7 @@ defmodule AndiWeb.UrlFormTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       form_data = %{"sourceUrl" => sourceUrl}
 
@@ -215,7 +215,7 @@ defmodule AndiWeb.UrlFormTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       form_data = %{"sourceQueryParams" => queryParams, "sourceUrl" => initialSourceUrl}
 
@@ -252,7 +252,7 @@ defmodule AndiWeb.UrlFormTest do
       allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert get_text(html, ".test-status__code") == ""
       assert get_text(html, ".test-status__time") == ""
@@ -274,7 +274,7 @@ defmodule AndiWeb.UrlFormTest do
       allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert get_text(html, ".test-status__code--good") == ""
 
@@ -294,7 +294,7 @@ defmodule AndiWeb.UrlFormTest do
       allow(UrlTest.test(dataset.technical.sourceUrl, any()), return: %{time: 1_000, status: 400})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_form_view = find_child(view, "url_form_editor")
+      url_form_view = find_live_child(view, "url_form_editor")
 
       assert get_text(html, ".test-status__code--bad") == ""
 
@@ -316,7 +316,7 @@ defmodule AndiWeb.UrlFormTest do
       |> Datasets.save()
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    url_form_view = find_child(view, "url_form_editor")
+    url_form_view = find_live_child(view, "url_form_editor")
 
     form_data = %{"sourceUrl" => ""}
 
@@ -331,7 +331,7 @@ defmodule AndiWeb.UrlFormTest do
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    url_form_view = find_child(view, "url_form_editor")
+    url_form_view = find_live_child(view, "url_form_editor")
 
     form_data = %{field => %{"0" => %{"key" => "", "value" => "where's my key"}}}
 

@@ -3,7 +3,7 @@ defmodule DiscoveryStreamsWeb.Endpoint do
 
   use Phoenix.Endpoint, otp_app: :discovery_streams
 
-  socket("/socket", DiscoveryStreamsWeb.UserSocket)
+  socket("/socket", DiscoveryStreamsWeb.UserSocket, websocket: [transport: Phoenix.Transports.WebSocket])
 
   plug(
     Plug.Parsers,

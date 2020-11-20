@@ -11,7 +11,7 @@ idle_timeout = 3_600 * 1_000 * idle_timeout_hours
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   secret_key_base: "7Qfvr6quFJ6Qks3FGiLMnm/eNV8K66yMVpkU46lCZ2rKj0YR9ksjxsB+SX3qHZre",
   render_errors: [view: DiscoveryApiWeb.ErrorView, accepts: ~w(json)],
-  pubsub: [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: DiscoveryApi.PubSub,
   instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
   http: [
     port: 4000,

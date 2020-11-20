@@ -1,6 +1,5 @@
 defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  use Phoenix.ConnTest
   use Placebo
   alias Andi.Schemas.User
 
@@ -139,7 +138,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       {:ok, view, _html} = live(conn, @url_path <> "?foo=bar")
 
       render_click(view, "order-by", %{"field" => "data_title"})
-      assert_redirect(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc")
+      assert_patch(view, @url_path <> "?foo=bar&order-by=data_title&order-dir=desc")
     end
   end
 
