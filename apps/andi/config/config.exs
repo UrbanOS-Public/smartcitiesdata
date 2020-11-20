@@ -13,7 +13,7 @@ config :andi, AndiWeb.Endpoint,
   # You should overwrite this as part of deploying the platform.
   secret_key_base: "z7Iv1RcFiPow+/j3QKYyezhVCleXMuNBmrDO130ddUzysadB1stTt+q0JfIrm/q7",
   render_errors: [view: AndiWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: Andi.PubSub,
   check_origin: ["http://localhost:4000", "https://*.smartcolumbusos.com"],
   http: [stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]]
 

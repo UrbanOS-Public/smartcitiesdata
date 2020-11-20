@@ -13,7 +13,7 @@
   <body>
     <div class="root">
       <main role="main" class="root__main">
-        <%= render @view_module, @view_template, assigns %>
+        <%= @inner_content %>
       </main>
     </div>
   </body>

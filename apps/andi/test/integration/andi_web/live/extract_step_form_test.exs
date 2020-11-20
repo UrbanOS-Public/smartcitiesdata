@@ -60,7 +60,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "when the add step button is pressed, a new step is rendered", %{view: view} do
-    editor = find_child(view, "extract_step_form_editor")
+    editor = find_live_child(view, "extract_step_form_editor")
 
     render_change(editor, "update_new_step_type", %{"value" => "date"})
     render_click(editor, "add-extract-step")
@@ -78,8 +78,8 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
-    editor = find_child(view, "extract_step_form_editor")
-    finalize_editor = find_child(view, "finalize_form_editor")
+    editor = find_live_child(view, "extract_step_form_editor")
+    finalize_editor = find_live_child(view, "finalize_form_editor")
 
     render_change(editor, "update_new_step_type", %{"value" => "http"})
 
@@ -90,8 +90,9 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
     extract_step_id = get_extract_step_id(andi_dataset, 0)
+    es_form = element(editor, "#step-#{extract_step_id} form")
 
-    render_change([editor, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+    render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
 
     render_click(editor, "save")
     render_click(finalize_editor, "publish")
@@ -111,10 +112,11 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
     extract_step_id = get_extract_step_id(dataset, 0)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    render_change(es_form, %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -126,10 +128,11 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   test "given an invalid extract date step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
     extract_step_id = get_extract_step_id(dataset, 1)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
-    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    render_change(es_form, %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
@@ -144,15 +147,16 @@ defmodule AndiWeb.ExtractStepFormTest do
     view: view
   } do
     extract_step_id = get_extract_step_id(dataset, 0)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     form_data = %{"action" => "GET", "url" => ""}
-    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    render_change(es_form, %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
 
     form_data = %{"action" => "GET", "url" => "bob.com"}
-    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    render_change(es_form, %{"form_data" => form_data})
 
     eventually(fn ->
       html = render(extract_steps_form_view)
@@ -162,7 +166,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   test "pressing the up arrow on an extract step moves it up the list of extract steps", %{view: view, andi_dataset: dataset, html: html} do
     extract_step_id = get_extract_step_id(dataset, 1)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
     expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
 
@@ -180,7 +184,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     html: html
   } do
     extract_step_id = get_extract_step_id(dataset, 0)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
     expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
 
@@ -194,7 +198,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   data_test "attempting to move an extract step out of index bounds does nothing", %{view: view, andi_dataset: dataset, html: html} do
     extract_step_id = get_extract_step_id(dataset, original_index)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
 
     render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string})

@@ -65,7 +65,7 @@ defmodule DiscoveryApi.Mixfile do
       {:patiently, "~> 0.2"},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
-      {:phoenix_pubsub, "~> 1.0"},
+      {:phoenix_pubsub, "~> 2.0"},
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},

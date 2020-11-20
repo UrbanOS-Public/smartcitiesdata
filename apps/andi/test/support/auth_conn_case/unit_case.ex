@@ -8,7 +8,8 @@ defmodule AndiWeb.Test.AuthConnCase.UnitCase do
 
   using do
     quote do
-      use Phoenix.ConnTest
+      import Phoenix.ConnTest
+      import Plug.Conn
       alias AndiWeb.Router.Helpers, as: Routes
 
       @endpoint AndiWeb.Endpoint

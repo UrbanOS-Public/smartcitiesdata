@@ -192,7 +192,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
     assert {:ok, view, html} = live(conn, edit_page)
-    metadata_view = find_child(view, "metadata_form_editor")
+    metadata_view = find_live_child(view, "metadata_form_editor")
 
     assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 

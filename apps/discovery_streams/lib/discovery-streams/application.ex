@@ -15,6 +15,7 @@ defmodule DiscoveryStreams.Application do
 
     children =
       [
+        {Phoenix.PubSub, [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2]},
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
         {Brook, brook()},

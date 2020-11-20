@@ -18,7 +18,8 @@ defmodule DiscoveryApiWeb.ConnCase do
   using do
     quote do
       # Import conveniences for testing with connections
-      use Phoenix.ConnTest
+      import Plug.Conn
+      import Phoenix.ConnTest
       import DiscoveryApiWeb.Router.Helpers
       alias SmartCity.TestDataGenerator, as: TDG
       alias DiscoveryApi.Test.Helper

@@ -4,8 +4,6 @@ defmodule DiscoveryStreamsWeb.UserSocket do
   channel("vehicle_position", DiscoveryStreamsWeb.StreamingChannel)
   channel("streaming:*", DiscoveryStreamsWeb.StreamingChannel)
 
-  transport(:websocket, Phoenix.Transports.WebSocket)
-
   def connect(_params, socket) do
     {:ok, socket}
   end

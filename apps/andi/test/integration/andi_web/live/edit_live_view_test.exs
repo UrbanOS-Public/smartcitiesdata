@@ -71,8 +71,8 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      url_view = find_child(view, "url_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
 
       form_data = %{"cadence" => "once"}
 
@@ -91,8 +91,8 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      metadata_view = find_child(view, "metadata_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       finalize_form_data = %{"cadence" => "once"}
       metadata_form_data = %{"description" => "cambapo"}
@@ -116,7 +116,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => "once"}
 
@@ -143,7 +143,7 @@ defmodule AndiWeb.EditLiveViewTest do
       Datasets.update_submission_status(dataset.id, :approved)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => "once"}
 
@@ -168,8 +168,8 @@ defmodule AndiWeb.EditLiveViewTest do
       Datasets.update_submission_status(dataset.id, submission_status)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"publishFrequency" => nil}
 
@@ -195,8 +195,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert "I dunno, whenever, I guess" == Datasets.get(dataset.id) |> get_in([:business, :publishFrequency])
 
       assert {:ok, view, _html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"publishFrequency" => nil}
 
@@ -215,7 +215,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       assert get_text(html, "#snackbar") == ""
 
@@ -236,7 +236,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_view = find_child(view, "url_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
 
       render_change(url_view, :save, %{})
 
@@ -251,7 +251,7 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => ""}
 
@@ -268,8 +268,8 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{
         "modifiedDate" => "",
@@ -310,8 +310,8 @@ defmodule AndiWeb.EditLiveViewTest do
       form_data = %{"dataTitle" => other_dataset.technical.dataName, "orgName" => other_dataset.technical.orgName}
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       render_change(metadata_view, :validate, %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render_change(metadata_view, :validate_system_name, %{})
@@ -328,8 +328,8 @@ defmodule AndiWeb.EditLiveViewTest do
       form_data = %{"sourceUrl" => "cam.com", field => %{"x" => "y"}}
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_view = find_child(view, "url_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       render_change(url_view, :validate, %{"form_data" => form_data})
       render_change(finalize_view, :publish)
@@ -352,7 +352,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => "new dataset title"}
 
@@ -373,7 +373,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_child(view, "metadata_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => "new dataset title"}
 
@@ -396,7 +396,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => "once"}
 
@@ -415,7 +415,7 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       assert Enum.empty?(get_attributes(html, "#form_data_sourceFormat", "disabled"))
 
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
       form_data = %{"cadence" => "once"}
 
       render_change(finalize_view, :validate, %{"form_data" => form_data})
@@ -439,15 +439,16 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      url_view = find_child(view, "url_form_editor")
-      extract_step_view = find_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
+      extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => ""}
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => "cam.com"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -468,15 +469,16 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      url_view = find_child(view, "url_form_editor")
-      extract_step_view = find_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
+      extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -497,28 +499,33 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      url_view = find_child(view, "url_form_editor")
-      extract_step_view = find_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      url_view = find_live_child(view, "url_form_editor")
+      extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       url_form_data = %{"sourceUrl" => "cam.com"}
       extract_form_data = %{"action" => "POST", "url" => "cam.com", "body" => "[]"}
 
       render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
 
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent != nil
-        assert dataset_sent.technical.extractSteps != []
-        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-        assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
-      end)
+      eventually(
+        fn ->
+          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+          assert dataset_sent != nil
+          assert dataset_sent.technical.extractSteps != []
+          assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+          assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
+        end,
+        500,
+        40
+      )
     end
 
     test "fails to publish if invalid extract steps are found", %{conn: conn} do
@@ -532,7 +539,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       render_change(finalize_view, :publish)
       html = render(view)
@@ -552,12 +559,13 @@ defmodule AndiWeb.EditLiveViewTest do
       extract_step_id = get_extract_step_id(dataset, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
-      extract_step_view = find_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+      extract_step_view = find_live_child(view, "extract_step_form_editor")
+      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
 
       extract_form_data = %{"type" => "http", "action" => "GET", "url" => "example.com/{{variable_name}}"}
 
-      render_change([extract_step_view, "#step-#{extract_step_id}"], :validate, %{"form_data" => extract_form_data})
+      render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
       html = render(view)
