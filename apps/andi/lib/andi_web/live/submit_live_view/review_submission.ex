@@ -90,4 +90,9 @@ defmodule AndiWeb.SubmitLiveView.ReviewSubmission do
 
     {:noreply, assign(socket, visibility: "collapsed")}
   end
+
+  def handle_event("cancel-edit", _, socket) do
+    send(socket.parent_pid, :cancel_edit)
+    {:noreply, socket}
+  end
 end
