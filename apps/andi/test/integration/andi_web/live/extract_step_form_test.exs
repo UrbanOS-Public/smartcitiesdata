@@ -10,7 +10,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
-  import FlokiHelpers, only: [find_elements: 2]
+  import FlokiHelpers, only: [find_elements: 2, get_text: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
@@ -34,7 +34,7 @@ defmodule AndiWeb.ExtractStepFormTest do
       id: UUID.uuid4(),
       context: %{
         destination: "bob_field",
-        deltaTimeUnit: "year",
+        deltaTimeUnit: "years",
         deltaTimeValue: 5,
         format: "{ISO:Extended}"
       }
@@ -128,7 +128,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_step_id = get_extract_step_id(dataset, 1)
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
-    form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
+    form_data = %{"destination" => "some_field", "deltaTimeUnit" => "days", "deltaTimeValue" => 1, "format" => ""}
     render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
 
     render_change(extract_steps_form_view, "save")
@@ -156,7 +156,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     eventually(fn ->
       html = render(extract_steps_form_view)
-      assert Enum.empty?(find_elements(html, ".component-number--valid")) == true
+      assert Enum.empty?(find_elements(html, ".component-number--valid")) == false
     end)
   end
 
@@ -209,6 +209,83 @@ defmodule AndiWeb.ExtractStepFormTest do
       [0, "-1"],
       [1, "1"]
     ])
+  end
+
+  test "pressing step delete button removes it from ecto", %{view: view, andi_dataset: dataset} do
+    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+    html = render_change(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
+    eventually(fn ->
+      assert Enum.empty?(find_elements(html, "#step-#{extract_step_id}"))
+      assert ExtractSteps.get(extract_step_id) == nil
+    end)
+  end
+
+  data_test "empty extract steps are invalid", %{conn: conn} do
+    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+    {:ok, andi_dataset} = Datasets.update(smrt_ds)
+
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+    assert get_text(html, ".extract-steps__error-message") == "Extract steps cannot be empty"
+
+    html = render_click(extract_steps_form_view, "save")
+
+    eventually(fn ->
+      assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    end)
+
+    where([
+      extract_steps: [nil, []]
+    ])
+  end
+
+  test "extract steps without a http step are invalid", %{conn: conn} do
+    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}})
+    {:ok, andi_dataset} = Datasets.update(smrt_ds)
+
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+    assert get_text(html, ".extract-steps__error-message") == "Dataset requires at least one HTTP step"
+
+    html = render_click(extract_steps_form_view, "save")
+
+    eventually(fn ->
+      assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    end)
+  end
+
+  test "validation is updated when steps are added and removed", %{conn: conn} do
+    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: []}})
+    {:ok, andi_dataset} = Datasets.update(smrt_ds)
+
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+
+    html = render_click(extract_steps_form_view, "save")
+
+    refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+
+    render_click(extract_steps_form_view, "update_new_step_type", %{"value" => "http"})
+    html = render_click(extract_steps_form_view, "add-extract-step")
+
+    assert get_text(html, ".extract-steps__error-message") == ""
+
+    render_click(extract_steps_form_view, "save")
+    extract_step_id = ExtractSteps.all_for_technical(andi_dataset.technical.id) |> List.first() |> Map.get(:id)
+
+    form_data = %{"url" => "cam", "action" => "GET"}
+    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    html = render(extract_steps_form_view)
+
+    refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
+
+    html = render_click(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
+
+    refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
   defp get_extract_step_id(dataset, index) do

@@ -93,6 +93,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
+    |> validate_extract_steps()
   end
 
   def changeset_for_draft(technical, changes) do
@@ -180,6 +181,14 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
       true ->
         CronExpression.Parser.parse(crontab, true)
+    end
+  end
+
+  defp validate_extract_steps(changeset) do
+    extract_steps = get_field(changeset, :extractSteps)
+    case extract_steps in [nil, []] do
+      true -> add_error(changeset, :extractSteps, "cannot be empty")
+      false -> changeset
     end
   end
 
