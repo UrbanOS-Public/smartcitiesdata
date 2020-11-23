@@ -12,16 +12,8 @@ defmodule AndiWeb.AccessLevelTest do
   alias Andi.Services.OrgStore
 
   setup_all do
-    organization = TDG.create_organization(%{})
-    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
-
-    Organizations.update(organization)
-    Datasets.update(dataset)
-
-    Brook.Test.with_event(Andi.instance_name(), fn ->
-      OrgStore.update(organization)
-      DatasetStore.update(dataset)
-    end)
+    organization = create_organization()
+    dataset = create_dataset(organization.id)
 
     on_exit(fn ->
       Application.put_env(:andi, :access_level, :private)
@@ -49,7 +41,6 @@ defmodule AndiWeb.AccessLevelTest do
     test "does not start elsa" do
       refute Elsa.Supervisor in andi_children()
     end
-
   end
 
   describe "API" do
@@ -63,8 +54,10 @@ defmodule AndiWeb.AccessLevelTest do
       |> response(404)
     end
 
-    test "does not allow POST access to datasets delete API", %{curator_conn: conn, dataset_id: id} do
-      assert post(conn, "/api/v1/dataset/delete", %{id: id})
+    test "does not allow POST access to datasets delete API", %{curator_conn: conn, organization_id: id} do
+      deletable_dataset = create_dataset(id)
+
+      assert post(conn, "/api/v1/dataset/delete", %{id: deletable_dataset.id})
       |> response(404)
     end
 
@@ -113,5 +106,27 @@ defmodule AndiWeb.AccessLevelTest do
   defp andi_children() do
     Supervisor.which_children(Andi.Supervisor)
     |> Enum.map(&elem(&1, 0))
+  end
+
+  defp create_organization() do
+    organization = TDG.create_organization(%{})
+
+    Organizations.update(organization)
+    Brook.Test.with_event(Andi.instance_name(), fn ->
+      OrgStore.update(organization)
+    end)
+
+    organization
+  end
+
+  defp create_dataset(org_id) do
+    dataset = TDG.create_dataset(%{technical: %{orgId: org_id}})
+
+    Datasets.update(dataset)
+    Brook.Test.with_event(Andi.instance_name(), fn ->
+      DatasetStore.update(dataset)
+    end)
+
+    dataset
   end
 end
