@@ -14,6 +14,7 @@ defmodule AndiWeb.AccessLevelTest do
   setup_all do
     organization = create_organization()
     dataset = create_dataset(organization.id)
+    deletable_dataset = create_dataset(organization.id)
 
     on_exit(fn ->
       Application.put_env(:andi, :access_level, :private)
@@ -25,6 +26,7 @@ defmodule AndiWeb.AccessLevelTest do
 
     [
       dataset_id: dataset.id,
+      deletable_dataset_id: dataset.id,
       organization_id: organization.id
     ]
   end
@@ -50,10 +52,8 @@ defmodule AndiWeb.AccessLevelTest do
       |> response(404)
     end
 
-    test "does not allow POST access to datasets delete API", %{curator_conn: conn, organization_id: id} do
-      deletable_dataset = create_dataset(id)
-
-      assert post(conn, "/api/v1/dataset/delete", %{id: deletable_dataset.id})
+    test "does not allow POST access to datasets delete API", %{curator_conn: conn, deletable_dataset_id: id} do
+      assert post(conn, "/api/v1/dataset/delete", %{id: id})
       |> response(404)
     end
 
