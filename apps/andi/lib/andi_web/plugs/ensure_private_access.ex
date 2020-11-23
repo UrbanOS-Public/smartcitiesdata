@@ -8,7 +8,7 @@ defmodule AndiWeb.Plug.EnsurePrivateAccess do
     if Keyword.has_key?(opts, :target) do
       opts
     else
-      raise("Missing required option ':target' in redirect")
+      raise("Missing required option ':target'")
     end
   end
 

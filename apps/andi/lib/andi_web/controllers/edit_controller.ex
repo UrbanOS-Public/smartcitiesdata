@@ -14,7 +14,7 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       dataset ->
-        if is_curator do
+        if is_curator and Andi.private_access?() do
           live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
         else
           live_render(conn, AndiWeb.SubmitLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
