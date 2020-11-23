@@ -29,7 +29,7 @@ config :andi, AndiWeb.Endpoint,
   ]
 
 config :andi, AndiWeb.Endpoint,
-  pubsub: [name: AndiWeb.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: Andi.PubSub,
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},

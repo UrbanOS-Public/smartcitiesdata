@@ -18,6 +18,7 @@ defmodule DiscoveryApi.Application do
 
     children =
       [
+        {Phoenix.PubSub, [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2]},
         DiscoveryApi.Data.SystemNameCache,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),

@@ -129,7 +129,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
         |> Datasets.save()
 
       assert {:ok, view, _} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = FormTools.form_data_from_andi_dataset(dataset)
       html = render_change(finalize_view, :validate, %{"form_data" => form_data})
@@ -147,7 +147,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => cronstring}
       html = render_change(finalize_view, :validate, %{"form_data" => form_data})
@@ -173,7 +173,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
     data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       render_click(finalize_view, "quick_schedule", %{"schedule" => schedule})
       html = render(finalize_view)
@@ -193,7 +193,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
     test "set schedule manually", %{conn: conn, dataset: dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => dataset.technical.cadence}
       html = render_change(finalize_view, :validate, %{"form_data" => form_data})
@@ -207,7 +207,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => dataset.technical.cadence}
       render_change(finalize_view, :validate, %{"form_data" => form_data})
@@ -232,7 +232,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_child(view, "finalize_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = %{"cadence" => nil}
       form_data_changeset = FinalizeFormSchema.changeset_from_form_data(form_data)

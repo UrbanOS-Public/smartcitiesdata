@@ -16,6 +16,7 @@ defmodule Andi.Application do
   def start(_type, _args) do
     children =
       [
+        {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
         guardian_db_sweeper(),

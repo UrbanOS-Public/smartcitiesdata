@@ -1,7 +1,6 @@
 defmodule EstuaryWeb.StreamingEventLiveViewTest do
   use ExUnit.Case
   use EstuaryWeb.ConnCase
-  use Phoenix.ConnTest
   use Placebo
 
   import Phoenix.LiveViewTest

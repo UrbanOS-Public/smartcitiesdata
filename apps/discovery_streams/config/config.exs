@@ -4,7 +4,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001, stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]],
   secret_key_base: "This is a test key",
   render_errors: [view: DiscoveryStreamsWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: DiscoveryStreams.PubSub
 
 config :logger,
   backends: [:console],

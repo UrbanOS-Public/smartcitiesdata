@@ -1,6 +1,5 @@
 defmodule AndiWeb.ExtractSecretFormTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  use Phoenix.ConnTest
   use Placebo
   alias Andi.Schemas.User
 
@@ -46,14 +45,16 @@ defmodule AndiWeb.ExtractSecretFormTest do
       allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_steps_form_view = find_child(view, "extract_step_form_editor")
+      extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       [extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id]
     end
 
     test "displays error for missing fields", %{extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id} do
       form_data = %{"destination" => ""}
-      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+      es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+
+      html = render_change(es_form, %{"form_data" => form_data})
 
       error_text = get_text(html, "#destination-error-msg")
       assert error_text != ""
@@ -61,7 +62,9 @@ defmodule AndiWeb.ExtractSecretFormTest do
 
     test "disables add button while form is invalid", %{extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id} do
       form_data = %{"destination" => ""}
-      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+      es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+
+      html = render_change(es_form, %{"form_data" => form_data})
 
       refute get_attributes(html, ".btn", "disabled") |> Enum.empty?()
     end
@@ -72,8 +75,11 @@ defmodule AndiWeb.ExtractSecretFormTest do
     } do
       expect(Andi.SecretService.write("#{extract_step_id}___bob", %{"bob" => "secret_value"}), return: {:ok, :na})
 
-      render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})
-      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "save_secret", %{"secret" => "secret_value"})
+      es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+      add_secret_button = element(extract_steps_form_view, "#step-#{extract_step_id} button", "Add")
+
+      render_change(es_form, %{"form_data" => %{"destination" => "bob", "secret_value" => "secret_value"}})
+      html = render_click(add_secret_button)
 
       success_text = get_text(html, ".secret__status-msg")
       assert success_text == "Secret saved successfully!"
@@ -85,8 +91,12 @@ defmodule AndiWeb.ExtractSecretFormTest do
     } do
       expect(Andi.SecretService.write("#{extract_step_id}___bob", %{"bob" => "secret_value"}), return: {:error, :na})
 
-      render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => %{"destination" => "bob"}})
-      html = render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "save_secret", %{"secret" => "secret_value"})
+      es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+      add_secret_button = element(extract_steps_form_view, "#step-#{extract_step_id} button", "Add")
+
+      render_change(es_form, %{"form_data" => %{"destination" => "bob", "secret_value" => "secret_value"}})
+
+      html = render_click(add_secret_button)
 
       success_text = get_text(html, ".secret__status-msg")
       assert success_text == "Secret save failed, contact your system administrator."
