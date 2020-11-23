@@ -1,8 +1,8 @@
 defmodule AndiWeb.AccessLevelTest do
-
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  import Phoenix.LiveViewTest
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -41,17 +41,18 @@ defmodule AndiWeb.AccessLevelTest do
     ]
   end
 
-  describe "`:public` access" do
+  describe "supervision" do
     test "does not start brook" do
-      # TODO - test this main supervisor instead
-      refute :brook in Application.started_applications()
+      refute Brook.Supervisor in andi_children()
     end
 
     test "does not start elsa" do
-      # TODO - test this main supervisor instead
-      refute :elsa in Application.started_applications()
+      refute Elsa.Supervisor in andi_children()
     end
 
+  end
+
+  describe "API" do
     test "does not allow GET access to datasets via API", %{curator_conn: conn, dataset_id: id} do
       assert get(conn, "/api/v1/dataset/#{id}")
       |> response(404)
@@ -91,5 +92,26 @@ defmodule AndiWeb.AccessLevelTest do
       assert post(conn, "/api/v1/organization/#{id}/users/add", %{org_id: id, user: []})
       |> response(404)
     end
+  end
+
+  describe "administrative features in UI" do
+    test "does not allow access to organizations list", %{curator_conn: conn} do
+      assert {:error, _} = live(conn, "/organizations")
+    end
+
+    test "does not allow access to organization edit", %{curator_conn: conn, organization_id: id} do
+      assert {:error, _} = live(conn, "/organizations/#{id}")
+    end
+
+    test "does not allow access to 'Edit View' for a dataset", %{curator_conn: conn, dataset_id: id} do
+      {:ok, view, _html} = live(conn, "/datasets/#{id}")
+
+      refute view.module == AndiWeb.EditLiveView
+    end
+  end
+
+  defp andi_children() do
+    Supervisor.which_children(Andi.Supervisor)
+    |> Enum.map(&elem(&1, 0))
   end
 end
