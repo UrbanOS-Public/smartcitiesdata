@@ -217,7 +217,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
   test "pressing step delete button removes it from ecto", %{view: view, andi_dataset: dataset} do
     extract_step_id = get_extract_step_id(dataset, 0)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     html = render_change(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
 
@@ -232,7 +232,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     assert get_text(html, ".extract-steps__error-message") == "Extract steps cannot be empty"
 
@@ -250,7 +250,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     assert get_text(html, ".extract-steps__error-message") == "Dataset requires at least one HTTP step"
 
@@ -266,7 +266,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     html = render_click(extract_steps_form_view, "save")
 
@@ -281,7 +281,9 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_step_id = ExtractSteps.all_for_technical(andi_dataset.technical.id) |> List.first() |> Map.get(:id)
 
     form_data = %{"url" => "cam", "action" => "GET"}
-    render_change([extract_steps_form_view, "#step-#{extract_step_id}"], "validate", %{"form_data" => form_data})
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+
+    render_change(es_form, %{"form_data" => form_data})
     html = render(extract_steps_form_view)
 
     refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
@@ -316,8 +318,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
-    extract_steps_form_view = find_child(view, "extract_step_form_editor")
-    finalize_editor = find_child(view, "finalize_form_editor")
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    finalize_editor = find_live_child(view, "finalize_form_editor")
 
     html = render_click(extract_steps_form_view, "save")
 

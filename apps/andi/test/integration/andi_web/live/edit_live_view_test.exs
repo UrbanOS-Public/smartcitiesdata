@@ -484,12 +484,12 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
       eventually(
         fn ->
+          html = render(view)
+          refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
           {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
           assert dataset_sent != nil
           assert dataset_sent.technical.extractSteps != []
@@ -565,8 +565,8 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_steps_form_view = find_child(view, "extract_step_form_editor")
-      finalize_view = find_child(view, "finalize_form_editor")
+      extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
 
       render_change(finalize_view, :publish)
       html = render(view)
