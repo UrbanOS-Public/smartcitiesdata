@@ -62,7 +62,7 @@ defmodule Andi.InputSchemas.DatasetsTest do
     end
 
     test "removes error from changeset when an invalid query param is removed" do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{}}})
+      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{}, sourceType: "remote"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 
@@ -103,7 +103,7 @@ defmodule Andi.InputSchemas.DatasetsTest do
     end
 
     test "removes error from changeset when an invalid header is removed" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{}}})
+      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{}, sourceType: "remote"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 
@@ -263,7 +263,7 @@ defmodule Andi.InputSchemas.DatasetsTest do
 
   describe "full_validation_changeset/1" do
     test "requires unique orgName and dataName" do
-      existing_dataset = TDG.create_dataset(%{})
+      existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
       changeset =
@@ -279,7 +279,7 @@ defmodule Andi.InputSchemas.DatasetsTest do
     end
 
     test "allows same orgName and dataName when id is same" do
-      existing_dataset = TDG.create_dataset(%{})
+      existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
       changeset = InputConverter.smrt_dataset_to_full_changeset(existing_dataset)

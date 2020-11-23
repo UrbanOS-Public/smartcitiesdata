@@ -151,7 +151,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
-    {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+
+    {:noreply,
+     assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
   end
 
   def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
@@ -170,7 +172,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
     all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
 
-    {:noreply, assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+    {:noreply,
+     assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
   end
 
   def handle_info(
@@ -275,7 +278,9 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
   end
 
-  defp update_validation_status(%{assigns: %{validation_status: validation_status, visibility: visibility, extract_steps: extract_steps}} = socket)
+  defp update_validation_status(
+         %{assigns: %{validation_status: validation_status, visibility: visibility, extract_steps: extract_steps}} = socket
+       )
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
     assign(socket, validation_status: get_new_validation_status(socket.assigns.extract_step_changesets, extract_steps))
   end
@@ -292,6 +297,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   defp extract_steps_error_message(extract_steps) when extract_steps in [nil, []], do: "Extract steps cannot be empty"
+
   defp extract_steps_error_message(extract_steps) do
     case has_http_step?(extract_steps) do
       false -> "Dataset requires at least one HTTP step"

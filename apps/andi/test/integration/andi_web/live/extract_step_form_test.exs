@@ -216,6 +216,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     extract_steps_form_view = find_child(view, "extract_step_form_editor")
 
     html = render_change(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
+
     eventually(fn ->
       assert Enum.empty?(find_elements(html, "#step-#{extract_step_id}"))
       assert ExtractSteps.get(extract_step_id) == nil
@@ -237,9 +238,7 @@ defmodule AndiWeb.ExtractStepFormTest do
       assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
     end)
 
-    where([
-      extract_steps: [nil, []]
-    ])
+    where(extract_steps: [nil, []])
   end
 
   test "extract steps without a http step are invalid", %{conn: conn} do

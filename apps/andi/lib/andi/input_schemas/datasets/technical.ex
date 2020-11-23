@@ -184,8 +184,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     end
   end
 
+  defp validate_extract_steps(%{changes: %{sourceType: "remote"}} = changeset), do: changeset
+
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
+
     case extract_steps in [nil, []] or has_no_http_steps?(extract_steps) do
       true -> add_error(changeset, :extractSteps, "cannot be empty")
       false -> changeset
