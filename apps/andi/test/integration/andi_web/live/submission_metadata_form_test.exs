@@ -2,12 +2,10 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  use AndiWeb.Test.PublicAccessCase
   use Placebo
 
   import Checkov
-
-  alias Andi.Services.DatasetStore
-  alias Andi.Services.OrgStore
 
   @moduletag shared_data_connection: true
 
@@ -28,6 +26,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.InputConverter
 
   @instance_name Andi.instance_name()
@@ -62,32 +61,21 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "validation is only triggered for new datasets", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{dataName: "original name"}})
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
+      {:ok, dataset} = Datasets.create(public_user)
+      |> Datasets.update(%{submission_status: :published, business: %{dataTitle: "Original Name"}, technical: %{dataName: "original_name"}})
 
-      eventually(
-        fn ->
-          assert {:ok, nil} != DatasetStore.get(smrt_dataset.id)
-        end,
-        1_000,
-        30
-      )
-
-      smrt_dataset.id
-      |> Andi.InputSchemas.Datasets.get()
-      |> Datasets.update(%{owner_id: public_user.id})
-
-      assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => "simpledatatitle", "dataName" => smrt_dataset.technical.dataName}
+      form_data = %{"dataTitle" => "simpledatatitle", "dataName" => dataset.technical.dataName}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
+
       html = render(metadata_view)
 
       value = get_value(html, "#form_data_dataName")
 
-      assert value == "original name"
+      assert value == "original_name"
     end
 
     data_test "data title #{title} generates data name #{data_name}", %{
@@ -238,24 +226,29 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "displays all other fields", %{public_conn: conn, public_user: public_user} do
-      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
-      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org)
-      eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
+      {:ok, org} = Organizations.create()
+      |> Organizations.update(%{
+            orgTitle: "Awesome Title",
+            orgName: "awesome_title"
+      })
 
-      smrt_dataset =
-        TDG.create_dataset(%{
-          business: %{
-            description: "A description with no special characters",
-            benefitRating: 1.0,
-            riskRating: 0.5
-          },
-          technical: %{private: true, orgId: org.id}
-        })
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
+      {:ok, dataset} = Datasets.create(public_user)
+      |> Datasets.update(%{
+        business: %{
+          description: "A description with no special characters",
+          benefitRating: 1.0,
+          riskRating: 0.5
+        },
+        technical: %{
+          private: true,
+          orgId: org.id,
+          sourceType: "ingest",
+          sourceFormat: "text/csv"
+        }
+      })
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
       assert get_value(html, ".metadata-form__title input") == dataset.business.dataTitle
       assert get_text(html, ".metadata-form__description textarea") == dataset.business.description
       {selected_format, _} = get_select(html, ".metadata-form__format select")
@@ -385,13 +378,12 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       [public_user: public_user]
     end
 
-    test "source format", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
-      eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end, 300, 100)
-      andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
-      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
-      assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
+    test "source format for published dataset", %{public_conn: conn, public_user: public_user} do
+      dataset = Datasets.create(public_user)
+
+      Datasets.update_submission_status(dataset.id, :published)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end

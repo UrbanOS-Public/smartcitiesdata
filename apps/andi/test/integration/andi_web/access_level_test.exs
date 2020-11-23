@@ -16,20 +16,14 @@ defmodule AndiWeb.AccessLevelTest do
     dataset = create_dataset(organization.id)
     deletable_dataset = create_dataset(organization.id)
 
-    on_exit(fn ->
-      Application.put_env(:andi, :access_level, :private)
-      restart_andi()
-    end)
-
-    Application.put_env(:andi, :access_level, :public)
-    restart_andi()
-
     [
       dataset_id: dataset.id,
       deletable_dataset_id: dataset.id,
       organization_id: organization.id
     ]
   end
+
+  use AndiWeb.Test.PublicAccessCase
 
   describe "supervision" do
     test "does not start brook" do
@@ -101,17 +95,15 @@ defmodule AndiWeb.AccessLevelTest do
     end
   end
 
+  describe "submitter features in UI" do
+    test "allows functioning access to the 'Dataset List View'", %{curator_conn: conn} do
+      assert {:ok, _view, _html} = live(conn, "/datasets")
+    end
+  end
+
   defp andi_children() do
     Supervisor.which_children(Andi.Supervisor)
     |> Enum.map(&elem(&1, 0))
-  end
-
-  defp restart_andi() do
-    Application.stop(:andi)
-    Application.stop(:brook)
-    Application.stop(:elsa)
-
-    Application.ensure_all_started(:andi)
   end
 
   defp create_organization() do
