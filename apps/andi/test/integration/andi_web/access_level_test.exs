@@ -17,15 +17,11 @@ defmodule AndiWeb.AccessLevelTest do
 
     on_exit(fn ->
       Application.put_env(:andi, :access_level, :private)
-      Application.ensure_all_started(:andi)
+      restart_andi()
     end)
+
     Application.put_env(:andi, :access_level, :public)
-
-    Application.stop(:andi)
-    Application.stop(:brook)
-    Application.stop(:elsa)
-
-    Application.ensure_all_started(:andi)
+    restart_andi()
 
     [
       dataset_id: dataset.id,
@@ -89,11 +85,13 @@ defmodule AndiWeb.AccessLevelTest do
 
   describe "administrative features in UI" do
     test "does not allow access to organizations list", %{curator_conn: conn} do
-      assert {:error, _} = live(conn, "/organizations")
+      assert get(conn, "/organizations")
+      |> response(404)
     end
 
     test "does not allow access to organization edit", %{curator_conn: conn, organization_id: id} do
-      assert {:error, _} = live(conn, "/organizations/#{id}")
+      assert get(conn, "/organizations/#{id}")
+      |> response(404)
     end
 
     test "does not allow access to 'Edit View' for a dataset", %{curator_conn: conn, dataset_id: id} do
@@ -106,6 +104,14 @@ defmodule AndiWeb.AccessLevelTest do
   defp andi_children() do
     Supervisor.which_children(Andi.Supervisor)
     |> Enum.map(&elem(&1, 0))
+  end
+
+  defp restart_andi() do
+    Application.stop(:andi)
+    Application.stop(:brook)
+    Application.stop(:elsa)
+
+    Application.ensure_all_started(:andi)
   end
 
   defp create_organization() do
