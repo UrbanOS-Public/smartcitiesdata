@@ -252,26 +252,17 @@ defmodule Andi.InputSchemas.Datasets do
   defp extract_owner_id(_, _), do: nil
 
   def full_validation_changeset_for_publish(schema, changes) do
-    extract_steps_changes = get_in(changes, [:technical, :extractSteps])
-    extract_steps_valid = extract_steps_valid?(extract_steps_changes)
-
     url_form_changeset = UrlFormSchema.changeset_from_andi_dataset(changes)
     url_form_valid = url_form_changeset.valid?
 
-    changes = update_changes_for_invalid_form(changes, extract_steps_valid, url_form_valid)
+    changes = update_changes_for_invalid_form(changes, url_form_valid)
 
     schema
     |> Dataset.changeset(changes)
     |> Dataset.validate_unique_system_name()
   end
 
-  defp update_changes_for_invalid_form(changes, false, false), do: changes
-
-  defp update_changes_for_invalid_form(changes, false, true) do
-    put_in(changes, [:technical, :extractSteps], [])
-  end
-
-  defp update_changes_for_invalid_form(changes, true, _) do
+  defp update_changes_for_invalid_form(changes, false) do
     url_placeholder =
       changes.business[:homepage]
       |> source_url_placeholder_from_homepage()
@@ -282,17 +273,8 @@ defmodule Andi.InputSchemas.Datasets do
     |> put_in([:technical, :sourceUrl], url_placeholder)
   end
 
+  defp update_changes_for_invalid_form(changes, _), do: changes
+
   defp source_url_placeholder_from_homepage(hompage) when is_nil(hompage) or hompage == "", do: "N/A"
   defp source_url_placeholder_from_homepage(hompage), do: hompage
-
-  defp extract_steps_valid?(extract_steps_changes) do
-    Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->
-      step_changeset = ExtractStep.changeset(step_changes)
-
-      case step_changeset.valid? do
-        true -> {:cont, true}
-        false -> {:halt, false}
-      end
-    end)
-  end
 end

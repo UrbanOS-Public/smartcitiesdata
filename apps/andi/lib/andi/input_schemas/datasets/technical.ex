@@ -190,7 +190,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     extract_steps = get_field(changeset, :extractSteps)
 
     case extract_steps in [nil, []] or has_no_http_steps?(extract_steps) do
-      true -> add_error(changeset, :extractSteps, "cannot be empty")
+      true -> add_error(changeset, :extractSteps, "cannot be empty and require at least one http step")
       false -> changeset
     end
   end

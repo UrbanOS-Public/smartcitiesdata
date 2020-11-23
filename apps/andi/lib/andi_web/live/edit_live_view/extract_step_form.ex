@@ -13,6 +13,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractHttpStepForm
   alias AndiWeb.ExtractSteps.ExtractSecretStepForm
   alias AndiWeb.ExtractSteps.ExtractAuthStepForm
+  alias AndiWeb.ExtractSteps.ExtractPlaceholderStepForm
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
@@ -272,6 +273,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
   defp render_extract_step_form(%{type: "auth"}), do: ExtractAuthStepForm
 
+  defp render_extract_step_form(_), do: ExtractPlaceholderStepForm
+
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
 
   defp map_to_dropdown_options(options) do
@@ -306,5 +309,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   end
 
   defp has_http_step?(steps), do: Enum.any?(steps, fn step -> step.type == "http" end)
-  defp extract_step_changesets_valid?(step_changesets), do: Enum.all?(step_changesets, fn {_, changeset} -> changeset.valid? end)
+
+  defp extract_step_changesets_valid?(step_changesets) do
+    Enum.all?(step_changesets, fn
+      {_, %{changes: _} = changeset} -> changeset.valid?
+      {_, placeholder_step_context} -> true
+    end)
+  end
 end

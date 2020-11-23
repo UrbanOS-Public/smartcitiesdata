@@ -287,6 +287,49 @@ defmodule AndiWeb.ExtractStepFormTest do
     refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
+  test "placeholder extract steps are able to be saved and published", %{conn: conn} do
+    smrt_ds =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "something.com"
+              }
+            },
+            %{
+              type: "http",
+              context: %{
+                url: "somethingelse.com",
+                action: "GET"
+              }
+            }
+          ]
+        }
+      })
+
+    {:ok, andi_dataset} = Datasets.update(smrt_ds)
+
+    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    extract_steps_form_view = find_child(view, "extract_step_form_editor")
+    finalize_editor = find_child(view, "finalize_form_editor")
+
+    html = render_click(extract_steps_form_view, "save")
+
+    refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
+
+    render_click(finalize_editor, "publish")
+
+    eventually(fn ->
+      html = render(view)
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
+      {:ok, smrt_dataset} = DatasetStore.get(andi_dataset.id)
+      assert nil != smrt_dataset
+    end)
+  end
+
   defp get_extract_step_id(dataset, index) do
     dataset
     |> Andi.InputSchemas.StructTools.to_map()
