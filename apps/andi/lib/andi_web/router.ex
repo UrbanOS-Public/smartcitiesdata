@@ -39,7 +39,7 @@ defmodule AndiWeb.Router do
 
     get "/", Redirect, to: "/datasets"
     live "/datasets", DatasetLiveView, layout: {AndiWeb.LayoutView, :app}, session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
-    get "/datasets/:id", EditController, :show_dataset
+    get "/submissions/:id", EditController, :edit_submission
 
     get "/auth/auth0/logout", AuthController, :logout
   end
@@ -51,7 +51,8 @@ defmodule AndiWeb.Router do
       layout: {AndiWeb.LayoutView, :app},
       session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
 
-    get "/organizations/:id", EditController, :show_organization
+    get "/datasets/:id", EditController, :edit_dataset
+    get "/organizations/:id", EditController, :edit_organization
   end
 
   scope "/api", AndiWeb.API do

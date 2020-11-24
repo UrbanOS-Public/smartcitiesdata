@@ -63,7 +63,7 @@ defmodule AndiWeb.DatasetLiveView do
           <% end %>
         </div>
 
-        <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order) %>
+        <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order, is_curator: @is_curator) %>
       </div>
     </div>
     """
@@ -114,8 +114,9 @@ defmodule AndiWeb.DatasetLiveView do
   def handle_event("add-dataset", _, socket) do
     owner = Andi.Repo.get(Andi.Schemas.User, socket.assigns.user_id)
     new_dataset = Datasets.create(owner)
+    is_curator? = socket.assigns.is_curator
 
-    {:noreply, push_redirect(socket, to: "/datasets/#{new_dataset.id}")}
+    {:noreply, push_redirect(socket, to: "/#{edit_type(is_curator?)}/#{new_dataset.id}")}
   end
 
   def handle_event("search", %{"search-value" => value}, socket) do
@@ -265,4 +266,7 @@ defmodule AndiWeb.DatasetLiveView do
     |> Map.get("only-submitted", default_for_filter_as_string(:only_submitted))
     |> string_to_bool()
   end
+
+  defp edit_type(true), do: "datasets"
+  defp edit_type(false), do: "submissions"
 end
