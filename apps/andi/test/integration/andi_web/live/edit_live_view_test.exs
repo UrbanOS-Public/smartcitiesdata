@@ -609,6 +609,8 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  # TODO - add tests to ensure public user can't access edit live view, even for stuff they own
+
   defp get_extract_step_id(dataset, index) do
     dataset
     |> Andi.InputSchemas.StructTools.to_map()
