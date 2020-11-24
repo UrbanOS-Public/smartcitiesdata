@@ -39,7 +39,6 @@ defmodule AndiWeb.Endpoint do
   # Set :encryption_salt if you would also like to encrypt it.
   plug Plug.Session, @session_options
 
-
   plug AndiWeb.Router
 
   def enforce_access_level(conn, _opts) do
@@ -51,8 +50,7 @@ defmodule AndiWeb.Endpoint do
         false -> plug
       end
 
-    with {:ok, _} <- Code.ensure_loaded(plug),
-         true <- function_exported?(plug, :access_levels_supported, 1),
+    with true <- function_exported?(plug, :access_levels_supported, 1),
          true <- Application.get_env(:andi, :access_level) in apply(plug, :access_levels_supported, [plug_opts]) do
       conn
     else
