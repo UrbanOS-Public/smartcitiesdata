@@ -1,5 +1,5 @@
 defmodule AndiWeb.DatasetLiveView do
-  use Phoenix.LiveView
+  use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
 
   import Ecto.Query, only: [from: 2]
@@ -10,6 +10,10 @@ defmodule AndiWeb.DatasetLiveView do
   alias Andi.InputSchemas.Datasets.Dataset
 
   import AndiWeb.Helpers.SortingHelpers
+
+  access_levels [
+    render: [:private, :public],
+  ]
 
   @default_filters [
     include_remotes: false,

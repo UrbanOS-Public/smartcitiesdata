@@ -20,7 +20,8 @@ defmodule AndiWeb.Router do
   end
 
   pipeline :auth do
-    plug Andi.Auth.Pipeline
+    plug AndiWeb.Auth.Pipeline
+    plug AndiWeb.Auth.EnsureAccessLevelForRoute, router: __MODULE__, exclusions: [AndiWeb.Redirect]
   end
 
   pipeline :curator do

@@ -14,6 +14,10 @@ defmodule AndiWeb.EditOrganizationLiveView do
   alias AndiWeb.Helpers.FormTools
   alias Andi.Services.DatasetStore
 
+  access_levels [
+    render: [:private],
+  ]
+
   @instance_name Andi.instance_name()
 
   def render(assigns) do

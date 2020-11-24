@@ -13,6 +13,7 @@ defmodule AndiWeb.API.DatasetController do
 
   access_levels [
     create: [:private],
+    get: [:private],
     get_all: [:private],
     disable: [:private],
     delete: [:private]

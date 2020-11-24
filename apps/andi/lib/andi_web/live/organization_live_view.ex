@@ -1,5 +1,5 @@
 defmodule AndiWeb.OrganizationLiveView do
-  use Phoenix.LiveView
+  use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
 
   import Ecto.Query, only: [from: 2]
@@ -8,6 +8,10 @@ defmodule AndiWeb.OrganizationLiveView do
   alias AndiWeb.OrganizationLiveView.Table
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Organization
+
+  access_levels [
+    render: [:private],
+  ]
 
   def render(assigns) do
     ~L"""

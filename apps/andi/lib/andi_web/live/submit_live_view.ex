@@ -6,6 +6,10 @@ defmodule AndiWeb.SubmitLiveView do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets.Dataset
 
+  access_levels [
+    render: [:private, :public],
+  ]
+
   require Logger
 
   def render(assigns) do
