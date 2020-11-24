@@ -38,6 +38,12 @@ defmodule AndiWeb.MetadataFormTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
+  setup %{curator_subject: curator_subject}do
+    {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
+
+    [curator_user: curator_user]
+  end
+
   describe "create new dataset" do
     setup do
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
@@ -62,22 +68,14 @@ defmodule AndiWeb.MetadataFormTest do
       assert value == "simpledatatitle"
     end
 
-    test "validation is only triggered for new datasets", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{dataName: "original name"}})
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
+    test "validation is only triggered for new datasets", %{conn: conn, curator_user: curator_user} do
+      {:ok, dataset} = Datasets.create(curator_user)
+      |> Datasets.update(%{technical: %{dataName: "original name"}, submission_status: :published})
 
-      eventually(
-        fn ->
-          assert {:ok, nil} != DatasetStore.get(smrt_dataset.id)
-        end,
-        1_000,
-        30
-      )
-
-      assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => "simpledatatitle", "dataName" => smrt_dataset.technical.dataName}
+      form_data = %{"dataTitle" => "simpledatatitle", "dataName" => dataset.technical.dataName}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       html = render(metadata_view)
@@ -626,12 +624,11 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "can not edit" do
-    test "source format", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
-      eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end, 300, 100)
+    test "source format for published dataset", %{conn: conn, curator_user: curator_user} do
+      {:ok, dataset} = Datasets.create(curator_user)
+      |> Datasets.update(%{submission_status: :published})
 
-      assert {:ok, view, html} = live(conn, @url_path <> smrt_dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end

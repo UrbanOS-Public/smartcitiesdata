@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  use AndiWeb.Test.PublicAccessCase
   use Placebo
 
   import Checkov
@@ -201,7 +202,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
     html = render_change(metadata_view, :save)
 
-    refute Enum.empty?(find_elements(html, "#orgId-error-msg"))
+    refute Enum.empty?(find_elements(html, "#description-error-msg"))
   end
 
   test "add dataset button creates a dataset with the owner as the currently logged in user", %{

@@ -2,6 +2,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  use AndiWeb.Test.PublicAccessCase
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper
 
