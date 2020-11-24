@@ -26,8 +26,8 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
       end
 
     with {:excluded, false} <- {:excluded, plug in exclusions},
-         true <- function_exported?(plug, :access_levels_supported, 2),
-          true <- access_level() in apply(plug, :access_levels_supported, [conn, plug_opts]) do
+         true <- function_exported?(plug, :access_levels_supported, 1),
+          true <- access_level() in apply(plug, :access_levels_supported, [plug_opts]) do
       conn
     else
       {:excluded, true} -> conn

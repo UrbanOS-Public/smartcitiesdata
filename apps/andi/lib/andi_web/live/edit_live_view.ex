@@ -10,10 +10,6 @@ defmodule AndiWeb.EditLiveView do
   import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
   require Logger
 
-  access_levels [
-    render: [:private],
-  ]
-
   @instance_name Andi.instance_name()
 
   def render(assigns) do
