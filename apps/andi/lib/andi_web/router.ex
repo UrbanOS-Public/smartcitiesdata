@@ -8,6 +8,7 @@ defmodule AndiWeb.Router do
          "font-src https://fonts.gstatic.com data: 'self';" <>
          "img-src 'self' data:;"
 
+
   pipeline :browser do
     plug Plug.Logger
     plug :accepts, ["html"]
@@ -23,12 +24,10 @@ defmodule AndiWeb.Router do
   end
 
   pipeline :curator do
-    plug AndiWeb.Plug.EnsurePrivateAccess, target: :browser
     plug Guardian.Plug.EnsureAuthenticated, claims: %{"https://andi.smartcolumbusos.com/roles" => ["Curator"]}
   end
 
   pipeline :api do
-    plug AndiWeb.Plug.EnsurePrivateAccess, target: :api
     plug :accepts, ["json"]
     plug Plug.Logger
     plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
