@@ -184,67 +184,157 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
   end
 
-  test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
-    allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+  describe "add dataset button for curator" do
+    setup do
+      on_exit(set_access_level(:private))
+      restart_andi()
 
-    {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
-    assert {:ok, view, _html} = live(conn, @url_path)
+      :ok
+    end
 
-    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+    test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
+      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
 
-    assert {:ok, view, html} = live(conn, edit_page)
-    metadata_view = find_live_child(view, "metadata_form_editor")
+      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
 
-    assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
-    assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-             get_value(html, "#form_data_dataName")
+      assert {:ok, view, html} = live(conn, edit_page)
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
-    html = render_change(metadata_view, :save)
+      assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-    refute Enum.empty?(find_elements(html, "#description-error-msg"))
+      assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+              get_value(html, "#form_data_dataName")
+
+      html = render_change(metadata_view, :save)
+
+      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+    end
+
+    test "add dataset button creates a dataset with the owner as the currently logged in user", %{
+      curator_conn: conn,
+      curator_subject: subject
+    } do
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
+
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+      assert {:ok, view, html} = live(conn, edit_page)
+
+      owned_dataset =
+        Andi.InputSchemas.Datasets.get_all()
+        |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+        |> List.first()
+
+      refute owned_dataset == nil
+      assert owned_dataset.business.contactEmail == user.email
+    end
+
+    test "add dataset button creates a dataset with release date and updated date defaulted to today", %{
+      curator_conn: conn,
+      curator_subject: subject
+    } do
+      expected_date = Date.utc_today()
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
+
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+      assert {:ok, view, html} = live(conn, edit_page)
+
+      owned_dataset =
+        Andi.InputSchemas.Datasets.get_all()
+        |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+        |> List.first()
+
+      refute owned_dataset == nil
+      assert owned_dataset.business.issuedDate == expected_date
+      assert owned_dataset.business.modifiedDate == expected_date
+    end
+
+    test "does not load datasets that only contain a timestamp", %{conn: conn} do
+      dataset_with_only_timestamp = %Dataset{
+        id: UUID.uuid4(),
+        ingestedTime: DateTime.utc_now(),
+        business: %{dataTitle: "baaaaad dataset"},
+        technical: %{}
+      }
+
+      Datasets.update(dataset_with_only_timestamp)
+
+      assert {:ok, _view, html} = live(conn, @url_path)
+      table_text = get_text(html, ".datasets-index__table")
+
+      refute dataset_with_only_timestamp.business.dataTitle =~ table_text
+    end
   end
 
-  test "add dataset button creates a dataset with the owner as the currently logged in user", %{
-    curator_conn: conn,
-    curator_subject: subject
-  } do
-    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
-    assert {:ok, view, _html} = live(conn, @url_path)
+  describe "add dataset button for non-curator" do
+    test "add dataset button creates a dataset with a default dataTitle and dataName", %{public_conn: conn, public_subject: subject} do
+      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
 
-    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
 
-    assert {:ok, view, html} = live(conn, edit_page)
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
-    owned_dataset =
-      Andi.InputSchemas.Datasets.get_all()
-      |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
-      |> List.first()
+      assert {:ok, view, html} = live(conn, edit_page)
+      metadata_view = find_live_child(view, "metadata_form_editor")
 
-    refute owned_dataset == nil
-    assert owned_dataset.business.contactEmail == user.email
-  end
+      assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-  test "add dataset button creates a dataset with release date and updated date defaulted to today", %{
-    curator_conn: conn,
-    curator_subject: subject
-  } do
-    expected_date = Date.utc_today()
-    {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
-    assert {:ok, view, _html} = live(conn, @url_path)
+      assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+              get_value(html, "#form_data_dataName")
 
-    {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+      html = render_change(metadata_view, :save)
 
-    assert {:ok, view, html} = live(conn, edit_page)
+      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+    end
 
-    owned_dataset =
-      Andi.InputSchemas.Datasets.get_all()
-      |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
-      |> List.first()
+    test "add dataset button creates a dataset with the owner as the currently logged in user", %{
+      public_conn: conn,
+      public_subject: subject
+    } do
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
 
-    refute owned_dataset == nil
-    assert owned_dataset.business.issuedDate == expected_date
-    assert owned_dataset.business.modifiedDate == expected_date
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+      assert {:ok, view, html} = live(conn, edit_page)
+
+      owned_dataset =
+        Andi.InputSchemas.Datasets.get_all()
+        |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+        |> List.first()
+
+      refute owned_dataset == nil
+      assert owned_dataset.business.contactEmail == user.email
+    end
+
+    test "add dataset button creates a dataset with release date and updated date defaulted to today", %{
+      public_conn: conn,
+      public_subject: subject
+    } do
+      expected_date = Date.utc_today()
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      assert {:ok, view, _html} = live(conn, @url_path)
+
+      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+
+      assert {:ok, view, html} = live(conn, edit_page)
+
+      owned_dataset =
+        Andi.InputSchemas.Datasets.get_all()
+        |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
+        |> List.first()
+
+      refute owned_dataset == nil
+      assert owned_dataset.business.issuedDate == expected_date
+      assert owned_dataset.business.modifiedDate == expected_date
+    end
   end
 
   test "does not load datasets that only contain a timestamp", %{conn: conn} do

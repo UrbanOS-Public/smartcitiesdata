@@ -89,9 +89,8 @@ defmodule AndiWeb.AccessLevelTest do
     end
 
     test "does not allow access to 'Edit View' for a dataset", %{curator_conn: conn, dataset_id: id} do
-      {:ok, view, _html} = live(conn, "/datasets/#{id}")
-
-      refute view.module == AndiWeb.EditLiveView
+      assert get(conn, "/datasets/#{id}")
+      |> response(404)
     end
   end
 

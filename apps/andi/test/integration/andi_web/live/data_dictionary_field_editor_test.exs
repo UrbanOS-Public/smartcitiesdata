@@ -23,7 +23,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       get_attributes: 3
     ]
 
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})

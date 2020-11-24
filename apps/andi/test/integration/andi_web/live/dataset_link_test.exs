@@ -22,7 +22,7 @@ defmodule AndiWeb.DatasetLinkTest do
   alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "create new dataset" do
     setup %{curator_subject: curator_subject, public_subject: public_subject} do

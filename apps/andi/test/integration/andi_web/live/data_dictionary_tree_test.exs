@@ -18,7 +18,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     ]
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do

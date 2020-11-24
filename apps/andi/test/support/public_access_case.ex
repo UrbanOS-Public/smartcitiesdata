@@ -5,19 +5,30 @@ defmodule AndiWeb.Test.PublicAccessCase do
 
   use ExUnit.CaseTemplate
 
-  setup_all do
-    on_exit(fn ->
-      Application.put_env(:andi, :access_level, :private)
-      restart_andi()
-    end)
+  using do
+    quote do
+      import AndiWeb.Test.PublicAccessCase
+    end
+  end
 
-    Application.put_env(:andi, :access_level, :public)
+  setup_all do
+    on_exit(set_access_level(:public))
     restart_andi()
 
     :ok
   end
 
-  defp restart_andi() do
+  def set_access_level(level) do
+    current = Application.get_env(:andi, :access_level)
+    Application.put_env(:andi, :access_level, level)
+
+    fn ->
+      Application.put_env(:andi, :access_level, current)
+      restart_andi()
+    end
+  end
+
+  def restart_andi() do
     Application.stop(:andi)
     Application.stop(:brook)
     Application.stop(:elsa)

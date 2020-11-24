@@ -32,7 +32,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   @instance_name Andi.instance_name()
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "create new dataset" do
     setup %{public_subject: public_subject} do
