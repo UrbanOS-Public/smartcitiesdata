@@ -45,6 +45,18 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
       assert Enum.count(dataset_rows) == 1
     end
+
+    test "edit button links to the submission edit page", %{public_conn: conn, public_subject: subject} do
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      dataset = Datasets.create(user)
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      edit_dataset_button = element(view, ".btn", "Edit")
+
+      render_click(edit_dataset_button)
+      assert_redirected view, "/submissions/#{dataset.id}"
+    end
   end
 
   describe "curator view" do
@@ -65,6 +77,18 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_rows = find_elements(html, ".datasets-table__tr")
 
       assert Enum.count(dataset_rows) >= 3
+    end
+
+    test "edit button links to the admin edit page", %{curator_conn: conn, public_subject: subject} do
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      dataset = Datasets.create(user)
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      edit_dataset_button = element(view, ".btn", "Edit")
+
+      render_click(edit_dataset_button)
+      assert_redirected view, "/datasets/#{dataset.id}"
     end
   end
 
@@ -408,8 +432,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
   end
-
-  # TODO - test link split for edit/submission
 
   defp get_dataset_table_row(html, dataset) do
     html
