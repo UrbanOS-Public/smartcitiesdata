@@ -19,7 +19,7 @@ defmodule AndiWeb.Test.AuthConnCase.IntegrationCase do
   alias Auth.TestHelper
 
   setup _tags do
-    Andi.Schemas.User.create_or_update(TestHelper.valid_jwt_sub(), %{email: "bob@example.com"})
+    Andi.Schemas.User.create_or_update(TestHelper.valid_jwt_sub(), %{email: "bob22@example.com"})
     AuthHelper.build_connections()
   end
 

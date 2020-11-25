@@ -1,8 +1,8 @@
 defmodule AndiWeb.SubmissionMetadataFormTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use AndiWeb.Test.PublicAccessCase
   use Placebo
 
   import Checkov
@@ -36,7 +36,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
   describe "create new dataset" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob39@example.com"})
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
     end
@@ -107,7 +107,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
   describe "enter form data" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob110@example.com"})
       [public_user: public_user]
     end
 
@@ -262,7 +262,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
   describe "edit form data" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob265@example.com"})
       [public_user: public_user]
     end
 
@@ -374,7 +374,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
   describe "can not edit" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob377@example.com"})
       [public_user: public_user]
     end
 

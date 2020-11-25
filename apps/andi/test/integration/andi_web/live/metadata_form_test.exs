@@ -39,7 +39,7 @@ defmodule AndiWeb.MetadataFormTest do
   @url_path "/datasets/"
 
   setup %{curator_subject: curator_subject}do
-    {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
+    {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob42@example.com"})
 
     [curator_user: curator_user]
   end

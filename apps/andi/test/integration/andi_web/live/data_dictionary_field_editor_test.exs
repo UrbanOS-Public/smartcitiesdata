@@ -1,8 +1,8 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use AndiWeb.Test.PublicAccessCase
   import Phoenix.LiveViewTest
   import Checkov
 
@@ -159,7 +159,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   describe "certain fields in the data dictionary editor are unavaliable for non curator users" do
     setup %{curator_subject: curator_subject, public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob162@example.com"})
       [public_user: public_user]
     end
 

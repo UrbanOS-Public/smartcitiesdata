@@ -1,8 +1,8 @@
 defmodule AndiWeb.DataDictionaryFormTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use AndiWeb.Test.PublicAccessCase
   use Placebo
   import Checkov
 
@@ -805,7 +805,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
   describe "non curators have a limited view of the data dictionary form" do
     setup %{curator_subject: curator_subject, public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob808@example.com"})
       [public_user: public_user]
     end
 
