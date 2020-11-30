@@ -26,7 +26,7 @@ defmodule AndiWeb.DatasetLinkTest do
 
   describe "create new dataset" do
     setup %{curator_subject: curator_subject, public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob29@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
     end
