@@ -326,7 +326,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
-      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
+      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
 
       render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
@@ -341,7 +341,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
         %{name: "int", type: "integer"},
         %{name: "float", type: "float"},
         %{name: "bool", type: "boolean"},
-        %{name: "date", type: "date"}
+        %{name: "date", type: "date"},
+        %{name: "timestamp", type: "timestamp"}
       ]
 
       assert generated_schema == expected_schema
