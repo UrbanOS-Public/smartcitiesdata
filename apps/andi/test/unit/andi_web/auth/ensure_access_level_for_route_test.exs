@@ -68,10 +68,34 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
       refute conn.halted
     end
 
-    test "plugs and other modules can be excluded" do
+    test "plugs can be excluded" do
       conn =
         build_conn(:get, "/excluded")
         |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router, exclusions: [AndiWeb.Test.ExcludeMe, AndiWeb.Test.ExcludeMeToo])
+
+      refute conn.status == 404
+      refute conn.halted
+    end
+
+    test "live views can be excluded" do
+      conn =
+        build_conn(:get, "/live-excluded")
+        |> EnsureAccessLevelForRoute.call(
+          router: AndiWeb.Test.Router,
+          exclusions: [AndiWeb.Test.ExcludedLiveView, AndiWeb.Test.ExcludeMeToo]
+        )
+
+      refute conn.status == 404
+      refute conn.halted
+    end
+
+    test "controllers can be excluded" do
+      conn =
+        build_conn(:get, "/controller-excluded")
+        |> EnsureAccessLevelForRoute.call(
+          router: AndiWeb.Test.Router,
+          exclusions: [AndiWeb.Test.ExcludedController, AndiWeb.Test.ExcludeMeToo]
+        )
 
       refute conn.status == 404
       refute conn.halted
@@ -172,6 +196,24 @@ defmodule AndiWeb.Test.ExcludedMe do
   end
 end
 
+defmodule AndiWeb.Test.ExcludedController do
+  use AndiWeb, :controller
+
+  def excluded(_conn, _params) do
+    "does not matter"
+  end
+end
+
+defmodule AndiWeb.Test.ExcludedLiveView do
+  use AndiWeb, :live_view
+
+  def render(assigns) do
+    ~L"""
+    Good times!
+    """
+  end
+end
+
 defmodule AndiWeb.Test.Router do
   use AndiWeb, :router
 
@@ -185,6 +227,8 @@ defmodule AndiWeb.Test.Router do
     live "/live-match", AndiWeb.Test.SpecifiedMatchingLiveView, layout: {AndiWeb.LayoutView, :app}
 
     get "/excluded", AndiWeb.Test.ExcludeMe, match: "me"
+    get "/controller-excluded", AndiWeb.Test.ExcludedController, :excluded
+    live "/live-excluded", AndiWeb.Test.ExcludedLiveView, layout: {AndiWeb.LayoutView, :app}
 
     get "/kaboom", AndiWeb.Test.SpecifiedController, :kaboom
   end

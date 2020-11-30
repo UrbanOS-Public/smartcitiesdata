@@ -20,7 +20,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
 
     with %{plug: plug, plug_opts: plug_opts} <- Phoenix.Router.route_info(router, conn.method, conn.path_info, conn.host),
          {controller, action} = resolve_controllers(plug, plug_opts),
-         {:excluded, false} <- {:excluded, plug in exclusions},
+         {:excluded, false} <- {:excluded, plug in exclusions or controller in exclusions},
          true <- function_exported?(controller, :access_levels_supported, 1),
          true <- access_level() in apply(controller, :access_levels_supported, [action]) do
       conn
@@ -33,7 +33,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
     end
   rescue
     e ->
-      message = "Unexpecgted error occurred while checking route " <> inspect(e)
+      message = "Unexpected error occurred while checking route " <> inspect(e)
       Logger.error(message)
       not_found(conn)
   end
