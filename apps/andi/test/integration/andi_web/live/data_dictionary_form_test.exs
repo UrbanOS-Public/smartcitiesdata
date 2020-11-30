@@ -1,5 +1,6 @@
 defmodule AndiWeb.DataDictionaryFormTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
@@ -29,7 +30,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "data_dictionary_tree_view" do
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do

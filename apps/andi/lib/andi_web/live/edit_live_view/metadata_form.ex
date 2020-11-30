@@ -17,11 +17,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
 
-    dataset_exists =
-      case Andi.Services.DatasetStore.get(dataset.id) do
-        {:ok, nil} -> false
-        _ -> true
-      end
+    dataset_published? = dataset.submission_status == :published
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -29,7 +25,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     {:ok,
      assign(socket,
-       dataset_exists: dataset_exists,
+       dataset_published?: dataset_published?,
        dataset_id: dataset.id,
        visibility: "expanded",
        validation_status: "expanded",
@@ -169,7 +165,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__organization">
                 <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-                <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_exists, selected: ""]) %>
+                <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: ""]) %>
                 <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
               </div>
 
@@ -185,13 +181,13 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__type">
                 <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
-                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [class: "select", disabled: @dataset_exists]) %>
+                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [class: "select", disabled: @dataset_published?]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceType, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__format">
                 <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
+                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
@@ -234,7 +230,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   def handle_event(
         "validate",
         %{"form_data" => form_data, "_target" => ["form_data", "dataTitle" | _]},
-        %{assigns: %{dataset_exists: false}} = socket
+        %{assigns: %{dataset_published?: false}} = socket
       ) do
     form_data
     |> FormTools.adjust_data_name()
@@ -245,7 +241,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
   def handle_event(
         "validate",
         %{"form_data" => form_data, "_target" => ["form_data", "orgId" | _]},
-        %{assigns: %{dataset_exists: false}} = socket
+        %{assigns: %{dataset_published?: false}} = socket
       ) do
     form_data
     |> FormTools.adjust_org_name()

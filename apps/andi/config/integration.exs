@@ -31,7 +31,8 @@ config :andi,
   kafka_broker: endpoint,
   dead_letter_topic: "dead-letters",
   kafka_endpoints: endpoint,
-  hsts_enabled: false
+  hsts_enabled: false,
+  access_level: :private
 
 config :andi, Andi.Repo,
   database: db_name,

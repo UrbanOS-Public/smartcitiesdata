@@ -19,12 +19,7 @@ defmodule Andi.Application do
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
-        guardian_db_sweeper(),
-        {Brook, brook()},
-        Andi.DatasetCache,
-        Andi.Migration.Migrations,
-        Andi.Scheduler,
-        elsa()
+        private_access_processes()
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
@@ -33,6 +28,21 @@ defmodule Andi.Application do
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp private_access_processes() do
+    if Andi.private_access?() do
+      [
+        guardian_db_sweeper(),
+        {Brook, brook()},
+        Andi.DatasetCache,
+        Andi.Migration.Migrations,
+        Andi.Scheduler,
+        elsa()
+      ]
+    else
+      []
+    end
   end
 
   defp elsa() do

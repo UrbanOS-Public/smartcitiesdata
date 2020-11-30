@@ -27,24 +27,37 @@ defmodule AndiWeb.EditLiveViewTest do
     [curator: curator, public_user: public_user]
   end
 
-  describe "public access to edit datasets" do
+  describe "public access for dataset submission" do
     test "public user can access their own dataset", %{public_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, "/submissions/" <> dataset.id)
     end
 
     test "public user cannot access an unowned dataset", %{public_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
 
-      get(conn, @url_path <> dataset.id)
+      get(conn, "/datasets/" <> dataset.id)
+      |> response(302)
+
+      get(conn, "/submissions/" <> dataset.id)
       |> response(404)
     end
 
     test "public user cannot access a dataset owned by another user", %{public_conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
 
-      get(conn, @url_path <> dataset.id)
+      get(conn, "/datasets/" <> dataset.id)
+      |> response(302)
+
+      get(conn, "/submissions/" <> dataset.id)
       |> response(404)
+    end
+
+    test "public user cannot access edit view, even for a dataset they own", %{public_conn: conn, public_user: public_user} do
+      dataset = Datasets.create(public_user)
+
+      assert get(conn, "/datasets/" <> dataset.id)
+             |> response(302)
     end
   end
 
