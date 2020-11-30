@@ -12,6 +12,9 @@ defmodule AndiWeb.AccessLevelTest do
   alias Andi.Services.OrgStore
 
   setup_all do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Andi.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, {:shared, self()})
+
     organization = create_organization()
     dataset = create_dataset(organization.id)
     deletable_dataset = create_dataset(organization.id)
