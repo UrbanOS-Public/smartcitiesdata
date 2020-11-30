@@ -3,6 +3,7 @@ defmodule AndiWeb.AuthTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  import AndiWeb.Test.PublicAccessCase
 
   describe "required login" do
     test "redirects users who are not authenticated to login page" do
@@ -18,6 +19,32 @@ defmodule AndiWeb.AuthTest do
 
       assert result.status == 302
       assert result.resp_body =~ "error_message=Unauthorized\""
+    end
+
+    test "returns 200 when user is authenticated and has correct roles", %{curator_conn: conn} do
+      result = get(conn, "/datasets")
+
+      assert result.status == 200
+    end
+  end
+
+  describe "public mode" do
+    setup do
+      on_exit(set_access_level(:public))
+      restart_andi()
+
+      Ecto.Adapters.SQL.Sandbox.checkout(Andi.Repo)
+      Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, {:shared, self()})
+
+      :ok
+    end
+
+    test "redirects users who are not authenticated to login page" do
+      unauthenticated_conn = build_conn()
+      result = get(unauthenticated_conn, "/datasets")
+
+      assert result.status == 302
+      assert result.resp_body =~ "/auth/auth0?prompt=login\""
     end
 
     test "returns 200 when user is authenticated and has correct roles", %{curator_conn: conn} do

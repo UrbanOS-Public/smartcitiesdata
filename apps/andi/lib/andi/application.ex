@@ -14,6 +14,8 @@ defmodule Andi.Application do
   getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
+    set_guardian_db_config()
+
     children =
       [
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
@@ -114,9 +116,19 @@ defmodule Andi.Application do
       nil ->
         []
 
+      _config ->
+        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+    end
+  end
+
+  defp set_guardian_db_config do
+    Application.get_env(:andi, Guardian.DB)
+    |> case do
+      nil ->
+        []
+
       config ->
         Application.put_env(:guardian, Guardian.DB, config)
-        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
   end
 end
