@@ -9,6 +9,7 @@ defmodule Reaper.FileIngest.Processor do
   alias SmartCity.HostedFile
   alias ExAws.S3
   alias Providers.Helpers.Provisioner
+  alias Reaper.DataExtract.ExtractStep
 
   alias Reaper.{
     UrlBuilder,
@@ -26,8 +27,13 @@ defmodule Reaper.FileIngest.Processor do
     dataset = Provisioner.provision(unprovisioned_dataset)
     filename = get_filename(dataset)
 
-    dataset
-    |> UrlBuilder.build()
+    http_extract_step =
+      dataset
+      |> get_in([:technical, :extractSteps])
+      |> List.last()
+
+    http_extract_step
+    |> UrlBuilder.decode_http_extract_step()
     |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
     |> upload(filename)
 

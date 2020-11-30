@@ -93,6 +93,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
+    |> validate_extract_steps()
   end
 
   def changeset_for_draft(technical, changes) do
@@ -182,6 +183,19 @@ defmodule Andi.InputSchemas.Datasets.Technical do
         CronExpression.Parser.parse(crontab, true)
     end
   end
+
+  defp validate_extract_steps(%{changes: %{sourceType: "remote"}} = changeset), do: changeset
+
+  defp validate_extract_steps(changeset) do
+    extract_steps = get_field(changeset, :extractSteps)
+
+    case extract_steps in [nil, []] or has_no_http_steps?(extract_steps) do
+      true -> add_error(changeset, :extractSteps, "cannot be empty and require at least one http step")
+      false -> changeset
+    end
+  end
+
+  defp has_no_http_steps?(extract_steps), do: Enum.all?(extract_steps, fn step -> step.type != "http" end)
 
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]

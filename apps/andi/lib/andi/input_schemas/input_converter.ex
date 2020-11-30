@@ -109,14 +109,16 @@ defmodule Andi.InputSchemas.InputConverter do
     |> SmartCity.Organization.new()
   end
 
-  def form_changes_from_changeset(form_changeset) do
-    error_fields = Keyword.keys(form_changeset.errors)
+  def form_changes_from_changeset(%{errors: errors} = form_changeset) do
+    error_fields = Keyword.keys(errors)
 
     form_changeset
     |> Ecto.Changeset.apply_changes()
     |> StructTools.to_map()
     |> add_error_fields_to_changes(error_fields)
   end
+
+  def form_changes_from_changeset(placeholder_step_context), do: placeholder_step_context
 
   defp add_error_fields_to_changes(changes, error_fields) do
     Enum.reduce(error_fields, changes, fn error_field, acc ->

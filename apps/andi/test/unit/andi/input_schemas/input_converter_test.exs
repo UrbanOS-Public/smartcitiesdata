@@ -298,7 +298,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
         "0" => %{"id" => Ecto.UUID.generate(), "key" => "chain", "value" => "city"},
         "1" => %{"id" => Ecto.UUID.generate(), "key" => "F# minor", "value" => "add"}
       },
-      "sourceType" => "sourceType",
+      "sourceType" => "remote",
       "sourceUrl" => "https://sourceurl.com?chain=city&F%23+minor=add"
     }
   }

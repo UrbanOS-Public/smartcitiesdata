@@ -2,7 +2,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStepTest do
   use ExUnit.Case
   import Checkov
 
-  alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.Datasets.ExtractAuthStep
   alias Andi.InputSchemas.Datasets.ExtractStep
 
