@@ -38,7 +38,7 @@ defmodule AndiWeb.MetadataFormTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
-  setup %{curator_subject: curator_subject}do
+  setup %{curator_subject: curator_subject} do
     {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob42@example.com"})
 
     [curator_user: curator_user]
@@ -69,8 +69,9 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     test "validation is only triggered for new datasets", %{conn: conn, curator_user: curator_user} do
-      {:ok, dataset} = Datasets.create(curator_user)
-      |> Datasets.update(%{technical: %{dataName: "original name"}, submission_status: :published})
+      {:ok, dataset} =
+        Datasets.create(curator_user)
+        |> Datasets.update(%{technical: %{dataName: "original name"}, submission_status: :published})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
@@ -625,8 +626,9 @@ defmodule AndiWeb.MetadataFormTest do
 
   describe "can not edit" do
     test "source format for published dataset", %{conn: conn, curator_user: curator_user} do
-      {:ok, dataset} = Datasets.create(curator_user)
-      |> Datasets.update(%{submission_status: :published})
+      {:ok, dataset} =
+        Datasets.create(curator_user)
+        |> Datasets.update(%{submission_status: :published})
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 

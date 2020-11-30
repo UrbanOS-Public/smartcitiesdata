@@ -7,7 +7,6 @@ defmodule AndiWeb.Endpoint do
 
   use Phoenix.Endpoint, otp_app: :andi
 
-
   plug Plug.Static,
     at: "/",
     from: :andi,
@@ -40,5 +39,4 @@ defmodule AndiWeb.Endpoint do
   plug Plug.Session, @session_options
 
   plug AndiWeb.Router
-
 end

@@ -61,8 +61,13 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "validation is only triggered for new datasets", %{public_conn: conn, public_user: public_user} do
-      {:ok, dataset} = Datasets.create(public_user)
-      |> Datasets.update(%{submission_status: :published, business: %{dataTitle: "Original Name"}, technical: %{dataName: "original_name"}})
+      {:ok, dataset} =
+        Datasets.create(public_user)
+        |> Datasets.update(%{
+          submission_status: :published,
+          business: %{dataTitle: "Original Name"},
+          technical: %{dataName: "original_name"}
+        })
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
@@ -226,26 +231,28 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
     end
 
     test "displays all other fields", %{public_conn: conn, public_user: public_user} do
-      {:ok, org} = Organizations.create()
-      |> Organizations.update(%{
-            orgTitle: "Awesome Title",
-            orgName: "awesome_title"
-      })
+      {:ok, org} =
+        Organizations.create()
+        |> Organizations.update(%{
+          orgTitle: "Awesome Title",
+          orgName: "awesome_title"
+        })
 
-      {:ok, dataset} = Datasets.create(public_user)
-      |> Datasets.update(%{
-        business: %{
-          description: "A description with no special characters",
-          benefitRating: 1.0,
-          riskRating: 0.5
-        },
-        technical: %{
-          private: true,
-          orgId: org.id,
-          sourceType: "ingest",
-          sourceFormat: "text/csv"
-        }
-      })
+      {:ok, dataset} =
+        Datasets.create(public_user)
+        |> Datasets.update(%{
+          business: %{
+            description: "A description with no special characters",
+            benefitRating: 1.0,
+            riskRating: 0.5
+          },
+          technical: %{
+            private: true,
+            orgId: org.id,
+            sourceType: "ingest",
+            sourceFormat: "text/csv"
+          }
+        })
 
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
 

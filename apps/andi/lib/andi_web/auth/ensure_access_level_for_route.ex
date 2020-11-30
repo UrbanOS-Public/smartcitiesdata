@@ -24,7 +24,9 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
          true <- access_level() in apply(controller, :access_levels_supported, [action]) do
       conn
     else
-      {:excluded, true} -> conn
+      {:excluded, true} ->
+        conn
+
       _ ->
         resp(conn, 404, "Not found")
         |> halt()

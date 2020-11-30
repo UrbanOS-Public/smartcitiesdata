@@ -4,9 +4,7 @@ defmodule AndiWeb.HealthCheckController do
   """
   use AndiWeb, :controller
 
-  access_levels [
-    index: [:private, :public]
-  ]
+  access_levels(index: [:private, :public])
 
   @spec index(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def index(conn, _params) do

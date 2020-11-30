@@ -8,7 +8,6 @@ defmodule AndiWeb.Router do
          "font-src https://fonts.gstatic.com data: 'self';" <>
          "img-src 'self' data:;"
 
-
   pipeline :browser do
     plug Plug.Logger
     plug :accepts, ["html"]

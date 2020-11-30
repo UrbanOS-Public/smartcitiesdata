@@ -11,9 +11,7 @@ defmodule AndiWeb.DatasetLiveView do
 
   import AndiWeb.Helpers.SortingHelpers
 
-  access_levels [
-    render: [:private, :public],
-  ]
+  access_levels(render: [:private, :public])
 
   @default_filters [
     include_remotes: false,

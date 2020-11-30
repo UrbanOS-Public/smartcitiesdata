@@ -14,64 +14,72 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
 
   describe "call/2" do
     test "returns a 404 for a controller that does not provide access level config" do
-      conn = build_conn(:get, "/unspecified")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/unspecified")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       assert conn.status == 404
       assert conn.halted
     end
 
     test "returns a 404 for a controller that provides non-matching access level config" do
-      conn = build_conn(:get, "/no-match")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/no-match")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       assert conn.status == 404
       assert conn.halted
     end
 
     test "passes through for a provided, matching access level" do
-      conn = build_conn(:get, "/match")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/match")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       refute conn.status == 404
       refute conn.halted
     end
 
     test "returns a 404 for a controller-less live view that does not provide access level config" do
-      conn = build_conn(:get, "/live-unspecified")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/live-unspecified")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       assert conn.status == 404
       assert conn.halted
     end
 
     test "returns a 404 for a provided, non-matching, controller-less live view" do
-      conn = build_conn(:get, "/live-no-match")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/live-no-match")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       assert conn.status == 404
       assert conn.halted
     end
 
     test "passes through for a provided, matching, controller-less live view" do
-      conn = build_conn(:get, "/live-match")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/live-match")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       refute conn.status == 404
       refute conn.halted
     end
 
     test "plugs and other modules can be excluded" do
-      conn = build_conn(:get, "/excluded")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router, exclusions: [AndiWeb.Test.ExcludeMe, AndiWeb.Test.ExcludeMeToo])
+      conn =
+        build_conn(:get, "/excluded")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router, exclusions: [AndiWeb.Test.ExcludeMe, AndiWeb.Test.ExcludeMeToo])
 
       refute conn.status == 404
       refute conn.halted
     end
 
     test "accurately returns a 404" do
-      conn = build_conn(:get, "/NOT-FOUND!!!")
-      |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+      conn =
+        build_conn(:get, "/NOT-FOUND!!!")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
       assert conn.status == 404
       assert conn.halted
@@ -100,10 +108,10 @@ end
 defmodule AndiWeb.Test.SpecifiedController do
   use AndiWeb, :controller
 
-  access_levels [
+  access_levels(
     no_match: [:public],
     match: [:public, :private]
-  ]
+  )
 
   def no_match(conn, _params) do
     resp(conn, 200, "data exposed!")
@@ -117,9 +125,7 @@ end
 defmodule AndiWeb.Test.SpecifiedNonMatchingLiveView do
   use AndiWeb, :live_view
 
-  access_levels [
-    render: [:public]
-  ]
+  access_levels(render: [:public])
 
   def render(assigns) do
     ~L"""
@@ -131,9 +137,7 @@ end
 defmodule AndiWeb.Test.SpecifiedMatchingLiveView do
   use AndiWeb, :live_view
 
-  access_levels [
-    render: [:public, :private]
-  ]
+  access_levels(render: [:public, :private])
 
   def render(assigns) do
     ~L"""
@@ -167,4 +171,3 @@ defmodule AndiWeb.Test.Router do
     get "/excluded", AndiWeb.Test.ExcludeMe, match: "me"
   end
 end
-

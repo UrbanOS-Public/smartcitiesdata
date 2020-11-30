@@ -11,13 +11,13 @@ defmodule AndiWeb.API.DatasetController do
   import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter
 
-  access_levels [
+  access_levels(
     create: [:private],
     get: [:private],
     get_all: [:private],
     disable: [:private],
     delete: [:private]
-  ]
+  )
 
   @instance_name Andi.instance_name()
 

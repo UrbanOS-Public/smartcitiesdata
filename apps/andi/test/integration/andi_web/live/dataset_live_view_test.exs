@@ -55,7 +55,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       edit_dataset_button = element(view, ".btn", "Edit")
 
       render_click(edit_dataset_button)
-      assert_redirected view, "/submissions/#{dataset.id}"
+      assert_redirected(view, "/submissions/#{dataset.id}")
     end
   end
 
@@ -88,7 +88,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       edit_dataset_button = element(view, ".btn", "Edit")
 
       render_click(edit_dataset_button)
-      assert_redirected view, "/datasets/#{dataset.id}"
+      assert_redirected(view, "/datasets/#{dataset.id}")
     end
   end
 
@@ -233,7 +233,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
       assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-              get_value(html, "#form_data_dataName")
+               get_value(html, "#form_data_dataName")
 
       html = render_change(metadata_view, :save)
 
@@ -314,7 +314,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
       assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-              get_value(html, "#form_data_dataName")
+               get_value(html, "#form_data_dataName")
 
       html = render_change(metadata_view, :save)
 

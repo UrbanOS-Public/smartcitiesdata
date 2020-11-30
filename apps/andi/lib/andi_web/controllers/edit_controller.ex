@@ -3,11 +3,11 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
 
-  access_levels [
+  access_levels(
     edit_organization: [:private],
     edit_dataset: [:private],
     edit_submission: [:private, :public]
-  ]
+  )
 
   def edit_dataset(conn, %{"id" => id}) do
     render_view_if_accessible(conn, id, AndiWeb.EditLiveView)

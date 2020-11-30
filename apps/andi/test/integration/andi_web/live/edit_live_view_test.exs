@@ -57,7 +57,7 @@ defmodule AndiWeb.EditLiveViewTest do
       dataset = Datasets.create(public_user)
 
       assert get(conn, "/datasets/" <> dataset.id)
-      |> response(302)
+             |> response(302)
     end
   end
 

@@ -6,11 +6,11 @@ defmodule AndiWeb.AuthController do
   require Logger
   plug Ueberauth
 
-  access_levels [
+  access_levels(
     request: [:private, :public],
     callback: [:private, :public],
     logout: [:private, :public]
-  ]
+  )
 
   alias AndiWeb.Auth.TokenHandler
 

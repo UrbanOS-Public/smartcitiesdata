@@ -9,9 +9,7 @@ defmodule AndiWeb.OrganizationLiveView do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Organization
 
-  access_levels [
-    render: [:private],
-  ]
+  access_levels(render: [:private])
 
   def render(assigns) do
     ~L"""

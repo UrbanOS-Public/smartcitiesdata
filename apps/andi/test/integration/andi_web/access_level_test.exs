@@ -38,59 +38,59 @@ defmodule AndiWeb.AccessLevelTest do
   describe "API" do
     test "does not allow GET access to datasets via API", %{curator_conn: conn, dataset_id: id} do
       assert get(conn, "/api/v1/dataset/#{id}")
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow PUT access to datasets via API", %{curator_conn: conn, dataset_id: id} do
       assert put(conn, "/api/v1/dataset", %{id: id})
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow POST access to datasets delete API", %{curator_conn: conn, deletable_dataset_id: id} do
       assert post(conn, "/api/v1/dataset/delete", %{id: id})
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow POST access to datasets disable API", %{curator_conn: conn, dataset_id: id} do
       assert post(conn, "/api/v1/dataset/disable", %{id: id})
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow access to datasets list", %{curator_conn: conn} do
       assert get(conn, "/api/v1/datasets")
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow access to organizations list", %{curator_conn: conn} do
       assert get(conn, "/api/v1/organizations")
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow POST access to organizations via API", %{curator_conn: conn, organization_id: id} do
       assert post(conn, "/api/v1/organization", %{id: id})
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow POST access to organization user association via API", %{curator_conn: conn, organization_id: id} do
       assert post(conn, "/api/v1/organization/#{id}/users/add", %{org_id: id, user: []})
-      |> response(404)
+             |> response(404)
     end
   end
 
   describe "administrative features in UI" do
     test "does not allow access to organizations list", %{curator_conn: conn} do
       assert get(conn, "/organizations")
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow access to organization edit", %{curator_conn: conn, organization_id: id} do
       assert get(conn, "/organizations/#{id}")
-      |> response(404)
+             |> response(404)
     end
 
     test "does not allow access to 'Edit View' for a dataset", %{curator_conn: conn, dataset_id: id} do
       assert get(conn, "/datasets/#{id}")
-      |> response(404)
+             |> response(404)
     end
   end
 
@@ -109,6 +109,7 @@ defmodule AndiWeb.AccessLevelTest do
     organization = TDG.create_organization(%{})
 
     Organizations.update(organization)
+
     Brook.Test.with_event(Andi.instance_name(), fn ->
       OrgStore.update(organization)
     end)
@@ -120,6 +121,7 @@ defmodule AndiWeb.AccessLevelTest do
     dataset = TDG.create_dataset(%{technical: %{orgId: org_id}})
 
     Datasets.update(dataset)
+
     Brook.Test.with_event(Andi.instance_name(), fn ->
       DatasetStore.update(dataset)
     end)
