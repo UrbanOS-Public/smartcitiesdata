@@ -32,6 +32,7 @@ defmodule AndiWeb.Test.PublicAccessCase do
     Application.stop(:andi)
     Application.stop(:brook)
     Application.stop(:elsa)
+    Application.stop(:ecto)
 
     Application.ensure_all_started(:andi)
   end

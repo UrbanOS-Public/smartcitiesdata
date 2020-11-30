@@ -19,6 +19,7 @@ defmodule Andi.Application do
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
+        guardian_db(),
         private_access_processes()
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
@@ -114,9 +115,19 @@ defmodule Andi.Application do
       nil ->
         []
 
-      config ->
-        Application.put_env(:guardian, Guardian.DB, config)
+      _config ->
         Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
+  end
+
+  defp guardian_db do
+    Application.get_env(:andi, Guardian.DB)
+    |> case do
+         nil ->
+           []
+
+         config ->
+           Application.put_env(:guardian, Guardian.DB, config)
+       end
   end
 end
