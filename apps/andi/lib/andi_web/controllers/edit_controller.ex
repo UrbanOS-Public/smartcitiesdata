@@ -60,14 +60,4 @@ defmodule AndiWeb.EditController do
         live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator})
     end
   end
-
-  def access_level(conn) do
-    %{"is_curator" => is_curator?} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
-
-    if is_curator? do
-      [:private]
-    else
-      [:private, :public]
-    end
-  end
 end
