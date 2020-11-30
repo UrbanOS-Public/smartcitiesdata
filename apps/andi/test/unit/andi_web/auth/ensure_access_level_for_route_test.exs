@@ -166,9 +166,7 @@ end
 defmodule AndiWeb.Test.FailingController do
   use AndiWeb, :controller
 
-  access_levels(
-    kaboom: [:public]
-  )
+  access_levels(kaboom: [:public])
 
   def kaboom(conn, _params) do
     resp(conn, 200, "kaboom")
