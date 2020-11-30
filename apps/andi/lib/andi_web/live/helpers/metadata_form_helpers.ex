@@ -38,7 +38,6 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   def keywords_to_string(nil), do: ""
   def keywords_to_string(keywords) when is_binary(keywords), do: keywords
   def keywords_to_string(keywords), do: Enum.join(keywords, ", ")
-
   def safe_calendar_value(nil), do: nil
 
   def safe_calendar_value(%{calendar: _, day: day, month: month, year: year}) do

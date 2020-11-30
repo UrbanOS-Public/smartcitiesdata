@@ -10,6 +10,12 @@ defmodule AndiWeb.API.OrganizationController do
   alias Andi.Services.OrgStore
   import SmartCity.Event, only: [organization_update: 0]
 
+  access_levels(
+    create: [:private],
+    get_all: [:private],
+    add_users_to_organization: [:private]
+  )
+
   @instance_name Andi.instance_name()
 
   @doc """

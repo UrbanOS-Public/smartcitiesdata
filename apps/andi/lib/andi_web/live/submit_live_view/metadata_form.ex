@@ -15,11 +15,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = SubmissionMetadataFormSchema.changeset_from_andi_dataset(dataset)
 
-    dataset_exists =
-      case Andi.Services.DatasetStore.get(dataset.id) do
-        {:ok, nil} -> false
-        _ -> true
-      end
+    dataset_published? = dataset.submission_status == :published
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -27,7 +23,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
     {:ok,
      assign(socket,
-       dataset_exists: dataset_exists,
+       dataset_published?: dataset_published?,
        dataset_id: dataset.id,
        visibility: "expanded",
        validation_status: "expanded",
@@ -82,7 +78,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
               <div class="metadata-form__format">
                 <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_exists]) %>
+                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
@@ -146,7 +142,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
   def handle_event(
         "validate",
         %{"form_data" => form_data, "_target" => ["form_data", "dataTitle" | _]},
-        %{assigns: %{dataset_exists: false}} = socket
+        %{assigns: %{dataset_published?: false}} = socket
       ) do
     form_data
     |> FormTools.adjust_data_name()

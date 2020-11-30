@@ -27,6 +27,7 @@ defmodule AndiWeb do
       import AndiWeb.Gettext
 
       alias AndiWeb.Router.Helpers, as: Routes
+      import AndiWeb.Auth.EnsureAccessLevelForRoute, only: [access_levels: 1]
     end
   end
 
@@ -73,6 +74,7 @@ defmodule AndiWeb do
       import Phoenix.HTML.Form
       import Phoenix.HTML.Link
       alias AndiWeb.Router.Helpers, as: Routes
+      import AndiWeb.Auth.EnsureAccessLevelForRoute, only: [access_levels: 1]
     end
   end
 
