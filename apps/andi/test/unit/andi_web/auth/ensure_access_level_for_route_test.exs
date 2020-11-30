@@ -1,6 +1,7 @@
 defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
   use ExUnit.Case
   use AndiWeb.ConnCase
+  use Placebo
 
   alias AndiWeb.Auth.EnsureAccessLevelForRoute
 
@@ -84,6 +85,17 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
       assert conn.status == 404
       assert conn.halted
     end
+
+    test "if an exception occurs, returns 404, not 500" do
+      allow AndiWeb.Test.SpecifiedController.access_levels_supported(any()), exec: fn _ -> raise "KABOOM!" end
+
+      conn =
+        build_conn(:get, "/kaboom")
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
+
+      assert conn.status == 404
+      assert conn.halted
+    end
   end
 end
 
@@ -119,6 +131,10 @@ defmodule AndiWeb.Test.SpecifiedController do
 
   def match(conn, _params) do
     resp(conn, 200, "data exposed!")
+  end
+
+  def kaboom(conn, _params) do
+    resp(conn, 200, "kaboom")
   end
 end
 
@@ -169,5 +185,7 @@ defmodule AndiWeb.Test.Router do
     live "/live-match", AndiWeb.Test.SpecifiedMatchingLiveView, layout: {AndiWeb.LayoutView, :app}
 
     get "/excluded", AndiWeb.Test.ExcludeMe, match: "me"
+
+    get "/kaboom", AndiWeb.Test.SpecifiedController, :kaboom
   end
 end

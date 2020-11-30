@@ -4,6 +4,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
   """
 
   import Plug.Conn
+  require Logger
 
   def init(opts) do
     if Keyword.has_key?(opts, :router) do
@@ -28,9 +29,18 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRoute do
         conn
 
       _ ->
-        resp(conn, 404, "Not found")
-        |> halt()
+        not_found(conn)
     end
+  rescue
+    e ->
+      message = "Unexpecgted error occurred while checking route " <> inspect(e)
+      Logger.error(message)
+      not_found(conn)
+  end
+
+  defp not_found(conn) do
+    resp(conn, 404, "Not found")
+    |> halt()
   end
 
   defmacro access_levels(opts \\ []) do
