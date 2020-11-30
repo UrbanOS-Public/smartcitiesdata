@@ -18,7 +18,7 @@ defmodule Andi.DatasetControllerTest do
 
   describe "dataset disable" do
     test "sends dataset:disable event" do
-      dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -43,7 +43,7 @@ defmodule Andi.DatasetControllerTest do
 
   describe "dataset delete" do
     test "sends dataset:delete event" do
-      dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -82,6 +82,7 @@ defmodule Andi.DatasetControllerTest do
           "orgId" => "org-123-456",
           "orgName" => Faker.Person.first_name(),
           "stream" => false,
+          "extractSteps" => [%{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}],
           "sourceUrl" => "https://example.com",
           "sourceType" => "stream",
           "sourceFormat" => "application/gtfs+protobuf",
@@ -177,6 +178,7 @@ defmodule Andi.DatasetControllerTest do
         TDG.create_dataset(
           id: "existing-ds1",
           technical: %{
+            extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
             orgName: org_name,
             systemName: "#{org_name}__#{data_name}"
@@ -205,6 +207,7 @@ defmodule Andi.DatasetControllerTest do
         TDG.create_dataset(
           id: "my-new-dataset",
           technical: %{
+            extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
             orgName: org_name,
             systemName: "#{org_name}__#{data_name}"
@@ -226,7 +229,7 @@ defmodule Andi.DatasetControllerTest do
       new_dataset =
         TDG.create_dataset(
           id: "my-new-dataset",
-          technical: %{dataName: "my_little_dataset"}
+          technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}], dataName: "my_little_dataset"}
         )
         |> struct_to_map_with_string_keys()
         |> put_in(["business", "modifiedDate"], "badDate")
@@ -254,6 +257,7 @@ defmodule Andi.DatasetControllerTest do
             benefitRating: nil
           },
           technical: %{
+            extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             sourceFormat: "",
             sourceHeaders: %{"" => "where's my key"},
             sourceQueryParams: %{"" => "where's MY key"}
@@ -309,7 +313,8 @@ defmodule Andi.DatasetControllerTest do
           id: " my-new-dataset  ",
           technical: %{
             dataName: "   the_data_name ",
-            orgName: " the_org_name   "
+            orgName: " the_org_name   ",
+            sourceType: "remote"
           },
           business: %{
             contactName: " some  body  ",
@@ -332,7 +337,7 @@ defmodule Andi.DatasetControllerTest do
     end
 
     test "put with a system name does not reflect it back" do
-      new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed"})
+      new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed", sourceType: "remote"})
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
 
@@ -348,7 +353,7 @@ defmodule Andi.DatasetControllerTest do
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset = TDG.create_dataset(%{})
+      new_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}})
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)

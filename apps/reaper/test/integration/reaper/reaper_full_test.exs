@@ -281,7 +281,19 @@ defmodule Reaper.FullTest do
           id: dataset_id,
           technical: %{
             cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  url: "http://localhost:#{bypass.port}/#{@csv_file_name}",
+                  queryParams: %{},
+                  headers: %{},
+                  protocol: nil,
+                  action: "GET"
+                },
+                assigns: %{}
+              }
+            ],
             sourceFormat: "csv",
             sourceType: "host"
           }

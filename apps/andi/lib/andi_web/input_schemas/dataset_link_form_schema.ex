@@ -20,14 +20,14 @@ defmodule AndiWeb.InputSchemas.DatasetLinkFormSchema do
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
-  def changeset(datasetLink, changes) do
-    datasetLink
+  def changeset(dataset_link, changes) do
+    dataset_link
     |> cast(changes, @cast_fields)
     |> validate_required(@required_fields, message: "is required")
   end
 
-  def changeset_for_draft(datasetLink, changes) do
-    cast(datasetLink, changes, @cast_fields)
+  def changeset_for_draft(dataset_link, changes) do
+    cast(dataset_link, changes, @cast_fields)
   end
 
   def changeset_from_andi_dataset(dataset) do

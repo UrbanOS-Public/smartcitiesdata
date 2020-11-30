@@ -35,7 +35,7 @@
 }
 
 .add-step {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .example-output {
@@ -85,6 +85,11 @@
         background-image: url('/images/delete_field.svg');
         cursor: pointer;
     }
+}
+
+.extract-steps__error-message{
+    color: red;
+    margin-bottom: 2rem;
 }
 
 

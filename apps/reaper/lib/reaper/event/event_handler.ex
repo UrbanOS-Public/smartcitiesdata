@@ -90,7 +90,13 @@ defmodule Reaper.Event.EventHandler do
       | technical: %{
           shapefile_dataset.technical
           | sourceFormat: hosted_file.mime_type,
-            sourceUrl: "s3://#{hosted_file.bucket}/#{hosted_file.key}"
+            extractSteps: [
+              %{
+                type: "s3",
+                context: %{url: "s3://#{hosted_file.bucket}/#{hosted_file.key}", headers: %{}},
+                assigns: %{}
+              }
+            ]
         }
     }
 

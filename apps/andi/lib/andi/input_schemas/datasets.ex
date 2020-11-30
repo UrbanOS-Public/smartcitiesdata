@@ -255,23 +255,16 @@ defmodule Andi.InputSchemas.Datasets do
     extract_steps_changes = get_in(changes, [:technical, :extractSteps])
     extract_steps_valid = extract_steps_valid?(extract_steps_changes)
 
-    url_form_changeset = UrlFormSchema.changeset_from_andi_dataset(changes)
-    url_form_valid = url_form_changeset.valid?
-
-    changes = update_changes_for_invalid_form(changes, extract_steps_valid, url_form_valid)
+    changes = update_changes_for_invalid_form(changes, extract_steps_valid)
 
     schema
     |> Dataset.changeset(changes)
     |> Dataset.validate_unique_system_name()
   end
 
-  defp update_changes_for_invalid_form(changes, false, false), do: changes
+  defp update_changes_for_invalid_form(changes, false), do: changes
 
-  defp update_changes_for_invalid_form(changes, false, true) do
-    put_in(changes, [:technical, :extractSteps], [])
-  end
-
-  defp update_changes_for_invalid_form(changes, true, _) do
+  defp update_changes_for_invalid_form(changes, true) do
     url_placeholder =
       changes.business[:homepage]
       |> source_url_placeholder_from_homepage()

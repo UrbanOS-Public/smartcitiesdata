@@ -49,6 +49,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     changeset(form_data_as_params)
   end
 
+  def form_changeset_from_andi_extract_step(%{type: type, context: context}) when type in ["s3", "sftp"], do: context
+
   def form_changeset_from_andi_extract_step(extract_step) do
     step_module = step_module(extract_step.type)
 
@@ -60,17 +62,21 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
 
   def preload(struct), do: StructTools.preload(struct, [])
 
-  defp validate_type(%{changes: %{type: type}} = changeset) when type in ["http", "date", "secret", "auth"] do
-    changeset
+  defp validate_type(%{changes: %{type: type}} = changeset) do
+    case step_module(type) == :invalid_type do
+      true -> add_error(changeset, :type, "invalid type")
+      false -> changeset
+    end
   end
-
-  defp validate_type(changeset), do: add_error(changeset, :type, "invalid type")
 
   defp validate_context(%{changes: %{context: nil}} = changeset), do: changeset
 
   defp validate_context(%{changes: %{type: type, context: context}} = changeset) do
     case step_module(type) do
       :invalid_type ->
+        changeset
+
+      nil ->
         changeset
 
       step_module ->
@@ -91,6 +97,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   defp step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
   defp step_module("secret"), do: Andi.InputSchemas.Datasets.ExtractSecretStep
   defp step_module("auth"), do: Andi.InputSchemas.Datasets.ExtractAuthStep
+  defp step_module("sftp"), do: nil
+  defp step_module("s3"), do: nil
   defp step_module(_invalid_type), do: :invalid_type
 
   defp wrap_context(form_data) do
