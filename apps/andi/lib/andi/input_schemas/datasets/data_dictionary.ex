@@ -127,14 +127,21 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     end
   end
 
-  defp validate_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"] do
+  defp validate_format(%{changes: %{type: type}} = changeset) when type == "timestamp" do
     put_change(changeset, :format, "{ISO:Extended}")
+  end
+
+  defp validate_format(%{changes: %{type: type}} = changeset) when type == "date" do
+    put_change(changeset, :format, "{ISOdate}")
   end
 
   defp validate_format(changeset), do: changeset
 
-  defp add_default_format(%{changes: %{type: type}} = changeset) when type in ["date", "timestamp"],
+  defp add_default_format(%{changes: %{type: type}} = changeset) when type == "timestamp",
     do: put_change(changeset, :format, "{ISO:Extended}")
+
+  defp add_default_format(%{changes: %{type: type}} = changeset) when type == "date",
+    do: put_change(changeset, :format, "{ISOdate}")
 
   defp add_default_format(changeset), do: changeset
 end
