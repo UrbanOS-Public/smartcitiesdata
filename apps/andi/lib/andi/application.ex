@@ -14,12 +14,13 @@ defmodule Andi.Application do
   getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
+    set_guardian_db_config()
+
     children =
       [
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
-        guardian_db(),
         private_access_processes()
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
@@ -120,7 +121,7 @@ defmodule Andi.Application do
     end
   end
 
-  defp guardian_db do
+  defp set_guardian_db_config do
     Application.get_env(:andi, Guardian.DB)
     |> case do
          nil ->
