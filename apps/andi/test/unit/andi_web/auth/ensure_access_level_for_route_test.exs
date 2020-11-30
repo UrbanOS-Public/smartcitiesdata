@@ -116,7 +116,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
     end
 
     test "if an exception occurs, returns 404, not 500" do
-      allow AndiWeb.Test.SpecifiedController.access_levels_supported(any()), exec: fn _ -> raise "KABOOM!" end
+      allow AndiWeb.Test.FailingController.access_levels_supported(any()), exec: fn _ -> raise "KABOOM!" end
 
       conn =
         build_conn(:get, "/kaboom")
@@ -161,6 +161,14 @@ defmodule AndiWeb.Test.SpecifiedController do
   def match(conn, _params) do
     resp(conn, 200, "data exposed!")
   end
+end
+
+defmodule AndiWeb.Test.FailingController do
+  use AndiWeb, :controller
+
+  access_levels(
+    kaboom: [:public]
+  )
 
   def kaboom(conn, _params) do
     resp(conn, 200, "kaboom")
@@ -235,6 +243,6 @@ defmodule AndiWeb.Test.Router do
     get "/controller-excluded", AndiWeb.Test.ExcludedController, :excluded
     live "/live-excluded", AndiWeb.Test.ExcludedLiveView, layout: {AndiWeb.LayoutView, :app}
 
-    get "/kaboom", AndiWeb.Test.SpecifiedController, :kaboom
+    get "/kaboom", AndiWeb.Test.FailingController, :kaboom
   end
 end
