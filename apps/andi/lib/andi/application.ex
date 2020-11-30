@@ -124,11 +124,11 @@ defmodule Andi.Application do
   defp set_guardian_db_config do
     Application.get_env(:andi, Guardian.DB)
     |> case do
-         nil ->
-           []
+      nil ->
+        []
 
-         config ->
-           Application.put_env(:guardian, Guardian.DB, config)
-       end
+      config ->
+        Application.put_env(:guardian, Guardian.DB, config)
+    end
   end
 end
