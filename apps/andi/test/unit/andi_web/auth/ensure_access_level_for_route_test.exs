@@ -2,8 +2,13 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
   use ExUnit.Case
   use AndiWeb.ConnCase
   use Placebo
+  import AndiWeb.Test.PublicAccessCase
 
   alias AndiWeb.Auth.EnsureAccessLevelForRoute
+
+  setup do
+    on_exit(set_access_level(:private))
+  end
 
   describe "init/1" do
     test "requires a :router setting" do
