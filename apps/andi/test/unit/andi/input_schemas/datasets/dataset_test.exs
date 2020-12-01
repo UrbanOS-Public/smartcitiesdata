@@ -284,9 +284,22 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       first_schema_field = changeset.changes.technical.changes.schema |> hd()
 
+      assert first_schema_field.changes.format == "{ISOdate}"
+
+      where(field: ["date"])
+    end
+
+    data_test "given a dataset with a schema that has #{field}, format is defaulted" do
+      changes =
+        @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing"}])
+
+      changeset = Dataset.changeset(changes)
+
+      first_schema_field = changeset.changes.technical.changes.schema |> hd()
+
       assert first_schema_field.changes.format == "{ISO:Extended}"
 
-      where(field: ["date", "timestamp"])
+      where(field: ["timestamp"])
     end
 
     data_test "invalid formats are rejected for #{field} schema fields" do
