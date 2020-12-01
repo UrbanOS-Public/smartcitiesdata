@@ -12,7 +12,9 @@ Retrieves data, decodes it, and loads it onto a Kafka topic
   * Run `mix test.integration` to run the integration tests
 
 ## To run inside a container(from the root directory):
-  * `docker build . -t <image_name:tag>`
+  * Go up to the smartcitiesdata directory `cd ../../`
+  * `./scripts/build.sh reaper 1.0`
+  * TODO: update this to include actual running the container
 
 ## Running Locally
 

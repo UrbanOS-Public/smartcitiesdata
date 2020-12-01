@@ -3,10 +3,12 @@
 Discovery API serves as middleware between our data storage and our Discovery UI.
 
 ### To run locally:
-  * `mix deps.get`
-  * `MIX_ENV=integration mix docker.start`
-  * `MIX_ENV=integration iex -S mix start --config config/auth0.exs`
-  * `MIX_ENV=integration mix docker.stop`
+  * Install dependencies with `mix deps.get` (in the smartcitiesdata directory)
+  * `MIX_ENV=integration mix docker.start` (in this directory)
+  # TODO: Create a config/auth0.exs file and test it
+  * `MIX_ENV=integration iex -S mix start --config config/auth0.exs` (in this directory)
+    or just `MIX_ENV=integration iex -S mix start` if you want to try it without an auth config
+  * `MIX_ENV=integration mix docker.stop` (in this directory)
 
   ## Add Organizations and Datasets by executing the following in the iex session:
   ```elixir
@@ -27,32 +29,46 @@ Discovery API serves as middleware between our data storage and our Discovery UI
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
   * Run `mix test.integration` to run the integration tests
 
-### To run inside a container(from the root directory):
-  * `docker build . -t <image_name:tag>`
+### To run inside a container:
+  * Go up to the smartcitiesdata directory `cd ../../`
+  * `./scripts/build.sh discovery_api 1.0`
+  * TODO: update this to include actual running the container
 
 ### To see the application live:
-  * Go to localhost:4000/metrics
+  * In your iex session type
+    ```elixir
+      "localhost:#{Application.get_env(:telemetry_event, :metrics_port)}/metrics"
+    ```
+    and go to the url printed out it in your browser.
   * Go to http://localhost:4000/api/v2/dataset/search
   * You can get paginated results using the url http://localhost:4000/api/v2/dataset/search?offset=10&limit=5&sort=name_asc
 
 ### Tableau Web Data Connector
 This application hosts a Tableau Web Data Connector that uses this API for interfacing with Tableau. More information can be found in its [README](./priv/static/tableau/README.md)
+<!--- TODO: Ask Jarred if he wants more details in the Tableau readme or if it is fine the way it is. -->
 
 ### To reindex the entire Elasticsearch index
 ```elixir
-Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
-|> Elasticsearch.Document.replace_all()
+Brook.get_all_values!(DiscoveryApi.instance_name(), :models) \
+|> DiscoveryApi.Search.Elasticsearch.Document.replace_all()
 ```
 
 ### Calculating Completeness scores manually
 
 For all datasets:
 
-`DiscoveryApi.Stats.StatsCalculator.produce_completeness_stats()`
+```elixir
+DiscoveryApi.Stats.StatsCalculator.produce_completeness_stats()
+```
 
-For a single dataset:
+Datasets will be calculated and persisted to Redis with a key of `discovery-api:view:state:models:{{dataset_id}}`
 
-`SmartCity.Dataset.get!(dataset_id) |> DiscoveryApi.Stats.StatsCalculator.calculate_and_save_completeness()`
-
-Datasets will be calculated and persisted to Redis with a key of `discovery-api:stats:{{dataset_id}}`
-
+To get the value of a key in Redis from the iex session do
+```elixir
+Redix.command!(:redix, ["GET", "mykey"])
+```
+To get a list of all keys in Redis from the iex session do
+```elixir
+Redix.command!(:redix, ["KEYS", "*"])  
+```
+For more information: https://hexdocs.pm/redix/Redix.html

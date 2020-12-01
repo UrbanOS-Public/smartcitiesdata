@@ -4,7 +4,7 @@ Validates data by evaluating each message and verifying that it has the required
 
 ### Setup
 
-  * Run `mix deps.get` to install dependencies
+  * Run `mix deps.get` (in the smartcitiesdata directory) to install dependencies
 
 ### To run locally:
   * To startup external dependancies in docker:
@@ -35,5 +35,5 @@ Validates data by evaluating each message and verifying that it has the required
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
   * Run `mix test.integration` to run the integration tests
 
-### To run inside a container(from the root directory):
-  * `docker build . -t <image_name:tag>`
+### To run inside a container(from the smartcitiesdata folder):
+  * Build the docker with `./scripts/build.sh valkyrie <your tag>`

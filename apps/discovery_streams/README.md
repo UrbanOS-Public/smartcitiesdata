@@ -6,16 +6,13 @@ Channels are named with the form of `streaming:{dataset systemName}` (example: `
 ## Getting Started
 
 To start your Phoenix server:
-
-```bash
-mix deps.get
-mix phx.server
-```
+* Install dependencies with `mix deps.get` (in the smartcitiesdata directory)
+* `MIX_ENV=integration mix phx.server` (in this directory)
 
 To start interactively:
 
 ```bash
-iex -S mix phx.server
+MIX_ENV=integration iex -S mix phx.server
 ```
 
 If you would like to run the app with its dependencies:
@@ -28,7 +25,7 @@ MIX_ENV=integration mix docker.start
 Install [websocat](https://github.com/vi/websocat)
 
 ```bash
-websocat wss://streams.smartcolumbusos.com/socket/websocket
+websocat wss://streams.smartcolumbusos.com/socket/websocket -H='User-Agent: websocat'
 {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}
 ```
 
@@ -38,7 +35,7 @@ A filter can be provided in the `phx_join` event by giving a filter key and valu
 ```bash
 # Stream only vehicles with an id of 11409
 
-websocat wss://streams.smartcolumbusos.com/socket/websocket
+websocat wss://streams.smartcolumbusos.com/socket/websocket -H='User-Agent: websocat'
 {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}
 ```
 

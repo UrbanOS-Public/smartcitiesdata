@@ -15,10 +15,10 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 - Lastly, you need an authorized account to login when the application starts
 
 
-- Install dependencies with `mix deps.get`
-- `cd assets` and `npm i`
-- `MIX_ENV=integration mix docker.start`
-- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start`
+- Install dependencies with `mix deps.get` (in the smartcitiesdata directory)
+- `cd assets` and `npm i` (in this directory)
+- `MIX_ENV=integration mix docker.start` (in this directory)
+- Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start` (in this directory)
 - Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.xip.io:4443/datasets`
 	- port 4443 can be swapped for the port used in the https configuration defined in `integration.exs` under `AndiWeb.Endpoint`
     - `MIX_ENV=integration mix start` will automatically generate the self-signed certificate for HTTPS. Review the output it gives for directions on how to allow the self-signed cert on your dev machine for ONLY localhost
