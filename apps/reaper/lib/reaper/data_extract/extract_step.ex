@@ -11,6 +11,7 @@ defmodule Reaper.DataExtract.ExtractStep do
 
   def execute_extract_steps(dataset, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
+      step = AtomicMap.convert(step, underscore: false)
       execute_extract_step(dataset, step, acc)
     end)
   end

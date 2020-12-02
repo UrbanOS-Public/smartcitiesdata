@@ -137,7 +137,15 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       |> Ecto.Changeset.get_field(:queryParams)
       |> remove_key_value(query_param_id)
 
-    new_changset = Ecto.Changeset.put_embed(socket.assigns.changeset, :queryParams, updated_query_params)
+    updated_url =
+      socket.assigns.changeset
+      |> Ecto.Changeset.get_field(:url)
+      |> Andi.URI.update_url_with_params(updated_query_params)
+
+    new_changset =
+      socket.assigns.changeset
+      |> Ecto.Changeset.put_embed(:queryParams, updated_query_params)
+      |> Ecto.Changeset.put_change(:url, updated_url)
 
     {:noreply, assign(socket, changeset: new_changset)}
   end

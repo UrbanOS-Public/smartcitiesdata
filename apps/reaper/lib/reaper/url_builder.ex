@@ -32,12 +32,16 @@ defmodule Reaper.UrlBuilder do
   end
 
   def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns}) do
-    string_params =
-      query_params
-      |> safe_evaluate_parameters(assigns)
-      |> URI.encode_query()
+      case url_has_query_params?(url) do
+        true -> build_safe_url_path(url, assigns)
+        false ->
+          string_params =
+            query_params
+            |> safe_evaluate_parameters(assigns)
+            |> URI.encode_query()
 
-    "#{build_safe_url_path(url, assigns)}?#{string_params}"
+          "#{build_safe_url_path(url, assigns)}?#{string_params}"
+      end
   end
 
   def build_safe_url_path(url, bindings) do
@@ -97,4 +101,6 @@ defmodule Reaper.UrlBuilder do
   defp evaluate_parameter({key, value}, bindings) do
     {key, EEx.eval_string(value, bindings)}
   end
+
+  defp url_has_query_params?(url), do: String.split(url, "?") |> Enum.count() > 1
 end
