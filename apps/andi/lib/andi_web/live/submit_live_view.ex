@@ -53,19 +53,20 @@ defmodule AndiWeb.SubmitLiveView do
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
 
-      <div phx-hook="showSnackbar">
-      <%= if @save_success do %>
-        <div id="snackbar" class="success-message"><%= @success_message %></div>
-      <% end %>
+      <div id="submit-page-snackbar" phx-hook="showSnackbar">
+        <div style="display: none;"><%= @click_id %></div>
+        <%= if @save_success do %>
+          <div id="snackbar" class="success-message"><%= @success_message %></div>
+        <% end %>
 
-      <%= if @has_validation_errors do %>
-        <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit</div>
-      <% end %>
+        <%= if @has_validation_errors do %>
+          <div id="snackbar" class="error-message">There were errors with the dataset you tried to submit</div>
+        <% end %>
 
-      <%= if @page_error do %>
-        <div id="snackbar" class="error-message">A page error occurred</div>
-      <% end %>
-    </div>
+        <%= if @page_error do %>
+          <div id="snackbar" class="error-message">A page error occurred</div>
+        <% end %>
+      </div>
     </div>
     """
   end
@@ -78,6 +79,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     {:ok,
      assign(socket,
+       click_id: UUID.uuid4(),
        changeset: new_changeset,
        dataset: dataset,
        dataset_id: dataset.id,
@@ -139,6 +141,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     {:noreply,
      assign(socket,
+       click_id: UUID.uuid4(),
        save_success: true,
        success_message: success_message,
        changeset: new_changeset,

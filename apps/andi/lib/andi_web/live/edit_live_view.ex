@@ -75,7 +75,8 @@ defmodule AndiWeb.EditLiveView do
 
       <%= live_component(@socket, AndiWeb.EditLiveView.DeleteDatasetModal, visibility: @delete_dataset_modal_visibility, id: @dataset_id) %>
 
-      <div phx-hook="showSnackbar">
+      <div id="edit-page-snackbar" phx-hook="showSnackbar">
+        <div style="display: none;"><%= @click_id %></div>
         <%= if @save_success do %>
           <div id="snackbar" class="success-message"><%= @success_message %></div>
         <% end %>
@@ -101,6 +102,7 @@ defmodule AndiWeb.EditLiveView do
 
     {:ok,
      assign(socket,
+       click_id: nil,
        changeset: new_changeset,
        dataset: dataset,
        dataset_id: dataset.id,
@@ -214,6 +216,7 @@ defmodule AndiWeb.EditLiveView do
 
     {:noreply,
      assign(socket,
+       click_id: UUID.uuid4(),
        save_success: true,
        success_message: success_message,
        changeset: new_changeset,
@@ -228,7 +231,7 @@ defmodule AndiWeb.EditLiveView do
   def handle_info({:update_save_message, status}, socket) do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
 
-    {:noreply, assign(socket, save_success: true, success_message: message)}
+    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message)}
   end
 
   def handle_info(:cancel_edit, socket) do
