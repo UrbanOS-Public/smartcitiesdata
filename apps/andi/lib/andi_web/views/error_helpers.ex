@@ -71,11 +71,16 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error({message, opts}, field, form_type), do: {interpret_error_message(message, field, form_type), opts}
 
-  defp interpret_error_message(_message, :description, SubmissionMetadataFormSchema), do: "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
+  defp interpret_error_message(_message, :description, SubmissionMetadataFormSchema),
+    do:
+      "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
 
-  defp interpret_error_message(_message, :sourceFormat, SubmissionMetadataFormSchema), do: "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
+  defp interpret_error_message(_message, :sourceFormat, SubmissionMetadataFormSchema),
+    do:
+      "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
 
-  defp interpret_error_message(_message, :contactName, SubmissionMetadataFormSchema), do: "Please enter a valid maintainer name. Who produces and/or updates this dataset? If you are the maintainer, enter your name."
+  defp interpret_error_message(_message, :contactName, SubmissionMetadataFormSchema),
+    do: "Please enter a valid maintainer name. Who produces and/or updates this dataset? If you are the maintainer, enter your name."
 
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
 

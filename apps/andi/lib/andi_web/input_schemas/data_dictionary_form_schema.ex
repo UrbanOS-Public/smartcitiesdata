@@ -135,7 +135,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     end
   end
 
-  defp validate_schema(changeset), do: changeset
+  defp validate_schema(changeset, _), do: changeset
 
   defp validate_schema_internals(%{changes: changes} = changeset) do
     schema =

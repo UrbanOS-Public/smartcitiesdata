@@ -292,7 +292,11 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       where([
         [:field, :form_data, :expected_error_message],
         [:dataTitle, %{"dataTitle" => ""}, "Please enter a valid dataset title."],
-        [:description, %{"description" => ""}, "Please enter a valid description."]
+        [
+          :description,
+          %{"description" => ""},
+          "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
+        ]
       ])
     end
 
@@ -308,7 +312,9 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       form_data = %{"sourceFormat" => ""}
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-      assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
+
+      assert get_text(html, "#sourceFormat-error-msg") ==
+               "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
     end
 
     test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user} do
@@ -369,7 +375,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
-      assert get_text(html, "#description-error-msg") == "Please enter a valid description."
+      assert get_text(html, "#description-error-msg") ==
+               "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
 
       updated_form_data = %{"description" => "Describe this!"}
 

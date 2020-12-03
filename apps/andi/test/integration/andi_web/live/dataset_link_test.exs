@@ -49,7 +49,7 @@ defmodule AndiWeb.DatasetLinkTest do
 
       where([
         [:field, :form_data, :expected_error_message],
-        [:datasetLink, %{"datasetLink" => ""}, "Please enter a valid dataset link."]
+        [:datasetLink, %{"datasetLink" => ""}, "Please enter a valid URL to your externally-hosted dataset"]
       ])
     end
   end
