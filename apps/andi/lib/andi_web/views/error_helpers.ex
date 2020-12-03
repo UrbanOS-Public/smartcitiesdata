@@ -6,6 +6,7 @@ defmodule AndiWeb.ErrorHelpers do
   use Phoenix.HTML
 
   alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
 
   @doc """
   Generates tag for inlined form input errors.
@@ -23,7 +24,8 @@ defmodule AndiWeb.ErrorHelpers do
   defp generate_error_tag(nil, _, _, _), do: nil
 
   defp generate_error_tag(error, field, form, options) do
-    translated = error |> interpret_error(field) |> translate_error()
+    %{data: %form_type{}} = form
+    translated = error |> interpret_error(field, form_type) |> translate_error()
 
     content_tag(:span, translated,
       class: "error-msg",
@@ -67,20 +69,30 @@ defmodule AndiWeb.ErrorHelpers do
     end
   end
 
-  defp interpret_error({message, opts}, field), do: {interpret_error_message(message, field), opts}
+  defp interpret_error({message, opts}, field, form_type), do: {interpret_error_message(message, field, form_type), opts}
 
-  defp interpret_error_message(message, :schema_sample), do: message
-  defp interpret_error_message("is required", field), do: default_error_message(field)
-  defp interpret_error_message(message, :format), do: "Error: " <> get_format_error_message(message)
-  defp interpret_error_message(_message, :body), do: "Please enter valid JSON"
+  defp interpret_error_message(_message, :description, SubmissionMetadataFormSchema), do: "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
 
-  defp interpret_error_message(message, field) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName],
+  defp interpret_error_message(_message, :sourceFormat, SubmissionMetadataFormSchema), do: "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
+
+  defp interpret_error_message(_message, :contactName, SubmissionMetadataFormSchema), do: "Please enter a valid maintainer name. Who produces and/or updates this dataset? If you are the maintainer, enter your name."
+
+  defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
+
+  defp interpret_error_message(_message, :datasetLink, _), do: "Please enter a valid URL to your externally-hosted dataset"
+
+  defp interpret_error_message(message, :schema_sample, _), do: message
+  defp interpret_error_message("is required", field, _), do: default_error_message(field)
+  defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
+  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"
+
+  defp interpret_error_message(message, field, _) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName],
     do: "Error: #{message}"
 
-  defp interpret_error_message(_message, field) when field in [:sourceHeaders, :sourceQueryParams, :queryParams, :headers],
+  defp interpret_error_message(_message, field, _) when field in [:sourceHeaders, :sourceQueryParams, :queryParams, :headers],
     do: "Please enter valid key(s)."
 
-  defp interpret_error_message(_message, field), do: default_error_message(field)
+  defp interpret_error_message(_message, field, _), do: default_error_message(field)
 
   defp default_error_message(field), do: "Please enter a valid #{get_downcased_display_name(field)}."
 
