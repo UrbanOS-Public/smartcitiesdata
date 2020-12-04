@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.24.7",
+      version: "0.24.8",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -41,6 +41,7 @@ defmodule Reaper.MixProject do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:brook, "~> 0.4.0"},
       {:cachex, "~> 3.2"},
       {:castore, "~> 0.1"},
