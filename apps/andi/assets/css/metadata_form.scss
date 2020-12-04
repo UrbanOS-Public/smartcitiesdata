@@ -21,6 +21,10 @@
     "format language"
     "maintainer-name homepage"
     "keywords .";
+
+  .metadata-form__description {
+      margin-bottom: 3rem;
+  }
 }
 
 .metadata__error-message {
