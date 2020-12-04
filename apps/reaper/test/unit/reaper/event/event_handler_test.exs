@@ -246,7 +246,13 @@ defmodule Reaper.Event.EventHandlerTest do
         | technical: %{
             shapefile_dataset.technical
             | sourceFormat: "application/geo+json",
-              sourceUrl: "s3://geojson/file.geojson"
+              extractSteps: [
+                %{
+                  type: "s3",
+                  context: %{url: "s3://geojson/file.geojson", headers: %{}},
+                  assigns: %{}
+                }
+              ]
           }
       }
 

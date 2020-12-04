@@ -1,4 +1,4 @@
-defmodule Andi.Auth.Pipeline do
+defmodule AndiWeb.Auth.Pipeline do
   @moduledoc false
 
   use Guardian.Plug.Pipeline,

@@ -5,6 +5,7 @@ defmodule AndiWeb.Redirect do
   Based on code found at:
     https://www.viget.com/articles/how-to-redirect-from-the-phoenix-router/
   """
+
   def init(opts) do
     if Keyword.has_key?(opts, :to) do
       opts

@@ -52,6 +52,10 @@ defmodule Andi.InputSchemas.ExtractSteps do
     |> Repo.insert_or_update()
   end
 
+  def delete(extract_step_id) do
+    Repo.delete(%ExtractStep{id: extract_step_id})
+  end
+
   def add_extract_header(extract_http_step_id) do
     from_extract_step = get(extract_http_step_id)
 

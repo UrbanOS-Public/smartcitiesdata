@@ -36,7 +36,17 @@ defmodule Reaper.FileIngest.ProcessorTest do
           technical: %{
             sourceType: "host",
             sourceFormat: "txt",
-            sourceUrl: @source_url,
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  url: @source_url,
+                  headers: %{},
+                  queryParams: %{}
+                },
+                assigns: %{}
+              }
+            ],
             cadence: 100
           }
         )
@@ -76,12 +86,17 @@ defmodule Reaper.FileIngest.ProcessorTest do
           technical: %{
             sourceType: "host",
             sourceFormat: "txt",
-            sourceUrl: %{
-              provider: "Echo",
-              opts: %{value: @source_url},
-              version: "1"
-            },
-            cadence: 100
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  url: @source_url,
+                  headers: %{},
+                  queryParams: %{}
+                },
+                assigns: %{}
+              }
+            ]
           }
         )
 

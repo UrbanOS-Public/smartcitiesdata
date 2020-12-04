@@ -7,8 +7,6 @@ defmodule AndiWeb.Endpoint do
 
   use Phoenix.Endpoint, otp_app: :andi
 
-  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
-
   plug Plug.Static,
     at: "/",
     from: :andi,
@@ -20,6 +18,10 @@ defmodule AndiWeb.Endpoint do
     plug Phoenix.LiveReloader
     plug Phoenix.CodeReloader
   end
+
+  plug AndiWeb.Auth.EnsureAccessLevelForRoute, router: AndiWeb.Router, exclusions: [AndiWeb.Redirect]
+
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   plug Plug.RequestId
 

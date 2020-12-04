@@ -3,7 +3,21 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
 
-  def show_dataset(conn, %{"id" => id}) do
+  access_levels(
+    edit_organization: [:private],
+    edit_dataset: [:private],
+    edit_submission: [:private, :public]
+  )
+
+  def edit_dataset(conn, %{"id" => id}) do
+    render_view_if_accessible(conn, id, AndiWeb.EditLiveView)
+  end
+
+  def edit_submission(conn, %{"id" => id}) do
+    render_view_if_accessible(conn, id, AndiWeb.SubmitLiveView)
+  end
+
+  defp render_view_if_accessible(conn, id, view) do
     %{"user_id" => user_id, "is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case get_dataset_if_accessible(id, is_curator, user_id) do
@@ -14,11 +28,7 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       dataset ->
-        if is_curator do
-          live_render(conn, AndiWeb.EditLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
-        else
-          live_render(conn, AndiWeb.SubmitLiveView, session: %{"dataset" => dataset, "user_id" => user_id, "is_curator" => is_curator})
-        end
+        live_render(conn, view, session: %{"dataset" => dataset, "is_curator" => is_curator})
     end
   end
 
@@ -36,7 +46,7 @@ defmodule AndiWeb.EditController do
     end
   end
 
-  def show_organization(conn, %{"id" => id}) do
+  def edit_organization(conn, %{"id" => id}) do
     %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case Organizations.get(id) do

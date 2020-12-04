@@ -2,13 +2,13 @@ defmodule E2ETest do
   use ExUnit.Case
   use Divo
   use Placebo
-  use Phoenix.ChannelTest
 
   @moduletag :e2e
   @moduletag capture_log: false
   @endpoint DiscoveryStreamsWeb.Endpoint
 
   alias SmartCity.TestDataGenerator, as: TDG
+  import Phoenix.ChannelTest
   import SmartCity.TestHelper
 
   @brokers Application.get_env(:e2e, :elsa_brokers)
@@ -23,6 +23,7 @@ defmodule E2ETest do
         %{name: "three", type: "integer"}
       ],
       sourceType: "ingest",
+      sourceUrl: "http://example.com",
       sourceFormat: "text/csv",
       cadence: "once"
     }
@@ -48,6 +49,7 @@ defmodule E2ETest do
       schema: [%{name: "feature", type: "json"}],
       sourceType: "ingest",
       sourceFormat: "application/zip",
+      sourceUrl: "http://example.com",
       cadence: "once"
     }
   }
@@ -76,8 +78,21 @@ defmodule E2ETest do
     dataset =
       @overrides
       |> put_in(
-        [:technical, :sourceUrl],
-        "http://localhost:#{bypass.port()}/path/to/the/data.csv"
+        [:technical, :extractSteps],
+        [
+          %{
+            type: "http",
+            context: %{
+              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+              action: "GET",
+              queryParams: %{},
+              headers: %{},
+              protocol: nil,
+              body: %{}
+            },
+            assigns: %{}
+          }
+        ]
       )
       |> TDG.create_dataset()
 
@@ -86,8 +101,21 @@ defmodule E2ETest do
     geo_dataset =
       @geo_overrides
       |> put_in(
-        [:technical, :sourceUrl],
-        "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile"
+        [:technical, :extractSteps],
+        [
+          %{
+            type: "http",
+            context: %{
+              url: "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile",
+              action: "GET",
+              queryParams: %{},
+              headers: %{},
+              protocol: nil,
+              body: %{}
+            },
+            assigns: %{}
+          }
+        ]
       )
       |> TDG.create_dataset()
 

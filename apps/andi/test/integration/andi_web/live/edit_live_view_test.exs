@@ -27,24 +27,37 @@ defmodule AndiWeb.EditLiveViewTest do
     [curator: curator, public_user: public_user]
   end
 
-  describe "public access to edit datasets" do
+  describe "public access for dataset submission" do
     test "public user can access their own dataset", %{public_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, "/submissions/" <> dataset.id)
     end
 
     test "public user cannot access an unowned dataset", %{public_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
 
-      get(conn, @url_path <> dataset.id)
+      get(conn, "/datasets/" <> dataset.id)
+      |> response(302)
+
+      get(conn, "/submissions/" <> dataset.id)
       |> response(404)
     end
 
     test "public user cannot access a dataset owned by another user", %{public_conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
 
-      get(conn, @url_path <> dataset.id)
+      get(conn, "/datasets/" <> dataset.id)
+      |> response(302)
+
+      get(conn, "/submissions/" <> dataset.id)
       |> response(404)
+    end
+
+    test "public user cannot access edit view, even for a dataset they own", %{public_conn: conn, public_user: public_user} do
+      dataset = Datasets.create(public_user)
+
+      assert get(conn, "/datasets/" <> dataset.id)
+             |> response(302)
     end
   end
 
@@ -111,7 +124,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "valid form data is saved on publish", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -137,7 +150,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "valid dataset's submission status is updated on publish", %{conn: conn} do
       allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       Datasets.update_submission_status(dataset.id, :approved)
@@ -277,7 +290,7 @@ defmodule AndiWeb.EditLiveViewTest do
         "orgName" => "something",
         "private" => false,
         "sourceFormat" => "something",
-        "sourceType" => "something",
+        "sourceType" => "remote",
         "benefitRating" => 1.0,
         "contactEmail" => "something@something.com",
         "contactName" => "something",
@@ -321,7 +334,10 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "allows saving with empty #{field}", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{field => %{"x" => "y"}}})
+      smrt_dataset =
+        %{technical: %{field => %{"x" => "y"}, "sourceType" => "remote"}}
+        |> AtomicMap.convert(underscore: false)
+        |> TDG.create_dataset()
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -391,7 +407,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "successfully publishing presents modal", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -408,7 +424,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "continuing to edit after publish reloads the page", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -423,7 +439,7 @@ defmodule AndiWeb.EditLiveViewTest do
       html = render(view)
 
       eventually(fn ->
-        assert !Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+        assert not Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
       end)
 
       render_change(view, "reload-page", %{})
@@ -462,36 +478,6 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
     end
 
-    test "allows publish of invalid extract form with valid url form", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-      url_view = find_live_child(view, "url_form_editor")
-      extract_step_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
-
-      url_form_data = %{"sourceUrl" => "cam.com"}
-      extract_form_data = %{"type" => "http", "action" => "GET", "url" => ""}
-
-      render_change(url_view, :validate, %{"form_data" => url_form_data})
-      render_change(es_form, %{"form_data" => extract_form_data})
-
-      render_change(finalize_view, :publish)
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent != nil
-        assert dataset_sent.technical.extractSteps == []
-      end)
-    end
-
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
@@ -511,12 +497,12 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(finalize_view, :publish)
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
       eventually(
         fn ->
+          html = render(view)
+          refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
           {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
           assert dataset_sent != nil
           assert dataset_sent.technical.extractSteps != []
@@ -584,6 +570,24 @@ defmodule AndiWeb.EditLiveViewTest do
         500,
         50
       )
+    end
+
+    data_test "does not publish when extract steps are invalid", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+      finalize_view = find_live_child(view, "finalize_form_editor")
+
+      render_change(finalize_view, :publish)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      refute Enum.empty?(find_elements(html, "#extract-step-form .component-header .section-number .component-number-status--invalid"))
+
+      where(extract_steps: [[], nil, [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]])
     end
   end
 

@@ -1,5 +1,6 @@
 defmodule AndiWeb.DataDictionaryFormTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
@@ -29,7 +30,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "data_dictionary_tree_view" do
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
@@ -326,7 +327,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
-      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
+      csv_sample = "string,int,float,bool,date,timestamp\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
 
       render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
@@ -341,7 +342,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
         %{name: "int", type: "integer"},
         %{name: "float", type: "float"},
         %{name: "bool", type: "boolean"},
-        %{name: "date", type: "date"}
+        %{name: "date", type: "date"},
+        %{name: "timestamp", type: "timestamp"}
       ]
 
       assert generated_schema == expected_schema
@@ -356,7 +358,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
-      csv_sample = "string\r,i&^%$nt,fl\toat,bool---,date as multi word column\nabc,9,1.5,true,2020-07-22T21:24:40"
+      csv_sample =
+        "string\r,i&^%$nt,fl\toat,bool---,date as multi word column,timestamp as multi word column\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
 
       render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
@@ -371,7 +374,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
         %{name: "int", type: "integer"},
         %{name: "float", type: "float"},
         %{name: "bool", type: "boolean"},
-        %{name: "date as multi word column", type: "date"}
+        %{name: "date as multi word column", type: "date"},
+        %{name: "timestamp as multi word column", type: "timestamp"}
       ]
 
       assert generated_schema == expected_schema

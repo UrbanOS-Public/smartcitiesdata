@@ -14,17 +14,14 @@ defmodule Andi.Application do
   getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
+    set_guardian_db_config()
+
     children =
       [
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
-        guardian_db_sweeper(),
-        {Brook, brook()},
-        Andi.DatasetCache,
-        Andi.Migration.Migrations,
-        Andi.Scheduler,
-        elsa()
+        private_access_processes()
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
@@ -33,6 +30,21 @@ defmodule Andi.Application do
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp private_access_processes() do
+    if Andi.private_access?() do
+      [
+        guardian_db_sweeper(),
+        {Brook, brook()},
+        Andi.DatasetCache,
+        Andi.Migration.Migrations,
+        Andi.Scheduler,
+        elsa()
+      ]
+    else
+      []
+    end
   end
 
   defp elsa() do
@@ -104,9 +116,19 @@ defmodule Andi.Application do
       nil ->
         []
 
+      _config ->
+        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+    end
+  end
+
+  defp set_guardian_db_config do
+    Application.get_env(:andi, Guardian.DB)
+    |> case do
+      nil ->
+        []
+
       config ->
         Application.put_env(:guardian, Guardian.DB, config)
-        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
     end
   end
 end

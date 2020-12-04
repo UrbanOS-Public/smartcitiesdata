@@ -26,6 +26,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       dataName: "dataName",
       orgName: "orgName",
       private: false,
+      extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
       schema: [
         %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
       ],
@@ -233,6 +234,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         |> Map.merge(%{
           technical: %{
             dataName: "dataName",
+            extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             orgName: "orgName",
             private: false,
             sourceUrl: "sourceUrl",
@@ -282,9 +284,22 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       first_schema_field = changeset.changes.technical.changes.schema |> hd()
 
+      assert first_schema_field.changes.format == "{ISOdate}"
+
+      where(field: ["date"])
+    end
+
+    data_test "given a dataset with a schema that has #{field}, format is defaulted" do
+      changes =
+        @valid_changes |> put_in([:technical, :schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing"}])
+
+      changeset = Dataset.changeset(changes)
+
+      first_schema_field = changeset.changes.technical.changes.schema |> hd()
+
       assert first_schema_field.changes.format == "{ISO:Extended}"
 
-      where(field: ["date", "timestamp"])
+      where(field: ["timestamp"])
     end
 
     data_test "invalid formats are rejected for #{field} schema fields" do
@@ -333,7 +348,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       [_, field] = field_path
 
-      assert changeset.changes.technical.errors == [{field, {"has invalid format", [validation: :format]}}]
+      assert {field, {"has invalid format", [validation: :format]}} in changeset.changes.technical.errors
 
       where(field_path: [[:technical, :sourceQueryParams], [:technical, :sourceHeaders]])
     end

@@ -8,4 +8,8 @@ defmodule Andi do
   """
 
   def instance_name(), do: :andi
+
+  def private_access?() do
+    Application.get_env(:andi, :access_level) == :private
+  end
 end

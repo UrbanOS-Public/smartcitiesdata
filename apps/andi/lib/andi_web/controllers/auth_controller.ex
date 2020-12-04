@@ -6,6 +6,12 @@ defmodule AndiWeb.AuthController do
   require Logger
   plug Ueberauth
 
+  access_levels(
+    request: [:private, :public],
+    callback: [:private, :public],
+    logout: [:private, :public]
+  )
+
   alias AndiWeb.Auth.TokenHandler
 
   def callback(%{assigns: %{ueberauth_failure: fails}} = conn, params) do

@@ -1,5 +1,6 @@
 defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   use ExUnit.Case
+  use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   import Phoenix.LiveViewTest
@@ -17,7 +18,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
     ]
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/submissions/"
 
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do
