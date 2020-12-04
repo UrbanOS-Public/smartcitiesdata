@@ -13,6 +13,8 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   def mount(_, %{"dataset" => dataset}, socket) do
     new_changeset = DatasetLinkFormSchema.changeset(dataset, %{})
 
+    send(socket.parent_pid, {:update_dataset_link_status, new_changeset.valid?})
+
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -70,7 +72,6 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
 
                 <div class="edit-button-group__save-btn">
                   <a href="#review_submission" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="review_submission">Next</a>
-                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
                 </div>
                 </div>
             </div>
@@ -83,6 +84,7 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> DatasetLinkFormSchema.changeset_from_form_data()
+    |> send_dataset_link_status(socket)
     |> complete_validation(socket)
   end
 
@@ -119,5 +121,10 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
     send(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
+  end
+
+  defp send_dataset_link_status(changeset, socket) do
+    send(socket.parent_pid, {:update_dataset_link_status, changeset.valid?})
+    changeset
   end
 end

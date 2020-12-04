@@ -92,6 +92,26 @@ body {
   color: white;
 }
 
+.btn--submit {
+  @extend .btn--save;
+  background-color: $color-text-link;
+  color: white;
+
+  &:disabled {
+    background-color: #7f7676;
+    border: 2px solid #7f7676;
+    cursor: default;
+
+    &:hover {
+      background-color: #7f7676;
+      border: 2px solid #7f7676;
+      color: white;
+      cursor: default;
+    }
+
+  }
+}
+
 .btn--next {
   float: right;
   margin-right: 0;
