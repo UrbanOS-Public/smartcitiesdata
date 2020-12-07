@@ -241,6 +241,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.put_new(:protocol, nil)
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
+    |> Map.update(:url, nil, &remove_query_params_from_url/1)
   end
 
   defp update_context_from_andi_step(context, "date") do
@@ -389,5 +390,11 @@ defmodule Andi.InputSchemas.InputConverter do
         {current_value, current_value}
     end)
     |> elem(1)
+  end
+
+  defp remove_query_params_from_url(url) do
+    url
+    |> String.split("?")
+    |> List.first()
   end
 end
