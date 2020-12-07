@@ -20,12 +20,13 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   def changeset(dictionary, changes) do
     source_format = Map.get(changes, :sourceFormat, nil)
     changes_with_id = StructTools.ensure_id(dictionary, changes)
+    source_type = Map.get(changes, :sourceType, "ingest")
 
     dictionary
     |> cast(changes_with_id, [], empty_values: [])
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> validate_required(:schema, message: "is required")
-    |> validate_schema()
+    |> validate_schema(source_type)
   end
 
   def changeset_from_andi_dataset(dataset) do
@@ -125,7 +126,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
   defp ensure_field_name(field), do: field
 
-  defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
+  defp validate_schema(changeset, source_type)
        when source_type in ["ingest", "stream"] do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
@@ -134,7 +135,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     end
   end
 
-  defp validate_schema(changeset), do: changeset
+  defp validate_schema(changeset, _), do: changeset
 
   defp validate_schema_internals(%{changes: changes} = changeset) do
     schema =

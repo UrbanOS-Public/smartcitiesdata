@@ -75,7 +75,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
-        <% f = Map.put(f, :errors, @changeset.errors) %>
+          <% f = Map.put(f, :errors, @changeset.errors) %>
 
           <div class="component-edit-section--<%= @visibility %>">
 
@@ -100,6 +100,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                   <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                 </div>
               <% end %>
+
+              <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
 
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
