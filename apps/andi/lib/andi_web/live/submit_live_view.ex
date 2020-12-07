@@ -59,7 +59,7 @@ defmodule AndiWeb.SubmitLiveView do
             </div>
 
             <div class="edit-button-group__save-btn">
-              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit" disabled="true">Submit</a>
+              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
             </div>
           </div>
@@ -147,7 +147,7 @@ defmodule AndiWeb.SubmitLiveView do
     if dataset_changeset.valid? do
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-
+        
       
 
     else
@@ -258,4 +258,8 @@ defmodule AndiWeb.SubmitLiveView do
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
+
+  defp form_valid?(form_status) do
+    form_status.data_dictionary && form_status.dataset_link && form_status.metadata
+  end
 end

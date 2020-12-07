@@ -98,17 +98,16 @@ body {
   color: white;
 
   &:disabled {
-    background-color: #7f7676;
-    border: 2px solid #7f7676;
+    background-color: #a9d3e6;
+    border: 2px solid #a9d3e6;
     cursor: default;
 
     &:hover {
-      background-color: #7f7676;
-      border: 2px solid #7f7676;
+      background-color: #a9d3e6;
+      border: 2px solid #a9d3e6;
       color: white;
       cursor: default;
     }
-
   }
 }
 
