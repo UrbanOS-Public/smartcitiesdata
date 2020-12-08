@@ -35,9 +35,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
             </div>
           </div>
 
-          <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-            <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render, add_field_event_name: @add_field_event_name) %>
-          </div>
+          <%= if is_set?(field, :subSchema) do %>
+            <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
+              <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render, add_field_event_name: @add_field_event_name) %>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% else %>
