@@ -131,6 +131,69 @@ defmodule Andi.InputSchemas.InputConverterTest do
              } = smrt_dataset
     end
 
+    test "removes query params from extract step url on andi_dataset_to_smrt_dataset" do
+      dataset =
+        TestDataGenerator.create_dataset(%{
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  action: "GET",
+                  url: "example.com?whats=up"
+                }
+              }
+            ]
+          }
+        })
+        |> InputConverter.smrt_dataset_to_full_changeset()
+        |> Ecto.Changeset.apply_changes()
+
+      {:ok, smrt_dataset} =
+        dataset
+        |> InputConverter.form_data_to_full_changeset(%{
+          "technical" => %{
+            "extractSteps" => [
+              %{
+                "type" => "http",
+                "context" => %{
+                  "url" => "http://example.com?key=value&key1=value1",
+                  "queryParams" => [
+                    %{
+                      "key" => "key",
+                      "value" => "value"
+                    },
+                    %{
+                      "key" => "key1",
+                      "value" => "value1"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        })
+        |> Changeset.apply_changes()
+        |> InputConverter.andi_dataset_to_smrt_dataset()
+
+      assert %SmartCity.Dataset{
+               technical: %{
+                 extractSteps: [
+                   %{
+                     type: "http",
+                     context: %{
+                       url: "http://example.com",
+                       queryParams: %{
+                         "key" => "value",
+                         "key1" => "value1"
+                       }
+                     }
+                   }
+                 ]
+               }
+             } = smrt_dataset
+    end
+
     test "converting a dataset to a changeset syncs source url and query params" do
       dataset =
         TestDataGenerator.create_dataset(%{

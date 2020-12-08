@@ -86,22 +86,25 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             <% end %>
             <div class="data-dictionary-form-edit-section form-grid">
 
-              <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
-                <div class="data-dictionary-form__file-upload">
-                  <div class="file-input-button--<%= loader_visibility %>">
-                    <div class="file-input-button">
-                      <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
-                      <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+              <div class="upload-section">
+                <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
+                  <div class="data-dictionary-form__file-upload">
+                    <div class="file-input-button--<%= loader_visibility %>">
+                      <div class="file-input-button">
+                        <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                        <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                      </div>
                     </div>
+
+                    <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
+                    <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                   </div>
+                <% end %>
 
-                  <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
-                  <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
-                </div>
-              <% end %>
+                <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
+              </div>
 
-              <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
 
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">

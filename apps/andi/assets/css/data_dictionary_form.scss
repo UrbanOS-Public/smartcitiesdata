@@ -46,7 +46,11 @@ $tick-height: 1rem + $field-padding - 0.44;
               font-size: 14px;
           }
       }
-    }
+  }
+
+  .upload-section {
+      display: block;
+  }
 
   .data-dictionary-form-tree-header {
     display: inline-flex;

@@ -32,18 +32,12 @@ defmodule Reaper.UrlBuilder do
   end
 
   def decode_http_extract_step(%{context: %{url: url, queryParams: query_params}, assigns: assigns}) do
-    case url_has_query_params?(url) do
-      true ->
-        build_safe_url_path(url, assigns)
+    string_params =
+      query_params
+      |> safe_evaluate_parameters(assigns)
+      |> URI.encode_query()
 
-      false ->
-        string_params =
-          query_params
-          |> safe_evaluate_parameters(assigns)
-          |> URI.encode_query()
-
-        "#{build_safe_url_path(url, assigns)}?#{string_params}"
-    end
+    "#{build_safe_url_path(url, assigns)}?#{string_params}"
   end
 
   def build_safe_url_path(url, bindings) do
