@@ -50,7 +50,8 @@ config :andi,
   dead_letter_topic: "streaming-dead-letters",
   kafka_endpoints: endpoint,
   documentation_root: System.get_env("DOCUMENTATION_ROOT") || "",
-  access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public")
+  access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public"),
+  vault_role: System.get_env("VAULT_ROLE")
 
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
