@@ -172,7 +172,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   defp validate_schema(changeset), do: changeset
 
-  defp validate_submission_schema(%{changes: %{schema: schema}} = changeset) do
+  defp validate_submission_schema(%{changes: %{schema: _}} = changeset) do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
