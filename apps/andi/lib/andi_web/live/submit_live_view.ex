@@ -56,7 +56,7 @@ defmodule AndiWeb.SubmitLiveView do
             </div>
 
             <div class="edit-button-group__save-btn">
-              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
+              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit-submission" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
             </div>
           </div>
@@ -133,7 +133,7 @@ defmodule AndiWeb.SubmitLiveView do
     {:noreply, redirect(socket, to: "/submissions/#{socket.assigns.dataset.id}")}
   end
 
-  def handle_event("submit", _, socket) do
+  def handle_event("submit-submission", _, socket) do
     dataset_id = socket.assigns.dataset.id
 
     AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})

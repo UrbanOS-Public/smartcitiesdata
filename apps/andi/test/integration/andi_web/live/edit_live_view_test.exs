@@ -510,7 +510,7 @@ defmodule AndiWeb.EditLiveViewTest do
           assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
         end,
         500,
-        40
+        80
       )
     end
 

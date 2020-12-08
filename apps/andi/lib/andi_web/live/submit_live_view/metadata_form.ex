@@ -17,12 +17,6 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
 
     send(socket.parent_pid, {:update_metadata_status, new_metadata_changeset.valid?})
 
-    dataset_exists =
-      case Andi.Services.DatasetStore.get(dataset.id) do
-        {:ok, nil} -> false
-        _ -> true
-      end
-
     dataset_published? = dataset.submission_status == :published
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
