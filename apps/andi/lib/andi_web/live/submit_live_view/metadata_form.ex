@@ -22,6 +22,7 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
         {:ok, nil} -> false
         _ -> true
       end
+
     dataset_published? = dataset.submission_status == :published
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")

@@ -134,7 +134,7 @@ defmodule AndiWeb.SubmitLiveView do
     {:noreply, redirect(socket, to: "/datasets/#{socket.assigns.dataset.id}")}
   end
 
-  def handle_event("submit", _, socket) do 
+  def handle_event("submit", _, socket) do
     dataset_id = socket.assigns.dataset.id
 
     AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
@@ -143,7 +143,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     andi_dataset = Datasets.get(dataset_id)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset) |> IO.inspect(label: "changeset: ")
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset) |> IO.inspect(label: "changeset")
 
     {:noreply, socket}
     # dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
@@ -151,8 +151,6 @@ defmodule AndiWeb.SubmitLiveView do
     # if dataset_changeset.valid? do
     #   Datasets.update_submission_status(dataset_id, :published)
     #   {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-        
-      
 
     # else
     #   {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
@@ -173,20 +171,19 @@ defmodule AndiWeb.SubmitLiveView do
     success_message = save_message(dataset_changeset.valid?)
 
     {:noreply,
-    assign(socket,
-      click_id: UUID.uuid4(),
-      save_success: true,
-      success_message: success_message,
-      changeset: dataset_changeset,
-      unsaved_changes: false
-    )}
+     assign(socket,
+       click_id: UUID.uuid4(),
+       save_success: true,
+       success_message: success_message,
+       changeset: dataset_changeset,
+       unsaved_changes: false
+     )}
+
     # dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
 
     # if dataset_changeset.valid? do
     #   Datasets.update_submission_status(dataset_id, :published)
     #   {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-
-      
 
     # else
     #   {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}

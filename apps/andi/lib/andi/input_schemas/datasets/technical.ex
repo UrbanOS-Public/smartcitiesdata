@@ -76,7 +76,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   @submission_cast_fields [
     :dataName,
-    :sourceFormat,
+    :sourceFormat
   ]
 
   @submission_required_fields [
@@ -117,7 +117,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_required(@submission_required_fields, message: "is required")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_source_format()
-    |> validate_schema()
+    |> validate_submission_schema()
   end
 
   def changeset_for_draft(technical, changes) do
@@ -171,6 +171,14 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   end
 
   defp validate_schema(changeset), do: changeset
+
+  defp validate_submission_schema(%{changes: %{schema: schema}} = changeset) do
+    case Ecto.Changeset.get_field(changeset, :schema, nil) do
+      [] -> add_error(changeset, :schema, "cannot be empty")
+      nil -> add_error(changeset, :schema, "is required", validation: :required)
+      _ -> validate_schema_internals(changeset)
+    end
+  end
 
   defp validate_schema_internals(%{changes: changes} = changeset) do
     schema =

@@ -98,7 +98,7 @@ defmodule Andi.InputSchemas.Datasets.Business do
   @submission_required_fields [
     :dataTitle,
     :description,
-    :contactName,
+    :contactName
   ]
 
   def changeset(business, %_struct{} = changes), do: changeset(business, Map.from_struct(changes))
