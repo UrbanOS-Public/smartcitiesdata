@@ -9,6 +9,7 @@ defmodule Andi.SecretService do
   @root_path "secrets/smart_city/"
 
   getter(:secrets_endpoint, generic: true)
+  getter(:vault_role, generic: true)
 
   def retrieve_auth0_credentials(), do: retrieve("auth0/andi")
 
@@ -54,7 +55,7 @@ defmodule Andi.SecretService do
       host: secrets_endpoint(),
       token_expires_at: set_login_ttl(20, :second)
     )
-    |> Vault.auth(%{role: "andi-role", jwt: token})
+    |> Vault.auth(%{role: vault_role(), jwt: token})
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)

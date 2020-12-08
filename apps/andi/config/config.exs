@@ -29,7 +29,8 @@ config :andi,
   topic: "dataset-registry",
   organization_topic: "organization-raw",
   dead_letter_topic: "streaming-dead-letters",
-  documentation_root: ""
+  documentation_root: "",
+  vault_role: "andi-role"
 
 config :tesla, adapter: Tesla.Adapter.Hackney
 
