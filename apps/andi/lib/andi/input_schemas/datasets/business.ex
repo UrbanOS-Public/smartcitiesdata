@@ -84,11 +84,28 @@ defmodule Andi.InputSchemas.Datasets.Business do
     :riskRating
   ]
 
+  @submission_cast_fields [
+    :contactName,
+    :dataTitle,
+    :description,
+    :homepage,
+    :keywords,
+    :language,
+    :spatial,
+    :temporal
+  ]
+
+  @submission_required_fields [
+    :dataTitle,
+    :description,
+    :contactName,
+  ]
+
   def changeset(business, %_struct{} = changes), do: changeset(business, Map.from_struct(changes))
 
   # Validations here are mirrored in lib/andi_web/input_schemas/metadata_form_schema.ex
   def changeset(business, changes) do
-    common_changeset_operations(business, changes)
+    common_changeset_operations(business, changes, @cast_fields)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:license, @url_regex, message: "should be a valid url link to the text of the license")
@@ -96,19 +113,27 @@ defmodule Andi.InputSchemas.Datasets.Business do
     |> validate_inclusion(:riskRating, @ratings, message: "should be one of #{inspect(@ratings)}")
   end
 
+  def submission_changeset(business, %_struct{} = changes), do: submission_changeset(business, Map.from_struct(changes))
+
+  # Validations here are mirrored in lib/andi_web/input_schemas/metadata_form_schema.ex
+  def submission_changeset(business, changes) do
+    common_changeset_operations(business, changes, @submission_cast_fields)
+    |> validate_required(@submission_required_fields, message: "is required")
+  end
+
   def changeset_for_draft(business, %_struct{} = changes) do
     changeset_for_draft(business, Map.from_struct(changes))
   end
 
   def changeset_for_draft(business, changes) do
-    common_changeset_operations(business, changes)
+    common_changeset_operations(business, changes, @cast_fields)
   end
 
-  defp common_changeset_operations(business, changes) do
+  defp common_changeset_operations(business, changes, fields) do
     changes_with_id = StructTools.ensure_id(business, changes)
 
     business
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, fields, empty_values: [])
     |> foreign_key_constraint(:dataset_id)
   end
 

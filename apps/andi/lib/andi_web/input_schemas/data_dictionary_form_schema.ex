@@ -27,6 +27,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> validate_required(:schema, message: "is required")
     |> validate_schema(source_type)
+    |> IO.inspect(label: "schema: ")
   end
 
   def changeset_from_andi_dataset(dataset) do

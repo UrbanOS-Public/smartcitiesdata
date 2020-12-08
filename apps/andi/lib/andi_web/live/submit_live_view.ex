@@ -59,7 +59,7 @@ defmodule AndiWeb.SubmitLiveView do
             </div>
 
             <div class="edit-button-group__save-btn">
-              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
+              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit">Submit</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
             </div>
           </div>
@@ -143,18 +143,20 @@ defmodule AndiWeb.SubmitLiveView do
 
     andi_dataset = Datasets.get(dataset_id)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
-    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset) |> IO.inspect(label: "changeset: ")
 
-    if dataset_changeset.valid? do
-      Datasets.update_submission_status(dataset_id, :published)
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+    {:noreply, socket}
+    # dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+
+    # if dataset_changeset.valid? do
+    #   Datasets.update_submission_status(dataset_id, :published)
+    #   {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
         
       
 
-    else
-      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
-    end
+    # else
+    #   {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
+    # end
   end
 
   def handle_event("save-all-draft", _, socket) do
@@ -166,18 +168,29 @@ defmodule AndiWeb.SubmitLiveView do
 
     andi_dataset = Datasets.get(dataset_id)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
-    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+    dataset_changeset = andi_dataset |> Dataset.changeset_for_draft(%{}) |> Map.put(:action, :update)
 
-    if dataset_changeset.valid? do
-      Datasets.update_submission_status(dataset_id, :published)
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+    success_message = save_message(dataset_changeset.valid?)
+
+    {:noreply,
+    assign(socket,
+      click_id: UUID.uuid4(),
+      save_success: true,
+      success_message: success_message,
+      changeset: dataset_changeset,
+      unsaved_changes: false
+    )}
+    # dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+
+    # if dataset_changeset.valid? do
+    #   Datasets.update_submission_status(dataset_id, :published)
+    #   {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
 
       
 
-    else
-      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
-    end
+    # else
+    #   {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
+    # end
   end
 
   def handle_info({:update_metadata_status, status}, socket) do
@@ -265,4 +278,7 @@ defmodule AndiWeb.SubmitLiveView do
   defp form_valid?(form_status) do
     form_status.data_dictionary && form_status.dataset_link && form_status.metadata
   end
+
+  defp save_message(true = _valid?), do: "Saved successfully."
+  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 end

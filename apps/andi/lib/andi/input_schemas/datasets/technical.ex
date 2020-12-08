@@ -74,6 +74,16 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :sourceUrl
   ]
 
+  @submission_cast_fields [
+    :dataName,
+    :sourceFormat,
+  ]
+
+  @submission_required_fields [
+    :dataName,
+    :sourceFormat
+  ]
+
   def changeset(technical, changes) do
     changes_with_id = StructTools.ensure_id(technical, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
@@ -94,6 +104,20 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_schema()
     |> validate_key_value_parameters()
     |> validate_extract_steps()
+  end
+
+  def submission_changeset(technical, changes) do
+    changes_with_id = StructTools.ensure_id(technical, changes)
+    source_format = Map.get(changes, :sourceFormat, nil)
+
+    technical
+    |> cast(changes_with_id, @submission_cast_fields, empty_values: [])
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> foreign_key_constraint(:dataset_id)
+    |> validate_required(@submission_required_fields, message: "is required")
+    |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_source_format()
+    |> validate_schema()
   end
 
   def changeset_for_draft(technical, changes) do
