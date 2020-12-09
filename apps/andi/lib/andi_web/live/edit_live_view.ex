@@ -73,21 +73,21 @@ defmodule AndiWeb.EditLiveView do
         </div>
 
         <%= if true do %>
-        <hr></hr>
-        <div class="btn-group__review-submission">
-          <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
-          <span class="delete-icon material-icons">delete_outline</span>
-          DELETE
-          </button>
-          <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
-            <span class="reject-icon material-icons">clear</span>
-            REJECT
-          </button>
-          <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
-            <span class="approve-icon material-icons">check</span>
-            APPROVE & PUBLISH
-          </button>
-        </div>
+          <hr></hr>
+          <div class="btn-group__review-submission">
+            <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+            <span class="delete-icon material-icons">delete_outline</span>
+            DELETE
+            </button>
+            <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+              <span class="reject-icon material-icons">clear</span>
+              REJECT
+            </button>
+            <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+              <span class="approve-icon material-icons">check</span>
+              APPROVE & PUBLISH
+            </button>
+          </div>
         <% end %>
 
       </div>

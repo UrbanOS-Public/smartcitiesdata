@@ -132,14 +132,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             </div>
 
             <div class="edit-button-group form-grid">
-              <div class="edit-button-group__cancel-btn">
-                <a href="#metadata-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form">Back</a>
-                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-              </div>
-
-              <div class="edit-button-group__save-btn">
-                <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Next</a>
-              </div>
+              <a href="#metadata-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form">Back</a>
+              <a href="#extract-step-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="extract_step_form">Next</a>
             </div>
           </div>
         </form>

@@ -144,14 +144,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
             </div>
 
             <div class="edit-button-group form-grid">
-              <div class="edit-button-group__cancel-btn">
-                <a href="#url-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Back</a>
-                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-              </div>
-
-              <div class="edit-button-group__save-btn">
-                <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-              </div>
+              <a href="#extract-step-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="extract_step_form">Back</a>
             </div>
           </div>
         </form>
