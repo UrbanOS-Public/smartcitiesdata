@@ -56,7 +56,7 @@ defmodule AndiWeb.SubmitLiveView do
             </div>
 
             <div class="edit-button-group__save-btn">
-              <button id="next-button" class="btn btn--next btn--large btn--submit" phx-click="submit-submission" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
+              <button id="submit-button" class="btn btn--next btn--large btn--submit" phx-click="submit-submission" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
               <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
             </div>
           </div>
@@ -201,37 +201,6 @@ defmodule AndiWeb.SubmitLiveView do
     {:noreply, assign(socket, form_status: form_status)}
   end
 
-  def handle_info(
-        %{topic: "form-save", payload: %{form_changeset: form_changeset, dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
-      ) do
-    socket = reset_save_success(socket)
-    form_changes = InputConverter.form_changes_from_changeset(form_changeset)
-
-    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, form_changes)
-
-    new_changeset =
-      andi_dataset
-      |> InputConverter.andi_dataset_to_full_ui_changeset()
-      |> Dataset.validate_unique_system_name()
-      |> Map.put(:action, :update)
-
-    success_message =
-      case new_changeset.valid? do
-        true -> "Saved successfully."
-        false -> "Saved successfully. You may need to fix errors before publishing."
-      end
-
-    {:noreply,
-     assign(socket,
-       click_id: UUID.uuid4(),
-       save_success: true,
-       success_message: success_message,
-       changeset: new_changeset,
-       unsaved_changes: false
-     )}
-  end
-
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
@@ -266,6 +235,7 @@ defmodule AndiWeb.SubmitLiveView do
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp form_valid?(form_status) do
+    IO.inspect(form_status, label: "form status: ")
     form_status.data_dictionary && form_status.dataset_link && form_status.metadata
   end
 
