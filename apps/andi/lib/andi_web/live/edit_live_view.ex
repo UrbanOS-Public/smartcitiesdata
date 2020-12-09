@@ -65,8 +65,31 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </form>
 
-      <div class="edit-page__delete-btn">
-        <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--delete btn--large" phx-click="dataset-delete" type="button">DELETE DATASET</button>
+      <div class="edit-page__btn-group">
+        <div class="btn-group__standard">
+          <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+          <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
+        </div>
+
+        <%= if true do %>
+        <hr></hr>
+        <div class="btn-group__review-submission">
+          <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+          <span class="delete-icon material-icons">delete_outline</span>
+          DELETE
+          </button>
+          <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+            <span class="reject-icon material-icons">clear</span>
+            REJECT
+          </button>
+          <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+            <span class="approve-icon material-icons">check</span>
+            APPROVE & PUBLISH
+          </button>
+        </div>
+        <% end %>
+
       </div>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
@@ -121,6 +144,18 @@ defmodule AndiWeb.EditLiveView do
        delete_dataset_modal_visibility: "hidden",
        is_curator: is_curator
      )}
+  end
+
+  def handle_event("save-all-draft", _, socket) do
+    dataset_id = socket.assigns.dataset.id
+
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: dataset_id})
+
+    andi_dataset = Datasets.get(dataset_id)
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset)
+
+    {:noreply, assign(socket, changeset: dataset_changeset, save_success: true, click_id: UUID.uuid4(), success_message: save_message(dataset_changeset.valid?))}
+
   end
 
   def handle_event("unsaved-changes-canceled", _, socket) do

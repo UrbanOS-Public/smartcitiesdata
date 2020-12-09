@@ -151,7 +151,6 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
 
               <div class="edit-button-group__save-btn">
                 <button type="button" id="publish-button" class="btn btn--publish btn--action btn--large" phx-click="publish">Publish</button>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
               </div>
             </div>
           </div>
