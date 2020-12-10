@@ -609,12 +609,22 @@ defmodule AndiWeb.EditLiveViewTest do
         |> element("#approve-button")
         |> render_click()
 
+      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+
       eventually(fn ->
         assert DatasetStore.get(andi_dataset.id) != {:ok, nil}
       end)
     end
 
+    test "redirects user to homepage when dataset is rejected", %{conn: conn, andi_dataset: andi_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      html =
+        view
+        |> element("#reject-button")
+        |> render_click()
 
+      assert_redirect(view, "/datasets")
+    end
   end
 
   defp get_extract_step_id(dataset, index) do

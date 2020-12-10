@@ -211,7 +211,10 @@ defmodule AndiWeb.EditLiveView do
     {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected)
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
-    {:noreply, assign(socket, changeset: new_changeset)}
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible", changeset: new_changeset)}
+      false -> {:noreply, redirect(socket, to: header_datasets_path())}
+    end
   end
 
   def handle_event("publish", _, socket), do: publish(socket)
