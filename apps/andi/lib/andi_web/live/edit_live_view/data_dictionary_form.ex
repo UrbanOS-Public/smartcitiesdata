@@ -296,7 +296,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        selected_field_id: field_id,
        add_data_dictionary_field_visible: false,
        new_field_initial_render: true
-     )}
+     ) |> update_validation_status()}
   end
 
   def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
@@ -322,7 +322,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        selected_field_id: new_selected_field_id,
        new_field_initial_render: true,
        remove_data_dictionary_field_visible: false
-     )}
+     ) |> update_validation_status()}
   end
 
   def handle_info({:add_data_dictionary_field_cancelled}, socket) do
