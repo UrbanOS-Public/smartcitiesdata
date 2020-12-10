@@ -81,18 +81,18 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     end
 
     test "status ascending", %{view: view, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d} do
-      render_click(view, "order-by", %{"field" => "status_sort"})
+      render_click(view, "order-by", %{"field" => "status"})
       html = render(view)
 
-      assert get_rendered_table_cells(html) == [row_a, row_b, row_d, row_c]
+      assert get_rendered_table_cells(html) == [row_d, row_c, row_a, row_b]
     end
 
     test "status descending", %{view: view, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d} do
-      render_click(view, "order-by", %{"field" => "status_sort"})
-      render_click(view, "order-by", %{"field" => "status_sort"})
+      render_click(view, "order-by", %{"field" => "status"})
+      render_click(view, "order-by", %{"field" => "status"})
       html = render(view)
 
-      assert get_rendered_table_cells(html) == [row_c, row_d, row_b, row_a]
+      assert get_rendered_table_cells(html) == [row_a, row_b, row_c, row_d]
     end
   end
 
@@ -122,15 +122,15 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     end
 
     test "status ascending", %{conn: conn, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d} do
-      {:ok, _view, html} = live(conn, @url_path <> "?order-by=status_sort")
+      {:ok, _view, html} = live(conn, @url_path <> "?order-by=status")
 
-      assert get_rendered_table_cells(html) == [row_a, row_b, row_d, row_c]
+      assert get_rendered_table_cells(html) == [row_d, row_c, row_a, row_b]
     end
 
     test "status descending", %{conn: conn, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d} do
-      {:ok, _view, html} = live(conn, @url_path <> "?order-by=status_sort&order-dir=desc")
+      {:ok, _view, html} = live(conn, @url_path <> "?order-by=status&order-dir=desc")
 
-      assert get_rendered_table_cells(html) == [row_c, row_d, row_b, row_a]
+      assert get_rendered_table_cells(html) == [row_a, row_b, row_c, row_d]
     end
 
     test "ordering does not affect other query params", %{conn: conn} do
