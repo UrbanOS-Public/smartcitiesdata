@@ -203,16 +203,12 @@ defmodule AndiWeb.DatasetLiveView do
       "id" => dataset.id,
       "org_title" => dataset.business.orgTitle,
       "data_title" => dataset.business.dataTitle,
-      "status" => status(dataset),
-      "status_sort" => status_sort(dataset)
+      "status" => status(dataset)
     }
   end
 
   defp status(%{ingestedTime: nil, submission_status: status}), do: String.capitalize(Atom.to_string(status))
   defp status(dataset), do: ingest_status(dataset)
-
-  defp status_sort(%{ingestedTime: nil, submission_status: status}), do: status
-  defp status_sort(%{ingestedTime: it}), do: it
 
   defp ingest_status(dataset) do
     case has_recent_dlq_message?(dataset.dlq_message) do
