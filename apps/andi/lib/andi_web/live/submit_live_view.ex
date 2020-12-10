@@ -41,14 +41,16 @@ defmodule AndiWeb.SubmitLiveView do
 
         <div class="data-dictionary-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
-          </div>
+        </div>
 
         <div class="url-form-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
         </div>
+
         <div class="review-submission-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.ReviewSubmission, id: :review_submission, session: %{"dataset" => @dataset}) %>
         </div>
+
         <div class="submission-component">
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">

@@ -607,6 +607,63 @@ defmodule AndiWeb.EditLiveViewTest do
     end
   end
 
+  describe "review dataset" do
+    setup do
+      smrt_dataset =
+        TDG.create_dataset(%{
+              technical: %{
+                extractSteps: [
+                  %{
+                    type: "http",
+                    context: %{
+                      action: "GET",
+                      url: "example.com"
+                    }
+                  }
+                ]
+              }
+                           })
+
+      {:ok, _} = Datasets.update(smrt_dataset)
+      {:ok, andi_dataset} = Datasets.update_submission_status(smrt_dataset.id, :submitted)
+
+      [andi_dataset: andi_dataset]
+    end
+
+    data_test "marks dataset status as #{status} when corresponding button is clicked", %{conn: conn, andi_dataset: andi_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      html =
+        view
+        |> element(button_selector)
+        |> render_click()
+
+      eventually(fn ->
+        assert Datasets.get(andi_dataset.id)[:submission_status] == status
+      end)
+
+      where([
+        [:button_selector, :status],
+        ["#approve-button", :published],
+        ["#reject-button", :rejected],
+        ["#publish-button", :published]
+      ])
+    end
+
+    test "publishes a dataset when it is approved", %{conn: conn, andi_dataset: andi_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      html =
+        view
+        |> element("#approve-button")
+        |> render_click()
+
+      eventually(fn ->
+        assert DatasetStore.get(andi_dataset.id) != {:ok, nil}
+      end)
+    end
+
+
+  end
+
   defp get_extract_step_id(dataset, index) do
     dataset
     |> Andi.InputSchemas.StructTools.to_map()
