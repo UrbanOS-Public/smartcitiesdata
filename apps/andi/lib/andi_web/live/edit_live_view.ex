@@ -63,9 +63,9 @@ defmodule AndiWeb.EditLiveView do
 
       <div class="edit-page__btn-group">
         <div class="btn-group__standard">
-          <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+          <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
           <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
         </div>
 
         <%= if true do %>
@@ -142,7 +142,7 @@ defmodule AndiWeb.EditLiveView do
      )}
   end
 
-  def handle_event("save-all-draft", _, socket) do
+  def handle_event("save", _, socket) do
     dataset_id = socket.assigns.dataset.id
 
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: dataset_id})
@@ -201,10 +201,10 @@ defmodule AndiWeb.EditLiveView do
   def handle_event("approve-for-publish", _, socket) do
     {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :approved)
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
-    updated_socket = assign(socket, changeset: new_changeset)
-    publish(updated_socket)
 
-    {:noreply, updated_socket}
+    socket
+    |> assign(changeset: new_changeset)
+    |> publish()
   end
 
   def handle_event("reject-dataset", _, socket) do

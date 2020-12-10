@@ -86,7 +86,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     render_change(editor, "update_new_step_type", %{"value" => "http"})
     render_click(editor, "add-extract-step")
 
-    render_click(editor, "save")
+    render_click(view, "save")
 
     andi_dataset = Andi.InputSchemas.Datasets.get(smrt_dataset.id)
     extract_step_id = get_extract_step_id(andi_dataset, 0)
@@ -94,8 +94,8 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
 
-    render_click(editor, "save")
-    render_click(finalize_editor, "publish")
+    render_click(view, "save")
+    render_click(view, "publish")
 
     eventually(fn ->
       extract_step = ExtractSteps.all_for_technical(andi_dataset.technical.id) |> List.first()
@@ -319,13 +319,12 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-    finalize_editor = find_live_child(view, "finalize_form_editor")
 
     html = render_click(extract_steps_form_view, "save")
 
     refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
 
-    render_click(finalize_editor, "publish")
+    render_click(view, "publish")
 
     eventually(fn ->
       html = render(view)

@@ -297,9 +297,9 @@ $component-header-height: 7.5rem;
 }
 
 #reject-button {
-    background-color: $color-error;
-    color: white;
-    border: 1px solid $color-error;
+    background-color: white;
+    color: black;
+    border: 1px solid black;
 
     .reject-icon {
         height: 1.5rem;
@@ -308,8 +308,8 @@ $component-header-height: 7.5rem;
     }
 
     &:hover {
-        background-color: white;
-        color: $color-error;
+        background-color: $color-error;
+        color: white;
         border: 1px solid $color-error;
     }
 }
