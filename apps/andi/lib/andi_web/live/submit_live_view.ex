@@ -235,7 +235,6 @@ defmodule AndiWeb.SubmitLiveView do
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp form_valid?(form_status) do
-    IO.inspect(form_status, label: "form status: ")
     form_status.data_dictionary && form_status.dataset_link && form_status.metadata
   end
 
