@@ -625,6 +625,20 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert_redirect(view, "/datasets")
     end
+
+    test "conditionally shows review buttons", %{conn: conn, andi_dataset: andi_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      assert Enum.empty?(find_elements(html, "#publish-button"))
+      refute Enum.empty?(find_elements(html, "#reject-button"))
+      refute Enum.empty?(find_elements(html, "#approve-button"))
+
+      Datasets.update_submission_status(andi_dataset.id, :approved)
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      refute Enum.empty?(find_elements(html, "#publish-button"))
+      assert Enum.empty?(find_elements(html, "#reject-button"))
+      assert Enum.empty?(find_elements(html, "#approve-button"))
+    end
   end
 
   defp get_extract_step_id(dataset, index) do

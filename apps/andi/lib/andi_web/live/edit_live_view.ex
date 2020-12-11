@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.Services.DatasetStore
 
   import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
+  import Phoenix.HTML
   require Logger
 
   @instance_name Andi.instance_name()
@@ -64,27 +65,14 @@ defmodule AndiWeb.EditLiveView do
       <div class="edit-page__btn-group">
         <div class="btn-group__standard">
           <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
-          <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
+          <%= render_publish_button(@submission_status) %>
           <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
         </div>
 
-        <%= if true do %>
-          <hr></hr>
-          <div class="btn-group__review-submission">
-            <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
-            <span class="delete-icon material-icons">delete_outline</span>
-            DELETE
-            </button>
-            <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
-              <span class="reject-icon material-icons">clear</span>
-              REJECT
-            </button>
-            <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
-              <span class="approve-icon material-icons">check</span>
-              APPROVE & PUBLISH
-            </button>
-          </div>
-        <% end %>
+        <hr></hr>
+        <div class="btn-group__review-submission">
+          <%= render_review_buttons(@submission_status) %>
+        </div>
 
       </div>
 
@@ -130,6 +118,7 @@ defmodule AndiWeb.EditLiveView do
        new_field_initial_render: false,
        page_error: false,
        save_success: false,
+       submission_status: dataset.submission_status,
        success_message: "",
        test_results: nil,
        finalize_form_data: nil,
@@ -322,4 +311,37 @@ defmodule AndiWeb.EditLiveView do
 
   defp save_message(true = _valid?), do: "Saved successfully."
   defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
+
+  defp render_publish_button(:submitted), do: ""
+  defp render_publish_button(_) do
+    ~E"""
+      <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
+    """
+  end
+
+  defp render_review_buttons(:submitted) do
+    ~E"""
+    <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                         <span class="delete-icon material-icons">delete_outline</span>
+      DELETE
+    </button>
+  <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+                                                                                         <span class="reject-icon material-icons">clear</span>
+      REJECT
+    </button>
+  <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+                                                                                           <span class="approve-icon material-icons">check</span>
+      APPROVE & PUBLISH
+    </button>
+    """
+  end
+
+  defp render_review_buttons(_) do
+    ~E"""
+    <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                         <span class="delete-icon material-icons">delete_outline</span>
+      DELETE
+    </button>
+    """
+  end
 end
