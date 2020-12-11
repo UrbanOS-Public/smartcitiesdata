@@ -3,19 +3,15 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   LiveComponent for an extract step with type AUTH
   """
   use Phoenix.LiveComponent
-  import Phoenix.HTML
   import Phoenix.HTML.Form
   import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
   alias Andi.InputSchemas.Datasets.ExtractAuthStep
   alias Andi.InputSchemas.Datasets.ExtractHeader
-  alias Andi.InputSchemas.Datasets.ExtractQueryParam
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
-  alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.Helpers.FormTools
   alias AndiWeb.ExtractSteps.ExtractStepHeader
 
   def mount(socket) do
@@ -127,12 +123,6 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
     end)
   end
 
-  defp key_values_to_keyword_list(form_data, field) do
-    form_data
-    |> Map.get(field, [])
-    |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  end
-
   defp path_to_string(empty_path) when empty_path in [nil, ""], do: empty_path
   defp path_to_string(path_array), do: Enum.join(path_array, ".")
 
@@ -140,7 +130,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   defp milliseconds_to_minutes(milliseconds) when is_integer(milliseconds), do: div(milliseconds, 60_000)
   defp milliseconds_to_minutes(milliseconds), do: milliseconds
 
-  defp convert_form_cache_ttl(%{cacheTtl: nil} = form_data), do: nil
+  defp convert_form_cache_ttl(%{cacheTtl: nil}), do: nil
 
   defp convert_form_cache_ttl(%{cacheTtl: form_cache_ttl} = form_data) do
     case String.match?(form_cache_ttl, ~r/^[[:digit:]]+$/) do

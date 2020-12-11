@@ -76,10 +76,9 @@ defmodule AndiWeb.ExtractStepFormTest do
     smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: []}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
-    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
 
     editor = find_live_child(view, "extract_step_form_editor")
-    finalize_editor = find_live_child(view, "finalize_form_editor")
 
     render_change(editor, "update_new_step_type", %{"value" => "http"})
 
@@ -265,7 +264,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: []}})
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
-    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     html = render_click(extract_steps_form_view, "save")
@@ -317,7 +316,7 @@ defmodule AndiWeb.ExtractStepFormTest do
 
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
-    {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
     html = render_click(extract_steps_form_view, "save")

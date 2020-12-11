@@ -7,7 +7,6 @@ defmodule AndiWeb.SubmitLiveView.DatasetLink do
   import Phoenix.HTML.Form
   require Logger
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.Datasets.Dataset
   alias AndiWeb.InputSchemas.DatasetLinkFormSchema
 
   def mount(_, %{"dataset" => dataset}, socket) do

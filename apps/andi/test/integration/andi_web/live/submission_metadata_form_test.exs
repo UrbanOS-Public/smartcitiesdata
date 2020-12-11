@@ -10,8 +10,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -28,8 +26,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.InputConverter
-
-  @instance_name Andi.instance_name()
 
   @endpoint AndiWeb.Endpoint
   @url_path "/submissions/"

@@ -21,7 +21,7 @@ defmodule AndiWeb.AccessLevelTest do
 
     [
       dataset_id: dataset.id,
-      deletable_dataset_id: dataset.id,
+      deletable_dataset_id: deletable_dataset.id,
       organization_id: organization.id
     ]
   end

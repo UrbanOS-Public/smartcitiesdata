@@ -4,7 +4,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
   import Ecto.Changeset
 
   alias Andi.InputSchemas.Datasets.ExtractHeader
-  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
 
   @primary_key false
@@ -98,14 +97,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
 
   defp validate_path(changeset), do: changeset
 
-  defp unwrap_context(andi_step) do
-    context = andi_step.context
-
-    andi_step
-    |> Map.merge(context)
-    |> Map.delete(:context)
-  end
-
   defp key_value_has_invalid_key?(nil), do: false
 
   defp key_value_has_invalid_key?(key_value_set) do
@@ -114,7 +105,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
 
   defp convert_map_with_index_to_list(changes, field) do
     map_with_index = Map.get(changes, field)
-    key_value_list = Enum.map(map_with_index, fn {key, value} -> value end)
+    key_value_list = Enum.map(map_with_index, fn {_, value} -> value end)
     Map.put(changes, field, key_value_list)
   end
 end

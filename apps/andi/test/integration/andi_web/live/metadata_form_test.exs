@@ -13,7 +13,7 @@ defmodule AndiWeb.MetadataFormTest do
 
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [dataset_update: 0, organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [

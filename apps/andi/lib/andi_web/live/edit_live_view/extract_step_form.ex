@@ -309,7 +309,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp extract_step_changesets_valid?(step_changesets) do
     Enum.all?(step_changesets, fn
       {_, %{changes: _} = changeset} -> changeset.valid?
-      {_, placeholder_step_context} -> true
+      _ -> true
     end)
   end
 end

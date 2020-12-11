@@ -8,7 +8,6 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
   alias Andi.InputSchemas.Datasets.ExtractStep
-  alias AndiWeb.InputSchemas.UrlFormSchema
 
   import Ecto.Query, only: [from: 2]
 

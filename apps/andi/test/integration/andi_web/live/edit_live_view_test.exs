@@ -224,7 +224,6 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
 
       assert get_text(html, "#snackbar") == ""
 
@@ -245,7 +244,6 @@ defmodule AndiWeb.EditLiveViewTest do
         |> Datasets.save()
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      url_view = find_live_child(view, "url_form_editor")
 
       render_change(view, :save, %{})
 
@@ -507,6 +505,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       render_change(es_form, %{"form_data" => extract_form_data})
 
+      render_change(view, :save)
       render_change(view, :publish)
       html = render(view)
 
@@ -532,7 +531,6 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       render_change(view, :publish)
       html = render(view)
@@ -585,12 +583,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
     data_test "marks dataset status as #{status} when corresponding button is clicked", %{conn: conn, andi_dataset: andi_dataset} do
       {:ok, andi_dataset} = Datasets.update_submission_status(andi_dataset.id, :submitted)
-      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      assert {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
 
-      html =
-        view
-        |> element(button_selector)
-        |> render_click()
+      view
+      |> element(button_selector)
+      |> render_click()
 
       eventually(fn ->
         assert Datasets.get(andi_dataset.id)[:submission_status] == status
@@ -619,12 +616,11 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "redirects user to homepage when dataset is rejected", %{conn: conn, andi_dataset: andi_dataset} do
-      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      assert {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
 
-      html =
-        view
-        |> element("#reject-button")
-        |> render_click()
+      view
+      |> element("#reject-button")
+      |> render_click()
 
       assert_redirect(view, "/datasets")
     end
