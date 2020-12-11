@@ -10,6 +10,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+
   import FlokiHelpers,
     only: [
       get_attributes: 3

@@ -564,18 +564,18 @@ defmodule AndiWeb.EditLiveViewTest do
     setup do
       smrt_dataset =
         TDG.create_dataset(%{
-              technical: %{
-                extractSteps: [
-                  %{
-                    type: "http",
-                    context: %{
-                      action: "GET",
-                      url: "example.com"
-                    }
-                  }
-                ]
+          technical: %{
+            extractSteps: [
+              %{
+                type: "http",
+                context: %{
+                  action: "GET",
+                  url: "example.com"
+                }
               }
-                           })
+            ]
+          }
+        })
 
       {:ok, _} = Datasets.update(smrt_dataset)
       {:ok, andi_dataset} = Datasets.update_submission_status(smrt_dataset.id, :submitted)
@@ -584,7 +584,9 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     data_test "marks dataset status as #{status} when corresponding button is clicked", %{conn: conn, andi_dataset: andi_dataset} do
+      {:ok, andi_dataset} = Datasets.update_submission_status(andi_dataset.id, :submitted)
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
       html =
         view
         |> element(button_selector)
@@ -597,13 +599,13 @@ defmodule AndiWeb.EditLiveViewTest do
       where([
         [:button_selector, :status],
         ["#approve-button", :published],
-        ["#reject-button", :rejected],
-        ["#publish-button", :published]
+        ["#reject-button", :rejected]
       ])
     end
 
     test "publishes a dataset when it is approved", %{conn: conn, andi_dataset: andi_dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
       html =
         view
         |> element("#approve-button")
@@ -618,6 +620,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "redirects user to homepage when dataset is rejected", %{conn: conn, andi_dataset: andi_dataset} do
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+
       html =
         view
         |> element("#reject-button")

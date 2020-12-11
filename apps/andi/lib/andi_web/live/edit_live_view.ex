@@ -201,8 +201,12 @@ defmodule AndiWeb.EditLiveView do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible", changeset: new_changeset)}
-      false -> {:noreply, redirect(socket, to: header_datasets_path())}
+      true ->
+        {:noreply,
+         assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible", changeset: new_changeset)}
+
+      false ->
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -313,6 +317,7 @@ defmodule AndiWeb.EditLiveView do
   defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 
   defp render_publish_button(:submitted), do: ""
+
   defp render_publish_button(_) do
     ~E"""
       <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
@@ -321,27 +326,27 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(:submitted) do
     ~E"""
-    <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
-                                                                                                         <span class="delete-icon material-icons">delete_outline</span>
-      DELETE
-    </button>
-  <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
-                                                                                         <span class="reject-icon material-icons">clear</span>
-      REJECT
-    </button>
-  <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
-                                                                                           <span class="approve-icon material-icons">check</span>
-      APPROVE & PUBLISH
-    </button>
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                          <span class="delete-icon material-icons">delete_outline</span>
+        DELETE
+      </button>
+      <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+                                                                                          <span class="reject-icon material-icons">clear</span>
+        REJECT
+      </button>
+      <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+                                                                                            <span class="approve-icon material-icons">check</span>
+        APPROVE & PUBLISH
+      </button>
     """
   end
 
   defp render_review_buttons(_) do
     ~E"""
-    <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
-                                                                                                         <span class="delete-icon material-icons">delete_outline</span>
-      DELETE
-    </button>
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                          <span class="delete-icon material-icons">delete_outline</span>
+        DELETE
+      </button>
     """
   end
 end
