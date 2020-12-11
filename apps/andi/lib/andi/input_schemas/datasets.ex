@@ -262,6 +262,12 @@ defmodule Andi.InputSchemas.Datasets do
     |> Dataset.validate_unique_system_name()
   end
 
+  def full_validation_submission_changeset_for_publish(schema, changes) do
+    schema
+    |> Dataset.submission_changeset(changes)
+    |> Dataset.validate_unique_system_name()
+  end
+
   defp update_changes_for_invalid_form(changes, false), do: changes
 
   defp update_changes_for_invalid_form(changes, true) do

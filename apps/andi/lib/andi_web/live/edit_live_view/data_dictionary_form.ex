@@ -18,6 +18,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def mount(_, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+    send(socket.parent_pid, {:update_data_dictionary_status, new_changeset.valid?})
+
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("source-format")
@@ -137,7 +139,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <div class="edit-button-group__save-btn">
                 <a href="#url-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="url_form">Next</a>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+                <%= if @is_curator do %>
+                  <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+                <% end %>
                 </div>
             </div>
           </div>
@@ -156,6 +160,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("validate", %{"data_dictionary_form_schema" => form_schema}, socket) do
     form_schema
     |> DataDictionaryFormSchema.changeset_from_form_data()
+    |> send_data_dictionary_status(socket)
     |> complete_validation(socket)
   end
 
@@ -190,6 +195,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           file
           |> parse_csv()
           |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
 
         assign_new_schema(socket, new_changeset)
 
@@ -209,6 +215,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           decoded_json
           |> List.wrap()
           |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
 
         assign_new_schema(socket, new_changeset)
 
@@ -255,7 +262,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset) |> send_data_dictionary_status(socket)
 
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
@@ -290,7 +297,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
 
     {:noreply,
      assign(socket,
@@ -316,7 +323,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       end
 
     dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
 
     {:noreply,
      assign(socket,
@@ -510,5 +517,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       true -> {:noreply, assign(socket, changeset: new_changeset)}
       _ -> {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
     end
+  end
+
+  defp send_data_dictionary_status(changeset, socket) do
+    send(socket.parent_pid, {:update_data_dictionary_status, changeset.valid?})
+    changeset
   end
 end

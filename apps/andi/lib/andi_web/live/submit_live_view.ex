@@ -41,7 +41,7 @@ defmodule AndiWeb.SubmitLiveView do
 
         <div class="data-dictionary-form-component">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
-        </div>
+          </div>
 
         <div class="url-form-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
@@ -49,9 +49,23 @@ defmodule AndiWeb.SubmitLiveView do
         <div class="review-submission-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.ReviewSubmission, id: :review_submission, session: %{"dataset" => @dataset}) %>
         </div>
+        <div class="submission-component">
+          <div class="edit-button-group form-grid">
+            <div class="edit-button-group__cancel-btn">
+              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+            </div>
+
+            <div class="edit-button-group__save-btn">
+              <button id="submit-button" class="btn btn--next btn--large btn--submit" phx-click="submit-submission" <%= if not form_valid?(@form_status), do: "disabled" %>>Submit</a>
+              <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save-all-draft">Save Draft</button>
+            </div>
+          </div>
+        </div>
       </form>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
+
+      <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
 
       <div id="submit-page-snackbar" phx-hook="showSnackbar">
         <div style="display: none;"><%= @click_id %></div>
@@ -79,6 +93,7 @@ defmodule AndiWeb.SubmitLiveView do
 
     {:ok,
      assign(socket,
+       form_status: %{metadata: false, data_dictionary: false, dataset_link: false},
        click_id: UUID.uuid4(),
        changeset: new_changeset,
        dataset: dataset,
@@ -115,38 +130,75 @@ defmodule AndiWeb.SubmitLiveView do
   end
 
   def handle_event("reload-page", _, socket) do
-    {:noreply, redirect(socket, to: "/datasets/#{socket.assigns.dataset.id}")}
+    {:noreply, redirect(socket, to: "/submissions/#{socket.assigns.dataset.id}")}
   end
 
-  def handle_info(
-        %{topic: "form-save", payload: %{form_changeset: form_changeset, dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
-      ) do
-    socket = reset_save_success(socket)
-    form_changes = InputConverter.form_changes_from_changeset(form_changeset)
+  def handle_event("submit-submission", _, socket) do
+    dataset_id = socket.assigns.dataset.id
 
-    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, form_changes)
+    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
 
-    new_changeset =
-      andi_dataset
-      |> InputConverter.andi_dataset_to_full_ui_changeset()
-      |> Dataset.validate_unique_system_name()
-      |> Map.put(:action, :update)
+    Process.sleep(1_000)
 
-    success_message =
-      case new_changeset.valid? do
-        true -> "Saved successfully."
-        false -> "Saved successfully. You may need to fix errors before publishing."
-      end
+    andi_dataset = Datasets.get(dataset_id)
+
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset)
+
+    if dataset_changeset.valid? do
+      Datasets.update_submission_status(dataset_id, :submitted)
+
+      {:noreply,
+       assign(socket,
+         dataset: andi_dataset,
+         changeset: dataset_changeset,
+         unsaved_changes: false,
+         publish_success_modal_visibility: "visible",
+         page_error: false
+       )}
+    else
+      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
+    end
+  end
+
+  def handle_event("save-all-draft", _, socket) do
+    dataset_id = socket.assigns.dataset.id
+
+    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
+
+    Process.sleep(1_000)
+
+    andi_dataset = Datasets.get(dataset_id)
+
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset) |> Map.put(:action, :update)
+
+    success_message = save_message(dataset_changeset.valid?)
 
     {:noreply,
      assign(socket,
        click_id: UUID.uuid4(),
        save_success: true,
        success_message: success_message,
-       changeset: new_changeset,
+       changeset: dataset_changeset,
        unsaved_changes: false
      )}
+  end
+
+  def handle_info({:update_metadata_status, status}, socket) do
+    form_status = socket.assigns.form_status |> Map.replace(:metadata, status)
+
+    {:noreply, assign(socket, form_status: form_status)}
+  end
+
+  def handle_info({:update_dataset_link_status, status}, socket) do
+    form_status = socket.assigns.form_status |> Map.replace(:dataset_link, status)
+
+    {:noreply, assign(socket, form_status: form_status)}
+  end
+
+  def handle_info({:update_data_dictionary_status, status}, socket) do
+    form_status = socket.assigns.form_status |> Map.replace(:data_dictionary, status)
+
+    {:noreply, assign(socket, form_status: form_status)}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
@@ -181,4 +233,11 @@ defmodule AndiWeb.SubmitLiveView do
   end
 
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
+
+  defp form_valid?(form_status) do
+    form_status.data_dictionary && form_status.dataset_link && form_status.metadata
+  end
+
+  defp save_message(true = _valid?), do: "Saved successfully."
+  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 end

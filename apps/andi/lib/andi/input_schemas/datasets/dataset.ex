@@ -29,6 +29,8 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   @cast_fields [:id, :ingestedTime, :version, :submission_status, :dlq_message, :owner_id, :datasetLink]
 
+  @submission_required_fields [:datasetLink]
+
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(dataset, changes) do
@@ -36,6 +38,16 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast(changes, @cast_fields)
     |> cast_assoc(:technical, with: &Technical.changeset/2)
     |> cast_assoc(:business, with: &Business.changeset/2)
+  end
+
+  def submission_changeset(changes), do: submission_changeset(%__MODULE__{}, changes)
+
+  def submission_changeset(dataset, changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> validate_required(@submission_required_fields, message: "is required")
+    |> cast_assoc(:technical, with: &Technical.submission_changeset/2)
+    |> cast_assoc(:business, with: &Business.submission_changeset/2)
   end
 
   def changeset_for_draft(dataset, %{owner: owner} = changes) do
