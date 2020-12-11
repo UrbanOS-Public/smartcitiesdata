@@ -75,6 +75,7 @@ defmodule AndiWeb.FormSection do
         {:ok, andi_dataset} = Andi.InputSchemas.Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
 
         new_changeset = apply(unquote(schema_module), :changeset_from_andi_dataset, [andi_dataset])
+        |> Map.put(:action, :update)
 
         {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
       end
