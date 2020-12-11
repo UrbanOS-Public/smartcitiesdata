@@ -66,6 +66,25 @@ body {
   border: 2px solid black;
 }
 
+.btn--cancel {
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+
+    &:hover {
+        color: white;
+        background-color: black;
+    }
+}
+
+.btn--review {
+    min-width: 10rem;
+    min-height: 2rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+}
+
 .btn--action {
   color: white;
   background-color: $color-text-link;

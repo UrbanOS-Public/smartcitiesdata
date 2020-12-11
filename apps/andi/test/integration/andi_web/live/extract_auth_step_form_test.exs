@@ -14,12 +14,10 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     only: [
       get_attributes: 3,
       get_value: 2,
-      get_values: 2,
       get_text: 2,
       find_elements: 2
     ]
 
-  alias Andi.Services.UrlTest
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.ExtractSteps
@@ -103,11 +101,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
     test "does not have key/value inputs when dataset extract step has no headers", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{"type" => "auth", "context" => %{"headers" => %{}}}]}})
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      extract_step_id = get_extract_step_id(andi_dataset, 0)
+      {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(".url-form__source-headers-key-input") |> Enum.empty?()
       assert html |> find_elements(".url-form__source-headers-value-input") |> Enum.empty?()
@@ -279,7 +275,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     form_data = %{"cacheTtl" => "20"}
     render_change(es_form, %{"form_data" => form_data})
 
-    html = render_click(extract_steps_form_view, "save")
+    render_click(extract_steps_form_view, "save")
 
     eventually(fn ->
       assert ExtractSteps.get(extract_step_id) |> get_in([:context, "cacheTtl"]) == 1_200_000

@@ -5,8 +5,6 @@ defmodule AndiWeb.SubmitLiveViewTest do
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
 
-  import Checkov
-
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
@@ -18,7 +16,6 @@ defmodule AndiWeb.SubmitLiveViewTest do
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
-  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 

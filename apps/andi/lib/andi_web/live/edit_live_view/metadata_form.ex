@@ -211,14 +211,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
             </div>
 
             <div class="edit-button-group form-grid">
-              <div class="edit-button-group__cancel-btn">
-                <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
-              </div>
-
-              <div class="edit-button-group__save-btn">
-                <a href="#data_dictionary_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
-                <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
-              </div>
+              <a href="#data_dictionary_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
             </div>
           </div>
         </form>

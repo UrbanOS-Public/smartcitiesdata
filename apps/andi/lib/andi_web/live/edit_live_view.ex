@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.Services.DatasetStore
 
   import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
+  import Phoenix.HTML
   require Logger
 
   @instance_name Andi.instance_name()
@@ -56,17 +57,23 @@ defmodule AndiWeb.EditLiveView do
           <%= live_render(@socket, AndiWeb.EditLiveView.ExtractStepForm, id: :extract_step_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
-        <div class="url-form-component">
-          <%= live_render(@socket, AndiWeb.EditLiveView.UrlForm, id: :url_form_editor, session: %{"dataset" => @dataset}) %>
-        </div>
-
         <div class="finalize-form-component ">
           <%= live_render(@socket, AndiWeb.EditLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"dataset" => @dataset}) %>
         </div>
       </form>
 
-      <div class="edit-page__delete-btn">
-        <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--delete btn--large" phx-click="dataset-delete" type="button">DELETE DATASET</button>
+      <div class="edit-page__btn-group">
+        <div class="btn-group__standard">
+          <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
+          <%= render_publish_button(@submission_status) %>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+        </div>
+
+        <hr></hr>
+        <div class="btn-group__review-submission">
+          <%= render_review_buttons(@submission_status) %>
+        </div>
+
       </div>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
@@ -111,6 +118,7 @@ defmodule AndiWeb.EditLiveView do
        new_field_initial_render: false,
        page_error: false,
        save_success: false,
+       submission_status: dataset.submission_status,
        success_message: "",
        test_results: nil,
        finalize_form_data: nil,
@@ -120,6 +128,23 @@ defmodule AndiWeb.EditLiveView do
        publish_success_modal_visibility: "hidden",
        delete_dataset_modal_visibility: "hidden",
        is_curator: is_curator
+     )}
+  end
+
+  def handle_event("save", _, socket) do
+    dataset_id = socket.assigns.dataset.id
+
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: dataset_id})
+
+    andi_dataset = Datasets.get(dataset_id)
+    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset)
+
+    {:noreply,
+     assign(socket,
+       changeset: dataset_changeset,
+       save_success: true,
+       click_id: UUID.uuid4(),
+       success_message: save_message(dataset_changeset.valid?)
      )}
   end
 
@@ -162,40 +187,30 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, redirect(socket, to: "/datasets/#{socket.assigns.dataset.id}")}
   end
 
-  def handle_info(:publish, socket) do
-    socket = reset_save_success(socket)
-    dataset_id = socket.assigns.dataset.id
+  def handle_event("approve-for-publish", _, socket) do
+    {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :approved)
+    new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
-    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
-    Process.sleep(1_000)
+    socket
+    |> assign(changeset: new_changeset)
+    |> publish()
+  end
 
-    andi_dataset = Datasets.get(dataset_id)
+  def handle_event("reject-dataset", _, socket) do
+    {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected)
+    new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
-    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+    case socket.assigns.unsaved_changes do
+      true ->
+        {:noreply,
+         assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible", changeset: new_changeset)}
 
-    if dataset_changeset.valid? do
-      Datasets.update_submission_status(dataset_id, :published)
-      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-
-      case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
-        :ok ->
-          {:noreply,
-           assign(socket,
-             dataset: andi_dataset,
-             changeset: dataset_changeset,
-             unsaved_changes: false,
-             publish_success_modal_visibility: "visible",
-             page_error: false
-           )}
-
-        error ->
-          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
-      end
-    else
-      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
+      false ->
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
+
+  def handle_event("publish", _, socket), do: publish(socket)
 
   def handle_info(
         %{topic: "form-save", payload: %{form_changeset: form_changeset, dataset_id: dataset_id}},
@@ -261,8 +276,77 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
+  defp publish(socket) do
+    socket = reset_save_success(socket)
+    dataset_id = socket.assigns.dataset.id
+
+    AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
+    Process.sleep(1_000)
+
+    andi_dataset = Datasets.get(dataset_id)
+
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
+    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+
+    if dataset_changeset.valid? do
+      Datasets.update_submission_status(dataset_id, :published)
+      {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+
+      case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
+        :ok ->
+          {:noreply,
+           assign(socket,
+             dataset: andi_dataset,
+             changeset: dataset_changeset,
+             unsaved_changes: false,
+             publish_success_modal_visibility: "visible",
+             page_error: false
+           )}
+
+        error ->
+          Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
+      end
+    else
+      {:noreply, assign(socket, changeset: dataset_changeset, has_validation_errors: true)}
+    end
+  end
+
   defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp save_message(true = _valid?), do: "Saved successfully."
   defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
+
+  defp render_publish_button(:submitted), do: ""
+
+  defp render_publish_button(_) do
+    ~E"""
+      <button id="publish-button" name="publish-button" class="btn btn--publish btn--action btn--large" type="button" phx-click="publish">Publish</button>
+    """
+  end
+
+  defp render_review_buttons(:submitted) do
+    ~E"""
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                          <span class="delete-icon material-icons">delete_outline</span>
+        DELETE
+      </button>
+      <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+                                                                                          <span class="reject-icon material-icons">clear</span>
+        REJECT
+      </button>
+      <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+                                                                                            <span class="approve-icon material-icons">check</span>
+        APPROVE & PUBLISH
+      </button>
+    """
+  end
+
+  defp render_review_buttons(_) do
+    ~E"""
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--delete" phx-click="dataset-delete" type="button">
+                                                                                                          <span class="delete-icon material-icons">delete_outline</span>
+        DELETE
+      </button>
+    """
+  end
 end

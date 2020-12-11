@@ -4,7 +4,6 @@ defmodule AndiWeb.SubmitLiveView do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Datasets.Dataset
 
   require Logger
 
@@ -46,9 +45,11 @@ defmodule AndiWeb.SubmitLiveView do
         <div class="url-form-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
         </div>
+
         <div class="review-submission-component">
           <%= live_render(@socket, AndiWeb.SubmitLiveView.ReviewSubmission, id: :review_submission, session: %{"dataset" => @dataset}) %>
         </div>
+
         <div class="submission-component">
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
@@ -184,19 +185,19 @@ defmodule AndiWeb.SubmitLiveView do
   end
 
   def handle_info({:update_metadata_status, status}, socket) do
-    form_status = socket.assigns.form_status |> Map.replace(:metadata, status)
+    form_status = socket.assigns.form_status |> Map.put(:metadata, status)
 
     {:noreply, assign(socket, form_status: form_status)}
   end
 
   def handle_info({:update_dataset_link_status, status}, socket) do
-    form_status = socket.assigns.form_status |> Map.replace(:dataset_link, status)
+    form_status = socket.assigns.form_status |> Map.put(:dataset_link, status)
 
     {:noreply, assign(socket, form_status: form_status)}
   end
 
   def handle_info({:update_data_dictionary_status, status}, socket) do
-    form_status = socket.assigns.form_status |> Map.replace(:data_dictionary, status)
+    form_status = socket.assigns.form_status |> Map.put(:data_dictionary, status)
 
     {:noreply, assign(socket, form_status: form_status)}
   end
@@ -231,8 +232,6 @@ defmodule AndiWeb.SubmitLiveView do
     Logger.debug(inspect(message))
     {:noreply, socket}
   end
-
-  defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp form_valid?(form_status) do
     form_status.data_dictionary && form_status.dataset_link && form_status.metadata

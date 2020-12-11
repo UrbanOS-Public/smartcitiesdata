@@ -743,7 +743,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
-      child_target = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target") |> List.last()
       child_id = get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-value-field-id") |> List.last()
 
       selectable = element(data_dictionary_view, ".data-dictionary-tree-field__text[phx-value-field-id='#{child_id}']")
@@ -807,7 +806,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "non curators have a limited view of the data dictionary form" do
-    setup %{curator_subject: curator_subject, public_subject: public_subject} do
+    setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
       [public_user: public_user]
     end
@@ -816,7 +815,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{sourceFormat: "application/json"}, business: %{}}
 
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
-      {:ok, dataset} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 

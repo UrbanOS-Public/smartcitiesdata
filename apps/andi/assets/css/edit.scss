@@ -250,27 +250,67 @@ $component-header-height: 7.5rem;
     display: none;
 }
 
-.edit-page__delete-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.btn-group__standard {
+    margin-bottom: 2rem;
+}
 
-    button {
+.btn-group__review-submission {
+    margin-top: 2rem;
+}
+
+
+#delete-dataset-button {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+
+    .delete-icon {
+        height: 1.5rem;
+        width: 1.5rem;
+        vertical-align: sub;
+    }
+
+    &:hover {
         background-color: $color-error;
-        border: none;
-        position: relative;
-        min-width: 14rem;
-        padding-left: 2.8rem;
+        color: white;
+        border: 1px solid $color-error;
+    }
+}
 
-        &:before {
-            background-image: url(/images/delete_field_white.svg);
-            width: 1.5rem;
-            height: 24px;
-            position: absolute;
-            content: " ";
-            left: 1.3rem;
-            color: white;
-        }
+#approve-button {
+    background-color: #02ac00;
+    color: white;
+    border: 1px solid #02ac00;
+    float: right;
+
+    .approve-icon {
+        height: 1.5rem;
+        width: 1.5rem;
+        vertical-align: sub;
+    }
+
+    &:hover {
+        background-color: white;
+        color: #02ac00;
+        border: 1px solid #02ac00;
+    }
+}
+
+#reject-button {
+    background-color: white;
+    color: black;
+    border: 1px solid black;
+
+    .reject-icon {
+        height: 1.5rem;
+        width: 1.5rem;
+        vertical-align: sub;
+    }
+
+    &:hover {
+        background-color: $color-error;
+        color: white;
+        border: 1px solid $color-error;
     }
 }
 

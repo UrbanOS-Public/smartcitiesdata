@@ -67,31 +67,27 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
           </div>
         </div>
 
-        <div class="component-edit-section--<%= @visibility %> form-section">
-          <div class="add-step">
-            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
-            <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
-          </div>
-
-          <div class="extract-steps__error-message"><%= extract_steps_error_message(@extract_steps) %></div>
-
-          <%= for extract_step <- @extract_steps do %>
-            <% component_module_to_render = render_extract_step_form(extract_step) %>
-            <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
-
-            <hr>
-            <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
-          <% end %>
-
-          <div class="edit-button-group form-grid">
-            <div class="edit-button-group__cancel-btn">
-              <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
-              <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+        <div class="form-section">
+          <div class="component-edit-section--<%= @visibility %>">
+            <div class="add-step">
+              <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+              <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
             </div>
 
-            <div class="edit-button-group__save-btn">
+            <div class="extract-steps__error-message"><%= extract_steps_error_message(@extract_steps) %></div>
+
+            <%= for extract_step <- @extract_steps do %>
+              <% component_module_to_render = render_extract_step_form(extract_step) %>
+              <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
+
+              <hr>
+              <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
+            <% end %>
+
+            <div class="edit-button-group form-grid">
+              <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
+
               <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
-              <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
             </div>
           </div>
         </div>
@@ -313,7 +309,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp extract_step_changesets_valid?(step_changesets) do
     Enum.all?(step_changesets, fn
       {_, %{changes: _} = changeset} -> changeset.valid?
-      {_, placeholder_step_context} -> true
+      _ -> true
     end)
   end
 end
