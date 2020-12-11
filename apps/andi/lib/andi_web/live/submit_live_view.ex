@@ -46,11 +46,10 @@ defmodule AndiWeb.SubmitLiveView do
           <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
         </div>
 
-        <div class="review-submission-component">
-          <%= live_render(@socket, AndiWeb.SubmitLiveView.ReviewSubmission, id: :review_submission, session: %{"dataset" => @dataset}) %>
-        </div>
-
         <div class="submission-component">
+          <div class="review-submission">
+            <h4>Please ensure that there are no errors or omitted fields before submitting. Upon submission, the Data Curator will review your dataset for completeness, efficacy, and accuracy. You may check the status of your submission by returning to your submission portal homepage. If you have any questions, please contact the <a href="https://www.smartcolumbusos.com/contact-us" target="_blank">Data Curator</a></h4>
+          </div>
           <div class="edit-button-group form-grid">
             <div class="edit-button-group__cancel-btn">
               <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
