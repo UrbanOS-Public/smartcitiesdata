@@ -41,8 +41,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     }
 
     extract_steps = [
-      default_extract_step,
-      date_extract_step
+      date_extract_step,
+      default_extract_step
     ]
 
     smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
@@ -110,7 +110,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "given an invalid extract step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
-    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_step_id = get_extract_step_id(dataset, 1)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -126,7 +126,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "given an invalid extract date step, the section shows an invalid status", %{andi_dataset: dataset, view: view} do
-    extract_step_id = get_extract_step_id(dataset, 1)
+    extract_step_id = get_extract_step_id(dataset, 0)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -251,7 +251,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
-    assert get_text(html, ".extract-steps__error-message") == "Dataset requires at least one HTTP step"
+    assert get_text(html, ".extract-steps__error-message") == "Extract steps must end with a HTTP or S3 step"
 
     html = render_click(extract_steps_form_view, "save")
 

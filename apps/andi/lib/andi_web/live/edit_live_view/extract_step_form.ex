@@ -292,7 +292,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp get_new_validation_status(step_changesets, []) when step_changesets == %{}, do: "invalid"
 
   defp get_new_validation_status(step_changesets, extract_steps) do
-    case has_http_step?(extract_steps) and extract_step_changesets_valid?(step_changesets) do
+    case ends_with_http_or_s3_step?(extract_steps) and extract_step_changesets_valid?(step_changesets) do
       true -> "valid"
       false -> "invalid"
     end
@@ -301,13 +301,16 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   defp extract_steps_error_message(extract_steps) when extract_steps in [nil, []], do: "Extract steps cannot be empty"
 
   defp extract_steps_error_message(extract_steps) do
-    case has_http_step?(extract_steps) do
-      false -> "Dataset requires at least one HTTP step"
+    case ends_with_http_or_s3_step?(extract_steps) do
+      false -> "Extract steps must end with a HTTP or S3 step"
       true -> nil
     end
   end
 
-  defp has_http_step?(steps), do: Enum.any?(steps, fn step -> step.type == "http" end)
+  defp ends_with_http_or_s3_step?(steps) do
+    last_step_type = List.last(steps) |> Map.get(:type)
+    last_step_type in ["http", "s3"]
+  end
 
   defp extract_step_changesets_valid?(step_changesets) do
     Enum.all?(step_changesets, fn
