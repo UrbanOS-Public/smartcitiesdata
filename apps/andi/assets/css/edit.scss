@@ -399,8 +399,3 @@ $component-header-height: 7.5rem;
 @include area(edit-button-group, save-btn);
 @include area(edit-button-group, test-btn);
 @include area(edit-button-group, messages);
-
-@include area(url-form, source-url);
-@include area(url-form, source-query-params);
-@include area(url-form, source-headers);
-@include area(url-form, test-section);

@@ -30,6 +30,13 @@
     }
 }
 
+.extract-s3-step-form-edit-section {
+    grid-template-areas:
+        "type ."
+        "url url"
+        "source-headers source-headers";
+}
+
 .extract-step-container {
     padding-left: 2rem;
 }
@@ -99,10 +106,10 @@
 @include area(extract-auth-step-form, path);
 @include area(extract-auth-step-form, type);
 @include area(extract-auth-step-form, url);
+@include area(extract-s3-step-form, type);
+@include area(extract-s3-step-form, url);
 @include area(extract-http-step-form, body);
 @include area(extract-http-step-form, method);
 @include area(extract-http-step-form, test-section);
 @include area(extract-http-step-form, type);
 @include area(extract-http-step-form, url);
-@include area(url-form, source-headers);
-@include area(url-form, source-query-params);

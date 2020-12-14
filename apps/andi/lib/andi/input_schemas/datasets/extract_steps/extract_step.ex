@@ -49,7 +49,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     changeset(form_data_as_params)
   end
 
-  def form_changeset_from_andi_extract_step(%{type: type, context: context}) when type in ["s3", "sftp"], do: context
+  def form_changeset_from_andi_extract_step(%{type: "sftp", context: context}), do: context
 
   def form_changeset_from_andi_extract_step(extract_step) do
     step_module = step_module(extract_step.type)
@@ -97,8 +97,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   defp step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
   defp step_module("secret"), do: Andi.InputSchemas.Datasets.ExtractSecretStep
   defp step_module("auth"), do: Andi.InputSchemas.Datasets.ExtractAuthStep
+  defp step_module("s3"), do: Andi.InputSchemas.Datasets.ExtractS3Step
   defp step_module("sftp"), do: nil
-  defp step_module("s3"), do: nil
   defp step_module(_invalid_type), do: :invalid_type
 
   defp wrap_context(form_data) do
