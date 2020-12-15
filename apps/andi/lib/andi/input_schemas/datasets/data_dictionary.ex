@@ -68,6 +68,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
+    |> validate_format(:name, ~r/^[[:alnum:]\s_-]+$/)
     |> validate_format()
     |> validate_selector(source_format)
   end
@@ -82,6 +83,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> add_default_format()
+    |> validate_format(:name, ~r/^[[:alnum:]\s_-]+$/)
     |> validate_required(@required_fields, message: "is required")
   end
 

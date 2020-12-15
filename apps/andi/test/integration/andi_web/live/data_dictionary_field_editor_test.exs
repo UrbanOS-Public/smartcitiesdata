@@ -155,6 +155,29 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
       assert Enum.empty?(find_elements(html, "#data-dictionary-field-editor > .error-msg"))
     end
+
+    data_test "schema field name #{name} makes dataset validity to be #{valid?}", %{conn: conn} do
+      schema = [%{name: name, type: "boolean"}]
+
+      smrt_dataset = TDG.create_dataset(%{technical: %{schema: schema}})
+
+      {:ok, dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+        |> Datasets.save()
+
+      {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-field-editor__name > .error-msg")) == valid?
+
+      where([
+        [:name, :valid?],
+        ["abc", true],
+        ["123", true],
+        ["spaces spaces ", true],
+        ["dash-dash_underscore", true],
+        ["!#$$()", false]
+      ])
+    end
   end
 
   describe "certain fields in the data dictionary editor are unavaliable for non curator users" do
