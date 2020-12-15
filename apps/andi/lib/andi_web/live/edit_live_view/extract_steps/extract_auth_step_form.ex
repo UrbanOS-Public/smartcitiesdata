@@ -114,15 +114,6 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
     {:noreply, assign(socket, changeset: new_changset)}
   end
 
-  defp remove_key_value(key_value_list, id) do
-    Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
-      case key_value.id == id do
-        true -> {:halt, List.delete(key_value_list, key_value)}
-        false -> {:cont, acc}
-      end
-    end)
-  end
-
   defp path_to_string(empty_path) when empty_path in [nil, ""], do: empty_path
   defp path_to_string(path_array), do: Enum.join(path_array, ".")
 

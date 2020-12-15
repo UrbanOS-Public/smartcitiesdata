@@ -171,15 +171,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {:noreply, assign(socket, test_results: test_results)}
   end
 
-  defp remove_key_value(key_value_list, id) do
-    Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
-      case key_value.id == id do
-        true -> {:halt, List.delete(key_value_list, key_value)}
-        false -> {:cont, acc}
-      end
-    end)
-  end
-
   defp disabled?(true), do: "disabled"
   defp disabled?(_), do: ""
 

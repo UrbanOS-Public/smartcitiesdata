@@ -81,13 +81,4 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
 
     {:noreply, assign(socket, changeset: new_changset)}
   end
-
-  defp remove_key_value(key_value_list, id) do
-    Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
-      case key_value.id == id do
-        true -> {:halt, List.delete(key_value_list, key_value)}
-        false -> {:cont, acc}
-      end
-    end)
-  end
 end
