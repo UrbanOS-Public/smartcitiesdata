@@ -38,4 +38,18 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
 
     {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
+
+  def ends_with_http_or_s3_step?(steps) do
+    last_step_type = List.last(steps) |> Map.get(:type)
+    last_step_type in ["http", "s3"]
+  end
+
+  def remove_key_value(key_value_list, id) do
+    Enum.reduce_while(key_value_list, key_value_list, fn key_value, acc ->
+      case key_value.id == id do
+        true -> {:halt, List.delete(key_value_list, key_value)}
+        false -> {:cont, acc}
+      end
+    end)
+  end
 end

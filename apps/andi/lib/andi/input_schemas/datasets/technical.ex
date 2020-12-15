@@ -10,6 +10,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Andi.InputSchemas.Datasets.ExtractStep
+  alias AndiWeb.Helpers.ExtractStepHelpers
   alias Crontab.CronExpression
   alias AndiWeb.Views.Options
 
@@ -221,13 +222,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
 
-    case extract_steps in [nil, []] or has_no_http_steps?(extract_steps) do
-      true -> add_error(changeset, :extractSteps, "cannot be empty and require at least one http step")
+    case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
+      true -> add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")
       false -> changeset
     end
   end
-
-  defp has_no_http_steps?(extract_steps), do: Enum.all?(extract_steps, fn step -> step.type != "http" end)
 
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]

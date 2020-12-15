@@ -190,7 +190,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
-  defp update_context_from_smrt_step(context, "auth") do
+  defp update_context_from_smrt_step(context, type) when type in ["s3", "auth"] do
     context
     |> encode_extract_step_body_as_json()
     |> Map.update(:headers, [], &to_key_value_list/1)
