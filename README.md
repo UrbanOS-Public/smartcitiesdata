@@ -34,27 +34,9 @@ a RESTful API, or a web socket API for streaming data feeds.
 * [macOS](https://github.com/Datastillery/smartcitiesdata/wiki/macOS-Setup)
 * [Linux](https://github.com/Datastillery/smartcitiesdata/wiki/Linux-Setup)
 
-### starting the entire stack in minikube or Docker Desktop embedded Kubernetes cluster
-The current best approach to locally running the stack is in a local instance of Kubernetes, either in the minikube virtual machine or in the Kubernetes instance that can be run natively from Docker Desktop for Mac or Docker Desktop for Windows. Both options are viable, although in recent versions of the Docker version, exposing services via a `LoadBalancer` type allow the service to be reachable from the host machine without additional network manipulation.
+### starting the entire stack
+https://github.com/Datastillery/smartcitiesdata/wiki/Run
 
-Once you have a Kubernetes cluster running, check out the `Datastillery/charts` repo and the `platform` chart for standing up the complete platform or any ad hoc components you'd like to enable.
-
-
-### port mappings
-| application       | port     | url                                  |
-| ----------------- | -------- | ------------------------------------ |
-| discovery_api     | 8082     | http://localhost:8082                |
-| discovery_ui      | 8085     | http://localhost:8085                |
-| discovery_streams | 8087     | ws://localhost:8087/socket/websocket |
-| presto            | 8081     | http://localhost:8081                |
-| andi              | 8080     | http://localhost:8080                |
-| kafka             | 9094     |                                      |
-| metastore         | 9083     |                                      |
-| redis             | 6379     |                                      |
-| minio             | 9000     |                                      |
-| ldap              | 389, 636 |                                      |
-| zookeeper         | 2181     |                                      |
-| postgres          | 5432     |                                      |
 
 ### Apps README
 | application       | url                                                                                                        |
