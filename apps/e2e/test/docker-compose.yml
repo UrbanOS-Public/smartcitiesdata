@@ -3,10 +3,12 @@ version: '3.4'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
     - "2181:2181"
   kafka:
     image: wurstmeister/kafka:2.12-2.1.1
+    container_name: kafka
     depends_on:
     - zookeeper
     ports:
@@ -29,6 +31,11 @@ services:
     - postgres
     ports:
     - "9083:9083"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9083"]
+      interval: 10s
+      timeout: 30s
+      retries: 3
     command: >
       /bin/bash -c "
         /opt/hive-metastore/bin/schematool -dbType postgres -validate || /opt/hive-metastore/bin/schematool -dbType postgres -initSchema;
@@ -43,6 +50,8 @@ services:
     image: postgres:9.6.16
     ports:
       - "5456:5432"
+    volumes:
+      - "./support/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql"
   minio:
     image: smartcitiesdata/minio-testo:development
     ports:
@@ -63,3 +72,15 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+  elasticsearch:
+    image: elasticsearch:7.4.2
+    ports:
+    - "9200:9200"
+    - "9300:9300"
+    environment:
+    - "discovery.type=single-node"
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
