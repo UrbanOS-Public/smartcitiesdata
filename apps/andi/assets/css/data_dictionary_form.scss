@@ -227,6 +227,10 @@ $tick-height: 1rem + $field-padding - 0.44;
 
 .data-dictionary-add-field-editor--visible {
     @include modal-wrapper()
+
+    .error-msg {
+        width: 23rem;
+    }
 }
 
 .modal-form-container {

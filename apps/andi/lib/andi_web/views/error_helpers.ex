@@ -6,6 +6,7 @@ defmodule AndiWeb.ErrorHelpers do
   use Phoenix.HTML
 
   alias AndiWeb.Views.DisplayNames
+  alias Andi.InputSchemas.Datasets.DataDictionary
   alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
 
   @doc """
@@ -81,6 +82,10 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error_message(_message, :contactName, SubmissionMetadataFormSchema),
     do: "Please enter a valid maintainer name. Who produces and/or updates this dataset? If you are the maintainer, enter your name."
+
+  defp interpret_error_message(_message, :name, DataDictionary) do
+    "Schema field names are restricted to A-Z, 0-9, dash, space, and underscore characters"
+  end
 
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
 
