@@ -84,7 +84,7 @@ defmodule AndiWeb.ErrorHelpers do
     do: "Please enter a valid maintainer name. Who produces and/or updates this dataset? If you are the maintainer, enter your name."
 
   defp interpret_error_message(_message, :name, DataDictionary) do
-    "Schema field names are restricted to A-Z, 0-9, dash, space, and underscore characters"
+    "Please enter a valid name. Schema fields cannot contain control characters."
   end
 
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"

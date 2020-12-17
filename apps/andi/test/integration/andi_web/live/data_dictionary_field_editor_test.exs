@@ -175,7 +175,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
         ["123", true],
         ["spaces spaces ", true],
         ["dash-dash_underscore", true],
-        ["!#$$()", false]
+        ["!#$$()", true],
+        [~s(control \t \n characters), false]
       ])
     end
   end
