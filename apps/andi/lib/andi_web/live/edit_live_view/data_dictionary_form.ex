@@ -160,7 +160,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
+      when file_type not in ["text/csv", "application/json"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
