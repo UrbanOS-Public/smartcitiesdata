@@ -179,7 +179,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
-      when file_type in ["text/csv", "application/vnd.ms-excel"] do
+      when file_type in ["text/csv"] do
     case validate_empty_csv(file) do
       {:ok, file} ->
         new_changeset =
