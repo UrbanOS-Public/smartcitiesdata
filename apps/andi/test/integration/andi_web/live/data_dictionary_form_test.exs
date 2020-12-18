@@ -822,4 +822,16 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
   end
+
+  test "required schema field displays proper error message", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: []}})
+
+    {:ok, dataset} =
+      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+      |> Datasets.save()
+
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+    assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
+  end
 end
