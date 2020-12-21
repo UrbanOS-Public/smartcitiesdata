@@ -3,12 +3,15 @@
 Discovery API serves as middleware between our data storage and our Discovery UI.
 
 ### To run locally:
-  * Install dependencies with `mix deps.get` (in the smartcitiesdata directory)
-  * `MIX_ENV=integration mix docker.start` (in this directory)
-  # TODO: Create a config/auth0.exs file and test it
-  * `MIX_ENV=integration iex -S mix start --config config/auth0.exs` (in this directory)
+  * Step 1: Install mix dependencies in the smartcitiesdata directory not this directory.
+    * Install dependencies with `mix deps.get`
+  * Step 2: Start all docker microservices necessary for discovery_api.
+    * `MIX_ENV=integration mix docker.start` (in this directory)
+  * Step 3: Actually run the application
+    * `MIX_ENV=integration iex -S mix start --config config/auth0.exs` (in this directory)
     or just `MIX_ENV=integration iex -S mix start` if you want to try it without an auth config
-  * `MIX_ENV=integration mix docker.stop` (in this directory)
+  * Step 4: When you are done using the app you can run this to stop the docker microservices.
+    * `MIX_ENV=integration mix docker.stop` (in this directory)
 
   ## Add Organizations and Datasets by executing the following in the iex session:
   ```elixir
@@ -29,10 +32,11 @@ Discovery API serves as middleware between our data storage and our Discovery UI
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
   * Run `mix test.integration` to run the integration tests
 
-### To run inside a container:
+
+### To build a discovery_api docker image:
   * Go up to the smartcitiesdata directory `cd ../../`
   * `./scripts/build.sh discovery_api 1.0`
-  * TODO: update this to include actual running the container
+  * You should now see smartcitiesdata/discovery_api in your list of docker images.
 
 ### To see the application live:
   * In your iex session type
@@ -45,7 +49,6 @@ Discovery API serves as middleware between our data storage and our Discovery UI
 
 ### Tableau Web Data Connector
 This application hosts a Tableau Web Data Connector that uses this API for interfacing with Tableau. More information can be found in its [README](./priv/static/tableau/README.md)
-<!--- TODO: Ask Jarred if he wants more details in the Tableau readme or if it is fine the way it is. -->
 
 ### To reindex the entire Elasticsearch index
 ```elixir

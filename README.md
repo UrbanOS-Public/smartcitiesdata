@@ -53,5 +53,5 @@ https://github.com/Datastillery/smartcitiesdata/wiki/Run
 ### notes
 ws://localhost:8087/socket/websocket
 
-## To run E2E Test Locally
+## To run End to End Tests Locally
   * Run `mix test.e2e` in the root of the project
