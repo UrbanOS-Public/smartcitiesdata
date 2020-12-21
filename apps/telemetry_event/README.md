@@ -161,14 +161,14 @@ config :telemetry_event,
 #### buckets:
   - It is up to the reporter to decide how the boundaries of the distribution buckets are configured - via :reporter_options, configuration of the aggregating system, or other means.
 
-### PORT NO FOR TEST AND INTEGRATION
+### PORT NUMBER FOR TEST AND INTEGRATION
   - Upon starting any application for test and integration, it will assign the metrics port dynamically which can be fetched using Application.get_env, for example:
 
 ```
 Application.get_env(:telemetry_event, :metrics_port)
 ```
 
-  - It will return a four digit port no as output, for example:
+  - It will return a four digit port number as output, for example:
 
 ```
 2168

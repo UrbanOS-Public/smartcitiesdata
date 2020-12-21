@@ -10,16 +10,23 @@ An application for reading data off kafka topics, batching it up and sending it 
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
   * Run `mix test.integration` to run the integration tests
 
-## To run inside a container(from the root directory):
-  * `docker build . -t <image_name:tag>`
+## To run inside a container:
+  * Go to the root of smartcitesdata `cd ../../` assuming in your in the root of forklift
+  * `./scripts/build.sh forklift 1.0`
 
-## Running Locally
-
-You can use [Divo](https://hexdocs.pm/divo/) to stand up the external dependencies locally using docker and docker-compose.
-
-```bash
-MIX_ENV=integration mix docker.start
-MIX_ENV=integration iex -S mix
+### To run locally (from forklift directory):
+  * To startup external dependancies in docker:
+    ```bash
+    `MIX_ENV=integration mix docker.start`
+    ```
+  * To run a single instance with no data in it:
+    ```bash
+    `MIX_ENV=integration iex -S mix`
+    ```
+  * To kill the docker:
+    ```bash
+    `MIX_ENV=integration mix docker.kill`
+    ```
 ```
 
 ## Jobs

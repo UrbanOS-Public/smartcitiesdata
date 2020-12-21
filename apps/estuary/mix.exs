@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.5",
+      version: "0.11.6",
       elixir: "~> 1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

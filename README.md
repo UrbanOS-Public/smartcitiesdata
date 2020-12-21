@@ -28,27 +28,30 @@ Finally, user access, discovery, and analysis is facilitated by a ReactJS web ap
 a RESTful API, or a web socket API for streaming data feeds.
 
 ## local development
-### starting the entire stack in minikube or Docker Desktop embedded Kubernetes cluster
-The current best approach to locally running the stack is in a local instance of Kubernetes, either in the minikube virtual machine or in the Kubernetes instance that can be run natively from Docker Desktop for Mac or Docker Desktop for Windows. Both options are viable, although in recent versions of the Docker version, exposing services via a `LoadBalancer` type allow the service to be reachable from the host machine without additional network manipulation.
+### local environment setup
+* [Setup needed to prepare workstation](https://github.com/Datastillery/smartcitiesdata/wiki/Setup)
+* [Windows](https://github.com/Datastillery/smartcitiesdata/wiki/Windows-Setup)
+* [macOS](https://github.com/Datastillery/smartcitiesdata/wiki/macOS-Setup)
+* [Linux](https://github.com/Datastillery/smartcitiesdata/wiki/Linux-Setup)
 
-Once you have a Kubernetes cluster running, check out the `Datastillery/charts` repo and the `platform` chart for standing up the complete platform or any ad hoc components you'd like to enable.
+### starting the entire stack
+https://github.com/Datastillery/smartcitiesdata/wiki/Run
 
 
-### port mappings
-| application       | port     | url                                  |
-| ----------------- | -------- | ------------------------------------ |
-| discovery_api     | 8082     | http://localhost:8082                |
-| discovery_ui      | 8085     | http://localhost:8085                |
-| discovery_streams | 8087     | ws://localhost:8087/socket/websocket |
-| presto            | 8081     | http://localhost:8081                |
-| andi              | 8080     | http://localhost:8080                |
-| kafka             | 9094     |                                      |
-| metastore         | 9083     |                                      |
-| redis             | 6379     |                                      |
-| minio             | 9000     |                                      |
-| ldap              | 389, 636 |                                      |
-| zookeeper         | 2181     |                                      |
-| postgres          | 5432     |                                      |
+### Apps README
+| application       | url                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| andi              | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/README.md)              |
+| discovery_api     | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_api/README.md)     |
+| discovery_streams | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_streams/README.md) |
+| estuary           | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/estuary/README.md)           |
+| forklift          | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/forklift/README.md)          |
+| odo               | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/odo/README.md)               |
+| reaper            | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/reaper/README.md)            |
+| valkyrie          | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/valkyrie/README.md)          |
 
 ### notes
 ws://localhost:8087/socket/websocket
+
+## To run End to End Tests Locally
+  * Run `mix test.e2e` in the root of the project

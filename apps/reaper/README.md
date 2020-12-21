@@ -11,8 +11,10 @@ Retrieves data, decodes it, and loads it onto a Kafka topic
   * Run `mix test.watch --stale` to only rerun the tests for modules that have changes
   * Run `mix test.integration` to run the integration tests
 
-## To run inside a container(from the root directory):
-  * `docker build . -t <image_name:tag>`
+## To build a reaper docker image:
+  * Go up to the smartcitiesdata directory `cd ../../`
+  * `./scripts/build.sh reaper 1.0`
+  * You should now see smartcitiesdata/reaper in your list of docker images.
 
 ## Running Locally
 
