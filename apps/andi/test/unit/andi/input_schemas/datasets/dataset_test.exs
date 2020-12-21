@@ -23,6 +23,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       publishFrequency: "publishFrequency"
     },
     technical: %{
+      cadence: "never",
       dataName: "dataName",
       orgName: "orgName",
       private: false,
@@ -233,6 +234,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         @valid_changes
         |> Map.merge(%{
           technical: %{
+            cadence: "never",
             dataName: "dataName",
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             orgName: "orgName",

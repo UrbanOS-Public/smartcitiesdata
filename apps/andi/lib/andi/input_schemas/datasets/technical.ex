@@ -67,6 +67,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :topLevelSelector
   ]
   @required_fields [
+    :cadence,
     :dataName,
     :orgName,
     :private,
