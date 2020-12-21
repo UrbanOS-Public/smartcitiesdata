@@ -540,6 +540,20 @@ defmodule AndiWeb.EditLiveViewTest do
 
       where(extract_steps: [[], nil, [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]])
     end
+
+    test "does not publish when cadence is not set", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: nil}})
+
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+
+      render_change(view, :publish)
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      refute Enum.empty?(find_elements(html, "#finalize_form .component-header .section-number .component-number-status--invalid"))
+    end
   end
 
   describe "delete dataset" do
