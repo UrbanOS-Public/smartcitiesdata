@@ -505,6 +505,7 @@ defmodule AndiWeb.MetadataFormTest do
       where([
         [:field, :form_data, :expected_error_message],
         [:dataTitle, %{"dataTitle" => ""}, "Please enter a valid dataset title."],
+        [:dataName, %{"dataName" => ""}, "Please enter a valid data name."],
         [:description, %{"description" => ""}, "Please enter a valid description."],
         [:contactName, %{"contactName" => ""}, "Please enter a valid maintainer name."],
         [:contactEmail, %{"contactEmail" => ""}, "Please enter a valid maintainer email."],
@@ -515,22 +516,11 @@ defmodule AndiWeb.MetadataFormTest do
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
-        [:topLevelSelector, %{"sourceFormat" => "text/xml", "topLevelSelector" => ""}, "Please enter a valid top level selector."]
+        [:topLevelSelector, %{"sourceFormat" => "text/xml", "topLevelSelector" => ""}, "Please enter a valid top level selector."],
+        [:private, %{"private" => ""}, "Please enter a valid level of access."],
+        [:sourceType, %{"sourceType" => ""}, "Please enter a valid source type."],
+        [:sourceFormat, %{"sourceFormat" => ""}, "Please enter a valid source format."]
       ])
-    end
-
-    test "required sourceFormat displays proper error message", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_live_child(view, "metadata_form_editor")
-
-      form_data = %{"sourceFormat" => ""}
-
-      html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-      assert get_text(html, "#sourceFormat-error-msg") == "Please enter a valid source format."
     end
 
     test "source format before publish", %{conn: conn} do

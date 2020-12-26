@@ -244,7 +244,7 @@ defmodule AndiWeb.ExtractStepFormTest do
     where(extract_steps: [nil, []])
   end
 
-  test "extract steps without a http step are invalid", %{conn: conn} do
+  test "extract steps without a trailing http or s3 step are invalid", %{conn: conn} do
     smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}})
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 

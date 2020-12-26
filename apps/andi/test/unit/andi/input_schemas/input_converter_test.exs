@@ -346,6 +346,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       "publishFrequency" => "publishFrequency"
     },
     "technical" => %{
+      "cadence" => "never",
       "dataName" => "dataName",
       "orgName" => "orgName",
       "private" => false,

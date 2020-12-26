@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   import FlokiHelpers,
     only: [
+      get_text: 2,
       get_attributes: 3,
       get_values: 2,
       find_elements: 2
@@ -226,26 +227,20 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
     end
   end
 
-  describe "dataset finalizing buttons" do
-    test "allows saving invalid form as draft", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
+  test "required cadence field displays proper error message", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{})
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
+    {:ok, dataset} =
+      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+      |> Datasets.save()
 
-      form_data = %{"cadence" => nil}
-      form_data_changeset = FinalizeFormSchema.changeset_from_form_data(form_data)
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    finalize_view = find_live_child(view, "finalize_form_editor")
 
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
-      render_change(finalize_view, :save, %{"form_data" => form_data})
+    form_data = %{"cadence" => ""}
+    html = render_change(finalize_view, :validate, %{"form_data" => form_data})
 
-      refute form_data_changeset.valid?
-
-      eventually(fn ->
-        assert Datasets.get(dataset.id) |> get_in([:technical, :cadence]) == nil
-      end)
-    end
+    assert get_text(html, "#cadence-error-msg") == "Please enter a valid cadence."
   end
 
   defp get_crontab_from_html(html) do
