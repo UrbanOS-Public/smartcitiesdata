@@ -160,13 +160,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json"] do
-    new_changeset =
-      socket.assigns.changeset
-      |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
-
-    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
+    file_type_not_allowed(socket)
   end
 
   def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
@@ -179,7 +174,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
-      when file_type in ["text/csv"] do
+      when file_type in ["text/csv", "application/vnd.ms-excel"] do
     case validate_empty_csv(file) do
       {:ok, file} ->
         new_changeset =
@@ -226,6 +221,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("file_upload_cancelled", _, socket) do
     {:noreply, assign(socket, loading_schema: false)}
+  end
+
+  def handle_event("file_type_not_allowed", _, socket) do
+    file_type_not_allowed(socket)
   end
 
   def handle_event("overwrite-schema", _, %{assigns: %{pending_changeset: nil}} = socket) do
@@ -515,5 +514,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   defp send_data_dictionary_status(changeset, socket) do
     send(socket.parent_pid, {:update_data_dictionary_status, changeset.valid?})
     changeset
+  end
+
+  defp file_type_not_allowed(socket) do
+    new_changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
+
+    {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 end

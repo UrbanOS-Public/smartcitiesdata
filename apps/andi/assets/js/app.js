@@ -21,6 +21,7 @@ import "phoenix_html"
 // import socket from "./socket"
 import { Socket } from 'phoenix'
 import { LiveSocket } from 'phoenix_live_view'
+import { fromBlob } from 'file-type/browser'
 
 let Hooks = {}
 
@@ -43,6 +44,10 @@ Hooks.readFile = {
         this.el.addEventListener("change", e => {
             this.pushEvent("file_upload_started");
             var file = this.el.files[0];
+
+            fromBlob(file).then((res) => {
+              this.pushEvent("file_type_not_allowed");
+            });
 
             fileToText(this.el.files[0]).then(fileAsText => {
                 this.pushEvent("file_upload", {
