@@ -194,6 +194,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   defp validate_cadence(%{changes: %{cadence: "once"}} = changeset), do: changeset
   defp validate_cadence(%{changes: %{cadence: "never"}} = changeset), do: changeset
 
+  defp validate_cadence(%{changes: %{cadence: "continuous"}} = changeset) do
+    changeset
+    |> put_change(:cadence, "0/2 0 0 ? * * *")
+  end
+
   defp validate_cadence(%{changes: %{cadence: crontab}} = changeset) do
     case validate_cron(crontab) do
       {:ok, _} -> changeset

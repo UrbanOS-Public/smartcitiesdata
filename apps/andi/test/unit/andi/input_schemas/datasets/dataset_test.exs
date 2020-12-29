@@ -365,6 +365,15 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       where(field_path: [[:technical, :sourceQueryParams], [:technical, :sourceHeaders]])
     end
+
+    test "update cadence to 0/2 0 0 ? * * * when cadence continuous is passed" do
+      changes = @valid_changes |> put_in([:technical, :cadence], "continuous")
+
+      changeset = Dataset.changeset(changes)
+
+      assert changeset.valid? == true
+      assert changeset.changes.technical.changes.cadence == "0/2 0 0 ? * * *"
+    end
   end
 
   defp accumulate_errors(changeset) do
