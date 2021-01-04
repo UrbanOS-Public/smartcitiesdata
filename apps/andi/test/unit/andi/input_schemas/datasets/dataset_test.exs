@@ -367,8 +367,9 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
     end
 
     data_test "cadence should be valid: #{inspect(cadence_under_test)}" do
-      changes = @valid_changes
-      |> put_in([:technical, :cadence], cadence_under_test)
+      changes =
+        @valid_changes
+        |> put_in([:technical, :cadence], cadence_under_test)
 
       changeset = Dataset.changeset(changes)
 
@@ -388,8 +389,9 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
     end
 
     data_test "cadence should not be valid: #{inspect(cadence_under_test)}" do
-      changes = @valid_changes
-      |> put_in([:technical, :cadence], cadence_under_test)
+      changes =
+        @valid_changes
+        |> put_in([:technical, :cadence], cadence_under_test)
 
       changeset = Dataset.changeset(changes)
 
