@@ -361,9 +361,47 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       changeset = Dataset.changeset(changes)
 
       assert changeset.valid?
-      assert Enum.empty?(changeset.errors)
+      assert Enum.empty?(accumulate_errors(changeset))
 
       where(field_path: [[:technical, :sourceQueryParams], [:technical, :sourceHeaders]])
+    end
+
+    data_test "cadence should be valid: #{inspect(cadence_under_test)}" do
+      changes = @valid_changes
+      |> put_in([:technical, :cadence], cadence_under_test)
+
+      changeset = Dataset.changeset(changes)
+
+      assert changeset.valid?
+      assert Enum.empty?(accumulate_errors(changeset))
+
+      where([
+        [:cadence_under_test],
+        ["once"],
+        ["never"],
+        ["1 2 3 4 5"],
+        ["1 2 3 4 5 6"],
+        ["*/10 * * * * *"],
+        ["*/2 * * * * *"],
+        ["continuous"]
+      ])
+    end
+
+    data_test "cadence should not be valid: #{inspect(cadence_under_test)}" do
+      changes = @valid_changes
+      |> put_in([:technical, :cadence], cadence_under_test)
+
+      changeset = Dataset.changeset(changes)
+
+      refute changeset.valid?
+      refute Enum.empty?(accumulate_errors(changeset))
+
+      where([
+        [:cadence_under_test],
+        ["* * * * * *"],
+        ["*/1 * * * * *"],
+        ["a b c d e f"]
+      ])
     end
   end
 

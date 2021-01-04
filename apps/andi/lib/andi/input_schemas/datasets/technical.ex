@@ -15,7 +15,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias AndiWeb.Views.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
-  @invalid_seconds ["*", "*/1", "*/2", "*/3", "*/4", "*/5", "*/6", "*/7", "*/8", "*/9"]
+  @invalid_seconds ["*", "*/1"]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "technical" do
@@ -191,8 +191,9 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 
-  defp validate_cadence(%{changes: %{cadence: "once"}} = changeset), do: changeset
-  defp validate_cadence(%{changes: %{cadence: "never"}} = changeset), do: changeset
+  defp validate_cadence(%{changes: %{cadence: cadence}} = changeset) when cadence in ["once", "never", "continuous"] do
+    changeset
+  end
 
   defp validate_cadence(%{changes: %{cadence: crontab}} = changeset) do
     case validate_cron(crontab) do
