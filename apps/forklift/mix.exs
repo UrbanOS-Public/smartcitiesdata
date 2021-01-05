@@ -5,7 +5,7 @@ defmodule Forklift.MixProject do
     [
       app: :forklift,
       version: "0.17.10",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -57,7 +57,7 @@ defmodule Forklift.MixProject do
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
       {:httpoison, "~> 1.5"},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:performance, in_umbrella: true, only: :integration}
     ]
   end

@@ -5,7 +5,7 @@ defmodule Reaper.MixProject do
     [
       app: :reaper,
       version: "0.24.9",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -89,7 +89,7 @@ defmodule Reaper.MixProject do
       {:excoveralls, "~> 0.11", only: :test},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:test, :integration], runtime: false},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},

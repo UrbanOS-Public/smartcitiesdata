@@ -9,7 +9,7 @@ defmodule DeadLetter.MixProject do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       elixir_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,

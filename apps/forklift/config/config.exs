@@ -17,7 +17,7 @@ config :forklift,
 config :logger,
   backends: [:console],
   level: :info,
-  compile_time_purge_level: :debug
+  compile_time_purge_matching: [[lower_level_than: :debug]]
 
 import_config "#{Mix.env()}.exs"
 
