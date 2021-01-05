@@ -220,6 +220,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   end
 
   defp validate_extract_steps(%{changes: %{sourceType: "remote"}} = changeset), do: changeset
+  defp validate_extract_steps(%{changes: %{cadence: "continuous"}} = changeset), do: changeset
 
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)

@@ -360,8 +360,8 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       changeset = Dataset.changeset(changes)
 
+      assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
-      assert Enum.empty?(accumulate_errors(changeset))
 
       where(field_path: [[:technical, :sourceQueryParams], [:technical, :sourceHeaders]])
     end
@@ -373,8 +373,8 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       changeset = Dataset.changeset(changes)
 
+      assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
-      assert Enum.empty?(accumulate_errors(changeset))
 
       where([
         [:cadence_under_test],
@@ -404,6 +404,78 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         ["*/1 * * * * *"],
         ["a b c d e f"]
       ])
+    end
+
+    test "extract steps can be empty when the sourceType is remote" do
+      changes =
+        @valid_changes
+        |> put_in([:technical, :sourceType], "remote")
+        |> delete_in([:technical, :extractSteps])
+
+      changeset = Dataset.changeset(changes)
+
+      assert changeset.valid?
+    end
+
+    test "extract steps can be empty when the cadence is continuous" do
+      changes =
+        @valid_changes
+        |> put_in([:technical, :cadence], "continuous")
+        |> delete_in([:technical, :extractSteps])
+
+      changeset = Dataset.changeset(changes)
+
+      assert changeset.valid?
+    end
+
+    test "extract steps are valid when http step is last" do
+      extract_steps = [
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
+        %{type: "http", context: %{action: "GET", url: "example.com"}}
+      ]
+
+      changes =
+        @valid_changes
+        |> put_in([:technical, :extractSteps], extract_steps)
+
+      changeset = Dataset.changeset(changes)
+
+      assert %{} == accumulate_errors(changeset)
+      assert changeset.valid?
+    end
+
+    test "extract steps are valid when s3 step is last" do
+      extract_steps = [
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
+        %{type: "s3", context: %{url: "something"}}
+      ]
+
+      changes =
+        @valid_changes
+        |> put_in([:technical, :extractSteps], extract_steps)
+
+      changeset = Dataset.changeset(changes)
+
+      assert %{} == accumulate_errors(changeset)
+      assert changeset.valid?
+    end
+
+    test "extract steps are not valid when http or s3 step is not last" do
+      extract_steps = [
+        %{type: "s3", context: %{url: "something"}},
+        %{type: "http", context: %{action: "GET", url: "example.com"}},
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}}
+      ]
+
+      changes =
+        @valid_changes
+        |> put_in([:technical, :extractSteps], extract_steps)
+
+      changeset = Dataset.changeset(changes)
+
+      expected_error = %{technical: %{extractSteps: [extractSteps: {"cannot be empty and must end with a http or s3 step", []}]}}
+      assert expected_error == accumulate_errors(changeset)
+      refute changeset.valid?
     end
   end
 
