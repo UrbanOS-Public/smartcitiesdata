@@ -4,7 +4,7 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.5.1",
+      version: "0.5.2",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
