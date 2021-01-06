@@ -4,12 +4,12 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.67.7",
+      version: "0.68.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),

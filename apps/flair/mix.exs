@@ -4,8 +4,8 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.5.1",
-      elixir: "~> 1.8",
+      version: "0.5.2",
+      elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -48,7 +48,7 @@ defmodule Flair.MixProject do
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:distillery, "~> 2.1"},
       {:pipeline, in_umbrella: true},

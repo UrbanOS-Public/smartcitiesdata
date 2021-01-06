@@ -4,12 +4,12 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.10.6",
+      version: "2.10.7",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
