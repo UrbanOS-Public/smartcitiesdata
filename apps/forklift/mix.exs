@@ -36,6 +36,7 @@ defmodule Forklift.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.12"},
       {:ex_doc, "~> 0.21"},
+      {:hackney, "~> 1.17"},
       {:jason, "~> 1.2", override: true},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
