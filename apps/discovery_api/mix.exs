@@ -57,7 +57,7 @@ defmodule DiscoveryApi.Mixfile do
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
       {:gettext, "~> 0.17"},
-      {:hackney, "~> 1.15.2"},
+      {:hackney, "~> 1.17"},
       {:httpoison, "~> 1.5"},
       {:faker, "~> 0.13"},
       {:jason, "~> 1.2"},

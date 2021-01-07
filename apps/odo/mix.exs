@@ -33,7 +33,7 @@ defmodule Odo.MixProject do
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
       {:geomancer, "~> 0.1.0"},
-      {:hackney, "~> 1.15.2"},
+      {:hackney, "~> 1.17"},
       {:jason, "~> 1.2"},
       {:libvault, "~> 0.2"},
       {:poison, "~> 3.1", override: true},
