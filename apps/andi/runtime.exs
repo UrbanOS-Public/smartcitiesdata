@@ -65,9 +65,8 @@ config :andi, Andi.Repo,
     versions: [:"tlsv1.2"],
     cacertfile: System.get_env("CA_CERTFILE_PATH"),
     server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
-    verify_fun:
-      {&:ssl_verify_hostname.verify_fun/3,
-      [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}]
+    verify_fun: {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
+  ]
 
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
