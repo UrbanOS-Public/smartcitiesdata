@@ -56,6 +56,7 @@ defmodule Andi.MixProject do
       {:gettext, "~> 0.17"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
+      {:hackney, "~> 1.17"},
       {:httpoison, "~> 1.5"},
       {:jason, "~> 1.2"},
       {:jaxon, "~> 1.0"},
