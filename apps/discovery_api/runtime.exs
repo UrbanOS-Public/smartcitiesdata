@@ -46,7 +46,7 @@ config :discovery_api, DiscoveryApi.Repo,
     server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
     verify_fun:
     {&:ssl_verify_hostname.verify_fun/3,
-     [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}]
+     [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
   ]
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
