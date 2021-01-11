@@ -71,8 +71,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :orgName,
     :private,
     :sourceFormat,
-    :sourceType,
-    :sourceUrl
+    :sourceType
   ]
 
   @submission_cast_fields [
