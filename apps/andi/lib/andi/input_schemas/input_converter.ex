@@ -362,6 +362,8 @@ defmodule Andi.InputSchemas.InputConverter do
     Enum.map(field_as_map, &to_key_value/1)
   end
 
+  defp to_key_value(%{key: _, value: _} = key_value), do: key_value
+
   defp to_key_value({k, v}) do
     %{key: to_string(k), value: v}
   end
