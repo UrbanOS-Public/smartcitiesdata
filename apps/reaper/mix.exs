@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "0.24.10",
+      version: "0.24.11",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -61,8 +61,8 @@ defmodule Reaper.MixProject do
       {:jason, "~> 1.1", override: true},
       {:jaxon, "~> 1.0"},
       {:libcluster, "~> 3.1"},
-      {:libvault, "~> 0.2"},
-      {:mint, "~> 0.4"},
+      {:libvault, "~> 0.2.3"},
+      {:mint, "~> 1.2"},
       {:nimble_csv, "~> 0.6.0"},
       {:observer_cli, "~> 1.5"},
       {:properties, in_umbrella: true},
