@@ -9,7 +9,7 @@ defmodule Providers.MixProject do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -26,7 +26,7 @@ defmodule Providers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:timex, "~> 3.6"}
     ]

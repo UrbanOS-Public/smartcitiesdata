@@ -9,7 +9,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
 config :logger,
   backends: [:console],
   level: :debug,
-  compile_time_purge_level: :info,
+  compile_time_purge_matching: [[lower_level_than: :info]],
   format: "$time $metadata[$level] $message\n",
   metadata: [:user_id]
 

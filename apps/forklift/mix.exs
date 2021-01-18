@@ -4,8 +4,8 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.17.10",
-      elixir: "~> 1.8",
+      version: "0.17.11",
+      elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -36,6 +36,7 @@ defmodule Forklift.MixProject do
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.12"},
       {:ex_doc, "~> 0.21"},
+      {:hackney, "~> 1.17"},
       {:jason, "~> 1.2", override: true},
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
@@ -57,7 +58,7 @@ defmodule Forklift.MixProject do
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
       {:httpoison, "~> 1.5"},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:performance, in_umbrella: true, only: :integration}
     ]
   end

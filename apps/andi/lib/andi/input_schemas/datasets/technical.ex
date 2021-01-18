@@ -11,11 +11,10 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.Helpers.ExtractStepHelpers
-  alias Crontab.CronExpression
+  alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Views.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
-  @invalid_seconds ["*", "*/1", "*/2", "*/3", "*/4", "*/5", "*/6", "*/7", "*/8", "*/9"]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "technical" do
@@ -72,8 +71,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :orgName,
     :private,
     :sourceFormat,
-    :sourceType,
-    :sourceUrl
+    :sourceType
   ]
 
   @submission_cast_fields [
@@ -101,7 +99,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_source_format()
-    |> validate_cadence()
+    |> CadenceValidator.validate()
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
@@ -191,34 +189,8 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 
-  defp validate_cadence(%{changes: %{cadence: "once"}} = changeset), do: changeset
-  defp validate_cadence(%{changes: %{cadence: "never"}} = changeset), do: changeset
-
-  defp validate_cadence(%{changes: %{cadence: crontab}} = changeset) do
-    case validate_cron(crontab) do
-      {:ok, _} -> changeset
-      {:error, error_msg} -> add_error(changeset, :cadence, "#{error_msg}")
-    end
-  end
-
-  defp validate_cadence(changeset), do: changeset
-
-  defp validate_cron(crontab) do
-    crontab_list = String.split(crontab, " ")
-
-    cond do
-      Enum.count(crontab_list) not in [5, 6] ->
-        {:error, "Invalid length"}
-
-      Enum.count(crontab_list) == 6 and hd(crontab_list) in @invalid_seconds ->
-        {:error, "Cron schedule has a minimum interval of every 10 seconds"}
-
-      true ->
-        CronExpression.Parser.parse(crontab, true)
-    end
-  end
-
   defp validate_extract_steps(%{changes: %{sourceType: "remote"}} = changeset), do: changeset
+  defp validate_extract_steps(%{changes: %{cadence: "continuous"}} = changeset), do: changeset
 
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)

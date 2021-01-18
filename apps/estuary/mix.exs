@@ -4,8 +4,8 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.6",
-      elixir: "~> 1.8",
+      version: "0.11.7",
+      elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -37,7 +37,7 @@ defmodule Estuary.MixProject do
       {:elsa, "~> 0.12"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:jason, "~> 1.2"},
-      {:mox, "~> 0.5.1", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},

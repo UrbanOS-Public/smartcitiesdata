@@ -7,7 +7,8 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase do
 
   using do
     quote do
-      use Phoenix.ConnTest
+      import Plug.Conn
+      import Phoenix.ConnTest
       alias DiscoveryApiWeb.Router.Helpers, as: Routes
 
       @endpoint DiscoveryApiWeb.Endpoint

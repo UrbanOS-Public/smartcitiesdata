@@ -9,7 +9,7 @@ defmodule DefinitionKafka.MixProject do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: test_paths(Mix.env()),
@@ -37,7 +37,7 @@ defmodule DefinitionKafka.MixProject do
       {:credo, "~> 1.0", only: [:dev]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.6", only: [:integration]},
-      {:mox, "~> 0.5.1", only: [:test]},
+      {:mox, "~> 1.0", only: [:test]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
       {:testing, in_umbrella: true, only: [:test, :integration]}
     ]

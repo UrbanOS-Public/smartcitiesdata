@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir:1.8.1
+FROM bitwalker/alpine-elixir:1.10.4
 ARG app_name
 COPY . /app
 WORKDIR /app

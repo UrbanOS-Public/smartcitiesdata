@@ -137,7 +137,7 @@ defmodule AndiWeb.EditLiveView do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: dataset_id})
 
     andi_dataset = Datasets.get(dataset_id)
-    dataset_changeset = InputConverter.andi_dataset_to_full_submission_changeset_for_publish(andi_dataset)
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
 
     {:noreply,
      assign(socket,

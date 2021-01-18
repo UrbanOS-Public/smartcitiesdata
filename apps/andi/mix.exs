@@ -4,12 +4,12 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "0.67.5",
+      version: "0.69.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
@@ -60,6 +60,7 @@ defmodule Andi.MixProject do
       {:gettext, "~> 0.17"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
+      {:hackney, "~> 1.17"},
       {:httpoison, "~> 1.5"},
       {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.2"},
