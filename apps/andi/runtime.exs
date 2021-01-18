@@ -51,7 +51,9 @@ config :andi,
   kafka_endpoints: endpoint,
   documentation_root: System.get_env("DOCUMENTATION_ROOT") || "",
   access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public"),
-  vault_role: System.get_env("VAULT_ROLE")
+  vault_role: System.get_env("VAULT_ROLE"),
+  hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
+  hosted_region: System.get_env("HOSTED_FILE_REGION")
 
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
@@ -100,3 +102,8 @@ config :andi, AndiWeb.Auth.TokenHandler,
   verify_issuer: true
 
 config :andi, Guardian.DB, repo: Andi.Repo
+
+config :ex_aws,
+  region: System.get_env("HOSTED_FILE_REGION")
+
+config :ex_aws, :s3, region: System.get_env("HOSTED_FILE_REGION")

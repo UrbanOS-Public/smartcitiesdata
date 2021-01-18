@@ -1,4 +1,5 @@
 use Mix.Config
+import_config "../test/integration/divo_minio.ex"
 
 host =
   case System.get_env("HOST_IP") do
@@ -14,6 +15,8 @@ db_username = "postgres"
 db_password = "postgres"
 db_port = "5456"
 
+bucket_name = "kdp-cloud-storage"
+
 config :andi,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
@@ -25,14 +28,16 @@ config :andi,
         database: db_name,
         port: db_port
       ]
-    }
+    },
+    {Andi.DivoMinio, [bucket_name: bucket_name]}
   ],
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint,
   dead_letter_topic: "dead-letters",
   kafka_endpoints: endpoint,
   hsts_enabled: false,
-  access_level: :private
+  access_level: :private,
+  hosted_bucket: bucket_name
 
 config :andi, Andi.Repo,
   database: db_name,
@@ -137,3 +142,17 @@ config :andi, AndiWeb.Auth.TokenHandler,
   allowed_drift: 3_000_000_000_000
 
 config :andi, Guardian.DB, repo: Andi.Repo
+
+config :ex_aws,
+  debug_requests: true,
+  access_key_id: "testing_access_key",
+  secret_access_key: "testing_secret_key",
+  region: "local"
+
+config :ex_aws, :s3,
+  scheme: "http://",
+  region: "local",
+  host: %{
+    "local" => "localhost"
+  },
+  port: 9000
