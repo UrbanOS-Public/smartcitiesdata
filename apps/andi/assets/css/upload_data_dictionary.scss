@@ -1,0 +1,20 @@
+#upload-sample-dataset-form {
+    .file-input-button {
+        display: inline;
+    }
+
+    .sample-file-display {
+        display: inline;
+    }
+
+    #form_data_sample_dataset {
+        display: none;
+    }
+
+    .file-upload-label {
+        cursor: pointer;
+        color: white;
+        background-color: #26adeb;
+        padding: 0.6rem 1.7rem;
+    }
+}

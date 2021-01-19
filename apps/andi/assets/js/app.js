@@ -48,7 +48,8 @@ Hooks.readFile = {
                 this.pushEvent("file_upload", {
                     file: fileAsText,
                     fileType: file["type"],
-                    fileSize: file["size"]
+                    fileSize: file["size"],
+                    fileName: file["name"]
                 });
             }, reason => {
                 reason == "aborted" && this.pushEvent("file_upload_cancelled");
