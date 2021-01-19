@@ -59,6 +59,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     {
       :ok,
       %{
+        public_table_ids: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :id)),
         public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
         private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName))
       }
@@ -176,7 +177,8 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
+      allow(QueryAccessUtils.authorized_statement_models(any()), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), seq: [false, true], meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -196,7 +198,8 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
+      allow(QueryAccessUtils.authorized_statement_models(any()), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), seq: [false, true], meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -283,6 +286,37 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                |> put_req_header("content-type", "text/plain")
                |> post("/api/v1/query", statement)
                |> response(400)
+    end
+
+    test "records api hit to all affected tables", %{
+      conn: conn,
+      public_tables: public_tables,
+      public_table_ids: public_table_ids,
+      json_response: allowed_response
+    } do
+      statement = """
+      WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
+      SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
+      """
+
+      allow(Prestige.stream!(any(), any()), return: [:result])
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(Redix.command!(:redix, any()), return: :ok)
+
+      conn
+      |> put_req_header("accept", "text/csv")
+      |> put_req_header("content-type", "text/plain")
+      |> post("/api/v1/query", statement)
+      |> response(200)
+
+      public_one_id = List.first(public_table_ids)
+      public_two_id = List.last(public_table_ids)
+
+      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{public_one_id}"])
+      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{public_two_id}"])
     end
   end
 

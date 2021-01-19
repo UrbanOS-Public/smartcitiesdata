@@ -9,26 +9,33 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   def authorized_session(conn, statement) do
     current_user = conn.assigns.current_user
 
-    case authorized_to_query?(statement, current_user) do
-      true ->
-        session_opts = DiscoveryApi.prestige_opts()
-        session = Prestige.new_session(session_opts)
-        {:ok, session}
-
-      false ->
+    with {:ok, authorized_tables, authorized_models} <- authorized_statement_models(statement),
+         true <- authorized_to_query?(authorized_tables, authorized_models, current_user) do
+      session_opts = DiscoveryApi.prestige_opts()
+      session = Prestige.new_session(session_opts)
+      {:ok, session}
+    else
+      _ ->
         {:error, "Session not authorized"}
     end
   end
 
-  def authorized_to_query?(statement, user) do
+  def authorized_statement_models(statement) do
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
          {:ok, affected_tables} <- PrestoService.get_affected_tables(session, statement),
-         affected_models <- get_affected_models(affected_tables),
-         true <- valid_tables?(affected_tables, affected_models) do
-      can_access_models?(affected_models, user)
+         affected_models <- get_affected_models(affected_tables) do
+      {:ok, affected_tables, affected_models}
     else
+      _ ->
+        {:error, "Query is not a select statement"}
+    end
+  end
+
+  def authorized_to_query?(affected_tables, affected_models, user) do
+    case valid_tables?(affected_tables, affected_models) do
+      true -> can_access_models?(affected_models, user)
       _ -> false
     end
   end

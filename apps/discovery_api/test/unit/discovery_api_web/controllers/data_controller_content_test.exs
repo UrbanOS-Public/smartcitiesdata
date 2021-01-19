@@ -60,7 +60,8 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
 
       allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
       allow(Model.get(@dataset_id), return: model)
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(QueryAccessUtils.authorized_statement_models(any()), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true, meck_options: [:passthrough])
       allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
 
       # these clearly need to be condensed

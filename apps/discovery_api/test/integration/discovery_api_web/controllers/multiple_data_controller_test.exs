@@ -16,11 +16,11 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
   describe "POST /query" do
     test "valid query increments api record in redis", %{
-        authorized_conn: authorized_conn,
-        authorized_subject: subject,
-        dataset_table: dataset_table,
-        dataset_id: dataset_id
-      } do
+      authorized_conn: authorized_conn,
+      authorized_subject: subject,
+      dataset_table: dataset_table,
+      dataset_id: dataset_id
+    } do
       Helper.create_persisted_user(subject)
 
       expected_api_hit_count =
