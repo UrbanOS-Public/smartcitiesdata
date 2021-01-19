@@ -36,26 +36,32 @@ defmodule AndiWeb.SubmitLiveViewTest do
       assert ["disabled"] = get_attributes(html, "#submit-button", "disabled")
     end
 
-    test "submit button is disabled if all sections arent completed", %{public_conn: conn, public_user: public_user} do
-      dataset = Datasets.create(public_user)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    test "submit button is disabled if all sections arent completed", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
-      dataset_link_view = find_live_child(view, "dataset_link_editor")
-
-      render_change(dataset_link_view, :validate, %{"form_data" => %{"datasetLink" => "www.google.com"}})
-
-      html = render(view)
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
       assert ["disabled"] = get_attributes(html, "#submit-button", "disabled")
     end
 
-    test "submit button is enabled if all required sections are completed", %{public_conn: conn, public_user: public_user} do
-      dataset = Datasets.create(public_user)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    test "submit button is enabled if all required sections are completed", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      blank_dataset = Map.put(blank_dataset, :datasetLink, "samples/#{blank_dataset.id}/sample.json")
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
       metadata_view = find_live_child(view, "metadata_form_editor")
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-      dataset_link_view = find_live_child(view, "dataset_link_editor")
 
       render_change(metadata_view, :validate, %{
         "form_data" => %{
@@ -73,7 +79,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
           "schema" => %{
             "0" => %{
               "bread_crumb" => "foo",
-              "dataset_id" => dataset.id,
+              "dataset_id" => andi_dataset.id,
               "description" => "",
               "id" => "f0cdd53a-cd5a-4741-a43d-7873d5f56773",
               "name" => "foo",
@@ -82,21 +88,25 @@ defmodule AndiWeb.SubmitLiveViewTest do
           }
         }
       })
-
-      render_change(dataset_link_view, :validate, %{"form_data" => %{"datasetLink" => "www.google.com"}})
 
       html = render(view)
 
       assert [] = get_attributes(html, "#submit-button", "disabled")
     end
 
-    test "dataset submission status is updated to subnmitted upon completion", %{public_conn: conn, public_user: public_user} do
-      dataset = Datasets.create(public_user)
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    test "dataset submission status is updated to subnmitted upon completion", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      blank_dataset = Map.put(blank_dataset, :datasetLink, "samples/#{blank_dataset.id}/sample.json")
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
       metadata_view = find_live_child(view, "metadata_form_editor")
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-      dataset_link_view = find_live_child(view, "dataset_link_editor")
 
       render_change(metadata_view, :validate, %{
         "form_data" => %{
@@ -114,7 +124,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
           "schema" => %{
             "0" => %{
               "bread_crumb" => "foo",
-              "dataset_id" => dataset.id,
+              "dataset_id" => andi_dataset.id,
               "description" => "",
               "id" => "f0cdd53a-cd5a-4741-a43d-7873d5f56773",
               "name" => "foo",
@@ -123,8 +133,6 @@ defmodule AndiWeb.SubmitLiveViewTest do
           }
         }
       })
-
-      render_change(dataset_link_view, :validate, %{"form_data" => %{"datasetLink" => "www.google.com"}})
 
       html = render(view)
 
@@ -133,7 +141,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
       element(view, "#submit-button") |> render_click()
 
       eventually(fn ->
-        assert Datasets.get(dataset.id) |> Map.get(:submission_status) == :submitted
+        assert Datasets.get(andi_dataset.id) |> Map.get(:submission_status) == :submitted
       end)
     end
   end
