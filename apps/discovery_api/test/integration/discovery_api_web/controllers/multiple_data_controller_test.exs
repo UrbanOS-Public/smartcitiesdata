@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   @organization_name "organization_alpha"
 
   setup_all do
-    _ = Helper.create_persisted_organization(%{orgName: @organization_name})
+    Helper.create_persisted_organization(%{orgName: @organization_name})
 
     {table_name, dataset_id} = Helper.create_persisted_dataset("test_data", "test_data", @organization_name)
 
@@ -15,16 +15,28 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   end
 
   describe "POST /query" do
-    test "something", %{
+    test "valid query increments api record in redis", %{
         authorized_conn: authorized_conn,
         authorized_subject: subject,
-        dataset_table: dataset_table
+        dataset_table: dataset_table,
+        dataset_id: dataset_id
       } do
-      _ = Helper.create_persisted_user(subject)
-      _ = authorized_conn
-          |> put_req_header("content-type", "text/plain")
-          |> post("/api/v1/query", "SELECT * FROM #{dataset_table}")
-          |> response(200)
+      Helper.create_persisted_user(subject)
+
+      expected_api_hit_count =
+        case Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"]) do
+          nil -> 1
+          initial_api_hit_count -> initial_api_hit_count + 1
+        end
+
+      authorized_conn
+      |> put_req_header("content-type", "text/plain")
+      |> post("/api/v1/query", "SELECT * FROM #{dataset_table}")
+      |> response(200)
+
+      updated_api_hit_count = Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
+
+      assert updated_api_hit_count == expected_api_hit_count
     end
   end
 end
