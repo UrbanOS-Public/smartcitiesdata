@@ -114,7 +114,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
            %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =
@@ -141,7 +141,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =
@@ -162,7 +162,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =
@@ -180,7 +180,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =
@@ -204,7 +204,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: undecodable_chart}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =
@@ -230,7 +230,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: nil}}
       )
 
-      allow(QueryAccessUtils.authorized_statement_models(@query), return: {:ok, nil, nil})
+      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
       allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
 
       body =

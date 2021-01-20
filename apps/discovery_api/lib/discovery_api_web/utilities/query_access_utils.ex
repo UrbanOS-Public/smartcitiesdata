@@ -6,41 +6,40 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
-  def authorized_session(conn, statement) do
+  def authorized_session(conn, authorized_models) do
     current_user = conn.assigns.current_user
 
-    with {:ok, authorized_tables, authorized_models} <- authorized_statement_models(statement),
-         true <- authorized_to_query?(authorized_tables, authorized_models, current_user) do
+    if user_can_access_models?(authorized_models, current_user) do
       session_opts = DiscoveryApi.prestige_opts()
       session = Prestige.new_session(session_opts)
       {:ok, session}
     else
-      _ ->
-        {:error, "Session not authorized"}
+      # IO.inspect(authorized_models, label: "Unauthorized models")
+      {:error, "Session not authorized"}
     end
   end
 
-  def authorized_statement_models(statement) do
+  def get_affected_models(statement) do
+    IO.inspect("get_affected_models/1")
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
          {:ok, affected_tables} <- PrestoService.get_affected_tables(session, statement),
-         affected_models <- get_affected_models(affected_tables) do
-      {:ok, affected_tables, affected_models}
+         affected_models <- map_affected_tables_to_models(affected_tables),
+         true <- valid_tables?(affected_tables, affected_models) do
+      {:ok, affected_models}
     else
       _ ->
-        {:error, "Query is not a select statement"}
+        {:error, "Query statement is invalid"}
     end
   end
 
-  def authorized_to_query?(affected_tables, affected_models, user) do
-    case valid_tables?(affected_tables, affected_models) do
-      true -> can_access_models?(affected_models, user)
-      _ -> false
-    end
+  def user_can_access_models?(affected_models, user) do
+    IO.inspect(user, label: "Checking if user can access models")
+    Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
   end
 
-  defp get_affected_models(affected_tables) do
+  defp map_affected_tables_to_models(affected_tables) do
     all_models = Model.get_all()
 
     Enum.filter(all_models, &(String.downcase(&1.systemName) in affected_tables))
@@ -53,9 +52,5 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
       |> Enum.map(&String.downcase/1)
 
     MapSet.new(affected_tables) == MapSet.new(affected_system_names)
-  end
-
-  defp can_access_models?(affected_models, user) do
-    Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
   end
 end

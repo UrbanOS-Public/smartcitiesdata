@@ -22,9 +22,9 @@ defmodule DiscoveryApiWeb.VisualizationController do
   def show(conn, %{"id" => id}) do
     with {:ok, %{query: query} = visualization} <- Visualizations.get_visualization_by_id(id),
          user = Map.get(conn.assigns, :current_user),
-         {:ok, authorized_tables, authorized_models} <- QueryAccessUtils.authorized_statement_models(query),
+         {:ok, authorized_models} <- QueryAccessUtils.get_affected_models(query),
          true <-
-           owns_visualization(visualization, user) || QueryAccessUtils.authorized_to_query?(authorized_tables, authorized_models, user) do
+           owns_visualization(visualization, user) || QueryAccessUtils.user_can_access_models?(authorized_models, user) do
       allowed_actions = get_allowed_actions(visualization, user)
       render(conn, :visualization, %{visualization: visualization, allowed_actions: allowed_actions})
     else

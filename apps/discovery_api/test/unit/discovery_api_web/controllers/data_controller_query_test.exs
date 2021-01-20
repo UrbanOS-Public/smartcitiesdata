@@ -15,8 +15,8 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   @feature_type "FeatureCollection"
 
   setup do
-    allow(QueryAccessUtils.authorized_statement_models(any()), return: {:ok, nil, nil})
-    allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true, meck_options: [:passthrough])
+    allow(QueryAccessUtils.get_affected_models(any()), return: {:ok, nil})
+    allow(QueryAccessUtils.user_can_access_models?(any(), any()), return: true, meck_options: [:passthrough])
 
     model =
       Helper.sample_model(%{
@@ -336,8 +336,8 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
   describe "query dataset with json type fields" do
     setup do
-      allow(QueryAccessUtils.authorized_statement_models(any()), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true, meck_options: [:passthrough])
+      allow(QueryAccessUtils.get_affected_models(any()), return: {:ok, nil})
+      allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
 
       model =
         Helper.sample_model(%{
