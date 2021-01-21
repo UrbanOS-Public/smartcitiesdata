@@ -9,6 +9,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
   @table "the__table"
+  @org_id "the_org"
 
   describe "get_affected_models/1" do
     test "should allow queries to public tables" do

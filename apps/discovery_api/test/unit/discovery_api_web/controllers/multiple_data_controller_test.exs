@@ -52,6 +52,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     ]
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
+    allow(Brook.Event.send(DiscoveryApi.instance_name(), "api:free_form_query", any(), any()), return: :ok)
 
     {
       :ok,
@@ -231,7 +232,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                |> response(400)
     end
 
-    test "records api hit to all affected tables", %{
+    test "sends brook event to record api hit for all affected tables", %{
       conn: conn,
       public_model_ids: public_model_ids,
       public_tables: public_tables,
@@ -247,18 +248,14 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-      allow(Redix.command!(:redix, any()), return: :ok)
 
       conn
-      |> put_req_header("accept", "text/csv")
+      |> put_req_header("accept", "application/json")
       |> put_req_header("content-type", "text/plain")
       |> post("/api/v1/query", statement)
       |> response(200)
 
-      [public_model_one_id, public_model_two_id] = public_model_ids
-
-      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{public_model_one_id}"])
-      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{public_model_two_id}"])
+      assert_called Brook.Event.send(DiscoveryApi.instance_name(), "api:free_form_query", DiscoveryApiWeb.MultipleDataController, public_model_ids)
     end
   end
 

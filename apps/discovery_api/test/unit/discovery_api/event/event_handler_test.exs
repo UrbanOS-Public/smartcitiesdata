@@ -2,7 +2,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
 
-  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, dataset_delete: 0]
+  import SmartCity.Event, only: [dataset_update: 0, organization_update: 0, user_organization_associate: 0, dataset_delete: 0, free_form_query: 0]
   import ExUnit.CaptureLog
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -114,6 +114,24 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       assert capture_log(fn ->
                Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
              end) =~ ~r/Failed to delete dataset: #{dataset.id}.*#{inspect(error)}/
+    end
+  end
+
+  describe "handle_event/1 #{free_form_query()}" do
+    setup do
+      sample_model_one = DiscoveryApi.Test.Helper.sample_model(%{id: "123"})
+      sample_model_two = DiscoveryApi.Test.Helper.sample_model(%{id: "456"})
+
+      allow(Redix.command!(any(), any()), return: :ok)
+
+      Brook.Event.process(@instance_name, Brook.Event.new(type: free_form_query(), data: [sample_model_one.id, sample_model_two.id], author: :author))
+
+      [sample_model_one: sample_model_one, sample_model_two: sample_model_two]
+    end
+
+    test "records api query hit for all affected datasets", %{sample_model_one: sample_model_one, sample_model_two: sample_model_two} do
+      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{sample_model_one.id}"])
+      assert_called Redix.command!(:redix, ["INCR", "smart_registry:free_form_query:count:#{sample_model_two.id}"])
     end
   end
 end

@@ -11,6 +11,8 @@ defmodule DiscoveryApiWeb.MultipleDataController do
     with {:ok, statement, conn} <- read_body(conn),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(statement),
          {:ok, session} <- QueryAccessUtils.authorized_session(conn, affected_models) do
+      Brook.Event.send(DiscoveryApi.instance_name(), "api:free_form_query", __MODULE__, Enum.map(affected_models, &Map.get(&1, :id)))
+
       format = get_format(conn)
 
       data_stream =

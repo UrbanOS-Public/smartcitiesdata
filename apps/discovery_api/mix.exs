@@ -76,7 +76,7 @@ defmodule DiscoveryApi.Mixfile do
       {:ranch, "~> 1.7.1", override: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, "~> 3.0", git: "https://github.com/Datastillery/smart_city", ref: "d400c6be9cbeb4d2a7a8e042b85af4eed44331a6", override: true},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
