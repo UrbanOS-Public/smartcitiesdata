@@ -5,7 +5,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Schemas.Visualizations.Visualization
-  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
+  alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
   @user_id "asdfkjashdflkjhasdkjkadsf"
 
@@ -114,8 +115,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
            %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -141,8 +143,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -162,8 +165,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -180,8 +184,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -204,8 +209,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: undecodable_chart}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -230,8 +236,9 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: nil}}
       )
 
-      allow(QueryAccessUtils.get_affected_models(@query), return: {:ok, nil, nil})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any(), any()), return: true)
+      allow(PrestoService.is_select_statement?(@query), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn

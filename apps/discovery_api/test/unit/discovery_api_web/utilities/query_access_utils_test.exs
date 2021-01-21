@@ -9,15 +9,6 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
   @table "the__table"
-  @org_id "good_org_id"
-  @user_without_org %{
-    user_id: "bob",
-    organizations: []
-  }
-  @user_with_org %{
-    user_id: "steve",
-    organizations: [%{id: @org_id}]
-  }
 
   describe "get_affected_models/1" do
     test "should allow queries to public tables" do
@@ -73,7 +64,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
     test "should not allow queries when get affected tables fails" do
       statement = "INSERT INTO public__one SELECT * FROM public__two"
 
-      allow PrestoService.get_affected_tables(any(), statement), return {:error, :does_not_matter}
+      allow PrestoService.get_affected_tables(any(), statement), return: {:error, :does_not_matter}
 
       assert {:error, "Query statement is invalid"} = QueryAccessUtils.get_affected_models(statement)
     end

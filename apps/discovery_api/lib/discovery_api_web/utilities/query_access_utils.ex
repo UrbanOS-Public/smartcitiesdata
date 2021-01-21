@@ -20,7 +20,6 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def get_affected_models(statement) do
-    IO.inspect("get_affected_models/1")
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
@@ -35,7 +34,6 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def user_can_access_models?(affected_models, user) do
-    IO.inspect(user, label: "Checking if user can access models")
     Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
   end
 

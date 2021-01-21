@@ -41,7 +41,8 @@ defmodule DiscoveryApiWeb.TableauController do
 
   def describe(conn, _params) do
     with {:ok, statement, conn} <- read_body(conn),
-         {:ok, session} <- QueryAccessUtils.authorized_session(conn, statement) do
+         {:ok, affected_models} <- QueryAccessUtils.get_affected_models(statement),
+         {:ok, session} <- QueryAccessUtils.authorized_session(conn, affected_models) do
       format = get_format(conn)
 
       query_schema =
