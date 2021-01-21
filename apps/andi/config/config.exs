@@ -32,7 +32,7 @@ config :andi,
   documentation_root: "",
   vault_role: "andi-role"
 
-config :tesla, adapter: Tesla.Adapter.Hackney
+config :tesla, adapter: Tesla.Adapter.Hackney, recv_timeout: 120_000
 
 config :andi, ecto_repos: [Andi.Repo]
 

@@ -16,7 +16,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.InputConverter
   alias Ecto.Changeset
 
-  def mount(_, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
+  def mount(_, %{"dataset" => dataset, "is_curator" => is_curator, "order" => order}, socket) do
     new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
     send(socket.parent_pid, {:update_data_dictionary_status, new_changeset.valid?})
 
@@ -39,7 +39,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        overwrite_schema_visibility: "hidden",
        pending_changeset: nil,
        loading_schema: false,
-       is_curator: is_curator
+       is_curator: is_curator,
+       order: order
      )
      |> assign(get_default_dictionary_field(new_changeset))}
   end
@@ -61,7 +62,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= @validation_status %>">2</h3>
+          <h3 class="component-number component-number--<%= @validation_status %>"><%= @order %></h3>
           <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">
