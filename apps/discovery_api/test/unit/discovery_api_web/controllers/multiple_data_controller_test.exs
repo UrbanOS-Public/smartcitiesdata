@@ -1,8 +1,10 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+
   import SmartCity.Event,
     only: [dataset_query: 0]
+
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils

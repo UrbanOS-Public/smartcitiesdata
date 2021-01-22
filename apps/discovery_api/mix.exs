@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "0.51.9",
+      version: "0.52.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -76,8 +76,7 @@ defmodule DiscoveryApi.Mixfile do
       {:ranch, "~> 1.7.1", override: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 3.0",
-       git: "https://github.com/Datastillery/smart_city", ref: "6078c15eede02228883e9f35b4c6e35c53e709ba", override: true},
+      {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},

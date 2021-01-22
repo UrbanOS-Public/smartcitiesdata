@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   alias DiscoveryApiWeb.MultipleDataView
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   import DiscoveryApiWeb.Utilities.StreamUtils
+
   import SmartCity.Event,
     only: [dataset_query: 0]
 
