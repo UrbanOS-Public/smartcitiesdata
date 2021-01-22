@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       expected_api_hit_count =
         case Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"]) do
           nil -> 1
-          initial_api_hit_count -> initial_api_hit_count + 1
+          initial_api_hit_count -> String.to_integer(initial_api_hit_count) + 1
         end
 
       authorized_conn
@@ -34,7 +34,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> post("/api/v1/query", "SELECT * FROM #{dataset_table}")
       |> response(200)
 
-      updated_api_hit_count = Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
+      updated_api_hit_count =
+        Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
+        |> String.to_integer()
 
       assert updated_api_hit_count == expected_api_hit_count
     end

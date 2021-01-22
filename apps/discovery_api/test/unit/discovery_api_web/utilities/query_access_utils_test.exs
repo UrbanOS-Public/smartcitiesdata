@@ -74,7 +74,9 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   describe "authorized_session/2" do
     test "should not allow queries to private tables if user doesn't have authorization" do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
-      conn = Phoenix.ConnTest.build_conn()
+
+      conn =
+        Phoenix.ConnTest.build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
       allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
@@ -86,7 +88,9 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       other_table = "other_table"
       private_model = Helper.sample_model(%{private: true, systemName: other_table, organizationDetails: %{id: @org_id}})
       public_model = Helper.sample_model(%{private: false, systemName: @table, organizationDetails: %{id: @org_id}})
-      conn = Phoenix.ConnTest.build_conn()
+
+      conn =
+        Phoenix.ConnTest.build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
       allow ModelAccessUtils.has_access?(private_model, conn.assigns.current_user), return: false
@@ -97,7 +101,9 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
 
     test "should not try to query private table with no logged in user" do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
-      conn = Phoenix.ConnTest.build_conn()
+
+      conn =
+        Phoenix.ConnTest.build_conn()
         |> Map.put(:assigns, %{current_user: nil})
 
       allow ModelAccessUtils.has_access?(model, nil), return: false

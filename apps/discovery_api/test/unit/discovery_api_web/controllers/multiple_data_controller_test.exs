@@ -1,6 +1,8 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+  import SmartCity.Event,
+    only: [dataset_query: 0]
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
@@ -52,14 +54,14 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     ]
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
-    allow(Brook.Event.send(DiscoveryApi.instance_name(), "api:free_form_query", any(), any()), return: :ok)
+    allow(Brook.Event.send(DiscoveryApi.instance_name(), dataset_query(), any(), any()), return: :ok)
 
     {
       :ok,
       %{
         public_model_ids: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :id)),
         public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
-        private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
+        private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName))
       }
     }
   end
@@ -255,25 +257,34 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> post("/api/v1/query", statement)
       |> response(200)
 
-      assert_called Brook.Event.send(DiscoveryApi.instance_name(), "api:free_form_query", DiscoveryApiWeb.MultipleDataController, public_model_ids)
+      assert_called Brook.Event.send(
+                      DiscoveryApi.instance_name(),
+                      dataset_query(),
+                      DiscoveryApiWeb.MultipleDataController,
+                      public_model_ids
+                    )
     end
   end
 
   describe "query geojson" do
     setup do
-      geojson_model = DiscoveryApi.Test.Helper.sample_model(%{
-        private: false,
-        systemName: "geojson__geojson"
-      })
+      geojson_model =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "geojson__geojson"
+        })
+
       statement = "SELECT * FROM #{geojson_model.systemName}"
 
       allow(Prestige.stream!(any(), any()), return: [:result])
+
       allow(Prestige.Result.as_maps(:result),
         return: [
           %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
           %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
         ]
       )
+
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, [Map.get(geojson_model, :systemName)]})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])

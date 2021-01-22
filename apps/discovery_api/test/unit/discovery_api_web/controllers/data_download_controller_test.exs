@@ -455,7 +455,6 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     allow(ObjectStorageService.download_file_as_stream(any(), any()), return: {:ok, ["anything"], "csv"})
     allow(Redix.command!(any(), any()), return: :ok)
 
-
     url = "/api/v1/dataset/#{dataset_id}/download"
 
     conn
