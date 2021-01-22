@@ -301,6 +301,7 @@ $tick-height: 1rem + $field-padding - 0.44;
     height: 40px;
     animation: spin 2s linear infinite;
     margin-left: 1rem;
+    margin-top: 10px;
 }
 
 .data-dictionary-form__loader--hidden {

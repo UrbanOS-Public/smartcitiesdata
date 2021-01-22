@@ -38,13 +38,15 @@ defmodule AndiWeb.SubmitLiveView do
           <%= live_render(@socket, AndiWeb.SubmitLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
 
+        <div class="upload-data-dictionary-form-component">
+          <%= live_render(@socket, AndiWeb.SubmitLiveView.UploadDataDictionary, id: :upload_data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
+        </div>
+
         <div class="data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
+          <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator, "order" => "3"}) %>
           </div>
 
-        <div class="url-form-component">
-          <%= live_render(@socket, AndiWeb.SubmitLiveView.DatasetLink, id: :dataset_link_editor, session: %{"dataset" => @dataset}) %>
-        </div>
+
 
         <div class="submission-component">
           <div class="review-submission">

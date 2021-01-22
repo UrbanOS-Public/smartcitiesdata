@@ -89,9 +89,8 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
 
-  defp interpret_error_message(_message, :datasetLink, _), do: "Please enter a valid URL to your externally-hosted dataset"
-
   defp interpret_error_message(message, :schema_sample, _), do: message
+  defp interpret_error_message(message, :datasetLink, _), do: message
   defp interpret_error_message("is required", field, _), do: default_error_message(field)
   defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
   defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"

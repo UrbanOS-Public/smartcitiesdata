@@ -27,6 +27,10 @@ defmodule Andi.SecretService do
     end
   end
 
+  def retrieve_aws_keys() do
+    retrieve("aws_keys/andi")
+  end
+
   def write(path, secret) do
     vault_path = "#{@root_path}ingestion/#{path}"
 
