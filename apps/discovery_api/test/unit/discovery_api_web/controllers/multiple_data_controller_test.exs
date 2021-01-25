@@ -259,11 +259,20 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> post("/api/v1/query", statement)
       |> response(200)
 
+      [public_model_id_one, public_model_id_two] = public_model_ids
+
       assert_called Brook.Event.send(
                       DiscoveryApi.instance_name(),
                       dataset_query(),
                       DiscoveryApiWeb.MultipleDataController,
-                      public_model_ids
+                      public_model_id_one
+                    )
+
+      assert_called Brook.Event.send(
+                      DiscoveryApi.instance_name(),
+                      dataset_query(),
+                      DiscoveryApiWeb.MultipleDataController,
+                      public_model_id_two
                     )
     end
   end

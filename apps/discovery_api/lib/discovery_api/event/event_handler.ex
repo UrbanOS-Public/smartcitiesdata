@@ -105,14 +105,12 @@ defmodule DiscoveryApi.Event.EventHandler do
     end
   end
 
-  def handle_event(%Brook.Event{type: dataset_query(), data: affected_model_ids, author: author, create_ts: timestamp}) do
-    Enum.each(affected_model_ids, fn model_id ->
-      dataset_query()
-      |> add_event_count(author, model_id)
+  def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
+    dataset_query()
+    |> add_event_count(author, dataset_id)
 
-      MetricsService.record_api_hit(dataset_query(), model_id)
-      Logger.debug(fn -> "Successfully recorded api hit for dataset: `#{model_id}` at #{timestamp}" end)
-    end)
+    MetricsService.record_api_hit(dataset_query(), dataset_id)
+    Logger.debug(fn -> "Successfully recorded api hit for dataset: `#{dataset_id}` at #{timestamp}" end)
 
     clear_caches()
     :discard

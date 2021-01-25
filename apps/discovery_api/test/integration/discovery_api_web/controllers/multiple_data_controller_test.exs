@@ -1,8 +1,10 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use ExUnit.Case
-
   use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
+
+  import SmartCity.TestHelper, only: [eventually: 1]
+
   alias DiscoveryApi.Test.Helper
 
   @organization_name "organization_alpha"
@@ -35,11 +37,12 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> post("/api/v1/query", "SELECT * FROM #{dataset_table}")
       |> response(200)
 
-      updated_api_hit_count =
-        Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
-        |> String.to_integer()
+      eventually(fn ->
+        updated_api_hit_count = Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
 
-      assert updated_api_hit_count == expected_api_hit_count
+        assert updated_api_hit_count != nil
+        assert String.to_integer(updated_api_hit_count) == expected_api_hit_count
+      end)
     end
   end
 end

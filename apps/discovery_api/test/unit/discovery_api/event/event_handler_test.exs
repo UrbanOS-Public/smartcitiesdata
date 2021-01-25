@@ -127,22 +127,20 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   describe "handle_event/1 #{dataset_query()}" do
     setup do
-      sample_model_one = DiscoveryApi.Test.Helper.sample_model(%{id: "123"})
-      sample_model_two = DiscoveryApi.Test.Helper.sample_model(%{id: "456"})
+      sample_model = DiscoveryApi.Test.Helper.sample_model(%{id: "123"})
 
       allow(Redix.command!(any(), any()), return: :ok)
 
       Brook.Event.process(
         @instance_name,
-        Brook.Event.new(type: dataset_query(), data: [sample_model_one.id, sample_model_two.id], author: :author)
+        Brook.Event.new(type: dataset_query(), data: sample_model.id, author: :author)
       )
 
-      [sample_model_one: sample_model_one, sample_model_two: sample_model_two]
+      [sample_model: sample_model]
     end
 
-    test "records api query hit for all affected datasets", %{sample_model_one: sample_model_one, sample_model_two: sample_model_two} do
-      assert_called Redix.command!(:redix, ["INCR", "smart_registry:#{dataset_query()}:count:#{sample_model_one.id}"])
-      assert_called Redix.command!(:redix, ["INCR", "smart_registry:#{dataset_query()}:count:#{sample_model_two.id}"])
+    test "records api query hit for all affected datasets", %{sample_model: sample_model} do
+      assert_called Redix.command!(:redix, ["INCR", "smart_registry:#{dataset_query()}:count:#{sample_model.id}"])
     end
   end
 end
