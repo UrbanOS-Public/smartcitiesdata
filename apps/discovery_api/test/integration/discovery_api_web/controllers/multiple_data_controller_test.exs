@@ -1,6 +1,7 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use ExUnit.Case
 
+  use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
   alias DiscoveryApi.Test.Helper
 

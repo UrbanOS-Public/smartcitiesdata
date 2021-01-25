@@ -14,7 +14,6 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
       session = Prestige.new_session(session_opts)
       {:ok, session}
     else
-      # IO.inspect(authorized_models, label: "Unauthorized models")
       {:error, "Session not authorized"}
     end
   end
