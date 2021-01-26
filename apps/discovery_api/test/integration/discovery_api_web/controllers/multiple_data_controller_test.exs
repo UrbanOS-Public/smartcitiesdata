@@ -4,6 +4,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
 
   import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.Event, only: [dataset_query: 0]
 
   alias DiscoveryApi.Test.Helper
 
@@ -27,7 +28,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       Helper.create_persisted_user(subject)
 
       expected_api_hit_count =
-        case Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"]) do
+        case Redix.command!(:redix, ["GET", "smart_registry:#{dataset_query()}:count:#{dataset_id}"]) do
           nil -> 1
           initial_api_hit_count -> String.to_integer(initial_api_hit_count) + 1
         end
@@ -38,7 +39,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> response(200)
 
       eventually(fn ->
-        updated_api_hit_count = Redix.command!(:redix, ["GET", "smart_registry:free_form_query:count:#{dataset_id}"])
+        updated_api_hit_count = Redix.command!(:redix, ["GET", "smart_registry:#{dataset_query()}:count:#{dataset_id}"])
 
         assert updated_api_hit_count != nil
         assert String.to_integer(updated_api_hit_count) == expected_api_hit_count
