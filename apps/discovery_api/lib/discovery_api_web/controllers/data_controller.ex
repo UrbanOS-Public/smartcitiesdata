@@ -68,7 +68,8 @@ defmodule DiscoveryApiWeb.DataController do
 
     with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name),
-         true <- QueryAccessUtils.authorized_to_query?(query, current_user) do
+         {:ok, authorized_models} <- QueryAccessUtils.get_affected_models(query),
+         true <- QueryAccessUtils.user_can_access_models?(authorized_models, current_user) do
       data_stream =
         session
         |> Prestige.stream!(query)

@@ -5,11 +5,19 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   import DiscoveryApiWeb.Utilities.StreamUtils
 
+  import SmartCity.Event,
+    only: [dataset_query: 0]
+
   plug(:accepts, MultipleDataView.accepted_formats())
 
   def query(conn, _params) do
     with {:ok, statement, conn} <- read_body(conn),
-         {:ok, session} <- QueryAccessUtils.authorized_session(conn, statement) do
+         {:ok, affected_models} <- QueryAccessUtils.get_affected_models(statement),
+         {:ok, session} <- QueryAccessUtils.authorized_session(conn, affected_models) do
+      Enum.each(affected_models, fn model ->
+        Brook.Event.send(DiscoveryApi.instance_name(), dataset_query(), __MODULE__, model.id)
+      end)
+
       format = get_format(conn)
 
       data_stream =

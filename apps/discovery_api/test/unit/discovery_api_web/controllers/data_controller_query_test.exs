@@ -5,7 +5,6 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
-  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApi.Services.PrestoService
 
   @dataset_id "test"
@@ -15,7 +14,9 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   @feature_type "FeatureCollection"
 
   setup do
-    allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+    allow(PrestoService.is_select_statement?(any()), return: true)
+    allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+    allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
     model =
       Helper.sample_model(%{
@@ -257,6 +258,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
       allow(SystemNameCache.get("geojson", "geojson"), return: "geojson__geojson")
       allow(Model.get(any()), return: model)
+      allow(Model.get_all(), return: [model])
 
       allow(Prestige.stream!(:connection, "SELECT * FROM geojson"),
         return: [:any]
@@ -335,7 +337,9 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
   describe "query dataset with json type fields" do
     setup do
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(PrestoService.is_select_statement?(any()), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       model =
         Helper.sample_model(%{

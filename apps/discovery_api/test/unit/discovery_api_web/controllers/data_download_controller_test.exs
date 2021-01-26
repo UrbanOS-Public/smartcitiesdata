@@ -85,6 +85,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         return: ["id", "int_array"]
       )
 
+      allow(Redix.command!(any(), any()), return: :ok)
+
       allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
@@ -451,6 +453,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
     allow(Model.get(dataset_id), return: model)
     allow(ObjectStorageService.download_file_as_stream(any(), any()), return: {:ok, ["anything"], "csv"})
+    allow(Redix.command!(any(), any()), return: :ok)
 
     url = "/api/v1/dataset/#{dataset_id}/download"
 

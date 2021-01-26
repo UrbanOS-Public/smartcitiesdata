@@ -5,7 +5,14 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.Data.TableInfoCache
 
   import SmartCity.Event,
-    only: [organization_update: 0, user_organization_associate: 0, dataset_update: 0, data_write_complete: 0, dataset_delete: 0]
+    only: [
+      organization_update: 0,
+      user_organization_associate: 0,
+      dataset_update: 0,
+      data_write_complete: 0,
+      dataset_delete: 0,
+      dataset_query: 0
+    ]
 
   require Logger
   alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
@@ -16,6 +23,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
+  alias DiscoveryApi.Services.MetricsService
 
   @instance_name DiscoveryApi.instance_name()
 
@@ -95,6 +103,17 @@ defmodule DiscoveryApi.Event.EventHandler do
         Logger.error("Unable to process message `#{inspect(dataset)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
         :discard
     end
+  end
+
+  def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
+    dataset_query()
+    |> add_event_count(author, dataset_id)
+
+    MetricsService.record_api_hit(dataset_query(), dataset_id)
+    Logger.debug(fn -> "Successfully recorded api hit for dataset: `#{dataset_id}` at #{timestamp}" end)
+
+    clear_caches()
+    :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author}) do

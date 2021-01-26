@@ -71,7 +71,8 @@ defmodule DiscoveryApi.Schemas.Visualizations do
     session = Prestige.new_session(DiscoveryApi.prestige_opts())
 
     with {:ok, tables} <- PrestoService.get_affected_tables(session, query),
-         true <- QueryAccessUtils.authorized_to_query?(query, user) do
+         {:ok, authorized_models} <- QueryAccessUtils.get_affected_models(query),
+         true <- QueryAccessUtils.user_can_access_models?(authorized_models, user) do
       visualization
       |> Map.put(:datasets, get_dataset_ids(tables))
       |> Map.put(:valid_query, true)

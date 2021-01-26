@@ -1,9 +1,10 @@
-require Logger
-
 defmodule DiscoveryApi.Services.MetricsService do
   @moduledoc """
   Service that collects metrics and records them to the application's metric through telemetry (which by default is prometheus)
   """
+
+  require Logger
+
   def record_csv_download_count_metrics(dataset_id, table_name) do
     [
       app: "discovery_api",

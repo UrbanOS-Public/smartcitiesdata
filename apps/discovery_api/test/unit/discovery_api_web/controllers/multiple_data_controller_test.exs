@@ -1,9 +1,12 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+
+  import SmartCity.Event,
+    only: [dataset_query: 0]
+
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
   setup do
@@ -53,12 +56,12 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     ]
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
-
-    allow(Prestige.new_session(any()), return: :connection)
+    allow(Brook.Event.send(DiscoveryApi.instance_name(), dataset_query(), any(), any()), return: :ok)
 
     {
       :ok,
       %{
+        public_model_ids: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :id)),
         public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
         private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName))
       }
@@ -98,7 +101,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: expected_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
@@ -126,7 +129,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.stream!(any(), any()), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       response_body =
@@ -149,10 +152,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
         SELECT * FROM private_one JOIN private_two ON private_one.a = private_two.b
       """
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      allow(Prestige.stream!(any(), statement), return: [:result])
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, private_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       assert conn
@@ -176,7 +179,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       allow(Prestige.Result.as_maps(:result), return: allowed_response)
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
+      allow(ModelAccessUtils.has_access?(private_tables, any()), return: false, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -195,60 +198,8 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       """
 
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(QueryAccessUtils.authorized_to_query?(any(), any()), seq: [false, true], meck_options: [:passthrough])
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query", statement)
-             |> response(400)
-    end
-
-    test "can't perform or describe query if there is an error getting affected tables", %{conn: conn} do
-      statement = """
-        INSERT INTO public__one SELECT * FROM public__two
-      """
-
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:error, :does_not_matter})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-
-      assert conn
-             |> put_req_header("accept", "application/json")
-             |> put_req_header("content-type", "text/plain")
-             |> post("/api/v1/query", statement)
-             |> response(400)
-    end
-
-    test "unable to query or describe datasets which are not in redis", %{conn: conn} do
-      statement = """
-      SELECT * FROM not_in_redis
-      """
-
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, ["not_in_redis"]})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
-
-      _response_body =
-        conn
-        |> put_req_header("accept", "text/csv")
-        |> put_req_header("content-type", "text/plain")
-        |> post("/api/v1/query", statement)
-        |> response(400)
-
-      assert not called?(Prestige.query!(any(), any()))
-    end
-
-    test "can't perform or describe query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
-      statement = """
-        EXPLAIN ANALYZE select * from public__one
-      """
-
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(PrestoService.is_select_statement?(statement), return: false)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, private_tables})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: false, meck_options: [:passthrough])
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -273,7 +224,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       expected_response = "{\"message\":\"#{failure_message}\"}"
 
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
       allow(Prestige.stream!(any(), any()), exec: fn _, _ -> raise Prestige.Error, failure_message end)
 
@@ -284,11 +235,57 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                |> post("/api/v1/query", statement)
                |> response(400)
     end
+
+    test "sends brook event to record api hit for all affected tables", %{
+      conn: conn,
+      public_model_ids: public_model_ids,
+      public_tables: public_tables,
+      json_response: allowed_response
+    } do
+      statement = """
+      WITH public_one AS (select a from public__one), public_two AS (select b from public__two)
+      SELECT * FROM public_one JOIN public_two ON public_one.a = public_two.b
+      """
+
+      allow(Prestige.stream!(any(), any()), return: [:result])
+      allow(Prestige.Result.as_maps(:result), return: allowed_response)
+      allow(PrestoService.is_select_statement?(statement), return: true)
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
+      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+
+      conn
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("content-type", "text/plain")
+      |> post("/api/v1/query", statement)
+      |> response(200)
+
+      [public_model_id_one, public_model_id_two] = public_model_ids
+
+      assert_called Brook.Event.send(
+                      DiscoveryApi.instance_name(),
+                      dataset_query(),
+                      DiscoveryApiWeb.MultipleDataController,
+                      public_model_id_one
+                    )
+
+      assert_called Brook.Event.send(
+                      DiscoveryApi.instance_name(),
+                      dataset_query(),
+                      DiscoveryApiWeb.MultipleDataController,
+                      public_model_id_two
+                    )
+    end
   end
 
   describe "query geojson" do
     setup do
-      statement = "SELECT * FROM geojson__geojson"
+      geojson_model =
+        DiscoveryApi.Test.Helper.sample_model(%{
+          private: false,
+          systemName: "geojson__geojson"
+        })
+
+      statement = "SELECT * FROM #{geojson_model.systemName}"
 
       allow(Prestige.stream!(any(), any()), return: [:result])
 
@@ -300,7 +297,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       )
 
       allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, ["geojson__geojson"]})
+      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, [Map.get(geojson_model, :systemName)]})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       %{statement: statement}
