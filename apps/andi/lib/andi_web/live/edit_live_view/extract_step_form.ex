@@ -3,9 +3,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   LiveComponent for editing dataset extract steps
   """
   use Phoenix.LiveView
+  use Properties, otp_app: :andi
   import Phoenix.HTML.Form
   require Logger
 
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
@@ -19,7 +21,11 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
 
-  def mount(_, %{"dataset" => dataset}, socket) do
+  @bucket_path "samples/"
+
+  getter(:hosted_bucket, generic: true)
+
+  def mount(_, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -41,7 +47,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        validation_map: %{},
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
-       new_step_type: ""
+       new_step_type: "",
+       is_curator: is_curator,
+       download_dataset_sample_error_msg: nil,
+       dataset_link: dataset.datasetLink
      )}
   end
 
@@ -70,6 +79,16 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
         <div class="form-section">
           <div class="component-edit-section--<%= @visibility %>">
+
+            <%= if @dataset_link != nil do %>
+              <div class="download_dataset_sample">
+                <h4>Dataset Link:</h4>
+                <p id="download_dataset_sample_link" phx-click="download_dataset_sample">
+                  <%= get_file_name_from_dataset_link(@dataset_link) %>
+                </p>
+              </div>
+            <% end %>
+
             <div class="add-step">
               <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
               <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
@@ -172,6 +191,37 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
     {:noreply,
      assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+  end
+
+  def handle_event("download_dataset_sample", _, %{assigns: %{dataset_link: nil}} = socket) do
+    {:noreply, assign(socket, %{download_dataset_sample_error_msg: "No dataset sample provided"})}
+  end
+
+  def handle_event("download_dataset_sample", _, %{assigns: %{is_curator: true, dataset_link: dataset_link}} = socket) do
+    {:ok, redirect_url} = presigned_url(socket.assigns.dataset_id, dataset_link)
+
+    {:noreply, redirect(socket, external: redirect_url)}
+  end
+
+  defp presigned_url(dataset_id, dataset_link) do
+    file_name = get_file_name_from_dataset_link(dataset_link)
+
+    ExAws.Config.new(:s3)
+    |> ExAws.S3.presigned_url(:get, "#{hosted_bucket()}/#{@bucket_path}#{dataset_id}", file_name)
+    |> case do
+        {:ok, presigned_url} -> {:ok, presigned_url}
+        {_, error} -> {:error, error}
+      end
+  end
+
+  defp get_file_name_from_dataset_link(dataset_link) do
+    dataset_link
+    |> String.split("/")
+    |> List.last()
+  end
+
+  def handle_event("download_dataset_sample", _, socket) do
+    {:noreply, assign(socket, %{download_dataset_sample_error_msg: "Unauthorized"})}
   end
 
   def handle_info(

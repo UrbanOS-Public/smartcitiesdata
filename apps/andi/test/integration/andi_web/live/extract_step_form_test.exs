@@ -5,12 +5,13 @@ defmodule AndiWeb.ExtractStepFormTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Checkov
+  use Properties, otp_app: :andi
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
-  import FlokiHelpers, only: [find_elements: 2, get_text: 2]
+  import FlokiHelpers, only: [find_elements: 2, get_text: 2, get_attributes: 3]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
@@ -18,6 +19,9 @@ defmodule AndiWeb.ExtractStepFormTest do
   alias Andi.Services.DatasetStore
 
   @url_path "/datasets/"
+  @bucket_path "samples/"
+
+  getter(:hosted_bucket, generic: true)
 
   setup %{conn: conn} do
     default_extract_step = %{
@@ -51,6 +55,45 @@ defmodule AndiWeb.ExtractStepFormTest do
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
     [view: view, html: html, andi_dataset: andi_dataset]
+  end
+
+  describe "download dataset sample" do
+    test "redirects users with a curator role", %{curator_conn: curator_conn, andi_dataset: andi_dataset} do
+      dataset_link = "#{andi_dataset.id}/cam.csv"
+      changes_with_dataset_link =
+        andi_dataset
+        |> Map.put(:datasetLink, dataset_link)
+        |> AtomicMap.convert(underscore: false)
+
+      {:ok, andi_dataset} = Datasets.update(andi_dataset, changes_with_dataset_link)
+
+      {:ok, view, html} = live(curator_conn, @url_path <> andi_dataset.id)
+      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+
+      {:ok, redirected_conn} =
+        extract_step_form_view
+        |> render_click(:download_dataset_sample, %{})
+        |> follow_redirect(curator_conn)
+
+      refute Enum.empty?(find_elements(html, "#download_dataset_sample_link"))
+      assert redirected_conn.request_path =~ dataset_link
+    end
+
+    test "displays error for users without a curator role", %{andi_dataset: andi_dataset} do
+      dummy_socket = %Phoenix.LiveView.Socket{assigns: %{is_curator: false, dataset_id: andi_dataset.id, dataset_link: "bucket/stuff/thing.csv"}}
+
+      assert {:noreply, %{assigns: %{download_dataset_sample_error_msg: "Unauthorized"}}} = AndiWeb.EditLiveView.ExtractStepForm.handle_event("download_dataset_sample", %{}, dummy_socket)
+    end
+
+    test "is rendered disabled when there is no dataset link associated with the dataset", %{view: view, html: html, andi_dataset: andi_dataset} do
+      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+
+      dummy_socket = %Phoenix.LiveView.Socket{assigns: %{is_curator: true, dataset_id: andi_dataset.id, dataset_link: nil}}
+      event_handler_response = AndiWeb.EditLiveView.ExtractStepForm.handle_event("download_dataset_sample", %{}, dummy_socket)
+
+      assert Enum.empty?(find_elements(html, "#download_dataset_sample_link"))
+      assert {:noreply, %{assigns: %{download_dataset_sample_error_msg: "No dataset sample provided"}}} = event_handler_response
+    end
   end
 
   test "given a dataset with many extract steps, all steps are rendered", %{html: html} do
