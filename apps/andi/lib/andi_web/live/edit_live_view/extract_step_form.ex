@@ -6,7 +6,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
@@ -17,11 +16,10 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractS3StepForm
   alias AndiWeb.ExtractSteps.ExtractPlaceholderStepForm
   alias Andi.InputSchemas.InputConverter
-  alias Andi.Schemas.DatasetDownload
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
 
-  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
+  def mount(_params, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -44,7 +42,6 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
        new_step_type: "",
-       is_curator: is_curator,
        dataset_link: dataset.datasetLink
      )}
   end
