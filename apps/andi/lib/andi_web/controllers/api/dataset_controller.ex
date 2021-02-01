@@ -6,9 +6,10 @@ defmodule AndiWeb.API.DatasetController do
   use AndiWeb, :controller
 
   require Logger
+  import SmartCity.Event, only: [dataset_update: 0]
+
   alias SmartCity.Dataset
   alias Andi.Services.DatasetStore
-  import SmartCity.Event, only: [dataset_update: 0]
   alias Andi.InputSchemas.InputConverter
 
   access_levels(

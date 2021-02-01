@@ -41,6 +41,23 @@
     padding-left: 2rem;
 }
 
+.download_dataset_sample {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+
+
+    #download_dataset_sample_link {
+        margin-left: 0.5rem;
+        text-decoration: underline;
+        color: $color-text-link;
+
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}
+
 .add-step {
     margin-bottom: 1rem;
 }

@@ -7,11 +7,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DatasetLinkFormSchema
   use Tesla
   import Phoenix.HTML.Form
-  alias AndiWeb.Router.Helpers, as: Routes
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.InputSchemas.DatasetLinkFormSchema
-  alias AndiWeb.Helpers.FormTools
-  alias ExAws.S3
 
   @bucket_path "samples/"
 
@@ -133,11 +130,11 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 250_000_000 do
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 250MB")
+      |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 200MB")
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
@@ -155,7 +152,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> send_dataset_link_status(socket)
       |> complete_validation(socket)
     else
-      error ->
+      _ ->
         socket.assigns.changeset
         |> send_error_interpreting_file(socket)
     end
@@ -172,7 +169,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> send_dataset_link_status(socket)
       |> complete_validation(socket)
     else
-      error ->
+      _ ->
         socket.assigns.changeset
         |> send_error_interpreting_file(socket)
     end
@@ -202,7 +199,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     new_changeset =
       changeset
       |> Map.put(:action, :update)
-      |> Changeset.add_error(:datasetLink, "There was a problem interpreting this file")
+      |> Ecto.Changeset.add_error(:datasetLink, "There was a problem interpreting this file")
 
     case is_loading_schema do
       true -> {:noreply, assign(socket, changeset: new_changeset)}

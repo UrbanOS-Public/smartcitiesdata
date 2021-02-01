@@ -19,7 +19,7 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
 
-  def mount(_, %{"dataset" => dataset}, socket) do
+  def mount(_params, %{"dataset" => dataset}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -41,7 +41,8 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
        validation_map: %{},
        dataset_id: dataset.id,
        technical_id: dataset.technical.id,
-       new_step_type: ""
+       new_step_type: "",
+       dataset_link: dataset.datasetLink
      )}
   end
 
@@ -70,6 +71,16 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
 
         <div class="form-section">
           <div class="component-edit-section--<%= @visibility %>">
+
+            <%= if @dataset_link != nil do %>
+              <div class="download_dataset_sample">
+                <h4>Dataset Link:</h4>
+                <a id="download_dataset_sample_link" target="_blank" href="/datasets/<%= @dataset_id %>/sample">
+                  <%= get_file_name_from_dataset_link(@dataset_link) %>
+                </a>
+              </div>
+            <% end %>
+
             <div class="add-step">
               <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
               <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
@@ -236,6 +247,12 @@ defmodule AndiWeb.EditLiveView.ExtractStepForm do
   def handle_info(message, socket) do
     Logger.debug(inspect(message))
     {:noreply, socket}
+  end
+
+  defp get_file_name_from_dataset_link(dataset_link) do
+    dataset_link
+    |> String.split("/")
+    |> List.last()
   end
 
   defp move_extract_step(socket, extract_step_index, target_index) do

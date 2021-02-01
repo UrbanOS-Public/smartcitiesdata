@@ -5,12 +5,13 @@ defmodule AndiWeb.ExtractStepFormTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Checkov
+  use Properties, otp_app: :andi
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
-  import FlokiHelpers, only: [find_elements: 2, get_text: 2]
+  import FlokiHelpers, only: [find_elements: 2, get_text: 2, get_attributes: 3]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
@@ -18,6 +19,9 @@ defmodule AndiWeb.ExtractStepFormTest do
   alias Andi.Services.DatasetStore
 
   @url_path "/datasets/"
+  @bucket_path "samples/"
+
+  getter(:hosted_bucket, generic: true)
 
   setup %{conn: conn} do
     default_extract_step = %{

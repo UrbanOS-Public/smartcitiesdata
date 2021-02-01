@@ -1,12 +1,19 @@
 defmodule AndiWeb.EditController do
   use AndiWeb, :controller
+  use Properties, otp_app: :andi
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
+  alias Andi.Schemas.DatasetDownload
+
+  getter(:hosted_bucket, generic: true)
+
+  @bucket_path "samples/"
 
   access_levels(
     edit_organization: [:private],
     edit_dataset: [:private],
-    edit_submission: [:private, :public]
+    edit_submission: [:private, :public],
+    download_dataset_sample: [:private]
   )
 
   def edit_dataset(conn, %{"id" => id}) do
@@ -15,6 +22,61 @@ defmodule AndiWeb.EditController do
 
   def edit_submission(conn, %{"id" => id}) do
     render_view_if_accessible(conn, id, AndiWeb.SubmitLiveView)
+  end
+
+  def download_dataset_sample(conn, %{"id" => dataset_id}) do
+    %{"user_id" => current_user_id, "is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    andi_dataset = Andi.InputSchemas.Datasets.get(dataset_id)
+    dataset_link = andi_dataset.datasetLink
+    ip_addr = conn.remote_ip |> Tuple.to_list() |> Enum.join(".")
+
+    with true <- is_curator,
+         false <- is_nil(dataset_link) do
+      persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, true)
+      {:ok, presigned_url} = presigned_url(dataset_id, dataset_link)
+
+      redirect(conn, external: presigned_url)
+    else
+      _ ->
+        persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, false)
+
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+    end
+  end
+
+  defp persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, download_success) do
+    download_request = %{
+      dataset_id: dataset_id,
+      dataset_link: dataset_link,
+      client_ip_addr: ip_addr,
+      timestamp: DateTime.utc_now(),
+      user_accessing: current_user_id,
+      download_success: download_success
+    }
+
+    download_request_changeset = DatasetDownload.changeset(%DatasetDownload{}, download_request)
+    Andi.Repo.insert_or_update(download_request_changeset)
+  end
+
+  defp presigned_url(dataset_id, dataset_link) do
+    file_name = get_file_name_from_dataset_link(dataset_link)
+
+    ExAws.Config.new(:s3)
+    |> ExAws.S3.presigned_url(:get, "#{hosted_bucket()}/#{@bucket_path}#{dataset_id}", file_name)
+    |> case do
+      {:ok, presigned_url} -> {:ok, presigned_url}
+      {_, error} -> {:error, error}
+    end
+  end
+
+  defp get_file_name_from_dataset_link(dataset_link) do
+    dataset_link
+    |> String.split("/")
+    |> List.last()
   end
 
   defp render_view_if_accessible(conn, id, view) do
