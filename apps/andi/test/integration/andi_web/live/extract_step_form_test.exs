@@ -57,45 +57,6 @@ defmodule AndiWeb.ExtractStepFormTest do
     [view: view, html: html, andi_dataset: andi_dataset]
   end
 
-  describe "download dataset sample" do
-    test "redirects users with a curator role", %{curator_conn: curator_conn, andi_dataset: andi_dataset} do
-      dataset_link = "#{andi_dataset.id}/cam.csv"
-      changes_with_dataset_link =
-        andi_dataset
-        |> Map.put(:datasetLink, dataset_link)
-        |> AtomicMap.convert(underscore: false)
-
-      {:ok, andi_dataset} = Datasets.update(andi_dataset, changes_with_dataset_link)
-
-      {:ok, view, html} = live(curator_conn, @url_path <> andi_dataset.id)
-      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
-
-      {:ok, redirected_conn} =
-        extract_step_form_view
-        |> render_click(:download_dataset_sample, %{})
-        |> follow_redirect(curator_conn)
-
-      refute Enum.empty?(find_elements(html, "#download_dataset_sample_link"))
-      assert redirected_conn.request_path =~ dataset_link
-    end
-
-    test "displays error for users without a curator role", %{andi_dataset: andi_dataset} do
-      dummy_socket = %Phoenix.LiveView.Socket{assigns: %{is_curator: false, dataset_id: andi_dataset.id, dataset_link: "bucket/stuff/thing.csv"}}
-
-      assert {:noreply, %{assigns: %{download_dataset_sample_error_msg: "Unauthorized"}}} = AndiWeb.EditLiveView.ExtractStepForm.handle_event("download_dataset_sample", %{}, dummy_socket)
-    end
-
-    test "is rendered disabled when there is no dataset link associated with the dataset", %{view: view, html: html, andi_dataset: andi_dataset} do
-      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
-
-      dummy_socket = %Phoenix.LiveView.Socket{assigns: %{is_curator: true, dataset_id: andi_dataset.id, dataset_link: nil}}
-      event_handler_response = AndiWeb.EditLiveView.ExtractStepForm.handle_event("download_dataset_sample", %{}, dummy_socket)
-
-      assert Enum.empty?(find_elements(html, "#download_dataset_sample_link"))
-      assert {:noreply, %{assigns: %{download_dataset_sample_error_msg: "No dataset sample provided"}}} = event_handler_response
-    end
-  end
-
   test "given a dataset with many extract steps, all steps are rendered", %{html: html} do
     assert find_elements(html, ".extract-step-container") |> Enum.count() == 2
     refute Enum.empty?(find_elements(html, ".extract-http-step-form"))
