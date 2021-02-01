@@ -29,17 +29,17 @@ defmodule AndiWeb.EditController do
 
     andi_dataset = Andi.InputSchemas.Datasets.get(dataset_id)
     dataset_link = andi_dataset.datasetLink
-    ip_addr = conn.remote_ip |> Tuple.to_list() |> Enum.join(".")
+    request_headers = conn.req_headers |> Jason.encode!()
 
     with true <- is_curator,
          false <- is_nil(dataset_link) do
-      persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, true)
+      persist_dataset_download_request(dataset_id, dataset_link, current_user_id, request_headers, true)
       {:ok, presigned_url} = presigned_url(dataset_id, dataset_link)
 
       redirect(conn, external: presigned_url)
     else
       _ ->
-        persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, false)
+        persist_dataset_download_request(dataset_id, dataset_link, current_user_id, request_headers, false)
 
         conn
         |> put_view(AndiWeb.ErrorView)
@@ -48,11 +48,11 @@ defmodule AndiWeb.EditController do
     end
   end
 
-  defp persist_dataset_download_request(dataset_id, dataset_link, current_user_id, ip_addr, download_success) do
+  defp persist_dataset_download_request(dataset_id, dataset_link, current_user_id, req_headers, download_success) do
     download_request = %{
       dataset_id: dataset_id,
       dataset_link: dataset_link,
-      client_ip_addr: ip_addr,
+      request_headers: req_headers,
       timestamp: DateTime.utc_now(),
       user_accessing: current_user_id,
       download_success: download_success
