@@ -133,11 +133,11 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 250_000_000 do
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 250MB")
+      |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 200MB")
       |> Map.put(:action, :update)
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
