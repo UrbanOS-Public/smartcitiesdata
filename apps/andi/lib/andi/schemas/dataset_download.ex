@@ -11,7 +11,7 @@ defmodule Andi.Schemas.DatasetDownload do
   schema "dataset_download" do
     field(:dataset_id, Ecto.UUID)
     field(:dataset_link, :string)
-    field(:client_ip_addr, :string)
+    field(:request_headers, :string)
     field(:timestamp, :utc_datetime)
     field(:user_accessing, :string)
     field(:download_success, :boolean)
@@ -22,7 +22,7 @@ defmodule Andi.Schemas.DatasetDownload do
   @cast_fields [
     :dataset_id,
     :dataset_link,
-    :client_ip_addr,
+    :request_headers,
     :timestamp,
     :user_accessing,
     :download_success
