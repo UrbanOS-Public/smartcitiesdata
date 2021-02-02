@@ -29,7 +29,7 @@ defmodule AndiWeb.EditController do
 
     andi_dataset = Andi.InputSchemas.Datasets.get(dataset_id)
     dataset_link = andi_dataset.datasetLink
-    request_headers = conn.req_headers |> Jason.encode!()
+    request_headers = conn.req_headers |> Enum.map(&Tuple.to_list/1) |> Jason.encode!()
 
     with true <- is_curator,
          false <- is_nil(dataset_link) do
