@@ -21,6 +21,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("populate_data_dictionary")
 
     {:ok,
      assign(socket,
@@ -64,7 +65,6 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
 
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, multipart: true] %>
-       
           <div class="component-edit-section--<%= @visibility %>">
             <div class="url-form-header">
               <h4>Dataset sample may not contain any Personally Identifiable Information (PII). If the data is found to contain PII, it will be rejected.</h4>
@@ -140,13 +140,22 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"file" => file, "fileName" => file_name, "fileType" => file_type}, socket)
+  def handle_event("file_upload", %{"file" => file, "fileName" => file_name, "fileType" => file_type, "fileSize" => file_size}, socket)
       when file_type in ["text/csv", "application/vnd.ms-excel"] do
     dataset_id = socket.assigns.dataset_id
     dataset_link = "#{@bucket_path}#{dataset_id}/#{file_name}"
 
     with {:ok, presigned_url} <- presigned_url(dataset_id, file_name),
          {:ok, _} <- upload_sample_dataset(presigned_url, file, "text/csv") do
+      AndiWeb.Endpoint.broadcast_from(
+        self(),
+        "populate_data_dictionary",
+        "populate_data_dictionary",
+        %{"dataset_sample" =>
+          %{"fileType" => file_type, "file" => file, "fileSize" => file_size},
+          "dataset_id" => socket.assigns.dataset_id
+        })
+
       %{datasetLink: dataset_link}
       |> DatasetLinkFormSchema.changeset_from_form_data()
       |> send_dataset_link_status(socket)

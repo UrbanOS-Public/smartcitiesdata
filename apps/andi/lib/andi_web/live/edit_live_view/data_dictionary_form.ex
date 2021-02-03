@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("source-format")
+    AndiWeb.Endpoint.subscribe("populate_data_dictionary")
 
     {:ok,
      assign(socket,
@@ -181,6 +182,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
       when file_type in ["text/csv", "application/vnd.ms-excel"] do
+    IO.inspect("here?")
     case validate_empty_csv(file) do
       {:ok, file} ->
         new_changeset =
@@ -217,6 +219,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", _, socket) do
+    IO.inspect("heere?")
     socket.assigns.changeset
     |> send_error_interpreting_file(socket)
   end
@@ -274,6 +277,15 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_info(%{topic: "source-format"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info(
+    %{topic: "populate_data_dictionary", payload: %{"dataset_sample" => dataset_sample, "dataset_id" => dataset_id}},
+    %{assigns: %{dataset_id: dataset_id}} = socket) do
+    IO.inspect(dataset_sample, label: "we made it")
+    #TODO this aint workin --> trigger changeset update somehow
+    {:noreply, push_event(socket, "file_upload", dataset_sample)}
+    # {:noreply, socket}
   end
 
   def handle_info(
