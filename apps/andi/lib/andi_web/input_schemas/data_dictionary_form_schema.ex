@@ -38,7 +38,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
   def changeset_from_form_data(form_data) do
     form_data
-    |> ensure_schema_order()
+    |> ensure_schema_order("schema")
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
   end
@@ -106,16 +106,20 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     end
   end
 
-  defp ensure_schema_order(form_data) do
+  defp ensure_schema_order(form_data, schema_field_name) do
     form_data
-    |> Map.update("schema", [], fn
-      schema_from_form_data ->
-        schema_from_form_data
-        |> Enum.map(fn {k, v} -> {String.to_integer(k), v} end)
-        |> Enum.sort()
-        |> Enum.map(fn {_, v} -> v end)
+    |> Map.update(schema_field_name, [], fn schema_from_form_data ->
+      schema_from_form_data
+      |> Enum.map(fn {k, v} -> {String.to_integer(k), v} end)
+      |> Enum.sort()
+      |> Enum.map(fn {_, v} -> v end)
+      |> Enum.map(&ensure_subschema_order/1)
     end)
   end
+
+  defp ensure_subschema_order(%{"subSchema" => _} = schema_field), do: ensure_schema_order(schema_field, "subSchema")
+
+  defp ensure_subschema_order(schema_field), do: schema_field
 
   defp ensure_field_name(%{"name" => ""} = field) do
     default_field_name = Map.get(field, "sequence", UUID.uuid4())

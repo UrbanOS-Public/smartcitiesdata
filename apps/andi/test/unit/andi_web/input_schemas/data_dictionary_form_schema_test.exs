@@ -130,6 +130,36 @@ defmodule AndiWeb.DataDictionaryFormSchemaTest do
 
       assert expected_schema_names == schema_names_from_form_data_changeset
     end
+
+    test "mainatains order of subschema" do
+      form_data = %{
+        "schema" => %{
+          "4" => %{
+            "name" => "cam",
+            "subSchema" => %{
+              "0" => %{"name" => "cams_child"},
+              "1" => %{"name" => "cams_other_child"},
+              "2" => %{"name" => "cams_third_child"}
+            }
+          },
+          "2" => %{"name" => "joe"},
+          "1" => %{"name" => "mike"},
+          "3" => %{"name" => "dude"}
+        }
+      }
+
+      subschema_names_from_form_data_changeset =
+        form_data
+        |> DataDictionaryFormSchema.changeset_from_form_data()
+        |> Ecto.Changeset.get_field(:schema)
+        |> List.last()
+        |> Map.get(:subSchema)
+        |> Enum.map(fn struct -> struct.name end)
+
+      expected_schema_names = ["cams_child", "cams_other_child", "cams_third_child"]
+
+      assert expected_schema_names == subschema_names_from_form_data_changeset
+    end
   end
 
   defp drop_fields_from_schema(nil), do: nil
