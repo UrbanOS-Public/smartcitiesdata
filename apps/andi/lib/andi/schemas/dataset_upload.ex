@@ -13,6 +13,7 @@ defmodule Andi.Schemas.DatasetUpload do
     field(:timestamp, :utc_datetime)
     field(:user_uploading, :string)
     field(:upload_success, :boolean)
+    field(:dataset_link, :string)
   end
 
   use Accessible
@@ -21,7 +22,8 @@ defmodule Andi.Schemas.DatasetUpload do
     :dataset_id,
     :timestamp,
     :user_uploading,
-    :upload_success
+    :upload_success,
+    :dataset_link
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)

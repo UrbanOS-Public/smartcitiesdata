@@ -128,7 +128,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> Ecto.Changeset.add_error(:datasetLink, "File type must be CSV or JSON")
       |> Map.put(:action, :update)
 
-    log_sample_upload(socket, false)
+    log_sample_upload(socket, nil, false)
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
@@ -140,7 +140,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 200MB")
       |> Map.put(:action, :update)
 
-    log_sample_upload(socket, false)
+    log_sample_upload(socket, nil, false)
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
@@ -162,7 +162,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
         }
       )
 
-      log_sample_upload(socket, true)
+      log_sample_upload(socket, dataset_link, true)
 
       %{datasetLink: dataset_link}
       |> DatasetLinkFormSchema.changeset_from_form_data()
@@ -176,7 +176,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   end
 
   def handle_event("file_upload", _, socket) do
-    log_sample_upload(socket, false)
+    log_sample_upload(socket, nil, false)
 
     socket.assigns.changeset
     |> send_error_interpreting_file(socket)
@@ -247,12 +247,13 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
 
   defp get_file_type_for_upload(file_type), do: file_type
 
-  defp log_sample_upload(socket, success?) do
+  defp log_sample_upload(socket, dataset_link, success?) do
     upload_log_changes = %{
       dataset_id: socket.assigns.dataset_id,
       timestamp: DateTime.utc_now(),
       user_uploading: socket.assigns.current_user_id,
-      upload_success: success?
+      upload_success: success?,
+      dataset_link: dataset_link
     }
 
     upload_log_changeset = Andi.Schemas.DatasetUpload.changeset(upload_log_changes)

@@ -8,6 +8,7 @@ defmodule Andi.Repo.Migrations.CreateDatasetUploadTable do
       add(:timestamp, :utc_datetime)
       add(:user_uploading, :string)
       add(:upload_success, :boolean)
+      add(:dataset_link, :string)
     end
   end
 end
