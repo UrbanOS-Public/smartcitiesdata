@@ -82,8 +82,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           <div class="component-edit-section--<%= @visibility %>">
 
             <%= if not @is_curator do %>
-              <div class="section-help">
-                <a href="https://prod-os-public-data.s3-us-west-2.amazonaws.com/andi/instructions.pdf" class="document-link" target="_blank">How to Complete the Data Dictionary Section <span class="link-out"></span></a>
+              <div class="section-help data-dictionary-help">
+                Please review your data dictionary schema for accuracy and completeness
               </div>
             <% end %>
             <div class="data-dictionary-form-edit-section form-grid">

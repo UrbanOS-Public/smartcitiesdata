@@ -312,6 +312,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     display: none;
 }
 
+.data-dictionary-help {
+    color: $color-form-label;
+    font-size: 1.1rem;
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }

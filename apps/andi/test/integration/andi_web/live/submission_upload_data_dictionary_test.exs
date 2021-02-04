@@ -186,5 +186,69 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
       assert generated_schema == []
       refute_broadcast("populate_data_dictionary", file_payload)
     end
+
+    test "logs sample upload to postgres on success", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      upload_data_dictionary_view = find_live_child(view, "upload_data_dictionary_form_editor")
+
+      json_sample = [%{field1: "blah", field2: "blah blah"}] |> Jason.encode!()
+
+      file_payload = %{
+        "fileType" => "application/json",
+        "fileName" => "sample.csv",
+        "file" => json_sample
+      }
+
+      render_change(upload_data_dictionary_view, :file_upload, file_payload)
+
+      download_log = Andi.Repo.get_by(Andi.Schemas.DatasetUpload, dataset_id: andi_dataset.id)
+
+      assert download_log != nil
+
+      associated_user = Andi.Repo.get(Andi.Schemas.User, download_log.user_uploading)
+
+      assert download_log.dataset_id == andi_dataset.id
+      assert associated_user.email == "bob@example.com"
+      assert download_log.upload_success
+    end
+
+    test "logs sample upload to postgres on failure", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      upload_data_dictionary_view = find_live_child(view, "upload_data_dictionary_form_editor")
+
+      json_sample = [%{field1: "blah", field2: "blah blah"}] |> Jason.encode!()
+
+      file_payload = %{
+        "fileType" => "invalid",
+        "fileName" => "sample.csv",
+        "file" => json_sample
+      }
+
+      render_change(upload_data_dictionary_view, :file_upload, file_payload)
+
+      download_log = Andi.Repo.get_by(Andi.Schemas.DatasetUpload, dataset_id: andi_dataset.id)
+
+      assert download_log != nil
+
+      associated_user = Andi.Repo.get(Andi.Schemas.User, download_log.user_uploading)
+
+      assert download_log.dataset_id == andi_dataset.id
+      assert associated_user.email == "bob@example.com"
+      refute download_log.upload_success
+    end
   end
 end
