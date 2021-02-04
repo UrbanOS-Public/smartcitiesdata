@@ -4,25 +4,14 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
-  import Checkov
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import Phoenix.ChannelTest
 
-  import FlokiHelpers,
-    only: [
-      get_attributes: 3,
-      get_value: 2,
-      get_select: 2,
-      get_all_select_options: 2,
-      get_select_first_option: 2,
-      get_text: 2,
-      get_texts: 2,
-      find_elements: 2
-    ]
+  import FlokiHelpers, only: [get_text: 2, find_elements: 2]
 
-  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
@@ -96,7 +85,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
         render_change(upload_data_dictionary_view, :file_upload, %{
           "fileType" => "text/csv",
           "fileName" => "sample.csv",
-          "file" => "John,Doe,120 jefferson st.,Riverside, NJ,8075"
+          "file" => "name,last,addr,city,state,zip\nJohn,Doe,120 jefferson st.,Riverside, NJ,8075"
         })
 
       eventually(fn ->
@@ -106,6 +95,96 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
         assert "sample.csv" == get_text(html, ".sample-file-display")
       end)
+    end
+
+    test "populates data dictionary for valid json files", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      upload_data_dictionary_view = find_live_child(view, "upload_data_dictionary_form_editor")
+
+      json_sample = [%{first_name: "joey", last_name: "bob", age: 12}] |> Jason.encode!()
+
+      render_change(upload_data_dictionary_view, :file_upload, %{
+        "fileType" => "application/json",
+        "fileName" => "sample.json",
+        "file" => json_sample
+      })
+
+      expected_schema = [
+        %{name: "age", type: "integer"},
+        %{name: "first_name", type: "string"},
+        %{name: "last_name", type: "string"}
+      ]
+
+      eventually(fn ->
+        updated_dataset = Datasets.get(andi_dataset.id)
+
+        generated_schema =
+          updated_dataset.technical.schema
+          |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+        assert(generated_schema == expected_schema)
+      end)
+    end
+
+    test "populates data dictionary for valid csv files", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      upload_data_dictionary_view = find_live_child(view, "upload_data_dictionary_form_editor")
+
+      render_change(upload_data_dictionary_view, :file_upload, %{
+        "fileType" => "text/csv",
+        "fileName" => "sample.csv",
+        "file" => "first_name,last_name,age\nJohn,Doe,34"
+      })
+
+      expected_schema = [
+        %{name: "first_name", type: "string"},
+        %{name: "last_name", type: "string"},
+        %{name: "age", type: "integer"}
+      ]
+
+      eventually(fn ->
+        updated_dataset = Datasets.get(andi_dataset.id)
+
+        generated_schema =
+          updated_dataset.technical.schema
+          |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+        assert(generated_schema == expected_schema)
+      end)
+    end
+
+    test "does not populate data dictionary for failed sample upload", %{
+      public_conn: conn,
+      blank_dataset: blank_dataset,
+      public_user: public_user
+    } do
+      {:ok, andi_dataset} = Datasets.update(blank_dataset)
+      {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
+
+      assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      upload_data_dictionary_view = find_live_child(view, "upload_data_dictionary_form_editor")
+
+      json_sample = [%{field1: "blah", field2: "blah blah"}] |> Jason.encode!()
+
+      file_payload = %{
+        "fileType" => "invalid",
+        "fileName" => "sample.csv",
+        "file" => json_sample
+      }
+
+      render_change(upload_data_dictionary_view, :file_upload, file_payload)
+
+      updated_dataset = Datasets.get(andi_dataset.id)
+      generated_schema = updated_dataset.technical.schema
+
+      assert generated_schema == []
+      refute_broadcast("populate_data_dictionary", file_payload)
     end
   end
 end

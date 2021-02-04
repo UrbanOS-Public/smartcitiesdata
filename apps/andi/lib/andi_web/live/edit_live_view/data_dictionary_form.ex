@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("source-format")
+    AndiWeb.Endpoint.subscribe("populate_data_dictionary")
 
     {:ok,
      assign(socket,
@@ -179,41 +180,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket)
-      when file_type in ["text/csv", "application/vnd.ms-excel"] do
-    case validate_empty_csv(file) do
-      {:ok, file} ->
-        new_changeset =
-          file
-          |> parse_csv()
-          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
-          |> send_data_dictionary_status(socket)
-
-        assign_new_schema(socket, new_changeset)
-
-      :error ->
-        send_error_interpreting_file(socket.assigns.changeset, socket)
-    end
-  end
-
-  def handle_event("file_upload", %{"file" => file, "fileType" => "application/json"}, socket) do
-    changeset =
-      socket.assigns.changeset
-      |> reset_changeset_errors()
-
-    case validate_empty_json(file) do
-      {:ok, decoded_json} ->
-        new_changeset =
-          decoded_json
-          |> List.wrap()
-          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
-          |> send_data_dictionary_status(socket)
-
-        assign_new_schema(socket, new_changeset)
-
-      :error ->
-        send_error_interpreting_file(changeset, socket)
-    end
+  def handle_event("file_upload", %{"file" => file, "fileType" => file_type}, socket) do
+    file_type_for_upload = get_file_type_for_upload(file_type)
+    generate_new_schema(socket, file, file_type_for_upload)
   end
 
   def handle_event("file_upload", _, socket) do
@@ -274,6 +243,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_info(%{topic: "source-format"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info(
+        %{
+          topic: "populate_data_dictionary",
+          payload: %{"dataset_sample" => %{"file" => file, "fileType" => file_type}, "dataset_id" => dataset_id}
+        },
+        %{assigns: %{dataset_id: dataset_id}} = socket
+      ) do
+    file_type_for_upload = get_file_type_for_upload(file_type)
+    generate_new_schema(socket, file, file_type)
   end
 
   def handle_info(
@@ -371,6 +351,50 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   defp reset_changeset_errors(changeset) do
     Map.update!(changeset, :errors, fn errors -> Keyword.delete(errors, :schema_sample) end)
   end
+
+  defp generate_new_schema(socket, file, "application/json") do
+    changeset =
+      socket.assigns.changeset
+      |> reset_changeset_errors()
+
+    case validate_empty_json(file) do
+      {:ok, decoded_json} ->
+        new_changeset =
+          decoded_json
+          |> List.wrap()
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
+
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(changeset, socket)
+    end
+  end
+
+  defp generate_new_schema(socket, file, "text/csv") do
+    case validate_empty_csv(file) do
+      {:ok, file} ->
+        new_changeset =
+          file
+          |> parse_csv()
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
+
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(socket.assigns.changeset, socket)
+    end
+  end
+
+  defp generate_new_schema(socket, _, _) do
+    send_error_interpreting_file(socket.assigns.changeset, socket)
+  end
+
+  defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
+
+  defp get_file_type_for_upload(file_type), do: file_type
 
   defp assign_new_schema(socket, new_changeset) do
     existing_schema_empty =
