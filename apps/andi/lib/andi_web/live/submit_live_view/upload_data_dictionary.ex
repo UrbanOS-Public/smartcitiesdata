@@ -14,7 +14,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
 
   getter(:hosted_bucket, generic: true)
 
-  def mount(_, %{"dataset" => dataset}, socket) do
+  def mount(_, %{"dataset" => dataset, "user_id" => user_id}, socket) do
     new_upload_data_dictionary_changeset = AndiWeb.InputSchemas.DatasetLinkFormSchema.changeset_from_andi_dataset(dataset)
 
     send(socket.parent_pid, {:update_dataset_link_status, new_upload_data_dictionary_changeset.valid?})
@@ -29,7 +29,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
        visibility: "collapsed",
        validation_status: "collapsed",
        dataset_id: dataset.id,
-       loading_schema: false
+       loading_schema: false,
+       current_user_id: user_id
      )}
   end
 
@@ -127,6 +128,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> Ecto.Changeset.add_error(:datasetLink, "File type must be CSV or JSON")
       |> Map.put(:action, :update)
 
+    log_sample_upload(socket, false)
+
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
@@ -136,6 +139,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       |> reset_changeset_errors()
       |> Ecto.Changeset.add_error(:datasetLink, "File size must be less than 200MB")
       |> Map.put(:action, :update)
+
+    log_sample_upload(socket, false)
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
@@ -157,6 +162,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
         }
       )
 
+      log_sample_upload(socket, true)
+
       %{datasetLink: dataset_link}
       |> DatasetLinkFormSchema.changeset_from_form_data()
       |> send_dataset_link_status(socket)
@@ -169,6 +176,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   end
 
   def handle_event("file_upload", _, socket) do
+    log_sample_upload(socket, false)
+
     socket.assigns.changeset
     |> send_error_interpreting_file(socket)
   end
@@ -237,4 +246,16 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
 
   defp get_file_type_for_upload(file_type), do: file_type
+
+  defp log_sample_upload(socket, success?) do
+    upload_log_changes = %{
+      dataset_id: socket.assigns.dataset_id,
+      timestamp: DateTime.utc_now(),
+      user_uploading: socket.assigns.current_user_id,
+      upload_success: success?
+    }
+
+    upload_log_changeset = Andi.Schemas.DatasetUpload.changeset(upload_log_changes)
+    Andi.Repo.insert_or_update(upload_log_changeset)
+  end
 end

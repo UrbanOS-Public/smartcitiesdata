@@ -90,7 +90,7 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       dataset ->
-        live_render(conn, view, session: %{"dataset" => dataset, "is_curator" => is_curator})
+        live_render(conn, view, session: %{"dataset" => dataset, "is_curator" => is_curator, "user_id" => user_id})
     end
   end
 

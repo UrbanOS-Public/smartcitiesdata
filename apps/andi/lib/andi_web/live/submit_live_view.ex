@@ -39,7 +39,7 @@ defmodule AndiWeb.SubmitLiveView do
         </div>
 
         <div class="upload-data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.SubmitLiveView.UploadDataDictionary, id: :upload_data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
+          <%= live_render(@socket, AndiWeb.SubmitLiveView.UploadDataDictionary, id: :upload_data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator, "user_id" => @current_user_id}) %>
         </div>
 
         <div class="data-dictionary-form-component">
@@ -87,7 +87,7 @@ defmodule AndiWeb.SubmitLiveView do
     """
   end
 
-  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
+  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator, "user_id" => user_id}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
@@ -98,6 +98,7 @@ defmodule AndiWeb.SubmitLiveView do
        form_status: %{metadata: false, data_dictionary: false, dataset_link: false},
        click_id: UUID.uuid4(),
        changeset: new_changeset,
+       current_user_id: user_id,
        dataset: dataset,
        dataset_id: dataset.id,
        is_curator: is_curator,
