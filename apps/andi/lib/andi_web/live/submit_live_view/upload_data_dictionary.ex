@@ -140,39 +140,23 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"file" => file, "fileName" => file_name, "fileType" => file_type, "fileSize" => file_size}, socket)
-      when file_type in ["text/csv", "application/vnd.ms-excel"] do
+  def handle_event("file_upload", %{"file" => file, "fileName" => file_name, "fileType" => file_type}, socket) do
+    file_type_for_upload = get_file_type_for_upload(file_type)
     dataset_id = socket.assigns.dataset_id
     dataset_link = "#{@bucket_path}#{dataset_id}/#{file_name}"
 
     with {:ok, presigned_url} <- presigned_url(dataset_id, file_name),
-         {:ok, _} <- upload_sample_dataset(presigned_url, file, "text/csv") do
+         {:ok, _} <- upload_sample_dataset(presigned_url, file, file_type_for_upload) do
       AndiWeb.Endpoint.broadcast_from(
         self(),
         "populate_data_dictionary",
         "populate_data_dictionary",
-        %{"dataset_sample" =>
-          %{"fileType" => file_type, "file" => file, "fileSize" => file_size},
+        %{
+          "dataset_sample" => %{"fileType" => file_type_for_upload, "file" => file},
           "dataset_id" => socket.assigns.dataset_id
-        })
+        }
+      )
 
-      %{datasetLink: dataset_link}
-      |> DatasetLinkFormSchema.changeset_from_form_data()
-      |> send_dataset_link_status(socket)
-      |> complete_validation(socket)
-    else
-      _ ->
-        socket.assigns.changeset
-        |> send_error_interpreting_file(socket)
-    end
-  end
-
-  def handle_event("file_upload", %{"file" => file, "fileName" => file_name, "fileType" => "application/json"}, socket) do
-    dataset_id = socket.assigns.dataset_id
-    dataset_link = "#{@bucket_path}#{dataset_id}/#{file_name}"
-
-    with {:ok, presigned_url} <- presigned_url(dataset_id, file_name),
-         {:ok, _} <- upload_sample_dataset(presigned_url, file, "application/json") do
       %{datasetLink: dataset_link}
       |> DatasetLinkFormSchema.changeset_from_form_data()
       |> send_dataset_link_status(socket)
@@ -249,4 +233,8 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
       {_, error} -> {:error, error}
     end
   end
+
+  defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
+
+  defp get_file_type_for_upload(file_type), do: file_type
 end
