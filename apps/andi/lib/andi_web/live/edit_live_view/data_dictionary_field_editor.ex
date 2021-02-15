@@ -53,8 +53,23 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           </div>
           <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
           <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+
+          <div class="data-dictionary-field-editor__default>
+            <% using_default = input_value(@form, :default) not in [nil, %{}] %>
+            <% offset = input_value(@form, :default) |> get_offset_from_default() %>
+
+            <div>
+              <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
+              <p class=<%= if !using_default, do: "disabled" %>>Use Default</p>
+            </div>
+            <div>
+            <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
+              <p>Offset in seconds</p>
+            </div>
+          </div>
         <% end %>
-      </div>
+        </div>
+
 
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
@@ -83,4 +98,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
       </div>
     """
   end
+
+  defp get_offset_from_default(%{provider: "date"} = default) do
+    default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
+  end
+
+  defp get_offset_from_default(%{provider: "timestamp"} = default) do
+    default |> Map.get(:opts) |> Map.get(:offset_in_seconds, 0)
+  end
+
+  defp get_offset_from_default(_), do: nil
 end
