@@ -59,7 +59,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         <div class="data-dictionary-field-editor__default full-width">
           <%= if field_type in ["date", "timestamp"] do %>
             <% using_default = input_value(@form, :default) not in [nil, %{}] %>
-            <% offset = input_value(@form, :default) |> get_offset_from_default() %>
+            <% offset = input_value(@form, :default) |> get_offset_from_default(using_default) %>
 
             <div class="inline" style="align-items: baseline;">
               <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
@@ -101,15 +101,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
     """
   end
 
-  defp get_offset_from_default(%{provider: "date"} = default) do
+  defp get_offset_from_default(_, false), do: nil
+
+  defp get_offset_from_default(%{provider: "date"} = default, _) do
     default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
   end
 
-  defp get_offset_from_default(%{provider: "timestamp"} = default) do
+  defp get_offset_from_default(%{provider: "timestamp"} = default, _) do
     default |> Map.get(:opts) |> Map.get(:offset_in_seconds, 0)
   end
 
-  defp get_offset_from_default(_), do: nil
+  defp get_offset_from_default(_, _), do: 0
 
   defp time_unit_from_field_type("date"), do: "days"
   defp time_unit_from_field_type("timestamp"), do: "seconds"

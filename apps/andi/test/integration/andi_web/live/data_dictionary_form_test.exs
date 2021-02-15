@@ -1033,5 +1033,50 @@ defmodule AndiWeb.DataDictionaryFormTest do
         } = updated_andi_ds.technical.schema |> hd()
       end, 10, 200)
     end
+
+    test "defaults offset to 0", %{conn: conn, andi_dataset_with_date: andi_dataset_with_date} do
+      schema_field_id = andi_dataset_with_date.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset_with_date.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset_with_date.id,
+            "offset" => nil,
+            "use_default" => "true",
+            "format" => format,
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(fn ->
+        updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+
+        assert %{
+          default: %{
+            "provider" => "date",
+            "version" => "1",
+            "opts" => %{
+              "format" => format,
+              "offset_in_days" => 0
+            }
+          }
+        } = updated_andi_ds.technical.schema |> hd()
+      end, 10, 200)
+
+    end
   end
 end
