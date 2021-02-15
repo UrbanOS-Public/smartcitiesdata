@@ -67,7 +67,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
             </div>
             <div class="inline" width="400px">
               <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
-              <%= label(@form, :offset, "Offset in seconds", class: "label") %>
+              <%= label(@form, :offset, "Offset in #{time_unit_from_field_type(field_type)}", class: "label") %>
             </div>
           <% end %>
         </div>
@@ -110,4 +110,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
   end
 
   defp get_offset_from_default(_), do: nil
+
+  defp time_unit_from_field_type("date"), do: "days"
+  defp time_unit_from_field_type("timestamp"), do: "seconds"
 end
