@@ -41,6 +41,7 @@ defmodule Providers.Helpers.Provisioner do
 
   defp provider_module(provider_name) do
     # to_existing_atom errors if the atom doesn't exist. Module names are pre-existing atoms.
+    provider_name = String.capitalize(provider_name)
     String.to_existing_atom("Elixir.Providers.#{provider_name}")
   rescue
     _ ->

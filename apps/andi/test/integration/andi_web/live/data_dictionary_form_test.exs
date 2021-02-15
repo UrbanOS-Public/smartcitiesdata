@@ -574,8 +574,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert [
                {"Top Level", technical_id},
                {"one", _},
-               {"two", _},
-               {"one > one-one", new_eligible_parent_id}
+               {"one > one-one", new_eligible_parent_id},
+               {"two", _}
              ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       add_field_form_data = %{
