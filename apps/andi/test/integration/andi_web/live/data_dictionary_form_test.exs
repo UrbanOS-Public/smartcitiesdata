@@ -854,7 +854,12 @@ defmodule AndiWeb.DataDictionaryFormTest do
     end
 
     test "replaces provider with nil when use default checkbox is unselected", %{conn: conn} do
-      smrt_dataset_with_provider = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}]}})
+      smrt_dataset_with_provider =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}]
+          }
+        })
 
       {:ok, andi_dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_provider)
@@ -889,14 +894,18 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_change(view, "save-all-draft")
 
-      eventually(fn ->
-        updated_andi_ds = Datasets.get(andi_dataset.id)
-        updated_schema_field = updated_andi_ds.technical.schema |> hd()
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset.id)
+          updated_schema_field = updated_andi_ds.technical.schema |> hd()
 
-        assert Map.get(updated_schema_field, :default) == %{}
-        assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
-        assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
-      end, 20, 200)
+          assert Map.get(updated_schema_field, :default) == %{}
+          assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+          assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+        end,
+        20,
+        200
+      )
     end
 
     test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
@@ -910,7 +919,6 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-
 
       assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
       assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
@@ -935,13 +943,17 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_change(view, "save-all-draft")
 
-      eventually(fn ->
-        updated_andi_ds = Datasets.get(andi_dataset.id)
-        updated_schema_field = updated_andi_ds.technical.schema |> hd()
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset.id)
+          updated_schema_field = updated_andi_ds.technical.schema |> hd()
 
-        assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
-        assert %{"provider" => "date"} = Map.get(updated_schema_field, :default)
-      end, 20, 100)
+          assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+          assert %{"provider" => "date"} = Map.get(updated_schema_field, :default)
+        end,
+        20,
+        100
+      )
     end
 
     test "generates provision for timestamps", %{conn: conn, andi_dataset_with_timestamp: andi_dataset_with_timestamp} do
@@ -973,20 +985,24 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_change(view, "save-all-draft")
 
-      eventually(fn ->
-        updated_andi_ds = Datasets.get(andi_dataset_with_timestamp.id)
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_timestamp.id)
 
-        assert %{
-          default: %{
-            "provider" => "timestamp",
-            "version" => "2",
-            "opts" => %{
-              "format" => format,
-              "offset_in_seconds" => offset_in_seconds
-            }
-          }
-        } = updated_andi_ds.technical.schema |> hd()
-      end, 10, 200)
+          assert %{
+                   default: %{
+                     "provider" => "timestamp",
+                     "version" => "2",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_seconds" => offset_in_seconds
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
     end
 
     test "generates provision for dates", %{conn: conn, andi_dataset_with_date: andi_dataset_with_date} do
@@ -1018,20 +1034,24 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_change(view, "save-all-draft")
 
-      eventually(fn ->
-        updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
 
-        assert %{
-          default: %{
-            "provider" => "date",
-            "version" => "1",
-            "opts" => %{
-              "format" => format,
-              "offset_in_days" => offset_in_days
-            }
-          }
-        } = updated_andi_ds.technical.schema |> hd()
-      end, 10, 200)
+          assert %{
+                   default: %{
+                     "provider" => "date",
+                     "version" => "1",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_days" => offset_in_days
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
     end
 
     test "defaults offset to 0", %{conn: conn, andi_dataset_with_date: andi_dataset_with_date} do
@@ -1062,21 +1082,24 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       render_change(view, "save-all-draft")
 
-      eventually(fn ->
-        updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
 
-        assert %{
-          default: %{
-            "provider" => "date",
-            "version" => "1",
-            "opts" => %{
-              "format" => format,
-              "offset_in_days" => 0
-            }
-          }
-        } = updated_andi_ds.technical.schema |> hd()
-      end, 10, 200)
-
+          assert %{
+                   default: %{
+                     "provider" => "date",
+                     "version" => "1",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_days" => 0
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
     end
   end
 end

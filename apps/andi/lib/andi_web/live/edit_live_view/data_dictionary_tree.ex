@@ -140,6 +140,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
       |> List.delete(:parent_id)
       |> List.delete(:technical_id)
       |> List.delete(:dataset_id)
+      |> List.delete(:default)
       |> Enum.map(fn k ->
         hidden_input(form_field, k)
       end)

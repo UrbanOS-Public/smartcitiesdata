@@ -94,7 +94,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
       assert [] = get_attributes(html, "#submit-button", "disabled")
     end
 
-    test "dataset submission status is updated to subnmitted upon completion", %{
+    test "dataset submission status is updated to submitted upon completion", %{
       public_conn: conn,
       blank_dataset: blank_dataset,
       public_user: public_user
