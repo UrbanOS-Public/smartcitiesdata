@@ -39,35 +39,37 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
 
-      <div class="data-dictionary-field-editor__type-info">
-        <%= if field_type == "list" do %>
-          <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
-          <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
-        <% end %>
+        <div class="data-dictionary-field-editor__type-info">
+          <%= if field_type == "list" do %>
+            <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
+            <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
+          <% end %>
 
-        <%= if field_type in ["date", "timestamp"] do %>
-          <div class="format-label">
-            <%= label(@form, :format, "Format", class: "label label--required") %>
-            <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
-          </div>
-          <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+          <%= if field_type in ["date", "timestamp"] do %>
+            <div class="format-label">
+              <%= label(@form, :format, "Format", class: "label label--required") %>
+              <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
+            </div>
+            <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+          <% end %>
+        </div>
 
-          <div class="data-dictionary-field-editor__default>
+        <div class="data-dictionary-field-editor__default full-width">
+          <%= if field_type in ["date", "timestamp"] do %>
             <% using_default = input_value(@form, :default) not in [nil, %{}] %>
             <% offset = input_value(@form, :default) |> get_offset_from_default() %>
 
-            <div>
+            <div class="inline" style="align-items: baseline;">
               <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
-              <p class=<%= if !using_default, do: "disabled" %>>Use Default</p>
+              <%= label(@form, :default, "Default Offset", class: "label") %>
             </div>
-            <div>
-            <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
-              <p>Offset in seconds</p>
+            <div class="inline" width="400px">
+              <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
+              <%= label(@form, :offset, "Offset in seconds", class: "label") %>
             </div>
-          </div>
-        <% end %>
+          <% end %>
         </div>
 
 

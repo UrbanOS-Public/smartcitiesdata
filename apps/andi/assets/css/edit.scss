@@ -345,6 +345,16 @@ $component-header-height: 7.5rem;
     vertical-align: bottom;
 }
 
+.inline {
+    display: flex;
+    align-items: center;
+
+}
+
+.disabled {
+    color: $disabled-background;
+}
+
 #snackbar {
     visibility: hidden;
     min-width: 250px;
