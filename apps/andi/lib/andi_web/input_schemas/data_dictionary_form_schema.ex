@@ -190,5 +190,4 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
   end
-
 end
