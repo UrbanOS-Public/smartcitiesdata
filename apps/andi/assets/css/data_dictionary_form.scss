@@ -291,6 +291,13 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+.add-default-tooltip {
+    text-decoration: underline;
+    color: #26adeb;
+    font-size: 14px;
+    margin-left: 4rem;
+}
+
 .file-input-button--loading {
     display: none;
 }
