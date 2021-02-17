@@ -39,22 +39,40 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
 
-      <div class="data-dictionary-field-editor__type-info">
-        <%= if field_type == "list" do %>
-          <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
-          <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
-        <% end %>
+        <div class="data-dictionary-field-editor__type-info">
+          <%= if field_type == "list" do %>
+            <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
+            <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
+          <% end %>
 
-        <%= if field_type in ["date", "timestamp"] do %>
-          <div class="format-label">
-            <%= label(@form, :format, "Format", class: "label label--required") %>
-            <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
-          </div>
-          <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
-        <% end %>
-      </div>
+          <%= if field_type in ["date", "timestamp"] do %>
+            <div class="format-label">
+              <%= label(@form, :format, "Format", class: "label label--required") %>
+              <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
+            </div>
+            <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
+          <% end %>
+        </div>
+
+        <div class="data-dictionary-field-editor__default full-width">
+          <%= if field_type in ["date", "timestamp"] do %>
+            <% using_default = input_value(@form, :default) not in [nil, %{}] %>
+            <% offset = input_value(@form, :default) |> get_offset_from_default(using_default) %>
+
+            <div class="inline" style="align-items: baseline;">
+              <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
+              <%= label(@form, :default, "Default Offset", class: "label") %>
+              <div class="test-status__tooltip-wrapper"><p phx-hook="addTooltip" data-tooltip-content="If the data ingested does not have a <%= field_type %> value, the system can add this value during ingestion" class="add-default-tooltip">Help</p></div>
+            </div>
+            <div class="inline" width="400px">
+              <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
+              <%= label(@form, :offset, "Offset in #{time_unit_from_field_type(field_type)}", class: "label") %>
+            </div>
+          <% end %>
+        </div>
+
 
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label") %>
@@ -83,4 +101,19 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
       </div>
     """
   end
+
+  defp get_offset_from_default(_, false), do: nil
+
+  defp get_offset_from_default(%{provider: "date"} = default, _) do
+    default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
+  end
+
+  defp get_offset_from_default(%{provider: "timestamp"} = default, _) do
+    default |> Map.get(:opts) |> Map.get(:offset_in_seconds, 0)
+  end
+
+  defp get_offset_from_default(_, _), do: 0
+
+  defp time_unit_from_field_type("date"), do: "days"
+  defp time_unit_from_field_type("timestamp"), do: "seconds"
 end

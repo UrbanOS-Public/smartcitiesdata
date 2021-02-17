@@ -17,9 +17,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     margin-right: 2rem;
     margin-top: 1.7rem;
     grid-template-columns: 33% 33% 33%;
+    grid-auto-flow: column;
     grid-template-areas:
       "name . type"
       "selector . type-info"
+      "default default default"
       "description description description"
       "pii masked demographic"
       "biased rationale .";
@@ -289,6 +291,13 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 }
 
+.add-default-tooltip {
+    text-decoration: underline;
+    color: #26adeb;
+    font-size: 14px;
+    margin-left: 4rem;
+}
+
 .file-input-button--loading {
     display: none;
 }
@@ -317,6 +326,16 @@ $tick-height: 1rem + $field-padding - 0.44;
     font-size: 1.1rem;
 }
 
+.inline {
+    width: max-content;
+
+    .label {
+        margin-left: 1rem;
+        font-size: 1.1rem;
+        width: -webkit-fill-available;
+    }
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -336,3 +355,4 @@ $tick-height: 1rem + $field-padding - 0.44;
 @include area(data-dictionary-field-editor, pii);
 @include area(data-dictionary-field-editor, description);
 @include area(data-dictionary-field-editor, rationale);
+@include area(data-dictionary-field-editor, default);

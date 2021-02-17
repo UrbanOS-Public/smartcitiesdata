@@ -40,14 +40,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     form_data
     |> ensure_schema_order("schema")
     |> AtomicMap.convert(safe: false, underscore: false)
-    |> changeset()
-  end
-
-  def changeset_from_file(parsed_file, dataset_id) do
-    generated_schema = generate_schema(parsed_file, dataset_id)
-
-    %{schema: generated_schema}
-    |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.update(:schema, [], &Enum.map(&1, fn schema_field -> populate_default(schema_field) end))
     |> changeset()
   end
 
@@ -148,5 +141,53 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
     DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
+  end
+
+  defp populate_default(schema_field_changes) do
+    {use_default, updated_changes} = Map.pop(schema_field_changes, :use_default)
+    {offset, updated_changes} = Map.pop(updated_changes, :offset)
+
+    case use_default do
+      "true" -> add_default_to_changes(updated_changes, offset)
+      _ -> updated_changes |> Map.put(:default, %{})
+    end
+  end
+
+  defp add_default_to_changes(changes, offset) when offset in [nil, ""], do: add_default_to_changes(changes, 0)
+
+  defp add_default_to_changes(%{type: "date"} = changes, offset) do
+    default_changes = %{
+      provider: "date",
+      version: "1",
+      opts: %{
+        format: Map.get(changes, :format),
+        offset_in_days: offset
+      }
+    }
+
+    Map.put(changes, :default, default_changes)
+  end
+
+  defp add_default_to_changes(%{type: "timestamp"} = changes, offset) do
+    default_changes = %{
+      provider: "timestamp",
+      version: "2",
+      opts: %{
+        format: Map.get(changes, :format),
+        offset_in_seconds: offset
+      }
+    }
+
+    Map.put(changes, :default, default_changes)
+  end
+
+  defp add_default_to_changes(changes, _), do: changes
+
+  def changeset_from_file(parsed_file, dataset_id) do
+    generated_schema = generate_schema(parsed_file, dataset_id)
+
+    %{schema: generated_schema}
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
   end
 end

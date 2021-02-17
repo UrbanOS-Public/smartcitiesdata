@@ -5,6 +5,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
   import Checkov
+  import SmartCity.TestHelper, only: [eventually: 3]
 
   @moduletag shared_data_connection: true
 
@@ -573,8 +574,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert [
                {"Top Level", technical_id},
                {"one", _},
-               {"two", _},
-               {"one > one-one", new_eligible_parent_id}
+               {"one > one-one", new_eligible_parent_id},
+               {"two", _}
              ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       add_field_form_data = %{
@@ -833,5 +834,272 @@ defmodule AndiWeb.DataDictionaryFormTest do
     assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
     assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
+  end
+
+  describe "default timestamp/date" do
+    setup do
+      smrt_dataset_with_timestamp = TDG.create_dataset(%{technical: %{schema: [%{name: "timestamp_field", type: "timestamp"}]}})
+
+      smrt_dataset_with_date = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date"}]}})
+
+      {:ok, andi_dataset_with_timestamp} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_timestamp)
+        |> Datasets.save()
+
+      {:ok, andi_dataset_with_date} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_date)
+        |> Datasets.save()
+
+      [andi_dataset_with_date: andi_dataset_with_date, andi_dataset_with_timestamp: andi_dataset_with_timestamp]
+    end
+
+    test "replaces provider with nil when use default checkbox is unselected", %{conn: conn} do
+      smrt_dataset_with_provider =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}]
+          }
+        })
+
+      {:ok, andi_dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_provider)
+        |> Datasets.save()
+
+      schema_field_id = andi_dataset.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+      assert get_value(html, "#data_dictionary_field_editor__offset_input") == "-1"
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset.id,
+            "format" => "{YYYY}",
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id,
+            "use_default" => "false",
+            "offset" => "-1"
+          }
+        }
+      }
+
+      html =
+        data_dictionary_view
+        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset.id)
+          updated_schema_field = updated_andi_ds.technical.schema |> hd()
+
+          assert Map.get(updated_schema_field, :default) == %{}
+          assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+          assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+        end,
+        20,
+        200
+      )
+    end
+
+    test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
+      smrt_dataset_with_provider = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date", default: nil}]}})
+
+      {:ok, andi_dataset} =
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_provider)
+        |> Datasets.save()
+
+      schema_field_id = andi_dataset.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+      assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset.id,
+            "format" => "{YYYY}",
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id,
+            "use_default" => "true"
+          }
+        }
+      }
+
+      html =
+        data_dictionary_view
+        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset.id)
+          updated_schema_field = updated_andi_ds.technical.schema |> hd()
+
+          assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+          assert %{"provider" => "date"} = Map.get(updated_schema_field, :default)
+        end,
+        20,
+        100
+      )
+    end
+
+    test "generates provision for timestamps", %{conn: conn, andi_dataset_with_timestamp: andi_dataset_with_timestamp} do
+      schema_field_id = andi_dataset_with_timestamp.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset_with_timestamp.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+      offset_in_seconds = -1 * 60 * 60 * 24
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset_with_timestamp.id,
+            "format" => format,
+            "name" => "timestamp_field",
+            "type" => "timestamp",
+            "bread_crumb" => "timestamp_field",
+            "id" => schema_field_id,
+            "use_default" => "true",
+            "offset" => offset_in_seconds
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_timestamp.id)
+
+          assert %{
+                   default: %{
+                     "provider" => "timestamp",
+                     "version" => "2",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_seconds" => offset_in_seconds
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
+
+    test "generates provision for dates", %{conn: conn, andi_dataset_with_date: andi_dataset_with_date} do
+      schema_field_id = andi_dataset_with_date.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset_with_date.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+      offset_in_days = -1
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset_with_date.id,
+            "offset" => offset_in_days,
+            "use_default" => "true",
+            "format" => format,
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+
+          assert %{
+                   default: %{
+                     "provider" => "date",
+                     "version" => "1",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_days" => offset_in_days
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
+
+    test "defaults offset to 0", %{conn: conn, andi_dataset_with_date: andi_dataset_with_date} do
+      schema_field_id = andi_dataset_with_date.technical.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_dataset_with_date.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "dataset_id" => andi_dataset_with_date.id,
+            "offset" => nil,
+            "use_default" => "true",
+            "format" => format,
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save-all-draft")
+
+      eventually(
+        fn ->
+          updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+
+          assert %{
+                   default: %{
+                     "provider" => "date",
+                     "version" => "1",
+                     "opts" => %{
+                       "format" => format,
+                       "offset_in_days" => 0
+                     }
+                   }
+                 } = updated_andi_ds.technical.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
   end
 end

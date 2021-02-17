@@ -9,19 +9,20 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "data_dictionary" do
-    field(:name, :string)
-    field(:type, :string)
-    field(:itemType, :string)
-    field(:selector, :string)
     field(:biased, :string)
+    field(:bread_crumb, :string)
+    field(:default, :map)
     field(:demographic, :string)
     field(:description, :string, description: "")
+    field(:format, :string)
+    field(:itemType, :string)
     field(:masked, :string)
+    field(:name, :string)
     field(:pii, :string)
     field(:rationale, :string)
-    field(:bread_crumb, :string)
-    field(:format, :string)
+    field(:selector, :string)
     field(:sequence, :integer, read_after_writes: true)
+    field(:type, :string)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
@@ -38,6 +39,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :selector,
     :itemType,
     :biased,
+    :default,
     :demographic,
     :description,
     :masked,
