@@ -155,6 +155,10 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
   defp add_default_to_changes(changes, offset) when offset in [nil, ""], do: add_default_to_changes(changes, 0)
 
+  defp add_default_to_changes(changes, offset) when is_binary(offset) do
+    add_default_to_changes(changes, String.to_integer(offset))
+  end
+
   defp add_default_to_changes(%{type: "date"} = changes, offset) do
     default_changes = %{
       provider: "date",
