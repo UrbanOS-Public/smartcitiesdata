@@ -63,8 +63,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
 
             <div class="inline" style="align-items: baseline;">
               <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
-              <%= label(@form, :default, "Default Offset", class: "label") %>
-              <div class="test-status__tooltip-wrapper"><p phx-hook="addTooltip" data-tooltip-content="If the data ingested does not have a <%= field_type %> value, the system can add this value during ingestion" class="add-default-tooltip">Help</p></div>
+              <%= label(@form, :default, "Set the Default Offset #{String.capitalize(field_type)}", class: "label") %>
+              <div class="test-status__tooltip-wrapper"><p phx-hook="addTooltip" data-tooltip-content="If the data ingested does not have a <%= field_type %> value, the system can add this value during ingestion by taking the current <%= field_type %> offset by the value entered below" class="add-default-tooltip">Help</p></div>
             </div>
             <div class="inline" width="400px">
               <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>

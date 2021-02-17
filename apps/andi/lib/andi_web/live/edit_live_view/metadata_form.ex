@@ -89,6 +89,18 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
               </div>
 
+              <div class="metadata-form__format">
+                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
+                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
+                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__top-level-selector">
+                <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+                <%= text_input(f, :topLevelSelector, [class: "input--text input", readonly: input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
+                <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
+              </div>
+
               <div class="metadata-form__maintainer-name">
                 <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
                 <%= text_input(f, :contactName, class: "input") %>
@@ -112,23 +124,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :issuedDate, bind_to_input: false) %>
               </div>
 
-              <div class="metadata-form__license">
-                <div class="help-text-label">
-                  <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
-                  <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
-                </div>
-                <%= text_input(f, :license, class: "input", value: MetadataFormHelpers.get_license(input_value(f, :license))) %>
-                <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
-                <div>
-                </div>
-              </div>
-
-              <div class="metadata-form__top-level-selector">
-                <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-                <%= text_input(f, :topLevelSelector, [class: "input--text input", readonly: input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"]]) %>
-                <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
-              </div>
-
               <div class="metadata-form__update-frequency">
                 <%= label(f, :publishFrequency, DisplayNames.get(:publishFrequency), class: "label label--required") %>
                 <%= text_input(f, :publishFrequency, class: "input") %>
@@ -139,6 +134,12 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
                 <%= text_input(f, :keywords, value: MetadataFormHelpers.keywords_to_string(input_value(f, :keywords)), class: "input") %>
                 <div class="label label--inline">Separated by comma</div>
+              </div>
+
+              <div class="metadata-form__risk-rating">
+                <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
+                <%= select(f, :riskRating, MetadataFormHelpers.get_rating_options(), class: "select", prompt: MetadataFormHelpers.rating_selection_prompt()) %>
+                <%= ErrorHelpers.error_tag(f, :riskRating, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__last-updated">
@@ -163,10 +164,22 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :temporal) %>
               </div>
 
+              <div class="metadata-form__type">
+                <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
+                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [class: "select", disabled: @dataset_published?]) %>
+                <%= ErrorHelpers.error_tag(f, :sourceType, bind_to_input: false) %>
+              </div>
+
               <div class="metadata-form__organization">
                 <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
                 <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: ""]) %>
                 <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
+              </div>
+
+              <div class="metadata-form__level-of-access">
+                <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
+                <%= select(f, :private, MetadataFormHelpers.get_level_of_access_options(), class: "select", selected: "") %>
+                <%= ErrorHelpers.error_tag(f, :private, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__language">
@@ -179,22 +192,15 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= text_input(f, :homepage, class: "input") %>
               </div>
 
-              <div class="metadata-form__type">
-                <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
-                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [class: "select", disabled: @dataset_published?]) %>
-                <%= ErrorHelpers.error_tag(f, :sourceType, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__format">
-                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
-                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__level-of-access">
-                <%= label(f, :private, DisplayNames.get(:private), class: "label label--required") %>
-                <%= select(f, :private, MetadataFormHelpers.get_level_of_access_options(), class: "select", selected: "") %>
-                <%= ErrorHelpers.error_tag(f, :private, bind_to_input: false) %>
+              <div class="metadata-form__license">
+                <div class="help-text-label">
+                  <%= label(f, :license, DisplayNames.get(:license), class: "label label--required") %>
+                  <%= link("About Licenses", to: "https://creativecommons.org/licenses/", target: "_blank") %>
+                </div>
+                <%= text_input(f, :license, class: "input", value: MetadataFormHelpers.get_license(input_value(f, :license))) %>
+                <%= ErrorHelpers.error_tag(f, :license, bind_to_input: false) %>
+                <div>
+                </div>
               </div>
 
               <div class="metadata-form__benefit-rating">
@@ -203,11 +209,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= ErrorHelpers.error_tag(f, :benefitRating, bind_to_input: false) %>
               </div>
 
-              <div class="metadata-form__risk-rating">
-                <%= label(f, :riskRating, DisplayNames.get(:riskRating), class: "label label--required") %>
-                <%= select(f, :riskRating, MetadataFormHelpers.get_rating_options(), class: "select", prompt: MetadataFormHelpers.rating_selection_prompt()) %>
-                <%= ErrorHelpers.error_tag(f, :riskRating, bind_to_input: false) %>
-              </div>
             </div>
 
             <div class="edit-button-group form-grid">
