@@ -168,7 +168,9 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
       |> FormTools.replace(:schema, fn schema ->
-        Enum.map(schema, &add_dataset_id(&1, smrt_dataset.id))
+        schema
+        |> Enum.map(&add_dataset_id(&1, smrt_dataset.id))
+        |> Enum.map(&convert_default/1)
       end)
     end)
   end
@@ -215,6 +217,22 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
+  defp convert_default(%{type: "date", default: _} = field) do
+    {default, updated_field} = Map.pop(field, :default)
+    offset = default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
+
+    updated_field |> Map.put(:use_default, true) |> Map.put(:default_offset, offset)
+  end
+
+  defp convert_default(%{type: "timestamp", default: _} = field) do
+    {default, updated_field} = Map.pop(field, :default)
+    offset = default |> Map.get(:opts) |> Map.get(:offset_in_seconds, 0)
+
+    updated_field |> Map.put(:use_default, true) |> Map.put(:default_offset, offset)
+  end
+
+  defp convert_default(field), do: field
+
   defp convert_andi_technical(andi_dataset) do
     andi_dataset
     |> Map.update!(:technical, fn technical ->
@@ -224,7 +242,9 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
       |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
       |> Map.update(:schema, nil, fn schema ->
-        Enum.map(schema, &drop_fields_from_dictionary_item/1)
+        schema
+        |> Enum.map(&drop_fields_from_dictionary_item/1)
+        |> Enum.map(&populate_schema_field_default/1)
       end)
     end)
   end
@@ -274,6 +294,44 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   defp decode_andi_extract_step_body(andi_extract_step), do: andi_extract_step
+
+  defp populate_schema_field_default(field) do
+    {use_default, updated_field} = Map.pop(field, :use_default)
+    {offset, updated_field} = Map.pop(updated_field, :default_offset)
+
+    case use_default do
+      true -> add_default_to_schema_field(updated_field, offset)
+      _ -> updated_field
+    end
+  end
+
+  defp add_default_to_schema_field(%{type: "date"} = field, offset) do
+    default_changes = %{
+      provider: "date",
+      version: "1",
+      opts: %{
+        format: Map.get(field, :format),
+        offset_in_days: offset
+      }
+    }
+
+    Map.put(field, :default, default_changes)
+  end
+
+  defp add_default_to_schema_field(%{type: "timestamp"} = field, offset) do
+    default_changes = %{
+      provider: "timestamp",
+      version: "2",
+      opts: %{
+        format: Map.get(field, :format),
+        offset_in_seconds: offset
+      }
+    }
+
+    Map.put(field, :default, default_changes)
+  end
+
+  defp add_default_to_schema_field(field, _), do: field
 
   defp drop_fields_from_dictionary_item(schema) do
     schema

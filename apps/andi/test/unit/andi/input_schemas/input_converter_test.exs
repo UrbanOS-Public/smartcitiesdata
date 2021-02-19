@@ -40,6 +40,14 @@ defmodule Andi.InputSchemas.InputConverterTest do
           technical: %{
             sourceQueryParams: %{"foo" => "bar", "baz" => "biz"},
             sourceHeaders: %{"food" => "bard", "bad" => "bid"},
+            schema: [
+              %{
+                name: "timstamp_field",
+                type: "timestamp",
+                format: "{YYYY}",
+                default: %{provider: "timestamp", version: "2", opts: %{format: "{YYYY}", offset_in_seconds: -1000}}
+              }
+            ],
             extractSteps: [
               %{
                 type: "http",

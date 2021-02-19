@@ -58,16 +58,16 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
 
         <div class="data-dictionary-field-editor__default full-width">
           <%= if field_type in ["date", "timestamp"] do %>
-            <% using_default = input_value(@form, :default) not in [nil, %{}] %>
-            <% offset = input_value(@form, :default) |> get_offset_from_default(using_default) %>
+          <% using_default = input_value(@form, :use_default) %>
+          <% offset = input_value(@form, :default_offset) |> get_offset_from_default(using_default) %>
 
             <div class="inline" style="align-items: baseline;">
-              <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
+              <%= checkbox(@form, :use_default, id: id <> "__use-default") %>
               <%= label(@form, :use_default, "Default Offset", class: "label") %>
             </div>
             <div class="inline" width="400px">
-              <%= number_input(@form, :offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
-              <%= label(@form, :offset, "Offset in #{time_unit_from_field_type(field_type)}", class: "label") %>
+              <%= number_input(@form, :default_offset, class: "input", id: id <> "__offset_input", value: offset, disabled: !using_default) %>
+              <%= label(@form, :default_offset, "Offset in #{time_unit_from_field_type(field_type)}", class: "label") %>
             </div>
           <% end %>
         </div>
@@ -81,16 +81,8 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
   end
 
   defp get_offset_from_default(_, false), do: nil
-
-  defp get_offset_from_default(%{provider: "date"} = default, _) do
-    default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
-  end
-
-  defp get_offset_from_default(%{provider: "timestamp"} = default, _) do
-    default |> Map.get(:opts) |> Map.get(:offset_in_seconds, 0)
-  end
-
-  defp get_offset_from_default(_, _), do: 0
+  defp get_offset_from_default(nil, _), do: 0
+  defp get_offset_from_default(offset, _), do: offset
 
   defp time_unit_from_field_type("date"), do: "days"
   defp time_unit_from_field_type("timestamp"), do: "seconds"
