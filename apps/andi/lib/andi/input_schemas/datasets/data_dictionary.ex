@@ -11,7 +11,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   schema "data_dictionary" do
     field(:biased, :string)
     field(:bread_crumb, :string)
-    field(:default, :map)
+    field(:default_offset, :integer)
     field(:demographic, :string)
     field(:description, :string, description: "")
     field(:format, :string)
@@ -23,6 +23,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:selector, :string)
     field(:sequence, :integer, read_after_writes: true)
     field(:type, :string)
+    field(:use_default, :boolean)
     has_many(:subSchema, __MODULE__, foreign_key: :parent_id, on_replace: :delete)
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
@@ -39,7 +40,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :selector,
     :itemType,
     :biased,
-    :default,
+    :default_offset,
     :demographic,
     :description,
     :masked,
@@ -50,7 +51,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :parent_id,
     :bread_crumb,
     :format,
-    :sequence
+    :sequence,
+    :use_default
   ]
   @required_fields [
     :name,

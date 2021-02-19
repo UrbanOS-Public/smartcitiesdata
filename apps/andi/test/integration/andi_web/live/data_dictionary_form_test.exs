@@ -897,9 +897,10 @@ defmodule AndiWeb.DataDictionaryFormTest do
       eventually(
         fn ->
           updated_andi_ds = Datasets.get(andi_dataset.id)
-          updated_schema_field = updated_andi_ds.technical.schema |> hd()
+          {:ok, smrt_ds_from_andi_ds} = InputConverter.andi_dataset_to_smrt_dataset(updated_andi_ds)
+          updated_schema_field = smrt_ds_from_andi_ds.technical.schema |> hd()
 
-          assert Map.get(updated_schema_field, :default) == %{}
+          refute Map.has_key?(updated_schema_field, :default)
           assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
           assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
         end,
@@ -909,10 +910,10 @@ defmodule AndiWeb.DataDictionaryFormTest do
     end
 
     test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
-      smrt_dataset_with_provider = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date", default: nil}]}})
+      smrt_dataset_without_provider = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date"}]}})
 
       {:ok, andi_dataset} =
-        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_provider)
+        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_without_provider)
         |> Datasets.save()
 
       schema_field_id = andi_dataset.technical.schema |> hd() |> Map.get(:id)
@@ -946,10 +947,11 @@ defmodule AndiWeb.DataDictionaryFormTest do
       eventually(
         fn ->
           updated_andi_ds = Datasets.get(andi_dataset.id)
-          updated_schema_field = updated_andi_ds.technical.schema |> hd()
+          {:ok, smrt_ds_from_andi_ds} = InputConverter.andi_dataset_to_smrt_dataset(updated_andi_ds)
+          updated_schema_field = smrt_ds_from_andi_ds.technical.schema |> hd()
 
           assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
-          assert %{"provider" => "date"} = Map.get(updated_schema_field, :default)
+          assert %{provider: "date"} = Map.get(updated_schema_field, :default)
         end,
         20,
         100
@@ -975,7 +977,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
             "bread_crumb" => "timestamp_field",
             "id" => schema_field_id,
             "use_default" => "true",
-            "offset" => offset_in_seconds
+            "default_offset" => offset_in_seconds
           }
         }
       }
@@ -988,17 +990,18 @@ defmodule AndiWeb.DataDictionaryFormTest do
       eventually(
         fn ->
           updated_andi_ds = Datasets.get(andi_dataset_with_timestamp.id)
+          {:ok, smrt_ds_from_andi_ds} = InputConverter.andi_dataset_to_smrt_dataset(updated_andi_ds)
 
           assert %{
                    default: %{
-                     "provider" => "timestamp",
-                     "version" => "2",
-                     "opts" => %{
-                       "format" => format,
-                       "offset_in_seconds" => offset_in_seconds
+                     provider: "timestamp",
+                     version: "2",
+                     opts: %{
+                       format: format,
+                       offset_in_seconds: offset_in_seconds
                      }
                    }
-                 } = updated_andi_ds.technical.schema |> hd()
+                 } = smrt_ds_from_andi_ds.technical.schema |> hd()
         end,
         10,
         200
@@ -1018,7 +1021,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
         "schema" => %{
           "0" => %{
             "dataset_id" => andi_dataset_with_date.id,
-            "offset" => offset_in_days,
+            "default_offset" => offset_in_days,
             "use_default" => "true",
             "format" => format,
             "name" => "date_field",
@@ -1037,17 +1040,18 @@ defmodule AndiWeb.DataDictionaryFormTest do
       eventually(
         fn ->
           updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+          {:ok, smrt_ds_from_andi_ds} = InputConverter.andi_dataset_to_smrt_dataset(updated_andi_ds)
 
           assert %{
                    default: %{
-                     "provider" => "date",
-                     "version" => "1",
-                     "opts" => %{
-                       "format" => format,
-                       "offset_in_days" => offset_in_days
+                     provider: "date",
+                     version: "1",
+                     opts: %{
+                       format: format,
+                       offset_in_days: offset_in_days
                      }
                    }
-                 } = updated_andi_ds.technical.schema |> hd()
+                 } = smrt_ds_from_andi_ds.technical.schema |> hd()
         end,
         10,
         200
@@ -1066,7 +1070,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
         "schema" => %{
           "0" => %{
             "dataset_id" => andi_dataset_with_date.id,
-            "offset" => nil,
+            "default_offset" => nil,
             "use_default" => "true",
             "format" => format,
             "name" => "date_field",
@@ -1085,17 +1089,18 @@ defmodule AndiWeb.DataDictionaryFormTest do
       eventually(
         fn ->
           updated_andi_ds = Datasets.get(andi_dataset_with_date.id)
+          {:ok, smrt_ds_from_andi_ds} = InputConverter.andi_dataset_to_smrt_dataset(updated_andi_ds)
 
           assert %{
                    default: %{
-                     "provider" => "date",
-                     "version" => "1",
-                     "opts" => %{
-                       "format" => format,
-                       "offset_in_days" => 0
+                     provider: "date",
+                     version: "1",
+                     opts: %{
+                       format: format,
+                       offset_in_days: 0
                      }
                    }
-                 } = updated_andi_ds.technical.schema |> hd()
+                 } = smrt_ds_from_andi_ds.technical.schema |> hd()
         end,
         10,
         200
