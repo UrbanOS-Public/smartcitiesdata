@@ -46,7 +46,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
                 <div class="secret_value_add">
                   <%= text_input(f, :secret_value, id: "step_#{@id}__secret_destination", type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}", placeholder: "Secrets are not displayed after being saved") %>
                   <% secret_value = FormData.input_value(nil, f, :secret_value) %>
-                  <button type="button" class="btn btn--action" phx-click="save_secret" <%= disable_add_button(@changeset, secret_value) %> phx-target='<%="#step-#{@id}"%>' phx-value-secret=<%= secret_value %>>Add</button>
+                  <button type="button" class="btn btn--action" phx-click="save_secret" <%= disable_add_button(@changeset, secret_value) %> phx-target='<%="#step-#{@id}"%>' phx-value-secret="<%= secret_value %>">Add</button>
                   <span class="secret__status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
                 </div>
               </div>
