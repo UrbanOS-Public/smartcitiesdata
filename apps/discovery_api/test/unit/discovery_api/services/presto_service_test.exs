@@ -210,9 +210,15 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
         [:error, :sanitized],
         ["line 1:41: Column 'missing_column' cannot be resolved", "Test Error: Column 'missing_column' cannot be resolved"],
         ["Column 'missing_column' cannot be resolved", "Test Error: Column 'missing_column' cannot be resolved"],
-        ["Invalid X-Presto-Prepared-Statement header: line 1:77: mismatched input 'select'. expecting: ',', '.'", "Test Error: mismatched input 'select'. expecting: ',', '.'"],
+        [
+          "Invalid X-Presto-Prepared-Statement header: line 1:77: mismatched input 'select'. expecting: ',', '.'",
+          "Test Error: mismatched input 'select'. expecting: ',', '.'"
+        ],
         ["line 1:15: Table hive.default.bob does not exist", "Bad Request"],
-        ["Invalid X-Presto-Prepared-Statement header: line 1:78: mismatched input ';'. expecting: ',', '.'", "Test Error: mismatched input ';'. expecting: ',', '.'"]
+        [
+          "Invalid X-Presto-Prepared-Statement header: line 1:78: mismatched input ';'. expecting: ',', '.'",
+          "Test Error: mismatched input ';'. expecting: ',', '.'"
+        ]
       ])
     end
   end

@@ -31,10 +31,12 @@ defmodule DiscoveryApiWeb.MultipleDataController do
     else
       {:sql_error, error} ->
         render_error(conn, 400, error)
+
       _ ->
         render_error(conn, 400, "Bad Request")
     end
   rescue
-    error in [Prestige.BadRequestError, Prestige.Error] -> render_error(conn, 400, PrestoService.sanitize_error(error.message, "Query Error")) # Can we move this down to presto_service?
+    error in [Prestige.BadRequestError, Prestige.Error] ->
+      render_error(conn, 400, PrestoService.sanitize_error(error.message, "Query Error"))
   end
 end

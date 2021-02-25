@@ -52,7 +52,9 @@ defmodule DiscoveryApi.Services.PrestoService do
 
     {:ok, plan}
   rescue
-    error in [Prestige.BadRequestError, Prestige.Error] -> {:sql_error, sanitize_error(error.message, "Syntax Error")}
+    error in [Prestige.BadRequestError, Prestige.Error] ->
+      {:sql_error, sanitize_error(error.message, "Syntax Error")}
+
     error ->
       Logger.error("Error explaining statement: #{statement}")
       Logger.error("#{inspect(error)}")

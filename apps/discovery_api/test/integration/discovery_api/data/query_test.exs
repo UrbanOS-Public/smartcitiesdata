@@ -305,7 +305,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FORM #{public_table}
       """
 
-      assert %{"message" => "Syntax Error: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'ORDER', 'UNION', 'WHERE', <EOF>"} ==
+      assert %{
+               "message" =>
+                 "Syntax Error: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'ORDER', 'UNION', 'WHERE', <EOF>"
+             } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -515,7 +518,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Syntax Error: mismatched input 'DROP'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
+      assert %{
+               "message" =>
+                 "Syntax Error: mismatched input 'DROP'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
+             } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -534,7 +540,10 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       request_body = "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
 
-      assert %{"message" => "Syntax Error: mismatched input 'SELECT'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
+      assert %{
+               "message" =>
+                 "Syntax Error: mismatched input 'SELECT'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
+             } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -550,7 +559,10 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table}; DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Syntax Error: mismatched input ';'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
+      assert %{
+               "message" =>
+                 "Syntax Error: mismatched input ';'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
+             } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
