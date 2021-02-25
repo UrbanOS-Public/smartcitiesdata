@@ -1,4 +1,5 @@
 defmodule DiscoveryApi.Services.PrestoService do
+  require Logger
   @moduledoc false
   @supported_statements [
     ~r/^\s*SELECT\s.*$/i,
