@@ -3,6 +3,7 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   require Logger
   alias DiscoveryApiWeb.MultipleDataView
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
+  alias DiscoveryApi.Services.PrestoService
   import DiscoveryApiWeb.Utilities.StreamUtils
 
   import SmartCity.Event,
@@ -28,11 +29,12 @@ defmodule DiscoveryApiWeb.MultipleDataController do
 
       resp_as_stream(conn, rendered_data_stream, format)
     else
+      {:sql_error, error} ->
+        render_error(conn, 400, error)
       _ ->
         render_error(conn, 400, "Bad Request")
     end
   rescue
-    Prestige.BadRequestError -> render_error(conn, 400, "Bad Request")
-    error in [Prestige.Error] -> render_error(conn, 400, error)
+    error in [Prestige.BadRequestError, Prestige.Error] -> render_error(conn, 400, PrestoService.sanitize_error(error.message, "Query Error")) # Can we move this down to presto_service?
   end
 end

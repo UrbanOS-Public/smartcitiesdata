@@ -25,15 +25,21 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   def get_affected_tables(session, statement) do
-    with {:ok, explanation} <- explain_statement(session, statement),
+    with true <- allowed_query?(statement),
+         {:ok, explanation} <- explain_statement(session, statement),
          {:ok, query_plan} <- extract_query_plan(explanation),
          [] <- extract_write_tables(query_plan),
          [] <- extract_system_tables(query_plan),
          [_ | _] = tables <- extract_read_tables(query_plan) do
       {:ok, tables}
     else
-      _ -> {:error, "bad thing happened"}
+      {:sql_error, error} -> {:sql_error, error}
+      error -> {:error, "Could not get affected tables: #{inspect(error)}"}
     end
+  end
+
+  defp allowed_query?(query) do
+    String.contains?(query, "$path") == false
   end
 
   defp explain_statement(session, statement) do
@@ -46,7 +52,32 @@ defmodule DiscoveryApi.Services.PrestoService do
 
     {:ok, plan}
   rescue
-    _ -> {:error, "Invalid Query"}
+    error in [Prestige.BadRequestError, Prestige.Error] -> {:sql_error, sanitize_error(error.message, "Syntax Error")}
+    error ->
+      Logger.error("Error explaining statement: #{statement}")
+      Logger.error("#{inspect(error)}")
+      {:error, "Invalid Query"}
+  end
+
+  def sanitize_error("Invalid X-Presto-Prepared-Statement header: " <> error, type) do
+    sanitize_error(error, type)
+  end
+
+  def sanitize_error(error, type) do
+    Regex.named_captures(~r|^.*?(?<line>line \d*:\d*: )?(?<message>.*)|, error)
+    |> Map.get("message")
+    |> add_error_type(type)
+    |> obscure_missing_tables()
+  end
+
+  defp add_error_type(error, type), do: "#{type}: #{error}"
+
+  defp obscure_missing_tables(error) do
+    if String.contains?(error, "does not exist") do
+      "Bad Request"
+    else
+      error
+    end
   end
 
   defp extract_query_plan(explanation) do
@@ -115,7 +146,7 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   defp validate_query(query) do
-    [";", "/*", "*/", "--"]
+    [";", "/*", "*/", "--", "$path"]
     |> Enum.map(fn x -> String.contains?(query, x) end)
     |> Enum.any?(fn contained_string -> contained_string end)
     |> case do

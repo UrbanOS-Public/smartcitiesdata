@@ -298,11 +298,53 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "any user gets a reasonable response when submitting statements with bad syntax", %{
-      private_table: private_table,
+      public_table: public_table,
       anonymous_conn: conn
     } do
       request_body = """
-        SALECT * FORM #{private_table}
+        SELECT * FORM #{public_table}
+      """
+
+      assert %{"message" => "Syntax Error: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'ORDER', 'UNION', 'WHERE', <EOF>"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
+    end
+
+    test "any user gets a reasonable response when submitting statements with a missing column", %{
+      public_table: public_table,
+      anonymous_conn: conn
+    } do
+      request_body = """
+        SELECT missing_column FROM #{public_table}
+      """
+
+      assert %{"message" => "Syntax Error: Column 'missing_column' cannot be resolved"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
+    end
+
+    test "any user gets a reasonable response when submitting statements with runtime errors", %{
+      public_table: public_table,
+      anonymous_conn: conn
+    } do
+      request_body = """
+        SELECT cast(name as double) FROM #{public_table}
+      """
+
+      assert %{"message" => "Query Error: Cannot cast 'Fred' to DOUBLE"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
+    end
+
+    test "any user gets an opaque response when submitting statements for a table that does not exist", %{
+      public_table: public_table,
+      anonymous_conn: conn
+    } do
+      request_body = """
+        SELECT * FROM non_existant_dataset
       """
 
       assert %{"message" => "Bad Request"} ==
@@ -312,14 +354,14 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "any user can't use multiple line magic comments (on more than one line)", %{
-      private_table: private_table,
+      public_table: public_table,
       anonymous_conn: conn
     } do
       request_body = """
         /*
         set session distributed_join = 'true'
         */
-        SELECT * FROM #{private_table}
+        SELECT * FROM #{public_table}
       """
 
       assert %{"message" => "Bad Request"} ==
@@ -329,12 +371,12 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "any user can't use multiple line magic comments", %{
-      private_table: private_table,
+      public_table: public_table,
       anonymous_conn: conn
     } do
       request_body = """
         /* set session distributed_join = 'true' */
-        SELECT * FROM #{private_table}
+        SELECT * FROM #{public_table}
       """
 
       assert %{"message" => "Bad Request"} ==
@@ -344,12 +386,12 @@ defmodule DiscoveryApi.Data.QueryTest do
     end
 
     test "any user can't use single line magic comments", %{
-      private_table: private_table,
+      public_table: public_table,
       anonymous_conn: conn
     } do
       request_body = """
         -- set session distributed_join = 'true'
-        SELECT * FROM #{private_table}
+        SELECT * FROM #{public_table}
       """
 
       assert %{"message" => "Bad Request"} ==
@@ -473,7 +515,7 @@ defmodule DiscoveryApi.Data.QueryTest do
         DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} ==
+      assert %{"message" => "Syntax Error: mismatched input 'DROP'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -492,7 +534,7 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       request_body = "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
 
-      assert %{"message" => "Bad Request"} ==
+      assert %{"message" => "Syntax Error: mismatched input 'SELECT'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -508,7 +550,7 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table}; DROP TABLE #{private_table}
       """
 
-      assert %{"message" => "Bad Request"} ==
+      assert %{"message" => "Syntax Error: mismatched input ';'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"} ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
                |> Jason.decode!()
@@ -540,6 +582,22 @@ defmodule DiscoveryApi.Data.QueryTest do
                |> Prestige.query!(~s|select * from #{private_table}|)
                |> (fn result -> result.rows end).()
                |> Enum.count()
+    end
+
+    test "any user can't query for path columns", %{
+      public_table: public_table,
+      private_table: private_table,
+      anonymous_conn: conn,
+      prestige_session: prestige_session
+    } do
+      request_body = """
+        select "$path" from #{public_table}
+      """
+
+      assert %{"message" => "Bad Request"} ==
+               plain_text_post(conn, "/api/v1/query", request_body)
+               |> response(400)
+               |> Jason.decode!()
     end
   end
 

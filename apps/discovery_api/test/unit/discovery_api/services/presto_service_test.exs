@@ -135,7 +135,7 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:sql_error, _} = PrestoService.get_affected_tables(any(), statement)
     end
   end
 
@@ -198,6 +198,21 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
         ["     START TRANSACTION  ", false],
         ["   USE hive.default    ", false],
         ["    VALUES 1, 2, 3    ", false]
+      ])
+    end
+  end
+
+  describe "error sanitization" do
+    data_test "statement starting with #{inspect(error)}" do
+      assert sanitized == PrestoService.sanitize_error(error, "Test Error")
+
+      where([
+        [:error, :sanitized],
+        ["line 1:41: Column 'missing_column' cannot be resolved", "Test Error: Column 'missing_column' cannot be resolved"],
+        ["Column 'missing_column' cannot be resolved", "Test Error: Column 'missing_column' cannot be resolved"],
+        ["Invalid X-Presto-Prepared-Statement header: line 1:77: mismatched input 'select'. expecting: ',', '.'", "Test Error: mismatched input 'select'. expecting: ',', '.'"],
+        ["line 1:15: Table hive.default.bob does not exist", "Bad Request"],
+        ["Invalid X-Presto-Prepared-Statement header: line 1:78: mismatched input ';'. expecting: ',', '.'", "Test Error: mismatched input ';'. expecting: ',', '.'"]
       ])
     end
   end

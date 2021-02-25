@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.SearchController do
         total: total
       )
     else
-      {:request_error, reason} ->
+      {:sql_error, reason} ->
         render_error(conn, 400, reason)
 
       {:error, reason} ->
