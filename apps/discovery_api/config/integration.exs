@@ -4,7 +4,7 @@ host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 redix_args = [host: host]
 
-config :discovery_api, DiscoveryApiWeb.Endpoint, 
+config :discovery_api, DiscoveryApiWeb.Endpoint,
   url: [scheme: "https", host: "data.integrationtests.example.com", port: 443],
   http: [protocol_options: [idle_timeout: 86_400_000]]
 
