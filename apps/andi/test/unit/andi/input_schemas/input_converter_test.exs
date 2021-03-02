@@ -33,7 +33,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       assert new_dataset == dataset
     end
 
-    test "SmartCity.Dataset => Changeset => SmartCity.Dataset with source params" do
+    test "SmartCity.Dataset => Changeset => SmartCity.Dataset with params" do
       dataset =
         TestDataGenerator.create_dataset(%{
           business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"},
@@ -65,6 +65,14 @@ defmodule Andi.InputSchemas.InputConverterTest do
                   },
                   protocol: ["http1"],
                   url: "example.com"
+                },
+                assigns: %{}
+              },
+              %{
+                type: "s3",
+                context: %{
+                  headers: %{"key2" => "val2"},
+                  url: "blah.com"
                 },
                 assigns: %{}
               }
