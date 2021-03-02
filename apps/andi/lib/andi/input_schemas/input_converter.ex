@@ -270,6 +270,12 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:url, nil, &remove_query_params_from_url/1)
   end
 
+  defp update_context_from_andi_step(context, "s3") do
+    context
+    |> decode_andi_extract_step_body()
+    |> Map.update(:headers, nil, &convert_key_value_to_map/1)
+  end
+
   defp update_context_from_andi_step(context, "date") do
     context
     |> Map.put_new(:deltaTimeValue, nil)
