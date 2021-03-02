@@ -25,7 +25,8 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
     scheme: "https",
     host: System.get_env("HOST"),
     port: 443
-  ]
+  ],
+  http: [protocol_options: [idle_timeout: 86_400_000]]
 
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
