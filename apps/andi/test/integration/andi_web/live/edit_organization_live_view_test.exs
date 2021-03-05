@@ -119,7 +119,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       assert "Error: organization name already exists" == get_text(html, "#orgName-error-msg")
     end
 
-    test "cannot create an org a name longer than the threshold", %{conn: conn} do
+    test "org a names longer than the threshold are truncated", %{conn: conn} do
       org = TDG.create_organization(%{orgName: "some_great_org_name"})
       Organizations.update(org)
 
@@ -133,7 +133,9 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       html = render(view)
 
-      assert "Error: should be at most 40 character(s)" == get_text(html, "#orgName-error-msg")
+      value = get_value(html, "#form_data_orgName")
+
+      assert value == "praesent_nec_arcu_eget_est_porttitor_et"
     end
 
     data_test "org title #{title} generates org name #{org_name}", %{conn: conn, smrt_org: smrt_org} do

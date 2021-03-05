@@ -124,20 +124,18 @@ defmodule AndiWeb.MetadataFormTest do
       where(title: ["", "!@#$%"])
     end
 
-    data_test "#{title} generating a data name over max length is invalid", %{conn: conn, blank_dataset: blank_dataset} do
+    test "generating a data name over max length truncates the name", %{conn: conn, blank_dataset: blank_dataset} do
       {:ok, dataset} = Datasets.update(blank_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => title}
+      form_data = %{"dataTitle" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam et sapien. Ave."}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       html = render(metadata_view)
 
-      refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
-
-      where(title: ["Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam et sapien. Ave."])
+      assert get_value(html, "#form_data_dataName") == "lorem_ipsum_dolor_sit_amet_consectetur_adipiscing_elit_aliquam_et_sapien"
     end
 
     test "organization dropdown is populated with all organizations in the system", %{conn: conn, blank_dataset: blank_dataset} do
