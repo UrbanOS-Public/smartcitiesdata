@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Schemas.Users.User do
     field(:subject_id, :string)
     field(:email, :string)
     has_many(:visualizations, Visualization, foreign_key: :owner_id)
-    many_to_many(:organizations, Organization, join_through: DiscoveryApi.Schemas.Users.UserOrganization)
+    many_to_many(:organizations, Organization, join_through: DiscoveryApi.Schemas.Users.UserOrganization, on_replace: :delete)
 
     timestamps()
   end
@@ -30,5 +30,13 @@ defmodule DiscoveryApi.Schemas.Users.User do
     user
     |> change()
     |> put_assoc(:organizations, [organization | user.organizations])
+  end
+
+  def changeset_remove_organization(user, organization) do
+    updated_orgs = List.delete(user.organizations, organization) |> IO.inspect()
+
+    user
+    |> change()
+    |> put_assoc(:organizations, updated_orgs)
   end
 end
