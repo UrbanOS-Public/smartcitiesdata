@@ -3,10 +3,14 @@ defmodule Andi.InputSchemas.Organization do
   Module for validating Ecto.Changesets on organization input
   """
   use Ecto.Schema
+  use Properties, otp_app: :andi
+
   import Ecto.Changeset
 
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Organizations
+
+  getter(:org_name_max_length, generic: true)
 
   @primary_key {:id, Ecto.UUID, autogenerate: false}
   schema "organizations" do
@@ -50,6 +54,7 @@ defmodule Andi.InputSchemas.Organization do
     organization
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
+    |> validate_length(:orgName, max: org_name_max_length())
     |> validate_id()
   end
 

@@ -30,7 +30,9 @@ config :andi,
   organization_topic: "organization-raw",
   dead_letter_topic: "streaming-dead-letters",
   documentation_root: "",
-  vault_role: "andi-role"
+  vault_role: "andi-role",
+  dataset_name_max_length: 75,
+  org_name_max_length: 40
 
 config :tesla, adapter: Tesla.Adapter.Hackney, recv_timeout: 120_000
 
