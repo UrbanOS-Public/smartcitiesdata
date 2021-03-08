@@ -9,6 +9,10 @@ defmodule Andi.InputSchemas.Datasets do
   alias Ecto.Changeset
   alias Andi.InputSchemas.Datasets.ExtractStep
 
+  use Properties, otp_app: :andi
+
+  getter(:dataset_name_max_length, generic: true)
+
   import Ecto.Query, only: [from: 2]
 
   require Logger
@@ -35,7 +39,7 @@ defmodule Andi.InputSchemas.Datasets do
     current_date = Date.utc_today()
     new_dataset_id = UUID.uuid4()
     new_dataset_title = "New Dataset - #{current_date}"
-    new_dataset_name = data_title_to_data_name(new_dataset_title)
+    new_dataset_name = data_title_to_data_name(new_dataset_title, dataset_name_max_length())
 
     new_changeset =
       Dataset.changeset_for_draft(
@@ -238,12 +242,32 @@ defmodule Andi.InputSchemas.Datasets do
     |> Enum.empty?()
   end
 
-  def data_title_to_data_name(data_title) do
+  def data_title_to_data_name(data_title, truncation_length) do
     data_title
     |> String.replace(" ", "_", global: true)
     |> String.replace(~r/[^[:alnum:]_]/, "", global: true)
     |> String.replace(~r/_+/, "_", global: true)
     |> String.downcase()
+    |> truncate_to_word(truncation_length)
+  end
+
+  defp truncate_to_word(data_title, truncation_length) do
+    data_title
+    |> String.split("_")
+    |> Enum.reduce_while([], &build_shorter_name(&1, &2, truncation_length))
+    |> Enum.reverse()
+    |> Enum.join("_")
+  end
+
+  defp build_shorter_name(word, word_list, max_length) do
+    new_word_list = [word | word_list]
+    new_name_length = Enum.join(new_word_list, "_") |> String.length()
+
+    if new_name_length > max_length do
+      {:halt, word_list}
+    else
+      {:cont, new_word_list}
+    end
   end
 
   defp extract_owner_id(nil, %{ownerId: ownerId}), do: ownerId

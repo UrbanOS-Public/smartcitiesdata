@@ -2,11 +2,16 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
   @moduledoc false
 
   use Ecto.Schema
+  use Properties, otp_app: :andi
+
   import Ecto.Changeset
 
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.InputConverter
+
+  getter(:dataset_name_max_length, generic: true)
+  getter(:org_name_max_length, generic: true)
 
   @no_dashes_regex ~r/^[^\-]+$/
   @email_regex ~r/^[\w\_\~\!\$\&\'\(\)\*\+\,\;\=\:.-]+@[\w.-]+\.[\w.-]+?$/
@@ -104,7 +109,9 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     |> validate_source_format()
     |> validate_top_level_selector()
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_length(:dataName, max: dataset_name_max_length())
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_length(:orgName, max: org_name_max_length())
     |> validate_format(:contactEmail, @email_regex)
     |> validate_format(:license, @url_regex, message: "should be a valid url link to the text of the license")
     |> validate_inclusion(:benefitRating, @ratings, message: "should be one of #{inspect(@ratings)}")

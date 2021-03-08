@@ -4,6 +4,10 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
   """
   alias Andi.InputSchemas.Datasets
 
+  use Properties, otp_app: :andi
+
+  getter(:dataset_name_max_length, generic: true)
+
   @scos_data_json_seed "1719bf64-38f5-40bf-9737-45e84f5c8419"
 
   def dataset_mapper(%{"dataset" => datasets}, org) do
@@ -87,7 +91,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
   defp source_url(_distribution), do: ""
 
   defp data_name(data_title) do
-    Datasets.data_title_to_data_name(data_title)
+    Datasets.data_title_to_data_name(data_title, dataset_name_max_length())
   end
 
   defp system_name(org_name, data_name) do
