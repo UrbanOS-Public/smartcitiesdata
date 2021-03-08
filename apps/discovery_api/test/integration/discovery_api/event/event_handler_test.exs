@@ -5,12 +5,13 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   use DiscoveryApi.ElasticSearchCase
 
   import SmartCity.TestHelper
+  import SmartCity.Event, only: [dataset_update: 0, user_organization_disassociate: 0]
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
-  import SmartCity.Event, only: [dataset_update: 0]
-
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Search.Elasticsearch
+  alias DiscoveryApi.Schemas.Users
 
   @instance_name DiscoveryApi.instance_name()
 
@@ -73,6 +74,26 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
         2000,
         10
       )
+    end
+  end
+
+  describe("#{user_organization_disassociate()}") do
+    test "removes associated user and organization in ecto" do
+      organization = Helper.create_persisted_organization()
+      {:ok, user} = Users.create(%{subject_id: "cam", email: "cam@cam.com"})
+      Users.associate_with_organization(user.id, organization.id)
+
+      {:ok, user_with_orgs} = Users.get_user_with_organizations(user.id)
+      assert Enum.any?(user_with_orgs.organizations, fn org -> org.id == organization.id end)
+
+      {:ok, user_org_disassociation} = SmartCity.UserOrganizationDisassociate.new(%{user_id: user.id, org_id: organization.id})
+
+      Brook.Event.send(@instance_name, user_organization_disassociate(), __MODULE__, user_org_disassociation)
+
+      eventually(fn ->
+        {:ok, user_with_orgs} = Users.get_user_with_organizations(user.id)
+        assert Enum.all?(user_with_orgs.organizations, fn org -> org.id != organization.id end)
+      end)
     end
   end
 end

@@ -52,4 +52,16 @@ defmodule DiscoveryApi.Schemas.Users do
       error -> error
     end
   end
+
+  def disassociate_with_organization(user_id, organization_id) do
+    with {:ok, user} <- get_user(user_id),
+         {:ok, organization} <- Organizations.get_organization(organization_id) do
+      user
+      |> Repo.preload(:organizations)
+      |> User.changeset_remove_organization(organization)
+      |> Repo.update()
+    else
+      error -> error
+    end
+  end
 end
