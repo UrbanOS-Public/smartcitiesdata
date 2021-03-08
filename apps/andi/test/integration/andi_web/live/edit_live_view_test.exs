@@ -429,11 +429,15 @@ defmodule AndiWeb.EditLiveViewTest do
 
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
 
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent != nil
-        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-      end)
+      eventually(
+        fn ->
+          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+          assert dataset_sent != nil
+          assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+        end,
+        2000,
+        50
+      )
     end
 
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
@@ -463,8 +467,8 @@ defmodule AndiWeb.EditLiveViewTest do
           assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
           assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
         end,
-        500,
-        80
+        2000,
+        50
       )
     end
 
@@ -520,7 +524,7 @@ defmodule AndiWeb.EditLiveViewTest do
           assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
           assert dataset_http_extract_step["assigns"] != nil
         end,
-        500,
+        1000,
         50
       )
     end
