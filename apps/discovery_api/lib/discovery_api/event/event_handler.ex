@@ -12,7 +12,8 @@ defmodule DiscoveryApi.Event.EventHandler do
       dataset_update: 0,
       data_write_complete: 0,
       dataset_delete: 0,
-      dataset_query: 0
+      dataset_query: 0,
+      user_login: 0
     ]
 
   require Logger
@@ -152,6 +153,17 @@ defmodule DiscoveryApi.Event.EventHandler do
     error ->
       Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
       :discard
+  end
+
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+    case Users.get_user(subject_id, :subject_id) do
+      {:ok, user} ->
+        :ok
+
+      _ ->
+        Users.create(%{subject_id: subject_id, email: email})
+        :ok
+    end
   end
 
   defp clear_caches() do
