@@ -6,6 +6,8 @@ defmodule AndiWeb.Helpers.FormTools do
   alias Andi.InputSchemas.StructTools
   alias Andi.Services.OrgStore
 
+  getter(:dataset_name_max_length, generic: true)
+  getter(:org_name_max_length, generic: true)
   getter(:documentation_root, generic: true)
 
   def adjust_source_url_for_query_params(form_data) do
@@ -26,7 +28,7 @@ defmodule AndiWeb.Helpers.FormTools do
 
   def adjust_data_name(form_data) do
     data_title = form_data |> Map.get("dataTitle")
-    data_name = Datasets.data_title_to_data_name(data_title)
+    data_name = Datasets.data_title_to_data_name(data_title, dataset_name_max_length())
 
     org_name = get_in(form_data, ["orgName"])
     system_name = "#{org_name}__#{data_name}"
@@ -38,7 +40,7 @@ defmodule AndiWeb.Helpers.FormTools do
 
   def adjust_org_name_from_org_title(form_data) do
     org_title = form_data |> Map.get("orgTitle")
-    org_name = Datasets.data_title_to_data_name(org_title)
+    org_name = Datasets.data_title_to_data_name(org_title, org_name_max_length())
 
     put_in(form_data, ["orgName"], org_name)
   end
