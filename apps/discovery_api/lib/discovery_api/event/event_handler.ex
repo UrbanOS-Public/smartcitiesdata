@@ -156,8 +156,11 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+    user_login()
+    |> add_event_count(author, nil)
+
     case Users.get_user(subject_id, :subject_id) do
-      {:ok, user} ->
+      {:ok, _user} ->
         :ok
 
       _ ->
