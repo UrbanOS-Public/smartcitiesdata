@@ -16,12 +16,16 @@ defmodule Andi.Event.EventHandlerTest do
 
       Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
 
-      eventually(fn ->
-        user_from_ecto = User.get_by_subject_id(new_user_subject_id)
-        assert user_from_ecto != nil
-        assert user_from_ecto.subject_id == user.subject_id
-        assert user_from_ecto.email == user.email
-      end)
+      eventually(
+        fn ->
+          user_from_ecto = User.get_by_subject_id(new_user_subject_id)
+          assert user_from_ecto != nil
+          assert user_from_ecto.subject_id == user.subject_id
+          assert user_from_ecto.email == user.email
+        end,
+        1_000,
+        30
+      )
     end
 
     test "does not persist user if subject_id already exists" do

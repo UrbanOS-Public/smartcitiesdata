@@ -13,7 +13,6 @@ defmodule AndiWeb.AuthController do
   )
 
   import SmartCity.Event, only: [user_login: 0]
-  alias Andi.Schemas.User
   alias AndiWeb.Auth.TokenHandler
 
   @instance_name Andi.instance_name()
