@@ -11,7 +11,8 @@ defmodule Andi.Event.EventHandler do
       data_ingest_end: 0,
       dataset_delete: 0,
       dataset_harvest_start: 0,
-      dataset_harvest_end: 0
+      dataset_harvest_end: 0,
+      user_login: 0
     ]
 
   alias SmartCity.{Dataset, Organization}
@@ -20,7 +21,7 @@ defmodule Andi.Event.EventHandler do
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
   alias Andi.Harvest.Harvester
-
+  alias Andi.Schemas.User
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
 
@@ -101,6 +102,20 @@ defmodule Andi.Event.EventHandler do
     Task.start(fn -> add_dataset_count() end)
     Datasets.delete(dataset.id)
     DatasetStore.delete(dataset.id)
+  end
+
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+    user_login()
+    |> add_event_count(author, nil)
+
+    case User.get_by_subject_id(subject_id) do
+      nil ->
+        User.create_or_update(subject_id, %{subject_id: subject_id, email: email})
+        :ok
+
+      _user ->
+        :ok
+    end
   end
 
   defp add_to_set(nil, id), do: MapSet.new([id])

@@ -12,7 +12,11 @@ defmodule AndiWeb.AuthController do
     logout: [:private, :public]
   )
 
+  import SmartCity.Event, only: [user_login: 0]
+  alias Andi.Schemas.User
   alias AndiWeb.Auth.TokenHandler
+
+  @instance_name Andi.instance_name()
 
   def callback(%{assigns: %{ueberauth_failure: fails}} = conn, params) do
     Logger.error("Failed to retrieve auth credentials: #{inspect(fails)} with params #{inspect(params)}")
@@ -22,7 +26,8 @@ defmodule AndiWeb.AuthController do
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email})
+    {:ok, user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email})
+    Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
 
     conn
     |> TokenHandler.put_session_token(auth.credentials.token)
