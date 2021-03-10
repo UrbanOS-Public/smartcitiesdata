@@ -6,6 +6,7 @@ defmodule Andi.Event.EventHandlerTest do
   import SmartCity.Event, only: [user_login: 0]
   alias Andi.Schemas.User
 
+  @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
 
   describe "#{user_login()}" do
