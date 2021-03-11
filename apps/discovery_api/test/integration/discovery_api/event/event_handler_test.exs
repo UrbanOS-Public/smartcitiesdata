@@ -80,7 +80,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "#{user_login()}" do
     test "persists user if subject id does not match one in ecto" do
       new_user_subject_id = UUID.uuid4()
-      user = User.changeset(%User{}, %{subject_id: new_user_subject_id, email: "cam@cam.com"}) |> Ecto.Changeset.apply_changes()
+      {:ok, user} = %{subject_id: new_user_subject_id, email: "cam@cam.com"} |> SmartCity.User.new()
       assert {:error, "User with subject_id #{new_user_subject_id} does not exist."} == Users.get_user(user.subject_id, :subject_id)
 
       Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
