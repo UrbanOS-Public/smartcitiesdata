@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
   use Placebo
 
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Datasets
 
   @source_query_param_id Ecto.UUID.generate()
   @source_header_id Ecto.UUID.generate()
@@ -476,6 +477,19 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       expected_error = %{technical: %{extractSteps: [extractSteps: {"cannot be empty and must end with a http or s3 step", []}]}}
       assert expected_error == accumulate_errors(changeset)
       refute changeset.valid?
+    end
+  end
+
+  describe "title conversion" do
+    data_test "In case of #{condition}, title #{title} is converted to name #{expected_name}" do
+      assert Datasets.data_title_to_data_name(title, 20) == expected_name
+
+      where([
+        [:condition, :title, :expected_name],
+        ["special characters", "Bob-Data, The Finest!", "bobdata_the_finest"],
+        ["double spaces", "This  is the   data", "this_is_the_data"],
+        ["over max length", "Bob-Data, The Finest! The Best!", "bobdata_the_finest"]
+      ])
     end
   end
 

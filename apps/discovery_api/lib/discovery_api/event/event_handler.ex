@@ -8,14 +8,16 @@ defmodule DiscoveryApi.Event.EventHandler do
     only: [
       organization_update: 0,
       user_organization_associate: 0,
+      user_organization_disassociate: 0,
       dataset_update: 0,
       data_write_complete: 0,
       dataset_delete: 0,
-      dataset_query: 0
+      dataset_query: 0,
+      user_login: 0
     ]
 
   require Logger
-  alias SmartCity.{Organization, UserOrganizationAssociate, Dataset}
+  alias SmartCity.{Organization, UserOrganizationAssociate, UserOrganizationDisassociate, Dataset}
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
@@ -42,6 +44,23 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     case Users.associate_with_organization(association.user_id, association.org_id) do
+      {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
+      result -> result
+    end
+
+    # This caches some tables that a user can access. This event can change that.
+    TableInfoCache.invalidate()
+
+    :discard
+  end
+
+  def handle_event(
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
+      ) do
+    user_organization_disassociate()
+    |> add_event_count(author, nil)
+
+    case Users.disassociate_with_organization(disassociation.user_id, disassociation.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
@@ -134,6 +153,20 @@ defmodule DiscoveryApi.Event.EventHandler do
     error ->
       Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
       :discard
+  end
+
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+    user_login()
+    |> add_event_count(author, nil)
+
+    case Users.get_user(subject_id, :subject_id) do
+      {:ok, _user} ->
+        :ok
+
+      _ ->
+        Users.create(%{subject_id: subject_id, email: email})
+        :ok
+    end
   end
 
   defp clear_caches() do

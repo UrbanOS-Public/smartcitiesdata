@@ -12,6 +12,7 @@ jobs:
         with:
           elixir-version: 1.9
           otp-version: 22.2
+          experimental-otp: true
           runs-on: ubuntu-latest
       - name: Get dependencies
         run: |

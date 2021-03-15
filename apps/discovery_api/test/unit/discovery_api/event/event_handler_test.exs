@@ -7,6 +7,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       dataset_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
+      user_organization_disassociate: 0,
       dataset_delete: 0,
       dataset_query: 0
     ]
@@ -62,6 +63,35 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       assert capture_log(fn ->
                EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
+             end) =~ error_message
+    end
+  end
+
+  describe "handle_event/1 user_organization_disassociate" do
+    setup do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      {:ok, disassociation_event} = SmartCity.UserOrganizationDisassociate.new(%{user_id: "user_id", org_id: "org_id"})
+
+      %{disassociation_event: disassociation_event}
+    end
+
+    test "should remove user/organization association in ecto and clear relevant caches", %{disassociation_event: disassociation_event} do
+      allow(Users.disassociate_with_organization(any(), any()), return: {:ok, %User{}})
+      expect(TableInfoCache.invalidate(), return: {:ok, true})
+
+      EventHandler.handle_event(Brook.Event.new(type: user_organization_disassociate(), data: disassociation_event, author: :author))
+
+      assert_called(Users.disassociate_with_organization(disassociation_event.user_id, disassociation_event.org_id))
+    end
+
+    test "logs errors when save fails", %{disassociation_event: disassociation_event} do
+      error_message = "you're a huge embarrassing failure"
+      allow(Users.disassociate_with_organization(any(), any()), return: {:error, error_message})
+
+      assert capture_log(fn ->
+               EventHandler.handle_event(
+                 Brook.Event.new(type: user_organization_disassociate(), data: disassociation_event, author: :author)
+               )
              end) =~ error_message
     end
   end
