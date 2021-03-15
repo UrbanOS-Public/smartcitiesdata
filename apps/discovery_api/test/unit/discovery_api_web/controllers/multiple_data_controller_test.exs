@@ -221,7 +221,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     test "returns prestige error details if prestige throws", %{conn: conn, public_tables: public_tables} do
       statement = "select quantity*2131241224124412124 from public__one"
       failure_message = "bigint multiplication overflow: 7694 * 2131241224124412124"
-      expected_response = "{\"message\":\"#{failure_message}\"}"
+      expected_response = "{\"message\":\"Query Error: #{failure_message}\"}"
 
       allow(PrestoService.is_select_statement?(statement), return: true)
       allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, public_tables})
