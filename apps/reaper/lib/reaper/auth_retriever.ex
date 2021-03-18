@@ -4,7 +4,7 @@ defmodule Reaper.AuthRetriever do
   """
   alias Reaper.Collections.Extractions
   alias Reaper.Cache.AuthCache
-  alias Reaper.UrlBuilder
+  alias Reaper.Util
 
   def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) when is_list(headers) do
     authorize(dataset_id, url, body, encode_method, Enum.into(headers, %{}), cache_ttl)
@@ -63,8 +63,9 @@ defmodule Reaper.AuthRetriever do
 
   defp make_auth_request(dataset_id, url, body, headers) do
     case HTTPoison.post(url, body, headers) do
-      {:ok, %{status_code: code, body: body}} when code < 400 ->
-        body
+      {:ok, %{status_code: code, body: body, headers: headers}} when code < 400 ->
+        content_encoding = Util.get_header_value(headers, "content-encoding")
+        handle_content_encoding(body, content_encoding)
 
       {:ok, %{status_code: code}} ->
         raise "Unable to retrieve auth credentials for dataset #{dataset_id} with status #{code}"
@@ -73,6 +74,9 @@ defmodule Reaper.AuthRetriever do
         raise "Unable to retrieve auth credentials for dataset #{dataset_id} with error #{inspect(error)}"
     end
   end
+
+  defp handle_content_encoding(body, "gzip"), do: :zlib.gunzip(body)
+  defp handle_content_encoding(body, _), do: body
 
   defp evaluate_eex_map(nil), do: %{}
 

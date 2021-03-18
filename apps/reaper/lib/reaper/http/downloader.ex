@@ -2,6 +2,7 @@ defmodule Reaper.Http.Downloader do
   @moduledoc """
   Will download large files over http to a file on disk.
   """
+  alias Reaper.Util
   require Logger
 
   @type url :: String.t()
@@ -64,6 +65,7 @@ defmodule Reaper.Http.Downloader do
          {:ok, response} <- stream_responses({response, file}, opts),
          {:ok, response} <- close_conn(response) do
       File.close(file)
+      handle_compression(response.headers, response.destination)
       handle_status(response, evaluated_headers)
     else
       {:error, conn, error} ->
@@ -205,4 +207,22 @@ defmodule Reaper.Http.Downloader do
   # at this time we dont have any use cases to do otherwise
   defp add_content_type(headers, ""), do: headers
   defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
+
+  defp handle_compression(headers, file_name) do
+    case Util.get_header_value(headers, "content-encoding") do
+      "gzip" -> uncompress_file(file_name)
+      _ -> :ok
+    end
+  end
+
+  # File.stream!([:compressed]) only handles gzip compression. Additional functions would be needed to support
+  # other formats.
+  defp uncompress_file(file_name) do
+    temp_file_name = file_name <> "_uncompressed"
+    file = File.stream!(temp_file_name)
+    file_name |> File.stream!([:compressed]) |> Stream.into(file) |> Stream.run()
+    File.close(file)
+    File.rm!(file_name)
+    File.rename!(temp_file_name, file_name)
+  end
 end

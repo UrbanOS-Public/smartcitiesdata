@@ -91,6 +91,43 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       assert assigns == %{token: "auth_token"}
     end
 
+    test "Handles compressed auth bodies", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        parsed = Jason.decode!(body)
+
+        case parsed do
+          %{"Key" => "AuthToken"} ->
+            conn
+            |> Plug.Conn.put_resp_header("Content-Encoding", "gzip")
+            |> Plug.Conn.resp(200, :zlib.gzip(Jason.encode!(%{token: "thetokenstring"})))
+
+          _ ->
+            Plug.Conn.resp(conn, 403, "No dice")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "auth",
+          context: %{
+            path: ["token"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            headers: %{},
+            cacheTtl: nil
+          },
+          assigns: %{}
+        }
+      ]
+
+      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+
+      assert assigns == %{token: "thetokenstring"}
+    end
+
     test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
@@ -123,6 +160,39 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
       assert assigns == %{key: "super secret", token: "auth_token"}
+    end
+
+    test "Can use empty string for body", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+
+        case body do
+          "" -> Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token2"}} |> Jason.encode!())
+          _ -> Plug.Conn.resp(conn, 403, "No dice")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "auth",
+          context: %{
+            path: ["sub", "path"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: "",
+            headers: %{},
+            cacheTtl: nil
+          },
+          assigns: %{
+            key: "super secret two"
+          }
+        }
+      ]
+
+      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+
+      assert assigns == %{key: "super secret two", token: "auth_token2"}
     end
 
     test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
@@ -424,7 +494,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
 
       assigns = ExtractStep.execute_extract_steps(dataset, steps)
 
-      assert assigns = %{output_file: {:file, "12345-6789"}, path: "fancyurl"}
+      assert assigns == %{output_file: {:file, "12345-6789"}, path: "fancyurl"}
       assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
@@ -504,8 +574,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
               any()
             ),
             return: {:file, "somefile2"}
-
-      filename = "#{dataset.id}"
 
       steps = [
         %{
