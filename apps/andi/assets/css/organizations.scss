@@ -5,13 +5,6 @@
 
 .organization-form-edit-section {
     margin: -2rem 1rem 2rem 1rem;
-
-    grid-template-areas:
-        "title logo-url"
-        "name ."
-        "description ."
-        "homepage ."
-        "data-json-url .";
 }
 
 .edit-organization-title {

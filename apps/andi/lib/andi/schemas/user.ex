@@ -44,5 +44,9 @@ defmodule Andi.Schemas.User do
     Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload([:datasets])
   end
 
+  def get_by_id(id) do
+    Repo.get_by(__MODULE__, id: id) |> Repo.preload([:datasets])
+  end
+
   def preload(struct), do: struct
 end
