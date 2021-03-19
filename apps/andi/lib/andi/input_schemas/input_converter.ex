@@ -200,7 +200,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_smrt_step(context, _), do: context
 
-  defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body != nil do
+  defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body not in ["", nil] do
     Map.put(smrt_extract_step, :body, Jason.encode!(body))
   end
 
