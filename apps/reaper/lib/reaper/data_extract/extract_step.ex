@@ -91,14 +91,19 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp evaluate_body_and_headers(step) do
-    body =
-      step.context.body
-      |> UrlBuilder.safe_evaluate_parameters(step.assigns)
-      |> Enum.into(%{})
-      |> Jason.encode!()
+    body = process_body(step.context.body, step.assigns)
 
     headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
 
     {body, headers}
+  end
+
+  defp process_body(body, _assigns) when body in ["", nil], do: ""
+
+  defp process_body(body, assigns) do
+    body
+    |> UrlBuilder.safe_evaluate_parameters(assigns)
+    |> Enum.into(%{})
+    |> Jason.encode!()
   end
 end
