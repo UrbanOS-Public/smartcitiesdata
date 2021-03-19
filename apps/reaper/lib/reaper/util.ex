@@ -7,7 +7,7 @@ defmodule Reaper.Util do
   defp deep_resolve(_key, _left, right), do: right
 
   def get_header_value(headers, header_name) do
-    case Enum.find(headers, fn {name, _value} -> String.downcase(name) == header_name end) do
+    case Enum.find(headers, fn {name, _value} -> String.downcase(name) == String.downcase(header_name) end) do
       nil -> nil
       {_header, value} -> value
     end

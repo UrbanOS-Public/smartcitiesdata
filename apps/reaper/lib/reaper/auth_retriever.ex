@@ -75,7 +75,13 @@ defmodule Reaper.AuthRetriever do
     end
   end
 
-  defp handle_content_encoding(body, "gzip"), do: :zlib.gunzip(body)
+  defp handle_content_encoding(body, "gzip") do
+    try do
+      :zlib.gunzip(body)
+    rescue
+      _ -> raise "Unable to decompress auth credentials. Payload may be corrupted or not compressed."
+    end
+  end
   defp handle_content_encoding(body, _), do: body
 
   defp evaluate_eex_map(nil), do: %{}

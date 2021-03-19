@@ -128,6 +128,43 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       assert assigns == %{token: "thetokenstring"}
     end
 
+    test "Handles invalid compressed auth bodies", %{bypass: bypass, dataset: dataset} do
+      Bypass.stub(bypass, "POST", "/", fn conn ->
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        parsed = Jason.decode!(body)
+
+        case parsed do
+          %{"Key" => "AuthToken"} ->
+            conn
+            |> Plug.Conn.put_resp_header("Content-Encoding", "gzip")
+            |> Plug.Conn.resp(200, "This is not gzipped")
+
+          _ ->
+            Plug.Conn.resp(conn, 403, "No dice")
+        end
+      end)
+
+      steps = [
+        %{
+          type: "auth",
+          context: %{
+            path: ["token"],
+            destination: "token",
+            url: "http://localhost:#{bypass.port}",
+            encodeMethod: "json",
+            body: %{Key: "AuthToken"},
+            headers: %{},
+            cacheTtl: nil
+          },
+          assigns: %{}
+        }
+      ]
+
+      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(dataset, steps)
+      end
+    end
+
     test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
