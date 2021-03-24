@@ -41,6 +41,17 @@ defmodule Andi.Services.Auth0Management do
   end
 
   def get_user_roles(subject_id) do
+    url = Keyword.fetch!(auth0(), :audience)
+
+    with {:ok, access_token} <- get_token(),
+         {:ok, response} <- get("#{url}users/#{subject_id}/roles", headers: [{"Authorization", "Bearer #{access_token}"}]) do
+      roles = response |> Map.get(:body) |> Jason.decode!()
+      roles
+    else
+      {:error, reason} ->
+        Logger.error("Unable to retrieve auth0 roles: #{reason}")
+        {:error, :retrieve_auth0_roles_failed}
+    end
   end
 
   defp client_id() do
