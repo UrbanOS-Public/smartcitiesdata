@@ -1,23 +1,6 @@
-[![Master](https://travis-ci.org/Datastillery/smartcitiesdata.svg?branch=master)](https://travis-ci.org/Datastillery/smartcitiesdata)
-
 # Smart Cities Data Platform
 
-Where to go to get started:
-* [What is the project and how it works](https://github.com/Datastillery/smartcitiesdata/wiki/The-What)
-* [What all those application names mean](https://github.com/Datastillery/smartcitiesdata/wiki/Names)
-* [How to run and use the code](https://github.com/Datastillery/smartcitiesdata/wiki/Run)
-* [How to contribute](https://github.com/Datastillery/smartcitiesdata/wiki/Contribute)
-* [How to contact the team for help](https://github.com/Datastillery/smartcitiesdata/wiki/Contact)
-* [Additional learning resources](https://github.com/Datastillery/smartcitiesdata/wiki/Resources)
-* [A glossary of terms and technologies](https://github.com/Datastillery/smartcitiesdata/wiki/Glossary)
-
-We look forward to growing a robust community around this project and doing some truly challenging and disruptive things in the space of Smart and Connected cities, industries, and organizations, IoT processing, and data analytics. Please join us and if you have any questions, feel free to reach out and ask!
-
-~ Smart Cities Data core team
-
-## architecture
-![scdp architecture diagram](./scdp_arch.png?raw=true "scdp architecture")
-
+# Project Description
 The platform is a combination of Elixir micro services custom built to ingest, normalize, transform,
 persist, and stream data from numerous sources, orchestrated via Kubernetes in any cloud provider or
 on-prem Kubernetes deployment. The loosely coupled services pass data across the pipeline via Kafka
@@ -27,31 +10,72 @@ files are persisted and retrieved via SQL queries processed by the PrestoDB engi
 Finally, user access, discovery, and analysis is facilitated by a ReactJS web application user interface,
 a RESTful API, or a web socket API for streaming data feeds.
 
-## local development
-### local environment setup
-* [Setup needed to prepare workstation](https://github.com/Datastillery/smartcitiesdata/wiki/Setup)
+![scdp architecture diagram](./scdp_arch.png?raw=true "scdp architecture")
+
+## Microservices
+| Application       | Short Description | Build Status |
+| ----------------- | ----------------- | ------------ |
+| [Andi](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/README.md)                             | Admin Interface for creating/editing datasets to be ingested  | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/andi.yml/badge.svg)  |
+| [Discovery API](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_api/README.md)           | API to search for and query datasets                          | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/discovery_api.yml/badge.svg) |
+| [Discovery Streams](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_streams/README.md)   | Websocket connection to listen to streaming data              | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/discovery_streams.yml/badge.svg)  |
+| [Estuary](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/estuary/README.md)                       | Microservice to persist event stream events                   | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/estuary.yml/badge.svg)  |
+| [Forklift](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/forklift/README.md)                     | Microservice for saving data to Presto DB                     | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/forklift.yml/badge.svg)  |
+| [Odo](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/odo/README.md)                               | Microservice to convert Shapefiles to GeoJSON                 | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/odo.yml/badge.svg)  |
+| [Reaper](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/reaper/README.md)                         | Microservice to retrieve data                                 | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/reaper.yml/badge.svg)  |
+| [Valkyrie](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/valkyrie/README.md)                     | Microservice to validate data structure during ingestion      | ![](https://github.com/Datastillery/smartcitiesdata/actions/workflows/valkyrie.yml/badge.svg)  |
+
+# Prerequisites
+### General Prerequisites
+* [Elixir](https://elixir-lang.org/) - The primary language that all of the microservices are written in
+* [Docker](https://www.docker.com/) - All microservices are built as docker images
+* [Apache Kafka](https://kafka.apache.org/) -  Communication mechanism between microservices
+* [Redis](https://redis.io/) - General purpose storage and caching
+* [Elasticsearch](https://www.elastic.co/) - Used by Discovery API for search
+* [PostgreSQL](https://www.postgresql.org/) - General purpoase storage
+* [Presto](https://prestodb.io/) - Big Data storage of ingested data
+* [Vault](https://www.vaultproject.io/) - Secure storage of secrets
+
+### Development Enviornment Prerequisites
+* [General Setup Information](https://github.com/Datastillery/smartcitiesdata/wiki/Setup)
 * [Windows](https://github.com/Datastillery/smartcitiesdata/wiki/Windows-Setup)
 * [macOS](https://github.com/Datastillery/smartcitiesdata/wiki/macOS-Setup)
 * [Linux](https://github.com/Datastillery/smartcitiesdata/wiki/Linux-Setup)
 
-### starting the entire stack
-https://github.com/Datastillery/smartcitiesdata/wiki/Run
 
+# Usage
+The microservices written in Elixir use [Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html) as the build tool.
+## Building
+Each microservice under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory has a `Dockerfile` that can be used to build that microservice individually by running the following command:
+```
+docker build .
+```
+## Testing
+* Unit Tests.  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
+```
+mix test
+```
+* Integration Tests  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
+```
+mix test.integration
+```
+* End to End (E2E) Tests.  Can be executed from the root of this repository.
+```
+mix test.e2e
+```
+## Execution
+[How to run and use the code](https://github.com/Datastillery/smartcitiesdata/wiki/Run)
 
-### Apps README
-| application       | url                                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------------------- |
-| andi              | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/README.md)              |
-| discovery_api     | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_api/README.md)     |
-| discovery_streams | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/discovery_streams/README.md) |
-| estuary           | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/estuary/README.md)           |
-| forklift          | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/forklift/README.md)          |
-| odo               | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/odo/README.md)               |
-| reaper            | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/reaper/README.md)            |
-| valkyrie          | [Click Here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/valkyrie/README.md)          |
-
-### notes
-ws://localhost:8087/socket/websocket
-
-## To run End to End Tests Locally
-  * Run `mix test.e2e` in the root of the project
+# Additional Notes
+* [What is the project and how it works](https://github.com/Datastillery/smartcitiesdata/wiki/The-What)
+* [What all those application names mean](https://github.com/Datastillery/smartcitiesdata/wiki/Names)
+* [Additional learning resources](https://github.com/Datastillery/smartcitiesdata/wiki/Resources)
+* [A glossary of terms and technologies](https://github.com/Datastillery/smartcitiesdata/wiki/Glossary)
+* [Starting All of the Microservices](https://github.com/Datastillery/smartcitiesdata/wiki/Run)
+# Version History and Retention
+Each microservice is released independently and can be found here in the [Releases](https://github.com/Datastillery/smartcitiesdata/releases) section.  All releases will be kept indefinitely.
+# License
+Released under [Apache 2 license](https://github.com/Datastillery/smartcitiesdata/blob/master/LICENSE).
+# Contributions
+[How to contribute](https://github.com/Datastillery/smartcitiesdata/wiki/Contribute)
+# Contact Information
+# Acknowledgements
