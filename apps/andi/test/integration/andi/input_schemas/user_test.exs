@@ -5,6 +5,7 @@ defmodule Andi.Schemas.UserTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.Schemas.User
+  alias Andi.InputSchemas.Organizations
 
   @moduletag shared_data_connection: true
 
@@ -36,6 +37,28 @@ defmodule Andi.Schemas.UserTest do
       Datasets.update(dataset)
 
       assert %{id: id, subject_id: user_one_subject_id, datasets: [%{id: dataset_id}]} = User.get_by_subject_id(user_one_subject_id)
+    end
+  end
+
+  describe "associate_with_organization/2" do
+    setup do
+      # Create a test user
+      subject_id = Ecto.UUID.generate()
+
+      {:ok, user} = User.create_or_update(subject_id, %{email: "foo@bar.com"})
+
+      # Create a test org
+      org = Organizations.create()
+
+      %{user: user, subject_id: subject_id, org: org}
+    end
+
+    test "associates a user with an organization", %{user: user, subject_id: subject_id, org: org} do
+      assert %{subject_id: subject_id} = User.get_by_subject_id(subject_id)
+
+      User.associate_with_organization(subject_id, org.id)
+
+      users = User.get_all()
     end
   end
 end

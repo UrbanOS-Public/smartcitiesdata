@@ -9,23 +9,6 @@ defmodule Andi.Services.Auth0Management do
 
   getter(:auth0, generic: true)
 
-  defp get_token() do
-    url = Keyword.fetch!(auth0(), :url)
-    audience = Keyword.fetch!(auth0(), :audience)
-
-    req_body =
-      URI.encode_query(%{grant_type: "client_credentials", client_id: client_id(), client_secret: client_secret(), audience: audience})
-
-    case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
-      {:ok, response} ->
-        access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
-        {:ok, access_token}
-
-      {_, error} ->
-        {:error, error}
-    end
-  end
-
   def get_roles() do
     url = Keyword.fetch!(auth0(), :audience)
 
@@ -64,5 +47,22 @@ defmodule Andi.Services.Auth0Management do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
     Keyword.fetch!(ueberauth_config, :client_secret)
+  end
+
+  defp get_token() do
+    url = Keyword.fetch!(auth0(), :url)
+    audience = Keyword.fetch!(auth0(), :audience)
+
+    req_body =
+      URI.encode_query(%{grant_type: "client_credentials", client_id: client_id(), client_secret: client_secret(), audience: audience})
+
+    case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
+      {:ok, response} ->
+        access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
+        {:ok, access_token}
+
+      {_, error} ->
+        {:error, error}
+    end
   end
 end
