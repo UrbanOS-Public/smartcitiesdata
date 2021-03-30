@@ -75,7 +75,7 @@ defmodule Andi.Schemas.UserTest do
 
       eventually(fn ->
         user = User.get_by_subject_id(subject_id)
-        
+
         assert [%{id: org_id}, %{id: org_two_id}] = Map.get(user, :organizations)
       end)
     end

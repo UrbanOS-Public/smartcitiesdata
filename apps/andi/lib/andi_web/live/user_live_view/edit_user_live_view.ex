@@ -38,7 +38,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
 
   def mount(_params, %{"is_curator" => is_curator, "user" => user}, socket) do
     changeset = User.changeset(user, %{}) |> Map.put(:errors, [])
-    
+
     case Auth0Management.get_roles() do
       roles ->
         roles = roles |> Enum.map(fn %{"name" => name, "description" => description} -> {description, name} end)
@@ -47,5 +47,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
       {:error, error} ->
         {:ok, assign(socket, is_curator: is_curator, changeset: changeset, roles: [], page_error: true, organizations: [])}
     end
+  end
+
+  def handle_event("validate", _, socket) do
+    {:noreply, socket}
   end
 end
