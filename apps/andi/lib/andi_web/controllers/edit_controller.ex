@@ -136,7 +136,7 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       user ->
-        live_render(conn, AndiWeb.EditUserLiveView, session: %{"is_curator" => is_curator, "user" => user})
+        live_render(conn, AndiWeb.UserLiveView.EditUserLiveView, session: %{"is_curator" => is_curator, "user" => user})
     end
   end
 end

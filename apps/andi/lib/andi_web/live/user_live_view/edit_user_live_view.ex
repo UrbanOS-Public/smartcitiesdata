@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditUserLiveView do
+defmodule AndiWeb.UserLiveView.EditUserLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
 
@@ -26,20 +26,26 @@ defmodule AndiWeb.EditUserLiveView do
                   <%= select(f, :user_role, @roles, [class: "select", readonly: true]) %>
               </div>
           </form>
+
+          <div class="associated-organizations-table">
+            <h3>Organizations Associated With This User</h3>
+
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations) %>
+          </div>
       </div>
     """
   end
 
   def mount(_params, %{"is_curator" => is_curator, "user" => user}, socket) do
     changeset = User.changeset(user, %{}) |> Map.put(:errors, [])
-
+    
     case Auth0Management.get_roles() do
       roles ->
         roles = roles |> Enum.map(fn %{"name" => name, "description" => description} -> {description, name} end)
-        {:ok, assign(socket, is_curator: is_curator, changeset: changeset, roles: roles)}
+        {:ok, assign(socket, is_curator: is_curator, changeset: changeset, roles: roles, organizations: user.organizations)}
 
       {:error, error} ->
-        {:ok, assign(socket, is_curator: is_curator, changeset: changeset, roles: [], page_error: true)}
+        {:ok, assign(socket, is_curator: is_curator, changeset: changeset, roles: [], page_error: true, organizations: [])}
     end
   end
 end
