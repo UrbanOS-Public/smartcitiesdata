@@ -2,10 +2,12 @@ defmodule AndiWeb.EditUserLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+  import AndiWeb.Test.PublicAccessCase
 
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
@@ -18,53 +20,31 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   @url_path "/user/"
 
-  describe "public user access" do
-    setup do
-      subject_id = Ecto.UUID.generate()
-      {:ok, user} = User.create_or_update(subject_id, %{email: "test@test.com"})
-
-      [user: user]
-    end
-
-    test "public users cannot view or edit users", %{public_conn: conn, user: user} do
-      assert {:error,
-              {
-                :redirect,
-                %{
-                  to: "/auth/auth0?prompt=login&error_message=Unauthorized"
-                }
-              }} = live(conn, @url_path <> user.id)
-
-      true
-    end
-  end
-
   describe "curator user access" do
-    setup do
-      subject_id = Ecto.UUID.generate()
-      {:ok, user} = User.create_or_update(subject_id, %{email: "bob@bob.com"})
+    setup %{public_subject: public_subject} do
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
 
       org_one = Organizations.create()
       org_two = Organizations.create()
 
-      {:ok, _} = User.associate_with_organization(subject_id, org_one.id)
-      {:ok, _} = User.associate_with_organization(subject_id, org_two.id)
+      {:ok, _} = User.associate_with_organization(public_subject, org_one.id)
+      {:ok, _} = User.associate_with_organization(public_subject, org_two.id)
 
-      [user: user]
+      [public_user: public_user]
     end
 
-    test "curators can view users and associated orgs", %{curator_conn: conn, user: user} do
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+    test "curators can view users and associated orgs", %{curator_conn: curator_conn, public_user: public_user} do
+      assert {:ok, view, html} = live(curator_conn, @url_path <> public_user.id)
     end
 
-    test "curators can see the users email as readonly", %{curator_conn: conn, user: user} do
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+    test "curators can see the users email as readonly", %{curator_conn: curator_conn, public_user: public_user} do
+      assert {:ok, view, html} = live(curator_conn, @url_path <> public_user.id)
       email = get_value(html, "#form_data_email")
-      assert email == "bob@bob.com"
+      assert email == "bob@example.com"
     end
 
-    test "curators can see organizations associated with the user", %{curator_conn: conn, user: user} do
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+    test "curators can see organizations associated with the user", %{curator_conn: curator_conn, public_user: public_user} do
+      assert {:ok, view, html} = live(curator_conn, @url_path <> public_user.id)
 
       orgs = find_elements(html, ".organizations-table__tr")
       assert length(orgs) == 2
