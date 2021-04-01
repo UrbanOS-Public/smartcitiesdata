@@ -52,6 +52,7 @@ defmodule AndiWeb.Router do
     get "/datasets/:id", EditController, :edit_dataset
     get "/organizations/:id", EditController, :edit_organization
     get "/datasets/:id/sample", EditController, :download_dataset_sample
+    get "/user/:id", EditController, :edit_user
   end
 
   scope "/api", AndiWeb.API do

@@ -1,0 +1,26 @@
+.user-edit-page {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.edit-user-title {
+    display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
+    margin-left: 1rem;
+    margin-right: 2rem;
+}
+
+.user-form-edit-section {
+    margin: -2rem 1rem 2rem 1rem;
+}
+
+.user-form__role {
+    margin-top: 35px;
+}
+
+.associated-organizations-table {
+    margin-top: 3rem;
+    width: 100%;
+}
+

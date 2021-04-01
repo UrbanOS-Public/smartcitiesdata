@@ -9,6 +9,7 @@ defmodule Andi.InputSchemas.Organization do
 
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Organizations
+  alias Andi.Schemas.User
 
   getter(:org_name_max_length, generic: true)
 
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.Organization do
     field(:homepage, :string)
     field(:logoUrl, :string)
     field(:dataJsonUrl, :string)
+    belongs_to(:org_owner, User, type: Ecto.UUID, foreign_key: :org_owner_id)
   end
 
   use Accessible

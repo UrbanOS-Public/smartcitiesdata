@@ -70,6 +70,10 @@ config :andi, Andi.Repo,
     verify_fun: {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
   ]
 
+config :andi, :auth0,
+  url: "https://#{System.get_env("AUTH0_DOMAIN")}/oauth/token",
+  audience: "https://#{System.get_env("AUTH0_DOMAIN")}/api/v2/"
+
 config :telemetry_event,
   metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   add_poller: true,
