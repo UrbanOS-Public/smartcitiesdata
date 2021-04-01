@@ -208,12 +208,14 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "sends a user:organization:associate event", %{conn: conn, org: org, users: users} do
+      {:ok, expected_1} = UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
+      {:ok, expected_2} = UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+      allow(Andi.Schemas.User.get_by_subject_id(expected_1.subject_id), return: %{subject_id: expected_1.subject_id, email: expected_1.email})
+      allow(Andi.Schemas.User.get_by_subject_id(expected_2.subject_id), return: %{subject_id: expected_2.subject_id, email: expected_2.email})
+
       conn
       |> post("/api/v1/organization/#{org.id}/users/add", users)
       |> json_response(200)
-
-      {:ok, expected_1} = UserOrganizationAssociate.new(%{user_id: 1, org_id: org.id})
-      {:ok, expected_2} = UserOrganizationAssociate.new(%{user_id: 2, org_id: org.id})
 
       assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_1), once())
       assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_2), once())

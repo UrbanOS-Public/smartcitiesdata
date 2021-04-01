@@ -52,14 +52,16 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{user_id: user_id, org_id: org_id},
+        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: email},
         author: author
       }) do
     user_organization_associate()
     |> add_event_count(author, nil)
 
-    merge(:org_to_users, org_id, &add_to_set(&1, user_id))
-    merge(:user_to_orgs, user_id, &add_to_set(&1, org_id))
+    create_user_if_not_exists(subject_id, email)
+    # TODO: Need Kevin's code here
+
+    :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data, author: author}) do
@@ -108,6 +110,10 @@ defmodule Andi.Event.EventHandler do
     user_login()
     |> add_event_count(author, nil)
 
+    create_user_if_not_exists(subject_id, email)
+  end
+
+  defp create_user_if_not_exists(subject_id, email) do
     case User.get_by_subject_id(subject_id) do
       nil ->
         User.create_or_update(subject_id, %{subject_id: subject_id, email: email})

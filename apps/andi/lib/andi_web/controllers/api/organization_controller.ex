@@ -112,7 +112,9 @@ defmodule AndiWeb.API.OrganizationController do
   @doc """
   Sends a user:organization:associate event
   """
-  def add_users_to_organization(conn, %{"org_id" => org_id, "users" => users}) do
+  def add_users_to_organization(conn, %{"org_id" => org_id, "users" => user_ids}) do
+    # TODO: Check for users not found
+    users = user_ids |> IO.inspect(label: "organization_controller.ex:117") |> Enum.map(&Andi.Schemas.User.get_by_subject_id/1)
     case Andi.Services.UserOrganizationAssociateService.associate(org_id, users) do
       :ok ->
         conn

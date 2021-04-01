@@ -42,8 +42,8 @@ defmodule DiscoveryApi.Event.EventHandler do
       ) do
     user_organization_associate()
     |> add_event_count(author, nil)
-
-    case Users.associate_with_organization(association.user_id, association.org_id) do
+    # TODO: Add user if not found
+    case Users.associate_with_organization(association.subject_id, association.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
