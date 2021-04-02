@@ -59,7 +59,7 @@ defmodule Andi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email)
-    # TODO: Need Kevin's code here
+    User.associate_with_organization(subject_id, org_id)
 
     :discard
   end

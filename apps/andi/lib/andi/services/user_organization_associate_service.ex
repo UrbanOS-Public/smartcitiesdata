@@ -39,8 +39,6 @@ defmodule Andi.Services.UserOrganizationAssociateService do
   end
 
   defp send_event(org_id, user) do
-    # TODO: Get email via subject ID
-    # TODO: Error if user can't be fetched
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
   end

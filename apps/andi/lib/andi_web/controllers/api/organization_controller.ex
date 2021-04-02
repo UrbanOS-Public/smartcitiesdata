@@ -113,14 +113,15 @@ defmodule AndiWeb.API.OrganizationController do
   Sends a user:organization:associate event
   """
   def add_users_to_organization(conn, %{"org_id" => org_id, "users" => user_ids}) do
-    # TODO: Check for users not found
-    users = user_ids |> IO.inspect(label: "organization_controller.ex:117") |> Enum.map(&Andi.Schemas.User.get_by_subject_id/1)
-    case Andi.Services.UserOrganizationAssociateService.associate(org_id, users) do
-      :ok ->
-        conn
-        |> put_status(200)
-        |> json(conn.body_params)
+    retrieved_users = Enum.map(user_ids, fn id -> {id, Andi.Schemas.User.get_by_subject_id(id)} end)
 
+    with false <- Enum.any?(retrieved_users, fn {_id, user} -> user == nil end),
+         users <- Enum.map(retrieved_users, fn {_id, user} -> user end),
+         :ok <- Andi.Services.UserOrganizationAssociateService.associate(org_id, users) do
+      conn
+      |> put_status(200)
+      |> json(conn.body_params)
+    else
       {:error, :invalid_org} ->
         conn
         |> put_status(400)
@@ -131,6 +132,16 @@ defmodule AndiWeb.API.OrganizationController do
         |> put_status(500)
         |> put_view(AndiWeb.ErrorView)
         |> render("500.json")
+
+      true ->
+        missing_user_ids =
+          retrieved_users
+          |> Enum.filter(fn {id, user} -> user == nil end)
+          |> Enum.map(fn {id, _user} -> id end)
+
+        conn
+        |> put_status(400)
+        |> json("The user(s) in this list: [#{Enum.join(missing_user_ids, ",")}] do not exist. No users were added to organizations.")
     end
   end
 end

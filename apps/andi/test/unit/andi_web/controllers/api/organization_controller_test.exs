@@ -182,6 +182,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 200", %{conn: conn, org: org, users: users} do
+      allow(Andi.Schemas.User.get_by_subject_id(any()),
+        return: %{subject_id: "N/A", email: "example.com"}
+      )
+
       actual =
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -191,6 +195,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
+      allow(Andi.Schemas.User.get_by_subject_id(any()),
+        return: %{subject_id: "N/A", email: "example.com"}
+      )
+
       allow(OrgStore.get(any()),
         return: {:ok, nil},
         meck_options: [:passthrough]
@@ -210,8 +218,14 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     test "sends a user:organization:associate event", %{conn: conn, org: org, users: users} do
       {:ok, expected_1} = UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
       {:ok, expected_2} = UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
-      allow(Andi.Schemas.User.get_by_subject_id(expected_1.subject_id), return: %{subject_id: expected_1.subject_id, email: expected_1.email})
-      allow(Andi.Schemas.User.get_by_subject_id(expected_2.subject_id), return: %{subject_id: expected_2.subject_id, email: expected_2.email})
+
+      allow(Andi.Schemas.User.get_by_subject_id(expected_1.subject_id),
+        return: %{subject_id: expected_1.subject_id, email: expected_1.email}
+      )
+
+      allow(Andi.Schemas.User.get_by_subject_id(expected_2.subject_id),
+        return: %{subject_id: expected_2.subject_id, email: expected_2.email}
+      )
 
       conn
       |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -221,8 +235,32 @@ defmodule AndiWeb.API.OrganizationControllerTest do
       assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_2), once())
     end
 
+    test "returns 400 if a user is not found", %{conn: conn, org: org, users: users} do
+      {:ok, expected_1} = UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
+      {:ok, expected_2} = UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+
+      allow(Andi.Schemas.User.get_by_subject_id(expected_1.subject_id),
+        return: nil
+      )
+
+      allow(Andi.Schemas.User.get_by_subject_id(expected_2.subject_id),
+        return: %{subject_id: expected_2.subject_id, email: expected_2.email}
+      )
+
+      conn
+      |> post("/api/v1/organization/#{org.id}/users/add", users)
+      |> json_response(400)
+
+      refute_called(Brook.Event.send(@instance_name, any(), :andi, expected_1), once())
+      refute_called(Brook.Event.send(@instance_name, any(), :andi, expected_2), once())
+    end
+
     @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
+      allow(Andi.Schemas.User.get_by_subject_id(any()),
+        return: %{subject_id: "N/A", email: "example.com"}
+      )
+
       allow(OrgStore.get(any()),
         return: {:error, "bad stuff happened"},
         meck_options: [:passthrough]
@@ -239,6 +277,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     @tag capture_log: true
     test "returns a 500 if unable to send events", %{conn: conn, org: org} do
+      allow(Andi.Schemas.User.get_by_subject_id(any()),
+        return: %{subject_id: "N/A", email: "example.com"}
+      )
+
       allow(Brook.Event.send(@instance_name, any(), :andi, any()),
         return: {:error, "unable to send event"},
         meck_options: [:passthrough]
