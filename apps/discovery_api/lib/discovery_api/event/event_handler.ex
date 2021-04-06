@@ -42,7 +42,9 @@ defmodule DiscoveryApi.Event.EventHandler do
       ) do
     user_organization_associate()
     |> add_event_count(author, nil)
-    # TODO: Add user if not found
+
+    create_user_if_not_exists(association.subject_id, association.email)
+
     case Users.associate_with_organization(association.subject_id, association.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
@@ -60,7 +62,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
-    case Users.disassociate_with_organization(disassociation.user_id, disassociation.org_id) do
+    case Users.disassociate_with_organization(disassociation.subject_id, disassociation.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
@@ -159,6 +161,10 @@ defmodule DiscoveryApi.Event.EventHandler do
     user_login()
     |> add_event_count(author, nil)
 
+    create_user_if_not_exists(subject_id, email)
+  end
+
+  defp create_user_if_not_exists(subject_id, email) do
     case Users.get_user(subject_id, :subject_id) do
       {:ok, _user} ->
         :ok
