@@ -85,45 +85,49 @@ defmodule DiscoveryApi.Schemas.UsersTest do
     end
 
     test "succeeds when user and organization exist", %{user: user, organization: organization} do
-      assert {:ok, saved} = Users.associate_with_organization(user.id, organization.id)
+      assert {:ok, saved} = Users.associate_with_organization(user.subject_id, organization.id)
 
       assert %User{organizations: [organization]} = saved
       assert %User{organizations: [organization]} = Repo.get(User, user.id) |> Repo.preload(:organizations)
     end
 
     test "fails when user does not exist", %{organization: organization} do
-      user_id = Ecto.UUID.generate()
-      assert {:error, "User with id #{user_id} does not exist."} == Users.associate_with_organization(user_id, organization.id)
+      subject_id = Ecto.UUID.generate()
+
+      assert {:error, "User with subject_id #{subject_id} does not exist."} ==
+               Users.associate_with_organization(subject_id, organization.id)
     end
 
     test "fails when user id is not a valid UUID", %{organization: organization} do
-      user_id = "just_a_string"
-      error_message = "User with id #{user_id} does not exist"
+      subject_id = "just_a_string"
+      error_message = "User with subject_id #{subject_id} does not exist"
 
-      {:error, actual_message} = Users.associate_with_organization(user_id, organization.id)
+      {:error, actual_message} = Users.associate_with_organization(subject_id, organization.id)
       assert actual_message =~ error_message
     end
 
     test "fails when organization does not exist", %{user: user} do
       org_id = "nonexistent-org"
-      assert {:error, "Organization with id #{inspect(org_id)} does not exist."} == Users.associate_with_organization(user.id, org_id)
+
+      assert {:error, "Organization with id #{inspect(org_id)} does not exist."} ==
+               Users.associate_with_organization(user.subject_id, org_id)
     end
 
     test "does not add the same organization more than once", %{user: user, organization: organization} do
-      assert {:ok, _} = Users.associate_with_organization(user.id, organization.id)
-      assert {:ok, _} = Users.associate_with_organization(user.id, organization.id)
+      assert {:ok, _} = Users.associate_with_organization(user.subject_id, organization.id)
+      assert {:ok, _} = Users.associate_with_organization(user.subject_id, organization.id)
 
-      assert {:ok, %User{organizations: [^organization]}} = Users.get_user_with_organizations(user.id)
+      assert {:ok, %User{organizations: [^organization]}} = Users.get_user_with_organizations(user.subject_id, :subject_id)
     end
 
     test "retains previously saved associated organizations", %{user: user, organization: organization} do
-      assert {:ok, _} = Users.associate_with_organization(user.id, organization.id)
+      assert {:ok, _} = Users.associate_with_organization(user.subject_id, organization.id)
 
       {:ok, other_organization} = Repo.insert(%Organization{id: "other-org-id", name: "my-other-org", title: "pretty sweet other org"})
 
-      assert {:ok, _} = Users.associate_with_organization(user.id, other_organization.id)
+      assert {:ok, _} = Users.associate_with_organization(user.subject_id, other_organization.id)
 
-      {:ok, %User{organizations: organizations}} = Users.get_user_with_organizations(user.id)
+      {:ok, %User{organizations: organizations}} = Users.get_user_with_organizations(user.subject_id, :subject_id)
       actual = MapSet.new(organizations)
       expected = MapSet.new([organization, other_organization])
       assert expected == actual

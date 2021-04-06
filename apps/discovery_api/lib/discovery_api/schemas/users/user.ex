@@ -33,7 +33,7 @@ defmodule DiscoveryApi.Schemas.Users.User do
   end
 
   def changeset_remove_organization(user, organization) do
-    updated_orgs = List.delete(user.organizations, organization) |> IO.inspect()
+    updated_orgs = List.delete(user.organizations, organization)
 
     user
     |> change()

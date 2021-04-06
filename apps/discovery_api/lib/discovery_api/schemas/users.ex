@@ -41,8 +41,8 @@ defmodule DiscoveryApi.Schemas.Users do
     end
   end
 
-  def associate_with_organization(user_id, organization_id) do
-    with {:ok, user} <- get_user(user_id),
+  def associate_with_organization(subject_id, organization_id) do
+    with {:ok, user} <- get_user(subject_id, :subject_id),
          {:ok, organization} <- Organizations.get_organization(organization_id) do
       user
       |> Repo.preload(:organizations)
@@ -53,8 +53,8 @@ defmodule DiscoveryApi.Schemas.Users do
     end
   end
 
-  def disassociate_with_organization(user_id, organization_id) do
-    with {:ok, user} <- get_user(user_id),
+  def disassociate_with_organization(subject_id, organization_id) do
+    with {:ok, user} <- get_user(subject_id, :subject_id),
          {:ok, organization} <- Organizations.get_organization(organization_id) do
       user
       |> Repo.preload(:organizations)

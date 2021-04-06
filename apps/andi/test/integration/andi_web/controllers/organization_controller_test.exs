@@ -64,34 +64,6 @@ defmodule Andi.OrganizationControllerTest do
     end
   end
 
-  describe "user organization associate" do
-    setup do
-      org = organization()
-      {:ok, response} = create(org)
-      {:ok, happy_path} = Organization.new(response.body)
-
-      eventually(fn ->
-        {:ok, %Organization{}} = OrgStore.get(org.id)
-      end)
-
-      [happy_path: happy_path, response: response]
-    end
-
-    test "happy path", %{happy_path: org} do
-      users = [1, 2]
-      body = Jason.encode!(%{org_id: org.id, users: users})
-
-      {:ok, %Tesla.Env{status: 200}} =
-        post("/api/v1/organization/#{org.id}/users/add", body, headers: [{"content-type", "application/json"}])
-
-      eventually(fn ->
-        assert get_brook(org.id, :org_to_users) == {:ok, MapSet.new(users)}
-        assert get_brook(1, :user_to_orgs) == {:ok, MapSet.new([org.id])}
-        assert get_brook(2, :user_to_orgs) == {:ok, MapSet.new([org.id])}
-      end)
-    end
-  end
-
   defp create(org) do
     struct = Jason.encode!(org)
 
