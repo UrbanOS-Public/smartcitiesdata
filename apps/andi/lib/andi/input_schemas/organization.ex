@@ -13,7 +13,7 @@ defmodule Andi.InputSchemas.Organization do
 
   getter(:org_name_max_length, generic: true)
 
-  @primary_key {:id, Ecto.UUID, autogenerate: false}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "organizations" do
     field(:description, :string)
     field(:orgName, :string)
@@ -21,7 +21,7 @@ defmodule Andi.InputSchemas.Organization do
     field(:homepage, :string)
     field(:logoUrl, :string)
     field(:dataJsonUrl, :string)
-    belongs_to(:org_owner, User, type: Ecto.UUID, foreign_key: :org_owner_id)
+    many_to_many(:users, User, join_through: Andi.Schemas.UserOrganization)
   end
 
   use Accessible
