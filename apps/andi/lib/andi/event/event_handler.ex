@@ -59,7 +59,14 @@ defmodule Andi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email)
-    User.associate_with_organization(subject_id, org_id)
+
+    case User.associate_with_organization(subject_id, org_id) do
+      {:error, error} ->
+        Logger.error("Unable to associate user with organization #{org_id}: #{inspect(error)}. This event has been discarded.")
+
+      _ ->
+        :ok
+    end
 
     :discard
   end

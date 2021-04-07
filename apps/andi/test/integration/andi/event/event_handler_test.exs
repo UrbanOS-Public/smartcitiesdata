@@ -15,7 +15,7 @@ defmodule Andi.Event.EventHandlerTest do
 
   describe "#{user_organization_associate()}" do
     setup do
-      org = TDG.create_organization([])
+      org = TDG.create_organization(%{})
 
       org
       |> Organization.changeset()
@@ -42,6 +42,44 @@ defmodule Andi.Event.EventHandlerTest do
       eventually(fn ->
         user_from_ecto = User.get_by_subject_id(old_user_subject_id)
         assert user_from_ecto.id == user.id
+        assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
+      end)
+    end
+
+    @tag capture_log: true
+    test "org can be associated to multiple existing users", %{org_id: org_id} do
+      subject1 = "auth1"
+      subject2 = "auth2"
+
+      {:ok, user1} =
+        User.create_or_update(subject1, %{
+          subject_id: subject1,
+          email: "blah@blah.com"
+        })
+
+      {:ok, user2} =
+        User.create_or_update(subject2, %{
+          subject_id: subject2,
+          email: "blah2@blah.com"
+        })
+
+      assert User.get_by_subject_id(subject1) != nil
+
+      association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject1, email: "blah@blah.com"}
+      Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
+
+      association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject2, email: "blah2@blah.com"}
+      Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
+
+      eventually(fn ->
+        user_from_ecto = User.get_by_subject_id(subject1)
+        assert user_from_ecto.id == user1.id
+        assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
+      end)
+
+      eventually(fn ->
+        user_from_ecto = User.get_by_subject_id(subject2)
+        assert user_from_ecto.id == user2.id
         assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
       end)
     end

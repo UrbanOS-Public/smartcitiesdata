@@ -16,7 +16,7 @@ defmodule Andi.Schemas.User do
     field(:subject_id, :string)
     field(:email, :string)
     has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :owner_id)
-    has_many(:organizations, Organization, on_replace: :delete, foreign_key: :org_owner_id)
+    many_to_many(:organizations, Organization, join_through: Andi.Schemas.UserOrganization, on_replace: :delete)
   end
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
