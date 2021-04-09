@@ -26,7 +26,11 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
     host: System.get_env("HOST"),
     port: 443
   ],
-  http: [protocol_options: [idle_timeout: 86_400_000]]
+  http: [protocol_options: [
+    inactivity_timeout: 86_400_000,
+    idle_timeout: 86_400_000
+    ]
+  ]
 
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
