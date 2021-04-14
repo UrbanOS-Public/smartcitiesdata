@@ -27,8 +27,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
     port: 443
   ],
   http: [protocol_options: [
-    inactivity_timeout: 86_400_000,
-    idle_timeout: 86_400_000
+    # These values may be superseded by network level timeouts such as a load balancer.
+    inactivity_timeout: 4_000_000,
+    idle_timeout: 4_000_000
     ]
   ]
 
