@@ -79,7 +79,15 @@ config :forklift, :brook,
     module: Brook.Storage.Redis,
     init_arg: [
       redix_args: redix_args,
-      namespace: "forklift:view"
+      namespace: "forklift:view",
+      event_limits: %{
+        "dataset:delete" => 100,
+        "dataset:update" => 100,
+        "data:write:complete" => 100,
+        "data:ingest:start" => 100,
+        "data:ingest:end" => 100,
+        "error:dataset:update" => 100
+      }
     ]
   ]
 

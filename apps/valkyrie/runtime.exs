@@ -60,7 +60,12 @@ if kafka_brokers do
     module: Brook.Storage.Redis,
     init_arg: [
       redix_args: redix_args,
-      namespace: "valkyrie:view"
+      namespace: "valkyrie:view",
+      event_limits: %{
+        "data:ingest:start" => 100,
+        "data:standardization:end" => 100,
+        "dataset:delete" => 100
+      }
     ]
   ]
 
