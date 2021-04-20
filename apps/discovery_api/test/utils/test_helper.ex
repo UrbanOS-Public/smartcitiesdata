@@ -122,13 +122,13 @@ defmodule DiscoveryApi.Test.Helper do
     organization
   end
 
-  def associate_user_with_organization(user_id, organization_id) do
-    {:ok, event} = SmartCity.UserOrganizationAssociate.new(%{user_id: user_id, org_id: organization_id})
+  def associate_user_with_organization(subject_id, organization_id) do
+    {:ok, event} = SmartCity.UserOrganizationAssociate.new(%{subject_id: subject_id, org_id: organization_id, email: "test@example.com"})
 
     Brook.Event.send(@instance_name, "user:organization:associate", :test, event)
 
     Patiently.wait_for(
-      fn -> user_associated_with_organization?(user_id, organization_id) end,
+      fn -> user_associated_with_organization?(subject_id, organization_id) end,
       dwell: 500,
       mat_tries: 10
     )
@@ -189,8 +189,8 @@ defmodule DiscoveryApi.Test.Helper do
     {table, dataset.id}
   end
 
-  defp user_associated_with_organization?(user_id, organization_id) do
-    case DiscoveryApi.Schemas.Users.get_user_with_organizations(user_id) do
+  defp user_associated_with_organization?(subject_id, organization_id) do
+    case DiscoveryApi.Schemas.Users.get_user_with_organizations(subject_id, :subject_id) do
       {:ok, user} -> user.organizations |> Enum.any?(fn org -> org.id == organization_id end)
       _ -> false
     end

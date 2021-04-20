@@ -84,6 +84,10 @@ config :andi, :brook,
     init_arg: [redix_args: redix_args, namespace: "andi:view"]
   ]
 
+config :andi, :auth0,
+  url: "https://smartcolumbusos-demo.auth0.com/oauth/token",
+  audience: "https://smartcolumbusos-demo.auth0.com/api/v2/"
+
 config :andi, AndiWeb.Endpoint,
   pubsub_server: Andi.PubSub,
   code_reloader: true,

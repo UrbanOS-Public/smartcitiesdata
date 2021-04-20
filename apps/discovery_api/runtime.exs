@@ -26,7 +26,12 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
     host: System.get_env("HOST"),
     port: 443
   ],
-  http: [protocol_options: [idle_timeout: 86_400_000]]
+  http: [protocol_options: [
+    # These values may be superseded by network level timeouts such as a load balancer.
+    inactivity_timeout: 4_000_000,
+    idle_timeout: 4_000_000
+    ]
+  ]
 
 config :discovery_api,
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
@@ -108,7 +113,20 @@ config :discovery_api, :brook,
   handlers: [DiscoveryApi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
+    init_arg: [
+      redix_args: redix_args,
+      namespace: "discovery-api:view",
+      event_limits: %{
+        "dataset:update" => 100,
+        "data:write:complete" => 100,
+        "dataset:query" => 100,
+        "organization:update" => 100,
+        "user:organization:associate" => 100,
+        "user:organization:disassociate" => 100,
+        "dataset:delete" => 100,
+        "user:login" => 100
+      }
+    ]
   ]
 
 config :discovery_api, :elasticsearch,

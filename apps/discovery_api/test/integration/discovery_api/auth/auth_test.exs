@@ -60,7 +60,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   describe "GET /dataset/:dataset_id with auth0 auth provider" do
     setup %{private_model_that_belongs_to_org_1: model, authorized_subject: subject} do
       user = Helper.create_persisted_user(subject)
-      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+      Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
     end
 
     test "is able to access a restricted dataset with a valid token", setup_map do
@@ -138,7 +138,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       model_id = model.id
 
       user = Helper.create_persisted_user(subject)
-      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+      Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
              |> response(200)
@@ -170,10 +170,10 @@ defmodule DiscoveryApi.Auth.AuthTest do
       model_id = model.id
 
       user = Helper.create_persisted_user(subject)
-      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+      Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
 
       other_user = Helper.create_persisted_user(other_subject)
-      Helper.associate_user_with_organization(other_user.id, model.organizationDetails.id)
+      Helper.associate_user_with_organization(other_user.subject_id, model.organizationDetails.id)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
              |> response(200)
@@ -239,7 +239,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
            private_model_that_belongs_to_org_1: model
          } = setup_map do
       user = Helper.create_persisted_user(setup_map.authorized_subject)
-      Helper.associate_user_with_organization(user.id, model.organizationDetails.id)
+      Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
 
       capture_log(fn ->
         DiscoveryApi.prestige_opts()

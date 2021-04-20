@@ -43,9 +43,26 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 user_organization_associate" do
     setup do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      {:ok, association_event} = SmartCity.UserOrganizationAssociate.new(%{user_id: "user_id", org_id: "org_id"})
+
+      {:ok, association_event} =
+        SmartCity.UserOrganizationAssociate.new(%{subject_id: "user_id", org_id: "org_id", email: "bob@example.com"})
+
+      allow(Users.get_user(association_event.subject_id, :subject_id), return: {:ok, :does_not_matter})
 
       %{association_event: association_event}
+    end
+
+    test "should create the user if it did not already exist", %{association_event: association_event} do
+      allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
+      allow(Users.create(any()), return: :ok)
+      expect(TableInfoCache.invalidate(), return: {:ok, true})
+
+      association_event = Map.put(association_event, :subject_id, "non-existant-id")
+      allow(Users.get_user(association_event.subject_id, :subject_id), return: {:error, nil})
+
+      EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
+
+      assert_called(Users.create(%{subject_id: association_event.subject_id, email: association_event.email}), once())
     end
 
     test "should save user/organization association to ecto and clear relevant caches", %{association_event: association_event} do
@@ -54,7 +71,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
 
-      assert_called(Users.associate_with_organization(association_event.user_id, association_event.org_id))
+      assert_called(Users.associate_with_organization(association_event.subject_id, association_event.org_id))
     end
 
     test "logs errors when save fails", %{association_event: association_event} do
@@ -70,7 +87,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 user_organization_disassociate" do
     setup do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      {:ok, disassociation_event} = SmartCity.UserOrganizationDisassociate.new(%{user_id: "user_id", org_id: "org_id"})
+      {:ok, disassociation_event} = SmartCity.UserOrganizationDisassociate.new(%{subject_id: "subject_id", org_id: "org_id"})
 
       %{disassociation_event: disassociation_event}
     end
@@ -81,7 +98,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       EventHandler.handle_event(Brook.Event.new(type: user_organization_disassociate(), data: disassociation_event, author: :author))
 
-      assert_called(Users.disassociate_with_organization(disassociation_event.user_id, disassociation_event.org_id))
+      assert_called(Users.disassociate_with_organization(disassociation_event.subject_id, disassociation_event.org_id))
     end
 
     test "logs errors when save fails", %{disassociation_event: disassociation_event} do

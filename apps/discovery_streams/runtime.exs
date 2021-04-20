@@ -33,7 +33,12 @@ if kafka_brokers do
       module: Brook.Storage.Redis,
       init_arg: [
         redix_args: [host: redis_host],
-        namespace: "discovery_streams:view"
+        namespace: "discovery_streams:view",
+        event_limits: %{
+          "dataset:update" => 100,
+          "dataset:delete" => 100,
+          "data:ingest:start" => 100
+        }
       ]
     ]
 end

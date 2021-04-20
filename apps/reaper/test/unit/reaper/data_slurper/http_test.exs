@@ -26,6 +26,19 @@ defmodule Reaper.DataSlurper.HttpTest do
       assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
     end
 
+    test "downloads and uncompresses http urls file on local filesystem", %{bypass: bypass} do
+      data = ~s|one,two,three\n1,2,3\n|
+
+      Bypass.stub(bypass, "GET", "/1.2/data.csv", fn conn ->
+        conn
+        |> Plug.Conn.put_resp_header("Content-Encoding", "gzip")
+        |> Plug.Conn.resp(200, :zlib.gzip(data))
+      end)
+
+      {:file, filename} = DataSlurper.Http.slurp("http://localhost:#{bypass.port}/1.2/data.csv", @dataset_id)
+      assert ~s|one,two,three\n1,2,3\n| == File.read!(filename)
+    end
+
     test "downloads http urls to file in download directory when", %{bypass: bypass} do
       Application.put_env(:reaper, :download_dir, "/tmp/")
       on_exit(fn -> Application.delete_env(:reaper, :download_dir) end)

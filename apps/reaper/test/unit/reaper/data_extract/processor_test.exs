@@ -6,7 +6,6 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
-  alias Reaper.Cache.AuthCache
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "12345-6789"
