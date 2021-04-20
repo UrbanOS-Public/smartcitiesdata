@@ -4,6 +4,7 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
   alias Andi.Schemas.DatasetDownload
+  alias Andi.Schemas.User
 
   getter(:hosted_bucket, generic: true)
 
@@ -11,6 +12,7 @@ defmodule AndiWeb.EditController do
 
   access_levels(
     edit_organization: [:private],
+    edit_user: [:private],
     edit_dataset: [:private],
     edit_submission: [:private, :public],
     download_dataset_sample: [:private]
@@ -120,6 +122,21 @@ defmodule AndiWeb.EditController do
 
       org ->
         live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator})
+    end
+  end
+
+  def edit_user(conn, %{"id" => id}) do
+    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    case User.get_by_id(id) do
+      nil ->
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+
+      user ->
+        live_render(conn, AndiWeb.UserLiveView.EditUserLiveView, session: %{"is_curator" => is_curator, "user" => user})
     end
   end
 end

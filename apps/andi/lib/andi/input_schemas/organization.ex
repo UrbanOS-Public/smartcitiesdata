@@ -9,10 +9,11 @@ defmodule Andi.InputSchemas.Organization do
 
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Organizations
+  alias Andi.Schemas.User
 
   getter(:org_name_max_length, generic: true)
 
-  @primary_key {:id, Ecto.UUID, autogenerate: false}
+  @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "organizations" do
     field(:description, :string)
     field(:orgName, :string)
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.Organization do
     field(:homepage, :string)
     field(:logoUrl, :string)
     field(:dataJsonUrl, :string)
+    many_to_many(:users, User, join_through: Andi.Schemas.UserOrganization)
   end
 
   use Accessible

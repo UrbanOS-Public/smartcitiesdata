@@ -6,7 +6,7 @@ redix_args = [host: host]
 
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   url: [scheme: "https", host: "data.integrationtests.example.com", port: 443],
-  http: [protocol_options: [idle_timeout: 86_400_000]]
+  http: [protocol_options: [inactivity_timeout: 4_000_000, idle_timeout: 4_000_000]]
 
 config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
