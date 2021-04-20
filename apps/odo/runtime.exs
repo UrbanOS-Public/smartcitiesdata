@@ -46,7 +46,14 @@ config :odo, :brook,
   handlers: [Odo.Event.EventHandler],
   storage: %{
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: [host: redis_host], namespace: "odo:view"]
+    init_arg: [
+      redix_args: [host: redis_host],
+      namespace: "odo:view",
+      event_limits: %{
+        "file:ingest:end" => 100,
+        "error:file:ingest" => 100
+      }
+    ]
   }
 
   config :telemetry_event,

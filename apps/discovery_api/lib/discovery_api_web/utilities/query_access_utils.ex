@@ -27,8 +27,8 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
          true <- valid_tables?(affected_tables, affected_models) do
       {:ok, affected_models}
     else
-      _ ->
-        {:error, "Query statement is invalid"}
+      {:sql_error, error} -> {:sql_error, error}
+      _ -> {:error, "Query statement is invalid"}
     end
   end
 

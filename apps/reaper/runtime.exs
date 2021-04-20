@@ -75,8 +75,15 @@ config :reaper, :brook,
       redix_args: redix_args,
       namespace: "reaper:view",
       event_limits: %{
-        "data:extract:start" => 1000,
-        "data:extract:end" => 1000
+        "data:extract:start" => 100,
+        "data:extract:end" => 100,
+        "data:ingest:start" => 100,
+        "file:ingest:start" => 100,
+        "file:ingest:end" => 100,
+        "error:dataset:update" => 100,
+        "dataset:update" => 100,
+        "dataset:disable" => 100,
+        "dataset:delete" => 100
       }
     ]
   },

@@ -11,7 +11,8 @@ defmodule DiscoveryApi.UserOrganizationAssociationTest do
     organization = Helper.create_persisted_organization()
     {:ok, user} = Users.create_or_update("unique|id", %{email: "thing@thing.thing"})
 
-    {:ok, association_event} = SmartCity.UserOrganizationAssociate.new(%{user_id: user.id, org_id: organization.id})
+    {:ok, association_event} =
+      SmartCity.UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: organization.id, email: "thing@thing.thing"})
 
     Brook.Event.send(DiscoveryApi.instance_name(), user_organization_associate(), __MODULE__, association_event)
 

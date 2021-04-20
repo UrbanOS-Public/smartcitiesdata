@@ -2,11 +2,16 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
+  import SmartCity.Event, only: [user_login: 0]
+
   alias DiscoveryApi.Schemas.Users
+
+  @instance_name DiscoveryApi.instance_name()
 
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
     auth_conn_case.disable_user_addition.()
+    allow(Brook.Event.send(@instance_name, user_login(), any(), any()), return: :ok)
     :ok
   end
 
@@ -56,6 +61,14 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       conn
       |> post("/api/v1/logged-in")
       |> response(500)
+    end
+
+    test "sends user:login brook event on success", %{authorized_conn: conn} do
+      conn
+      |> post("/api/v1/logged-in")
+      |> response(200)
+
+      assert_called(Brook.Event.send(@instance_name, user_login(), any(), any()))
     end
   end
 end

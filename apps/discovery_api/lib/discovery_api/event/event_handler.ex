@@ -12,7 +12,8 @@ defmodule DiscoveryApi.Event.EventHandler do
       dataset_update: 0,
       data_write_complete: 0,
       dataset_delete: 0,
-      dataset_query: 0
+      dataset_query: 0,
+      user_login: 0
     ]
 
   require Logger
@@ -42,7 +43,9 @@ defmodule DiscoveryApi.Event.EventHandler do
     user_organization_associate()
     |> add_event_count(author, nil)
 
-    case Users.associate_with_organization(association.user_id, association.org_id) do
+    create_user_if_not_exists(association.subject_id, association.email)
+
+    case Users.associate_with_organization(association.subject_id, association.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
@@ -59,7 +62,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
-    case Users.disassociate_with_organization(disassociation.user_id, disassociation.org_id) do
+    case Users.disassociate_with_organization(disassociation.subject_id, disassociation.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
     end
@@ -152,6 +155,24 @@ defmodule DiscoveryApi.Event.EventHandler do
     error ->
       Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
       :discard
+  end
+
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+    user_login()
+    |> add_event_count(author, nil)
+
+    create_user_if_not_exists(subject_id, email)
+  end
+
+  defp create_user_if_not_exists(subject_id, email) do
+    case Users.get_user(subject_id, :subject_id) do
+      {:ok, _user} ->
+        :ok
+
+      _ ->
+        Users.create(%{subject_id: subject_id, email: email})
+        :ok
+    end
   end
 
   defp clear_caches() do
