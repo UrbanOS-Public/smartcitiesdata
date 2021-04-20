@@ -230,7 +230,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   describe "api/v1/query" do
     setup context do
       user = Helper.create_persisted_user(context.authorized_subject)
-      Helper.associate_user_with_organization(user.id, context.organization.id)
+      Helper.associate_user_with_organization(user.subject_id, context.organization.id)
 
       context
     end

@@ -6,6 +6,8 @@ defmodule Andi.Schemas.User do
   alias Andi.Repo
   import Ecto.Changeset
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Organization
+  alias Andi.InputSchemas.Organizations
   import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -14,6 +16,7 @@ defmodule Andi.Schemas.User do
     field(:subject_id, :string)
     field(:email, :string)
     has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :owner_id)
+    many_to_many(:organizations, Organization, join_through: Andi.Schemas.UserOrganization, on_replace: :delete)
   end
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
@@ -34,14 +37,27 @@ defmodule Andi.Schemas.User do
     |> Repo.insert_or_update()
   end
 
+  def associate_with_organization(subject_id, organization_id) do
+    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:organizations),
+         org <- Organizations.get(organization_id) do
+      user |> Repo.preload(:organizations) |> change() |> put_assoc(:organizations, [org | user.organizations]) |> Repo.update()
+    else
+      error -> error
+    end
+  end
+
   def get_all() do
     query = from(user in __MODULE__)
 
-    Repo.all(query) |> Repo.preload([:datasets])
+    Repo.all(query) |> Repo.preload([:datasets, :organizations])
   end
 
   def get_by_subject_id(subject_id) do
-    Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload([:datasets])
+    Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload([:datasets, :organizations])
+  end
+
+  def get_by_id(id) do
+    Repo.get_by(__MODULE__, id: id) |> Repo.preload([:datasets, :organizations])
   end
 
   def preload(struct), do: struct
