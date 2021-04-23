@@ -7,7 +7,6 @@ defmodule Valkyrie.Performance.CveTest do
     topic_prefixes: ["raw", "transformed"],
     log_level: :warn
 
-  import Valkyrie.Application
   import SmartCity.Event, only: [data_ingest_start: 0]
   import SmartCity.TestHelper
 

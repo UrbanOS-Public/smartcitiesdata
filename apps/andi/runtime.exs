@@ -37,7 +37,20 @@ config :andi, :brook,
   handlers: [Andi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: redix_args, namespace: "andi:view"]
+    init_arg: [
+      redix_args: redix_args,
+      namespace: "andi:view",
+      event_limits: %{
+        "dataset:update" => 100,
+        "organization:update" => 100,
+        "user:organization:associate" => 100,
+        "data:ingest:end" => 100,
+        "dataset:delete" => 100,
+        "dataset:harvest:start" => 100,
+        "dataset:harvest:end" => 100,
+        "user:login" => 100
+      }
+    ]
   ]
 
 config :andi, AndiWeb.Endpoint,

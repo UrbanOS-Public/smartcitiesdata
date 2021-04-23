@@ -113,7 +113,20 @@ config :discovery_api, :brook,
   handlers: [DiscoveryApi.Event.EventHandler],
   storage: [
     module: Brook.Storage.Redis,
-    init_arg: [redix_args: redix_args, namespace: "discovery-api:view"]
+    init_arg: [
+      redix_args: redix_args,
+      namespace: "discovery-api:view",
+      event_limits: %{
+        "dataset:update" => 100,
+        "data:write:complete" => 100,
+        "dataset:query" => 100,
+        "organization:update" => 100,
+        "user:organization:associate" => 100,
+        "user:organization:disassociate" => 100,
+        "dataset:delete" => 100,
+        "user:login" => 100
+      }
+    ]
   ]
 
 config :discovery_api, :elasticsearch,

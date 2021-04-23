@@ -5,6 +5,7 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "cacache": "^15.0.6",
     "phoenix": "file:../../../deps/phoenix",
     "phoenix_html": "file:../../../deps/phoenix_html",
     "phoenix_live_view": "file:../../../deps/phoenix_live_view",
@@ -14,7 +15,7 @@
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.0",
-    "copy-webpack-plugin": "^4.5.0",
+    "copy-webpack-plugin": "^6.4.1",
     "css-loader": "^2.1.1",
     "dot-prop": ">=4.2.1",
     "file-loader": "^4.2.0",
@@ -24,11 +25,13 @@
     "minimist": ">=1.2.5",
     "node-sass": "^4.13.1",
     "normalize.css": "^8.0.1",
-    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "optimize-css-assets-webpack-plugin": "^5.0.4",
+    "postcss": "^8.2.10",
+    "postcss-svgo": "^5.0.0",
     "sass-loader": "^8.0.0",
     "serialize-javascript": ">=3.1.0",
-    "uglifyjs-webpack-plugin": "^1.2.4",
-    "webpack": "4.41.2",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9",
     "yargs-parser": ">=18.1.2"
   }
