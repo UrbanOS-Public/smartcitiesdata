@@ -190,7 +190,10 @@ defmodule ValkyrieTest do
 
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
-    assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == true
+
+    eventually fn ->
+      assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == true
+    end
 
     Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
 
