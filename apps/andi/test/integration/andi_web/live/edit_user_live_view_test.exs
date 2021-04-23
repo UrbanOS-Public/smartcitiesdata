@@ -5,24 +5,19 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   @moduletag shared_data_connection: true
 
-  import Checkov
   import Placebo
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
       get_value: 2,
-      get_text: 2,
-      find_elements: 2,
       get_all_select_options: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
-  alias Andi.InputSchemas.Datasets
-  alias Andi.Services.OrgStore
   alias Andi.Services.Auth0Management
 
   alias Andi.Schemas.User
@@ -97,7 +92,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> user.id)
       org_id = org.id
 
-      assert [{"Please select an organization", ""}, {"Awesome Title", org_id}] = get_all_select_options(html, "#organiation_org_id")
+      eventually(fn ->
+        assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
+                 get_all_select_options(html, "#organiation_org_id")
+      end)
 
       html = render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
 
