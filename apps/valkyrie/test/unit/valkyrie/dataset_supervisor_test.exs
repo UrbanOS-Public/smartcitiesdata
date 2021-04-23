@@ -6,24 +6,24 @@ defmodule Valkyrie.DatasetSupervisorTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "ensure_started/1" do
-    setup do
+    setup %{} do
       dataset = TDG.create_dataset(%{})
 
       allow(DynamicSupervisor.start_child(any(), any()),
-        return: Agent.start(fn -> 42 end, name: :"#{dataset.id}_supervisor"),
+        exec: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{dataset.id}_supervisor") end,
         meck_options: [:passthrough]
       )
 
-      %{dataset: dataset}
-    end
-
-    test "should start dataset process", setup_params do
       start_options = [
-        dataset: setup_params.dataset,
+        dataset: dataset,
         input_topic: "input_topic",
         output_topic: "output_topic"
       ]
 
+      %{start_options: start_options}
+    end
+
+    test "should start dataset process", %{start_options: start_options} do
       DatasetSupervisor.ensure_started(start_options)
 
       assert_called(
@@ -31,18 +31,15 @@ defmodule Valkyrie.DatasetSupervisorTest do
       )
     end
 
-    test "should handle restarting a dataset process", setup_params do
-      start_options = [
-        dataset: setup_params.dataset,
-        input_topic: "input_topic",
-        output_topic: "output_topic"
-      ]
-
+    test "should not restart a running dataset process", %{start_options: start_options} do
       {:ok, first_pid} = DatasetSupervisor.ensure_started(start_options)
 
-      {:ok, _second_pid} = DatasetSupervisor.ensure_started(start_options)
+      assert {:ok, ^first_pid} = DatasetSupervisor.ensure_started(start_options)
 
-      assert_called(DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, first_pid))
+      assert_called(
+        DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}),
+        once()
+      )
     end
   end
 end

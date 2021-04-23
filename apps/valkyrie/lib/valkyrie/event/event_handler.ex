@@ -4,8 +4,12 @@ defmodule Valkyrie.Event.EventHandler do
   """
   alias SmartCity.Dataset
   use Brook.Event.Handler
-  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
+
+  import SmartCity.Event,
+    only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
+
   require Logger
+  @instance_name Valkyrie.instance_name()
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
@@ -32,6 +36,22 @@ defmodule Valkyrie.Event.EventHandler do
     Valkyrie.DatasetProcessor.stop(dataset_id)
     Logger.debug("#{__MODULE__}: Standardization finished for dataset: #{dataset_id}")
     delete(:datasets, dataset_id)
+  end
+
+  def handle_event(%Brook.Event{
+        type: dataset_update(),
+        data: %Dataset{} = dataset,
+        author: author
+      }) do
+    dataset_update()
+    |> add_event_count(author, dataset.id)
+
+    if Valkyrie.DatasetSupervisor.is_started?(dataset.id) do
+      Valkyrie.DatasetProcessor.stop(dataset.id)
+      Valkyrie.DatasetProcessor.start(dataset)
+    end
+
+    merge(:datasets, dataset.id, dataset)
   end
 
   def handle_event(%Brook.Event{
