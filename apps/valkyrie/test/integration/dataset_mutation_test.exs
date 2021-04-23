@@ -4,7 +4,7 @@ defmodule Valkyrie.DatasetMutationTest do
   use Properties, otp_app: :valkyrie
 
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_delete: 0, dataset_update: 0]
   alias SmartCity.TestDataGenerator, as: TDG
 
   @dataset_id "ds1"
@@ -41,7 +41,7 @@ defmodule Valkyrie.DatasetMutationTest do
     )
 
     updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
-    Brook.Event.send(@instance_name, data_ingest_start(), :author, updated_dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :author, updated_dataset)
 
     Process.sleep(2_000)
 
