@@ -19,8 +19,27 @@
     margin-top: 35px;
 }
 
+.user-form__organizations {
+    margin-top: 35px;
+}
+
 .associated-organizations-table {
     margin-top: 3rem;
     width: 100%;
 }
 
+.btn--add-organization {
+    min-width: 100px;
+    border-radius: 5px;
+    height: 2.3rem;
+    background-color: #27cb00;
+
+    &:hover {
+        background-color: #2de000;
+    }
+}
+
+@keyframes fadeOut {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
