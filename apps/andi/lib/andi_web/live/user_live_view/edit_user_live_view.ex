@@ -44,7 +44,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
 
           <div class="associated-organizations-table">
             <h3>Organizations Associated With This User</h3>
-            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations) %>
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
       </div>
     """
@@ -99,6 +99,11 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   end
 
   def handle_event("associate", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_info({:disassociate_org, org_id}, socket) do
+    IO.inspect(org_id, label: "handle this from the parent: ")
     {:noreply, socket}
   end
 
