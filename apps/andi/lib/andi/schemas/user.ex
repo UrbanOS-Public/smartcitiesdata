@@ -46,6 +46,16 @@ defmodule Andi.Schemas.User do
     end
   end
 
+  def disassociate_with_organization(subject_id, organization_id) do
+    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:organizations),
+         org <- Organizations.get(organization_id) do
+      updated_orgs = List.delete(user.organizations, org)
+      user |> Repo.preload(:organizations) |> change() |> put_assoc(:organizations, updated_orgs) |> Repo.update()
+    else
+      error -> error
+    end
+  end
+
   def get_all() do
     query = from(user in __MODULE__)
 

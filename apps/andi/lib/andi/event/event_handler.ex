@@ -8,6 +8,7 @@ defmodule Andi.Event.EventHandler do
       dataset_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
+      user_organization_disassociate: 0,
       data_ingest_end: 0,
       dataset_delete: 0,
       dataset_harvest_start: 0,
@@ -17,6 +18,7 @@ defmodule Andi.Event.EventHandler do
 
   alias SmartCity.{Dataset, Organization}
   alias SmartCity.UserOrganizationAssociate
+  alias SmartCity.UserOrganizationDisassociate
 
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
@@ -63,6 +65,25 @@ defmodule Andi.Event.EventHandler do
     case User.associate_with_organization(subject_id, org_id) do
       {:error, error} ->
         Logger.error("Unable to associate user with organization #{org_id}: #{inspect(error)}. This event has been discarded.")
+
+      _ ->
+        :ok
+    end
+
+    :discard
+  end
+
+  def handle_event(
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
+      ) do
+    user_organization_disassociate()
+    |> add_event_count(author, nil)
+
+    case User.disassociate_with_organization(disassociation.subject_id, disassociation.org_id) do
+      {:error, error} ->
+        Logger.error(
+          "Unable to disassociate user with organization #{disassociation.org_id}: #{inspect(error)}. This event has been discarded."
+        )
 
       _ ->
         :ok
