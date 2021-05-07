@@ -3,7 +3,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   use AndiWeb.HeaderLiveView
 
   import Phoenix.HTML.Form
-  import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0, user_organization_associate: 0]
+
+  import SmartCity.Event,
+    only: [organization_update: 0, dataset_delete: 0, user_organization_associate: 0, user_organization_disassociate: 0]
 
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Schemas.User
@@ -38,13 +40,13 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           <div id="edit-page-snackbar" phx-hook="showSnackbar">
             <div style="display: none;"><%= @click_id %></div>
             <%= if @success do %>
-              <div id="snackbar" class="success-message">Organization successfully associated. Please refresh you see the updated organization.</div>
+              <div id="snackbar" class="success-message"><%= @success_message %></div>
             <% end %>
           </div>
 
           <div class="associated-organizations-table">
             <h3>Organizations Associated With This User</h3>
-            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations) %>
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
       </div>
     """
@@ -65,6 +67,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
            organizations: user.organizations,
            user: user,
            success: false,
+           success_message: "",
            click_id: nil
          )}
 
@@ -78,6 +81,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
            organizations: [],
            user: user,
            success: false,
+           success_message: "",
            click_id: nil
          )}
     end
@@ -95,11 +99,30 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     user = socket.assigns.user
     send_event(org_id, user)
 
-    {:noreply, assign(socket, success: true, click_id: UUID.uuid4())}
+    {:noreply,
+     assign(socket,
+       success: true,
+       success_message: "Organization successfully associated. Please refresh to see the updated organizations.",
+       click_id: UUID.uuid4()
+     )}
   end
 
   def handle_event("associate", _, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info({:disassociate_org, org_id}, socket) do
+    user = socket.assigns.user
+
+    {:ok, user_org_disassociation} = SmartCity.UserOrganizationDisassociate.new(%{subject_id: user.subject_id, org_id: org_id})
+    Brook.Event.send(:andi, user_organization_disassociate(), :andi, user_org_disassociation)
+
+    {:noreply,
+     assign(socket,
+       success: true,
+       success_message: "Organization successfully disassociated. Please refresh to see the updated organizations.",
+       click_id: UUID.uuid4()
+     )}
   end
 
   defp send_event(org_id, user) do

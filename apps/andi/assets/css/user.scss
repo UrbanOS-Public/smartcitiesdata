@@ -39,6 +39,20 @@
     }
 }
 
+.btn--remove-organization {
+    padding: 0.3rem 1.2rem;
+    display: inline-block;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: red;
+    color: white;
+    border: none;
+
+    &:hover {
+        background-color: #ff2525;
+    }
+}
+
 @keyframes fadeOut {
     from {opacity: 1;}
     to {opacity: 0;}

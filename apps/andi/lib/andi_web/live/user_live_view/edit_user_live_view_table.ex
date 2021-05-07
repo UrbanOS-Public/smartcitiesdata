@@ -12,7 +12,7 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewTable do
       <table class="organizations-table">
         <thead>
           <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--unsorted">Organization</th>
-          <th class="organizations-table__th organizations-table__cell" style="width: 10%">Actions</th>
+          <th class="organizations-table__th organizations-table__cell" style="width: 20%">Actions</th>
         </thead>
 
         <%= if @organizations == [] do %>
@@ -21,7 +21,10 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewTable do
           <%= for organization <- @organizations do %>
             <tr class="organizations-table__tr">
               <td class="organizations-table__cell organizations-table__cell--break"><%= Map.get(organization, :orgName, "") %></td>
-              <td class="organizations-table__cell organizations-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/organizations/#{Map.get(organization, :id)}", class: "btn") %></td>
+              <td class="organizations-table__cell organizations-table__cell--break" style="width: 10%;">
+                <%= Link.link("Edit", to: "/organizations/#{Map.get(organization, :id)}", class: "btn") %>
+                <button phx-click="remove_org" phx-value-org-id="<%= organization.id %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
+              </td>
             </td>
             </tr>
           <% end %>
@@ -29,5 +32,10 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewTable do
       </table>
     </div>
     """
+  end
+
+  def handle_event("remove_org", %{"org-id" => org_id}, socket) do
+    send(self(), {:disassociate_org, org_id})
+    {:noreply, socket}
   end
 end

@@ -97,7 +97,38 @@ defmodule AndiWeb.EditUserLiveViewTest do
                  get_all_select_options(html, "#organiation_org_id")
       end)
 
-      html = render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
+
+      eventually(fn ->
+        user = User.get_by_subject_id(user.subject_id)
+
+        assert [%{id: org_id}] = user.organizations
+      end)
+    end
+
+    test "curators can disassociate an organization from a user", %{curator_conn: conn, user: user, org: org} do
+      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+      org_id = org.id
+
+      # Create another org
+      org2 = TDG.create_organization(%{orgTitle: "another awesome org", orgName: "another_awesome_org_title"})
+
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org2)
+
+      org2_id = org2.id
+
+      # Associate to user 
+      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organiation" => %{"org_id" => org2_id}})
+
+      eventually(fn ->
+        user = User.get_by_subject_id(user.subject_id)
+
+        assert [%{id: org_id}, %{id: org2_id}] = user.organizations
+      end)
+
+      # Disassociate an org from a user
+      send(view.pid, {:disassociate_org, org2_id})
 
       eventually(fn ->
         user = User.get_by_subject_id(user.subject_id)
