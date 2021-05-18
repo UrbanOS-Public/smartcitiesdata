@@ -17,6 +17,10 @@ defmodule AndiWeb.HeaderLiveView do
             <span class="organization-link__icon material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
+          <span class="user-link" phx-click="show-users">
+            <span class="user-link__icon material-icons">people</span>
+            <span class="user-link__text">USERS</span>
+          </span>
         <% end %>
         <span class="log-out-link" phx-click="log-out">
           <span class="log-out-link__icon material-icons">person</span>
@@ -39,6 +43,10 @@ defmodule AndiWeb.HeaderLiveView do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path())
       end
 
+      def handle_event("show-users", _, socket) do
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_users_path())
+      end
+
       def handle_event("log-out", _, socket) do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
@@ -51,6 +59,10 @@ defmodule AndiWeb.HeaderLiveView do
 
   defmacro header_organizations_path() do
     "/organizations"
+  end
+
+  defmacro header_users_path() do
+    "/users"
   end
 
   defmacro header_log_out_path() do
