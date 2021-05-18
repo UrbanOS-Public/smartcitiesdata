@@ -42,7 +42,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
       [org: andi_organization, user: user]
     end
 
-    test "public users cannot view or edit organizations", %{public_conn: conn, user: user} do
+    test "public users cannot view or edit users", %{public_conn: conn, user: user} do
       assert {:error,
               {
                 :redirect,
@@ -53,7 +53,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
     end
   end
 
-  describe "curator organization access" do
+  describe "curator user access" do
     setup do
       user_one_subject_id = UUID.uuid4()
 
@@ -72,7 +72,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
       [org: org1, user: user]
     end
 
-    test "curators can view and edit organizations", %{curator_conn: conn, user: user} do
+    test "curators can view and edit users", %{curator_conn: conn, user: user} do
       assert {:ok, view, html} = live(conn, @url_path <> user.id)
     end
 
