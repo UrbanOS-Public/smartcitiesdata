@@ -1,0 +1,78 @@
+.users-view {
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    height: 100%;
+    margin: 1em;
+}
+
+.users-index {
+    padding: 1rem 3rem;
+}
+
+.users-index__header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.users-index__title {
+    font-size: 1.5rem;
+  }
+
+.users-index__search {
+    width: 50%;
+}
+
+.users-index__search-input-container {
+  display: flex;
+  width: 100%;
+  margin: 0.5rem;
+  border: 1px solid $search-unfocused;
+}
+
+.users-index__search-input-container:focus-within {
+  border: 1px solid $search-focused;
+}
+
+.users-index__search-icon {
+  padding: 0.1rem;
+  color: $search-unfocused;
+  text-align: center;
+}
+
+.users-index__search-input {
+  width: 100%;
+  padding: 0.1rem;
+  outline: none;
+  border: none;
+}
+
+.users-index__search-input::placeholder,
+.users-index__search-input::-webkit-input-placeholder,
+.users-index__search-input::-ms-input-placeholder {
+  color: $search-unfocused;
+}
+
+.users-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.users-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.users-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.users-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
