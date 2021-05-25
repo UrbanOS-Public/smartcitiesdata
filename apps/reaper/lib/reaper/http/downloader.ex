@@ -209,8 +209,11 @@ defmodule Reaper.Http.Downloader do
   defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
 
   defp handle_compression(headers, file_name) do
-    case Util.get_header_value(headers, "content-encoding") do
+    content_type = Util.get_header_value(headers, "content-encoding") || Util.get_header_value(headers, "content-type")
+
+    case content_type do
       "gzip" -> uncompress_file(file_name)
+      "application/zip" -> uncompress_zip_file(file_name)
       _ -> :ok
     end
   end
@@ -221,8 +224,45 @@ defmodule Reaper.Http.Downloader do
     temp_file_name = file_name <> "_uncompressed"
     file = File.stream!(temp_file_name)
     file_name |> File.stream!([:compressed]) |> Stream.into(file) |> Stream.run()
+
     File.close(file)
     File.rm!(file_name)
     File.rename!(temp_file_name, file_name)
+  end
+
+  defp uncompress_zip_file(file_name) do
+    temp_file_name = file_name <> "_uncompressed"
+    temp_file = File.stream!(temp_file_name)
+
+    file_to_unzip = Unzip.LocalFile.open(file_name)
+    {:ok, unzip} = Unzip.new(file_to_unzip)
+
+    internal_file = get_filename_inside_zip_archive(unzip)
+
+    unzip
+    |> Unzip.file_stream!(internal_file)
+    |> Stream.into(temp_file)
+    |> Stream.run()
+
+    File.close(temp_file)
+    File.rm!(file_name)
+    File.rename!(temp_file_name, file_name)
+  end
+
+  defp get_filename_inside_zip_archive(unzip) do
+    file_entries = Unzip.list_entries(unzip) |> filter_out_directories()
+    case length(file_entries) do
+      1 -> file_entries |> hd() |> Map.get(:file_name)
+      _ -> raise "Zip file contained more than one file and therefore could not be processed"
+    end
+  end
+
+  defp filter_out_directories(entries) do
+    entries
+    |> Enum.reject(fn entry ->
+      entry
+      |> Map.get(:file_name)
+      |> String.contains?("/")
+    end)
   end
 end
