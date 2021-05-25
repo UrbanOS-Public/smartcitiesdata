@@ -46,6 +46,24 @@ defmodule TestUtils do
     bypass
   end
 
+  def bypass_file_with_header(bypass, file_name, header) do
+    Bypass.stub(bypass, "HEAD", "/#{file_name}", fn conn ->
+      Plug.Conn.resp(conn, 200, "")
+    end)
+
+    Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
+      conn = Plug.Conn.put_resp_header(conn, header.key, header.value)
+
+      Plug.Conn.resp(
+        conn,
+        200,
+        File.read!("test/support/#{file_name}")
+      )
+    end)
+
+    bypass
+  end
+
   defp is_feed_supervisor?({_, _, _, [mod]}) do
     mod == Reaper.FeedSupervisor
   end
