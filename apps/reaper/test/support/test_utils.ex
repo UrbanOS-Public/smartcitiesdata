@@ -53,6 +53,7 @@ defmodule TestUtils do
 
     Bypass.stub(bypass, "GET", "/#{file_name}", fn conn ->
       conn = Plug.Conn.put_resp_header(conn, header.key, header.value)
+
       Plug.Conn.resp(
         conn,
         200,

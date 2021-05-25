@@ -39,7 +39,12 @@ defmodule Reaper.Http.DownloaderTest do
     {:ok, response} = Downloader.download("http://localhost:#{bypass.port}/202104-cogo-tripdata.zip", to: "test.output")
 
     assert response.destination == "test.output"
-    expected_first_two_lines = ["ride_id,rideable_type,started_at,ended_at,start_station_name,start_station_id,end_station_name,end_station_id,start_lat,start_lng,end_lat,end_lng,member_casual\r", "D3C5EFA4658F429F,electric_bike,2021-04-24 16:28:15,2021-04-24 16:45:27,High St & King Ave,50,Summit St & Hudson St,89,39.99015466666667,-83.0058115,40.014657666666665,-83.0002585,casual\r"]
+
+    expected_first_two_lines = [
+      "ride_id,rideable_type,started_at,ended_at,start_station_name,start_station_id,end_station_name,end_station_id,start_lat,start_lng,end_lat,end_lng,member_casual\r",
+      "D3C5EFA4658F429F,electric_bike,2021-04-24 16:28:15,2021-04-24 16:45:27,High St & King Ave,50,Summit St & Hudson St,89,39.99015466666667,-83.0058115,40.014657666666665,-83.0002585,casual\r"
+    ]
+
     assert expected_first_two_lines == File.read!("test.output") |> String.split("\n", trim: true) |> Enum.slice(0..1)
   end
 

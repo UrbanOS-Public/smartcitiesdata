@@ -251,6 +251,7 @@ defmodule Reaper.Http.Downloader do
 
   defp get_filename_inside_zip_archive(unzip) do
     file_entries = Unzip.list_entries(unzip) |> filter_out_directories()
+
     case length(file_entries) do
       1 -> file_entries |> hd() |> Map.get(:file_name)
       _ -> raise "Zip file contained more than one file and therefore could not be processed"
