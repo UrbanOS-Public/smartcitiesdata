@@ -1,6 +1,7 @@
 defmodule AndiWeb.UserLiveView.EditUserLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  require Logger
 
   import Phoenix.HTML.Form
 
@@ -26,8 +27,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
                   <%= text_input(f, :email, class: "input", readonly: true) %>
               </div>
               <div class="user-form__role">
-                  <%= label(f, :user_role, class: "label") %>
-                  <%= select(f, :user_role, @roles, [class: "select", readonly: true]) %>
+                  <%= label(f, :role, class: "label") %>
+                  <%= select(f, :role, @roles, [class: "select", readonly: true, prompt: "Please select a role"]) %>
+                  <button class="btn btn--add-organization" phx-click="add-role" phx-value-selected-role="<%= @selected_role %>">Add Role</button>
               </div>
 
               <div class="user-form__organizations">
@@ -45,6 +47,11 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           </div>
 
           <div class="associated-organizations-table">
+            <h3>Roles Associated With This User</h3>
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles) %>
+          </div>
+
+          <div class="associated-organizations-table">
             <h3>Organizations Associated With This User</h3>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
@@ -55,39 +62,55 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   def mount(_params, %{"is_curator" => is_curator, "user" => user}, socket) do
     changeset = User.changeset(user, %{}) |> Map.put(:errors, [])
 
-    case Auth0Management.get_roles() do
-      roles ->
-        roles = roles |> Enum.map(fn %{"name" => name, "description" => description} -> {description, name} end)
-
-        {:ok,
-         assign(socket,
-           is_curator: is_curator,
-           changeset: changeset,
-           roles: roles,
-           organizations: user.organizations,
-           user: user,
-           success: false,
-           success_message: "",
-           click_id: nil
-         )}
-
+    with {:ok, roles} <- Auth0Management.get_roles(),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(user.subject_id) do
+      {:ok,
+       assign(socket,
+         is_curator: is_curator,
+         changeset: changeset,
+         roles: parse_roles(roles, user_roles),
+         user_roles: user_roles,
+         organizations: user.organizations,
+         user: user,
+         success: false,
+         success_message: "",
+         click_id: nil,
+         selected_role: ""
+       )}
+    else
       {:error, error} ->
+        Logger.error("unable to fetch role information from auth0: #{error}")
+
         {:ok,
          assign(socket,
            is_curator: is_curator,
            changeset: changeset,
            roles: [],
+           user_roles: [],
            page_error: true,
            organizations: [],
            user: user,
            success: false,
            success_message: "",
-           click_id: nil
+           click_id: nil,
+           selected_role: ""
          )}
     end
   end
 
+  def handle_event("validate", %{"_target" => ["form_data", "role"], "form_data" => %{"role" => role}}, socket) do
+    {:noreply, assign(socket, selected_role: role)}
+  end
+
   def handle_event("validate", _, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("add-role", %{"selected-role" => selected_role}, socket) do
+    IO.inspect(selected_role, label: "selected_role: ")
+
+    
+
     {:noreply, socket}
   end
 
@@ -128,5 +151,17 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   defp send_event(org_id, user) do
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
+  end
+
+  defp parse_roles(roles, user_roles) when length(roles) == 0, do: []
+
+  defp parse_roles(roles, user_roles) do
+    roles = roles |> Enum.filter(fn role -> !Enum.find(user_roles, fn user_role -> role["id"] == user_role["id"] end) end)
+    roles = roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
+    roles
+  end
+
+  defp generate_prompt(user_roles) do
+    "Add Role"
   end
 end

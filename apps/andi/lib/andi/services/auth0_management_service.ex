@@ -15,7 +15,7 @@ defmodule Andi.Services.Auth0Management do
     with {:ok, access_token} <- get_token(),
          {:ok, response} <- get("#{url}roles", headers: [{"Authorization", "Bearer #{access_token}"}]) do
       roles = response |> Map.get(:body) |> Jason.decode!()
-      roles
+      {:ok, roles}
     else
       {:error, reason} ->
         Logger.error("Unable to retrieve auth0 roles: #{reason}")
@@ -29,11 +29,24 @@ defmodule Andi.Services.Auth0Management do
     with {:ok, access_token} <- get_token(),
          {:ok, response} <- get("#{url}users/#{subject_id}/roles", headers: [{"Authorization", "Bearer #{access_token}"}]) do
       roles = response |> Map.get(:body) |> Jason.decode!()
-      roles
+      {:ok, roles}
     else
       {:error, reason} ->
         Logger.error("Unable to retrieve auth0 roles: #{reason}")
         {:error, :retrieve_auth0_roles_failed}
+    end
+  end
+
+  def assign_user_role(subject_id, role_id) do
+    url = Keyword.fetch!(auth0(), :audience)
+
+    with {:ok, access_token} <- get_token(),
+         {:ok, response} <- post("#{url}users/#{subject_id}/roles", body: %{roles: [role_id]} |> Jason.encode!(), headers: [{"Authorization", "Bearer #{access_token}"}, {"content-type", "application/json"}]) do
+      {:ok, response |> Map.get(:body)}
+    else
+      {:error, reason} ->
+        Logger.error("Unable to assign user role: #{reason}")
+        {:error, :assign_auth0_role}
     end
   end
 

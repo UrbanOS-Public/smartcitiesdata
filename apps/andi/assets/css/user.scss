@@ -53,6 +53,30 @@
     }
 }
 
+.roles-table {
+    width: 100%;
+    border: $table-border;
+    border-collapse: collapse;
+}
+
+.roles-table__tr:nth-child(odd) {
+    background-color: $color-table-stripe;
+}
+  
+.roles-table__th {
+    padding: $table-padding;
+    border-right: $table-border;
+    text-align: left;
+    background: $color-table-header;
+}
+
+.roles-table__cell {
+    padding: $table-padding;
+    border-right: $table-border;
+    height: $table-height;
+    max-width: 30rem;
+}
+
 @keyframes fadeOut {
     from {opacity: 1;}
     to {opacity: 0;}
