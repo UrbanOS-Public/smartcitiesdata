@@ -124,7 +124,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
        )}
     else
       {:error, error} ->
-        Logger.error("unable to fetch role information from auth0: #{error}")
+        Logger.error("unable to add role to user: #{error}")
         {:noreply, socket}
     end
   end
@@ -176,7 +176,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
        )}
     else
       {:error, error} ->
-        Logger.error("unable to fetch role information from auth0: #{error}")
+        Logger.error("unable to remove role from user: #{error}")
         {:noreply, socket}
     end
   end
@@ -191,9 +191,5 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   defp parse_roles(roles) do
     roles = roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
     roles
-  end
-
-  defp generate_prompt(user_roles) do
-    "Add Role"
   end
 end
