@@ -41,7 +41,29 @@ defmodule Andi.Services.Auth0Management do
     url = Keyword.fetch!(auth0(), :audience)
 
     with {:ok, access_token} <- get_token(),
-         {:ok, response} <- post("#{url}users/#{subject_id}/roles", body: %{roles: [role_id]} |> Jason.encode!(), headers: [{"Authorization", "Bearer #{access_token}"}, {"content-type", "application/json"}]) do
+         {:ok, response} <-
+           post(
+             "#{url}users/#{subject_id}/roles",
+             %{roles: [role_id]} |> Jason.encode!(),
+             headers: [{"Authorization", "Bearer #{access_token}"}, {"content-type", "application/json"}]
+           ) do
+      {:ok, response |> Map.get(:body)}
+    else
+      {:error, reason} ->
+        Logger.error("Unable to assign user role: #{reason}")
+        {:error, :assign_auth0_role}
+    end
+  end
+
+  def delete_user_role(subject_id, role_id) do
+    url = Keyword.fetch!(auth0(), :audience)
+
+    with {:ok, access_token} <- get_token(),
+         {:ok, response} <-
+           delete("#{url}users/#{subject_id}/roles",
+             body: %{roles: [role_id]} |> Jason.encode!(),
+             headers: [{"Authorization", "Bearer #{access_token}"}, {"content-type", "application/json"}]
+           ) do
       {:ok, response |> Map.get(:body)}
     else
       {:error, reason} ->

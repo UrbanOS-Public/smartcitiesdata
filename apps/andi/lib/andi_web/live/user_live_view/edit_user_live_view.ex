@@ -68,7 +68,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
        assign(socket,
          is_curator: is_curator,
          changeset: changeset,
-         roles: parse_roles(roles, user_roles),
+         roles: parse_roles(roles),
          user_roles: user_roles,
          organizations: user.organizations,
          user: user,
@@ -106,12 +106,27 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     {:noreply, socket}
   end
 
-  def handle_event("add-role", %{"selected-role" => selected_role}, socket) do
-    IO.inspect(selected_role, label: "selected_role: ")
-
-    
-
+  def handle_event("add-role", %{"selected-role" => ""}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("add-role", %{"selected-role" => selected_role}, socket) do
+    subject_id = socket.assigns.user.subject_id
+    role_id = selected_role
+
+    with {:ok, _} <- Auth0Management.assign_user_role(subject_id, role_id),
+         {:ok, roles} <- Auth0Management.get_roles(),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
+      {:noreply,
+       assign(socket,
+         roles: parse_roles(roles),
+         user_roles: user_roles
+       )}
+    else
+      {:error, error} ->
+        Logger.error("unable to fetch role information from auth0: #{error}")
+        {:noreply, socket}
+    end
   end
 
   def handle_event("associate", %{"organiation" => %{"org_id" => ""}}, socket) do
@@ -148,15 +163,32 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
      )}
   end
 
+  def handle_info({:remove_role, role_id}, socket) do
+    subject_id = socket.assigns.user.subject_id
+
+    with {:ok, _} <- Auth0Management.delete_user_role(subject_id, role_id),
+         {:ok, roles} <- Auth0Management.get_roles(),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
+      {:noreply,
+       assign(socket,
+         roles: parse_roles(roles),
+         user_roles: user_roles
+       )}
+    else
+      {:error, error} ->
+        Logger.error("unable to fetch role information from auth0: #{error}")
+        {:noreply, socket}
+    end
+  end
+
   defp send_event(org_id, user) do
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
   end
 
-  defp parse_roles(roles, user_roles) when length(roles) == 0, do: []
+  defp parse_roles(roles) when length(roles) == 0, do: []
 
-  defp parse_roles(roles, user_roles) do
-    roles = roles |> Enum.filter(fn role -> !Enum.find(user_roles, fn user_role -> role["id"] == user_role["id"] end) end)
+  defp parse_roles(roles) do
     roles = roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
     roles
   end

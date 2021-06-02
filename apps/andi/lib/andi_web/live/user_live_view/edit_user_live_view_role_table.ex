@@ -22,7 +22,7 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable do
             <tr class="roles-table__tr">
               <td class="roles-table__cell roles-table__cell--break"><%= Map.get(role, "description", "") %></td>
               <td class="roles-table__cell roles-table__cell--break" style="width: 10%;">
-                  <button phx-click="remove_role" phx-value-org-id="<%= role["id"] %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
+                  <button phx-click="remove_role" phx-value-role-id="<%= role["id"] %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
               </td>
             </tr>
           <% end %>
@@ -30,5 +30,10 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable do
       </table>
     </div>
     """
+  end
+
+  def handle_event("remove_role", %{"role-id" => role_id}, socket) do
+    send(self(), {:remove_role, role_id})
+    {:noreply, socket}
   end
 end
