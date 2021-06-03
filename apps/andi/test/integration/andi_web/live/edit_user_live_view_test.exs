@@ -68,7 +68,15 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
 
-      allow(Auth0Management.get_roles(), return: [%{"name" => "curator", "description" => "curator role"}], meck_options: [:passthrough])
+      allow(Auth0Management.get_roles(),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
+
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
 
       [org: org1, user: user]
     end
@@ -86,7 +94,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
     test "curators can read user roles", %{curator_conn: conn, user: user} do
       assert {:ok, view, html} = live(conn, @url_path <> user.id)
 
-      assert [{"curator role", "curator"}] == get_all_select_options(html, "#form_data_user_role")
+      assert [
+               {"Please select a role", ""},
+               {"Dataset Curator", "rol_OQaxdo38yewzqWR0"}
+             ] = get_all_select_options(html, "#form_data_role")
     end
 
     test "curators can associate orgs to users", %{curator_conn: conn, user: user, org: org} do

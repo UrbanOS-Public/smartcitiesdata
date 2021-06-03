@@ -6,7 +6,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   import Phoenix.HTML.Form
 
   import SmartCity.Event,
-    only: [organization_update: 0, dataset_delete: 0, user_organization_associate: 0, user_organization_disassociate: 0]
+    only: [user_organization_associate: 0, user_organization_disassociate: 0]
 
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Schemas.User
@@ -188,8 +188,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   defp parse_roles(roles) when length(roles) == 0, do: []
 
   defp parse_roles(roles) do
-    roles = roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
-    roles
+    roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
   end
 
   defp is_self(signed_in_user, edit_user) do
