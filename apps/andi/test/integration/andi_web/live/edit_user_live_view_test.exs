@@ -5,7 +5,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   @moduletag shared_data_connection: true
 
-  import Placebo
+  use Placebo
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [organization_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -13,7 +13,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
   import FlokiHelpers,
     only: [
       get_value: 2,
-      get_all_select_options: 2
+      get_all_select_options: 2,
+      find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -135,6 +136,94 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
         assert [%{id: org_id}] = user.organizations
       end)
+    end
+  end
+
+  describe "curator user roles" do
+    setup do
+      user_one_subject_id = UUID.uuid4()
+
+      {:ok, user} =
+        User.create_or_update(user_one_subject_id, %{
+          subject_id: user_one_subject_id,
+          email: "blah@blah.com"
+        })
+
+      org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
+
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
+
+      allow(Auth0Management.get_roles(),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
+
+      allow(Auth0Management.assign_user_role(any(), any()),
+        return: {:ok, any()},
+        meck_options: [:passthrough]
+      )
+
+      allow(Auth0Management.delete_user_role(any(), any()),
+        return: {:ok, any()},
+        meck_options: [:passthrough]
+      )
+
+      [org: org1, user: user]
+    end
+
+    test "curators can view users current roles", %{curator_conn: conn, user: user} do
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+
+      assert length(find_elements(html, ".roles-table__tr")) == 1
+    end
+
+    test "curators can add roles to users", %{curator_conn: conn, user: user} do
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, []},
+        meck_options: [:passthrough]
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+
+      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
+
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
+
+      # add role to user
+      html = render_change(view, "add-role", %{"selected-role" => "rol_OQaxdo38yewzqWR0"})
+
+      assert length(find_elements(html, ".roles-table__tr")) == 1
+    end
+
+    test "curators can remove roles from users", %{curator_conn: conn, user: user} do
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
+        meck_options: [:passthrough]
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+
+      assert length(find_elements(html, ".roles-table__tr")) == 1
+
+      allow(Auth0Management.get_user_roles(any()),
+        return: {:ok, []},
+        meck_options: [:passthrough]
+      )
+
+      # remove role
+      send(view.pid, {:remove_role, "rol_OQaxdo38yewzqWR0"})
+
+      html = render(view)
+
+      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
     end
   end
 end
