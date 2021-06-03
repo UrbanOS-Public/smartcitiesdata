@@ -48,7 +48,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
 
           <div class="associated-organizations-table">
             <h3>Roles Associated With This User</h3>
-            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles) %>
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles, self: @self) %>
           </div>
 
           <div class="associated-organizations-table">
@@ -59,8 +59,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     """
   end
 
-  def mount(_params, %{"is_curator" => is_curator, "user" => user}, socket) do
+  def mount(_params, %{"is_curator" => is_curator, "user" => user, "user_id" => user_id}, socket) do
     changeset = User.changeset(user, %{}) |> Map.put(:errors, [])
+    signed_in_user = User.get_by_id(user_id)
 
     with {:ok, roles} <- Auth0Management.get_roles(),
          {:ok, user_roles} <- Auth0Management.get_user_roles(user.subject_id) do
@@ -75,7 +76,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
          success: false,
          success_message: "",
          click_id: nil,
-         selected_role: ""
+         selected_role: "",
+         self: is_self(signed_in_user, user)
        )}
     else
       {:error, error} ->
@@ -93,7 +95,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
            success: false,
            success_message: "",
            click_id: nil,
-           selected_role: ""
+           selected_role: "",
+           self: is_self(signed_in_user, user)
          )}
     end
   end
@@ -115,11 +118,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     role_id = selected_role
 
     with {:ok, _} <- Auth0Management.assign_user_role(subject_id, role_id),
-         {:ok, roles} <- Auth0Management.get_roles(),
          {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
       {:noreply,
        assign(socket,
-         roles: parse_roles(roles),
          user_roles: user_roles
        )}
     else
@@ -167,11 +168,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     subject_id = socket.assigns.user.subject_id
 
     with {:ok, _} <- Auth0Management.delete_user_role(subject_id, role_id),
-         {:ok, roles} <- Auth0Management.get_roles(),
          {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
       {:noreply,
        assign(socket,
-         roles: parse_roles(roles),
          user_roles: user_roles
        )}
     else
@@ -191,5 +190,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   defp parse_roles(roles) do
     roles = roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
     roles
+  end
+
+  defp is_self(signed_in_user, edit_user) do
+    signed_in_user.subject_id == edit_user.subject_id
   end
 end

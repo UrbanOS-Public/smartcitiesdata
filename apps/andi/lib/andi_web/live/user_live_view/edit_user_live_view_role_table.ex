@@ -22,8 +22,10 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable do
             <tr class="roles-table__tr">
               <td class="roles-table__cell roles-table__cell--break"><%= Map.get(role, "description", "") %></td>
               <td class="roles-table__cell roles-table__cell--break" style="width: 10%;">
-                  <button phx-click="remove_role" phx-value-role-id="<%= role["id"] %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
-              </td>
+                  <%= if not @self do %>
+                    <button phx-click="remove_role" phx-value-role-id="<%= role["id"] %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
+                  <% end %>
+                </td>
             </tr>
           <% end %>
         <% end %>
