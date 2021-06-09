@@ -575,15 +575,16 @@ defmodule AndiWeb.DataDictionaryFormTest do
         "Top Level",
         "one > one-one",
         "one",
-        "two",
+        "two"
       ]
 
-      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select") 
-      
+      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
       Enum.each(select_options, fn select_option ->
         option_name = Tuple.to_list(select_option) |> Enum.at(0)
         assert option_name in expected_options
       end)
+
       new_eligible_parent_id = List.keyfind(select_options, "one > one-one", 0) |> Tuple.to_list() |> Enum.at(1)
 
       add_field_form_data = %{
