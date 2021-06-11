@@ -571,12 +571,20 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
       html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
 
-      assert [
-               {"Top Level", technical_id},
-               {"one", _},
-               {"one > one-one", new_eligible_parent_id},
-               {"two", _}
-             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+      expected_options = [
+        "Top Level",
+        "one > one-one",
+        "one",
+        "two"
+      ]
+
+      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      Enum.each(select_options, fn {option_name, _} ->
+        assert option_name in expected_options
+      end)
+
+      {_, new_eligible_parent_id} = List.keyfind(select_options, "one > one-one", 0)
 
       add_field_form_data = %{
         "field" => %{
