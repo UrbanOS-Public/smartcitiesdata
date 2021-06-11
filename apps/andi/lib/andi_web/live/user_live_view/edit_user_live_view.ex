@@ -1,11 +1,12 @@
 defmodule AndiWeb.UserLiveView.EditUserLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  require Logger
 
   import Phoenix.HTML.Form
 
   import SmartCity.Event,
-    only: [organization_update: 0, dataset_delete: 0, user_organization_associate: 0, user_organization_disassociate: 0]
+    only: [user_organization_associate: 0, user_organization_disassociate: 0]
 
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Schemas.User
@@ -26,8 +27,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
                   <%= text_input(f, :email, class: "input", readonly: true) %>
               </div>
               <div class="user-form__role">
-                  <%= label(f, :user_role, class: "label") %>
-                  <%= select(f, :user_role, @roles, [class: "select", readonly: true]) %>
+                  <%= label(f, :role, class: "label") %>
+                  <%= select(f, :role, @roles, [class: "select", readonly: true, prompt: "Please select a role"]) %>
+                  <button class="btn btn--add-organization" phx-click="add-role" phx-value-selected-role="<%= @selected_role %>">Add Role</button>
               </div>
 
               <div class="user-form__organizations">
@@ -45,6 +47,11 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           </div>
 
           <div class="associated-organizations-table">
+            <h3>Roles Associated With This User</h3>
+            <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles, self: @self) %>
+          </div>
+
+          <div class="associated-organizations-table">
             <h3>Organizations Associated With This User</h3>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
@@ -52,43 +59,75 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     """
   end
 
-  def mount(_params, %{"is_curator" => is_curator, "user" => user}, socket) do
+  def mount(_params, %{"is_curator" => is_curator, "user" => user, "user_id" => user_id}, socket) do
     changeset = User.changeset(user, %{}) |> Map.put(:errors, [])
+    signed_in_user = User.get_by_id(user_id)
 
-    case Auth0Management.get_roles() do
-      roles ->
-        roles = roles |> Enum.map(fn %{"name" => name, "description" => description} -> {description, name} end)
-
-        {:ok,
-         assign(socket,
-           is_curator: is_curator,
-           changeset: changeset,
-           roles: roles,
-           organizations: user.organizations,
-           user: user,
-           success: false,
-           success_message: "",
-           click_id: nil
-         )}
-
+    with {:ok, roles} <- Auth0Management.get_roles(),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(user.subject_id) do
+      {:ok,
+       assign(socket,
+         is_curator: is_curator,
+         changeset: changeset,
+         roles: parse_roles(roles),
+         user_roles: user_roles,
+         organizations: user.organizations,
+         user: user,
+         success: false,
+         success_message: "",
+         click_id: nil,
+         selected_role: "",
+         self: is_self(signed_in_user, user)
+       )}
+    else
       {:error, error} ->
+        Logger.error("unable to fetch role information from auth0: #{error}")
+
         {:ok,
          assign(socket,
            is_curator: is_curator,
            changeset: changeset,
            roles: [],
+           user_roles: [],
            page_error: true,
            organizations: [],
            user: user,
            success: false,
            success_message: "",
-           click_id: nil
+           click_id: nil,
+           selected_role: "",
+           self: is_self(signed_in_user, user)
          )}
     end
   end
 
+  def handle_event("validate", %{"_target" => ["form_data", "role"], "form_data" => %{"role" => role}}, socket) do
+    {:noreply, assign(socket, selected_role: role)}
+  end
+
   def handle_event("validate", _, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("add-role", %{"selected-role" => ""}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("add-role", %{"selected-role" => selected_role}, socket) do
+    subject_id = socket.assigns.user.subject_id
+    role_id = selected_role
+
+    with {:ok, _} <- Auth0Management.assign_user_role(subject_id, role_id),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
+      {:noreply,
+       assign(socket,
+         user_roles: user_roles
+       )}
+    else
+      {:error, error} ->
+        Logger.error("unable to add role to user: #{error}")
+        {:noreply, socket}
+    end
   end
 
   def handle_event("associate", %{"organiation" => %{"org_id" => ""}}, socket) do
@@ -125,8 +164,34 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
      )}
   end
 
+  def handle_info({:remove_role, role_id}, socket) do
+    subject_id = socket.assigns.user.subject_id
+
+    with {:ok, _} <- Auth0Management.delete_user_role(subject_id, role_id),
+         {:ok, user_roles} <- Auth0Management.get_user_roles(subject_id) do
+      {:noreply,
+       assign(socket,
+         user_roles: user_roles
+       )}
+    else
+      {:error, error} ->
+        Logger.error("unable to remove role from user: #{error}")
+        {:noreply, socket}
+    end
+  end
+
   defp send_event(org_id, user) do
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
+  end
+
+  defp parse_roles(roles) when length(roles) == 0, do: []
+
+  defp parse_roles(roles) do
+    roles |> Enum.map(fn %{"id" => id, "description" => description} -> {description, id} end)
+  end
+
+  defp is_self(signed_in_user, edit_user) do
+    signed_in_user.subject_id == edit_user.subject_id
   end
 end
