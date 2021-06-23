@@ -30,7 +30,6 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(business, :describedByMimeType) %>
         <%= hidden_input(business, :describedByUrl) %>
         <%= hidden_input(business, :id) %>
-        <%= hidden_input(business, :orgTitle) %>
         <%= hidden_input(business, :parentDataset) %>
         <%= hidden_input(business, :referenceUrls) %>
         <%= hidden_input(technical, :allow_duplicates) %>
@@ -39,8 +38,6 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :credentials) %>
         <%= hidden_input(technical, :dataName) %>
         <%= hidden_input(technical, :id) %>
-        <%= hidden_input(technical, :orgId) %>
-        <%= hidden_input(technical, :orgName) %>
         <%= hidden_input(technical, :protocol) %>
         <%= hidden_input(technical, :sourceFormat) %>
         <%= hidden_input(technical, :sourceType) %>

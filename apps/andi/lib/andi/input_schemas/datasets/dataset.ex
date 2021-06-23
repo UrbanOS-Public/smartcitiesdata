@@ -96,10 +96,17 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   def validate_unique_system_name(%{changes: %{technical: technical}} = changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
     data_name = Ecto.Changeset.get_change(technical, :dataName)
-    org_name = Ecto.Changeset.get_change(technical, :orgName)
-
-    technical_changeset = check_uniqueness(technical, id, data_name, org_name)
-    Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
+    org_id = Ecto.Changeset.get_field(changeset, :organization_id)
+    case is_nil(org_id) do
+      false ->
+        org = Andi.InputSchemas.Organizations.get(org_id)
+        technical_changeset = check_uniqueness(technical, id, data_name, org.orgName)
+        Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
+      _ -> 
+        technical_changeset = check_uniqueness(technical, id, data_name, nil)
+        Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
+    end
+    
   end
 
   def validate_unique_system_name(changeset) do

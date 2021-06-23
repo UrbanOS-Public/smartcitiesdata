@@ -28,7 +28,6 @@ defmodule Andi.InputSchemas.Datasets.Business do
     field(:language, :string)
     field(:license, :string)
     field(:modifiedDate, :date)
-    field(:orgTitle, :string)
     field(:parentDataset, :string)
     field(:publishFrequency, :string)
     field(:referenceUrls, {:array, :string})
@@ -61,7 +60,6 @@ defmodule Andi.InputSchemas.Datasets.Business do
     :language,
     :license,
     :modifiedDate,
-    :orgTitle,
     :parentDataset,
     :publishFrequency,
     :referenceUrls,
@@ -79,7 +77,6 @@ defmodule Andi.InputSchemas.Datasets.Business do
     :description,
     :issuedDate,
     :license,
-    :orgTitle,
     :publishFrequency,
     :riskRating
   ]
