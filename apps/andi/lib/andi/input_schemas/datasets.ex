@@ -1,8 +1,6 @@
 defmodule Andi.InputSchemas.Datasets do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets.Technical
-  alias Andi.InputSchemas.Datasets.Organization
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Andi.Repo
@@ -100,8 +98,13 @@ defmodule Andi.InputSchemas.Datasets do
     form_changes = InputConverter.form_changes_from_changeset(form_changeset)
     update_from_form(dataset_id, form_changes)
   end
+  
+  def is_org_changed?(form_changes) do
+    Map.has_key?(form_changes, :organization_id)
+  end
 
   def update_from_form(dataset_id, form_changes) do
+    org_changed = is_org_changed?(form_changes)
     existing_dataset = get(dataset_id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
 
@@ -136,19 +139,19 @@ defmodule Andi.InputSchemas.Datasets do
       |> Map.merge(form_changes)
       |> Map.get(:datasetLink)
 
-    case {owner_id, organization_id} do
-      {nil, nil} ->
+    case {owner_id, org_changed} do
+      {nil, false} ->
         existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, datasetLink: dataset_link})
 
-      {owner_id, nil} ->
+      {owner_id, false} ->
         existing_dataset
         |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, datasetLink: dataset_link})
 
-      {nil, organization_id} ->
+      {nil, true} ->
         existing_dataset
         |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, organization_id: organization_id, datasetLink: dataset_link})
 
-      {owner_id, organization_id} ->
+      {owner_id, true} ->
         existing_dataset
         |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, organization_id: organization_id, datasetLink: dataset_link})
     end
@@ -250,14 +253,13 @@ defmodule Andi.InputSchemas.Datasets do
 
   def is_unique?(_id, data_name, org_name) when is_nil(data_name) or is_nil(org_name), do: true
 
-  #TODO fix me
   def is_unique?(id, data_name, org_name) do
-    from(dataset in Andi.InputSchemas.Datasets,
+    from(dataset in Dataset,
       join: technical in assoc(dataset, :technical),
-      left_join: organization in assoc(dataset, :organization),
+      join: organization in assoc(dataset, :organization),
       where: technical.dataName == ^data_name and organization.orgName == ^org_name and technical.dataset_id != ^id
     )
-    |> Repo.all()
+    |> Repo.all() 
     |> Enum.empty?()
   end
 
