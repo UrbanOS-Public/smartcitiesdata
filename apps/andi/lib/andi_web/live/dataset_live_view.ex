@@ -155,7 +155,6 @@ defmodule AndiWeb.DatasetLiveView do
 
   defp query_on_search_change(search_value, socket) do
     owner_id = socket.assigns.is_curator || socket.assigns.user_id
-
     refresh_datasets(search_value, owner_id)
   end
 
@@ -166,11 +165,12 @@ defmodule AndiWeb.DatasetLiveView do
       from(dataset in Dataset,
         join: technical in assoc(dataset, :technical),
         join: business in assoc(dataset, :business),
-        preload: [business: business, technical: technical],
+        left_join: organization in assoc(dataset, :organization),
+        preload: [business: business, technical: technical, organization: organization],
         where: not is_nil(technical.id),
         where: not is_nil(business.id),
         where: ilike(business.dataTitle, type(^search_string, :string)),
-        or_where: ilike(business.orgTitle, type(^search_string, :string)),
+        or_where: ilike(organization.orgTitle, type(^search_string, :string)),
         select: dataset
       )
 
@@ -198,13 +198,27 @@ defmodule AndiWeb.DatasetLiveView do
     Enum.map(datasets, &to_view_model/1)
   end
 
-  defp to_view_model(dataset) do
+  defp view_model(dataset, nil) do
     %{
       "id" => dataset.id,
-      "org_title" => dataset.business.orgTitle,
+      "org_title" => nil,
       "data_title" => dataset.business.dataTitle,
       "status" => status(dataset)
     }
+  end
+
+  defp view_model(dataset, _organization_id) do
+  %{
+      "id" => dataset.id,
+      "org_title" => dataset.organization.orgTitle,
+      "data_title" => dataset.business.dataTitle,
+      "status" => status(dataset)
+    }
+  end
+
+  defp to_view_model(dataset) do
+    org_id = dataset.organization_id
+    view_model(dataset, org_id)
   end
 
   defp status(%{ingestedTime: nil, submission_status: status}), do: String.capitalize(Atom.to_string(status))

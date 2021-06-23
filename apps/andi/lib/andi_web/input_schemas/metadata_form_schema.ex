@@ -34,6 +34,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     field(:license, :string)
     field(:modifiedDate, :date)
     field(:orgId, :string)
+    field(:organization_id, :string)
     field(:orgName, :string)
     field(:orgTitle, :string)
     field(:publishFrequency, :string)
@@ -66,6 +67,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :license,
     :modifiedDate,
     :orgId,
+    :organization_id,
     :orgName,
     :orgTitle,
     :private,
@@ -90,7 +92,7 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :issuedDate,
     :language,
     :license,
-    :orgId,
+    :organization_id,
     :orgName,
     :orgTitle,
     :private,
@@ -124,13 +126,14 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
 
   def changeset_from_andi_dataset(dataset) do
     owner_id = dataset.owner_id
+    organization_id = dataset.organization_id
     dataset = StructTools.to_map(dataset)
-
     business_changes = dataset.business
     technical_changes = dataset.technical
     changes = Map.merge(business_changes, technical_changes)
     changes = Map.put(changes, :datasetId, dataset.id)
     changes = Map.put_new(changes, :ownerId, owner_id)
+    changes = Map.put_new(changes, :organization_id, organization_id)
 
     changeset(changes)
   end

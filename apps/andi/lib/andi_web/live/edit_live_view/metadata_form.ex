@@ -16,7 +16,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def mount(_, %{"dataset" => dataset}, socket) do
     new_metadata_changeset = MetadataFormSchema.changeset_from_andi_dataset(dataset)
-
     dataset_published? = dataset.submission_status == :published
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
@@ -30,7 +29,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
        visibility: "expanded",
        validation_status: "expanded",
        changeset: new_metadata_changeset,
-       owner_id: dataset.owner_id
+       owner_id: dataset.owner_id,
+       organization_id: dataset.organization_id
      )}
   end
 
@@ -62,7 +62,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
           <%= hidden_input(f, :orgName) %>
           <%= hidden_input(f, :orgTitle) %>
-          <%= hidden_input(f, :orgId) %>
+          <%= hidden_input(f, :organization_id) %>
           <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
           <%= hidden_input(f, :sourceType) %>
@@ -172,8 +172,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
               <div class="metadata-form__organization">
                 <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-                <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: ""]) %>
-                <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
+                <%= select(f, :organization_id, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: ""]) %>
+                <%= ErrorHelpers.error_tag(f, :organization_id, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__level-of-access">
@@ -234,7 +234,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
   def handle_event(
         "validate",
-        %{"form_data" => form_data, "_target" => ["form_data", "orgId" | _]},
+        %{"form_data" => form_data, "_target" => ["form_data", "organization_id" | _]},
         %{assigns: %{dataset_published?: false}} = socket
       ) do
     form_data
