@@ -35,6 +35,14 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
+  def changeset(dataset, %{organization: organization} = changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> put_assoc(:organization, organization)
+    |> cast_assoc(:technical, with: &Technical.changeset/2)
+    |> cast_assoc(:business, with: &Business.changeset/2)
+  end
+
   def changeset(dataset, changes) do
     dataset
     |> cast(changes, @cast_fields)
@@ -102,11 +110,11 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
         org = Andi.InputSchemas.Organizations.get(org_id)
         technical_changeset = check_uniqueness(technical, id, data_name, org.orgName)
         Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
-      _ -> 
+      _ ->
         technical_changeset = check_uniqueness(technical, id, data_name, nil)
         Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
     end
-    
+
   end
 
   def validate_unique_system_name(changeset) do

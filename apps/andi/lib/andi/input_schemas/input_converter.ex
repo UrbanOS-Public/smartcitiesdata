@@ -91,7 +91,6 @@ defmodule Andi.InputSchemas.InputConverter do
 
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
     dataset_as_map = StructTools.to_map(dataset)
-
     Andi.InputSchemas.Datasets.full_validation_changeset_for_publish(%Dataset{}, dataset_as_map)
   end
 
@@ -105,7 +104,7 @@ defmodule Andi.InputSchemas.InputConverter do
     dataset
     |> StructTools.to_map()
     |> convert_andi_business()
-    |> convert_andi_technical()
+    |> convert_andi_technical() # |> IO.inspect(label: "***** AFTER CONVERTING BUSINESS AND TECHNICAL *****")
     |> SmartCity.Dataset.new()
   end
 
@@ -139,7 +138,6 @@ defmodule Andi.InputSchemas.InputConverter do
       |> fix_modified_date()
     end)
   end
-
   defp convert_andi_business(andi_dataset) do
     andi_dataset
     |> Map.update!(:business, fn business ->

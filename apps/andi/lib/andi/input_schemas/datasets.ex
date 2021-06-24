@@ -98,7 +98,7 @@ defmodule Andi.InputSchemas.Datasets do
     form_changes = InputConverter.form_changes_from_changeset(form_changeset)
     update_from_form(dataset_id, form_changes)
   end
-  
+
   def is_org_changed?(form_changes) do
     Map.has_key?(form_changes, :organization_id)
   end
@@ -259,7 +259,7 @@ defmodule Andi.InputSchemas.Datasets do
       join: organization in assoc(dataset, :organization),
       where: technical.dataName == ^data_name and organization.orgName == ^org_name and technical.dataset_id != ^id
     )
-    |> Repo.all() 
+    |> Repo.all()
     |> Enum.empty?()
   end
 
