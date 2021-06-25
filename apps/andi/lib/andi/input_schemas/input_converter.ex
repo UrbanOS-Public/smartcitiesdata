@@ -104,8 +104,9 @@ defmodule Andi.InputSchemas.InputConverter do
     dataset
     |> StructTools.to_map()
     |> convert_andi_business()
-    |> convert_andi_technical() # |> IO.inspect(label: "***** AFTER CONVERTING BUSINESS AND TECHNICAL *****")
-    |> SmartCity.Dataset.new()
+    |> convert_andi_technical()
+    |> convert_andi_organization()
+    |> SmartCity.Dataset.new() |> IO.inspect(label: "***** AFTER LINE 108 *****")
   end
 
   def andi_org_to_smrt_org(%Organization{} = org) do
@@ -147,6 +148,14 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
+  defp convert_andi_organization(andi_dataset) do
+    andi_dataset
+    |> Map.update!(:organization, fn organization ->
+      organization
+    end)
+  end
+
+
   defp convert_form_business(form_dataset) do
     form_dataset
     |> Map.update(:business, %{}, fn business ->
@@ -155,6 +164,7 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:keywords, nil, &keywords_to_list/1)
     end)
   end
+
 
   defp convert_smrt_technical(smrt_dataset) do
     smrt_dataset

@@ -29,7 +29,8 @@ defmodule Andi.InputSchemas.Datasets do
       from(dataset in Dataset,
         join: technical in assoc(dataset, :technical),
         join: business in assoc(dataset, :business),
-        preload: [business: business, technical: technical]
+        join: organization in assoc(dataset, :organization),
+        preload: [business: business, technical: technical, organization: organization]
       )
 
     Repo.all(query)
