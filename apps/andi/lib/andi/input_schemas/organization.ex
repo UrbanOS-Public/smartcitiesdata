@@ -7,7 +7,6 @@ defmodule Andi.InputSchemas.Organization do
 
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Organizations
   alias Andi.Schemas.User
@@ -22,7 +21,6 @@ defmodule Andi.InputSchemas.Organization do
     field(:homepage, :string)
     field(:logoUrl, :string)
     field(:dataJsonUrl, :string)
-    has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :organization_id)
     many_to_many(:users, User, join_through: Andi.Schemas.UserOrganization)
   end
 

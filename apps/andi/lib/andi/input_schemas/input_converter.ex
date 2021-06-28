@@ -46,6 +46,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> AtomicMap.convert(safe: false, underscore: false)
     |> convert_smrt_business()
     |> convert_smrt_technical()
+    |> convert_smrt_organization()
   end
 
   def form_data_to_ui_changeset(form_data \\ %{}) do
@@ -106,7 +107,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> convert_andi_business()
     |> convert_andi_technical()
     |> convert_andi_organization()
-    |> SmartCity.Dataset.new() |> IO.inspect(label: "***** AFTER LINE 108 *****")
+    |> SmartCity.Dataset.new()
   end
 
   def andi_org_to_smrt_org(%Organization{} = org) do
@@ -139,6 +140,11 @@ defmodule Andi.InputSchemas.InputConverter do
       |> fix_modified_date()
     end)
   end
+
+  defp convert_smrt_organization(smrt_dataset) do
+    Map.update!(smrt_dataset, :organization, &Map.delete(&1, :version))
+  end
+
   defp convert_andi_business(andi_dataset) do
     andi_dataset
     |> Map.update!(:business, fn business ->

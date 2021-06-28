@@ -73,7 +73,6 @@ defmodule Andi.DatasetCache do
   end
 
   def add_dataset_info(dataset) do
-    IO.inspect(dataset, label: "***** UPON ADDING DATASET INFO *****")
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],

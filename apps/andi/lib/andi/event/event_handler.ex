@@ -32,7 +32,6 @@ defmodule Andi.Event.EventHandler do
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     dataset_update()
     |> add_event_count(author, data.id)
-
     Andi.DatasetCache.add_dataset_info(data)
 
     Task.start(fn -> add_dataset_count() end)
