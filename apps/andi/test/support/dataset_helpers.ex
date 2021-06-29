@@ -9,16 +9,6 @@ defmodule DatasetHelpers do
 
   import Placebo
 
-  # def create_dataset(overrides) do
-  #   changes =
-  #     overrides
-  #     |> TDG.create_dataset()
-  #     |> InputConverter.prepare_smrt_dataset_for_casting()
-
-  #   Dataset.changeset_for_draft(%Dataset{}, changes)
-  #   |> Ecto.Changeset.apply_changes()
-  # end
-
   def smrt_org_to_andi_org(org) do
     org
     |> StructTools.to_map()
@@ -27,14 +17,22 @@ defmodule DatasetHelpers do
     |> Map.delete(:version)
   end
 
+  def create_dataset(overrides, org) do
+    changes =
+      TDG.create_dataset(overrides)
+      |> InputConverter.prepare_smrt_dataset_for_casting() 
+    changes = Map.put(changes, :organization, org)
+    Dataset.changeset_for_draft(%Dataset{}, changes)
+    |> Ecto.Changeset.apply_changes()
+  end
+
   def create_dataset(overrides) do
     changes =
       overrides
       |> TDG.create_dataset()
       |> InputConverter.prepare_smrt_dataset_for_casting()
 
-    org = TDG.create_organization(%{organization_id: changes.organization_id})
-      |> smrt_org_to_andi_org()
+    org = create_organization(%{organization_id: changes.organization_id})
     changes = Map.put(changes, :organization, org)
 
     Dataset.changeset_for_draft(%Dataset{}, changes)
