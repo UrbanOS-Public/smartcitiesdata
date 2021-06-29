@@ -105,6 +105,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> StructTools.to_map()
     |> convert_andi_business()
     |> convert_andi_technical()
+    |> SmartCity.Dataset.new()
   end
 
   def andi_org_to_smrt_org(%Organization{} = org) do
