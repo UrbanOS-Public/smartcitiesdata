@@ -453,7 +453,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
+          organization_id: org.id,
           business: %{
             description: "A description with no special characters",
             benefitRating: 1.0,
@@ -479,7 +479,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
 
-      assert {org_id, org_name} == get_select(html, ".metadata-form__organization select")
+      assert {org.id, org_name} == get_select(html, ".metadata-form__organization select")
 
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
       assert get_value(html, ".metadata-form__homepage input") == dataset.business.homepage
