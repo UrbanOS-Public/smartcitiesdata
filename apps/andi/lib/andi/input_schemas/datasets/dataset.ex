@@ -33,11 +33,14 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   @submission_required_fields [:datasetLink]
 
+  @organization_required_fields [:organization_id]
+
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(dataset, %{organization: organization} = changes) do
     dataset
     |> cast(changes, @cast_fields)
+    |> validate_required(@organization_required_fields, message: "is required")
     |> put_assoc(:organization, organization)
     |> cast_assoc(:technical, with: &Technical.changeset/2)
     |> cast_assoc(:business, with: &Business.changeset/2)
