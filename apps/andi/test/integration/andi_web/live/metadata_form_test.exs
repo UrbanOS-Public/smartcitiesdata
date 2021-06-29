@@ -8,6 +8,7 @@ defmodule AndiWeb.MetadataFormTest do
 
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
 
   @moduletag shared_data_connection: true
 
@@ -40,8 +41,9 @@ defmodule AndiWeb.MetadataFormTest do
 
   setup %{curator_subject: curator_subject} do
     {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
-
-    [curator_user: curator_user]
+    smrt_org = TDG.create_organization(%{}) 
+    Organizations.update(smrt_org)
+    [curator_user: curator_user, org_id: smrt_org.id, org_name: smrt_org.orgName]
   end
 
   describe "create new dataset" do
@@ -166,10 +168,10 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     test "updating data title allows common data name across different orgs", %{conn: conn} do
-      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camido", systemName: "kevino__camino"}})
+      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camido", systemName: "#{org_name}__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "carrabino__blah"}})
+      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "blah", systemName: "#{org_name}__blah"}})
       {:ok, _} = Datasets.update(new_dataset)
 
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
@@ -186,10 +188,10 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     test "updating data title adds error when data name exists within same org", %{conn: conn} do
-      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "harharhar", systemName: "kevino__harharhar"}})
+      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "harharhar", systemName: "#{org_name}__harharhar"}})
       {:ok, new_andi_dataset} = Datasets.update(new_dataset)
 
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
@@ -206,10 +208,10 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     test "changing org retriggers data_name validation", %{conn: conn} do
-      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
+      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{technical: %{orgName: "benjino", dataName: "camino", systemName: "benjino__camino"}})
+      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "benjino__camino"}})
       {:ok, _} = Datasets.update(new_dataset)
 
       org = TDG.create_organization(%{orgTitle: "kevin org", orgName: "kevino"})
@@ -503,7 +505,9 @@ defmodule AndiWeb.MetadataFormTest do
     end
 
     data_test "required #{field} field displays proper error message", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+      smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -526,7 +530,7 @@ defmodule AndiWeb.MetadataFormTest do
         [:issuedDate, %{"issuedDate" => nil}, "Please enter a valid release date."],
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:publishFrequency, %{"publishFrequency" => ""}, "Please enter a valid update frequency."],
-        [:orgId, %{"orgId" => ""}, "Please enter a valid organization."],
+        [:organization_id, %{"organization_id" => ""}, "Please enter a valid organization."],
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
