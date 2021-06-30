@@ -33,7 +33,9 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "create new dataset" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+      blank_dataset = %Dataset{organization_id: smrt_org.id, id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
     end
 
@@ -109,11 +111,13 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "enter form data" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      [public_user: public_user]
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+      [public_user: public_user, org_id: smrt_org.id]
     end
 
-    test "the default language is set to english", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "the default language is set to english", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -123,8 +127,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert {"english", "English"} = get_select(html, ".metadata-form__language")
     end
 
-    test "the language is set to spanish", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{language: "spanish"}})
+    test "the language is set to spanish", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{language: "spanish"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -134,8 +138,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert {"spanish", "Spanish"} = get_select(html, ".metadata-form__language")
     end
 
-    test "the language is changed from english to spanish", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "the language is changed from english to spanish", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -150,8 +154,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert {"spanish", "Spanish"} = get_select(html, ".metadata-form__language")
     end
 
-    test "adds commas between keywords", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{keywords: ["one", "two", "three"]}})
+    test "adds commas between keywords", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{keywords: ["one", "two", "three"]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -162,8 +166,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert subject =~ "one, two, three"
     end
 
-    test "keywords input should show empty string if keywords is nil", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{keywords: nil}})
+    test "keywords input should show empty string if keywords is nil", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{keywords: nil}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -174,8 +178,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert subject == ""
     end
 
-    test "should not add additional commas to keywords", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "should not add additional commas to keywords", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -191,8 +195,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert expected == subject
     end
 
-    test "should trim spaces in keywords", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "should trim spaces in keywords", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -208,8 +212,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert "a, good, keyword, is .... hard, to find" == subject
     end
 
-    test "can handle lists of keywords", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "can handle lists of keywords", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -226,7 +230,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert expected == subject
     end
 
-    test "displays all other fields", %{public_conn: conn, public_user: public_user} do
+    test "displays all other fields", %{public_conn: conn, public_user: public_user, org_id: org_id} do
       {:ok, org} =
         Organizations.create()
         |> Organizations.update(%{
@@ -237,6 +241,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       {:ok, dataset} =
         Datasets.create(public_user)
         |> Datasets.update(%{
+          organization_id: org_id,
           business: %{
             description: "A description with no special characters",
             benefitRating: 1.0,
@@ -244,7 +249,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
           },
           technical: %{
             private: true,
-            orgId: org.id,
             sourceType: "ingest",
             sourceFormat: "text/csv"
           }
@@ -266,11 +270,13 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "edit form data" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      [public_user: public_user]
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+      [public_user: public_user, org_id: smrt_org.id]
     end
 
-    data_test "required #{field} field displays proper error message", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    data_test "required #{field} field displays proper error message", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -296,8 +302,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       ])
     end
 
-    test "required sourceFormat displays proper error message", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "required sourceFormat displays proper error message", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -313,9 +319,10 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
                "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
     end
 
-    test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user} do
+    test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user, org_id: org_id} do
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: org_id,
           business: %{
             dataTitle: "dater",
             publishFrequency: "",
@@ -344,8 +351,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       refute Enum.empty?(find_elements(html, ".component-number-status--valid"))
     end
 
-    test "source format before publish", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "source format before publish", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
@@ -355,8 +362,8 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
       assert Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
-    test "error message is cleared when form is updated", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{business: %{description: nil}})
+    test "error message is cleared when form is updated", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{description: nil}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
