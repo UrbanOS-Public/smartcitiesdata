@@ -23,14 +23,18 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.FinalizeFormSchema
+  alias Andi.InputSchemas.Organizations
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
   describe "one-time ingestion" do
     setup %{conn: conn} do
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             cadence: "once"
           }
@@ -58,8 +62,11 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "never ingestion" do
     setup %{conn: conn} do
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             cadence: "never"
           }
@@ -87,8 +94,11 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "repeat ingestion" do
     setup %{conn: conn} do
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             cadence: "0 * * * * *"
           }
@@ -102,7 +112,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
       [
         view: view,
-        html: html
+        html: html,
+        org_id: smrt_org.id
       ]
     end
 
@@ -117,9 +128,10 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert "0 * * * * *" == get_crontab_from_html(html)
     end
 
-    data_test "does not allow schedules more frequent than every 10 seconds", %{conn: conn} do
+    data_test "does not allow schedules more frequent than every 10 seconds", %{conn: conn, org_id: org_id} do
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: org_id,
           technical: %{
             cadence: "*/#{second_interval} * * * * *"
           }
@@ -140,8 +152,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       where(second_interval: ["1", "2", "3", "4", "5", "6", "7", "8", "9"])
     end
 
-    data_test "marks #{cronstring} as invalid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    data_test "marks #{cronstring} as invalid", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -166,10 +178,12 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "finalize form" do
     setup do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "1 1 1 * * *"}})
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+      dataset = TDG.create_dataset(%{organization_id: smrt_org.id, technical: %{cadence: "1 1 1 * * *"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
-      [dataset: andi_dataset]
+      [dataset: andi_dataset, org_id: smrt_org.id]
     end
 
     data_test "quick schedule #{schedule}", %{conn: conn, dataset: dataset} do
@@ -203,8 +217,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
-    test "handles five-character cronstrings", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "4 2 7 * *"}})
+    test "handles five-character cronstrings", %{conn: conn, org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{cadence: "4 2 7 * *"}})
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -218,8 +232,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
     end
 
-    test "handles cadence of never", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+    test "handles cadence of never", %{conn: conn, org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{cadence: "never"}})
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -228,7 +242,9 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   end
 
   test "required cadence field displays proper error message", %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(%{})
+    smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
+    smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
 
     {:ok, dataset} =
       InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)

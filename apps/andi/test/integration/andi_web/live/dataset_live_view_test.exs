@@ -8,6 +8,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import Checkov
 
   alias Andi.InputSchemas.Organizations
+  alias Andi.Services.OrgStore
 
   @moduletag shared_data_connection: true
 
@@ -31,6 +32,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   setup do
     smrt_org = TDG.create_organization(%{}) 
     Organizations.update(smrt_org)
+    OrgStore.update(smrt_org)
     [org_id: smrt_org.id, org_name: smrt_org.orgName]
   end
 
