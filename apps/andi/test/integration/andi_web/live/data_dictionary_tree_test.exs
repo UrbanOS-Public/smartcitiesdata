@@ -9,6 +9,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
   @moduletag shared_data_connection: true
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
   import FlokiHelpers,
@@ -22,8 +23,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do
+      smrt_org = TDG.create_organization(%{}) 
+      Organizations.update(smrt_org)
       dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             schema: [
               %{
