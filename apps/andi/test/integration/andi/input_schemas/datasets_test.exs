@@ -12,27 +12,34 @@ defmodule Andi.InputSchemas.DatasetsTest do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Organizations
 
+  setup do
+    smrt_org = TDG.create_organization(%{}) 
+    Organizations.update(smrt_org)
+    [org_id: smrt_org.id]
+  end
   describe "is_unique/3" do
-    test "given an existing dataset with the same system name it returns false" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing dataset with the same system name it returns false", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, _andi_dataset} = Datasets.update(dataset)
-
-      refute Datasets.is_unique?(UUID.uuid4(), dataset.technical.dataName, dataset.technical.orgName)
+      org = Organizations.get(org_id)
+      refute Datasets.is_unique?(UUID.uuid4(), dataset.technical.dataName, org.orgName)
     end
 
-    test "given an existing dataset with the same system name and id it returns true" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing dataset with the same system name and id it returns true", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, _andi_dataset} = Datasets.update(dataset)
-
-      assert Datasets.is_unique?(dataset.id, dataset.technical.dataName, dataset.technical.orgName)
+      org = Organizations.get(org_id)
+      assert Datasets.is_unique?(dataset.id, dataset.technical.dataName, org.orgName)
     end
   end
 
   describe "remove_source_query_param/2" do
-    test "given an existing source query param, it deletes it" do
+    test "given an existing source query param, it deletes it", %{org_id: org_id} do
       dataset =
         TDG.create_dataset(%{
+          organization_id: org_id,
           technical: %{
             sourceUrl: "http://example.com?foo=baz&riz=bar",
             sourceQueryParams: %{"foo" => "baz", "riz" => "bar"}
@@ -52,8 +59,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
                Datasets.remove_source_query_param(dataset.id, original_id)
     end
 
-    test "given a non-existing source query param, it returns unaltered query params" do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"dog" => "cat"}}})
+    test "given a non-existing source query param, it returns unaltered query params", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceQueryParams: %{"dog" => "cat"}}})
 
       {:ok, %{technical: %{sourceQueryParams: [existing_query_param]}} = _andi_dataset} = Datasets.update(dataset)
 
@@ -61,8 +68,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       assert {:ok, %{technical: %{sourceQueryParams: [^existing_query_param]}}} = Datasets.remove_source_query_param(dataset.id, missing_id)
     end
 
-    test "removes error from changeset when an invalid query param is removed" do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{}, sourceType: "remote"}})
+    test "removes error from changeset when an invalid query param is removed", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceQueryParams: %{}, sourceType: "remote"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 
@@ -83,8 +90,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "remove_source_header/2" do
-    test "given an existing source header, it deletes it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}}})
+    test "given an existing source header, it deletes it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}}})
 
       {:ok, %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}, %{id: the_other_id}]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -93,8 +100,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
                Datasets.remove_source_header(dataset.id, original_id)
     end
 
-    test "given a non-existing source header, it returns an error" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{"bumble" => "bee"}}})
+    test "given a non-existing source header, it returns an error", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id,technical: %{sourceHeaders: %{"bumble" => "bee"}}})
 
       {:ok, %{technical: %{sourceHeaders: [existing_headers]}} = _andi_dataset} = Datasets.update(dataset)
 
@@ -102,8 +109,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       assert {:ok, %{technical: %{sourceHeaders: [^existing_headers]}}} = Datasets.remove_source_header(dataset.id, missing_id)
     end
 
-    test "removes error from changeset when an invalid header is removed" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{}, sourceType: "remote"}})
+    test "removes error from changeset when an invalid header is removed", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{}, sourceType: "remote"}})
 
       {:ok, andi_dataset} = Datasets.update(dataset)
 
@@ -124,16 +131,16 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "add_source_query_param/1" do
-    test "given an existing dataset with no params, it adds a new, blank param to it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{}}})
+    test "given an existing dataset with no params, it adds a new, blank param to it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceQueryParams: %{}}})
 
       {:ok, %{technical: %{sourceQueryParams: []}} = _andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, %{technical: %{sourceQueryParams: [%{id: _, key: nil, value: nil}]}}} = Datasets.add_source_query_param(dataset.id)
     end
 
-    test "given an existing dataset, it adds a new, blank param to it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceQueryParams: %{"foo" => "baz"}}})
+    test "given an existing dataset, it adds a new, blank param to it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceQueryParams: %{"foo" => "baz"}}})
 
       {:ok, %{technical: %{sourceQueryParams: [%{id: original_id, key: "foo", value: "baz"}]}} = _andi_dataset} = Datasets.update(dataset)
 
@@ -143,16 +150,16 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "add_source_header/1" do
-    test "given an existing dataset with no headers, it adds a new, blank source header to it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{}}})
+    test "given an existing dataset with no headers, it adds a new, blank source header to it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{}}})
 
       {:ok, %{technical: %{sourceHeaders: []}} = _andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, %{technical: %{sourceHeaders: [%{id: _, key: nil, value: nil}]}}} = Datasets.add_source_header(dataset.id)
     end
 
-    test "given an existing dataset, it adds a new, blank source header to it" do
-      dataset = TDG.create_dataset(%{technical: %{sourceHeaders: %{"api-key" => "to-my-heart"}}})
+    test "given an existing dataset, it adds a new, blank source header to it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{"api-key" => "to-my-heart"}}})
 
       {:ok, %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -163,9 +170,9 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "get_all/0" do
-    test "given existing datasets, it returns them, with at least business and technical preloaded" do
-      dataset_one = TDG.create_dataset(%{})
-      dataset_two = TDG.create_dataset(%{})
+    test "given existing datasets, it returns them, with at least business and technical preloaded", %{org_id: org_id} do
+      dataset_one = TDG.create_dataset(%{organization_id: org_id})
+      dataset_two = TDG.create_dataset(%{organization_id: org_id})
 
       assert {:ok, _} = Datasets.update(dataset_one)
       assert {:ok, _} = Datasets.update(dataset_two)
@@ -175,8 +182,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "get/1" do
-    test "given an existing dataset, it returns it, preloaded" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing dataset, it returns it, preloaded", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, %{id: dataset_id, business: %{id: business_id}, technical: %{id: technical_id, schema: [%{id: schema_id} | _]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -191,8 +198,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "delete/1" do
-    test "given an existing dataset, it cascade deletes it" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing dataset, it cascade deletes it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, %{business: %{id: business_id}, technical: %{id: technical_id, schema: [%{id: schema_id} | _]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -205,8 +212,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "update_ingested_time/2" do
-    test "given an existing dataset, it adds the ingested time into it" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing dataset, it adds the ingested time into it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, _andi_dataset} = Datasets.update(dataset)
 
@@ -217,8 +224,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       assert DateTime.diff(ingested_time_from_db, now) == 0
     end
 
-    test "given a non-existing dataset, it creates a partial one to be filled later" do
-      dataset = TDG.create_dataset(%{})
+    test "given a non-existing dataset, it creates a partial one to be filled later", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       now = DateTime.utc_now()
 
@@ -229,14 +236,14 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "update/1" do
-    test "given a newly seen smart city dataset, turns it into an Andi dataset" do
-      dataset = TDG.create_dataset(%{})
+    test "given a newly seen smart city dataset, turns it into an Andi dataset", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       assert {:ok, _} = Datasets.update(dataset)
     end
 
-    test "given an existing smart city dataset, updates it" do
-      dataset = TDG.create_dataset(%{})
+    test "given an existing smart city dataset, updates it", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
 
       original_data_title = dataset.business.dataTitle
 
@@ -260,9 +267,10 @@ defmodule Andi.InputSchemas.DatasetsTest do
               }} = Datasets.update(updated_dataset)
     end
 
-    test "given a blank extract step body, retains it" do
+    test "given a blank extract step body, retains it", %{org_id: org_id} do
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: org_id,
           technical: %{
             extractSteps: [
               %{
@@ -284,8 +292,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
   end
 
   describe "full_validation_changeset/1" do
-    test "requires unique orgName and dataName" do
-      existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "requires unique orgName and dataName", %{org_id: org_id} do
+      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
       changeset =
@@ -300,8 +308,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       assert technical_changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
     end
 
-    test "allows same orgName and dataName when id is same" do
-      existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "allows same orgName and dataName when id is same", %{org_id: org_id} do
+      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
       changeset = InputConverter.smrt_dataset_to_full_changeset(existing_dataset)
@@ -310,8 +318,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
       assert changeset.errors == []
     end
 
-    test "includes light validation" do
-      dataset = TDG.create_dataset(%{})
+    test "includes light validation", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, _} = Datasets.update(dataset)
 
       changeset =
