@@ -29,9 +29,9 @@ defmodule AndiWeb.EditLiveViewTest do
     {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
     smrt_org = TDG.create_organization(%{}) 
     Organizations.update(smrt_org)
-    Brook.Test.with_event(Andi.instance_name(), fn ->
-      OrgStore.update(smrt_org)
-    end)
+    # Brook.Test.with_event(Andi.instance_name(), fn ->
+    #   OrgStore.update(smrt_org)
+    # end)
     [curator: curator, public_user: public_user, org_id: smrt_org.id, orgName: smrt_org.orgName]
   end
 
@@ -51,15 +51,15 @@ defmodule AndiWeb.EditLiveViewTest do
       |> response(404)
     end
 
-    # test "public user cannot access a dataset owned by another user", %{public_conn: conn, curator: curator} do
-    #   dataset = Datasets.create(curator)
+    test "public user cannot access a dataset owned by another user", %{public_conn: conn, curator: curator} do
+      dataset = Datasets.create(curator)
 
-    #   get(conn, "/datasets/" <> dataset.id)
-    #   |> response(302)
+      get(conn, "/datasets/" <> dataset.id)
+      |> response(302)
 
-    #   get(conn, "/submissions/" <> dataset.id)
-    #   |> response(404)
-    # end
+      get(conn, "/submissions/" <> dataset.id)
+      |> response(404)
+    end
 
     test "public user cannot access edit view, even for a dataset they own", %{public_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
@@ -75,10 +75,10 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    # test "curator can access an unowned dataset", %{curator_conn: conn, org_id: org_id} do
-    #   {:ok, dataset} = TDG.create_dataset(%{organization_id: org_id}) |> Datasets.update()
-    #   assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    # end
+    test "curator can access an unowned dataset", %{curator_conn: conn, org_id: org_id} do
+      {:ok, dataset} = TDG.create_dataset(%{organization_id: org_id}) |> Datasets.update()
+      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    end
 
     test "curator can access a dataset owned by another user", %{curator_conn: conn, public_user: public_user} do
       dataset = Datasets.create(public_user)
@@ -361,7 +361,6 @@ defmodule AndiWeb.EditLiveViewTest do
       metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => "new dataset title"}
-
       render_change(metadata_view, "validate", %{"form_data" => form_data})
       render_change(metadata_view, "cancel-edit", %{})
       html = render(view)
@@ -587,9 +586,9 @@ defmodule AndiWeb.EditLiveViewTest do
     setup do
       smrt_org = TDG.create_organization(%{}) 
       Organizations.update(smrt_org)
-      Brook.Test.with_event(Andi.instance_name(), fn ->
-        OrgStore.update(smrt_org)
-      end)
+      # Brook.Test.with_event(Andi.instance_name(), fn ->
+      #   OrgStore.update(smrt_org)
+      # end)
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,
