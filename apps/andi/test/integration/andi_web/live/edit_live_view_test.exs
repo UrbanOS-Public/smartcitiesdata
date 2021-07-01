@@ -18,7 +18,6 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.InputConverter
-  alias Andi.Services.OrgStore
 
 
   @endpoint AndiWeb.Endpoint
@@ -29,9 +28,6 @@ defmodule AndiWeb.EditLiveViewTest do
     {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
     smrt_org = TDG.create_organization(%{}) 
     Organizations.update(smrt_org)
-    # Brook.Test.with_event(Andi.instance_name(), fn ->
-    #   OrgStore.update(smrt_org)
-    # end)
     [curator: curator, public_user: public_user, org_id: smrt_org.id, orgName: smrt_org.orgName]
   end
 
@@ -586,9 +582,6 @@ defmodule AndiWeb.EditLiveViewTest do
     setup do
       smrt_org = TDG.create_organization(%{}) 
       Organizations.update(smrt_org)
-      # Brook.Test.with_event(Andi.instance_name(), fn ->
-      #   OrgStore.update(smrt_org)
-      # end)
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,

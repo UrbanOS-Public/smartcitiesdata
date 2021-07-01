@@ -4,7 +4,6 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   curator versions of the metadata form.
   """
   alias AndiWeb.Views.Options
-  alias Andi.Services.OrgStore
   alias Andi.Schemas.User
   alias Andi.InputSchemas.Organizations
 

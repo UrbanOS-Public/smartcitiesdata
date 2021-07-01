@@ -17,6 +17,7 @@ defmodule AndiWeb.ExtractStepFormTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.ExtractSteps
   alias Andi.Services.DatasetStore
+  alias Andi.InputSchemas.Organizations
 
   @url_path "/datasets/"
   @bucket_path "samples/"
@@ -48,13 +49,14 @@ defmodule AndiWeb.ExtractStepFormTest do
       date_extract_step,
       default_extract_step
     ]
-
-    smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+    smrt_org = TDG.create_organization(%{}) 
+    Organizations.update(smrt_org)
+    smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id, technical: %{extractSteps: extract_steps}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
 
-    [view: view, html: html, andi_dataset: andi_dataset]
+    [view: view, html: html, andi_dataset: andi_dataset, org_id: smrt_org.id]
   end
 
   test "given a dataset with many extract steps, all steps are rendered", %{html: html} do
@@ -76,8 +78,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
-  test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: []}})
+  test "when an http extract step is added, its changeset adds a body field", %{conn: conn, org_id: org_id} do
+    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: []}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
     {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
@@ -230,8 +232,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
-  data_test "empty extract steps are invalid", %{conn: conn} do
-    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+  data_test "empty extract steps are invalid", %{conn: conn, org_id: org_id} do
+    smrt_ds = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: extract_steps}})
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
@@ -248,8 +250,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     where(extract_steps: [nil, []])
   end
 
-  test "extract steps without a trailing http or s3 step are invalid", %{conn: conn} do
-    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}})
+  test "extract steps without a trailing http or s3 step are invalid", %{conn: conn, org_id: org_id} do
+    smrt_ds = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}})
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
@@ -264,8 +266,8 @@ defmodule AndiWeb.ExtractStepFormTest do
     end)
   end
 
-  test "validation is updated when steps are added and removed", %{conn: conn} do
-    smrt_ds = TDG.create_dataset(%{technical: %{extractSteps: []}})
+  test "validation is updated when steps are added and removed", %{conn: conn, org_id: org_id} do
+    smrt_ds = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: []}})
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
@@ -296,9 +298,10 @@ defmodule AndiWeb.ExtractStepFormTest do
     refute Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
-  test "placeholder extract steps are able to be saved and published", %{conn: conn} do
+  test "placeholder extract steps are able to be saved and published", %{conn: conn, org_id: org_id} do
     smrt_ds =
       TDG.create_dataset(%{
+        organization_id: org_id,
         technical: %{
           extractSteps: [
             %{
