@@ -11,6 +11,7 @@ defmodule AndiWeb.API.DatasetController do
   alias SmartCity.Dataset
   alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Organizations
 
   access_levels(
     create: [:private],
@@ -172,8 +173,9 @@ defmodule AndiWeb.API.DatasetController do
     |> Dataset.new()
   end
 
-  defp with_system_name(%{"technical" => technical} = msg) do
-    system_name = "#{technical["orgName"]}__#{technical["dataName"]}"
+  defp with_system_name(%{"technical" => technical, "organization_id" =>  organization_id} = msg) do
+    org = Organizations.get(organization_id)
+    system_name = "#{org.orgName}__#{technical["dataName"]}"
     put_in(msg, ["technical", "systemName"], system_name)
   end
 end

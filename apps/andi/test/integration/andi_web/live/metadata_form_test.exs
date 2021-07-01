@@ -193,7 +193,6 @@ defmodule AndiWeb.MetadataFormTest do
 
       new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "harharhar", systemName: "#{org_name}__harharhar"}})
       {:ok, new_andi_dataset} = Datasets.update(new_dataset)
-      IO.inspect(new_andi_dataset, label: "noodle")
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
