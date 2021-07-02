@@ -342,8 +342,8 @@ defmodule Andi.InputSchemas.Datasets do
     |> put_in([:technical, :sourceUrl], url_placeholder)
   end
 
-  defp source_url_placeholder_from_homepage(hompage) when is_nil(hompage) or hompage == "", do: "N/A"
-  defp source_url_placeholder_from_homepage(hompage), do: hompage
+  defp source_url_placeholder_from_homepage(homepage) when is_nil(homepage) or homepage == "", do: "N/A"
+  defp source_url_placeholder_from_homepage(homepage), do: homepage
 
   defp extract_steps_valid?(extract_steps_changes) do
     Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->

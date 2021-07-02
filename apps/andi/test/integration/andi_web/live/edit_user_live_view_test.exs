@@ -106,10 +106,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
       eventually(fn ->
         assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
-                 get_all_select_options(html, "#organiation_org_id")
+                 get_all_select_options(html, "#organization_org_id")
       end)
 
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org_id}})
 
       eventually(fn ->
         user = User.get_by_subject_id(user.subject_id)
@@ -130,8 +130,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
       org2_id = org2.id
 
       # Associate to user 
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org2_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org2_id}})
 
       eventually(fn ->
         user = User.get_by_subject_id(user.subject_id)
