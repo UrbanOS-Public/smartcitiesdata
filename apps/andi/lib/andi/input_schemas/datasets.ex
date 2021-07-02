@@ -29,7 +29,7 @@ defmodule Andi.InputSchemas.Datasets do
       from(dataset in Dataset,
         join: technical in assoc(dataset, :technical),
         join: business in assoc(dataset, :business),
-        join: organization in assoc(dataset, :organization),
+        left_join: organization in assoc(dataset, :organization),
         preload: [business: business, technical: technical, organization: organization]
       )
 

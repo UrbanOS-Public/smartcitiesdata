@@ -344,7 +344,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       owned_dataset =
         Andi.InputSchemas.Datasets.get_all()
         |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
-        |> List.first() |> IO.inspect(label: "owned dataset")
+        |> List.first()
 
       refute owned_dataset == nil
       assert owned_dataset.business.contactEmail == user.email
@@ -363,7 +363,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert {:ok, view, html} = live(conn, edit_page)
 
       owned_dataset =
-        Andi.InputSchemas.Datasets.get_all() |> IO.inspect(label: "noodles")
+        Andi.InputSchemas.Datasets.get_all()
         |> Enum.filter(fn dataset -> dataset.owner_id == user.id end)
         |> List.first()
 
