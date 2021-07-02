@@ -30,7 +30,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets"
 
   setup do
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [org_id: smrt_org.id, org_name: smrt_org.orgName]
   end
@@ -391,9 +391,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form submit executes search" do
     test "filters on orgTitle", %{conn: conn} do
-      org_a = TDG.create_organization(%{orgTitle: "org_a"}) 
+      org_a = TDG.create_organization(%{orgTitle: "org_a"})
       Organizations.update(org_a)
-      org_b = TDG.create_organization(%{orgTitle: "org_b"}) 
+      org_b = TDG.create_organization(%{orgTitle: "org_b"})
       Organizations.update(org_b)
 
       {:ok, dataset_a} = TDG.create_dataset(%{organization_id: org_a.id}) |> Datasets.update()
@@ -431,9 +431,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "Search Submit succeeds even with missing fields", %{conn: conn, org_id: org_id} do
-      org_a = TDG.create_organization(%{orgTitle: "org_a"}) 
+      org_a = TDG.create_organization(%{orgTitle: "org_a"})
       Organizations.update(org_a)
-      org_b = TDG.create_organization(%{orgTitle: "org_b"}) 
+      org_b = TDG.create_organization(%{orgTitle: "org_b"})
       Organizations.update(org_b)
 
       {:ok, dataset_a} =

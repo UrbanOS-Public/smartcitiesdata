@@ -15,10 +15,11 @@ defmodule Andi.InputSchemas.DatasetsTest do
   alias Andi.InputSchemas.Organizations
 
   setup do
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [org_id: smrt_org.id]
   end
+
   describe "is_unique/3" do
     test "given an existing dataset with the same system name it returns false", %{org_id: org_id} do
       dataset = TDG.create_dataset(%{organization_id: org_id})
@@ -91,7 +92,8 @@ defmodule Andi.InputSchemas.DatasetsTest do
 
   describe "remove_source_header/2" do
     test "given an existing source header, it deletes it", %{org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}}})
+      dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{"api-key" => "to-my-heart", "some_other" => "one"}}})
 
       {:ok, %{technical: %{sourceHeaders: [%{id: original_id, key: "api-key", value: "to-my-heart"}, %{id: the_other_id}]}} = _andi_dataset} =
         Datasets.update(dataset)
@@ -101,7 +103,7 @@ defmodule Andi.InputSchemas.DatasetsTest do
     end
 
     test "given a non-existing source header, it returns an error", %{org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id,technical: %{sourceHeaders: %{"bumble" => "bee"}}})
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceHeaders: %{"bumble" => "bee"}}})
 
       {:ok, %{technical: %{sourceHeaders: [existing_headers]}} = _andi_dataset} = Datasets.update(dataset)
 

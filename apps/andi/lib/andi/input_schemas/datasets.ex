@@ -150,13 +150,25 @@ defmodule Andi.InputSchemas.Datasets do
 
       {nil, true} ->
         existing_dataset
-        |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, organization_id: organization_id, datasetLink: dataset_link})
+        |> update(%{
+          technical: technical_changes,
+          business: business_changes,
+          id: dataset_id,
+          organization_id: organization_id,
+          datasetLink: dataset_link
+        })
 
       {owner_id, true} ->
         existing_dataset
-        |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, organization_id: organization_id, datasetLink: dataset_link})
+        |> update(%{
+          technical: technical_changes,
+          business: business_changes,
+          id: dataset_id,
+          owner_id: owner_id,
+          organization_id: organization_id,
+          datasetLink: dataset_link
+        })
     end
-
   end
 
   def update_ingested_time(dataset_id, ingested_time) do

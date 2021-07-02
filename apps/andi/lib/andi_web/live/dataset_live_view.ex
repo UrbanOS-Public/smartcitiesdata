@@ -208,7 +208,7 @@ defmodule AndiWeb.DatasetLiveView do
   end
 
   defp view_model(dataset, _organization_id) do
-  %{
+    %{
       "id" => dataset.id,
       "org_title" => dataset.organization.orgTitle,
       "data_title" => dataset.business.dataTitle,

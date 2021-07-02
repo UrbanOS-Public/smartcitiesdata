@@ -27,7 +27,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   @url_path "/submissions/"
 
   setup do
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [org_id: smrt_org.id]
   end
@@ -45,7 +45,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   test "item type selector is shown when field type is a list", %{conn: conn, org_id: org_id} do
     field_id = UUID.uuid4()
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "string", type: "list"}]}})
+
+    smrt_dataset =
+      TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "string", type: "list"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -56,7 +58,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   test "item type selector does not allow list of lists", %{conn: conn, org_id: org_id} do
     field_id = UUID.uuid4()
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "list", type: "list"}]}})
+
+    smrt_dataset =
+      TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "list", type: "list"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -68,7 +72,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   data_test "format input is shown when field type is #{field}", %{conn: conn, org_id: org_id} do
     field_id = UUID.uuid4()
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", type: field, format: "{ISO:Extended}"}]}})
+
+    smrt_dataset =
+      TDG.create_dataset(%{
+        organization_id: org_id,
+        technical: %{schema: [%{id: field_id, name: "one", type: field, format: "{ISO:Extended}"}]}
+      })
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 

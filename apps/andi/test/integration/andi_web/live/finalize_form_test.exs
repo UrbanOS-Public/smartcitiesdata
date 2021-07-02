@@ -30,8 +30,9 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "one-time ingestion" do
     setup %{conn: conn} do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,
@@ -62,8 +63,9 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "never ingestion" do
     setup %{conn: conn} do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,
@@ -94,8 +96,9 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "repeat ingestion" do
     setup %{conn: conn} do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,
@@ -178,7 +181,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "finalize form" do
     setup do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
       dataset = TDG.create_dataset(%{organization_id: smrt_org.id, technical: %{cadence: "1 1 1 * * *"}})
 
@@ -242,8 +245,8 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   end
 
   test "required cadence field displays proper error message", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{}) 
-      Organizations.update(smrt_org)
+    smrt_org = TDG.create_organization(%{})
+    Organizations.update(smrt_org)
     smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
 
     {:ok, dataset} =

@@ -49,7 +49,8 @@ defmodule AndiWeb.ExtractStepFormTest do
       date_extract_step,
       default_extract_step
     ]
-    smrt_org = TDG.create_organization(%{}) 
+
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id, technical: %{extractSteps: extract_steps}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
@@ -251,7 +252,12 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "extract steps without a trailing http or s3 step are invalid", %{conn: conn, org_id: org_id} do
-    smrt_ds = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}})
+    smrt_ds =
+      TDG.create_dataset(%{
+        organization_id: org_id,
+        technical: %{extractSteps: [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]}
+      })
+
     {:ok, andi_dataset} = Datasets.update(smrt_ds)
 
     {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)

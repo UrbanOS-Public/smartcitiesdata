@@ -18,7 +18,7 @@ defmodule Andi.DatasetControllerTest do
   getter(:kafka_broker, generic: true)
 
   setup do
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [org_id: smrt_org.id]
   end
@@ -81,8 +81,9 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset put" do
     setup do
       uuid = Faker.UUID.v4()
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       request = %{
         "id" => uuid,
         "organization_id" => smrt_org.id,
@@ -210,6 +211,7 @@ defmodule Andi.DatasetControllerTest do
       data_name = "system-name"
       smrt_org = TDG.create_organization(%{orgName: org_name})
       Organizations.update(smrt_org)
+
       new_dataset =
         TDG.create_dataset(
           id: "my-new-dataset",
@@ -313,7 +315,7 @@ defmodule Andi.DatasetControllerTest do
                Enum.filter(expected_error_keys, fn [area, _] -> area == "business" end) |> length()
     end
 
-    test "put trims fields on dataset",  %{org: org} do
+    test "put trims fields on dataset", %{org: org} do
       new_dataset =
         TDG.create_dataset(
           organization_id: org.id,
@@ -358,7 +360,12 @@ defmodule Andi.DatasetControllerTest do
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{org: org} do
-      new_dataset = TDG.create_dataset(%{organization_id: org.id, technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}})
+      new_dataset =
+        TDG.create_dataset(%{
+          organization_id: org.id,
+          technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}
+        })
+
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)

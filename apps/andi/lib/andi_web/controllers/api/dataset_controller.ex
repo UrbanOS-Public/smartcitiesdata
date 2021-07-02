@@ -173,7 +173,7 @@ defmodule AndiWeb.API.DatasetController do
     |> Dataset.new()
   end
 
-  defp with_system_name(%{"technical" => technical, "organization_id" =>  organization_id} = msg) do
+  defp with_system_name(%{"technical" => technical, "organization_id" => organization_id} = msg) do
     org = Organizations.get(organization_id)
     system_name = "#{org.orgName}__#{technical["dataName"]}"
     put_in(msg, ["technical", "systemName"], system_name)

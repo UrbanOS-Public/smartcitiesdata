@@ -20,8 +20,10 @@ defmodule DatasetHelpers do
   def create_dataset(overrides, org) do
     changes =
       TDG.create_dataset(overrides)
-      |> InputConverter.prepare_smrt_dataset_for_casting() 
+      |> InputConverter.prepare_smrt_dataset_for_casting()
+
     changes = Map.put(changes, :organization, org)
+
     Dataset.changeset_for_draft(%Dataset{}, changes)
     |> Ecto.Changeset.apply_changes()
   end
@@ -41,7 +43,7 @@ defmodule DatasetHelpers do
 
   def create_organization(overrides \\ %{}) do
     TDG.create_organization(overrides)
-      |> smrt_org_to_andi_org()
+    |> smrt_org_to_andi_org()
   end
 
   def create_empty_dataset() do

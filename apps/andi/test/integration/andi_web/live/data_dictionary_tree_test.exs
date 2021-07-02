@@ -23,8 +23,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
 
   describe "expand/collapse and check/uncheck" do
     setup %{conn: conn} do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,

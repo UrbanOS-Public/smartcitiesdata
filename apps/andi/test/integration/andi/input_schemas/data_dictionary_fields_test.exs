@@ -14,7 +14,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
     setup do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
 
       dataset =
@@ -156,8 +156,9 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
     test "given an existing dataset with a nested schema" do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,

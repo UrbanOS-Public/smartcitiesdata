@@ -19,14 +19,13 @@ defmodule AndiWeb.EditLiveViewTest do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.InputConverter
 
-
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
   setup %{curator_subject: curator_subject, public_subject: public_subject} do
     {:ok, curator} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
     {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [curator: curator, public_user: public_user, org_id: smrt_org.id, orgName: smrt_org.orgName]
   end
@@ -413,7 +412,8 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "allows publish of invalid url form with valid extract step form", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "", extractSteps: [%{type: "http", context: %{}}]}})
+      smrt_dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "", extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -443,7 +443,8 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "valid.com", extractSteps: [%{type: "http", context: %{}}]}})
+      smrt_dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "valid.com", extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -580,8 +581,9 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "review dataset" do
     setup do
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
+
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: smrt_org.id,

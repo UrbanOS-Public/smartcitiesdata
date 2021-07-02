@@ -74,7 +74,7 @@ defmodule Andi.InputSchemas.Organization do
   end
 
   def preload(struct), do: struct
-  
+
   defp validate_id(changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
 

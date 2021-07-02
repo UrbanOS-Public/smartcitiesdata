@@ -41,7 +41,7 @@ defmodule AndiWeb.MetadataFormTest do
 
   setup %{curator_subject: curator_subject} do
     {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
-    smrt_org = TDG.create_organization(%{}) 
+    smrt_org = TDG.create_organization(%{})
     Organizations.update(smrt_org)
     [curator_user: curator_user, org_id: smrt_org.id, org_name: smrt_org.orgName]
   end
@@ -191,7 +191,9 @@ defmodule AndiWeb.MetadataFormTest do
       existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "harharhar", systemName: "#{org_name}__harharhar"}})
+      new_dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "harharhar", systemName: "#{org_name}__harharhar"}})
+
       {:ok, new_andi_dataset} = Datasets.update(new_dataset)
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")

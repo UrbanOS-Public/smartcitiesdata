@@ -139,7 +139,6 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
-
   defp convert_andi_business(andi_dataset) do
     andi_dataset
     |> Map.update!(:business, fn business ->
@@ -149,7 +148,6 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
-
   defp convert_form_business(form_dataset) do
     form_dataset
     |> Map.update(:business, %{}, fn business ->
@@ -158,7 +156,6 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:keywords, nil, &keywords_to_list/1)
     end)
   end
-
 
   defp convert_smrt_technical(smrt_dataset) do
     smrt_dataset

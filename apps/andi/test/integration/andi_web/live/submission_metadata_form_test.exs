@@ -33,7 +33,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "create new dataset" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
       blank_dataset = %Dataset{organization_id: smrt_org.id, id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
@@ -111,7 +111,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "enter form data" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
       [public_user: public_user, org_id: smrt_org.id]
     end
@@ -270,7 +270,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
   describe "edit form data" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-      smrt_org = TDG.create_organization(%{}) 
+      smrt_org = TDG.create_organization(%{})
       Organizations.update(smrt_org)
       [public_user: public_user, org_id: smrt_org.id]
     end
@@ -319,7 +319,11 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
                "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
     end
 
-    test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user, org_id: org_id} do
+    test "non-submission required field updateFrequency does not trigger a validation error", %{
+      public_conn: conn,
+      public_user: public_user,
+      org_id: org_id
+    } do
       smrt_dataset =
         TDG.create_dataset(%{
           organization_id: org_id,
