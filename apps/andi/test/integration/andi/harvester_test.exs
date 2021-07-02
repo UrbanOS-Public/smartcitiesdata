@@ -36,6 +36,8 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: "http://localhost:#{bypass.port()}/data.json"
         })
 
+      Organizations.update(org)
+
       %{data_json: data_json, org: org, bypass: bypass}
     end
 
