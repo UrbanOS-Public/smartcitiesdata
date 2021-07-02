@@ -3,15 +3,37 @@ defmodule Andi.Event.EventHandlerTest do
   use Andi.DataCase
 
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [user_login: 0, user_organization_associate: 0]
+  import SmartCity.Event, only: [user_login: 0, user_organization_associate: 0, dataset_update: 0]
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Schemas.User
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Datasets
 
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
+
+  describe "#{dataset_update()}" do
+    test "discards the event if the dataset does not have a valid organization id associated with it" do
+      created_dataset = TDG.create_dataset(%{})
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, created_dataset)
+
+      eventually(
+        fn ->
+          datasets = Datasets.get_all() |> IO.inspect(label: "the data")
+
+          assert datasets
+                 |> Enum.map(fn dataset -> dataset.id end)
+                 |> IO.inspect(label: "ids")
+                 |> Enum.all?(fn id -> id != created_dataset.id end)
+        end,
+        1_000,
+        30
+      )
+    end
+  end
 
   describe "#{user_organization_associate()}" do
     setup do

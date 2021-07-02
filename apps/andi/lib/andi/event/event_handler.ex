@@ -29,7 +29,6 @@ defmodule Andi.Event.EventHandler do
 
   @instance_name Andi.instance_name()
 
-  # TODO add test case for this
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     case Organizations.get(data.organization_id) do
       nil ->
