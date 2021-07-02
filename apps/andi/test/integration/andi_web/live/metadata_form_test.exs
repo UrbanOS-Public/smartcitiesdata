@@ -198,7 +198,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => "camino", "orgName" => org_name, "datasetId" => new_andi_dataset.id}
+      form_data = %{"dataTitle" => "camino", "orgName" => org_name, "datasetId" => new_andi_dataset.id, "organization_id" => org_id}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
