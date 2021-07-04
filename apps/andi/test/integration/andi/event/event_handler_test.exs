@@ -22,11 +22,10 @@ defmodule Andi.Event.EventHandlerTest do
 
       eventually(
         fn ->
-          datasets = Datasets.get_all() |> IO.inspect(label: "the data")
+          datasets = Datasets.get_all()
 
           assert datasets
                  |> Enum.map(fn dataset -> dataset.id end)
-                 |> IO.inspect(label: "ids")
                  |> Enum.all?(fn id -> id != created_dataset.id end)
         end,
         1_000,
