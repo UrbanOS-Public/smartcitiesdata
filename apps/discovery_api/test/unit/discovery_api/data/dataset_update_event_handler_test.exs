@@ -20,7 +20,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       clear_saved_models()
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(ResponseCache.invalidate(), return: :ok)
-      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
+      allow(DiscoveryApi.RecommendationEngine.save(any(), any()), return: :ok)
 
       allow(Redix.command!(any(), any()), return: ["not_in_redis"])
 

@@ -30,16 +30,16 @@ defmodule DiscoveryApi.Event.EventHandler do
   @instance_name DiscoveryApi.instance_name()
 
   def update_datasets_with_org(org) do
-    Brook.get_all_values(@instance_name, :models) |> elem(1) |> IO.inspect(label: "all datasets")
-    |> Enum.each(fn model -> 
+    {:ok, models} = Brook.get_all_values(@instance_name, :models)
+
+    Enum.each(models, fn model ->
       if model.organizationDetails.id == org.id do
         SystemNameCache.put(model.id, org.orgName, model.name)
-        model = Map.put(model, :organizationDetails, Mapper.to_organization_details(org)) |> IO.inspect(label: "model")
+        model = Map.put(model, :organizationDetails, Mapper.to_organization_details(org))
         Elasticsearch.Document.update(model)
         save_model_to_recommendation_engine(model, org)
         merge(:models, model.id, model)
         clear_caches()
-
       end
     end)
   end
@@ -158,10 +158,13 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, dataset.id)
 
     Task.start(fn -> add_dataset_count() end)
-    RecommendationEngine.delete(dataset.id)
-    org = DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id)
-    SystemNameCache.delete(org.name, dataset.technical.dataName)
-    Elasticsearch.Document.delete(dataset.id)
+    RecommendationEngine.delete(dataset.id) |> IO.inspect(label: "***** AFTER DELETING FROM REC ENGINE *****")
+
+    {:ok, org} =
+      DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id) |> IO.inspect(label: "***** ORGANIZATION *****")
+
+    SystemNameCache.delete(org.name, dataset.technical.dataName) |> IO.inspect(label: "***** AFTER DELETING FROM SYSTEM NAME CACHE *****")
+    Elasticsearch.Document.delete(dataset.id) |> IO.inspect(label: "***** AFTER DELETING ELASTIC SEARCH DOCUMENT *****")
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
     clear_caches()
@@ -198,11 +201,13 @@ defmodule DiscoveryApi.Event.EventHandler do
     TableInfoCache.invalidate()
   end
 
-  defp save_model_to_recommendation_engine(%DiscoveryApi.Data.Model{private: false, schema: schema} = model, organization) when length(schema) > 0 do
+  defp save_model_to_recommendation_engine(%DiscoveryApi.Data.Model{private: false, schema: schema} = model, organization)
+       when length(schema) > 0 do
     RecommendationEngine.save(model, organization)
   end
 
-  defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset, organization) when length(schema) > 0 do
+  defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset, organization)
+       when length(schema) > 0 do
     RecommendationEngine.save(dataset, organization)
   end
 
