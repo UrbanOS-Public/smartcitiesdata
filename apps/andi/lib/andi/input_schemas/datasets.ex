@@ -140,35 +140,49 @@ defmodule Andi.InputSchemas.Datasets do
       |> Map.merge(form_changes)
       |> Map.get(:datasetLink)
 
-    case {owner_id, org_changed} do
-      {nil, false} ->
-        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, datasetLink: dataset_link})
+    changes = %{
+      dataset_id: dataset_id,
+      technical_changes: technical_changes,
+      business_changes: business_changes,
+      owner_id: owner_id,
+      organization_id: organization_id,
+      dataset_link: dataset_link
+    }
 
-      {owner_id, false} ->
-        existing_dataset
-        |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, datasetLink: dataset_link})
+    existing_dataset |> update_dataset(owner_id, org_changed, changes)
 
-      {nil, true} ->
-        existing_dataset
-        |> update(%{
-          technical: technical_changes,
-          business: business_changes,
-          id: dataset_id,
-          organization_id: organization_id,
-          datasetLink: dataset_link
-        })
+  end
 
-      {owner_id, true} ->
-        existing_dataset
-        |> update(%{
-          technical: technical_changes,
-          business: business_changes,
-          id: dataset_id,
-          owner_id: owner_id,
-          organization_id: organization_id,
-          datasetLink: dataset_link
-        })
-    end
+  def update_dataset(existing_dataset, nil, false, changes) do
+    existing_dataset |> update(%{technical: changes.technical_changes, business: changes.business_changes, id: changes.dataset_id, datasetLink: changes.dataset_link})
+  end
+
+  def update_dataset(existing_dataset, owner_id, false, changes) do
+    existing_dataset
+        |> update(%{technical: changes.technical_changes, business: changes.business_changes, id: changes.dataset_id, owner_id: changes.owner_id, datasetLink: changes.dataset_link})
+  end
+
+  def update_dataset(existing_dataset, nil, true, changes) do
+    existing_dataset
+    |> update(%{
+      technical: changes.technical_changes,
+      business: changes.business_changes,
+      id: changes.dataset_id,
+      organization_id: changes.organization_id,
+      datasetLink: changes.dataset_link
+    })
+  end
+
+  def update_dataset(existing_dataset, owner_id, true, changes) do
+    existing_dataset
+      |> update(%{
+        technical: changes.technical_changes,
+        business: changes.business_changes,
+        id: changes.dataset_id,
+        owner_id: changes.owner_id,
+        organization_id: changes.organization_id,
+        datasetLink: changes.dataset_link
+      })
   end
 
   def update_ingested_time(dataset_id, ingested_time) do
