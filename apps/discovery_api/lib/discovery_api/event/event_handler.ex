@@ -29,11 +29,27 @@ defmodule DiscoveryApi.Event.EventHandler do
 
   @instance_name DiscoveryApi.instance_name()
 
+  def update_datasets_with_org(org) do
+    Brook.get_all_values(@instance_name, :models) |> elem(1) |> IO.inspect(label: "all datasets")
+    |> Enum.each(fn model -> 
+      if model.organizationDetails.id == org.id do
+        SystemNameCache.put(model.id, org.orgName, model.name)
+        model = Map.put(model, :organizationDetails, Mapper.to_organization_details(org)) |> IO.inspect(label: "model")
+        Elasticsearch.Document.update(model)
+        save_model_to_recommendation_engine(model, org)
+        merge(:models, model.id, model)
+        clear_caches()
+
+      end
+    end)
+  end
+
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
     organization_update()
     |> add_event_count(author, data.id)
 
     Organizations.create_or_update(data)
+    update_datasets_with_org(data)
     :discard
   end
 
@@ -109,11 +125,11 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     Task.start(fn -> add_dataset_count() end)
 
-    with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
+    with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
          model <- Mapper.to_data_model(dataset, organization) do
       Elasticsearch.Document.update(model)
-      save_dataset_to_recommendation_engine(dataset)
+      save_dataset_to_recommendation_engine(dataset, organization)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
       merge(:models, model.id, model)
       clear_caches()
@@ -143,7 +159,8 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     Task.start(fn -> add_dataset_count() end)
     RecommendationEngine.delete(dataset.id)
-    SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName)
+    org = DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id)
+    SystemNameCache.delete(org.name, dataset.technical.dataName)
     Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
@@ -181,11 +198,15 @@ defmodule DiscoveryApi.Event.EventHandler do
     TableInfoCache.invalidate()
   end
 
-  defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset) when length(schema) > 0 do
-    RecommendationEngine.save(dataset)
+  defp save_model_to_recommendation_engine(%DiscoveryApi.Data.Model{private: false, schema: schema} = model, organization) when length(schema) > 0 do
+    RecommendationEngine.save(model, organization)
   end
 
-  defp save_dataset_to_recommendation_engine(_dataset), do: :ok
+  defp save_dataset_to_recommendation_engine(%Dataset{technical: %{private: false, schema: schema}} = dataset, organization) when length(schema) > 0 do
+    RecommendationEngine.save(dataset, organization)
+  end
+
+  defp save_dataset_to_recommendation_engine(_dataset, _organization), do: :ok
 
   defp add_event_count(event_type, author, dataset_id) do
     [
