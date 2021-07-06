@@ -25,8 +25,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       allow(Redix.command!(any(), any()), return: ["not_in_redis"])
 
       dataset = TDG.create_dataset(%{id: "123"})
-      organization = create_schema_organization(%{id: dataset.technical.orgId})
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      organization = create_schema_organization(%{id: dataset.organization_id})
+      allow(Organizations.get_organization(dataset.organization_id), return: {:ok, organization})
       {:ok, %{dataset: dataset, organization: organization}}
     end
 
@@ -40,7 +40,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "should not persist the model when organization get fails" do
       dataset = TDG.create_dataset(%{id: "123"})
 
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:error, :failure})
+      allow(Organizations.get_organization(dataset.organization_id), return: {:error, :failure})
 
       Brook.Test.send(DiscoveryApi.instance_name(), dataset_update(), "unit", dataset)
 
@@ -75,12 +75,12 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
-      organization = create_schema_organization(%{id: dataset.technical.orgId})
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      organization = create_schema_organization(%{id: dataset.organization_id})
+      allow(Organizations.get_organization(dataset.organization_id), return: {:ok, organization})
 
       Brook.Test.send(@instance_name, dataset_update(), "unit", dataset)
 
-      assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset))
+      assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset, organization))
 
       where([
         [:called, :dataset_map],
