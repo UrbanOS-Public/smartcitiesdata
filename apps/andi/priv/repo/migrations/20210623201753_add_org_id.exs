@@ -8,8 +8,5 @@ defmodule Andi.Repo.Migrations.AddOrgAssociation do
     alter table(:datasets) do
       add :organization_id, references(:organizations, type: :uuid)
     end
-    flush()
-    Datasets.get_all() |> Enum.each(fn dataset -> dataset |> Dataset.changeset(%{organization_id: dataset.technical.orgId}) |> Repo.update() end)
-    flush()
   end
 end
