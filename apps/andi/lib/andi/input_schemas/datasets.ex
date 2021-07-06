@@ -150,16 +150,27 @@ defmodule Andi.InputSchemas.Datasets do
     }
 
     existing_dataset |> update_dataset(owner_id, org_changed, changes)
-
   end
 
   def update_dataset(existing_dataset, nil, false, changes) do
-    existing_dataset |> update(%{technical: changes.technical_changes, business: changes.business_changes, id: changes.dataset_id, datasetLink: changes.dataset_link})
+    existing_dataset
+    |> update(%{
+      technical: changes.technical_changes,
+      business: changes.business_changes,
+      id: changes.dataset_id,
+      datasetLink: changes.dataset_link
+    })
   end
 
   def update_dataset(existing_dataset, owner_id, false, changes) do
     existing_dataset
-        |> update(%{technical: changes.technical_changes, business: changes.business_changes, id: changes.dataset_id, owner_id: changes.owner_id, datasetLink: changes.dataset_link})
+    |> update(%{
+      technical: changes.technical_changes,
+      business: changes.business_changes,
+      id: changes.dataset_id,
+      owner_id: changes.owner_id,
+      datasetLink: changes.dataset_link
+    })
   end
 
   def update_dataset(existing_dataset, nil, true, changes) do
@@ -175,14 +186,14 @@ defmodule Andi.InputSchemas.Datasets do
 
   def update_dataset(existing_dataset, owner_id, true, changes) do
     existing_dataset
-      |> update(%{
-        technical: changes.technical_changes,
-        business: changes.business_changes,
-        id: changes.dataset_id,
-        owner_id: changes.owner_id,
-        organization_id: changes.organization_id,
-        datasetLink: changes.dataset_link
-      })
+    |> update(%{
+      technical: changes.technical_changes,
+      business: changes.business_changes,
+      id: changes.dataset_id,
+      owner_id: changes.owner_id,
+      organization_id: changes.organization_id,
+      datasetLink: changes.dataset_link
+    })
   end
 
   def update_ingested_time(dataset_id, ingested_time) do
