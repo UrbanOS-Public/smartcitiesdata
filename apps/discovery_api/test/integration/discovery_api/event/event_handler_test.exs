@@ -65,7 +65,6 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
         assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
 
-      #update organization title
       organization = Map.put(organization, :orgTitle, "newTitle")
       Brook.Event.send(@instance_name, "organization:update", :test, organization)
 
