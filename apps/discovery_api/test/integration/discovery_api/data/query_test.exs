@@ -26,28 +26,25 @@ defmodule DiscoveryApi.Data.QueryTest do
 
     public_dataset =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
           private: false,
-          orgId: organization.id,
-          orgName: organization.orgName
         }
       })
 
     private_dataset =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
-          private: true,
-          orgId: organization.id,
-          orgName: organization.orgName
+          private: true
         }
       })
 
     geojson_dataset =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
-          private: false,
-          orgId: organization.id,
-          orgName: organization.orgName
+          private: false
         }
       })
 
@@ -132,11 +129,11 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual == "id,name\n1,Fred\n2,Gred\n"
     end
 
-    test "Queries limited data from presto when using orgName and dataName in url", %{public_dataset: public_dataset, anonymous_conn: conn} do
+    test "Queries limited data from presto when using orgName and dataName in url", %{public_dataset: public_dataset, anonymous_conn: conn, organization: organization} do
       actual =
         get(
           conn,
-          "/api/v1/organization/#{public_dataset.technical.orgName}/dataset/#{public_dataset.technical.dataName}/query?limit=2&orderBy=name"
+          "/api/v1/organization/#{organization.orgName}/dataset/#{public_dataset.technical.dataName}/query?limit=2&orderBy=name"
         )
         |> response(200)
 
