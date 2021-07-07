@@ -19,7 +19,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     test "updates the dataset in the search index" do
       organization = Helper.create_persisted_organization()
 
-      dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+      dataset = TDG.create_dataset(%{organization_id: organization.id})
       dataset_id = dataset.id
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -55,7 +55,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
     test "persisting a model should use information from the organization:update event" do
       expected_organization = Helper.create_persisted_organization()
-      expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
+      expected_registry_dataset = TDG.create_dataset(%{organization_id: expected_organization.id})
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, expected_registry_dataset)
 
