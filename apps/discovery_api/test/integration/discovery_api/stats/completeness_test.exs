@@ -25,8 +25,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       dataset1 =
         TDG.create_dataset(%{
+          organization_id: organization.id,
           technical: %{
-            orgId: organization.id,
             private: false,
             systemName: "test_table",
             schema: DataHelper.real_dataset_schema()
@@ -35,8 +35,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
       dataset2 =
         TDG.create_dataset(%{
+          organization_id: organization.id,
           technical: %{
-            orgId: organization.id,
             private: false,
             systemName: "test_table2",
             schema: [
