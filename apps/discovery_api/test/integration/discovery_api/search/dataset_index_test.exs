@@ -892,7 +892,9 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
 
     test "pagination parameters are respected" do
-      Enum.each(0..9, fn x -> create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}}) end)
+      Enum.each(0..9, fn x ->
+        create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}})
+      end)
 
       local_eventually(fn ->
         %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2"})
@@ -919,8 +921,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     dataset =
       overrides
-      |> Map.put_new(:technical, %{})
-      |> put_in([:technical, :orgId], @organization_id_1)
+      |> put_in([:organization_id], @organization_id_1)
       |> TDG.create_dataset()
 
     Brook.Event.send(@instance_name, "dataset:update", __MODULE__, dataset)
