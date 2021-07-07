@@ -158,13 +158,13 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, dataset.id)
 
     Task.start(fn -> add_dataset_count() end)
-    RecommendationEngine.delete(dataset.id) |> IO.inspect(label: "***** AFTER DELETING FROM REC ENGINE *****")
+    RecommendationEngine.delete(dataset.id)
 
     {:ok, org} =
-      DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id) |> IO.inspect(label: "***** ORGANIZATION *****")
+      DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id)
 
-    SystemNameCache.delete(org.name, dataset.technical.dataName) |> IO.inspect(label: "***** AFTER DELETING FROM SYSTEM NAME CACHE *****")
-    Elasticsearch.Document.delete(dataset.id) |> IO.inspect(label: "***** AFTER DELETING ELASTIC SEARCH DOCUMENT *****")
+    SystemNameCache.delete(org.name, dataset.technical.dataName)
+    Elasticsearch.Document.delete(dataset.id)
     StatsCalculator.delete_completeness(dataset.id)
     Model.delete(dataset.id)
     clear_caches()

@@ -1,7 +1,7 @@
 defmodule DiscoveryApi.Data.MapperTest do
   use ExUnit.Case
   use Placebo
-  alias DiscoveryApi.Data.{Mapper, Model}
+  alias DiscoveryApi.Data.{Mapper, Model, OrganizationDetails}
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
 
@@ -33,4 +33,20 @@ defmodule DiscoveryApi.Data.MapperTest do
       ])
     end
   end
+
+  describe "to_organization_details/1" do
+    test "returns the expected values" do
+      organization = TDG.create_organization(%{})
+  
+      result = Mapper.to_organization_details(organization)
+  
+      assert result.id == organization.id
+      assert result.orgName == organization.orgName
+      assert result.orgTitle == organization.orgTitle
+      assert result.description == organization.description
+      assert result.logoUrl == organization.logoUrl
+      assert result.homepage == organization.homepage
+    
+    end
+  end  
 end
