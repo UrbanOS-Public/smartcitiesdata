@@ -818,6 +818,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["Zoo"] ==
                  response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "sort should default by title ascending" do
@@ -832,6 +833,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["2020 Zones", "Alphabet", "Zoo"] ==
                  response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "sort should allow by title descending" do
@@ -846,6 +848,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert ["Zoo", "Alphabet", "2020 Zones"] ==
                  response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "title") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "sort should allow for last_mod" do
@@ -859,6 +862,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "indexed datasets are updated with lastUpdatedDates" do
@@ -875,6 +879,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
         assert ["C", "B", "A"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "sort should allow for relevance" do
@@ -889,6 +894,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
         assert ["2", "1", "3"] == response_map |> Map.get("results") |> Enum.map(fn model -> Map.get(model, "id") end)
       end)
+      Helper.clear_saved_models()
     end
 
     test "pagination parameters are respected" do
@@ -913,6 +919,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
         assert 2 == metadata |> Map.get("offset")
         assert 10 == metadata |> Map.get("totalDatasets")
       end)
+      Helper.clear_saved_models()
     end
   end
 
