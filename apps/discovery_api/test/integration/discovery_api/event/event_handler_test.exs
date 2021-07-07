@@ -66,9 +66,9 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       end)
 
       #update organization title
-      organization = Map.put(organization, :orgTitle, "newTitle") |> IO.inspect(label: "org")
+      organization = Map.put(organization, :orgTitle, "newTitle")
       Brook.Event.send(@instance_name, "organization:update", :test, organization)
-      IO.inspect(Elasticsearch.Document.get(dataset_id), label: "dataset")
+
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id, organizationDetails: %{orgTitle: "newTitle"}}} = Elasticsearch.Document.get(dataset_id)
       end)
