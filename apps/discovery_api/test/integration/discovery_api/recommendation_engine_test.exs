@@ -11,8 +11,12 @@ defmodule DiscoveryApi.RecommendationEngineTest do
   @instance_name DiscoveryApi.instance_name()
 
   test "dataset recommendations" do
+    organization = Helper.create_persisted_organization()
+    {:ok, organization} = DiscoveryApi.Schemas.Organizations.get_organization(organization.id)
+
     dataset_to_get_recommendations_for =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
           schema: [
             %{name: "id", type: "int"},
@@ -25,10 +29,11 @@ defmodule DiscoveryApi.RecommendationEngineTest do
         }
       })
 
-    _organization = Helper.create_persisted_organization(%{id: dataset_to_get_recommendations_for.technical.orgId})
+    
 
     dataset_with_wrong_types =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
           schema: [
             %{name: "id", type: "bad"},
@@ -43,6 +48,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
 
     dataset_that_should_match =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
           schema: [
             %{name: "id", type: "int"},
@@ -55,6 +61,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
 
     dataset_that_doesnt_meet_column_count_threshold =
       TDG.create_dataset(%{
+        organization_id: organization.id,
         technical: %{
           schema: [
             %{name: "id", type: "int"},
@@ -64,10 +71,10 @@ defmodule DiscoveryApi.RecommendationEngineTest do
         }
       })
 
-    RecommendationEngine.save(dataset_to_get_recommendations_for)
-    RecommendationEngine.save(dataset_with_wrong_types)
-    RecommendationEngine.save(dataset_that_should_match)
-    RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold)
+    RecommendationEngine.save(dataset_to_get_recommendations_for, organization)
+    RecommendationEngine.save(dataset_with_wrong_types, organization)
+    RecommendationEngine.save(dataset_that_should_match, organization)
+    RecommendationEngine.save(dataset_that_doesnt_meet_column_count_threshold, organization)
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset_to_get_recommendations_for)
 
@@ -88,7 +95,7 @@ defmodule DiscoveryApi.RecommendationEngineTest do
                id: dataset_that_should_match.id,
                systemName: dataset_that_should_match.technical.systemName,
                dataName: dataset_that_should_match.technical.dataName,
-               orgName: dataset_that_should_match.technical.orgName,
+               orgName: organization.name,
                dataTitle: dataset_that_should_match.business.dataTitle
              }
            ] == results

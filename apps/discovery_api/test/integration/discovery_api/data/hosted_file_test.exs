@@ -49,7 +49,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset =
       TDG.create_dataset(%{
         id: dataset_id,
-        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+        organization_id: organization.id,
+        technical: %{systemName: system_name, sourceType: "host", dataName: dataset_name}
       })
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -78,7 +79,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset =
       TDG.create_dataset(%{
         id: dataset_id,
-        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+        organization_id: organization.id,
+        technical: %{systemName: system_name, sourceType: "host", dataName: dataset_name}
       })
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -107,7 +109,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset =
       TDG.create_dataset(%{
         id: dataset_id,
-        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+        organization_id: organization.id,
+        technical: %{systemName: system_name, sourceType: "host", dataName: dataset_name}
       })
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -136,7 +139,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
     dataset =
       TDG.create_dataset(%{
         id: dataset_id,
-        technical: %{systemName: system_name, orgId: organization.id, sourceType: "host", dataName: dataset_name}
+        organization_id: organization.id,
+        technical: %{systemName: system_name,sourceType: "host", dataName: dataset_name}
       })
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
