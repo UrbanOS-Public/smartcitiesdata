@@ -38,6 +38,7 @@ defmodule Andi.MixProject do
       {:accessible, "~> 0.2.1"},
       {:atomic_map, "~> 0.9"},
       {:auth, in_umbrella: true},
+      {:brod, "~> 3.15.6", override: true}, #upgrading beyond 3.15.6 does not support our current version of kafka
       {:brook, "~> 0.4.0"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},
@@ -79,8 +80,8 @@ defmodule Andi.MixProject do
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 3.0"},
-      {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
+      {:smart_city, "~> 4.0"},
+      {:smart_city_test, "~> 1.0.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},
       {:sweet_xml, "~> 0.6"},
