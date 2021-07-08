@@ -50,6 +50,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
             cadence: 100
           }
         )
+
       orgName = String.split(dataset.technical.systemName, "__") |> Enum.at(0)
 
       expect(Reaper.DataSlurper.slurp(@source_url, dataset.id, any(), any()),
@@ -100,7 +101,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
             ]
           }
         )
-      
+
       orgName = String.split(dataset.technical.systemName, "__") |> Enum.at(0)
 
       expect(Reaper.DataSlurper.slurp(@source_url, dataset.id, any(), any()),

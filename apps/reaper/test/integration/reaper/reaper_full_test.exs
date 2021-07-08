@@ -298,6 +298,7 @@ defmodule Reaper.FullTest do
             sourceType: "host"
           }
         })
+
       orgName = String.split(hosted_dataset.technical.systemName, "__") |> Enum.at(0)
 
       Brook.Event.send(@instance_name, dataset_update(), :reaper, hosted_dataset)

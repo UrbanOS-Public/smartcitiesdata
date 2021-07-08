@@ -76,6 +76,7 @@ defmodule Reaper.FileIngest.Processor do
       source_format
       |> MIME.extensions()
       |> hd()
+
     org_name = String.split(system_name, "__") |> Enum.at(0)
     "#{org_name}/#{data_name}.#{extension}"
   end
