@@ -165,11 +165,13 @@ defmodule ValkyrieTest do
 
     TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
 
-    eventually fn ->
+    eventually (fn ->
       output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
 
       assert messages -- [invalid_message] == output_messages
-    end
+    end, 
+    500, 
+    20)
   end
 
   test "valkyrie does not start a stopped processor on dataset update" do

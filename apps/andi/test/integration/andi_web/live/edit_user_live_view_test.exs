@@ -8,7 +8,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
   use Placebo
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -107,7 +107,9 @@ defmodule AndiWeb.EditUserLiveViewTest do
       eventually(fn ->
         assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
                  get_all_select_options(html, "#organization_org_id")
-      end)
+      end        
+      500,
+      20)
 
       render_change(view, "associate", %{"organization" => %{"org_id" => org_id}})
 
