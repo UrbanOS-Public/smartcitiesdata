@@ -28,7 +28,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       TDG.create_dataset(%{
         organization_id: organization.id,
         technical: %{
-          private: false,
+          private: false
         }
       })
 
@@ -129,7 +129,11 @@ defmodule DiscoveryApi.Data.QueryTest do
       assert actual == "id,name\n1,Fred\n2,Gred\n"
     end
 
-    test "Queries limited data from presto when using orgName and dataName in url", %{public_dataset: public_dataset, anonymous_conn: conn, organization: organization} do
+    test "Queries limited data from presto when using orgName and dataName in url", %{
+      public_dataset: public_dataset,
+      anonymous_conn: conn,
+      organization: organization
+    } do
       actual =
         get(
           conn,

@@ -160,8 +160,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     Task.start(fn -> add_dataset_count() end)
     RecommendationEngine.delete(dataset.id)
 
-    {:ok, org} =
-      DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id)
+    {:ok, org} = DiscoveryApi.Schemas.Organizations.get_organization(dataset.organization_id)
 
     SystemNameCache.delete(org.name, dataset.technical.dataName)
     Elasticsearch.Document.delete(dataset.id)

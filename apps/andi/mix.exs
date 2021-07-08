@@ -38,7 +38,8 @@ defmodule Andi.MixProject do
       {:accessible, "~> 0.2.1"},
       {:atomic_map, "~> 0.9"},
       {:auth, in_umbrella: true},
-      {:brod, "~> 3.15.6", override: true}, #upgrading beyond 3.15.6 does not support our current version of kafka
+      # upgrading beyond 3.15.6 does not support our current version of kafka
+      {:brod, "~> 3.15.6", override: true},
       {:brook, "~> 0.4.0"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},

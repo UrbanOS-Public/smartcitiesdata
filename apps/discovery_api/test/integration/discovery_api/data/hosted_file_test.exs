@@ -140,7 +140,7 @@ defmodule DiscoveryApi.Data.HostedFileTest do
       TDG.create_dataset(%{
         id: dataset_id,
         organization_id: organization.id,
-        technical: %{systemName: system_name,sourceType: "host", dataName: dataset_name}
+        technical: %{systemName: system_name, sourceType: "host", dataName: dataset_name}
       })
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)

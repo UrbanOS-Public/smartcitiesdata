@@ -29,8 +29,6 @@ defmodule DiscoveryApi.RecommendationEngineTest do
         }
       })
 
-    
-
     dataset_with_wrong_types =
       TDG.create_dataset(%{
         organization_id: organization.id,
