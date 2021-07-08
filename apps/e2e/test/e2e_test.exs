@@ -76,7 +76,7 @@ defmodule E2ETest do
     end)
 
     org =
-        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
+      TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
 
     org_resp =
       HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
