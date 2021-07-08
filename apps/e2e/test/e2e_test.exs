@@ -83,6 +83,14 @@ defmodule E2ETest do
         {"Content-Type", "application/json"}
       ])
 
+    eventually(fn ->
+      with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
+           [org] <- Jason.decode!(resp.body) do
+        assert org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
+        assert org["orgName"] == "end_to"
+      end
+    end)
+
     dataset =
       @overrides
       |> put_in(
@@ -428,6 +436,7 @@ defmodule E2ETest do
     test "from andi are executable by reaper", %{bypass: bypass} do
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: @overrides.organization_id,
           technical: %{
             extractSteps: [
               %{
