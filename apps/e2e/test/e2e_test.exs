@@ -13,8 +13,8 @@ defmodule E2ETest do
 
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
+    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
-      orgName: "end_to",
       dataName: "end",
       systemName: "end_to__end",
       schema: [
@@ -31,9 +31,9 @@ defmodule E2ETest do
 
   @streaming_overrides %{
     id: "strimmin",
+    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
       dataName: "strimmin",
-      orgName: "usa",
       cadence: "*/10 * * * * *",
       sourceType: "stream",
       systemName: "usa__strimmin"
@@ -42,8 +42,8 @@ defmodule E2ETest do
 
   @geo_overrides %{
     id: "geo_data",
+    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
-      orgName: "end_to",
       dataName: "land",
       systemName: "end_to__land",
       schema: [%{name: "feature", type: "json"}],
@@ -74,6 +74,14 @@ defmodule E2ETest do
     Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
       Plug.Conn.resp(conn, 200, shapefile)
     end)
+
+    org =
+        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
+
+    org_resp =
+      HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
+        {"Content-Type", "application/json"}
+      ])
 
     dataset =
       @overrides
@@ -120,6 +128,7 @@ defmodule E2ETest do
       |> TDG.create_dataset()
 
     [
+      org_resp: org_resp,
       dataset: dataset,
       streaming_dataset: streaming_dataset,
       geo_dataset: geo_dataset,
@@ -128,16 +137,8 @@ defmodule E2ETest do
   end
 
   describe "creating an organization" do
-    test "via RESTful POST" do
-      org =
-        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
-
-      resp =
-        HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
+    test "via RESTful POST", %{org_resp: org_resp} do
+      assert org_resp.status_code == 201
     end
 
     test "persists the organization for downstream use" do
