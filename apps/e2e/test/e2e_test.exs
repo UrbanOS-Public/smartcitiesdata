@@ -354,14 +354,14 @@ defmodule E2ETest do
     test "is available through socket connection", %{streaming_dataset: ds} do
       eventually(fn ->
         {:ok, _, _} =
-        socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
-        |> subscribe_and_join(
-          DiscoveryStreamsWeb.StreamingChannel,
-          "streaming:#{ds.technical.systemName}",
-          %{}
-        )
-      end
-      )
+          socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
+          |> subscribe_and_join(
+            DiscoveryStreamsWeb.StreamingChannel,
+            "streaming:#{ds.technical.systemName}",
+            %{}
+          )
+      end)
+
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
