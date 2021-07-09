@@ -12,13 +12,20 @@ defmodule Andi.DatasetControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
 
   plug(Tesla.Middleware.BaseUrl, "http://localhost:4000")
   getter(:kafka_broker, generic: true)
 
+  setup do
+    smrt_org = TDG.create_organization(%{})
+    Organizations.update(smrt_org)
+    [org_id: smrt_org.id]
+  end
+
   describe "dataset disable" do
-    test "sends dataset:disable event" do
-      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "sends dataset:disable event", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -42,8 +49,8 @@ defmodule Andi.DatasetControllerTest do
   end
 
   describe "dataset delete" do
-    test "sends dataset:delete event" do
-      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "sends dataset:delete event", %{org_id: org_id} do
+      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
       {:ok, _} = create(dataset)
 
       eventually(fn ->
@@ -74,13 +81,14 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset put" do
     setup do
       uuid = Faker.UUID.v4()
+      smrt_org = TDG.create_organization(%{})
+      Organizations.update(smrt_org)
 
       request = %{
         "id" => uuid,
+        "organization_id" => smrt_org.id,
         "technical" => %{
           "dataName" => Faker.Person.first_name(),
-          "orgId" => "org-123-456",
-          "orgName" => Faker.Person.first_name(),
           "stream" => false,
           "extractSteps" => [%{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}],
           "sourceUrl" => "https://example.com",
@@ -104,7 +112,6 @@ defmodule Andi.DatasetControllerTest do
           "dataTitle" => "dataset title",
           "description" => "description",
           "modifiedDate" => "",
-          "orgTitle" => "org title",
           "contactName" => "contact name",
           "contactEmail" => "contact@email.com",
           "license" => "https://www.test.net",
@@ -135,20 +142,20 @@ defmodule Andi.DatasetControllerTest do
         assert DatasetStore.get(request["id"]) != {:ok, nil}
       end)
 
-      {:ok, response: response, message: message}
+      {:ok, response: response, message: message, org: smrt_org}
     end
 
-    test "assigns a system name", %{message: message, response: response} do
+    test "assigns a system name", %{message: message, response: response, org: org} do
       system_name = get_in(response, ["technical", "systemName"])
       {:ok, struct} = SmartCity.Dataset.new(message)
 
-      assert system_name == struct.technical.orgName <> "__" <> struct.technical.dataName
+      assert system_name == org.orgName <> "__" <> struct.technical.dataName
     end
 
-    test "writes data to event stream", %{message: message} do
+    test "writes data to event stream", %{message: message, org: org} do
       {:ok, struct} = SmartCity.Dataset.new(message)
 
-      struct = put_in(struct, [:technical, :systemName], struct.technical.orgName <> "__" <> struct.technical.dataName)
+      struct = put_in(struct, [:technical, :systemName], org.orgName <> "__" <> struct.technical.dataName)
 
       eventually(fn ->
         values =
@@ -169,18 +176,18 @@ defmodule Andi.DatasetControllerTest do
       end)
     end
 
-    test "put returns 400 when systemName matches existing systemName", %{message: message} do
+    test "put returns 400 when systemName matches existing systemName", %{message: message, org: org} do
       {:ok, struct} = SmartCity.Dataset.new(message)
-      org_name = struct.technical.orgName
+      org_name = org.orgName
       data_name = struct.technical.dataName
 
       existing_dataset =
         TDG.create_dataset(
           id: "existing-ds1",
+          organization_id: org.id,
           technical: %{
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
-            orgName: org_name,
             systemName: "#{org_name}__#{data_name}"
           }
         )
@@ -202,14 +209,16 @@ defmodule Andi.DatasetControllerTest do
     test "put returns 400 when systemName has dashes" do
       org_name = "what-a-great"
       data_name = "system-name"
+      smrt_org = TDG.create_organization(%{orgName: org_name})
+      Organizations.update(smrt_org)
 
       new_dataset =
         TDG.create_dataset(
           id: "my-new-dataset",
+          organization_id: smrt_org.id,
           technical: %{
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
-            orgName: org_name,
             systemName: "#{org_name}__#{data_name}"
           }
         )
@@ -221,14 +230,14 @@ defmodule Andi.DatasetControllerTest do
         |> Map.get("errors")
         |> Map.get("technical")
 
-      assert errors["orgName"] == ["cannot contain dashes"]
       assert errors["dataName"] == ["cannot contain dashes"]
     end
 
-    test "put returns 400 when modifiedDate is invalid" do
+    test "put returns 400 when modifiedDate is invalid", %{org: org} do
       new_dataset =
         TDG.create_dataset(
           id: "my-new-dataset",
+          organization_id: org.id,
           technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}], dataName: "my_little_dataset"}
         )
         |> struct_to_map_with_string_keys()
@@ -244,10 +253,11 @@ defmodule Andi.DatasetControllerTest do
       assert errors["modifiedDate"] == ["is invalid"]
     end
 
-    test "put returns 400 and errors when fields are invalid" do
+    test "put returns 400 and errors when fields are invalid", %{org: org} do
       new_dataset =
         TDG.create_dataset(
           id: "my-new-dataset",
+          organization_id: org.id,
           business: %{
             dataTitle: "",
             description: nil,
@@ -266,7 +276,6 @@ defmodule Andi.DatasetControllerTest do
         |> struct_to_map_with_string_keys()
         |> delete_in([
           ["business", "contactName"],
-          ["business", "orgTitle"],
           ["business", "issuedDate"],
           ["business", "riskRating"],
           ["technical", "sourceFormat"],
@@ -285,7 +294,6 @@ defmodule Andi.DatasetControllerTest do
         ["business", "issuedDate"],
         ["business", "license"],
         ["business", "publishFrequency"],
-        ["business", "orgTitle"],
         ["business", "dataTitle"],
         ["business", "description"],
         ["business", "benefitRating"],
@@ -307,13 +315,13 @@ defmodule Andi.DatasetControllerTest do
                Enum.filter(expected_error_keys, fn [area, _] -> area == "business" end) |> length()
     end
 
-    test "put trims fields on dataset" do
+    test "put trims fields on dataset", %{org: org} do
       new_dataset =
         TDG.create_dataset(
+          organization_id: org.id,
           id: " my-new-dataset  ",
           technical: %{
             dataName: "   the_data_name ",
-            orgName: " the_org_name   ",
             sourceType: "remote"
           },
           business: %{
@@ -333,11 +341,10 @@ defmodule Andi.DatasetControllerTest do
       assert response["business"]["contactName"] == "some  body"
       assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
       assert response["technical"]["dataName"] == "the_data_name"
-      assert response["technical"]["orgName"] == "the_org_name"
     end
 
-    test "put with a system name does not reflect it back" do
-      new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed", sourceType: "remote"})
+    test "put with a system name does not reflect it back", %{org: org} do
+      new_dataset = TDG.create_dataset(organization_id: org.id, technical: %{systemName: "this_will__get_tossed", sourceType: "remote"})
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
 
@@ -352,8 +359,13 @@ defmodule Andi.DatasetControllerTest do
       assert system_name != "this_will__get_tossed"
     end
 
-    test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}})
+    test "PUT /api/ dataset passed without UUID generates UUID for dataset", %{org: org} do
+      new_dataset =
+        TDG.create_dataset(%{
+          organization_id: org.id,
+          technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}
+        })
+
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
@@ -369,9 +381,9 @@ defmodule Andi.DatasetControllerTest do
       assert uuid != nil
     end
 
-    test "returns 400 when cron string is longer than 6 characters" do
+    test "returns 400 when cron string is longer than 6 characters", %{org: org} do
       new_dataset =
-        TDG.create_dataset(%{})
+        TDG.create_dataset(%{organization_id: org.id})
         |> put_in([:technical, :cadence], "0 * * * * * *")
         |> struct_to_map_with_string_keys()
 

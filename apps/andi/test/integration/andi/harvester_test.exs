@@ -36,6 +36,8 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: "http://localhost:#{bypass.port()}/data.json"
         })
 
+      Organizations.update(org)
+
       %{data_json: data_json, org: org, bypass: bypass}
     end
 
@@ -154,7 +156,7 @@ defmodule Andi.Harvest.HarvesterTest do
         "datasetId" => "3142a038-e77b-49c9-b800-bd706a7152ef"
       }
 
-      dataset_one = TDG.create_dataset(%{id: "3142a038-e77b-49c9-b800-bd706a7152ef"})
+      dataset_one = TDG.create_dataset(%{id: "3142a038-e77b-49c9-b800-bd706a7152ef", organization_id: org.id})
 
       Organizations.update_harvested_dataset(harvested_dataset_one)
 

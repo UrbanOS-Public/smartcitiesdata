@@ -46,7 +46,7 @@ defmodule AndiWeb.Helpers.FormTools do
   end
 
   def adjust_org_name(form_data) do
-    org_id = form_data["orgId"]
+    org_id = form_data["organization_id"]
     data_name = form_data["dataName"]
 
     case OrgStore.get(org_id) do

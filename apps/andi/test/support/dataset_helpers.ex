@@ -3,10 +3,30 @@ defmodule DatasetHelpers do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
 
   import Placebo
+
+  def smrt_org_to_andi_org(org) do
+    org
+    |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.delete(:dn)
+    |> Map.delete(:version)
+  end
+
+  def create_dataset(overrides, org) do
+    changes =
+      TDG.create_dataset(overrides)
+      |> InputConverter.prepare_smrt_dataset_for_casting()
+
+    changes = Map.put(changes, :organization, org)
+
+    Dataset.changeset_for_draft(%Dataset{}, changes)
+    |> Ecto.Changeset.apply_changes()
+  end
 
   def create_dataset(overrides) do
     changes =
@@ -14,8 +34,16 @@ defmodule DatasetHelpers do
       |> TDG.create_dataset()
       |> InputConverter.prepare_smrt_dataset_for_casting()
 
+    org = create_organization(%{organization_id: changes.organization_id})
+    changes = Map.put(changes, :organization, org)
+
     Dataset.changeset_for_draft(%Dataset{}, changes)
     |> Ecto.Changeset.apply_changes()
+  end
+
+  def create_organization(overrides \\ %{}) do
+    TDG.create_organization(overrides)
+    |> smrt_org_to_andi_org()
   end
 
   def create_empty_dataset() do

@@ -18,7 +18,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   test "returns empty list when dataset has no data saved" do
     organization = Helper.create_persisted_organization()
 
-    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset = TDG.create_dataset(%{organization_id: organization.id})
     system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()
@@ -41,7 +41,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
   test "returns results for datasets stored in presto" do
     organization = Helper.create_persisted_organization()
 
-    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset = TDG.create_dataset(%{organization_id: organization.id})
     system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()

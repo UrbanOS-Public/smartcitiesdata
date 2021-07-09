@@ -16,6 +16,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
@@ -24,7 +25,9 @@ defmodule AndiWeb.EditLiveViewTest do
   setup %{curator_subject: curator_subject, public_subject: public_subject} do
     {:ok, curator} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
     {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
-    [curator: curator, public_user: public_user]
+    smrt_org = TDG.create_organization(%{})
+    Organizations.update(smrt_org)
+    [curator: curator, public_user: public_user, org_id: smrt_org.id, orgName: smrt_org.orgName]
   end
 
   describe "public access for dataset submission" do
@@ -33,8 +36,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, "/submissions/" <> dataset.id)
     end
 
-    test "public user cannot access an unowned dataset", %{public_conn: conn} do
-      {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
+    test "public user cannot access an unowned dataset", %{public_conn: conn, org_id: org_id} do
+      {:ok, dataset} = TDG.create_dataset(%{organization_id: org_id}) |> Datasets.update()
 
       get(conn, "/datasets/" <> dataset.id)
       |> response(302)
@@ -67,8 +70,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "curator can access an unowned dataset", %{curator_conn: conn} do
-      {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
+    test "curator can access an unowned dataset", %{curator_conn: conn, org_id: org_id} do
+      {:ok, dataset} = TDG.create_dataset(%{organization_id: org_id}) |> Datasets.update()
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
@@ -79,8 +82,8 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "save and publish form data" do
-    test "save button in one section saves all sections", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: "never"}})
+    test "save button in one section saves all sections", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{cadence: "never"}})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -97,8 +100,8 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
     end
 
-    test "publish button saves all sections", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "publish button saves all sections", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -121,8 +124,8 @@ defmodule AndiWeb.EditLiveViewTest do
       end)
     end
 
-    test "valid form data is saved on publish", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "valid form data is saved on publish", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -146,9 +149,9 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "valid dataset's submission status is updated on publish", %{conn: conn} do
+    test "valid dataset's submission status is updated on publish", %{conn: conn, org_id: org_id} do
       allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       Datasets.update_submission_status(dataset.id, :approved)
@@ -170,9 +173,9 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "invalid dataset's submission status is not updated on publish", %{conn: conn} do
+    test "invalid dataset's submission status is not updated on publish", %{conn: conn, org_id: org_id} do
       allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
-      smrt_dataset = TDG.create_dataset(%{})
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       submission_status = :approved
@@ -195,9 +198,10 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "invalid form data is saved on publish", %{conn: conn} do
+    test "invalid form data is saved on publish", %{conn: conn, org_id: org_id} do
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: org_id,
           business: %{publishFrequency: "I dunno, whenever, I guess"}
         })
 
@@ -216,8 +220,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert nil == Datasets.get(dataset.id) |> get_in([:business, :publishFrequency])
     end
 
-    test "success message is displayed when form data is saved", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "success message is displayed when form data is saved", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -234,10 +238,10 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#snackbar") != ""
     end
 
-    test "saving form as draft does not send brook event", %{conn: conn} do
+    test "saving form as draft does not send brook event", %{conn: conn, org_id: org_id} do
       allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
-      smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{issuedDate: nil}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -250,8 +254,8 @@ defmodule AndiWeb.EditLiveViewTest do
       refute_called Brook.Event.send(any(), any(), any(), any())
     end
 
-    test "saving form as draft with invalid changes warns user", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{business: %{dataTitle: ""}})
+    test "saving form as draft with invalid changes warns user", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{dataTitle: ""}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -269,8 +273,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert get_text(html, "#snackbar") == "Saved successfully. You may need to fix errors before publishing."
     end
 
-    test "allows clearing modified date", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{business: %{modifiedDate: "2020-01-01T00:00:00Z"}})
+    test "allows clearing modified date", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{modifiedDate: "2020-01-01T00:00:00Z"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -278,9 +282,9 @@ defmodule AndiWeb.EditLiveViewTest do
       metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{
+        "organization_id" => org_id,
         "modifiedDate" => "",
         "dataName" => "somethimn",
-        "orgName" => "something",
         "private" => false,
         "sourceFormat" => "something",
         "sourceType" => "remote",
@@ -291,7 +295,6 @@ defmodule AndiWeb.EditLiveViewTest do
         "description" => "something",
         "issuedDate" => ~D[1899-10-20],
         "license" => "https://www.test.net",
-        "orgTitle" => "something",
         "publishFrequency" => "something",
         "riskRating" => 1.0
       }
@@ -308,12 +311,11 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "does not save when dataset org and data name match existing dataset", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "does not save when dataset org and data name match existing dataset", %{conn: conn, org_id: org_id, orgName: orgName} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, dataset} = Datasets.update(smrt_dataset)
-      {:ok, other_dataset} = Datasets.update(TDG.create_dataset(%{}))
-
-      form_data = %{"dataTitle" => other_dataset.technical.dataName, "orgName" => other_dataset.technical.orgName}
+      {:ok, other_dataset} = Datasets.update(TDG.create_dataset(%{organization_id: org_id}))
+      form_data = %{"dataTitle" => other_dataset.technical.dataName, "orgName" => orgName}
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
@@ -325,8 +327,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert render(view) |> get_text("#snackbar") =~ "errors"
     end
 
-    test "alert shows when section changes are unsaved on cancel action", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "alert shows when section changes are unsaved on cancel action", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -344,8 +346,8 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
     end
 
-    test "clicking cancel takes you back to the datasets page without saved changes", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "clicking cancel takes you back to the datasets page without saved changes", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -354,7 +356,6 @@ defmodule AndiWeb.EditLiveViewTest do
       metadata_view = find_live_child(view, "metadata_form_editor")
 
       form_data = %{"dataTitle" => "new dataset title"}
-
       render_change(metadata_view, "validate", %{"form_data" => form_data})
       render_change(metadata_view, "cancel-edit", %{})
       html = render(view)
@@ -368,8 +369,8 @@ defmodule AndiWeb.EditLiveViewTest do
       assert_redirect(view, "/datasets")
     end
 
-    test "successfully publishing presents modal", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "successfully publishing presents modal", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -385,8 +386,8 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
     end
 
-    test "continuing to edit after publish reloads the page", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+    test "continuing to edit after publish reloads the page", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -410,8 +411,9 @@ defmodule AndiWeb.EditLiveViewTest do
       assert_redirect(view, url)
     end
 
-    test "allows publish of invalid url form with valid extract step form", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceUrl: "", extractSteps: [%{type: "http", context: %{}}]}})
+    test "allows publish of invalid url form with valid extract step form", %{conn: conn, org_id: org_id} do
+      smrt_dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "", extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -440,8 +442,9 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceUrl: "valid.com", extractSteps: [%{type: "http", context: %{}}]}})
+    test "replaces url form elements when both url form and extract form are valid", %{conn: conn, org_id: org_id} do
+      smrt_dataset =
+        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceUrl: "valid.com", extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -472,13 +475,13 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    test "fails to publish if invalid extract steps are found", %{conn: conn} do
+    test "fails to publish if invalid extract steps are found", %{conn: conn, org_id: org_id} do
       extract_steps = [
         %{type: "http", context: %{action: "GET", url: ""}},
         %{type: "http", context: %{action: "GET", url: "example2.com"}}
       ]
 
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: extract_steps, sourceUrl: ""}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -491,12 +494,12 @@ defmodule AndiWeb.EditLiveViewTest do
       assert {:ok, nil} == DatasetStore.get(smrt_dataset.id)
     end
 
-    test "published extract steps have assigns and variables", %{conn: conn} do
+    test "published extract steps have assigns and variables", %{conn: conn, org_id: org_id} do
       extract_steps = [
         %{type: "http", context: %{action: "GET", url: "example2.com"}}
       ]
 
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: extract_steps}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -529,8 +532,8 @@ defmodule AndiWeb.EditLiveViewTest do
       )
     end
 
-    data_test "does not publish when extract steps are invalid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
+    data_test "does not publish when extract steps are invalid", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: extract_steps}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -545,8 +548,8 @@ defmodule AndiWeb.EditLiveViewTest do
       where(extract_steps: [[], nil, [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]])
     end
 
-    test "does not publish when cadence is not set", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: nil}})
+    test "does not publish when cadence is not set", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{cadence: nil}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -561,8 +564,8 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   describe "delete dataset" do
-    test "dataset is deleted after confirmation", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+    test "dataset is deleted after confirmation", %{conn: conn, org_id: org_id} do
+      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -578,8 +581,12 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "review dataset" do
     setup do
+      smrt_org = TDG.create_organization(%{})
+      Organizations.update(smrt_org)
+
       smrt_dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             extractSteps: [
               %{

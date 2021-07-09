@@ -51,6 +51,8 @@ defmodule Reaper.FileIngest.ProcessorTest do
           }
         )
 
+      orgName = String.split(dataset.technical.systemName, "__") |> Enum.at(0)
+
       expect(Reaper.DataSlurper.slurp(@source_url, dataset.id, any(), any()),
         meck_options: [:passthrough],
         return: {:file, "filename"}
@@ -60,7 +62,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         ExAws.S3.upload(
           any(),
           any(),
-          "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
+          "#{orgName}/#{dataset.technical.dataName}.txt"
         ),
         meck_options: [:passthrough]
       )
@@ -73,7 +75,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         dataset_id: dataset.id,
         mime_type: "text/plain",
         bucket: hosted_file_bucket(),
-        key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
+        key: "#{orgName}/#{dataset.technical.dataName}.txt"
       }
 
       assert_called(Brook.Event.send(@instance_name, file_ingest_end(), :reaper, expected_file_upload))
@@ -100,6 +102,8 @@ defmodule Reaper.FileIngest.ProcessorTest do
           }
         )
 
+      orgName = String.split(dataset.technical.systemName, "__") |> Enum.at(0)
+
       expect(Reaper.DataSlurper.slurp(@source_url, dataset.id, any(), any()),
         meck_options: [:passthrough],
         return: {:file, "filename"}
@@ -109,7 +113,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         ExAws.S3.upload(
           any(),
           any(),
-          "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
+          "#{orgName}/#{dataset.technical.dataName}.txt"
         ),
         meck_options: [:passthrough]
       )
@@ -122,7 +126,7 @@ defmodule Reaper.FileIngest.ProcessorTest do
         dataset_id: dataset.id,
         mime_type: "text/plain",
         bucket: hosted_file_bucket(),
-        key: "#{dataset.technical.orgName}/#{dataset.technical.dataName}.txt"
+        key: "#{orgName}/#{dataset.technical.dataName}.txt"
       }
 
       assert_called(Brook.Event.send(@instance_name, file_ingest_end(), :reaper, expected_file_upload))

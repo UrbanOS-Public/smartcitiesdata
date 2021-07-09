@@ -8,7 +8,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
   use Placebo
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [organization_update: 0]
-  import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
     only: [
@@ -20,6 +20,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.Auth0Management
+  alias Andi.Services.OrgStore
 
   alias Andi.Schemas.User
 
@@ -68,6 +69,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
 
+      eventually(fn ->
+        assert OrgStore.get(org1.id) != {:ok, nil}
+      end)
+
       allow(Auth0Management.get_roles(),
         return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
         meck_options: [:passthrough]
@@ -104,12 +109,16 @@ defmodule AndiWeb.EditUserLiveViewTest do
       assert {:ok, view, html} = live(conn, @url_path <> user.id)
       org_id = org.id
 
-      eventually(fn ->
-        assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
-                 get_all_select_options(html, "#organiation_org_id")
-      end)
+      eventually(
+        fn ->
+          assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
+                   get_all_select_options(html, "#organization_org_id")
+        end,
+        500,
+        20
+      )
 
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org_id}})
 
       eventually(fn ->
         user = User.get_by_subject_id(user.subject_id)
@@ -130,8 +139,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
       org2_id = org2.id
 
       # Associate to user 
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
-      render_change(view, "associate", %{"organiation" => %{"org_id" => org2_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org_id}})
+      render_change(view, "associate", %{"organization" => %{"org_id" => org2_id}})
 
       eventually(fn ->
         user = User.get_by_subject_id(user.subject_id)

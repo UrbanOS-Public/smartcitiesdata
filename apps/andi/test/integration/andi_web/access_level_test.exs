@@ -121,7 +121,7 @@ defmodule AndiWeb.AccessLevelTest do
   end
 
   defp create_dataset(org_id) do
-    dataset = TDG.create_dataset(%{technical: %{orgId: org_id}})
+    dataset = TDG.create_dataset(%{organization_id: org_id})
 
     Datasets.update(dataset)
 

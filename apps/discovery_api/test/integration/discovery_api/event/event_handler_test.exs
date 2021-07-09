@@ -19,7 +19,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     test "updates the dataset in the search index" do
       organization = Helper.create_persisted_organization()
 
-      dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+      dataset = TDG.create_dataset(%{organization_id: organization.id})
       dataset_id = dataset.id
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -53,9 +53,40 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       assert new_org.title == expected_organization.orgTitle
     end
 
+    test "when an organization is updated then its datasets are also updated" do
+      organization = Helper.create_persisted_organization()
+
+      dataset = TDG.create_dataset(%{organization_id: organization.id})
+      dataset_id = dataset.id
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
+      end)
+
+      organization = Map.put(organization, :orgTitle, "newTitle")
+      Brook.Event.send(@instance_name, "organization:update", :test, organization)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id, organizationDetails: %{orgTitle: "newTitle"}}} = Elasticsearch.Document.get(dataset_id)
+      end)
+
+      result =
+        HTTPoison.get!("http://localhost:4000/api/v1/organization/#{organization.id}", %{})
+        |> Map.from_struct()
+
+      assert result.status_code == 200
+      new_org = Jason.decode!(result.body, keys: :atoms)
+
+      assert new_org.id == organization.id
+      assert new_org.name == organization.orgName
+      assert new_org.title == organization.orgTitle
+    end
+
     test "persisting a model should use information from the organization:update event" do
       expected_organization = Helper.create_persisted_organization()
-      expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
+      expected_registry_dataset = TDG.create_dataset(%{organization_id: expected_organization.id})
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, expected_registry_dataset)
 

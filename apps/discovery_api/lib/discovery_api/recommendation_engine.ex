@@ -5,17 +5,33 @@ defmodule DiscoveryApi.RecommendationEngine do
 
   @prefix "discovery_api:dataset_recommendations:"
 
-  def save(%SmartCity.Dataset{} = dataset) do
+  def save(%SmartCity.Dataset{} = dataset, organization) do
     recommendation_metadata = %{
       id: dataset.id,
       systemName: dataset.technical.systemName,
-      orgName: dataset.technical.orgName,
+      orgName: organization.name,
       dataName: dataset.technical.dataName,
       dataTitle: dataset.business.dataTitle,
       schema: schema_mapper(dataset.technical.schema)
     }
 
     case Persistence.persist(@prefix <> dataset.id, recommendation_metadata) do
+      {:ok, _} -> :ok
+      error -> error
+    end
+  end
+
+  def save(%DiscoveryApi.Data.Model{} = model, organization) do
+    recommendation_metadata = %{
+      id: model.id,
+      systemName: model.systemName,
+      orgName: organization.orgName,
+      dataName: model.name,
+      dataTitle: model.title,
+      schema: schema_mapper(model.schema)
+    }
+
+    case Persistence.persist(@prefix <> model.id, recommendation_metadata) do
       {:ok, _} -> :ok
       error -> error
     end

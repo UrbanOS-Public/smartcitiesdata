@@ -21,13 +21,13 @@ defmodule DiscoveryApi.Data.DataJsonTest do
 
     organization = Helper.create_persisted_organization()
 
-    dataset_one = TDG.create_dataset(%{technical: %{orgId: organization.id, private: true}})
+    dataset_one = TDG.create_dataset(%{organization_id: organization.id, technical: %{private: true}})
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset_one)
 
-    dataset_two = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset_two = TDG.create_dataset(%{organization_id: organization.id, technical: %{orgId: organization.id}})
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset_two)
 
-    dataset_three = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset_three = TDG.create_dataset(%{organization_id: organization.id, technical: %{orgId: organization.id}})
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset_three)
 
     eventually(
@@ -56,7 +56,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   end
 
   test "Returns an additional dataset when we add one via an update", %{organization_id: organization_id} do
-    additional_dataset = TDG.create_dataset(%{technical: %{orgId: organization_id}})
+    additional_dataset = TDG.create_dataset(%{organization_id: organization_id})
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, additional_dataset)
 
     eventually(fn ->

@@ -7,15 +7,19 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.DataDictionaryFields
 
   describe "add_field_to_parent/2" do
     setup do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
+      smrt_org = TDG.create_organization(%{})
+      Organizations.update(smrt_org)
 
       dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             schema: [
               %{
@@ -152,9 +156,12 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
     test "given an existing dataset with a nested schema" do
       schema_parent_field_id = UUID.uuid4()
       schema_child_field_id = UUID.uuid4()
+      smrt_org = TDG.create_organization(%{})
+      Organizations.update(smrt_org)
 
       dataset =
         TDG.create_dataset(%{
+          organization_id: smrt_org.id,
           technical: %{
             schema: [
               %{

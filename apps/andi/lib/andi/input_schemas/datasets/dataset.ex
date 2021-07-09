@@ -11,6 +11,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Organization
 
   @primary_key {:id, :string, autogenerate: false}
   schema "datasets" do
@@ -20,6 +21,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     field(:version, :string)
     field(:submission_status, Ecto.Enum, values: [:published, :approved, :rejected, :submitted, :draft], default: :draft)
     belongs_to(:owner, User, type: Ecto.UUID, foreign_key: :owner_id)
+    belongs_to(:organization, Organization, type: Ecto.UUID, foreign_key: :organization_id)
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)
     has_one(:technical, Technical, on_replace: :update)
@@ -27,11 +29,22 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   use Accessible
 
-  @cast_fields [:id, :ingestedTime, :version, :submission_status, :dlq_message, :owner_id, :datasetLink]
+  @cast_fields [:id, :ingestedTime, :version, :submission_status, :dlq_message, :owner_id, :datasetLink, :organization_id]
 
   @submission_required_fields [:datasetLink]
 
+  @organization_required_fields [:organization_id]
+
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
+  def changeset(dataset, %{organization: organization} = changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> validate_required(@organization_required_fields, message: "is required")
+    |> put_assoc(:organization, organization)
+    |> cast_assoc(:technical, with: &Technical.changeset/2)
+    |> cast_assoc(:business, with: &Business.changeset/2)
+  end
 
   def changeset(dataset, changes) do
     dataset
@@ -58,6 +71,23 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
+  def changeset_for_draft(dataset, %{owner: owner, organization: organization} = changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> put_assoc(:owner, owner)
+    |> put_assoc(:organization, organization)
+    |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
+    |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
+  end
+
+  def changeset_for_draft(dataset, %{organization: organization} = changes) do
+    dataset
+    |> cast(changes, @cast_fields)
+    |> put_assoc(:organization, organization)
+    |> cast_assoc(:technical, with: &Technical.changeset_for_draft/2)
+    |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
+  end
+
   def changeset_for_draft(dataset, changes) do
     dataset
     |> cast(changes, @cast_fields)
@@ -65,7 +95,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> cast_assoc(:business, with: &Business.changeset_for_draft/2)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :owner])
+  def preload(struct), do: StructTools.preload(struct, [:technical, :business, :owner, :organization])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 
@@ -74,11 +104,23 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> validate_unique_system_name()
   end
 
+  def get_org_name_if_exists(changeset) do
+    org_id = Ecto.Changeset.get_field(changeset, :organization_id)
+
+    case is_nil(org_id) do
+      false ->
+        org = Andi.InputSchemas.Organizations.get(org_id)
+        org.orgName
+
+      _ ->
+        nil
+    end
+  end
+
   def validate_unique_system_name(%{changes: %{technical: technical}} = changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
     data_name = Ecto.Changeset.get_change(technical, :dataName)
-    org_name = Ecto.Changeset.get_change(technical, :orgName)
-
+    org_name = get_org_name_if_exists(changeset)
     technical_changeset = check_uniqueness(technical, id, data_name, org_name)
     Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
   end
@@ -86,8 +128,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   def validate_unique_system_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :datasetId)
     data_name = Ecto.Changeset.get_change(changeset, :dataName)
-    org_name = Ecto.Changeset.get_change(changeset, :orgName)
-
+    org_name = get_org_name_if_exists(changeset)
     check_uniqueness(changeset, id, data_name, org_name)
   end
 

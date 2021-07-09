@@ -38,6 +38,7 @@ defmodule AndiWeb.Views.DisplayNames do
     orgId: "Organization",
     orgName: "Organization Name",
     orgTitle: "Organization Title",
+    organization_id: "Organization",
     path: "Response Location",
     private: "Level of Access",
     publishFrequency: "Update Frequency",

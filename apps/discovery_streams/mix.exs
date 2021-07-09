@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "2.10.8",
+      version: "3.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -63,8 +63,8 @@ defmodule DiscoveryStreams.Mixfile do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city, "~> 3.0"},
-      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:smart_city, "~> 4.0"},
+      {:smart_city_test, "~> 1.0", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
