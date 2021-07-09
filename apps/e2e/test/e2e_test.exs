@@ -84,10 +84,10 @@ defmodule E2ETest do
       ])
 
     eventually(fn ->
-        resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
-        [org] <- Jason.decode!(resp.body) do
-        assert org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
-        assert org["orgName"] == "end_to"
+        resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations")
+        [new_org] <- Jason.decode!(resp.body) do
+        assert new_org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
+        assert new_org["orgName"] == "end_to"
       end
     end)
 
