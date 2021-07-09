@@ -20,6 +20,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
   alias Andi.Services.Auth0Management
+  alias Andi.Services.OrgStore
 
   alias Andi.Schemas.User
 
@@ -67,6 +68,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
       org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
 
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
+
+      eventually(fn ->
+        assert OrgStore.get(org1.id) != {:ok, nil}
+      end)
 
       allow(Auth0Management.get_roles(),
         return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
