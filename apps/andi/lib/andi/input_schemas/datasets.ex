@@ -333,7 +333,6 @@ defmodule Andi.InputSchemas.Datasets do
   defp extract_owner_id(_, %{ownerId: ownerId}), do: ownerId
   defp extract_owner_id(_, _), do: nil
 
-  defp extract_organization_id(nil, %{organization_id: organization_id}), do: organization_id
   defp extract_organization_id(_, %{organization_id: organization_id}), do: organization_id
   defp extract_organization_id(_, _), do: nil
 

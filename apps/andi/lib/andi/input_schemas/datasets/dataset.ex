@@ -104,36 +104,30 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     |> validate_unique_system_name()
   end
 
-  def validate_unique_system_name(%{changes: %{technical: technical}} = changeset) do
-    id = Ecto.Changeset.get_field(changeset, :id)
-    data_name = Ecto.Changeset.get_change(technical, :dataName)
+  def get_org_name_if_exists(changeset) do
     org_id = Ecto.Changeset.get_field(changeset, :organization_id)
-
     case is_nil(org_id) do
       false ->
         org = Andi.InputSchemas.Organizations.get(org_id)
-        technical_changeset = check_uniqueness(technical, id, data_name, org.orgName)
-        Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
-
+        org.orgName
       _ ->
-        technical_changeset = check_uniqueness(technical, id, data_name, nil)
-        Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
+        nil
     end
+  end
+
+  def validate_unique_system_name(%{changes: %{technical: technical}} = changeset) do
+    id = Ecto.Changeset.get_field(changeset, :id)
+    data_name = Ecto.Changeset.get_change(technical, :dataName)
+    org_name = get_org_name_if_exists(changeset)
+    technical_changeset = check_uniqueness(technical, id, data_name, org_name)
+    Ecto.Changeset.put_change(changeset, :technical, technical_changeset)
   end
 
   def validate_unique_system_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :datasetId)
     data_name = Ecto.Changeset.get_change(changeset, :dataName)
-    org_id = Ecto.Changeset.get_field(changeset, :organization_id)
-
-    case is_nil(org_id) do
-      false ->
-        org = Andi.InputSchemas.Organizations.get(org_id)
-        check_uniqueness(changeset, id, data_name, org.orgName)
-
-      _ ->
-        check_uniqueness(changeset, id, data_name, nil)
-    end
+    org_name = get_org_name_if_exists(changeset)
+    check_uniqueness(changeset, id, data_name, org_name)
   end
 
   defp check_uniqueness(changeset, id, data_name, org_name) do
