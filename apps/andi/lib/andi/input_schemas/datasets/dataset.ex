@@ -106,10 +106,12 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
 
   def get_org_name_if_exists(changeset) do
     org_id = Ecto.Changeset.get_field(changeset, :organization_id)
+
     case is_nil(org_id) do
       false ->
         org = Andi.InputSchemas.Organizations.get(org_id)
         org.orgName
+
       _ ->
         nil
     end
