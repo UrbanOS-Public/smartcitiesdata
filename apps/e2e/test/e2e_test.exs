@@ -83,6 +83,8 @@ defmodule E2ETest do
         {"Content-Type", "application/json"}
       ])
 
+    Process.sleep(5_000)
+
     eventually(fn ->
       with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
            [org] <- Jason.decode!(resp.body) do
