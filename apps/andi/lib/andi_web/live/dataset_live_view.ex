@@ -198,7 +198,7 @@ defmodule AndiWeb.DatasetLiveView do
     Enum.map(datasets, &to_view_model/1)
   end
 
-  defp view_model(dataset, nil) do
+  defp to_view_model(%{organization_id: nil} = dataset) do
     %{
       "id" => dataset.id,
       "org_title" => nil,
@@ -207,18 +207,13 @@ defmodule AndiWeb.DatasetLiveView do
     }
   end
 
-  defp view_model(dataset, _organization_id) do
+  defp to_view_model(dataset) do
     %{
       "id" => dataset.id,
       "org_title" => dataset.organization.orgTitle,
       "data_title" => dataset.business.dataTitle,
       "status" => status(dataset)
     }
-  end
-
-  defp to_view_model(dataset) do
-    org_id = dataset.organization_id
-    view_model(dataset, org_id)
   end
 
   defp status(%{ingestedTime: nil, submission_status: status}), do: String.capitalize(Atom.to_string(status))
