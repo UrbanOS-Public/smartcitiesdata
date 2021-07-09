@@ -360,6 +360,7 @@ defmodule E2ETest do
           "streaming:#{ds.technical.systemName}",
           %{}
         )
+      end
       )
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
