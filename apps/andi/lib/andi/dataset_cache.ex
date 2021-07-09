@@ -78,6 +78,7 @@ defmodule Andi.DatasetCache do
 
   def add_dataset_info(dataset) do
     org_name = get_org_from_dataset(dataset)
+
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
