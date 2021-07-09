@@ -36,7 +36,7 @@ defmodule E2ETest do
       dataName: "strimmin",
       cadence: "*/10 * * * * *",
       sourceType: "stream",
-      systemName: "usa__strimmin"
+      systemName: "end_to__strimmin"
     }
   }
 
