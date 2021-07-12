@@ -72,7 +72,7 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~>4.1"},
+      {:smart_city, "~> 4.0.1"},
       {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
       {:telemetry_event, in_umbrella: true},
