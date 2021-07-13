@@ -28,23 +28,15 @@ defmodule AndiWeb.DataDictionaryFormTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Organizations
   alias AndiWeb.Helpers.FormTools
 
   @endpoint AndiWeb.Endpoint
   @url_path "/submissions/"
 
-  setup %{} do
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    [org_id: smrt_org.id]
-  end
-
   describe "data_dictionary_tree_view" do
-    test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn, org_id: org_id} do
+    test "given a schema with no nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [
               %{
@@ -71,10 +63,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert ["string", "integer", "float"] == get_texts(html, ".data-dictionary-tree-field__type")
     end
 
-    test "given a schema with nesting it displays the three fields in a well-known (BEM) way", %{conn: conn, org_id: org_id} do
+    test "given a schema with nesting it displays the three fields in a well-known (BEM) way", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [
               %{
@@ -138,10 +129,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert ["string", "map", "integer", "list", "float", "map", "string"] == get_texts(html, ".data-dictionary-tree-field__type")
     end
 
-    test "generates hidden inputs for fields that are not selected", %{conn: conn, org_id: org_id} do
+    test "generates hidden inputs for fields that are not selected", %{conn: conn} do
       dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [
               %{
@@ -179,21 +169,16 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert Enum.count(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_1_description")) > 0
     end
 
-    test "handles datasets with no schema fields", %{conn: conn, org_id: org_id} do
-      dataset =
-        TDG.create_dataset(%{
-          organization_id: org_id,
-          technical: %{sourceType: "remote"}
-        })
-        |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
+    test "handles datasets with no schema fields", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}}) |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
     end
 
-    test "displays help for datasets with empty schema fields", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "ingest", schema: []}})
+    test "displays help for datasets with empty schema fields", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: []}})
 
       dataset
       |> InputConverter.smrt_dataset_to_draft_changeset()
@@ -204,9 +189,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
     end
 
-    test "does not display help for datasets with empty subschema fields", %{conn: conn, org_id: org_id} do
+    test "does not display help for datasets with empty subschema fields", %{conn: conn} do
       field_with_empty_subschema = %{name: "max", type: "map", subSchema: []}
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "ingest", schema: [field_with_empty_subschema]}})
+      dataset = TDG.create_dataset(%{technical: %{sourceType: "ingest", schema: [field_with_empty_subschema]}})
 
       dataset
       |> InputConverter.smrt_dataset_to_draft_changeset()
@@ -219,8 +204,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "schema sample upload" do
-    test "is shown when sourceFormat is CSV or JSON", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "application/json"}})
+    test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/json"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -230,8 +215,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
 
-    test "is hidden when sourceFormat is not CSV nor JSON", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "application/geo+json"}})
+    test "is hidden when sourceFormat is not CSV nor JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/geo+json"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -241,8 +226,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
 
-    test "does not allow file uploads greater than 200MB", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    test "does not allow file uploads greater than 200MB", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -253,8 +238,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    test "should throw error when empty csv file is passed", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    test "should throw error when empty csv file is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -267,8 +252,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    data_test "accepts common csv file type #{type}", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    data_test "accepts common csv file type #{type}", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -287,8 +272,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       ])
     end
 
-    test "should throw error when empty csv file with `\n` is passed", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    test "should throw error when empty csv file with `\n` is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -301,8 +286,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    test "provides modal when existing schema will be overwritten", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    test "provides modal when existing schema will be overwritten", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
 
       {:ok, _} = Datasets.update(dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -315,9 +300,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
     end
 
-    test "does not provide modal with no existing schema", %{conn: conn, org_id: org_id} do
+    test "does not provide modal with no existing schema", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -334,9 +319,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(updated_dataset.technical.schema)
     end
 
-    test "parses CSVs with various types", %{conn: conn, org_id: org_id} do
+    test "parses CSVs with various types", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -365,9 +350,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert generated_schema == expected_schema
     end
 
-    test "parses CSV with valid column names", %{conn: conn, org_id: org_id} do
+    test "parses CSV with valid column names", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "text/csv"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -397,9 +382,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       assert generated_schema == expected_schema
     end
 
-    test "handles invalid json", %{conn: conn, org_id: org_id} do
+    test "handles invalid json", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -414,9 +399,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    test "should throw error when empty json file is passed", %{conn: conn, org_id: org_id} do
+    test "should throw error when empty json file is passed", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -429,9 +414,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    test "generates eligible parents list", %{conn: conn, org_id: org_id} do
+    test "generates eligible parents list", %{conn: conn} do
       dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{sourceType: "remote", sourceFormat: "application/json"}})
+        TDG.create_dataset(%{technical: %{sourceType: "remote", sourceFormat: "application/json"}})
         |> Map.update(:technical, %{}, &Map.delete(&1, :schema))
 
       {:ok, _} = Datasets.update(dataset)
@@ -454,10 +439,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "add dictionary field modal" do
-    setup %{org_id: org_id} do
+    setup do
       dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [
               %{
@@ -645,10 +629,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "remove dictionary field modal" do
-    setup %{org_id: org_id} do
+    setup do
       dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [
               %{
@@ -849,8 +832,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
     end
   end
 
-  test "required schema field displays proper error message", %{conn: conn, org_id: org_id} do
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: []}})
+  test "required schema field displays proper error message", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: []}})
 
     {:ok, dataset} =
       InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -862,11 +845,10 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "default timestamp/date" do
-    setup %{org_id: org_id} do
-      smrt_dataset_with_timestamp =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{name: "timestamp_field", type: "timestamp"}]}})
+    setup do
+      smrt_dataset_with_timestamp = TDG.create_dataset(%{technical: %{schema: [%{name: "timestamp_field", type: "timestamp"}]}})
 
-      smrt_dataset_with_date = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{name: "date_field", type: "date"}]}})
+      smrt_dataset_with_date = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date"}]}})
 
       {:ok, andi_dataset_with_timestamp} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_with_timestamp)
@@ -879,10 +861,9 @@ defmodule AndiWeb.DataDictionaryFormTest do
       [andi_dataset_with_date: andi_dataset_with_date, andi_dataset_with_timestamp: andi_dataset_with_timestamp]
     end
 
-    test "replaces provider with nil when use default checkbox is unselected", %{conn: conn, org_id: org_id} do
+    test "replaces provider with nil when use default checkbox is unselected", %{conn: conn} do
       smrt_dataset_with_provider =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             schema: [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}]
           }
@@ -936,9 +917,8 @@ defmodule AndiWeb.DataDictionaryFormTest do
       )
     end
 
-    test "replaces nil provider with default when use default checkbox is checked", %{conn: conn, org_id: org_id} do
-      smrt_dataset_without_provider =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{name: "date_field", type: "date"}]}})
+    test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
+      smrt_dataset_without_provider = TDG.create_dataset(%{technical: %{schema: [%{name: "date_field", type: "date"}]}})
 
       {:ok, andi_dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset_without_provider)

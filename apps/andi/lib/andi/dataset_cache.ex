@@ -72,19 +72,13 @@ defmodule Andi.DatasetCache do
     {:reply, :ok, pid}
   end
 
-  def get_org_from_dataset(%{organization: %{orgName: org_name}}), do: org_name
-  def get_org_from_dataset(%{technical: %{orgName: org_name}}), do: org_name
-  def get_org_from_dataset(_dataset), do: "unknown"
-
   def add_dataset_info(dataset) do
-    org_name = get_org_from_dataset(dataset)
-
     [
       dataset_id: dataset[:id],
       dataset_title: dataset[:business][:dataTitle],
       system_name: dataset[:technical][:systemName],
       source_type: dataset[:technical][:sourceType],
-      org_name: org_name
+      org_name: dataset[:technical][:orgName]
     ]
     |> TelemetryEvent.add_event_metrics([:dataset_info], value: %{gauge: 1})
   end

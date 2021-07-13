@@ -23,26 +23,21 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
     auth_conn_case.disable_revocation_list.()
 
-    org_a = DatasetHelpers.create_organization(%{orgTitle: "org_a", orgName: "org_a"})
-    org_b = DatasetHelpers.create_organization(%{orgTitle: "org_b", orgName: "org_b"})
-    org_c = DatasetHelpers.create_organization(%{orgTitle: "org_c", orgName: "org_c"})
-    org_d = DatasetHelpers.create_organization(%{orgTitle: "org_d", orgName: "org_d"})
-
     dataset_a =
-      DatasetHelpers.create_dataset(%{business: %{dataTitle: "data_a"}}, org_d)
+      DatasetHelpers.create_dataset(business: %{orgTitle: "org_d", dataTitle: "data_a"})
       |> Map.put(:ingestedTime, @ingested_time_a)
 
     dataset_b =
-      DatasetHelpers.create_dataset(%{business: %{dataTitle: "data_b"}}, org_c)
+      DatasetHelpers.create_dataset(business: %{orgTitle: "org_c", dataTitle: "data_b"})
       |> Map.put(:ingestedTime, @ingested_time_b)
 
     dataset_c =
-      DatasetHelpers.create_dataset(%{business: %{dataTitle: "data_c"}}, org_b)
+      DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_c"})
       |> Map.put(:ingestedTime, nil)
       |> Map.put(:submission_status, :rejected)
 
     dataset_d =
-      DatasetHelpers.create_dataset(%{business: %{dataTitle: "data_d"}}, org_a)
+      DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_d"})
       |> Map.put(:ingestedTime, nil)
       |> Map.put(:submission_status, :approved)
 
@@ -54,10 +49,10 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
       get(conn, @url_path)
       |> live()
 
-    row_a = ["Success", dataset_a.business.dataTitle, dataset_a.organization.orgTitle, "Edit"]
-    row_b = ["Success", dataset_b.business.dataTitle, dataset_b.organization.orgTitle, "Edit"]
-    row_c = ["Rejected", dataset_c.business.dataTitle, dataset_c.organization.orgTitle, "Edit"]
-    row_d = ["Approved", dataset_d.business.dataTitle, dataset_d.organization.orgTitle, "Edit"]
+    row_a = ["Success", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
+    row_b = ["Success", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
+    row_c = ["Rejected", dataset_c.business.dataTitle, dataset_c.business.orgTitle, "Edit"]
+    row_d = ["Approved", dataset_d.business.dataTitle, dataset_d.business.orgTitle, "Edit"]
 
     {:ok, %{view: view, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d}}
   end

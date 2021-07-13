@@ -23,19 +23,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Organizations
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
 
   describe "updating query params" do
     setup do
-      smrt_org = TDG.create_organization(%{})
-      Organizations.update(smrt_org)
-
       dataset =
         TDG.create_dataset(%{
-          organization_id: smrt_org.id,
           technical: %{
             extractSteps: [
               %{
@@ -54,7 +49,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, andi_dataset} = Datasets.update(dataset)
       extract_step_id = get_extract_step_id(andi_dataset, 0)
 
-      [dataset: andi_dataset, org_id: smrt_org.id, extract_step_id: extract_step_id]
+      [dataset: andi_dataset, extract_step_id: extract_step_id]
     end
 
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{
@@ -117,8 +112,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       )
     end
 
-    data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{field => %{}}})
+    data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn} do
+      dataset = TDG.create_dataset(%{technical: %{field => %{}}})
       {:ok, _andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
@@ -163,17 +158,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   describe "url testing" do
-    setup do
-      smrt_org = TDG.create_organization(%{})
-      Organizations.update(smrt_org)
-      [org_id: smrt_org.id]
-    end
-
     @tag capture_log: true
-    test "uses provided query params and headers", %{conn: conn, org_id: org_id} do
+    test "uses provided query params and headers", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             extractSteps: [
               %{
@@ -204,8 +192,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       [extract_step_id: extract_step_id]
     end
 
-    data_test "queryParams are updated when query params are added to url", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: [%{type: "http", context: %{}}]}})
+    data_test "queryParams are updated when query params are added to url", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -235,8 +223,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       ])
     end
 
-    data_test "url is updated when query params are added", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{extractSteps: [%{type: "http", context: %{}}]}})
+    data_test "url is updated when query params are added", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
       extract_step_id = get_extract_step_id(dataset, 0)
@@ -272,10 +260,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       ])
     end
 
-    test "status and time are displayed when source url is tested", %{conn: conn, org_id: org_id} do
+    test "status and time are displayed when source url is tested", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             extractSteps: [
               %{
@@ -312,10 +299,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
     end
 
-    test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn, org_id: org_id} do
+    test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             extractSteps: [
               %{
@@ -350,10 +336,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
     end
 
-    test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn, org_id: org_id} do
+    test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org_id,
           technical: %{
             extractSteps: [
               %{
@@ -390,98 +375,84 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
   end
 
-  describe "field error messages" do
-    setup do
-      smrt_org = TDG.create_organization(%{})
-      Organizations.update(smrt_org)
-      [org_id: smrt_org.id]
-    end
-
-    test "required url field displays proper error message", %{conn: conn, org_id: org_id} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          organization_id: org_id,
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
+  test "required url field displays proper error message", %{conn: conn} do
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              context: %{
+                action: "GET",
+                url: "123.com",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
               }
-            ]
-          }
-        })
+            }
+          ]
+        }
+      })
 
-      {:ok, dataset} =
-        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-        |> Datasets.save()
+    {:ok, dataset} =
+      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+      |> Datasets.save()
 
-      extract_step_id = get_extract_step_id(dataset, 0)
+    extract_step_id = get_extract_step_id(dataset, 0)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
-      form_data = %{"url" => ""}
+    form_data = %{"url" => ""}
 
-      html = render_change(es_form, %{"form_data" => form_data})
+    html = render_change(es_form, %{"form_data" => form_data})
 
-      assert get_text(html, "#url-error-msg") == "Please enter a valid url."
-    end
+    assert get_text(html, "#url-error-msg") == "Please enter a valid url."
+  end
 
-    data_test "invalid #{field} displays proper error message", %{conn: conn, org_id: org_id} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          organization_id: org_id,
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "POST",
-                  url: "123.com",
-                  body: "",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
+  data_test "invalid #{field} displays proper error message", %{conn: conn} do
+    smrt_dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          extractSteps: [
+            %{
+              type: "http",
+              context: %{
+                action: "POST",
+                url: "123.com",
+                body: "",
+                queryParams: %{"x" => "y"},
+                headers: %{"api-key" => "to-my-heart"}
               }
-            ]
-          }
-        })
+            }
+          ]
+        }
+      })
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
+    {:ok, dataset} = Datasets.update(smrt_dataset)
+    extract_step_id = get_extract_step_id(dataset, 0)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
-      form_data = %{field => value, "action" => "POST", "type" => "http", "url" => "example.com"}
+    form_data = %{field => value, "action" => "POST", "type" => "http", "url" => "example.com"}
 
-      html = render_change(es_form, %{"form_data" => form_data})
+    html = render_change(es_form, %{"form_data" => form_data})
 
-      assert get_text(html, "##{field}-error-msg") == error
+    assert get_text(html, "##{field}-error-msg") == error
 
-      where([
-        [:field, :value, :error],
-        ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
-        ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
-        ["body", "this is invalid json", "Please enter valid JSON"]
-      ])
-    end
+    where([
+      [:field, :value, :error],
+      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
+      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
+      ["body", "this is invalid json", "Please enter valid JSON"]
+    ])
   end
 
   test "body passes validation with valid json", %{conn: conn} do
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-
     smrt_dataset =
       TDG.create_dataset(%{
-        organization_id: smrt_org.id,
         technical: %{
           extractSteps: [
             %{

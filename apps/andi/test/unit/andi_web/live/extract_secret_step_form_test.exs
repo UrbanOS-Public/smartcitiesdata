@@ -1,7 +1,6 @@
 defmodule AndiWeb.ExtractSecretFormTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
-  alias Andi.InputSchemas.Organizations
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
@@ -15,7 +14,6 @@ defmodule AndiWeb.ExtractSecretFormTest do
     allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
     allow(User.get_all(), return: [@user])
     allow(User.get_by_subject_id(any()), return: @user)
-    allow(Organizations.get(any()), return: DatasetHelpers.create_organization())
     []
   end
 

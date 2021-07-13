@@ -9,7 +9,6 @@ defmodule Andi.MessageHandlerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.MessageHandler
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Organizations
 
   @endpoints [localhost: 9092]
 
@@ -26,9 +25,7 @@ defmodule Andi.MessageHandlerTest do
         ]
       )
 
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
+    dataset = TDG.create_dataset(%{})
     {:ok, _} = Datasets.update(dataset)
     dlq_message_value = %{dataset_id: dataset.id} |> Jason.encode!()
 
@@ -43,9 +40,7 @@ defmodule Andi.MessageHandlerTest do
   end
 
   test "dlq messages are added to the corresponding dataset in postgres" do
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
+    dataset = TDG.create_dataset(%{})
     {:ok, _} = Datasets.update(dataset)
 
     current_timestamp = DateTime.utc_now()

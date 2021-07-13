@@ -26,6 +26,8 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     field(:cadence, :string)
     field(:credentials, :boolean)
     field(:dataName, :string)
+    field(:orgId, :string)
+    field(:orgName, :string)
     field(:private, :boolean)
     field(:protocol, {:array, :string})
     field(:sourceFormat, :string)
@@ -53,6 +55,8 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :credentials,
     :dataName,
     :id,
+    :orgId,
+    :orgName,
     :private,
     :protocol,
     :sourceFormat,
@@ -64,6 +68,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   @required_fields [
     :cadence,
     :dataName,
+    :orgName,
     :private,
     :sourceFormat,
     :sourceType
@@ -91,6 +96,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@required_fields, message: "is required")
+    |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_source_format()
     |> CadenceValidator.validate()

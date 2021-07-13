@@ -30,9 +30,8 @@ defmodule DiscoveryApi.Data.DictionaryTest do
 
       dataset =
         TDG.create_dataset(%{
-          organization_id: organization.id,
           business: %{description: "Bob had a horse and this is its data"},
-          technical: %{schema: schema}
+          technical: %{orgId: organization.id, schema: schema}
         })
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)

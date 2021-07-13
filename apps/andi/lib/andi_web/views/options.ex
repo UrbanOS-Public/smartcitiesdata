@@ -152,11 +152,17 @@ defmodule AndiWeb.Views.Options do
   end
 
   def organizations(stored_organizations) do
-    org_options =
-      stored_organizations
-      |> Enum.sort_by(&Map.get(&1, :orgTitle))
-      |> Enum.map(&{&1.orgTitle, &1.id})
+    case stored_organizations do
+      {:ok, organizations} ->
+        org_options =
+          organizations
+          |> Enum.sort_by(&Map.get(&1, :orgTitle))
+          |> Enum.map(&{&1.orgTitle, &1.id})
 
-    [{"Please select an organization", ""}] ++ org_options
+        [{"Please select an organization", ""}] ++ org_options
+
+      {:error, _} ->
+        []
+    end
   end
 end

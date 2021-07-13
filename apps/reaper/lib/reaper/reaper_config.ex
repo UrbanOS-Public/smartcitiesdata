@@ -48,12 +48,10 @@ defmodule Reaper.ReaperConfig do
   """
   @spec from_dataset(SmartCity.Dataset.t()) :: {:ok, Reaper.ReaperConfig.t()}
   def from_dataset(%SmartCity.Dataset{} = dataset) do
-    orgName = String.split(dataset.technical.systemName, "__") |> Enum.at(0)
-
     struct = %__MODULE__{
       dataset_id: dataset.id,
       dataName: dataset.technical.dataName,
-      orgName: orgName,
+      orgName: dataset.technical.orgName,
       cadence: dataset.technical.cadence,
       sourceFormat: dataset.technical.sourceFormat,
       sourceUrl: dataset.technical.sourceUrl,

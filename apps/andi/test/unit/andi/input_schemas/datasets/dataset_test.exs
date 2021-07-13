@@ -17,6 +17,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       contactEmail: "contact@email.com",
       contactName: "contactName",
       dataTitle: "dataTitle",
+      orgTitle: "orgTitle",
       description: "description",
       issuedDate: "2020-01-01T00:00:00Z",
       license: "https://www.test.net",
@@ -25,6 +26,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
     technical: %{
       cadence: "never",
       dataName: "dataName",
+      orgName: "orgName",
       private: false,
       extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
       schema: [
@@ -63,12 +65,14 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
           [:business, :contactEmail],
           [:business, :contactName],
           [:business, :dataTitle],
+          [:business, :orgTitle],
           [:business, :description],
           [:business, :issuedDate],
           [:business, :publishFrequency],
           [:business, :riskRating],
           [:business, :license],
           [:technical, :dataName],
+          [:technical, :orgName],
           [:technical, :private],
           [:technical, :sourceFormat],
           [:technical, :sourceType]
@@ -156,6 +160,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
 
       where(
         field_path: [
+          [:technical, :orgName],
           [:technical, :dataName]
         ]
       )
@@ -233,6 +238,7 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
             cadence: "never",
             dataName: "dataName",
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
+            orgName: "orgName",
             private: false,
             sourceUrl: "sourceUrl",
             schema: schema,

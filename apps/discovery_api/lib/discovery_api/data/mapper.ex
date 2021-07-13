@@ -55,17 +55,6 @@ defmodule DiscoveryApi.Data.Mapper do
     }
   end
 
-  def to_organization_details(%SmartCity.Organization{} = organization) do
-    %OrganizationDetails{
-      id: organization.id,
-      orgName: organization.orgName,
-      orgTitle: organization.orgTitle,
-      description: organization.description,
-      logoUrl: organization.logoUrl,
-      homepage: organization.homepage
-    }
-  end
-
   defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]
   defp get_file_type(source_format), do: source_format |> MIME.extensions() |> hd() |> String.upcase() |> List.wrap()
 

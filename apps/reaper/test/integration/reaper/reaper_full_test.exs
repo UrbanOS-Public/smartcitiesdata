@@ -299,8 +299,6 @@ defmodule Reaper.FullTest do
           }
         })
 
-      orgName = String.split(hosted_dataset.technical.systemName, "__") |> Enum.at(0)
-
       Brook.Event.send(@instance_name, dataset_update(), :reaper, hosted_dataset)
 
       eventually(fn ->
@@ -308,7 +306,7 @@ defmodule Reaper.FullTest do
 
         case ExAws.S3.get_object(
                hosted_file_bucket(),
-               "#{orgName}/#{hosted_dataset.technical.dataName}.csv"
+               "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.csv"
              )
              |> ExAws.request() do
           {:ok, resp} ->

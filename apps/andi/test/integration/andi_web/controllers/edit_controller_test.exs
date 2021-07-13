@@ -6,7 +6,6 @@ defmodule AndiWeb.EditControllerTest do
   @moduletag shared_data_connection: true
 
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
@@ -19,9 +18,7 @@ defmodule AndiWeb.EditControllerTest do
     end
 
     test "gives 200 if dataset is found", %{conn: conn} do
-      smrt_org = TDG.create_organization(%{})
-      Organizations.update(smrt_org)
-      smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
+      smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       conn = get(conn, "#{@url_path}/#{dataset.id}")
@@ -31,9 +28,7 @@ defmodule AndiWeb.EditControllerTest do
 
   describe "download dataset sample" do
     setup do
-      smrt_org = TDG.create_organization(%{})
-      Organizations.update(smrt_org)
-      smrt_dataset = TDG.create_dataset(%{organization_id: smrt_org.id})
+      smrt_dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
       [andi_dataset: andi_dataset]

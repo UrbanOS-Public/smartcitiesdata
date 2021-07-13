@@ -280,12 +280,12 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   describe "harvested datasets table" do
     setup do
-      {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
+      dataset1 = TDG.create_dataset(%{})
+      dataset2 = TDG.create_dataset(%{})
+      dataset3 = TDG.create_dataset(%{})
+      dataset4 = TDG.create_dataset(%{})
 
-      dataset1 = TDG.create_dataset(%{organization_id: org.id})
-      dataset2 = TDG.create_dataset(%{organization_id: org.id})
-      dataset3 = TDG.create_dataset(%{organization_id: org.id})
-      dataset4 = TDG.create_dataset(%{organization_id: org.id})
+      {:ok, org} = TDG.create_organization(%{}) |> Organizations.update()
 
       %{dataTitle: dataset1.business.dataTitle, datasetId: dataset1.id, orgId: org.id} |> Organizations.update_harvested_dataset()
       %{dataTitle: dataset2.business.dataTitle, datasetId: dataset2.id, orgId: org.id} |> Organizations.update_harvested_dataset()

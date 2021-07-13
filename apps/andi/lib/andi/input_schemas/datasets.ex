@@ -29,8 +29,7 @@ defmodule Andi.InputSchemas.Datasets do
       from(dataset in Dataset,
         join: technical in assoc(dataset, :technical),
         join: business in assoc(dataset, :business),
-        left_join: organization in assoc(dataset, :organization),
-        preload: [business: business, technical: technical, organization: organization]
+        preload: [business: business, technical: technical]
       )
 
     Repo.all(query)
@@ -67,7 +66,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes = InputConverter.prepare_smrt_dataset_for_casting(smrt_dataset)
 
     andi_dataset
-    |> Andi.Repo.preload([:business, :technical, :owner, :organization])
+    |> Andi.Repo.preload([:business, :technical, :owner])
     |> Dataset.changeset_for_draft(changes)
     |> save()
   end
@@ -86,7 +85,7 @@ defmodule Andi.InputSchemas.Datasets do
     changes_as_map = StructTools.to_map(changes)
 
     from_dataset
-    |> Andi.Repo.preload([:business, :technical, :owner, :organization])
+    |> Andi.Repo.preload([:business, :technical, :owner])
     |> Dataset.changeset_for_draft(changes_as_map)
     |> save()
   end
@@ -100,12 +99,7 @@ defmodule Andi.InputSchemas.Datasets do
     update_from_form(dataset_id, form_changes)
   end
 
-  def is_org_changed?(form_changes) do
-    Map.has_key?(form_changes, :organization_id)
-  end
-
   def update_from_form(dataset_id, form_changes) do
-    org_changed = is_org_changed?(form_changes)
     existing_dataset = get(dataset_id)
     changeset = InputConverter.andi_dataset_to_full_ui_changeset(existing_dataset)
 
@@ -128,11 +122,6 @@ defmodule Andi.InputSchemas.Datasets do
       |> Changeset.get_field(:owner_id, nil)
       |> extract_owner_id(form_changes)
 
-    organization_id =
-      changeset
-      |> Changeset.get_field(:organization_id, nil)
-      |> extract_organization_id(form_changes)
-
     dataset_link =
       changeset
       |> Changeset.apply_changes()
@@ -140,60 +129,14 @@ defmodule Andi.InputSchemas.Datasets do
       |> Map.merge(form_changes)
       |> Map.get(:datasetLink)
 
-    changes = %{
-      dataset_id: dataset_id,
-      technical_changes: technical_changes,
-      business_changes: business_changes,
-      owner_id: owner_id,
-      organization_id: organization_id,
-      dataset_link: dataset_link
-    }
+    case owner_id do
+      nil ->
+        existing_dataset |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, datasetLink: dataset_link})
 
-    existing_dataset |> update_dataset(owner_id, org_changed, changes)
-  end
-
-  def update_dataset(existing_dataset, nil, false, changes) do
-    existing_dataset
-    |> update(%{
-      technical: changes.technical_changes,
-      business: changes.business_changes,
-      id: changes.dataset_id,
-      datasetLink: changes.dataset_link
-    })
-  end
-
-  def update_dataset(existing_dataset, owner_id, false, changes) do
-    existing_dataset
-    |> update(%{
-      technical: changes.technical_changes,
-      business: changes.business_changes,
-      id: changes.dataset_id,
-      owner_id: changes.owner_id,
-      datasetLink: changes.dataset_link
-    })
-  end
-
-  def update_dataset(existing_dataset, nil, true, changes) do
-    existing_dataset
-    |> update(%{
-      technical: changes.technical_changes,
-      business: changes.business_changes,
-      id: changes.dataset_id,
-      organization_id: changes.organization_id,
-      datasetLink: changes.dataset_link
-    })
-  end
-
-  def update_dataset(existing_dataset, owner_id, true, changes) do
-    existing_dataset
-    |> update(%{
-      technical: changes.technical_changes,
-      business: changes.business_changes,
-      id: changes.dataset_id,
-      owner_id: changes.owner_id,
-      organization_id: changes.organization_id,
-      datasetLink: changes.dataset_link
-    })
+      owner_id ->
+        existing_dataset
+        |> update(%{technical: technical_changes, business: business_changes, id: dataset_id, owner_id: owner_id, datasetLink: dataset_link})
+    end
   end
 
   def update_ingested_time(dataset_id, ingested_time) do
@@ -292,10 +235,8 @@ defmodule Andi.InputSchemas.Datasets do
   def is_unique?(_id, data_name, org_name) when is_nil(data_name) or is_nil(org_name), do: true
 
   def is_unique?(id, data_name, org_name) do
-    from(dataset in Dataset,
-      join: technical in assoc(dataset, :technical),
-      join: organization in assoc(dataset, :organization),
-      where: technical.dataName == ^data_name and organization.orgName == ^org_name and technical.dataset_id != ^id
+    from(technical in Andi.InputSchemas.Datasets.Technical,
+      where: technical.dataName == ^data_name and technical.orgName == ^org_name and technical.dataset_id != ^id
     )
     |> Repo.all()
     |> Enum.empty?()
@@ -333,9 +274,6 @@ defmodule Andi.InputSchemas.Datasets do
   defp extract_owner_id(_, %{ownerId: ownerId}), do: ownerId
   defp extract_owner_id(_, _), do: nil
 
-  defp extract_organization_id(_, %{organization_id: organization_id}), do: organization_id
-  defp extract_organization_id(_, _), do: nil
-
   def full_validation_changeset_for_publish(schema, changes) do
     extract_steps_changes = get_in(changes, [:technical, :extractSteps])
     extract_steps_valid = extract_steps_valid?(extract_steps_changes)
@@ -366,8 +304,8 @@ defmodule Andi.InputSchemas.Datasets do
     |> put_in([:technical, :sourceUrl], url_placeholder)
   end
 
-  defp source_url_placeholder_from_homepage(homepage) when is_nil(homepage) or homepage == "", do: "N/A"
-  defp source_url_placeholder_from_homepage(homepage), do: homepage
+  defp source_url_placeholder_from_homepage(hompage) when is_nil(hompage) or hompage == "", do: "N/A"
+  defp source_url_placeholder_from_homepage(hompage), do: hompage
 
   defp extract_steps_valid?(extract_steps_changes) do
     Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->

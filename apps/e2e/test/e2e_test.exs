@@ -13,8 +13,8 @@ defmodule E2ETest do
 
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
-    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
+      orgName: "end_to",
       dataName: "end",
       systemName: "end_to__end",
       schema: [
@@ -31,19 +31,19 @@ defmodule E2ETest do
 
   @streaming_overrides %{
     id: "strimmin",
-    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
       dataName: "strimmin",
+      orgName: "usa",
       cadence: "*/10 * * * * *",
       sourceType: "stream",
-      systemName: "end_to__strimmin"
+      systemName: "usa__strimmin"
     }
   }
 
   @geo_overrides %{
     id: "geo_data",
-    organization_id: "451d5608-b4dc-406c-a7ce-8df24768a237",
     technical: %{
+      orgName: "end_to",
       dataName: "land",
       systemName: "end_to__land",
       schema: [%{name: "feature", type: "json"}],
@@ -73,21 +73,6 @@ defmodule E2ETest do
 
     Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
       Plug.Conn.resp(conn, 200, shapefile)
-    end)
-
-    org =
-      TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
-
-    org_resp =
-      HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
-        {"Content-Type", "application/json"}
-      ])
-
-    eventually(fn ->
-      resp = HTTPoison.get!("http://localhost:4000/api/v1/organizations")
-      [new_org] = Jason.decode!(resp.body)
-      assert new_org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
-      assert new_org["orgName"] == "end_to"
     end)
 
     dataset =
@@ -135,7 +120,6 @@ defmodule E2ETest do
       |> TDG.create_dataset()
 
     [
-      org_resp: org_resp,
       dataset: dataset,
       streaming_dataset: streaming_dataset,
       geo_dataset: geo_dataset,
@@ -144,14 +128,25 @@ defmodule E2ETest do
   end
 
   describe "creating an organization" do
-    test "via RESTful POST", %{org_resp: org_resp} do
-      assert org_resp.status_code == 201
+    test "via RESTful POST" do
+      org =
+        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
+
+      resp =
+        HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
+          {"Content-Type", "application/json"}
+        ])
+
+      assert resp.status_code == 201
     end
 
     test "persists the organization for downstream use" do
+      base = Application.get_env(:paddle, Paddle)[:base]
+
       eventually(fn ->
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
+          assert org["dn"] == "cn=end_to,ou=integration,#{base}"
           assert org["id"] == "451d5608-b4dc-406c-a7ce-8df24768a237"
           assert org["orgName"] == "end_to"
         end
@@ -349,15 +344,13 @@ defmodule E2ETest do
     end
 
     test "is available through socket connection", %{streaming_dataset: ds} do
-      eventually(fn ->
-        {:ok, _, _} =
-          socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
-          |> subscribe_and_join(
-            DiscoveryStreamsWeb.StreamingChannel,
-            "streaming:#{ds.technical.systemName}",
-            %{}
-          )
-      end)
+      {:ok, _, _} =
+        socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
+        |> subscribe_and_join(
+          DiscoveryStreamsWeb.StreamingChannel,
+          "streaming:#{ds.technical.systemName}",
+          %{}
+        )
 
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
@@ -434,7 +427,6 @@ defmodule E2ETest do
     test "from andi are executable by reaper", %{bypass: bypass} do
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: @overrides.organization_id,
           technical: %{
             extractSteps: [
               %{
