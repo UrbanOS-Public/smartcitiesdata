@@ -76,7 +76,7 @@ defmodule DiscoveryApi.Mixfile do
       {:ranch, "~> 1.7.1", override: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 4.0.1"},
+      {:smart_city, "~> 4.0"},
       {:smart_city_test, "~> 1.0.0", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},

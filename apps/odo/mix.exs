@@ -40,7 +40,7 @@ defmodule Odo.MixProject do
       {:properties, in_umbrella: true},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14.0"},
-      {:smart_city, "~> 4.0.1"},
+      {:smart_city, "~> 4.0"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},
       {:tasks, in_umbrella: true, only: :dev},
