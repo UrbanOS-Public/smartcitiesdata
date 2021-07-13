@@ -1,6 +1,6 @@
 # Andi
 
-This application is used to administer the creation and ongoing management of datasets and their associated organizations for the Smart Cities data platform. The name `Andi` is an acronym that stands for "Administrative Network Data Interface". 
+This application is used to administer the creation and ongoing management of datasets and their associated organizations for the Smart Cities data platform. The name `Andi` is an acronym that stands for "Administrative Network Data Interface".
 
 Andi is a Phoenix web application defining a RESTful interface to fill the dataset registry. Incoming JSON messages are parsed to create and save dataset definitions into Redis and save the associated organization into both Redis and LDAP.
 
@@ -10,7 +10,7 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 
 #### Prerequisites for auth0 setup: 
 - In `config/integration.exs`, TLS is enabled for Phoenix by default to allow you to work with Auth0, which requires it.
-- You must create self-signed TLS certificates in order for this configuration to take hold. These certs will be regenerated if you run `MIX_ENV=integration mix start` or `mix test.integration`. However, you can generate a key and self-signed certificate that works with the `config/integration.exs` setup by running `mix x509.gen.selfsigned localhost 127.0.0.1.nip.io --force` separately.
+- You must create self-signed TLS certificates in order for this configuration to take hold. These certs will be regenerated if you run `MIX_ENV=integration mix start` or `mix test.integration`. However, you can generate a key and self-signed certificate that works with the `config/integration.exs` setup by running `mix x509.gen.selfsigned localhost 127.0.0.1.xip.io --force` separately.
 - Andi also requires an Auth0 client secret to be set as a system environment variable. You can get this value from auth0.com in the corresponding tenant configuration for the ANDI application. You will need this value to start andi (specified below in the <auth_client_secret> variable)
 - Lastly, you need an authorized account to login when the application starts
 
@@ -19,13 +19,13 @@ Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functi
 - `cd assets` and `npm i` (in this directory)
 - `MIX_ENV=integration mix docker.start` (in this directory)
 - Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start` (in this directory)
-- Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.nip.io:4443/datasets`
+- Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.xip.io:4443/datasets`
 	- port 4443 can be swapped for the port used in the https configuration defined in `integration.exs` under `AndiWeb.Endpoint`
     - `MIX_ENV=integration mix start` will automatically generate the self-signed certificate for HTTPS. Review the output it gives for directions on how to allow the self-signed cert on your dev machine for ONLY localhost
 
 - NOTE:
-  - If this page `https://127.0.0.1.nip.io:4443/datasets` is not loading on the browser after successful start of the server (This may happen in LINUX OS).
-    - Consider adding `127.0.0.1       127.0.0.1.nip.io` at the end of file `/etc/hosts`. Using `sudo vim /etc/hosts`
+  - If this page `https://127.0.0.1.xip.io:4443/datasets` is not loading on the browser after successful start of the server (This may happen in LINUX OS).
+    - Consider adding `127.0.0.1       127.0.0.1.xip.io` at the end of file `/etc/hosts`. Using `sudo vim /etc/hosts`
 
 ###
 

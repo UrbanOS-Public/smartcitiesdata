@@ -120,7 +120,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       )
 
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
-      allow(RecommendationEngine.save(any(), any()), return: :seriously_whatever)
+      allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
@@ -143,22 +143,15 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 #{dataset_delete()}" do
     setup do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-      org_name = "men in black"
-
-      allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
-        return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: org_name}}
-      )
-
-      %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()}), org_name: org_name}
+      %{dataset: TDG.create_dataset(%{id: Faker.UUID.v4()})}
     end
 
-    test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset, org_name: org_name} do
+    test "should delete the dataset and return ok when dataset:delete is called", %{dataset: dataset} do
       expect(RecommendationEngine.delete(dataset.id), return: :ok)
       expect(StatsCalculator.delete_completeness(dataset.id), return: :ok)
       expect(ResponseCache.invalidate(), return: {:ok, true})
       expect(TableInfoCache.invalidate(), return: {:ok, true})
-      expect(SystemNameCache.delete(org_name, dataset.technical.dataName), return: {:ok, true})
+      expect(SystemNameCache.delete(dataset.technical.orgName, dataset.technical.dataName), return: {:ok, true})
       expect(Model.delete(dataset.id), return: :ok)
       expect(DataJsonService.delete_data_json(), return: :ok)
       expect(Elasticsearch.Document.delete(dataset.id), return: :ok)

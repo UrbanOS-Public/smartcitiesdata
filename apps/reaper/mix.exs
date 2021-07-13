@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "1.0.0",
+      version: "0.25.2",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -72,7 +72,7 @@ defmodule Reaper.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
       {:sftp_ex, "~> 0.2"},
-      {:smart_city, "~>4.0"},
+      {:smart_city, "~>3.0"},
       {:saxy, "~> 0.10"},
       {:sweet_xml, "~> 0.6"},
       {:telemetry_event, in_umbrella: true},
@@ -94,7 +94,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 1.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
       {:performance, in_umbrella: true, only: :integration},
       {:unzip, "~> 0.6.0"}

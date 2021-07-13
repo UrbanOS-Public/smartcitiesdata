@@ -70,14 +70,13 @@ defmodule Reaper.FileIngest.Processor do
   end
 
   defp get_filename(%SmartCity.Dataset{
-         technical: %{systemName: system_name, dataName: data_name, sourceFormat: source_format}
+         technical: %{orgName: org_name, dataName: data_name, sourceFormat: source_format}
        }) do
     extension =
       source_format
       |> MIME.extensions()
       |> hd()
 
-    org_name = String.split(system_name, "__") |> Enum.at(0)
     "#{org_name}/#{data_name}.#{extension}"
   end
 end

@@ -6,7 +6,6 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias SmartCity.TestDataGenerator
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Organizations
   alias SmartCity.TestDataGenerator, as: TDG
 
   use Placebo
@@ -14,7 +13,6 @@ defmodule Andi.InputSchemas.InputConverterTest do
   describe "main conversions" do
     setup do
       allow(Datasets.is_unique?(any(), any(), any()), return: true)
-      allow(Organizations.get(any()), return: DatasetHelpers.create_organization())
 
       :ok
     end

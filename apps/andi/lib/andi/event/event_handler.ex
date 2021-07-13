@@ -30,22 +30,16 @@ defmodule Andi.Event.EventHandler do
   @instance_name Andi.instance_name()
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
-    case Organizations.get(data.organization_id) do
-      nil ->
-        Logger.error("Organization #{data.organization_id} does not exist. Discarding update event for dataset #{data.id}.")
-        :discard
+    dataset_update()
+    |> add_event_count(author, data.id)
 
-      _ ->
-        dataset_update()
-        |> add_event_count(author, data.id)
+    Andi.DatasetCache.add_dataset_info(data)
 
-        Andi.DatasetCache.add_dataset_info(data)
+    Task.start(fn -> add_dataset_count() end)
+    Datasets.update_ingested_time(data.id, DateTime.utc_now())
 
-        Task.start(fn -> add_dataset_count() end)
-        Datasets.update_ingested_time(data.id, DateTime.utc_now())
-        Datasets.update(data)
-        DatasetStore.update(data)
-    end
+    Datasets.update(data)
+    DatasetStore.update(data)
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do

@@ -7,9 +7,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   import Checkov
 
-  alias Andi.InputSchemas.Organizations
-  alias Andi.Services.OrgStore
-
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
@@ -29,12 +26,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
-  setup do
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    [org_id: smrt_org.id, org_name: smrt_org.orgName]
-  end
-
   describe "non-curator view" do
     test "organization button is not shown", %{public_conn: conn} do
       {:ok, _view, html} = live(conn, @url_path)
@@ -42,9 +33,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert Enum.empty?(find_elements(html, ".organization-link"))
     end
 
-    test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject, org_id: org_id} do
-      {:ok, _dataset_a} = TDG.create_dataset(%{organization_id: org_id, business: %{orgTitle: "org_a"}}) |> Datasets.update()
-      {:ok, _dataset_b} = TDG.create_dataset(%{organization_id: org_id, business: %{orgTitle: "org_b"}}) |> Datasets.update()
+    test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
       Datasets.create(user)
 
@@ -75,9 +66,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(find_elements(html, ".organization-link"))
     end
 
-    test "all datasets are shown", %{curator_conn: conn, public_subject: subject, org_id: org_id} do
-      {:ok, _dataset_a} = TDG.create_dataset(%{organization_id: org_id, business: %{orgTitle: "org_a"}}) |> Datasets.update()
-      {:ok, _dataset_b} = TDG.create_dataset(%{organization_id: org_id, business: %{orgTitle: "org_b"}}) |> Datasets.update()
+    test "all datasets are shown", %{curator_conn: conn, public_subject: subject} do
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
       {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
       Datasets.create(user)
 
@@ -102,8 +93,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "dataset status" do
-    data_test "is #{inspect(submission_status)} if dataset has not been ingested", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    data_test "is #{inspect(submission_status)} if dataset has not been ingested", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
 
       Datasets.update_submission_status(dataset.id, submission_status)
@@ -126,8 +117,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       ])
     end
 
-    test "defaults submission status to draft", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "defaults submission status to draft", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
 
       assert {:ok, view, html} = live(conn, @url_path)
@@ -138,8 +129,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--draft"))
     end
 
-    test "ingest status overrides submission status", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "ingest status overrides submission status", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
       Datasets.update_submission_status(dataset.id, :rejected)
 
@@ -154,8 +145,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
-    test "shows success when there is no dlq message stored for a dataset", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
@@ -169,8 +160,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
-    test "shows error when there is a dlq message stored for a dataset", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "shows error when there is a dlq message stored for a dataset", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
@@ -195,8 +186,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--error"))
     end
 
-    test "shows success when the latest dlq message is older than seven days", %{conn: conn, org_id: org_id} do
-      dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "shows success when the latest dlq message is older than seven days", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
@@ -391,25 +382,20 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form submit executes search" do
     test "filters on orgTitle", %{conn: conn} do
-      org_a = TDG.create_organization(%{orgTitle: "org_a"})
-      Organizations.update(org_a)
-      org_b = TDG.create_organization(%{orgTitle: "org_b"})
-      Organizations.update(org_b)
-
-      {:ok, dataset_a} = TDG.create_dataset(%{organization_id: org_a.id}) |> Datasets.update()
-      {:ok, dataset_b} = TDG.create_dataset(%{organization_id: org_b.id}) |> Datasets.update()
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
 
       {:ok, view, _html} = live(conn, @url_path)
 
-      html = render_submit(view, :search, %{"search-value" => org_a.orgTitle})
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
-      assert get_text(html, ".datasets-index__table") =~ org_a.orgTitle
-      refute get_text(html, ".datasets-index__table") =~ org_b.orgTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.orgTitle
     end
 
-    test "filters on dataTitle", %{conn: conn, org_id: org_id} do
-      {:ok, dataset_a} = TDG.create_dataset(%{organization_id: org_id, business: %{dataTitle: "data_a"}}) |> Datasets.update()
-      {:ok, dataset_b} = TDG.create_dataset(%{organization_id: org_id, business: %{dataTitle: "data_b"}}) |> Datasets.update()
+    test "filters on dataTitle", %{conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -419,9 +405,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
-    test "shows No Datasets if no results returned", %{conn: conn, org_id: org_id} do
-      {:ok, _dataset_a} = TDG.create_dataset(%{organization_id: org_id, business: %{dataTitle: "data_a"}}) |> Datasets.update()
-      {:ok, _dataset_b} = TDG.create_dataset(%{organization_id: org_id, business: %{dataTitle: "data_b"}}) |> Datasets.update()
+    test "shows No Datasets if no results returned", %{conn: conn} do
+      {:ok, _dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
+      {:ok, _dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()
 
       {:ok, view, _html} = live(conn, @url_path)
 
@@ -430,26 +416,22 @@ defmodule AndiWeb.DatasetLiveViewTest do
       assert get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
 
-    test "Search Submit succeeds even with missing fields", %{conn: conn, org_id: org_id} do
-      org_a = TDG.create_organization(%{orgTitle: "org_a"})
-      Organizations.update(org_a)
-      org_b = TDG.create_organization(%{orgTitle: "org_b"})
-      Organizations.update(org_b)
-
+    test "Search Submit succeeds even with missing fields", %{conn: conn} do
       {:ok, dataset_a} =
-        TDG.create_dataset(%{organization_id: org_a.id})
+        TDG.create_dataset(business: %{orgTitle: "org_a"})
         |> put_in([:business, :dataTitle], nil)
         |> Datasets.update()
 
       {:ok, dataset_b} =
-        TDG.create_dataset(%{organization_id: org_b.id, business: %{dataTitle: "data_b"}})
+        TDG.create_dataset(business: %{dataTitle: "data_b"})
+        |> put_in([:business, :orgTitle], nil)
         |> Datasets.update()
 
       {:ok, view, _html} = live(conn, @url_path)
 
-      html = render_submit(view, :search, %{"search-value" => org_a.orgTitle})
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
-      assert get_text(html, ".datasets-index__table") =~ org_a.orgTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.orgTitle
       refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
   end

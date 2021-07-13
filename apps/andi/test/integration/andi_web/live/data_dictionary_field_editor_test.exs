@@ -10,7 +10,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -26,14 +25,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   @url_path "/submissions/"
 
-  setup do
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    [org_id: smrt_org.id]
-  end
-
-  test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn, org_id: org_id} do
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{name: "one", type: "string"}]}})
+  test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -43,11 +36,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     assert Enum.empty?(find_elements(html, ".data-dictionary-field-editor__format"))
   end
 
-  test "item type selector is shown when field type is a list", %{conn: conn, org_id: org_id} do
+  test "item type selector is shown when field type is a list", %{conn: conn} do
     field_id = UUID.uuid4()
-
-    smrt_dataset =
-      TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "string", type: "list"}]}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", itemType: "string", type: "list"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -56,11 +47,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     refute Enum.empty?(find_elements(html, ".data-dictionary-field-editor__item-type"))
   end
 
-  test "item type selector does not allow list of lists", %{conn: conn, org_id: org_id} do
+  test "item type selector does not allow list of lists", %{conn: conn} do
     field_id = UUID.uuid4()
-
-    smrt_dataset =
-      TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [%{id: field_id, name: "one", itemType: "list", type: "list"}]}})
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", itemType: "list", type: "list"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -70,14 +59,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     assert {"List", "list"} not in get_all_select_options(html, ".data-dictionary-field-editor__item-type")
   end
 
-  data_test "format input is shown when field type is #{field}", %{conn: conn, org_id: org_id} do
+  data_test "format input is shown when field type is #{field}", %{conn: conn} do
     field_id = UUID.uuid4()
-
-    smrt_dataset =
-      TDG.create_dataset(%{
-        organization_id: org_id,
-        technical: %{schema: [%{id: field_id, name: "one", type: field, format: "{ISO:Extended}"}]}
-      })
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{id: field_id, name: "one", type: field, format: "{ISO:Extended}"}]}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -88,8 +72,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     where(field: ["date", "timestamp"])
   end
 
-  data_test "empty values for #{selector_name} are selected by default", %{conn: conn, org_id: org_id} do
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: [], sourceType: "remote"}})
+  data_test "empty values for #{selector_name} are selected by default", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{schema: [], sourceType: "remote"}})
 
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -117,8 +101,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     ])
   end
 
-  test "xml selector is disabled when source type is not xml", %{conn: conn, org_id: org_id} do
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+  test "xml selector is disabled when source type is not xml", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
     {:ok, dataset} = Datasets.update(smrt_dataset)
 
     {:ok, _view, html} = live(conn, @url_path <> dataset.id)
@@ -126,8 +110,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
   end
 
-  test "xml selector is enabled when source type is xml", %{conn: conn, org_id: org_id} do
-    smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/xml"}})
+  test "xml selector is enabled when source type is xml", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/xml"}})
 
     {:ok, dataset} =
       InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -139,12 +123,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   end
 
   describe "validation" do
-    data_test "missing #{field} shows error", %{conn: conn, org_id: org_id} do
+    data_test "missing #{field} shows error", %{conn: conn} do
       schema =
         [%{name: "cam", type: "list", item_type: "string", selector: "cam/cam"}]
         |> remove_field_from_schema(field)
 
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/xml", schema: schema}})
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/xml", schema: schema}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -160,8 +144,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       )
     end
 
-    test "dataset with no schema does not perform field editor validation", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: []}})
+    test "dataset with no schema does not perform field editor validation", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{schema: []}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -172,10 +156,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       assert Enum.empty?(find_elements(html, "#data-dictionary-field-editor > .error-msg"))
     end
 
-    data_test "schema field name #{name} makes dataset validity to be #{valid?}", %{conn: conn, org_id: org_id} do
+    data_test "schema field name #{name} makes dataset validity to be #{valid?}", %{conn: conn} do
       schema = [%{name: name, type: "boolean"}]
 
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{schema: schema}})
+      smrt_dataset = TDG.create_dataset(%{technical: %{schema: schema}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)

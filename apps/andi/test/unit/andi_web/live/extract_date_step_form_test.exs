@@ -2,7 +2,6 @@ defmodule AndiWeb.ExtractDateFormTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
-  alias Andi.InputSchemas.Organizations
 
   import Phoenix.LiveViewTest
   import FlokiHelpers, only: [find_elements: 2, get_text: 2]
@@ -15,7 +14,6 @@ defmodule AndiWeb.ExtractDateFormTest do
     allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
     allow(User.get_all(), return: [@user])
     allow(User.get_by_subject_id(any()), return: @user)
-    allow(Organizations.get(any()), return: DatasetHelpers.create_organization())
     []
   end
 

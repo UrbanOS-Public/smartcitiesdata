@@ -41,7 +41,6 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
 
   defp dataset_model(data_json_dataset, org) do
     %{
-      "organization_id" => org.id,
       "business" => %{
         "categories" => data_json_dataset["theme"],
         "conformsToUri" => "https://project-open-data.cio.gov/v1.1/schema/",
@@ -57,6 +56,7 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
         "language" => data_json_dataset["language"],
         "license" => data_json_dataset["license"],
         "modifiedDate" => modified_date(data_json_dataset["modified"]),
+        "orgTitle" => org.orgTitle,
         "parentDataset" => data_json_dataset["isPartOf"],
         "referenceUrls" => data_json_dataset["references"],
         "rights" => data_json_dataset["rights"],
@@ -65,6 +65,8 @@ defmodule Andi.Harvest.DataJsonDatasetMapper do
       "id" => generate_scos_dataset_id(data_json_dataset["identifier"]),
       "technical" => %{
         "dataName" => data_name(data_json_dataset["title"]),
+        "orgName" => org.orgName,
+        "orgId" => org.id,
         "sourceFormat" => "text/html",
         "private" => access_level(data_json_dataset["accessLevel"]),
         "sourceType" => "remote",

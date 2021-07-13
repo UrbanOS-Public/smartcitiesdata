@@ -157,9 +157,10 @@ defmodule DiscoveryApi.Test.Helper do
     dataset =
       TDG.create_dataset(%{
         id: id,
-        organization_id: organization.id,
         technical: %{
           private: private,
+          orgId: organization.id,
+          orgName: organization.orgName,
           dataName: name,
           systemName: "#{organization.orgName}__#{name}"
         }

@@ -8,7 +8,6 @@ defmodule AndiWeb.MetadataFormTest do
 
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
-  alias Andi.InputSchemas.Organizations
 
   @moduletag shared_data_connection: true
 
@@ -41,9 +40,8 @@ defmodule AndiWeb.MetadataFormTest do
 
   setup %{curator_subject: curator_subject} do
     {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
-    smrt_org = TDG.create_organization(%{})
-    Organizations.update(smrt_org)
-    [curator_user: curator_user, org_id: smrt_org.id, org_name: smrt_org.orgName]
+
+    [curator_user: curator_user]
   end
 
   describe "create new dataset" do
@@ -157,21 +155,21 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      assert {"", ["Please select an organization"]} == get_select_first_option(html, "#form_data_organization_id")
+      assert {"", ["Please select an organization"]} == get_select_first_option(html, "#form_data_orgId")
 
-      form_data = %{"dataName" => "data_title", "organization_id" => org2.id}
+      form_data = %{"dataName" => "data_title", "orgId" => org2.id}
 
-      html = render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "organization_id"]})
+      html = render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgId"]})
 
       assert "very_readable__data_title" == get_value(html, "#form_data_systemName")
-      assert {org2.id, "Very Readable"} == get_select(html, "#form_data_organization_id")
+      assert {org2.id, "Very Readable"} == get_select(html, "#form_data_orgId")
     end
 
-    test "updating data title allows common data name across different orgs", %{conn: conn, org_id: org_id, org_name: org_name} do
-      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camido", systemName: "#{org_name}__camino"}})
+    test "updating data title allows common data name across different orgs", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camido", systemName: "kevino__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "blah", systemName: "#{org_name}__blah"}})
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "carrabino", dataName: "blah", systemName: "carrabino__blah"}})
       {:ok, _} = Datasets.update(new_dataset)
 
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
@@ -187,18 +185,17 @@ defmodule AndiWeb.MetadataFormTest do
       assert Enum.empty?(find_elements(html, "#dataName-error-msg"))
     end
 
-    test "updating data title adds error when data name exists within same org", %{conn: conn, org_id: org_id, org_name: org_name} do
-      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
+    test "updating data title adds error when data name exists within same org", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset =
-        TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "harharhar", systemName: "#{org_name}__harharhar"}})
-
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "harharhar", systemName: "kevino__harharhar"}})
       {:ok, new_andi_dataset} = Datasets.update(new_dataset)
+
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => "camino", "orgName" => org_name, "datasetId" => new_andi_dataset.id, "organization_id" => org_id}
+      form_data = %{"dataTitle" => "camino", "orgName" => new_andi_dataset.technical.orgName, "datasetId" => new_andi_dataset.id}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
@@ -208,11 +205,11 @@ defmodule AndiWeb.MetadataFormTest do
       refute Enum.empty?(find_elements(html, "#dataName-error-msg"))
     end
 
-    test "changing org retriggers data_name validation", %{conn: conn, org_id: org_id, org_name: org_name} do
-      existing_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
+    test "changing org retriggers data_name validation", %{conn: conn} do
+      existing_dataset = TDG.create_dataset(%{technical: %{orgName: "kevino", dataName: "camino", systemName: "kevino__camino"}})
       {:ok, _} = Datasets.update(existing_dataset)
 
-      new_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{dataName: "camino", systemName: "#{org_name}__camino"}})
+      new_dataset = TDG.create_dataset(%{technical: %{orgName: "benjino", dataName: "camino", systemName: "benjino__camino"}})
       {:ok, _} = Datasets.update(new_dataset)
 
       org = TDG.create_organization(%{orgTitle: "kevin org", orgName: "kevino"})
@@ -222,7 +219,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, view, _} = live(conn, @url_path <> new_dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      form_data = %{"dataTitle" => "camino", "orgName" => org_name}
+      form_data = %{"dataTitle" => "camino", "orgName" => new_dataset.technical.orgName}
 
       render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "dataTitle"]})
       render(metadata_view)
@@ -241,8 +238,8 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "enter form data" do
-    test "display Level of Access as public when private is false", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{private: false}})
+    test "display Level of Access as public when private is false", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{private: false}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -250,8 +247,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert {"false", "Public"} = get_select(html, ".metadata-form__level-of-access")
     end
 
-    test "display Level of Access as private when private is true", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{private: true}})
+    test "display Level of Access as private when private is true", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{private: true}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -260,8 +257,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert {"true", "Private"} = get_select(html, ".metadata-form__level-of-access")
     end
 
-    test "the default language is set to english", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "the default language is set to english", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -270,8 +267,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert {"english", "English"} = get_select(html, ".metadata-form__language")
     end
 
-    test "the language is set to spanish", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{language: "spanish"}})
+    test "the language is set to spanish", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{language: "spanish"}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -280,8 +277,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert {"spanish", "Spanish"} = get_select(html, ".metadata-form__language")
     end
 
-    test "the language is changed from english to spanish", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "the language is changed from english to spanish", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -295,8 +292,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert {"spanish", "Spanish"} = get_select(html, ".metadata-form__language")
     end
 
-    data_test "benefit rating is set to '#{label}' (#{inspect(value)})", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{benefitRating: value}})
+    data_test "benefit rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{benefitRating: value}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -312,8 +309,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    data_test "risk rating is set to '#{label}' (#{inspect(value)})", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{riskRating: value}})
+    data_test "risk rating is set to '#{label}' (#{inspect(value)})", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{riskRating: value}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -329,8 +326,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    data_test "errors on invalid email: #{email}", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{contactEmail: email}})
+    data_test "errors on invalid email: #{email}", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{contactEmail: email}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -354,8 +351,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    data_test "does not error on valid email: #{email}", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{contactEmail: email}})
+    data_test "does not error on valid email: #{email}", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{contactEmail: email}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -376,8 +373,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    test "adds commas between keywords", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{keywords: ["one", "two", "three"]}})
+    test "adds commas between keywords", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{keywords: ["one", "two", "three"]}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -387,8 +384,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert subject =~ "one, two, three"
     end
 
-    test "keywords input should show empty string if keywords is nil", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{keywords: nil}})
+    test "keywords input should show empty string if keywords is nil", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{keywords: nil}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -398,8 +395,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert subject == ""
     end
 
-    test "should not add additional commas to keywords", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "should not add additional commas to keywords", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -414,8 +411,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert expected == subject
     end
 
-    test "should trim spaces in keywords", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "should trim spaces in keywords", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -430,8 +427,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert "a, good, keyword, is .... hard, to find" == subject
     end
 
-    test "can handle lists of keywords", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "can handle lists of keywords", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -447,20 +444,19 @@ defmodule AndiWeb.MetadataFormTest do
       assert expected == subject
     end
 
-    test "displays all other fields", %{conn: conn, org_id: org_id, org_name: org_name} do
-      org = TDG.create_organization(%{orgTitle: org_name, orgName: org_name})
+    test "displays all other fields", %{conn: conn} do
+      org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org)
       eventually(fn -> OrgStore.get(org.id) != {:ok, nil} end)
 
       smrt_dataset =
         TDG.create_dataset(%{
-          organization_id: org.id,
           business: %{
             description: "A description with no special characters",
             benefitRating: 1.0,
             riskRating: 0.5
           },
-          technical: %{private: true}
+          technical: %{private: true, orgId: org.id}
         })
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -480,7 +476,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
 
-      assert {org.id, org_name} == get_select(html, ".metadata-form__organization select")
+      assert {org.id, "Awesome Title"} == get_select(html, ".metadata-form__organization select")
 
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
       assert get_value(html, ".metadata-form__homepage input") == dataset.business.homepage
@@ -490,8 +486,8 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "edit form data" do
-    test "accessibility level must be public or private", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{private: true}})
+    test "accessibility level must be public or private", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{private: true}})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -506,8 +502,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_select(html, ".metadata-form__level-of-access") == {"false", "Public"}
     end
 
-    data_test "required #{field} field displays proper error message", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    data_test "required #{field} field displays proper error message", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -530,7 +526,7 @@ defmodule AndiWeb.MetadataFormTest do
         [:issuedDate, %{"issuedDate" => nil}, "Please enter a valid release date."],
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:publishFrequency, %{"publishFrequency" => ""}, "Please enter a valid update frequency."],
-        [:organization_id, %{"organization_id" => ""}, "Please enter a valid organization."],
+        [:orgId, %{"orgId" => ""}, "Please enter a valid organization."],
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
@@ -541,8 +537,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    test "source format before publish", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "source format before publish", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -551,8 +547,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
-    data_test "displays error when #{field} is unset", %{conn: conn, org_id: org_id} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    data_test "displays error when #{field} is unset", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
@@ -573,8 +569,8 @@ defmodule AndiWeb.MetadataFormTest do
       ])
     end
 
-    test "error message is cleared when form is updated", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, business: %{issuedDate: nil}})
+    test "error message is cleared when form is updated", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -596,8 +592,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#issuedDate-error-msg") == ""
     end
 
-    test "displays error when topLevelSelector jpath is invalid", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "displays error when topLevelSelector jpath is invalid", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} =
         InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
@@ -612,16 +608,16 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#topLevelSelector-error-msg") == "Error: Expected an integer at `x]`"
     end
 
-    test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id, technical: %{sourceFormat: "text/csv"}})
+    test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
     end
 
-    test "dataset owner lists all the users in the system by email", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "dataset owner lists all the users in the system by email", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
       {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com"})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -643,8 +639,8 @@ defmodule AndiWeb.MetadataFormTest do
       refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
-    test "organization title", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    test "organization title", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
       eventually(fn -> DatasetStore.get(smrt_dataset.id) != {:ok, nil} end)
 
@@ -659,8 +655,8 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "hidden so form_data has all the validated fields in it" do
-    data_test "#{name} is hidden", %{conn: conn, org_id: org_id, org_name: org_name} do
-      smrt_dataset = TDG.create_dataset(%{organization_id: org_id})
+    data_test "#{name} is hidden", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
       {:ok, dataset} = Datasets.update(smrt_dataset)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
