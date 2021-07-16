@@ -93,21 +93,11 @@ defmodule Andi.Application do
       Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")
       []
     else
-      case Andi.SecretService.retrieve_auth0_credentials() do
-        {:ok, credentials} ->
-          Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-            domain: System.get_env("AUTH0_DOMAIN"),
-            client_id: System.get_env("AUTH0_CLIENT_ID"),
-            client_secret: Map.get(credentials, "auth0_client_secret")
-          )
-
-        {:error, error} ->
-          raise RuntimeError, message: "Could not start application, encountered error while retrieving Auth0 keys: #{error}"
-
-        nil ->
-          raise RuntimeError,
-            message: "Could not start application, failed to retrieve Auth0 keys from Vault."
-      end
+      Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+        domain: System.get_env("AUTH0_DOMAIN"),
+        client_id: System.get_env("AUTH0_CLIENT_ID"),
+        client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+      )
     end
   end
 
