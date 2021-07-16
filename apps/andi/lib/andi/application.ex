@@ -86,19 +86,22 @@ defmodule Andi.Application do
     :ok
   end
 
-  def set_auth0_credentials() do
-    endpoint = secrets_endpoint()
-
-    if is_nil(endpoint) || String.length(endpoint) == 0 do
-      Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")
-      []
-    else
-      Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-        domain: System.get_env("AUTH0_DOMAIN"),
-        client_id: System.get_env("AUTH0_CLIENT_ID"),
-        client_secret: System.get_env("AUTH0_CLIENT_SECRET")
-      )
+  def get_auth0_variable(var_name) do
+    var = System.get_env(var_name)
+    if is_nil(var) || String.length(var) == 0 do
+      Logger.warn("Required Auth0 variable #{var_name} is nil. ANDI will not be able to authenticate users.")
     end
+    var
+  end
+
+  def set_auth0_credentials() do
+
+    Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+      domain: get_auth0_variable("AUTH0_DOMAIN"),
+      client_id: get_auth0_variable("AUTH0_CLIENT_ID"),
+      client_secret: get_auth0_variable("AUTH0_CLIENT_SECRET")
+    )
+
   end
 
   defp set_aws_keys() do

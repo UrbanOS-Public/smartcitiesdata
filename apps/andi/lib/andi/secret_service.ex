@@ -11,8 +11,6 @@ defmodule Andi.SecretService do
   getter(:secrets_endpoint, generic: true)
   getter(:vault_role, generic: true)
 
-  def retrieve_auth0_credentials(), do: retrieve("auth0/andi")
-
   def retrieve(path) do
     vault_path = "#{@root_path}#{path}"
 
