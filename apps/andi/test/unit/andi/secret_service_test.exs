@@ -17,17 +17,6 @@ defmodule Andi.SecretServiceTest do
       }
     end
 
-    test "retrieves credentials for auth0", values do
-      allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:ok, values.jwt}
-      allow Vault.new(any()), return: values.vault
-      allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}), return: {:ok, values.vault}
-
-      allow Vault.read(values.vault, "secrets/smart_city/auth0/andi"),
-        return: {:ok, values.credentials}
-
-      assert SecretService.retrieve_auth0_credentials() == {:ok, values.credentials}
-    end
-
     test "writes secrets", values do
       test_secret = %{test: "secret"}
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:ok, values.jwt}
@@ -44,7 +33,7 @@ defmodule Andi.SecretServiceTest do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
-               assert SecretService.retrieve_auth0_credentials() ==
+               assert SecretService.retrieve_aws_keys() ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
     end
@@ -60,7 +49,7 @@ defmodule Andi.SecretServiceTest do
         return: {:ok, values.credentials}
 
       assert capture_log(fn ->
-               assert SecretService.retrieve_auth0_credentials() ==
+               assert SecretService.retrieve_aws_keys() ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
     end
