@@ -105,9 +105,9 @@ defmodule Andi.Application do
 
   def set_auth0_credentials() do
     Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-      domain: get_env_variable("AUTH0_DOMAIN", true),
-      client_id: get_env_variable("AUTH0_CLIENT_ID", true),
-      client_secret: get_env_variable("AUTH0_CLIENT_SECRET", true)
+      domain: get_env_variable("AUTH0_DOMAIN", false),
+      client_id: get_env_variable("AUTH0_CLIENT_ID", false),
+      client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
     )
   end
 
