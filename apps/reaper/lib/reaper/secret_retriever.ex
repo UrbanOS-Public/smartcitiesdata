@@ -14,10 +14,6 @@ defmodule Reaper.SecretRetriever do
     retrieve("ingestion/#{dataset_id}")
   end
 
-  def retrieve_aws_keys() do
-    retrieve("aws_keys/reaper")
-  end
-
   defp retrieve(path) do
     vault_path = "#{@root_path}#{path}"
 

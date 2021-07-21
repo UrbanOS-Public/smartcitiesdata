@@ -1,5 +1,7 @@
 use Mix.Config
 aws_region = "local"
+System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
+System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 redix_args = [host: host]
