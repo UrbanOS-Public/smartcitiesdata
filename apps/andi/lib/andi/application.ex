@@ -95,11 +95,13 @@ defmodule Andi.Application do
 
     if is_invalid_env_variable(var) do
       Logger.warn("Required environment variable #{var_name} is nil.")
+
       if throw_if_absent do
         raise RuntimeError,
-            message: "Could not start application, required #{var_name} is nil."
+          message: "Could not start application, required #{var_name} is nil."
       end
     end
+
     var
   end
 
@@ -115,7 +117,6 @@ defmodule Andi.Application do
     Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID", true))
     Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET", true))
   end
-
 
   defp guardian_db_sweeper do
     Application.get_env(:andi, Guardian.DB)

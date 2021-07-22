@@ -38,9 +38,11 @@ defmodule Odo.Application do
 
     if is_nil(var) || String.length(var) == 0 do
       Logger.warn("Required environment variable #{var_name} is nil.")
+
       raise RuntimeError,
-          message: "Could not start application, required #{var_name} is not set."
+        message: "Could not start application, required #{var_name} is not set."
     end
+
     var
   end
 

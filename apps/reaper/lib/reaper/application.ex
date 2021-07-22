@@ -62,20 +62,21 @@ defmodule Reaper.Application do
 
     if is_nil(var) || String.length(var) == 0 do
       Logger.warn("Required environment variable #{var_name} is nil.")
+
       raise RuntimeError,
-          message: "Could not start application, required #{var_name} is not set."
+        message: "Could not start application, required #{var_name} is not set."
     end
+
     var
   end
 
   defp fetch_and_set_hosted_file_credentials do
-      
-  Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID"))
-  Application.put_env(
-    :ex_aws,
-    :secret_access_key,
-    get_env_variable("AWS_ACCESS_KEY_SECRET")
-  )
+    Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID"))
 
+    Application.put_env(
+      :ex_aws,
+      :secret_access_key,
+      get_env_variable("AWS_ACCESS_KEY_SECRET")
+    )
   end
 end

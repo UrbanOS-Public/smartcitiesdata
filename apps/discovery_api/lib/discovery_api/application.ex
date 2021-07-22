@@ -54,8 +54,9 @@ defmodule DiscoveryApi.Application do
 
     if is_nil(var) || String.length(var) == 0 do
       raise RuntimeError,
-          message: "Could not start application, required #{var_name} is not set."
+        message: "Could not start application, required #{var_name} is not set."
     end
+
     var
   end
 
