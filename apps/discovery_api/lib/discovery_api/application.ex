@@ -49,12 +49,20 @@ defmodule DiscoveryApi.Application do
     end
   end
 
-  defp get_s3_credentials do
-    secrets_endpoint()
-    |> case do
-      nil -> nil
-      _ -> DiscoveryApi.S3.CredentialRetriever.retrieve()
+  def get_env_variable(var_name) do
+    var = System.get_env(var_name)
+
+    if is_nil(var) || String.length(var) == 0 do
+      raise RuntimeError,
+        message: "Could not start application, required #{var_name} is not set."
     end
+
+    var
+  end
+
+  defp get_s3_credentials do
+    Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID"))
+    Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET"))
   end
 
   defp ecto_repo do

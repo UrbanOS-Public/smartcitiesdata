@@ -1,5 +1,8 @@
 use Mix.Config
 
+System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
+System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+
 config :logger,
   level: :warn
 

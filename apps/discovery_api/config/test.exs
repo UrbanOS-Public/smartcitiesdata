@@ -1,5 +1,7 @@
 use Mix.Config
 
+System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
+System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
 config :prestige, :session_opts, url: "http://localhost:8080"
 
 config :discovery_api, DiscoveryApiWeb.Endpoint,

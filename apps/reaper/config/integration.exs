@@ -1,6 +1,8 @@
 use Mix.Config
 import_config "../test/integration/divo_sftp.ex"
 import_config "../test/integration/divo_minio.ex"
+System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
+System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
 
 host =
   case System.get_env("HOST_IP") do

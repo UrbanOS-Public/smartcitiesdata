@@ -86,11 +86,20 @@ defmodule Andi.Application do
     :ok
   end
 
-  def get_auth0_variable(var_name) do
+  def is_invalid_env_variable(var) do
+    is_nil(var) || String.length(var) == 0
+  end
+
+  def get_env_variable(var_name, throw_if_absent) do
     var = System.get_env(var_name)
 
-    if is_nil(var) || String.length(var) == 0 do
-      Logger.warn("Required Auth0 variable #{var_name} is nil. ANDI will not be able to authenticate users.")
+    if is_invalid_env_variable(var) do
+      Logger.warn("Required environment variable #{var_name} is nil.")
+
+      if throw_if_absent do
+        raise RuntimeError,
+          message: "Could not start application, required #{var_name} is nil."
+      end
     end
 
     var
@@ -98,38 +107,15 @@ defmodule Andi.Application do
 
   def set_auth0_credentials() do
     Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-      domain: get_auth0_variable("AUTH0_DOMAIN"),
-      client_id: get_auth0_variable("AUTH0_CLIENT_ID"),
-      client_secret: get_auth0_variable("AUTH0_CLIENT_SECRET")
+      domain: get_env_variable("AUTH0_DOMAIN", false),
+      client_id: get_env_variable("AUTH0_CLIENT_ID", false),
+      client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
     )
   end
 
-  defp set_aws_keys() do
-    endpoint = secrets_endpoint()
-
-    if is_nil(endpoint) || String.length(endpoint) == 0 do
-      Logger.warn("No secrets endpoint. ANDI will not be able to authenticate users")
-      []
-    else
-      case Andi.SecretService.retrieve_aws_keys() do
-        nil ->
-          raise RuntimeError,
-            message: "Could not start application, failed to retrieve AWS keys from Vault."
-
-        {:error, error} ->
-          raise RuntimeError,
-            message: "Could not start application, encountered error while retrieving AWS keys: #{error}"
-
-        {:ok, creds} ->
-          Application.put_env(:ex_aws, :access_key_id, Map.get(creds, "aws_access_key_id"))
-
-          Application.put_env(
-            :ex_aws,
-            :secret_access_key,
-            Map.get(creds, "aws_secret_access_key")
-          )
-      end
-    end
+  def set_aws_keys() do
+    Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID", true))
+    Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET", true))
   end
 
   defp guardian_db_sweeper do
