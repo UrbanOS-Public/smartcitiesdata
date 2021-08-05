@@ -12,10 +12,11 @@ defmodule DiscoveryApi.Search.Elasticsearch.DatasetIndex do
 
   def create_if_missing() do
     case Elastix.Index.exists?(url(), dataset_index_name()) do
-      {:ok, true} -> 
+      {:ok, true} ->
         Logger.warn("Dataset index already exists. Will not attempt to recreate.")
         {:ok, "Dataset Index not created."}
-      {:ok, false} -> 
+
+      {:ok, false} ->
         Logger.info("Creating new dataset index.")
         %{name: name, options: options} = dataset_index()
         create(name, options)
