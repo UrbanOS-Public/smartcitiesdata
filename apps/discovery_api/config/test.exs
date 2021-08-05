@@ -3,6 +3,7 @@ use Mix.Config
 System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
 System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
 config :prestige, :session_opts, url: "http://localhost:8080"
+host = "localhost"
 
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: 4001],
@@ -45,3 +46,64 @@ config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
 
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
 config :discovery_api, Guardian.DB, repo: DiscoveryApi.Repo
+
+config :discovery_api, :elasticsearch,
+  url: "http://#{host}:9200",
+  indices: %{
+    datasets: %{
+      name: "datasets",
+      options: %{
+        settings: %{
+          number_of_shards: 1
+        },
+        mappings: %{
+          properties: %{
+            title: %{
+              type: "text",
+              index: true
+            },
+            titleKeyword: %{
+              type: "keyword",
+              index: true
+            },
+            modifiedDate: %{
+              type: "text",
+              index: true
+            },
+            lastUpdatedDate: %{
+              type: "text",
+              index: true
+            },
+            sortDate: %{
+              type: "date",
+              index: true
+            },
+            keywords: %{
+              type: "text",
+              index: true
+            },
+            organizationDetails: %{
+              properties: %{
+                id: %{
+                  type: "keyword",
+                  index: true
+                }
+              }
+            },
+            facets: %{
+              properties: %{
+                orgTitle: %{
+                  type: "keyword",
+                  index: true
+                },
+                keywords: %{
+                  type: "keyword",
+                  index: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
