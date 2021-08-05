@@ -31,6 +31,22 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
   end
 
+  describe "create_if_missing/0" do
+    test "it creates the datasets index if there is no index", %{es_indices: %{datasets: index}} do
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:ok, created} = Elasticsearch.DatasetIndex.create_if_missing()
+
+      index_name_as_atom = String.to_atom(index.name)
+      assert created[index_name_as_atom][:mappings] != %{}
+    end
+
+    test "it does not create a dataset index if one already exists", %{es_indices: %{datasets: index}} do
+      assert {:ok, _} = Elasticsearch.DatasetIndex.delete()
+      assert {:ok, _} = Elasticsearch.DatasetIndex.create()
+      assert {:ok, "Dataset Index not created."} = Elasticsearch.DatasetIndex.create_if_missing()
+    end
+  end
+
   describe "delete/0" do
     test "it deletes the datasets index" do
       assert {:ok, _} = Elasticsearch.DatasetIndex.delete()

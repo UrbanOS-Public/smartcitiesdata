@@ -33,6 +33,7 @@ defmodule DiscoveryApi.Application do
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
+    DiscoveryApi.Search.Elasticsearch.DatasetIndex.create_if_missing()
     opts = [strategy: :one_for_one, name: DiscoveryApi.Supervisor]
     Supervisor.start_link(children, opts)
   end
