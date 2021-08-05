@@ -20,6 +20,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.DatasetIndex do
         Logger.info("Creating new dataset index.")
         %{name: name, options: options} = dataset_index()
         create(name, options)
+
       {:error, error} ->
         Logger.error("An unexpected error occured. Dataset index not created.")
     end
