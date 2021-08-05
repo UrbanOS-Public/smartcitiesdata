@@ -1,6 +1,9 @@
 use Mix.Config
 import_config "../test/integration/divo_minio.ex"
 
+System.put_env("AUTH0_DOMAIN", "smartcolumbusos-demo.auth0.com")
+System.put_env("AUTH0_CLIENT_ID", "KrA99qgUDwRWvbI07YOknIZSS1jzdXUr")
+
 host =
   case System.get_env("HOST_IP") do
     nil -> "localhost"
