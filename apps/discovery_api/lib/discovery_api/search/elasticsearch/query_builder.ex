@@ -4,7 +4,8 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
   """
   require Logger
 
-  @elasticsearch_max_buckets 2_147_483_647
+  # At maxiumum possible buckets (2_147_483_647) this can cause memory issues in ES
+  @elasticsearch_max_buckets 4_000_000
 
   def build(search_opts \\ []) do
     query_json = %{
