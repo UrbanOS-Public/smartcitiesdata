@@ -27,48 +27,12 @@ defmodule RaptorWeb do
     end
   end
 
-  def view do
-    quote do
-      use Phoenix.View,
-        root: "lib/raptor_web/templates",
-        namespace: RaptorWeb
-
-      # Import convenience functions from controllers
-      import Phoenix.Controller,
-        only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
-
-      # Include shared imports and aliases for views
-      unquote(view_helpers())
-    end
-  end
-
   def router do
     quote do
       use Phoenix.Router
 
       import Plug.Conn
       import Phoenix.Controller
-    end
-  end
-
-  def channel do
-    quote do
-      use Phoenix.Channel
-      import RaptorWeb.Gettext
-    end
-  end
-
-  defp view_helpers do
-    quote do
-      # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
-
-      # Import basic rendering functionality (render, render_layout, etc)
-      import Phoenix.View
-
-      import RaptorWeb.ErrorHelpers
-      import RaptorWeb.Gettext
-      alias RaptorWeb.Router.Helpers, as: Routes
     end
   end
 

@@ -10,20 +10,7 @@ defmodule RaptorWeb.Endpoint do
     signing_salt: "AiPy21FY"
   ]
 
-  socket "/socket", RaptorWeb.UserSocket,
-    websocket: true,
-    longpoll: false
-
   plug(PlugHeartbeat, path: "/healthcheck")
-
-  plug(Raptor.Plugs.SecureHeaders)
-
-  plug(Corsica,
-    origins: "*",
-    allow_credentials: true,
-    allow_headers: ["authorization", "content-type"],
-    expose_headers: ["token"]
-  )
 
   # Serve at "/" the static files from "priv/static" directory.
   #
