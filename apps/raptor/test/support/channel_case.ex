@@ -27,14 +27,4 @@ defmodule RaptorWeb.ChannelCase do
       @endpoint RaptorWeb.Endpoint
     end
   end
-
-  setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Raptor.Repo)
-
-    unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Raptor.Repo, {:shared, self()})
-    end
-
-    :ok
-  end
 end

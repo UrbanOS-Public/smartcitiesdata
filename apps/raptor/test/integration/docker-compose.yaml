@@ -9,16 +9,6 @@ services:
       interval: 5s
       timeout: 20s
       retries: 3
-  postgres:
-    image: smartcitiesdata/postgres-testo:0.9.12
-    ports:
-      - "5455:5432"
-  ecto-postgres:
-    image: postgres:9.6.16
-    ports:
-      - "5456:5432"
-    volumes:
-      - "./support/init_postgres.sql:/docker-entrypoint-initdb.d/init_postgres.sql"
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper

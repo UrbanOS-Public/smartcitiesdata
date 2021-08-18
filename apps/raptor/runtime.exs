@@ -33,23 +33,6 @@ config :raptor, RaptorWeb.Endpoint,
 
 config :raptor,
 
-config :raptor, Raptor.Repo,
-  database: System.get_env("POSTGRES_DBNAME"),
-  username: System.get_env("POSTGRES_USER"),
-  password: System.get_env("POSTGRES_PASSWORD"),
-  hostname: System.get_env("POSTGRES_HOST"),
-  port: System.get_env("POSTGRES_PORT"),
-  ssl: true,
-  ssl_opts: [
-    verify: :verify_peer,
-    versions: [:"tlsv1.2"],
-    cacertfile: System.get_env("CA_CERTFILE_PATH"),
-    server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
-    verify_fun:
-    {&:ssl_verify_hostname.verify_fun/3,
-     [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
-  ]
-
 required_envars = ["REDIS_HOST", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
 
 Enum.each(required_envars, fn var ->

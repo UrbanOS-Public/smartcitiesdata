@@ -25,7 +25,7 @@ defmodule Raptor.MixProject do
   def application do
     [
       mod: {Raptor.Application, []},
-      extra_applications: [:logger, :runtime_tools, :corsica, :prestige, :ecto]
+      extra_applications: [:logger, :runtime_tools, :corsica, :prestige]
     ]
   end
 
@@ -41,9 +41,7 @@ defmodule Raptor.MixProject do
       {:atomic_map, "~> 0.9"},
       {:assertions, "~> 0.14.1", only: [:test, :integration], runtime: false},
       {:auth, in_umbrella: true},
-      {:ex_aws, "~> 2.1"},
       {:ibrowse, "~> 4.4"},
-      {:libvault, "~> 0.2"},
       {:sweet_xml, "~> 0.6"},
       {:brook, "~> 0.4"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
@@ -51,19 +49,12 @@ defmodule Raptor.MixProject do
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 2.7"},
       {:cowlib, "~> 2.8", override: true},
-      {:csv, "~> 2.3"},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 1.0", only: [:test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
-      {:ex_json_schema, "~> 0.7", only: [:test, :integration]},
-      {:ecto_sql, "~> 3.0"},
-      {:elastix, "~> 0.8.0"},
-      {:guardian, "~> 2.0"},
-      {:guardian_db, "~> 2.0.3"},
       {:gettext, "~> 0.17"},
       {:hackney, "~> 1.17"},
       {:httpoison, "~> 1.5"},
-      {:faker, "~> 0.13"},
       {:jason, "~> 1.2"},
       {:mime, "~> 1.3", override: true},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
@@ -74,7 +65,6 @@ defmodule Raptor.MixProject do
       {:nanoid, "~> 2.0"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},
-      {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},
       {:quantum, "~>2.4"},
@@ -103,7 +93,7 @@ defmodule Raptor.MixProject do
 
   defp aliases() do
     [
-      start: ["ecto.create --quiet", "ecto.migrate", "phx.server"]
+      start: ["phx.server"]
     ]
   end
 end

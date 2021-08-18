@@ -7,16 +7,12 @@
 # General application configuration
 use Mix.Config
 
-config :raptor,
-  ecto_repos: [Raptor.Repo]
 
 # Configures the endpoint
 config :raptor, RaptorWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "EkTifp9BP1V1Mr1QPj9WU05X709LxaHj+2LbqDp6pHjz4XlKPVe/bh9aFq0dxtnx",
-  render_errors: [view: RaptorWeb.ErrorView, accepts: ~w(html json), layout: false],
-  pubsub_server: Raptor.PubSub,
-  live_view: [signing_salt: "XwIvCNDQ"]
+  pubsub_server: Raptor.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,

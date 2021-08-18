@@ -12,8 +12,6 @@ defmodule Raptor.Application do
 
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
-      Raptor.Repo,
       # Start the Telemetry supervisor
       RaptorWeb.Telemetry,
       {Brook, brook()},

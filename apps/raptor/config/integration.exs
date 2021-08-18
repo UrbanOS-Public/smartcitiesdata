@@ -27,23 +27,12 @@ config :ex_json_schema,
 
 config :prestige, :session_opts, url: "http://#{host}:8080"
 
-config :raptor, ecto_repos: [Raptor.Repo]
-
-config :raptor, Raptor.Repo,
-  database: "raptor_test",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  port: "5456"
 
 config :raptor, Raptor.Auth.TokenHandler,
   issuer: "https://smartcolumbusos-demo.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000
-
-config :raptor, Guardian.DB, repo: Raptor.Repo
 
 config :raptor, :brook,
   instance: :raptor,
