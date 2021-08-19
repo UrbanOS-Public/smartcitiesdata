@@ -33,6 +33,7 @@ defmodule Raptor.MixProject do
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 2.0"},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},
       {:properties, in_umbrella: true},
       {:redix, "~> 0.10"},

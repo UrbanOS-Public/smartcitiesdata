@@ -19,7 +19,11 @@ defmodule Raptor.Event.EventHandler do
 
   @instance_name Raptor.instance_name()
 
-  def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
+  def handle_event(%Brook.Event{
+        type: organization_update(),
+        data: %Organization{} = data,
+        author: author
+      }) do
     IO.inspect(data, label: "I received this event")
     :discard
   end
@@ -31,8 +35,6 @@ defmodule Raptor.Event.EventHandler do
           author: author
         } = event
       ) do
-    IO.inspect(event, label: "I received this event")
-
     :discard
   end
 
@@ -43,8 +45,6 @@ defmodule Raptor.Event.EventHandler do
           author: author
         } = event
       ) do
-    IO.inspect(event, "I received this event")
-
     :discard
   end
 end

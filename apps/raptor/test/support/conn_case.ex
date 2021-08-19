@@ -30,5 +30,4 @@ defmodule RaptorWeb.ConnCase do
       @endpoint RaptorWeb.Endpoint
     end
   end
-
 end

@@ -7,3 +7,6 @@ To start Raptor locally:
   * Run `MIX_ENV=integration iex -S mix start`
 
 Now you can visit [`localhost:4000`](http://localhost:4000/healthcheck) from your browser.
+
+To run unit tests: `mix test`
+To run integration tests: `mix test.integration`

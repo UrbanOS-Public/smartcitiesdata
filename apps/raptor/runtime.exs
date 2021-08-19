@@ -24,10 +24,11 @@ config :raptor, RaptorWeb.Endpoint,
     host: System.get_env("HOST"),
     port: 443
   ],
-  http: [protocol_options: [
-    # These values may be superseded by network level timeouts such as a load balancer.
-    inactivity_timeout: 4_000_000,
-    idle_timeout: 4_000_000
+  http: [
+    protocol_options: [
+      # These values may be superseded by network level timeouts such as a load balancer.
+      inactivity_timeout: 4_000_000,
+      idle_timeout: 4_000_000
     ]
   ]
 

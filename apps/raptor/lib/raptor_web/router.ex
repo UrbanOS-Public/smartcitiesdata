@@ -15,6 +15,5 @@ defmodule RaptorWeb.Router do
 
   scope "/", RaptorWeb do
     pipe_through :browser
-
   end
 end
