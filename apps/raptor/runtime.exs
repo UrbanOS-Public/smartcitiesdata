@@ -31,9 +31,7 @@ config :raptor, RaptorWeb.Endpoint,
     ]
   ]
 
-config :raptor,
-
-required_envars = ["REDIS_HOST", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
+required_envars = ["REDIS_HOST"]
 
 Enum.each(required_envars, fn var ->
   if is_nil(System.get_env(var)) do

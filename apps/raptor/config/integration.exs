@@ -11,8 +11,7 @@ config :raptor, RaptorWeb.Endpoint,
 config :raptor,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
   divo: "test/integration/docker-compose.yaml",
-  divo_wait: [dwell: 2000, max_tries: 35],
-  hsts_enabled: false
+  divo_wait: [dwell: 2000, max_tries: 35]
 
 config :redix,
   args: redix_args
@@ -20,19 +19,6 @@ config :redix,
 config :phoenix,
   serve_endpoints: true,
   persistent: true
-
-config :ex_json_schema,
-       :remote_schema_resolver,
-       fn url -> URLResolver.resolve_url(url) end
-
-config :prestige, :session_opts, url: "http://#{host}:8080"
-
-
-config :raptor, Raptor.Auth.TokenHandler,
-  issuer: "https://smartcolumbusos-demo.auth0.com/",
-  allowed_algos: ["RS256"],
-  verify_issuer: false,
-  allowed_drift: 3_000_000_000_000
 
 config :raptor, :brook,
   instance: :raptor,
@@ -52,6 +38,3 @@ config :raptor, :brook,
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "raptor:view"]
   ]
-
-config :raptor,
-  user_visualization_limit: 4
