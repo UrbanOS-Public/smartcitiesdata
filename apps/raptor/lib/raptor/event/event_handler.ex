@@ -7,12 +7,7 @@ defmodule Raptor.Event.EventHandler do
     only: [
       organization_update: 0,
       user_organization_associate: 0,
-      user_organization_disassociate: 0,
-      dataset_update: 0,
-      data_write_complete: 0,
-      dataset_delete: 0,
-      dataset_query: 0,
-      user_login: 0
+      user_organization_disassociate: 0
     ]
 
   alias SmartCity.{UserOrganizationAssociate, UserOrganizationDisassociate, Organization}

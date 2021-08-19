@@ -4,20 +4,13 @@ defmodule Raptor.Event.EventHandlerTest do
 
   import SmartCity.Event,
     only: [
-      dataset_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
-      user_organization_disassociate: 0,
-      dataset_delete: 0,
-      dataset_query: 0
+      user_organization_disassociate: 0
     ]
-
-  import ExUnit.CaptureLog
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Raptor.Event.EventHandler
-
-  @instance_name Raptor.instance_name()
 
   describe "handle_event/1 organization_update" do
     test "should return :discard when an event is received" do
