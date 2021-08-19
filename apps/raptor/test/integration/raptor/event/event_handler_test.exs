@@ -1,11 +1,6 @@
 defmodule Raptor.Event.EventHandlerTest do
   use ExUnit.Case
 
-  import SmartCity.TestHelper
-
-  import SmartCity.Event,
-    only: [dataset_update: 0, user_organization_disassociate: 0, user_login: 0]
-
   alias SmartCity.TestDataGenerator, as: TDG
   alias Raptor.Test.Helper
 
