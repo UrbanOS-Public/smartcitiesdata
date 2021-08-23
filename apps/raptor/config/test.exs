@@ -23,18 +23,11 @@ config :phoenix,
 config :raptor, :brook,
   instance: :raptor,
   driver: [
-    module: Brook.Driver.Kafka,
-    init_arg: [
-      endpoints: endpoints,
-      topic: "event-stream",
-      group: "raptor-event-stream",
-      config: [
-        begin_offset: :earliest
-      ]
-    ]
+    module: Brook.Driver.Test,
+    init_arg: []
   ],
   handlers: [Raptor.Event.EventHandler],
   storage: [
-    module: Brook.Storage.Redis,
-    init_arg: [redix_args: redix_args, namespace: "raptor:view"]
+    module: Brook.Storage.Ets,
+    init_arg: []
   ]
