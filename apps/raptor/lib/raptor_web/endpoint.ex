@@ -28,6 +28,7 @@ defmodule RaptorWeb.Endpoint do
     plug Phoenix.CodeReloader
   end
 
+  # Generate unique request id for each request
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
