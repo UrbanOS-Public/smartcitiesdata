@@ -59,6 +59,12 @@ release :odo do
   set overlays: [{:copy, "apps/odo/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :raptor do
+  set version: current_version(:raptor)
+  set applications: [:runtime_tools, :raptor]
+  set overlays: [{:copy, "apps/raptor/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :reaper do
   set version: current_version(:reaper)
   set applications: [:runtime_tools, :reaper]
