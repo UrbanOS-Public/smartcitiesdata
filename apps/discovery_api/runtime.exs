@@ -129,8 +129,14 @@ config :discovery_api, :brook,
     ]
   ]
 
+elasticsearch_protocol =
+  case System.get_env("ELASTICSEARCH_TLS_ENABLED") do
+    "true" -> "https"
+    _ -> "http"
+  end
+
 config :discovery_api, :elasticsearch,
-  url: "https://" <> System.get_env("ELASTICSEARCH_HOST"),
+  url: "#{elasticsearch_protocol}://#{System.get_env("ELASTICSEARCH_HOST")}",
   indices: %{
     datasets: %{
       name: "datasets",
