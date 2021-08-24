@@ -9,6 +9,8 @@ get_redix_args = fn host, password ->
   end)
 end
 
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
 endpoint =
@@ -60,6 +62,8 @@ config :raptor, :brook,
       redix_args: redix_args,
       namespace: "raptor:view",
       event_limits: %{
+        "dataset:update" => 100,
+        "organization:update" => 100,
         "user:organization:associate" => 100,
         "user:organization:disassociate" => 100
       }
