@@ -24,6 +24,7 @@ defmodule Testing.MixProject do
   defp deps do
     [
       {:cowlib, "~> 2.8", override: true},
+      {:glock, "~> 0.1.0"},
       {:protocol_source, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
       {:protocol_decoder, in_umbrella: true},
