@@ -5,6 +5,7 @@ defmodule Raptor.Application do
 
   use Application
   use Properties, otp_app: :raptor
+  require Logger
 
   @instance_name Raptor.instance_name()
 
@@ -22,11 +23,13 @@ defmodule Raptor.Application do
       # Start a worker by calling: Raptor.Worker.start_link(arg)
       # {Raptor.Worker, arg}
     ]
+    set_auth0_credentials()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Raptor.Supervisor]
     Supervisor.start_link(children, opts)
+    
   end
 
   # Tell Phoenix to update the endpoint configuration
@@ -35,4 +38,33 @@ defmodule Raptor.Application do
     RaptorWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  def is_invalid_env_variable(var) do
+    is_nil(var) || String.length(var) == 0
+  end
+
+
+  def get_env_variable(var_name, throw_if_absent) do
+    var = System.get_env(var_name)
+
+    if is_invalid_env_variable(var) do
+      Logger.warn("Required environment variable #{var_name} is nil.")
+
+      if throw_if_absent do
+        raise RuntimeError,
+          message: "Could not start application, required #{var_name} is nil."
+      end
+    end
+
+    var
+  end
+
+  def set_auth0_credentials() do
+    Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+      domain: get_env_variable("AUTH0_DOMAIN", false),
+      client_id: get_env_variable("AUTH0_CLIENT_ID", false),
+      client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
+    )
+  end
+
 end

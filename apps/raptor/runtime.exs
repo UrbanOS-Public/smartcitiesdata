@@ -42,6 +42,10 @@ Enum.each(required_envars, fn var ->
   end
 end)
 
+config :raptor, :auth0,
+  url: "https://#{System.get_env("AUTH0_DOMAIN")}/oauth/token",
+  audience: "https://#{System.get_env("AUTH0_DOMAIN")}/api/v2/"
+
 config :raptor, :brook,
   instance: :raptor,
   driver: [

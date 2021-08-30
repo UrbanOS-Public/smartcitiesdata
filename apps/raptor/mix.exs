@@ -40,6 +40,8 @@ defmodule Raptor.MixProject do
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
+      {:tesla, "~> 1.3"},
+      {:ueberauth_auth0, "~> 0.8.1"},
       {:distillery, "~> 2.1"}
     ]
   end

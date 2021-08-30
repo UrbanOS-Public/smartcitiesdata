@@ -11,4 +11,23 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
+config :ueberauth, Ueberauth,
+  providers: [
+    auth0:
+      {Ueberauth.Strategy.Auth0,
+       [
+         default_audience: "raptor",
+         allowed_request_params: [
+           :scope,
+           :state,
+           :audience,
+           :connection,
+           :prompt,
+           :screen_hint,
+           :login_hint,
+           :error_message
+         ]
+       ]}
+  ]
+
 import_config "#{Mix.env()}.exs"
