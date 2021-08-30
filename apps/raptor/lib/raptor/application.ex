@@ -23,13 +23,13 @@ defmodule Raptor.Application do
       # Start a worker by calling: Raptor.Worker.start_link(arg)
       # {Raptor.Worker, arg}
     ]
+
     set_auth0_credentials()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Raptor.Supervisor]
     Supervisor.start_link(children, opts)
-    
   end
 
   # Tell Phoenix to update the endpoint configuration
@@ -42,7 +42,6 @@ defmodule Raptor.Application do
   def is_invalid_env_variable(var) do
     is_nil(var) || String.length(var) == 0
   end
-
 
   def get_env_variable(var_name, throw_if_absent) do
     var = System.get_env(var_name)
@@ -66,5 +65,4 @@ defmodule Raptor.Application do
       client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
     )
   end
-
 end

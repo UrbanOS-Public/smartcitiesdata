@@ -13,7 +13,10 @@ defmodule Raptor.Services.Auth0Management do
     url = Keyword.fetch!(auth0(), :audience)
 
     with {:ok, access_token} <- get_token(),
-         {:ok, response} <- get("#{url}users?q=app_metadata.apiKey:\"#{apiKey}\"&search_engine=v3", headers: [{"Authorization", "Bearer #{access_token}"}]) do
+         {:ok, response} <-
+           get("#{url}users?q=app_metadata.apiKey:\"#{apiKey}\"&search_engine=v3",
+             headers: [{"Authorization", "Bearer #{access_token}"}]
+           ) do
       users = response |> Map.get(:body) |> Jason.decode!()
       {:ok, users}
     else
@@ -22,7 +25,6 @@ defmodule Raptor.Services.Auth0Management do
         {:error, :retrieve_auth0_users_by_api_key_failed}
     end
   end
-
 
   defp client_id() do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
@@ -41,7 +43,12 @@ defmodule Raptor.Services.Auth0Management do
     audience = Keyword.fetch!(auth0(), :audience)
 
     req_body =
-      URI.encode_query(%{grant_type: "client_credentials", client_id: client_id(), client_secret: client_secret(), audience: audience})
+      URI.encode_query(%{
+        grant_type: "client_credentials",
+        client_id: client_id(),
+        client_secret: client_secret(),
+        audience: audience
+      })
 
     case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
       {:ok, response} ->

@@ -12,7 +12,7 @@ config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
   client_id: System.get_env("AUTH0_CLIENT_ID"),
   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
 
-  config :raptor, :auth0,
+config :raptor, :auth0,
   url: "https://smartcolumbusos-demo.auth0.com/oauth/token",
   audience: "https://smartcolumbusos-demo.auth0.com/api/v2/"
 
