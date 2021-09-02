@@ -5,7 +5,9 @@ defmodule RaptorWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", RaptorWeb do
-    pipe_through :browser
+  scope "/api", RaptorWeb do
+    pipe_through :api
+    get("/authorize", AuthorizeController, :authorize)
   end
+
 end
