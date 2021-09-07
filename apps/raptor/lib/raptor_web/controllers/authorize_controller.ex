@@ -7,7 +7,6 @@ defmodule RaptorWeb.AuthorizeController do
   plug(:accepts, ["json"])
 
   def validate_user_list(user_list) do
-
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
