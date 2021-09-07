@@ -9,5 +9,4 @@ defmodule RaptorWeb.Router do
     pipe_through :api
     get("/authorize", AuthorizeController, :authorize)
   end
-
 end
