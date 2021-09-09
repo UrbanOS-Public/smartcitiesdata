@@ -24,6 +24,7 @@ defmodule RaptorWeb do
       import Plug.Conn
       import RaptorWeb.Gettext
       alias RaptorWeb.Router.Helpers, as: Routes
+      import RaptorWeb.RenderError
     end
   end
 
@@ -33,6 +34,21 @@ defmodule RaptorWeb do
 
       import Plug.Conn
       import Phoenix.Controller
+    end
+  end
+
+  def view do
+    quote do
+      use Phoenix.View,
+        root: "lib/raptor_web/templates",
+        namespace: RaptorWeb
+
+      # Import convenience functions from controllers
+      import Phoenix.Controller, only: [get_flash: 2, view_module: 1]
+
+      import RaptorWeb.Router.Helpers
+      import RaptorWeb.ErrorHelpers
+      import RaptorWeb.Gettext
     end
   end
 

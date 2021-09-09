@@ -5,7 +5,7 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "0.1.0",
+      version: "0.2.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -40,6 +40,8 @@ defmodule Raptor.MixProject do
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
+      {:tesla, "~> 1.3"},
+      {:ueberauth_auth0, "~> 0.8.1"},
       {:distillery, "~> 2.1"}
     ]
   end
