@@ -6,7 +6,25 @@ defmodule RaptorWeb.AuthorizeController do
 
   plug(:accepts, ["json"])
 
-  def validate_user_list(user_list) do
+  def check_user_association(user, datasetName) do
+      # check what organization the dataset belongs to
+
+      # User-Org Table
+      # user | {orgs: [{orgId, orgName}]}
+
+      # Dataset-Org Table
+      # datasetId | datasetName | orgId | orgName
+
+      # check what organizations the user belongs to
+
+      # check if there is a match
+
+      # return true if there is a match or false if there is not
+      true
+
+  end
+
+  def validate_user_list(user_list, datasetName) do
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
@@ -14,8 +32,13 @@ defmodule RaptorWeb.AuthorizeController do
 
       1 ->
         user = user_list |> Enum.at(0)
-        # Only users who have validated their email address may make API calls
-        user["email_verified"]
+        if(user["email_verified"]) do
+          check_user_association(user, datasetName)
+        else
+          # Only users who have validated their email address may make API calls
+          false
+        end
+
 
       _ ->
         Logger.warn("Multiple users cannot have the same API Key.")
@@ -23,9 +46,9 @@ defmodule RaptorWeb.AuthorizeController do
     end
   end
 
-  def authorize(conn, %{"apiKey" => apiKey}) do
+  def authorize(conn, %{"apiKey" => apiKey, "datasetName" => datasetName}) do
     case Auth0Management.get_users_by_api_key(apiKey) do
-      {:ok, user_list} -> render(conn, %{is_authorized: validate_user_list(user_list)})
+      {:ok, user_list} -> render(conn, %{is_authorized: validate_user_list(user_list, datasetName)})
       {:error, _} -> render(conn, %{is_authorized: false})
     end
   end

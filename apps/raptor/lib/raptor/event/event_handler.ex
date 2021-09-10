@@ -3,14 +3,20 @@ defmodule Raptor.Event.EventHandler do
 
   use Brook.Event.Handler
 
+  alias Raptor.Services.DatasetStore
+  alias Raptor.Services.OrgStore
+  alias Raptor.Persistence
+  alias Raptor.UserOrgAssoc
+
   import SmartCity.Event,
     only: [
+      dataset_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
       user_organization_disassociate: 0
     ]
 
-  alias SmartCity.{UserOrganizationAssociate, UserOrganizationDisassociate, Organization}
+  alias SmartCity.{UserOrganizationAssociate, UserOrganizationDisassociate, Organization, Dataset}
 
   @instance_name Raptor.instance_name()
 
@@ -19,7 +25,12 @@ defmodule Raptor.Event.EventHandler do
         data: %Organization{} = data,
         author: author
       }) do
-    IO.inspect(data, label: "I received this event")
+    OrgStore.update(data)
+    :discard
+  end
+
+  def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
+    DatasetStore.update(dataset)
     :discard
   end
 
@@ -30,6 +41,9 @@ defmodule Raptor.Event.EventHandler do
           author: author
         } = event
       ) do
+    {:ok, user_org_assoc} = UserOrgAssoc.from_event(association)
+    IO.inspect(user_org_assoc, label: "I GOT HERE")
+    Persistence.persist(user_org_assoc)
     :discard
   end
 
