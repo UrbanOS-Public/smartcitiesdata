@@ -7,6 +7,7 @@ defmodule Raptor.Event.EventHandler do
   alias Raptor.Services.OrgStore
   alias Raptor.Persistence
   alias Raptor.UserOrgAssoc
+  alias Raptor.Dataset
 
   import SmartCity.Event,
     only: [
@@ -30,7 +31,10 @@ defmodule Raptor.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
-    DatasetStore.update(dataset)
+    #DatasetStore.update(dataset)
+    {:ok, dataset} = Raptor.Dataset.from_event(dataset)
+    IO.inspect(dataset, label: "I GOT TO DATASET UPDATE")
+    Persistence.persist(dataset)
     :discard
   end
 
