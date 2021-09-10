@@ -20,12 +20,26 @@ defmodule Raptor.UserOrgAssoc do
   @doc """
   Converts a `SmartCity.UserOrgAssociation` to a `Raptor.UserOrgAssoc`
   """
-  @spec from_event(SmartCity.UserOrganizationAssociate.t()) :: {:ok, Raptor.UserOrgAssoc.t()}
-  def from_event(%SmartCity.UserOrganizationAssociate{} = assoc) do
+  @spec from_associate_event(SmartCity.UserOrganizationAssociate.t()) :: {:ok, Raptor.UserOrgAssoc.t()}
+  def from_associate_event(%SmartCity.UserOrganizationAssociate{} = assoc) do
     struct = %__MODULE__{
       user_id: assoc.subject_id,
       org_id: assoc.org_id,
       email: assoc.email
+    }
+
+    {:ok, struct}
+  end
+
+    @doc """
+  Converts a `SmartCity.UserOrgDisassociation` to a `Raptor.UserOrgAssoc`
+  """
+  @spec from_disassociate_event(SmartCity.UserOrganizationDisassociate.t()) :: {:ok, Raptor.UserOrgAssoc.t()}
+  def from_disassociate_event(%SmartCity.UserOrganizationDisassociate{} = assoc) do
+    struct = %__MODULE__{
+      user_id: assoc.subject_id,
+      org_id: assoc.org_id,
+      email: nil
     }
 
     {:ok, struct}

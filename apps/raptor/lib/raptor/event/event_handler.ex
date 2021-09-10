@@ -41,8 +41,8 @@ defmodule Raptor.Event.EventHandler do
           author: author
         } = event
       ) do
-    {:ok, user_org_assoc} = UserOrgAssoc.from_event(association)
-    IO.inspect(user_org_assoc, label: "I GOT HERE")
+    {:ok, user_org_assoc} = UserOrgAssoc.from_associate_event(association)
+    IO.inspect(user_org_assoc, label: "I GOT TO UPDATE")
     Persistence.persist(user_org_assoc)
     :discard
   end
@@ -54,6 +54,9 @@ defmodule Raptor.Event.EventHandler do
           author: author
         } = event
       ) do
+    {:ok, user_org_assoc} = UserOrgAssoc.from_disassociate_event(disassociation)
+    IO.inspect(user_org_assoc, label: "I GOT TO DELETE")
+    Persistence.delete(user_org_assoc)
     :discard
   end
 end

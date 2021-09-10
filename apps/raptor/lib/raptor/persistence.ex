@@ -45,24 +45,26 @@ defmodule Raptor.Persistence do
   """
   @spec persist(Raptor.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
   def persist(%UserOrgAssoc{} = user_org_assoc) do
+    key = "#{user_org_assoc.user_id}_#{user_org_assoc.org_id}"
     user_org_assoc
     |> Map.from_struct()
     |> Jason.encode!()
-    |> (fn config_json ->
-          Redix.command!(@redix, ["SET", @name_space <> user_org_assoc.user_id, config_json])
+    |> (fn assoc_json ->
+          Redix.command!(@redix, ["SET", @name_space <> key, assoc_json])
         end).()
   end
 
    @doc """
   Remove a `Raptor.UserOrgAssoc` from Redis
   """
-  @spec deleteAssoc(Raptor.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
-  def deleteAssoc(%UserOrgAssoc{} = user_org_assoc) do
+  @spec delete(Raptor.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
+  def delete(%UserOrgAssoc{} = user_org_assoc) do
+    key = "#{user_org_assoc.user_id}_#{user_org_assoc.org_id}"
     user_org_assoc
     |> Map.from_struct()
     |> Jason.encode!()
-    |> (fn config_json ->
-          Redix.command!(@redix, ["SET", @name_space <> user_org_assoc.user_id, config_json]) # TODOupdate implementation of this method to have delete capability
+    |> (fn assoc_json ->
+          Redix.command!(@redix, ["DEL", @name_space <> key, assoc_json]) # TODOupdate implementation of this method to have delete capability
         end).()
   end
 
