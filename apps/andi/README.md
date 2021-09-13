@@ -59,4 +59,4 @@ For integration testing, Andi encapsulates its external dependencies in Docker i
 
 ## Documentation 
 
-For details on how to use the ANDI API, please review the Postman collection located [here](https://duckduckgo.com).
+For details on how to use the ANDI API, please review the Postman collection located [here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
