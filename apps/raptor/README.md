@@ -15,6 +15,9 @@ To test that the event stream is working, you can send a smart city event throug
     organization = SmartCity.TestDataGenerator.create_organization(%{})
     Brook.Event.send(Raptor.instance_name(), "organization:update", :testing, organization)
 
+    dataset = SmartCity.TestDataGenerator.create_dataset(%{})
+    Brook.Event.send(Raptor.instance_name(), "dataset:update", :testing, dataset)
+
     ***** CODE TO RUN TO TEST UserOrgAssociate Event!!! *******
     alias SmartCity.UserOrganizationAssociate
     import SmartCity.Event, only: [user_login: 0, user_organization_associate: 0]

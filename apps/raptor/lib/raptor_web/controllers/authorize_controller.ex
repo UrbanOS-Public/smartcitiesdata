@@ -2,29 +2,34 @@ defmodule RaptorWeb.AuthorizeController do
   use RaptorWeb, :controller
 
   alias Raptor.Services.Auth0Management
+  alias Raptor.Services.DatasetStore
+  alias Raptor.Services.UserOrgAssocStore
   require Logger
 
   plug(:accepts, ["json"])
 
-  def check_user_association(user, datasetName) do
-      # check what organization the dataset belongs to
-
-      # User-Org Table
-      # user | {orgs: [{orgId, orgName}]}
-
-      # Dataset-Org Table
-      # datasetId | datasetName | orgId | orgName
-
-      # check what organizations the user belongs to
-
-      # check if there is a match
-
-      # return true if there is a match or false if there is not
-      true
-
+  def is_user_in_org?(user_id, org_id) do
+    UserOrgAssocStore.get(user_id, org_id) != %{}
   end
 
-  def validate_user_list(user_list, datasetName) do
+  def is_valid_dataset?(dataset) do 
+    dataset != %{}
+  end
+
+
+  def check_user_association(user, systemName) do
+      dataset_associated_with_system_name = DatasetStore.get(systemName)
+      if(is_valid_dataset?(dataset_associated_with_system_name)) do
+        org_id_of_dataset = dataset_associated_with_system_name.org_id
+        is_user_in_org?(user.id, org_id_of_dataset)
+      else
+        false
+      end
+      
+  end
+
+  def validate_user_list(user_list, systemName) do
+    IO.inspect(user_list, label: "USER_LIST")
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
@@ -33,12 +38,11 @@ defmodule RaptorWeb.AuthorizeController do
       1 ->
         user = user_list |> Enum.at(0)
         if(user["email_verified"]) do
-          check_user_association(user, datasetName)
+          check_user_association(user, systemName)
         else
           # Only users who have validated their email address may make API calls
           false
         end
-
 
       _ ->
         Logger.warn("Multiple users cannot have the same API Key.")
@@ -46,9 +50,9 @@ defmodule RaptorWeb.AuthorizeController do
     end
   end
 
-  def authorize(conn, %{"apiKey" => apiKey, "datasetName" => datasetName}) do
+  def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
     case Auth0Management.get_users_by_api_key(apiKey) do
-      {:ok, user_list} -> render(conn, %{is_authorized: validate_user_list(user_list, datasetName)})
+      {:ok, user_list} -> render(conn, %{is_authorized: validate_user_list(user_list, systemName)})
       {:error, _} -> render(conn, %{is_authorized: false})
     end
   end

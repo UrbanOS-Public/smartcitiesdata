@@ -13,6 +13,10 @@ defmodule RaptorWeb.ErrorView do
     message
   end
 
+  def render("400.json", %{message: message}) do
+    message
+  end
+
   def fill_json_template(message) do
     %{message: message}
   end
