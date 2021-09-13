@@ -12,7 +12,7 @@ defmodule RaptorWeb.AuthorizeController do
     UserOrgAssocStore.get(user_id, org_id) != %{}
   end
 
-  def is_valid_dataset?(dataset) do 
+  def is_valid_dataset?(dataset) do
     dataset != %{}
   end
 
@@ -21,15 +21,14 @@ defmodule RaptorWeb.AuthorizeController do
       dataset_associated_with_system_name = DatasetStore.get(systemName)
       if(is_valid_dataset?(dataset_associated_with_system_name)) do
         org_id_of_dataset = dataset_associated_with_system_name.org_id
-        is_user_in_org?(user.id, org_id_of_dataset)
+        is_user_in_org?(user.user_id, org_id_of_dataset)
       else
         false
       end
-      
+
   end
 
   def validate_user_list(user_list, systemName) do
-    IO.inspect(user_list, label: "USER_LIST")
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
