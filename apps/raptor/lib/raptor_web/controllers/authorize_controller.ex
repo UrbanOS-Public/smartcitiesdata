@@ -21,7 +21,7 @@ defmodule RaptorWeb.AuthorizeController do
       dataset_associated_with_system_name = DatasetStore.get(systemName)
       if(is_valid_dataset?(dataset_associated_with_system_name)) do
         org_id_of_dataset = dataset_associated_with_system_name.org_id
-        is_user_in_org?(user.user_id, org_id_of_dataset)
+        is_user_in_org?(user["user_id"], org_id_of_dataset)
       else
         false
       end
