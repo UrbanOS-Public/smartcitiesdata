@@ -30,7 +30,11 @@ defmodule Raptor.Event.EventHandler do
     :discard
   end
 
-  def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
+  def handle_event(%Brook.Event{
+        type: dataset_update(),
+        author: author,
+        data: %Dataset{} = dataset
+      }) do
     {:ok, dataset} = Raptor.Dataset.from_event(dataset)
     DatasetStore.persist(dataset)
     :discard

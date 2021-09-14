@@ -20,7 +20,8 @@ defmodule Raptor.UserOrgAssoc do
   @doc """
   Converts a `SmartCity.UserOrgAssociation` to a `Raptor.UserOrgAssoc`
   """
-  @spec from_associate_event(SmartCity.UserOrganizationAssociate.t()) :: {:ok, Raptor.UserOrgAssoc.t()}
+  @spec from_associate_event(SmartCity.UserOrganizationAssociate.t()) ::
+          {:ok, Raptor.UserOrgAssoc.t()}
   def from_associate_event(%SmartCity.UserOrganizationAssociate{} = assoc) do
     struct = %__MODULE__{
       user_id: assoc.subject_id,
@@ -31,10 +32,11 @@ defmodule Raptor.UserOrgAssoc do
     {:ok, struct}
   end
 
-    @doc """
+  @doc """
   Converts a `SmartCity.UserOrgDisassociation` to a `Raptor.UserOrgAssoc`
   """
-  @spec from_disassociate_event(SmartCity.UserOrganizationDisassociate.t()) :: {:ok, Raptor.UserOrgAssoc.t()}
+  @spec from_disassociate_event(SmartCity.UserOrganizationDisassociate.t()) ::
+          {:ok, Raptor.UserOrgAssoc.t()}
   def from_disassociate_event(%SmartCity.UserOrganizationDisassociate{} = assoc) do
     struct = %__MODULE__{
       user_id: assoc.subject_id,
@@ -48,7 +50,8 @@ defmodule Raptor.UserOrgAssoc do
   @doc """
   Convert a `Raptor.UserOrgAssoc` into JSON
   """
-  @spec encode(Raptor.UserOrgAssoc.t()) :: {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
+  @spec encode(Raptor.UserOrgAssoc.t()) ::
+          {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
   def encode(%__MODULE__{} = user_org_assoc) do
     Jason.encode(user_org_assoc)
   end

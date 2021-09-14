@@ -9,7 +9,6 @@ defmodule Raptor.Dataset do
           dataset_id: String.t(),
           system_name: String.t(),
           org_id: String.t()
-
         }
 
   defstruct [
@@ -35,7 +34,8 @@ defmodule Raptor.Dataset do
   @doc """
   Convert a `Raptor.UserOrgAssoc` into JSON
   """
-  @spec encode(Raptor.Dataset.t()) :: {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
+  @spec encode(Raptor.Dataset.t()) ::
+          {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
   def encode(%__MODULE__{} = dataset) do
     Jason.encode(dataset)
   end

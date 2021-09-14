@@ -1,5 +1,5 @@
 defmodule Raptor.Services.DatasetStore do
-@moduledoc """
+  @moduledoc """
   This module provides functionality for interacting with Redis
   """
   require Logger
@@ -8,7 +8,7 @@ defmodule Raptor.Services.DatasetStore do
   @namespace "raptor:datasets:"
   @redix Raptor.Application.redis_client()
 
-    @doc """
+  @doc """
   Get all datasets from Redis
   """
   @spec get_all() :: list(map())
@@ -24,24 +24,25 @@ defmodule Raptor.Services.DatasetStore do
     end
   end
 
-      @doc """
+  @doc """
   Get a given dataset by its system name
   """
   @spec get(String.t()) :: map()
   def get(system_name) do
     entries_matching_system_name = Redix.command!(@redix, ["KEYS", @namespace <> system_name])
+
     case length(entries_matching_system_name) do
       0 ->
         Logger.warn("No datasets exist with system name of #{system_name}")
         %{}
+
       1 ->
         dataset_key = entries_matching_system_name |> List.first()
-        Redix.command!(@redix, ["MGET", dataset_key])
-        |> Enum.map(&from_json/1) |> List.first()
+        Redix.command!(@redix, ["MGET", dataset_key]) |> Enum.map(&from_json/1) |> List.first()
+
       _ ->
         Logger.warn("Multiple datasets match #{system_name}. Cannot continue.")
         %{}
-
     end
   end
 
@@ -58,10 +59,9 @@ defmodule Raptor.Services.DatasetStore do
         end).()
   end
 
-   defp from_json(json_string) do
+  defp from_json(json_string) do
     json_string
     |> Jason.decode!(keys: :atoms)
     |> (fn map -> struct(%Raptor.Dataset{}, map) end).()
   end
-
 end
