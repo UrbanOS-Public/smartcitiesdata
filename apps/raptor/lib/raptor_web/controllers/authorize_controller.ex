@@ -58,4 +58,16 @@ defmodule RaptorWeb.AuthorizeController do
         render(conn, %{is_authorized: false})
     end
   end
+
+  def authorize(conn, %{"apiKey" => _}) do
+    render_error(conn, 400, "systemName is a required parameter.")
+  end
+
+  def authorize(conn, %{"systemName" => _}) do
+    render_error(conn, 400, "apiKey is a required parameter.")
+  end
+
+  def authorize(conn, _) do
+    render_error(conn, 400, "apiKey and systemName are required parameters.")
+  end
 end

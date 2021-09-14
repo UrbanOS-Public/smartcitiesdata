@@ -4,26 +4,11 @@ defmodule Raptor.Event.EventHandlerTest do
 
   import SmartCity.Event,
     only: [
-      organization_update: 0,
       user_organization_associate: 0,
       user_organization_disassociate: 0
     ]
 
-  alias SmartCity.TestDataGenerator, as: TDG
   alias Raptor.Event.EventHandler
-
-  describe "handle_event/1 organization_update" do
-    test "should return :discard when an event is received" do
-      org = TDG.create_organization(%{})
-
-      result =
-        EventHandler.handle_event(
-          Brook.Event.new(type: organization_update(), data: org, author: :author)
-        )
-
-      assert result == :discard
-    end
-  end
 
   describe "handle_event/1 user_organization_associate" do
     setup do
