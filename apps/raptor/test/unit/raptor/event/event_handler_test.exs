@@ -13,7 +13,7 @@ defmodule Raptor.Event.EventHandlerTest do
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.DatasetStore
   alias Raptor.UserOrgAssoc
-  alias Raptor.Dataset
+  alias Raptor.Schemas.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "handle_event/1 user_organization_associate" do
@@ -45,7 +45,7 @@ defmodule Raptor.Event.EventHandlerTest do
         org_id: "org_id",
         email: "blah@example.com"
       }
-      
+
       assert_called UserOrgAssocStore.persist(expected_assoc_event)
       assert result == :discard
     end

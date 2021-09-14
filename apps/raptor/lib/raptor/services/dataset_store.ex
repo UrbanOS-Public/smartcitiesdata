@@ -3,7 +3,7 @@ defmodule Raptor.Services.DatasetStore do
   This module provides functionality for interacting with Redis
   """
   require Logger
-  alias Raptor.Dataset
+  alias Raptor.Schemas.Dataset
 
   @namespace "raptor:datasets:"
   @redix Raptor.Application.redis_client()
@@ -47,9 +47,9 @@ defmodule Raptor.Services.DatasetStore do
   end
 
   @doc """
-  Save a `Raptor.Dataset` to Redis
+  Save a `Raptor.Schemas.Dataset` to Redis
   """
-  @spec persist(Raptor.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
+  @spec persist(Raptor.Schemas.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
   def persist(%Dataset{} = dataset) do
     dataset
     |> Map.from_struct()
@@ -62,6 +62,6 @@ defmodule Raptor.Services.DatasetStore do
   defp from_json(json_string) do
     json_string
     |> Jason.decode!(keys: :atoms)
-    |> (fn map -> struct(%Raptor.Dataset{}, map) end).()
+    |> (fn map -> struct(%Raptor.Schemas.Dataset{}, map) end).()
   end
 end

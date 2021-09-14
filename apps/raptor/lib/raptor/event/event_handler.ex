@@ -6,7 +6,7 @@ defmodule Raptor.Event.EventHandler do
   alias Raptor.Services.DatasetStore
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.UserOrgAssoc
-  alias Raptor.Dataset
+  alias Raptor.Schemas.Dataset
 
   import SmartCity.Event,
     only: [
@@ -22,7 +22,7 @@ defmodule Raptor.Event.EventHandler do
         author: _author,
         data: %Dataset{} = dataset
       }) do
-    {:ok, dataset} = Raptor.Dataset.from_event(dataset)
+    {:ok, dataset} = Raptor.Schemas.Dataset.from_event(dataset)
     DatasetStore.persist(dataset)
     :discard
   end

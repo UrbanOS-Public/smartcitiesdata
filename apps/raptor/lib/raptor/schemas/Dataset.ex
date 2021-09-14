@@ -1,4 +1,4 @@
-defmodule Raptor.Dataset do
+defmodule Raptor.Schemas.Dataset do
   @moduledoc """
   This module defines the structure for a user organization association
   """
@@ -20,7 +20,7 @@ defmodule Raptor.Dataset do
   @doc """
   Converts a `SmartCity.UserOrgAssociation` to a `Raptor.UserOrgAssoc`
   """
-  @spec from_event(SmartCity.Dataset.t()) :: {:ok, Raptor.Dataset.t()}
+  @spec from_event(SmartCity.Dataset.t()) :: {:ok, Raptor.Schemas.Dataset.t()}
   def from_event(%SmartCity.Dataset{} = dataset) do
     struct = %__MODULE__{
       dataset_id: dataset.id,
@@ -34,7 +34,7 @@ defmodule Raptor.Dataset do
   @doc """
   Convert a `Raptor.UserOrgAssoc` into JSON
   """
-  @spec encode(Raptor.Dataset.t()) ::
+  @spec encode(Raptor.Schemas.Dataset.t()) ::
           {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}
   def encode(%__MODULE__{} = dataset) do
     Jason.encode(dataset)
