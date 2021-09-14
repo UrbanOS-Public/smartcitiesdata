@@ -1,4 +1,4 @@
-defmodule Schemas.DatasetTest do
+defmodule Raptor.Schemas.DatasetTest do
   use RaptorWeb.ConnCase
   alias Raptor.Schemas.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
