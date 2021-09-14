@@ -5,7 +5,7 @@ defmodule Raptor.Event.EventHandler do
 
   alias Raptor.Services.DatasetStore
   alias Raptor.Services.UserOrgAssocStore
-  alias Raptor.UserOrgAssoc
+  alias Raptor.Schemas.UserOrgAssoc
   alias Raptor.Schemas.Dataset
 
   import SmartCity.Event,
@@ -27,25 +27,21 @@ defmodule Raptor.Event.EventHandler do
     :discard
   end
 
-  def handle_event(
-        %Brook.Event{
-          type: user_organization_associate(),
-          data: %UserOrganizationAssociate{} = association,
-          author: _author
-        }
-      ) do
+  def handle_event(%Brook.Event{
+        type: user_organization_associate(),
+        data: %UserOrganizationAssociate{} = association,
+        author: _author
+      }) do
     {:ok, user_org_assoc} = UserOrgAssoc.from_associate_event(association)
     UserOrgAssocStore.persist(user_org_assoc)
     :discard
   end
 
-  def handle_event(
-        %Brook.Event{
-          type: user_organization_disassociate(),
-          data: %UserOrganizationDisassociate{} = disassociation,
-          author: _author
-        }
-      ) do
+  def handle_event(%Brook.Event{
+        type: user_organization_disassociate(),
+        data: %UserOrganizationDisassociate{} = disassociation,
+        author: _author
+      }) do
     {:ok, user_org_assoc} = UserOrgAssoc.from_disassociate_event(disassociation)
     UserOrgAssocStore.delete(user_org_assoc)
     :discard

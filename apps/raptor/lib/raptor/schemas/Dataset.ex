@@ -18,7 +18,7 @@ defmodule Raptor.Schemas.Dataset do
   ]
 
   @doc """
-  Converts a `SmartCity.UserOrgAssociation` to a `Raptor.UserOrgAssoc`
+  Converts a `SmartCity.UserOrgAssociation` to a `Raptor.Schemas.UserOrgAssoc`
   """
   @spec from_event(SmartCity.Dataset.t()) :: {:ok, Raptor.Schemas.Dataset.t()}
   def from_event(%SmartCity.Dataset{} = dataset) do
@@ -32,7 +32,7 @@ defmodule Raptor.Schemas.Dataset do
   end
 
   @doc """
-  Convert a `Raptor.UserOrgAssoc` into JSON
+  Convert a `Raptor.Schemas.UserOrgAssoc` into JSON
   """
   @spec encode(Raptor.Schemas.Dataset.t()) ::
           {:ok, String.t()} | {:error, Jason.EncodeError.t() | Exception.t()}

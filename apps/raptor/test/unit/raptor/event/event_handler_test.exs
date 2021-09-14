@@ -12,7 +12,7 @@ defmodule Raptor.Event.EventHandlerTest do
   alias Raptor.Event.EventHandler
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.DatasetStore
-  alias Raptor.UserOrgAssoc
+  alias Raptor.Schemas.UserOrgAssoc
   alias Raptor.Schemas.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -24,6 +24,7 @@ defmodule Raptor.Event.EventHandlerTest do
           org_id: "org_id",
           email: "blah@example.com"
         })
+
       allow(UserOrgAssocStore.persist(any()), return: {:ok, "success"})
 
       %{association_event: association_event}
@@ -40,13 +41,14 @@ defmodule Raptor.Event.EventHandlerTest do
             author: :author
           )
         )
+
       expected_assoc_event = %UserOrgAssoc{
         user_id: "user_id",
         org_id: "org_id",
         email: "blah@example.com"
       }
 
-      assert_called UserOrgAssocStore.persist(expected_assoc_event)
+      assert_called(UserOrgAssocStore.persist(expected_assoc_event))
       assert result == :discard
     end
   end
@@ -55,6 +57,7 @@ defmodule Raptor.Event.EventHandlerTest do
     setup do
       {:ok, disassociation_event} =
         SmartCity.UserOrganizationDisassociate.new(%{subject_id: "subject_id", org_id: "org_id"})
+
       allow(UserOrgAssocStore.delete(any()), return: {:ok, "success"})
       %{disassociation_event: disassociation_event}
     end
@@ -70,12 +73,14 @@ defmodule Raptor.Event.EventHandlerTest do
             author: :author
           )
         )
-        expected_disassoc_event = %UserOrgAssoc{
-          user_id: "subject_id",
-          org_id: "org_id",
-          email: nil
-        }
-      assert_called UserOrgAssocStore.delete(expected_disassoc_event)
+
+      expected_disassoc_event = %UserOrgAssoc{
+        user_id: "subject_id",
+        org_id: "org_id",
+        email: nil
+      }
+
+      assert_called(UserOrgAssocStore.delete(expected_disassoc_event))
       assert result == :discard
     end
   end
@@ -98,12 +103,14 @@ defmodule Raptor.Event.EventHandlerTest do
             author: :author
           )
         )
-        expected_dataset_entry = %Dataset{
-          dataset_id: dataset.id,
-          org_id: dataset.technical.orgId,
-          system_name: dataset.technical.systemName
-        }
-      assert_called DatasetStore.persist(expected_dataset_entry)
+
+      expected_dataset_entry = %Dataset{
+        dataset_id: dataset.id,
+        org_id: dataset.technical.orgId,
+        system_name: dataset.technical.systemName
+      }
+
+      assert_called(DatasetStore.persist(expected_dataset_entry))
       assert result == :discard
     end
   end

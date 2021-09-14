@@ -3,7 +3,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   This module provides functionality for interacting with Redis
   """
   require Logger
-  alias Raptor.UserOrgAssoc
+  alias Raptor.Schemas.UserOrgAssoc
 
   @namespace "raptor:user_org_assoc:"
   @redix Raptor.Application.redis_client()
@@ -48,9 +48,9 @@ defmodule Raptor.Services.UserOrgAssocStore do
   end
 
   @doc """
-  Save a `Raptor.UserOrgAssoc` to Redis
+  Save a `Raptor.Schemas.UserOrgAssoc` to Redis
   """
-  @spec persist(Raptor.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
+  @spec persist(Raptor.Schemas.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
   def persist(%UserOrgAssoc{} = user_org_assoc) do
     key = "#{user_org_assoc.user_id}:#{user_org_assoc.org_id}"
 
@@ -63,9 +63,9 @@ defmodule Raptor.Services.UserOrgAssocStore do
   end
 
   @doc """
-  Remove a `Raptor.UserOrgAssoc` from Redis
+  Remove a `Raptor.Schemas.UserOrgAssoc` from Redis
   """
-  @spec delete(Raptor.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
+  @spec delete(Raptor.Schemas.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
   def delete(%UserOrgAssoc{} = user_org_assoc) do
     key = "#{user_org_assoc.user_id}:#{user_org_assoc.org_id}"
 
