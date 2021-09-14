@@ -20,6 +20,7 @@ defmodule Raptor.Services.DatasetStore do
       keys ->
         keys
         |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
+        |> IO.inspect(label: "******** HERE IS THE JSON YOU ARE LOOKING FOR *********")
         |> Enum.map(&from_json/1)
     end
   end
