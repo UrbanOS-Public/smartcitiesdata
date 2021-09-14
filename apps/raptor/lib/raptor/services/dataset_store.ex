@@ -20,7 +20,6 @@ defmodule Raptor.Services.DatasetStore do
       keys ->
         keys
         |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> IO.inspect(label: "******** HERE IS THE JSON YOU ARE LOOKING FOR *********")
         |> Enum.map(&from_json/1)
     end
   end
@@ -30,7 +29,7 @@ defmodule Raptor.Services.DatasetStore do
   """
   @spec get(String.t()) :: map()
   def get(system_name) do
-    entries_matching_system_name = Redix.command!(@redix, ["KEYS", @namespace <> system_name])
+    entries_matching_system_name = Redix.command!(@redix, ["KEYS", @namespace <> system_name]) |> IO.inspect(label: "CREEPINESS IS HERE")
 
     case length(entries_matching_system_name) do
       0 ->
@@ -39,7 +38,7 @@ defmodule Raptor.Services.DatasetStore do
 
       1 ->
         dataset_key = entries_matching_system_name |> List.first()
-        Redix.command!(@redix, ["MGET", dataset_key]) |> Enum.map(&from_json/1) |> List.first()
+        Redix.command!(@redix, ["MGET", dataset_key]) |> Enum.map(&from_json/1) |> IO.inspect(label: "**************") |> List.first()
 
       _ ->
         Logger.warn("Multiple datasets match #{system_name}. Cannot continue.")
