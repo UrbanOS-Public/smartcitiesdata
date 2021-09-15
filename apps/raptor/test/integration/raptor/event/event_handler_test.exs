@@ -45,4 +45,27 @@ defmodule Raptor.Event.EventHandlerTest do
       end)
     end
   end
+
+  describe "user_organization:disassociate" do
+    setup do
+      association = %SmartCity.UserOrganizationAssociate{org_id: "ds9", subject_id: "kira", email: "nerys@starfleet.com"}
+      Brook.Event.send(Raptor.instance_name(), user_organization_associate(), :testing, association)
+
+      expected_raptor_assoc =%UserOrgAssoc{user_id: "kira", org_id: "ds9", email: "nerys@starfleet.com"}
+      eventually(fn ->
+        raptor_user_org_assoc = UserOrgAssocStore.get("kira", "ds9")
+        assert expected_raptor_assoc == raptor_user_org_assoc
+      end)
+    end
+
+    test "when a user_organization_disassociate event is received, a user_organization_associate event is deleted from Redis" do
+      disassociation = %SmartCity.UserOrganizationDisassociate{org_id: "ds9", subject_id: "kira"}
+      Brook.Event.send(Raptor.instance_name(), user_organization_disassociate(), :testing, disassociation)
+
+      eventually(fn ->
+        raptor_user_org_assoc = UserOrgAssocStore.get("kira", "ds9")
+        assert %{} == raptor_user_org_assoc
+      end)
+    end
+  end
 end
