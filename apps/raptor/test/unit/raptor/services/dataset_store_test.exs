@@ -74,7 +74,7 @@ defmodule Raptor.Services.DatasetStoreTest do
          %{conn: conn} do
       system_name = "system__name"
       keys = ["raptor:datasets:system__name", "raptor:datasets:system__name1"]
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: keys)
+      allow(Redix.command!(@redix, ["KEYS", @namespace <> system_name]), return: keys)
 
       actualDatasets = DatasetStore.get(system_name)
 
