@@ -29,7 +29,7 @@ defmodule Raptor.Services.DatasetStore do
   """
   @spec get(String.t()) :: map()
   def get(system_name) do
-    entries_matching_system_name = Redix.command!(@redix, ["KEYS", @namespace <> system_name]) 
+    entries_matching_system_name = Redix.command!(@redix, ["KEYS", @namespace <> system_name])
 
     case length(entries_matching_system_name) do
       0 ->

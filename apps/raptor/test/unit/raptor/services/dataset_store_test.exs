@@ -84,12 +84,18 @@ defmodule Raptor.Services.DatasetStoreTest do
 
   describe "persist/1" do
     test "Redis is successfully called with a dataset", %{conn: conn} do
-        dataset = %Dataset{dataset_id: "1", system_name: "system__name", org_id: "system"}
-        dataset_json = "{\"dataset_id\":\"1\",\"org_id\":\"system\",\"system_name\":\"system__name\"}"
-        allow(Redix.command!(@redix, ["SET", @namespace <> "system__name", dataset_json]), return: :ok)
-        DatasetStore.persist(dataset)
+      dataset = %Dataset{dataset_id: "1", system_name: "system__name", org_id: "system"}
 
-        assert_called Redix.command!(@redix, ["SET", @namespace <> "system__name", dataset_json])
+      dataset_json =
+        "{\"dataset_id\":\"1\",\"org_id\":\"system\",\"system_name\":\"system__name\"}"
+
+      allow(Redix.command!(@redix, ["SET", @namespace <> "system__name", dataset_json]),
+        return: :ok
+      )
+
+      DatasetStore.persist(dataset)
+
+      assert_called(Redix.command!(@redix, ["SET", @namespace <> "system__name", dataset_json]))
     end
   end
 end
