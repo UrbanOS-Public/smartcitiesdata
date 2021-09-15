@@ -1,30 +1,66 @@
 # Raptor
 
-To start Raptor locally:
+Raptor is an elixir microservice that can be used to authorize access to private datasets. It has a REST endpoint that accepts an API Key from Auth0 and a system_name of a SmartCity dataset. It will then return a boolean indicating whether or not a user has access to the given dataset.
 
-- Install dependencies with `mix deps.get`
-- Run `MIX_ENV=integration mix docker.start`
-- Run `MIX_ENV=integration iex -S mix start`
+## Using Raptor
 
-Now you can visit [`localhost:4000`](http://localhost:4000/healthcheck) from your browser or via Postman and should receive a 200 OK response.
+### Prerequisites
 
-Note: If you view this in Chrome, you will receive a faviocon.ico error message in the console, although you will still receive a 200 OK response. This is because this microservice is just an internal API, it's not intended to be called by a front-end application.
+#### Auth0 Requirements
 
-To test that the event stream is working, you can send a smart city event through the microservice and see the result outputted in the console:
+In order to access Raptor, Auth0 credentials are required. Follow these steps in order to set up auth0 to access Raptor:
 
+1. Create an authorized account in Auth0 to access Raptor. Make sure to create the account in the tenant that matches the development environment that you are using.
+2. Get the Auth0 Client Secret from Auth0. Raptor requires an Auth0 client secret to be set as a system environment variable. You can get this value from auth0.com in the corresponding tenant configuration for the ANDI application. (Note: Eventually this will change to use the Auth0 Management API instead of ANDI's configuration.) You will need this value to start raptor (specified below in the <auth_client_secret> variable)
+3. Get the API Key for the user that you created in Auth0. This APIKey should be generated the first time that you use your Auth0 credentials to log in to either ANDI or Discovery API. It can be found in the app_metadata section of the Auth0 management console for your user.
+
+### Running Locally
+
+To run Raptor locally, take the following steps:
+
+1. Install dependencies with `mix deps.get`
+2. Run `MIX_ENV=integration mix docker.start`
+3. Run `AUTH0_CLIENT_SECRET=<auth_client_secret> MIX_ENV=integration iex -S mix start`
+
+Now you can visit [`localhost:4001`](http://localhost:4001/healthcheck) from your browser or via Postman and should receive a 200 OK response.
+
+### Generating Sample Data
+
+To test that the event stream is working, you can send a SmartCity event through the microservice and see the result outputted in the console:
+
+To send a dataset update event:
 ```
-  organization = SmartCity.TestDataGenerator.create_organization(%{})
-  Brook.Event.send(Raptor.instance_name(), "organization:update", :testing, organization)
-
   dataset = SmartCity.TestDataGenerator.create_dataset(%{})
   Brook.Event.send(Raptor.instance_name(), "dataset:update", :testing, dataset)
+```
 
-  ***** CODE TO RUN TO TEST UserOrgAssociate Event!!! *******
+To send a user_organization_associate event:
+```
   alias SmartCity.UserOrganizationAssociate
-  import SmartCity.Event, only: [user_login: 0, user_organization_associate: 0]
+  import SmartCity.Event
   association = %SmartCity.UserOrganizationAssociate{org_id: "org1", subject_id: "user1", email: "blah@blah.com"}
   Brook.Event.send(Raptor.instance_name(), user_organization_associate(), :testing, association)
 ```
+To send a user_organization_disassociate event:
+```
+  alias SmartCity.UserOrganizationDisassociate
+  import SmartCity.Event
+  disassociation = %SmartCity.UserOrganizationDisassociate{org_id: "org1", subject_id: "user1"}
+  Brook.Event.send(Raptor.instance_name(), user_organization_disassociate(), :testing, disassociation)
+```
 
-To run unit tests: `mix test`
-To run integration tests: `mix test.integration`
+Note: You should not send a disassociate event before sending an associate event. 
+
+## Testing Raptor
+
+### Unit Tests
+
+Raptor relies on the standard ExUnit test framework to run unit tests, Run with the usual command: `mix test`
+
+### Integration Tests
+
+For integration testing, Andi encapsulates its external dependencies in Docker images and orchestrates the test runs through the Divo library. Run with the command: `mix test.integration`
+
+## Documentation
+
+For details on how to use the Raptor API, please review the Postman collection located [here](TODO).
