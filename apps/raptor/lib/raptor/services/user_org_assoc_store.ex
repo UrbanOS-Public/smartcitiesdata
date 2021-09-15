@@ -68,13 +68,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   @spec delete(Raptor.Schemas.UserOrgAssoc.t()) :: Redix.Protocol.redis_value() | no_return()
   def delete(%UserOrgAssoc{} = user_org_assoc) do
     key = "#{user_org_assoc.user_id}:#{user_org_assoc.org_id}"
-
-    user_org_assoc
-    |> Map.from_struct()
-    |> Jason.encode!()
-    |> (fn assoc_json ->
-          Redix.command!(@redix, ["DEL", @namespace <> key, assoc_json])
-        end).()
+    Redix.command!(@redix, ["DEL", @namespace <> key])
   end
 
   defp from_json(json_string) do
