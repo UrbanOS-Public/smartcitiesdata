@@ -3,7 +3,6 @@ defmodule Raptor.Event.EventHandlerTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  alias Raptor.Test.Helper
   alias Raptor.Services.DatasetStore
   alias Raptor.Schemas.Dataset
   alias Raptor.Services.UserOrgAssocStore
@@ -14,7 +13,6 @@ defmodule Raptor.Event.EventHandlerTest do
     user_organization_associate: 0,
     user_organization_disassociate: 0
   ]
-  alias SmartCity.{UserOrganizationAssociate, UserOrganizationDisassociate}
 
   @instance_name Raptor.instance_name()
 
