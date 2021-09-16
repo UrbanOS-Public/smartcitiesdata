@@ -1,0 +1,44 @@
+{
+	"info": {
+		"_postman_id": "bbd62cee-08ef-4ac7-85f1-a198144ab0f7",
+		"name": "Raptor",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Local Development",
+			"item": [
+				{
+					"name": "Authorize",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:4001/api/authorize?apiKey={INSERT_API_KEY}&systemName={INSERT_SYSTEM_NAME}",
+							"host": [
+								"localhost"
+							],
+							"port": "4001",
+							"path": [
+								"api",
+								"authorize"
+							],
+							"query": [
+								{
+									"key": "apiKey",
+									"value": "{INSERT_API_KEY}"
+								},
+								{
+									"key": "systemName",
+									"value": "{INSERT_SYSTEM_NAME}"
+								}
+							]
+						},
+						"description": "The Authorize endpoint has two required parameters:\n- apiKey: The apiKey of the user requesting access to a dataset\n- systemName: The systemName of the SmartCity dataset being requested\n\nThe endpoint will return true if the user has permission to access the dataset, and false otherwise."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

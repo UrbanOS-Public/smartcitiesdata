@@ -18,7 +18,7 @@ config :raptor, :auth0,
 
 config :raptor, RaptorWeb.Endpoint,
   url: [scheme: "https", host: "data.integrationtests.example.com", port: 443],
-  http: [protocol_options: [inactivity_timeout: 4_000_000, idle_timeout: 4_000_000]]
+  http: [protocol_options: [inactivity_timeout: 4_000_000, idle_timeout: 4_000_000], port: 4001]
 
 config :raptor,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],

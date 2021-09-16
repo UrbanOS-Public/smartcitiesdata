@@ -2,11 +2,32 @@ defmodule RaptorWeb.AuthorizeController do
   use RaptorWeb, :controller
 
   alias Raptor.Services.Auth0Management
+  alias Raptor.Services.DatasetStore
+  alias Raptor.Services.UserOrgAssocStore
   require Logger
 
   plug(:accepts, ["json"])
 
-  def validate_user_list(user_list) do
+  def is_user_in_org?(user_id, org_id) do
+    UserOrgAssocStore.get(user_id, org_id) != %{}
+  end
+
+  def is_valid_dataset?(dataset) do
+    dataset != %{}
+  end
+
+  def check_user_association(user, systemName) do
+    dataset_associated_with_system_name = DatasetStore.get(systemName)
+
+    if(is_valid_dataset?(dataset_associated_with_system_name)) do
+      org_id_of_dataset = dataset_associated_with_system_name.org_id
+      is_user_in_org?(user["user_id"], org_id_of_dataset)
+    else
+      false
+    end
+  end
+
+  def validate_user_list(user_list, systemName) do
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
@@ -14,8 +35,13 @@ defmodule RaptorWeb.AuthorizeController do
 
       1 ->
         user = user_list |> Enum.at(0)
-        # Only users who have validated their email address may make API calls
-        user["email_verified"]
+
+        if(user["email_verified"]) do
+          check_user_association(user, systemName)
+        else
+          # Only users who have validated their email address may make API calls
+          false
+        end
 
       _ ->
         Logger.warn("Multiple users cannot have the same API Key.")
@@ -23,10 +49,25 @@ defmodule RaptorWeb.AuthorizeController do
     end
   end
 
-  def authorize(conn, %{"apiKey" => apiKey}) do
+  def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
     case Auth0Management.get_users_by_api_key(apiKey) do
-      {:ok, user_list} -> render(conn, %{is_authorized: validate_user_list(user_list)})
-      {:error, _} -> render(conn, %{is_authorized: false})
+      {:ok, user_list} ->
+        render(conn, %{is_authorized: validate_user_list(user_list, systemName)})
+
+      {:error, _} ->
+        render(conn, %{is_authorized: false})
     end
+  end
+
+  def authorize(conn, %{"apiKey" => _}) do
+    render_error(conn, 400, "systemName is a required parameter.")
+  end
+
+  def authorize(conn, %{"systemName" => _}) do
+    render_error(conn, 400, "apiKey is a required parameter.")
+  end
+
+  def authorize(conn, _) do
+    render_error(conn, 400, "apiKey and systemName are required parameters.")
   end
 end

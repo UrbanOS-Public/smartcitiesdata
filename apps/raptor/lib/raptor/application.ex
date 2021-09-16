@@ -11,11 +11,14 @@ defmodule Raptor.Application do
 
   getter(:brook, generic: true)
 
+  def redis_client(), do: :raptor_redix
+
   def start(_type, _args) do
     children = [
       # Start the Telemetry supervisor
       RaptorWeb.Telemetry,
       {Brook, brook()},
+      redis(),
       # Start the PubSub system
       {Phoenix.PubSub, [name: Raptor.PubSub, adapter: Phoenix.PubSub.PG2]},
       # Start the Endpoint (http/https)
@@ -56,6 +59,14 @@ defmodule Raptor.Application do
     end
 
     var
+  end
+
+  defp redis() do
+    Application.get_env(:redix, :args, [])
+    |> case do
+      nil -> []
+      redix_args -> {Redix, Keyword.put(redix_args, :name, redis_client())}
+    end
   end
 
   def set_auth0_credentials() do
