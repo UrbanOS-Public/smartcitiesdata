@@ -11,6 +11,9 @@ end
 
 redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
 
+config :redix,
+  args: redix_args
+
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
 endpoint =
