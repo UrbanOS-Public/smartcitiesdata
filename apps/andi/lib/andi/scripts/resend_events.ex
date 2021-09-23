@@ -17,13 +17,13 @@ defmodule Andi.Scripts.ResendEvents do
     |> Enum.each(fn user ->
       build_org_assocs_for_user(user)
       |> Enum.each(fn assoc ->
-        Brook.Event.send(:andi, user_organization_associate(), :testing, assoc)
+        Brook.Event.send(:andi, user_organization_associate(), :data_migrator, assoc)
       end)
     end)
   end
 
   def resend_dataset_events() do
     {:ok, datasets} = DatasetStore.get_all()
-    datasets |> Enum.map(fn dataset -> Brook.Event.send(:andi, "dataset:update", :testing, dataset) end)
+    datasets |> Enum.map(fn dataset -> Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset) end)
   end
 end

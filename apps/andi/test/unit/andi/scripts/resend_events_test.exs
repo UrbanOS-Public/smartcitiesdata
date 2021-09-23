@@ -18,8 +18,8 @@ defmodule Andi.Scripts.ResendEventsTest do
 
       Andi.Scripts.ResendEvents.resend_dataset_events()
 
-      assert_called Brook.Event.send(:andi, dataset_update(), :testing, dataset1)
-      assert_called Brook.Event.send(:andi, dataset_update(), :testing, dataset2)
+      assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset1)
+      assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset2)
     end
   end
 
@@ -62,25 +62,25 @@ defmodule Andi.Scripts.ResendEventsTest do
 
       Andi.Scripts.ResendEvents.resend_user_org_assoc_events()
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :testing, %UOA{
+      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
                       email: "sample@accenture.com",
                       org_id: "1",
                       subject_id: "auth0|1"
                     })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :testing, %UOA{
+      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
                       email: "sample@accenture.com",
                       org_id: "2",
                       subject_id: "auth0|1"
                     })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :testing, %UOA{
+      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
                       email: "sample@accenture.com",
                       org_id: "3",
                       subject_id: "auth0|2"
                     })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :testing, %UOA{
+      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
                       email: "sample@accenture.com",
                       org_id: "4",
                       subject_id: "auth0|2"
