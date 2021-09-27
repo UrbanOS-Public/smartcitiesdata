@@ -43,6 +43,19 @@ To generate 3 sample datasets and send them to the event stream as dataset updat
 Enum.map(1..3, fn _ -> SmartCity.TestDataGenerator.create_dataset([]) end) |> Enum.each(&(Brook.Event.send(:andi, "dataset:update", :andi, &1)))
 ```
 
+#### ResendEvent Scripts
+
+ANDI has the capability to send a dataset:update and a user-organization:associate event for all existing datasets and user organization associations. In order to use this capability, execute the functions in the module `Andi.Scripts.ResendEvents`. This is useful when standing up a new microservice that listens to the event stream, in order to get that new service caught up to the current state of datasets and user-organization associations.
+
+Example:
+```
+# To resend all dataset events
+Andi.Scripts.ResendEvents.resend_dataset_events()
+
+# To resend all user-organizations associations
+Andi.Scripts.ResendEvents.resend_user_org_assoc_events()
+```
+
 ## Testing ANDI
 
 ### Unit Tests
