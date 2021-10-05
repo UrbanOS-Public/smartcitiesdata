@@ -2,8 +2,8 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
-get_redix_args = fn host, password ->
-  [host: host, password: password]
+get_redix_args = fn host, password, port ->
+  [host: host, password: password, port: port]
   |> Enum.filter(fn
     {_, nil} -> false
     {_, ""} -> false
@@ -11,7 +11,7 @@ get_redix_args = fn host, password ->
   end)
 end
 
-redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"), System.get_env("REDIS_PORT"))
 
 if kafka_brokers do
   endpoints =
