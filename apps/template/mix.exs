@@ -39,6 +39,7 @@ defmodule Template.MixProject do
       {:redix, "~> 0.10"},
       {:smart_city, "~> 3.0"},
       {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
+      {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:distillery, "~> 2.1"}
     ]
