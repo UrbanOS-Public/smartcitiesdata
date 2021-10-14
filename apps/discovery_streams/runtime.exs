@@ -1,7 +1,18 @@
 use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-redis_host = System.get_env("REDIS_HOST")
+
+get_redix_args = fn host, password, port ->
+  port = if (port == ""), do: port, else: String.to_integer(port)
+  [host: host, password: password, port: port]
+  |> Enum.filter(fn
+    {_, nil} -> false
+    {_, ""} -> false
+    _ -> true
+  end)
+end
+
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"), System.get_env("REDIS_PORT"))
 
 if kafka_brokers do
   endpoints =
@@ -32,7 +43,7 @@ if kafka_brokers do
     storage: [
       module: Brook.Storage.Redis,
       init_arg: [
-        redix_args: [host: redis_host],
+        redix_args: redix_args,
         namespace: "discovery_streams:view",
         event_limits: %{
           "dataset:update" => 100,
