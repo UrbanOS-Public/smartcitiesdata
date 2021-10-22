@@ -44,24 +44,16 @@ Channels are named with the form of `streaming:{dataset systemName}` (example: `
 
 1. Install [websocat](https://github.com/vi/websocat).
 1. Start Docker from **Andi**. Run **Andi** and **Reaper** locally.
-1. Make a `PUT` request to the **Andi API** to add a dataset.
-   - For help with the API, see the Postman collection located [here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
-   - Use the `central_ohio_transit_authority__cota_stream` dataset found [here](https://andi.prod.internal.smartcolumbusos.com/api/v1/dataset/90d51c3b-8c01-4ba4-ac24-a3206458f851), or create your own.
-   - Before making the `PUT` request, make sure the dataset has `technical.sourceType` set to `"stream"`.
-1. In the Andi console, send a dataset update event through Brook:
-
-   ```bash
-   {:ok, datasetList} = Andi.Services.DatasetStore.get_all()
-
-   dataset = datasetList |> List.first()
-
-   Brook.Event.send(:andi, "dataset:update", :andi, dataset)
-   ```
-
+1. In `discovery_streams > config > config.exs`, under `config :discovery_streams`, set `topic_prefix` to `"raw-"`.
+   - **Make sure** to change it back to `"transformed-"` when finished with local testing!
 1. Run **Discovery Streams** by starting the Phoenix server:
    ```bash
    MIX_ENV=integration iex -S mix phx.server
    ```
+1. Make a `PUT` request to the **Andi API** to add a dataset.
+   - For help with the API, see the Postman collection located [here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
+   - Use the `central_ohio_transit_authority__cota_stream` dataset found [here](https://andi.prod.internal.smartcolumbusos.com/api/v1/dataset/90d51c3b-8c01-4ba4-ac24-a3206458f851), or create your own.
+   - Before making the `PUT` request, make sure the dataset has `technical.sourceType` set to `"stream"`.
 1. Start websocat:
    ```bash
    websocat ws://127.0.0.1:4001/socket/websocket -H='User-Agent: websocat'
@@ -71,6 +63,11 @@ Channels are named with the form of `streaming:{dataset systemName}` (example: `
    {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}
    ```
    - If using your own dataset, replace `central_ohio_transit_authority__cota_stream` with the system name of your dataset.
+1. You should see the following success response:
+   ```bash
+   {"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"1","topic":"streaming:central_ohio_transit_authority__cota_stream"}
+   ```
+   Every ten seconds (by default), you should see data events appear in the console.
 
 ### Setting a Filter
 
