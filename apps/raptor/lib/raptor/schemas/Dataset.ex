@@ -8,13 +8,15 @@ defmodule Raptor.Schemas.Dataset do
   @type t :: %__MODULE__{
           dataset_id: String.t(),
           system_name: String.t(),
-          org_id: String.t()
+          org_id: String.t(),
+          is_private: boolean()
         }
 
   defstruct [
     :dataset_id,
     :system_name,
-    :org_id
+    :org_id,
+    :is_private
   ]
 
   @doc """
@@ -25,7 +27,8 @@ defmodule Raptor.Schemas.Dataset do
     struct = %__MODULE__{
       dataset_id: dataset.id,
       system_name: dataset.technical.systemName,
-      org_id: dataset.technical.orgId
+      org_id: dataset.technical.orgId,
+      is_private: dataset.technical.private
     }
 
     {:ok, struct}

@@ -50,12 +50,18 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
-    case Auth0Management.get_users_by_api_key(apiKey) do
-      {:ok, user_list} ->
-        render(conn, %{is_authorized: validate_user_list(user_list, systemName)})
+    case DatasetStore.get(systemName).is_private do
+      true ->
+        case Auth0Management.get_users_by_api_key(apiKey) do
+          {:ok, user_list} ->
+            render(conn, %{is_authorized: validate_user_list(user_list, systemName)})
 
-      {:error, _} ->
-        render(conn, %{is_authorized: false})
+          {:error, _} ->
+            render(conn, %{is_authorized: false})
+        end
+
+      false ->
+        render(conn, %{is_authorized: true})
     end
   end
 
@@ -63,11 +69,17 @@ defmodule RaptorWeb.AuthorizeController do
     render_error(conn, 400, "systemName is a required parameter.")
   end
 
-  def authorize(conn, %{"systemName" => _}) do
-    render_error(conn, 400, "apiKey is a required parameter.")
+  def authorize(conn, %{"systemName" => systemName}) do
+    case DatasetStore.get(systemName).is_private do
+      true ->
+        render_error(conn, 400, "apiKey is a required parameter to access private datasets.")
+
+      false ->
+        render(conn, %{is_authorized: true})
+    end
   end
 
   def authorize(conn, _) do
-    render_error(conn, 400, "apiKey and systemName are required parameters.")
+    render_error(conn, 400, "systemName is a required parameter.")
   end
 end

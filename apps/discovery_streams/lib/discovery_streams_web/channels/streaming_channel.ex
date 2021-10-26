@@ -42,8 +42,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
   def is_authorized_in_raptor(api_key, system_name) do
     raptor_url = Keyword.fetch!(raptor(), :url)
-    url_with_params = "#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}"
-    case HTTPoison.get(url_with_params) do
+    case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name)) do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
@@ -51,6 +50,22 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
         Logger.error("Raptor failed to authorize with error: #{error}")
         false
     end
+  end
+
+  def raptor_url_with_params(raptor_url, nil, nil) do
+    "#{raptor_url}"
+  end
+
+  def raptor_url_with_params(raptor_url, api_key, nil) do
+    "#{raptor_url}?apiKey=#{api_key}"
+  end
+
+  def raptor_url_with_params(raptor_url, nil, system_name) do
+    "#{raptor_url}?systemName=#{system_name}"
+  end
+
+  def raptor_url_with_params(raptor_url, api_key, system_name) do
+    "#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}"
   end
 
   def handle_in(@filter_event, message, socket) do
