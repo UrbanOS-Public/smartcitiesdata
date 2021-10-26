@@ -12,14 +12,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{id: id, technical: %{sourceType: "stream", systemName: system_name}} = dataset,
         author: author
       }) do
-    begin_data_ingestion(author, id, system_name, dataset.id)
-    :ok
-  end
-
-  def begin_data_ingestion(author, id, system_name, dataset_id) do
     add_event_count(data_ingest_start(), author, id)
+
     save_dataset_to_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.start_child(dataset_id)
+    :ok
   end
 
   def handle_event(%Brook.Event{
