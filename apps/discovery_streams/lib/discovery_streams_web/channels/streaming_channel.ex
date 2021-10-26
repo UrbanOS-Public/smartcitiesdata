@@ -5,6 +5,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     and then begins sending new data as it arrives.
   """
   use DiscoveryStreamsWeb, :channel
+  use Properties, otp_app: :discovery_streams
+  require Logger
+
+  getter(:raptor, generic: true)
 
   @instance_name DiscoveryStreams.instance_name()
 
@@ -14,17 +18,38 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
+
     system_name = determine_system_name(channel)
 
     case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
 
-      {:ok, _system_name} ->
-        {:ok, assign(socket, :filter, create_filter_rules(params))}
+      {:ok, _dataset_id} ->
+        api_key = params["api_key"]
+
+        if is_authorized_in_raptor(api_key, system_name) do
+          filter = Map.delete(params, "api_key")
+          {:ok, assign(socket, :filter, create_filter_rules(filter))}
+        else
+          {:error, %{reason: "Unauthorized to connect to channel #{channel}"}}
+        end
 
       _ ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
+    end
+  end
+
+  def is_authorized_in_raptor(api_key, system_name) do
+    raptor_url = Keyword.fetch!(raptor(), :url)
+    url_with_params = "#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}"
+    case HTTPoison.get(url_with_params) do
+      {:ok, %{body: body}} ->
+        {:ok, is_authorized} = Jason.decode(body)
+        is_authorized["is_authorized"]
+      error ->
+        Logger.error("Raptor failed to authorize with error: #{error}")
+        false
     end
   end
 

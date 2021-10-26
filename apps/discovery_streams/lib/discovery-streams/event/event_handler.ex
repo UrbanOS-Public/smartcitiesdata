@@ -9,22 +9,10 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}} = dataset,
+        data: %Dataset{id: id, technical: %{sourceType: "stream", systemName: system_name}} = dataset,
         author: author
       }) do
     begin_data_ingestion(author, id, system_name, dataset.id)
-    :ok
-  end
-
-  def handle_event(%Brook.Event{
-    type: data_ingest_start(),
-    data: %Dataset{id: id, technical: %{sourceType: "stream", private: true, systemName: system_name}} = dataset,
-    author: author
-  }) do
-    {:ok, auth} = get_auth()
-    if auth["is_authorized"] do
-      begin_data_ingestion(author, id, system_name, dataset.id)
-    end
     :ok
   end
 
@@ -32,14 +20,6 @@ defmodule DiscoveryStreams.Event.EventHandler do
     add_event_count(data_ingest_start(), author, id)
     save_dataset_to_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.start_child(dataset_id)
-  end
-
-  def get_auth() do
-    case HTTPoison.get("http://localhost:4002/api/authorize?apiKey=5JIaldG1vCorgLoHgtCRXlhj&systemName=nicole_llc__data") do
-      {:ok, %{body: body}} ->
-        Jason.decode(body)
-      error -> error
-    end
   end
 
   def handle_event(%Brook.Event{

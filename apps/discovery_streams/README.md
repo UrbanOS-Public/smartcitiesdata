@@ -59,15 +59,26 @@ Channels are named with the form of `streaming:{dataset systemName}` (example: `
    websocat ws://127.0.0.1:4001/socket/websocket -H='User-Agent: websocat'
    ```
 1. Connect to your dataset:
+
    ```bash
    {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{},"ref":"1"}
    ```
+
    - If using your own dataset, replace `central_ohio_transit_authority__cota_stream` with the system name of your dataset.
+
 1. You should see the following success response:
    ```bash
    {"event":"phx_reply","payload":{"response":{},"status":"ok"},"ref":"1","topic":"streaming:central_ohio_transit_authority__cota_stream"}
    ```
    Every ten seconds (by default), you should see data events appear in the console.
+
+### Connecting to a private dataset
+
+A private dataset can be streamed by a client within the organization that owns the dataset. An API key can be provided in the `phx_join` event by including the key-value pair `"api_key":"<client API key>"` in the payload:
+
+```bash
+   {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"api_key":"1234567890abcdefg"},"ref":"1"}
+```
 
 ### Setting a Filter
 
@@ -75,9 +86,12 @@ A filter can be provided in the `phx_join` event by giving a filter key and valu
 
 ```bash
 # Stream only vehicles with an id of 11409
-
 websocat wss://streams.smartcolumbusos.com/socket/websocket -H='User-Agent: websocat'
 {"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"vehicle.vehicle.id":"11409"},"ref":"1"}
+
+# Include both a filter and an API key
+websocat wss://streams.smartcolumbusos.com/socket/websocket -H='User-Agent: websocat'
+{"topic": "streaming:central_ohio_transit_authority__cota_stream","event":"phx_join","payload":{"api_key":"1234567890abcdefg","vehicle.vehicle.id":"11409"},"ref":"1"}
 ```
 
 ## Environment Variables
