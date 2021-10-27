@@ -9,6 +9,7 @@ defmodule DiscoveryStreams.Services.RaptorService do
     raptor_url = Keyword.fetch!(raptor(), :url)
     case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name)) do
       {:ok, %{body: body}} ->
+        body
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
       error ->

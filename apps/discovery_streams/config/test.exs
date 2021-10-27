@@ -7,6 +7,9 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001],
   server: false
 
+  config :discovery_streams, :raptor,
+  url: "raptor.test/"
+
 config :discovery_streams, endpoints: [localhost: 9092]
 
 config :discovery_streams, :brook,
