@@ -4,11 +4,9 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     After a client joins the channel, it pushes the datasets cache to the client,
     and then begins sending new data as it arrives.
   """
-  use DiscoveryStreamsWeb, :channel
-  use Properties, otp_app: :discovery_streams
-  require Logger
+  alias DiscoveryStreams.Services.RaptorService
 
-  getter(:raptor, generic: true)
+  use DiscoveryStreamsWeb, :channel
 
   @instance_name DiscoveryStreams.instance_name()
 
@@ -28,7 +26,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
       {:ok, _dataset_id} ->
         api_key = params["api_key"]
 
-        if is_authorized_in_raptor(api_key, system_name) do
+        if RaptorService.is_authorized(api_key, system_name) do
           filter = Map.delete(params, "api_key")
           {:ok, assign(socket, :filter, create_filter_rules(filter))}
         else
@@ -38,34 +36,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
       _ ->
         {:error, %{reason: "Channel #{channel} does not exist"}}
     end
-  end
-
-  def is_authorized_in_raptor(api_key, system_name) do
-    raptor_url = Keyword.fetch!(raptor(), :url)
-    case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name)) do
-      {:ok, %{body: body}} ->
-        {:ok, is_authorized} = Jason.decode(body)
-        is_authorized["is_authorized"]
-      error ->
-        Logger.error("Raptor failed to authorize with error: #{error}")
-        false
-    end
-  end
-
-  def raptor_url_with_params(raptor_url, nil, nil) do
-    "#{raptor_url}"
-  end
-
-  def raptor_url_with_params(raptor_url, api_key, nil) do
-    "#{raptor_url}?apiKey=#{api_key}"
-  end
-
-  def raptor_url_with_params(raptor_url, nil, system_name) do
-    "#{raptor_url}?systemName=#{system_name}"
-  end
-
-  def raptor_url_with_params(raptor_url, api_key, system_name) do
-    "#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}"
   end
 
   def handle_in(@filter_event, message, socket) do
