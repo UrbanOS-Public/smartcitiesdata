@@ -16,18 +16,12 @@ defmodule RaptorWeb.AuthorizeController do
     dataset != %{}
   end
 
-  def check_user_association(user, systemName) do
-    dataset_associated_with_system_name = DatasetStore.get(systemName)
-
-    if(is_valid_dataset?(dataset_associated_with_system_name)) do
-      org_id_of_dataset = dataset_associated_with_system_name.org_id
-      is_user_in_org?(user["user_id"], org_id_of_dataset)
-    else
-      false
-    end
+  def check_user_association(user, dataset) do
+    org_id_of_dataset = dataset.org_id
+    is_user_in_org?(user["user_id"], org_id_of_dataset)
   end
 
-  def validate_user_list(user_list, systemName) do
+  def validate_user_list(user_list, dataset) do
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
@@ -37,7 +31,7 @@ defmodule RaptorWeb.AuthorizeController do
         user = user_list |> Enum.at(0)
 
         if(user["email_verified"]) do
-          check_user_association(user, systemName)
+          check_user_association(user, dataset)
         else
           # Only users who have validated their email address may make API calls
           false
@@ -50,18 +44,23 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
-    case DatasetStore.get(systemName).is_private do
-      true ->
+    dataset_associated_with_system_name = DatasetStore.get(systemName)
+
+    if(is_valid_dataset?(dataset_associated_with_system_name)) do
+      if dataset_associated_with_system_name.is_private do
+
         case Auth0Management.get_users_by_api_key(apiKey) do
           {:ok, user_list} ->
-            render(conn, %{is_authorized: validate_user_list(user_list, systemName)})
+            render(conn, %{is_authorized: validate_user_list(user_list, dataset_associated_with_system_name)})
 
           {:error, _} ->
             render(conn, %{is_authorized: false})
         end
-
-      false ->
+      else
         render(conn, %{is_authorized: true})
+      end
+    else
+      render(conn, %{is_authorized: false})
     end
   end
 
@@ -70,12 +69,16 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"systemName" => systemName}) do
-    case DatasetStore.get(systemName).is_private do
-      true ->
-        render_error(conn, 400, "apiKey is a required parameter to access private datasets.")
+    dataset_associated_with_system_name = DatasetStore.get(systemName)
 
-      false ->
+    if(is_valid_dataset?(dataset_associated_with_system_name)) do
+      if DatasetStore.get(systemName).is_private do
+        render_error(conn, 400, "apiKey is a required parameter to access private datasets.")
+      else
         render(conn, %{is_authorized: true})
+      end
+    else
+      render(conn, %{is_authorized: false})
     end
   end
 
