@@ -1,5 +1,4 @@
 defmodule DiscoveryStreams.Services.RaptorService do
-
   use Properties, otp_app: :discovery_streams
   require Logger
 
@@ -10,6 +9,7 @@ defmodule DiscoveryStreams.Services.RaptorService do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
+
       error ->
         Logger.error("Raptor failed to authorize with error: #{inspect(error)}")
         false

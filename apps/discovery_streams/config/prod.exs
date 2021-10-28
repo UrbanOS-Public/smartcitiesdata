@@ -9,8 +9,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint, check_origin: false
 
-config :discovery_streams, :raptor,
-  url: "http://raptor/api/authorize"
+config :discovery_streams, :raptor, url: "http://raptor/api/authorize"
 
 config :logger,
   level: :info

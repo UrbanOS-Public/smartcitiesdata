@@ -107,27 +107,29 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
   test "joining topic that does not exist returns error tuple" do
     assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
-      subscribe_and_join(
-        socket(DiscoveryStreamsWeb.UserSocket),
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:three"
-      )
+             subscribe_and_join(
+               socket(DiscoveryStreamsWeb.UserSocket),
+               DiscoveryStreamsWeb.StreamingChannel,
+               "streaming:three"
+             )
   end
 
   test "joining unauthorized topic returns error tuple" do
     allow(RaptorService.is_authorized(any(), any()),
       return: false
     )
+
     assert {:error, %{reason: "Unauthorized to connect to channel streaming:shuttle-position"}} ==
-      subscribe_and_join(
-        socket(DiscoveryStreamsWeb.UserSocket),
-        DiscoveryStreamsWeb.StreamingChannel,
-        "streaming:shuttle-position"
-      )
+             subscribe_and_join(
+               socket(DiscoveryStreamsWeb.UserSocket),
+               DiscoveryStreamsWeb.StreamingChannel,
+               "streaming:shuttle-position"
+             )
   end
 
   test "API key and system name are passed to Raptor" do
     api_key = "abcdefg"
+
     DiscoveryStreamsWeb.StreamingChannel.join(
       "streaming:shuttle-position",
       %{"api_key" => api_key},

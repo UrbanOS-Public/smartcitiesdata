@@ -48,10 +48,11 @@ defmodule RaptorWeb.AuthorizeController do
 
     if(is_valid_dataset?(dataset_associated_with_system_name)) do
       if dataset_associated_with_system_name.is_private do
-
         case Auth0Management.get_users_by_api_key(apiKey) do
           {:ok, user_list} ->
-            render(conn, %{is_authorized: validate_user_list(user_list, dataset_associated_with_system_name)})
+            render(conn, %{
+              is_authorized: validate_user_list(user_list, dataset_associated_with_system_name)
+            })
 
           {:error, _} ->
             render(conn, %{is_authorized: false})

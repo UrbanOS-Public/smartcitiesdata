@@ -28,8 +28,18 @@ defmodule Raptor.Services.DatasetStoreTest do
       )
 
       expectedDatasets = [
-        %Dataset{dataset_id: "1", system_name: "system__name", org_id: "system", is_private: false},
-        %Dataset{dataset_id: "2", system_name: "system__name_2", org_id: "system", is_private: true}
+        %Dataset{
+          dataset_id: "1",
+          system_name: "system__name",
+          org_id: "system",
+          is_private: false
+        },
+        %Dataset{
+          dataset_id: "2",
+          system_name: "system__name_2",
+          org_id: "system",
+          is_private: true
+        }
       ]
 
       actualDatasets = DatasetStore.get_all()
@@ -61,7 +71,12 @@ defmodule Raptor.Services.DatasetStoreTest do
         ]
       )
 
-      expected_dataset = %Dataset{dataset_id: "1", system_name: "system__name", org_id: "system", is_private: false}
+      expected_dataset = %Dataset{
+        dataset_id: "1",
+        system_name: "system__name",
+        org_id: "system",
+        is_private: false
+      }
 
       actualDataset = DatasetStore.get(system_name)
 
@@ -81,7 +96,12 @@ defmodule Raptor.Services.DatasetStoreTest do
 
   describe "persist/1" do
     test "Redis is successfully called with a dataset" do
-      dataset = %Dataset{dataset_id: "1", system_name: "system__name", org_id: "system", is_private: false}
+      dataset = %Dataset{
+        dataset_id: "1",
+        system_name: "system__name",
+        org_id: "system",
+        is_private: false
+      }
 
       dataset_json =
         "{\"dataset_id\":\"1\",\"is_private\":false,\"org_id\":\"system\",\"system_name\":\"system__name\"}"

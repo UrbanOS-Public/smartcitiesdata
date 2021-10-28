@@ -65,7 +65,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
       expect(DatasetStore.get(system_name),
-        return: %{dataset_id: "wags", system_name: system_name, org_id: dataset_org_id, is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
       )
 
       expect(UserOrgAssocStore.get(user_id, dataset_org_id),
@@ -102,7 +107,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "some__data"
 
       expect(DatasetStore.get(system_name),
-        return: %{dataset_id: "wags", system_name: system_name, org_id: "dog_stats", is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: "dog_stats",
+          is_private: true
+        }
       )
 
       actual =
@@ -120,7 +130,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"is_authorized" => true}
 
       expect(DatasetStore.get(system_name),
-        return: %{dataset_id: "wags", system_name: system_name, org_id: "dog_stats", is_private: false}
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: "dog_stats",
+          is_private: false
+        }
       )
 
       actual =
@@ -163,7 +178,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"is_authorized" => false}
 
       expect(DatasetStore.get(any()),
-        return: %{dataset_id: "wags", system_name: "system__name", org_id: "dog_stats", is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
       )
 
       expect(Auth0Management.get_users_by_api_key(api_key),
@@ -183,7 +203,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"is_authorized" => false}
 
       expect(DatasetStore.get(any()),
-        return: %{dataset_id: "wags", system_name: "system__name", org_id: "dog_stats", is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
       )
 
       expect(Auth0Management.get_users_by_api_key(api_key),
@@ -203,7 +228,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"is_authorized" => false}
 
       expect(DatasetStore.get(any()),
-        return: %{dataset_id: "wags", system_name: "system__name", org_id: "dog_stats", is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
       )
 
       expect(Auth0Management.get_users_by_api_key(api_key),
@@ -223,8 +253,14 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"is_authorized" => false}
 
       expect(DatasetStore.get(any()),
-        return: %{dataset_id: "wags", system_name: "system__name", org_id: "dog_stats", is_private: true}
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
       )
+
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:error, []})
 
       actual =

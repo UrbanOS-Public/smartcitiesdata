@@ -16,7 +16,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
-
     system_name = determine_system_name(channel)
 
     case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do

@@ -95,7 +95,11 @@ defmodule Raptor.AuthorizeControllerTest do
   def create_and_send_dataset_event(private \\ false)
 
   def create_and_send_dataset_event(private) when private == true do
-    dataset = TDG.create_dataset(%{technical: %{org_id: "1234-5678", system_name: "some_org___some_data", private: true}})
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{org_id: "1234-5678", system_name: "some_org___some_data", private: true}
+      })
+
     Brook.Event.send(@instance_name, dataset_update(), :test, dataset)
 
     expected_raptor_dataset = %Dataset{

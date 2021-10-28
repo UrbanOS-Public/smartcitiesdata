@@ -15,6 +15,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   setup_all do
     bypass = Bypass.open()
+
     Bypass.stub(bypass, "GET", "/api/authorize", fn conn ->
       system_name =
         conn
@@ -35,7 +36,6 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "broadcasts data to end users" do
-
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset1)
 
@@ -80,7 +80,11 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "doesnt broadcast private datasets if unauthorized" do
-    private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true, systemName: @unauthorized_private_system_name})
+    private_dataset =
+      TDG.create_dataset(
+        id: Faker.UUID.v4(),
+        technical: %{sourceType: "stream", private: true, systemName: @unauthorized_private_system_name}
+      )
 
     Brook.Test.send(@instance_name, data_ingest_start(), :author, private_dataset)
 
