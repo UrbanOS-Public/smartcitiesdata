@@ -1,5 +1,3 @@
-[![Master](https://travis-ci.org/Datastillery/reaper.svg?branch=master)](https://travis-ci.org/Datastillery/reaper)
-
 # Reaper
 
 Retrieves data, decodes it, and loads it onto a Kafka topic
