@@ -23,4 +23,4 @@ MIX_ENV=integration iex -S mix
 
 ## License
 
-Released under [Apache 2 license](https://github.com/Datastillery/smartcitiesdata/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/LICENSE).

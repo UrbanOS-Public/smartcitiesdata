@@ -69,7 +69,7 @@ defmodule Estuary.MixProject do
   defp docs do
     [
       main: "readme",
-      source_url: "https://www.github.com/Datastillery/smartcitiesdata",
+      source_url: "https://www.github.com/UrbanOS-Public/smartcitiesdata",
       extras: [
         "README.md"
       ]

@@ -147,4 +147,4 @@ The resulting supervision tree looks roughly like this:
 
 ## License
 
-Released under [Apache 2 license](https://github.com/Datastillery/reaper/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/UrbanOS-Public/reaper/blob/master/LICENSE).

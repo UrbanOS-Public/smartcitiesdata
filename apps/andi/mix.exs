@@ -16,7 +16,7 @@ defmodule Andi.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      description: "Dataset curation interface for Datastillery"
+      description: "Dataset curation interface for UrbanOS"
     ]
   end
 
