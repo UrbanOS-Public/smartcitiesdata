@@ -20,7 +20,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
     case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
-        {:error, %{reason: "Channel #{channel} does not exist"}}
+        {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
 
       {:ok, _dataset_id} ->
         api_key = params["api_key"]
@@ -29,11 +29,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
           filter = Map.delete(params, "api_key")
           {:ok, assign(socket, :filter, create_filter_rules(filter))}
         else
-          {:error, %{reason: "Unauthorized to connect to channel #{channel}"}}
+          {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
         end
 
       _ ->
-        {:error, %{reason: "Channel #{channel} does not exist"}}
+        {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
     end
   end
 

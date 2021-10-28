@@ -106,7 +106,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "joining topic that does not exist returns error tuple" do
-    assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
+    assert {:error, %{reason: "Channel streaming:three does not exist or you do not have access"}} ==
              subscribe_and_join(
                socket(DiscoveryStreamsWeb.UserSocket),
                DiscoveryStreamsWeb.StreamingChannel,
@@ -119,7 +119,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
       return: false
     )
 
-    assert {:error, %{reason: "Unauthorized to connect to channel streaming:shuttle-position"}} ==
+    assert {:error, %{reason: "Channel streaming:shuttle-position does not exist or you do not have access"}} ==
              subscribe_and_join(
                socket(DiscoveryStreamsWeb.UserSocket),
                DiscoveryStreamsWeb.StreamingChannel,
