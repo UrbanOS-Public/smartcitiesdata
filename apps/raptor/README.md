@@ -22,26 +22,30 @@ To run Raptor locally, take the following steps:
 2. Run `MIX_ENV=integration mix docker.start`
 3. Run `AUTH0_CLIENT_SECRET=<auth_client_secret> MIX_ENV=integration iex -S mix start`
 
-Now you can visit [`localhost:4001`](http://localhost:4001/healthcheck) from your browser or via Postman and should receive a 200 OK response.
+Now you can visit [`localhost:4002`](http://localhost:4002/healthcheck) from your browser or via Postman and should receive a 200 OK response.
 
 ### Generating Sample Data
 
 To test that the event stream is working, you can send a SmartCity event through the microservice and see the result outputted in the console:
 
 To send a dataset update event:
+
 ```
   dataset = SmartCity.TestDataGenerator.create_dataset(%{})
   Brook.Event.send(Raptor.instance_name(), "dataset:update", :testing, dataset)
 ```
 
 To send a user_organization_associate event:
+
 ```
   alias SmartCity.UserOrganizationAssociate
   import SmartCity.Event
   association = %SmartCity.UserOrganizationAssociate{org_id: "org1", subject_id: "user1", email: "blah@blah.com"}
   Brook.Event.send(Raptor.instance_name(), user_organization_associate(), :testing, association)
 ```
+
 To send a user_organization_disassociate event:
+
 ```
   alias SmartCity.UserOrganizationDisassociate
   import SmartCity.Event
@@ -49,7 +53,7 @@ To send a user_organization_disassociate event:
   Brook.Event.send(Raptor.instance_name(), user_organization_disassociate(), :testing, disassociation)
 ```
 
-Note: You should not send a disassociate event before sending an associate event. 
+Note: You should not send a disassociate event before sending an associate event.
 
 ## Testing Raptor
 

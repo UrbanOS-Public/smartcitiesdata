@@ -26,7 +26,8 @@ defmodule Raptor.Event.EventHandlerTest do
       expected_raptor_dataset = %Dataset{
         dataset_id: dataset.id,
         org_id: dataset.technical.orgId,
-        system_name: system_name
+        system_name: system_name,
+        is_private: dataset.technical.private
       }
 
       eventually(fn ->

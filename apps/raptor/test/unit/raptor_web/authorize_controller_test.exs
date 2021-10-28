@@ -114,7 +114,23 @@ defmodule RaptorWeb.AuthorizeControllerTest do
     end
   end
 
-  # TODO: No API key needed for public dataset
+  describe "public dataset authorization" do
+    test "always returns true", %{conn: conn} do
+      system_name = "system__name"
+      expected = %{"is_authorized" => true}
+
+      expect(DatasetStore.get(system_name),
+        return: %{dataset_id: "wags", system_name: system_name, org_id: "dog_stats", is_private: false}
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+  end
 
   describe "invalid input" do
     test "returns an error when the systemName is not passed", %{conn: conn} do
