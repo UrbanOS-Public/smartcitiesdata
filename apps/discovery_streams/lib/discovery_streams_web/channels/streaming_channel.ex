@@ -4,6 +4,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     After a client joins the channel, it pushes the datasets cache to the client,
     and then begins sending new data as it arrives.
   """
+  alias DiscoveryStreams.Services.RaptorService
+
   use DiscoveryStreamsWeb, :channel
 
   @instance_name DiscoveryStreams.instance_name()
@@ -18,13 +20,20 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
 
     case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
-        {:error, %{reason: "Channel #{channel} does not exist"}}
+        {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
 
-      {:ok, _system_name} ->
-        {:ok, assign(socket, :filter, create_filter_rules(params))}
+      {:ok, _dataset_id} ->
+        api_key = params["api_key"]
+
+        if RaptorService.is_authorized(api_key, system_name) do
+          filter = Map.delete(params, "api_key")
+          {:ok, assign(socket, :filter, create_filter_rules(filter))}
+        else
+          {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
+        end
 
       _ ->
-        {:error, %{reason: "Channel #{channel} does not exist"}}
+        {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
     end
   end
 

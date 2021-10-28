@@ -1,4 +1,5 @@
 defmodule DiscoveryStreams.SourceHandlerTest do
+  alias DiscoveryStreams.Services.RaptorService
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
@@ -20,6 +21,10 @@ defmodule DiscoveryStreams.SourceHandlerTest do
 
     allow(Brook.get(any(), :streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream"),
       return: {:ok, @dataset_2_id}
+    )
+
+    allow(RaptorService.is_authorized(any(), any()),
+      return: true
     )
 
     :ok

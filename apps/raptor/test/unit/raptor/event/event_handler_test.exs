@@ -107,7 +107,8 @@ defmodule Raptor.Event.EventHandlerTest do
       expected_dataset_entry = %Dataset{
         dataset_id: dataset.id,
         org_id: dataset.technical.orgId,
-        system_name: dataset.technical.systemName
+        system_name: dataset.technical.systemName,
+        is_private: dataset.technical.private
       }
 
       assert_called(DatasetStore.persist(expected_dataset_entry))

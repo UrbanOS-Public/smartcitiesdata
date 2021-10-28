@@ -11,6 +11,29 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
 
   @instance_name DiscoveryStreams.instance_name()
+  @unauthorized_private_system_name "private__data"
+
+  setup_all do
+    bypass = Bypass.open()
+
+    Bypass.stub(bypass, "GET", "/api/authorize", fn conn ->
+      system_name =
+        conn
+        |> Plug.Conn.fetch_query_params()
+        |> Map.get(:query_params)
+        |> Map.get("systemName")
+
+      if system_name == @unauthorized_private_system_name do
+        Plug.Conn.resp(conn, 200, "{\"is_authorized\":false}")
+      else
+        Plug.Conn.resp(conn, 200, "{\"is_authorized\":true}")
+      end
+    end)
+
+    Application.put_env(:discovery_streams, :raptor_url, "http://localhost:#{bypass.port}/api/authorize")
+
+    :ok
+  end
 
   test "broadcasts data to end users" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
@@ -56,8 +79,12 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     refute_push("update", %{"dont" => "readme"}, 15_000)
   end
 
-  test "doesnt broadcast private datasets" do
-    private_dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: true})
+  test "doesnt broadcast private datasets if unauthorized" do
+    private_dataset =
+      TDG.create_dataset(
+        id: Faker.UUID.v4(),
+        technical: %{sourceType: "stream", private: true, systemName: @unauthorized_private_system_name}
+      )
 
     Brook.Test.send(@instance_name, data_ingest_start(), :author, private_dataset)
 

@@ -8,7 +8,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   @redix Raptor.Application.redis_client()
 
   describe "get_all/0" do
-    test "returns empty list when no datasets in redis", %{conn: conn} do
+    test "returns empty list when no datasets in redis" do
       allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: [])
 
       actualDatasets = UserOrgAssocStore.get_all()
@@ -16,7 +16,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       assert [] == actualDatasets
     end
 
-    test "returns list of user-org associations when they exist in redis", %{conn: conn} do
+    test "returns list of user-org associations when they exist in redis" do
       keys = ["raptor:user_org_assoc:user_id:org_id", "raptor:user_org_assoc:user_id1:org_id1"]
       allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: keys)
 
@@ -39,8 +39,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   end
 
   describe "get/1" do
-    test "an empty map is returned when there are no entries in redis matching the userId and orgId",
-         %{conn: conn} do
+    test "an empty map is returned when there are no entries in redis matching the userId and orgId" do
       user_id = "picard"
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
@@ -51,13 +50,12 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       assert %{} == actualDataset
     end
 
-    test "a Raptor user org assoc is returned when there is one entry in redis matching the user id and org id",
-         %{conn: conn} do
+    test "a Raptor user org assoc is returned when there is one entry in redis matching the user id and org id" do
       user_id = "picard"
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "#{user_id}:#{org_id}"]),
+      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
         return: ["raptor:user_org_assoc:picard:enterprise"]
       )
 
@@ -78,8 +76,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       assert expected_dataset == actualDataset
     end
 
-    test "an empty map is returned when there are multiple entries in redis matching the user id and org id",
-         %{conn: conn} do
+    test "an empty map is returned when there are multiple entries in redis matching the user id and org id" do
       user_id = "picard"
       org_id = "enterprise"
 
@@ -97,7 +94,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   end
 
   describe "persist/1" do
-    test "Redis is successfully called with a user org assoc entry", %{conn: conn} do
+    test "Redis is successfully called with a user org assoc entry" do
       user_id = "picard"
       org_id = "enterprise"
 
@@ -124,7 +121,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   end
 
   describe "delete/1" do
-    test "Redis' delete is successfully called with a user org disassoc entry", %{conn: conn} do
+    test "Redis' delete is successfully called with a user org disassoc entry" do
       user_id = "picard"
       org_id = "enterprise"
       userOrgAssoc = %UserOrgAssoc{user_id: "picard", email: nil, org_id: "enterprise"}

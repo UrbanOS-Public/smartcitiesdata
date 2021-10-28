@@ -16,7 +16,7 @@ defmodule Raptor.AuthorizeControllerTest do
 
   @instance_name Raptor.instance_name()
 
-  plug(Tesla.Middleware.BaseUrl, "http://localhost:4001")
+  plug(Tesla.Middleware.BaseUrl, "http://localhost:4002")
   getter(:kafka_broker, generic: true)
 
   describe "authorize" do
@@ -29,7 +29,8 @@ defmodule Raptor.AuthorizeControllerTest do
     end
 
     test "returns is_authorized=false when the user does not have permissions to access the requested dataset" do
-      dataset = create_and_send_dataset_event()
+      is_private_dataset = true
+      dataset = create_and_send_dataset_event(is_private_dataset)
       system_name = dataset.technical.systemName
 
       {:ok, %Tesla.Env{body: body}} =
@@ -41,7 +42,8 @@ defmodule Raptor.AuthorizeControllerTest do
     end
 
     test "returns is_authorized=true when the user has permissions to access the requested dataset" do
-      dataset = create_and_send_dataset_event()
+      is_private_dataset = true
+      dataset = create_and_send_dataset_event(is_private_dataset)
       system_name = dataset.technical.systemName
       send_user_org_associate_event(dataset.technical.orgId, "123", "nicole@starfleet.com")
 
@@ -54,7 +56,8 @@ defmodule Raptor.AuthorizeControllerTest do
     end
 
     test "returns is_authorized=false when the user's permissions to access the requested dataset are revoked" do
-      dataset = create_and_send_dataset_event()
+      is_private_dataset = true
+      dataset = create_and_send_dataset_event(is_private_dataset)
       system_name = dataset.technical.systemName
       send_user_org_associate_event(dataset.technical.orgId, "123", "nicole@starfleet.com")
 
@@ -73,16 +76,56 @@ defmodule Raptor.AuthorizeControllerTest do
 
       assert body == "{\"is_authorized\":false}"
     end
+
+    test "returns is_authorized=true when the dataset is public" do
+      is_private_dataset = false
+      dataset = create_and_send_dataset_event(is_private_dataset)
+      system_name = dataset.technical.systemName
+      send_user_org_associate_event(dataset.technical.orgId, "123", "nicole@starfleet.com")
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/authorize?systemName=#{system_name}",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"is_authorized\":true}"
+    end
   end
 
-  def create_and_send_dataset_event() do
+  def create_and_send_dataset_event(private \\ false)
+
+  def create_and_send_dataset_event(private) when private == true do
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{org_id: "1234-5678", system_name: "some_org___some_data", private: true}
+      })
+
+    Brook.Event.send(@instance_name, dataset_update(), :test, dataset)
+
+    expected_raptor_dataset = %Dataset{
+      dataset_id: dataset.id,
+      org_id: dataset.technical.orgId,
+      system_name: dataset.technical.systemName,
+      is_private: dataset.technical.private
+    }
+
+    eventually(fn ->
+      raptor_dataset = DatasetStore.get(dataset.technical.systemName)
+      assert raptor_dataset == expected_raptor_dataset
+    end)
+
+    dataset
+  end
+
+  def create_and_send_dataset_event(private) when private == false do
     dataset = TDG.create_dataset(%{})
     Brook.Event.send(@instance_name, dataset_update(), :test, dataset)
 
     expected_raptor_dataset = %Dataset{
       dataset_id: dataset.id,
       org_id: dataset.technical.orgId,
-      system_name: dataset.technical.systemName
+      system_name: dataset.technical.systemName,
+      is_private: dataset.technical.private
     }
 
     eventually(fn ->

@@ -1,4 +1,5 @@
 defmodule DiscoveryStreamsWeb.StreamingChannelTest do
+  alias DiscoveryStreams.Services.RaptorService
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
@@ -11,6 +12,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
     allow(Brook.get(any(), :streaming_datasets_by_system_name, "shuttle-position"),
       return: {:ok, @dataset_1_id}
+    )
+
+    allow(RaptorService.is_authorized(any(), any()),
+      return: true
     )
 
     :ok
@@ -101,11 +106,36 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "joining topic that does not exist returns error tuple" do
-    assert {:error, %{reason: "Channel streaming:three does not exist"}} ==
+    assert {:error, %{reason: "Channel streaming:three does not exist or you do not have access"}} ==
              subscribe_and_join(
                socket(DiscoveryStreamsWeb.UserSocket),
                DiscoveryStreamsWeb.StreamingChannel,
                "streaming:three"
              )
+  end
+
+  test "joining unauthorized topic returns error tuple" do
+    allow(RaptorService.is_authorized(any(), any()),
+      return: false
+    )
+
+    assert {:error, %{reason: "Channel streaming:shuttle-position does not exist or you do not have access"}} ==
+             subscribe_and_join(
+               socket(DiscoveryStreamsWeb.UserSocket),
+               DiscoveryStreamsWeb.StreamingChannel,
+               "streaming:shuttle-position"
+             )
+  end
+
+  test "API key and system name are passed to Raptor" do
+    api_key = "abcdefg"
+
+    DiscoveryStreamsWeb.StreamingChannel.join(
+      "streaming:shuttle-position",
+      %{"api_key" => api_key},
+      socket(DiscoveryStreamsWeb.UserSocket)
+    )
+
+    assert_called(RaptorService.is_authorized(api_key, "shuttle-position"))
   end
 end

@@ -25,7 +25,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
       dataset =
         TDG.create_dataset(
           id: Faker.UUID.v4(),
-          technical: %{sourceType: "stream", private: false, systemName: "fake_system_name"}
+          technical: %{sourceType: "stream", systemName: "fake_system_name"}
         )
 
       event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
@@ -48,7 +48,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
       dataset =
         TDG.create_dataset(
           id: Faker.UUID.v4(),
-          technical: %{sourceType: "stream", private: false, systemName: "fake_system_name"}
+          technical: %{sourceType: "stream", systemName: "fake_system_name"}
         )
 
       event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
@@ -56,23 +56,6 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
 
       assert_called DiscoveryStreams.Stream.Supervisor.start_child(dataset.id), once()
       assert :ok == response
-    end
-
-    test "data:extract:start event should not handle private dataset" do
-      dataset =
-        TDG.create_dataset(
-          id: Faker.UUID.v4(),
-          technical: %{sourceType: "stream", private: true, systemName: "fake_system_name"}
-        )
-
-      event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
-
-      response = EventHandler.handle_event(event)
-
-      refute_called Brook.ViewState.create(any(), any(), any())
-      refute_called DiscoveryStreams.Stream.Supervisor.start_child(any())
-
-      assert :discard == response
     end
   end
 

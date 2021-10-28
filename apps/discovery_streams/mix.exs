@@ -36,6 +36,7 @@ defmodule DiscoveryStreams.Mixfile do
     [
       {:annotated_retry, in_umbrella: true},
       {:brook, "~> 0.4.0"},
+      {:bypass, "~> 2.0", only: [:test, :integration]},
       {:cachex, "~> 3.0"},
       {:checkov, "~> 1.0", only: [:test, :integration]},
       {:cowlib, "~> 2.8", override: true},

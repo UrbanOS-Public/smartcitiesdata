@@ -9,7 +9,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{id: id, technical: %{sourceType: "stream", private: false, systemName: system_name}} = dataset,
+        data: %Dataset{id: id, technical: %{sourceType: "stream", systemName: system_name}} = dataset,
         author: author
       }) do
     add_event_count(data_ingest_start(), author, id)

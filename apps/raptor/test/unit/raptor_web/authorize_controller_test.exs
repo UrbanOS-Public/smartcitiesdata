@@ -29,7 +29,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
 
   @unauthorized_call []
 
-  describe "authorization checks" do
+  describe "private dataset authorization" do
     test "returns true when there is one valid user that has the given api key", %{conn: conn} do
       api_key = "enterprise"
       system_name = "system__name"
@@ -40,7 +40,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
       expect(DatasetStore.get(system_name),
-        return: %{dataset_id: "wags", system_name: system_name, org_id: org_id}
+        return: %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true}
       )
 
       expect(UserOrgAssocStore.get(user_id, org_id),
@@ -65,7 +65,12 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
       expect(DatasetStore.get(system_name),
-        return: %{dataset_id: "wags", system_name: system_name, org_id: dataset_org_id}
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
       )
 
       expect(UserOrgAssocStore.get(user_id, dataset_org_id),
@@ -84,7 +89,6 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "enterprise"
       system_name = "invalid_system__name"
       expected = %{"is_authorized" => false}
-      expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
       expect(DatasetStore.get(system_name),
         return: %{}
@@ -99,18 +103,51 @@ defmodule RaptorWeb.AuthorizeControllerTest do
     end
 
     test "returns an error when the apiKey is not passed", %{conn: conn} do
-      expected = %{"message" => "apiKey is a required parameter."}
+      expected = %{"message" => "apiKey is a required parameter to access private datasets."}
+      system_name = "some__data"
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
 
       actual =
         conn
-        |> get("/api/authorize?systemName=systemName")
+        |> get("/api/authorize?systemName=#{system_name}")
         |> json_response(400)
 
       assert actual == expected
     end
   end
 
-  describe "invalid input checks" do
+  describe "public dataset authorization" do
+    test "always returns true", %{conn: conn} do
+      system_name = "system__name"
+      expected = %{"is_authorized" => true}
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: "dog_stats",
+          is_private: false
+        }
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+  end
+
+  describe "invalid input" do
     test "returns an error when the systemName is not passed", %{conn: conn} do
       expected = %{"message" => "systemName is a required parameter."}
 
@@ -123,7 +160,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
     end
 
     test "returns an error when the apiKey and the systemName are not passed", %{conn: conn} do
-      expected = %{"message" => "apiKey and systemName are required parameters."}
+      expected = %{"message" => "systemName is a required parameter."}
 
       actual =
         conn
@@ -134,11 +171,20 @@ defmodule RaptorWeb.AuthorizeControllerTest do
     end
   end
 
-  describe "authentication checks" do
+  describe "authentication" do
     test "returns false when there is one valid user that has the given api key but their email is not validated",
          %{conn: conn} do
       api_key = "enterprise"
       expected = %{"is_authorized" => false}
+
+      expect(DatasetStore.get(any()),
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
 
       expect(Auth0Management.get_users_by_api_key(api_key),
         return: {:ok, @unverified_email_call}
@@ -156,6 +202,15 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
+      expect(DatasetStore.get(any()),
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
+
       expect(Auth0Management.get_users_by_api_key(api_key),
         return: {:ok, @unauthorized_call}
       )
@@ -172,6 +227,15 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
+      expect(DatasetStore.get(any()),
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
+
       expect(Auth0Management.get_users_by_api_key(api_key),
         return: {:ok, @multiple_users_call}
       )
@@ -187,6 +251,16 @@ defmodule RaptorWeb.AuthorizeControllerTest do
     test "returns false if the auth0 management api returns an error", %{conn: conn} do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
+
+      expect(DatasetStore.get(any()),
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
+
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:error, []})
 
       actual =
