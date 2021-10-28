@@ -88,7 +88,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
         ["ingest", false, true],
         ["ingest", true, true],
         ["stream", false, false],
-        ["stream", true, false]
+        ["stream", true, true]
       ])
     end
 
