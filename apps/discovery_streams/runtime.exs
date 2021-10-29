@@ -3,7 +3,7 @@ use Mix.Config
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
 get_redix_args = fn host, password, port ->
-  port = if (port == ""), do: port, else: String.to_integer(port)
+  port = if (port in [nil, ""]), do: port, else: String.to_integer(port)
   [host: host, password: password, port: port]
   |> Enum.filter(fn
     {_, nil} -> false
