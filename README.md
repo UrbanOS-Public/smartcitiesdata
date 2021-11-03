@@ -50,7 +50,7 @@ Each microservice under the [apps/](https://github.com/Datastillery/smartcitiesd
 docker build .
 ```
 
-Additional app specific build steps will be in the relative readme at `apps/{app}`.
+Additional app specific build steps will be in the relative readme at `apps/{app}/readme.md`.
 
 ## Testing
 * Unit Tests can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
