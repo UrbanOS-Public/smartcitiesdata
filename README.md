@@ -49,16 +49,19 @@ Each microservice under the [apps/](https://github.com/Datastillery/smartcitiesd
 ```
 docker build .
 ```
+
+Additional app specific build steps will be in the relative readme at `apps/{app}/readme.md`.
+
 ## Testing
-* Unit Tests.  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
+* Unit Tests can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
 ```
 mix test
 ```
-* Integration Tests  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
+* Integration Tests can be executed from the root of this repository or a specific application under the [apps/](https://github.com/Datastillery/smartcitiesdata/tree/master/apps) directory
 ```
 mix test.integration
 ```
-* End to End (E2E) Tests.  Can be executed from the root of this repository.
+* End to End (E2E) Tests can be executed from the root of this repository.
 ```
 mix test.e2e
 ```
