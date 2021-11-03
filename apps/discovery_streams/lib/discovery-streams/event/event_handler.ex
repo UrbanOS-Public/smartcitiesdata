@@ -26,7 +26,6 @@ defmodule DiscoveryStreams.Event.EventHandler do
       }) do
     add_event_count(dataset_update(), author, dataset.id)
 
-    delete_from_viewstate(dataset.id, dataset.technical.systemName)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
 
     :ok

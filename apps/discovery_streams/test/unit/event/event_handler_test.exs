@@ -66,7 +66,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
       :ok
     end
 
-    data_test "when sourceType is '#{source_type}' and private is '#{private}' dataset_deleted == #{delete_called}" do
+    data_test "when sourceType is '#{source_type}' and private is '#{private}' stream_terminated == #{stream_terminated}" do
       system_name = Faker.UUID.v4()
 
       dataset =
@@ -79,16 +79,38 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
 
       EventHandler.handle_event(event)
 
+      assert stream_terminated == called?(DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id))
+
+      where([
+        [:source_type, :private, :stream_terminated],
+        ["ingest", false, true],
+        ["ingest", true, true],
+        ["stream", false, false],
+        ["stream", true, true]
+      ])
+    end
+
+    data_test "when sourceType is '#{source_type}' dataset_deleted == #{delete_called}" do
+      system_name = Faker.UUID.v4()
+
+      dataset =
+        TDG.create_dataset(
+          id: Faker.UUID.v4(),
+          technical: %{sourceType: source_type, systemName: system_name}
+        )
+
+      event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
+
+      EventHandler.handle_event(event)
+
       assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_id, dataset.id))
       assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_system_name, system_name))
       assert delete_called == called?(DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id))
 
       where([
-        [:source_type, :private, :delete_called],
-        ["ingest", false, true],
-        ["ingest", true, true],
-        ["stream", false, false],
-        ["stream", true, true]
+        [:source_type, :delete_called],
+        ["ingest", true],
+        ["stream", false]
       ])
     end
 
