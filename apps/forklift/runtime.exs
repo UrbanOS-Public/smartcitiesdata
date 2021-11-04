@@ -110,6 +110,22 @@ config :redix,
 config :ex_aws,
   region: System.get_env("AWS_REGION") || "us-west-2"
 
+if System.get_env("AWS_ACCESS_KEY_ID") do
+  config :ex_aws,
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+end
+
+if System.get_env("S3_HOST_NAME") do
+  config :ex_aws, :s3,
+    scheme: "http://",
+    region: "local",
+    host: %{
+      "local" => System.get_env("S3_HOST_NAME")
+    },
+    port: System.get_env("S3_PORT") |> String.to_integer()
+end
+
 if System.get_env("COMPACTION_SCHEDULE") do
   special_compaction_datasets_string = System.get_env("SPECIAL_COMPACTION_DATASETS") || ""
   special_compaction_datasets = String.split(special_compaction_datasets_string, ",")
