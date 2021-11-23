@@ -2,9 +2,9 @@ use Mix.Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
-get_redix_args = fn host, password, port ->
+get_redix_args = fn host, password, port, ssl ->
   port = if (port in [nil, ""]), do: port, else: String.to_integer(port)
-  [host: host, password: password, port: port]
+  [host: host, password: password, port: port, ssl: ssl]
   |> Enum.filter(fn
     {_, nil} -> false
     {_, ""} -> false
@@ -12,7 +12,7 @@ get_redix_args = fn host, password, port ->
   end)
 end
 
-redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"), System.get_env("REDIS_PORT"))
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"), System.get_env("REDIS_PORT"), System.get_env("REDIS_SSL"))
 
 if kafka_brokers do
   endpoints =
