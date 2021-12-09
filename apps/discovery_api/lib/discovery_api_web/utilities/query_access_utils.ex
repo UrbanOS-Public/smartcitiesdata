@@ -1,3 +1,5 @@
+require Logger
+
 defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @moduledoc """
   Provides authentication and authorization helper methods
@@ -6,10 +8,11 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
-  def authorized_session(conn, authorized_models) do
+  def authorized_session(conn, affected_models) do
     current_user = conn.assigns.current_user
+    api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    if user_can_access_models?(authorized_models, current_user) do
+    if api_key_can_access_models?(affected_models, api_key) || user_can_access_models?(affected_models, current_user) do
       session_opts = DiscoveryApi.prestige_opts()
       session = Prestige.new_session(session_opts)
       {:ok, session}
@@ -34,6 +37,16 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
 
   def user_can_access_models?(affected_models, user) do
     Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
+  end
+
+  def api_key_can_access_models?(affected_models, []) do
+    Logger.warn("No API Key Provided")
+    false
+  end
+
+  def api_key_can_access_models?(affected_models, api_key) do
+    Logger.warn("TODO: Checking with raptor")
+    true
   end
 
   defp map_affected_tables_to_models(affected_tables) do
