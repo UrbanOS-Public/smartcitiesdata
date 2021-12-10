@@ -29,8 +29,6 @@ defmodule DiscoveryApi.Services.RaptorService do
   end
 
   defp raptor_url_with_params(raptor_url, api_key, system_name) do
-    Logger.warn("rap service @ L33")
-    Logger.warn("#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}")
     "#{raptor_url}?apiKey=#{api_key}&systemName=#{system_name}"
   end
 end

@@ -40,7 +40,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
     Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
   end
 
-  def api_key_can_access_models?(affected_models, []) do
+  def api_key_can_access_models?(_affected_models, []) do
     false
   end
 

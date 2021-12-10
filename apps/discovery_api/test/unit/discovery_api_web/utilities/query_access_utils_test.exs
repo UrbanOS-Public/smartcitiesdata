@@ -2,8 +2,11 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   use ExUnit.Case
   use Placebo
 
+  require Logger
+
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApi.Services.RaptorService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
@@ -72,7 +75,23 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   end
 
   describe "authorized_session/2" do
-    test "should not allow queries to private tables if user doesn't have authorization" do
+    test "should not allow queries to private tables if user doesn't have JWT or API_KEY authorization" do
+      model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
+
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Map.put(:assigns, %{current_user: "jim bob"})
+        |> Map.put(:req_headers, [{"api_key", "sample_api_key"}])
+
+      [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
+
+      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
+      allow RaptorService.is_authorized(expected_api_key, model[:systemName]), return: false
+
+      assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
+    end
+
+    test "should not allow queries to private tables if user doesn't have a vaild JWT and no api_key is provided" do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
@@ -84,7 +103,35 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
     end
 
-    test "should not allow queries that include private tables if user doesn't have authorization" do
+    test "should allow queries that include private tables if authorized api_key is provided and a JWT is not" do
+      model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
+
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Map.put(:assigns, %{current_user: "jim bob"})
+        |> Map.put(:req_headers, [{"api_key", "sample_api_key"}])
+
+      [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
+
+      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
+      allow RaptorService.is_authorized(expected_api_key, model[:systemName]), return: true
+
+      assert {:ok, authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
+    end
+
+    test "should allow queries that include private tables if provided JWT has access" do
+      model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
+
+      conn =
+        Phoenix.ConnTest.build_conn()
+        |> Map.put(:assigns, %{current_user: "jim bob"})
+
+      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: true
+
+      assert {:ok, authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
+    end
+
+    test "should not allow queries that include private tables if user doesn't have JWT authorization" do
       other_table = "other_table"
       private_model = Helper.sample_model(%{private: true, systemName: other_table, organizationDetails: %{id: @org_id}})
       public_model = Helper.sample_model(%{private: false, systemName: @table, organizationDetails: %{id: @org_id}})
