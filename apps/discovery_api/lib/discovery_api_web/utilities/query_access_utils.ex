@@ -5,6 +5,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   Provides authentication and authorization helper methods
   """
   alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApi.Services.RaptorService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
@@ -40,13 +41,11 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def api_key_can_access_models?(affected_models, []) do
-    Logger.warn("No API Key Provided")
     false
   end
 
-  def api_key_can_access_models?(affected_models, api_key) do
-    Logger.warn("TODO: Checking with raptor")
-    true
+  def api_key_can_access_models?(affected_models, [api_key]) do
+    Enum.all?(affected_models, &RaptorService.is_authorized(api_key, &1[:systemName]))
   end
 
   defp map_affected_tables_to_models(affected_tables) do
