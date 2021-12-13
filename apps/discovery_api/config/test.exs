@@ -17,7 +17,7 @@ config :discovery_api,
   test_mode: true,
   hsts_enabled: false
 
-config :discovery_api,
+config :raptor_service,
   raptor_url: "raptor/test/"
 
 config :logger, level: :warn

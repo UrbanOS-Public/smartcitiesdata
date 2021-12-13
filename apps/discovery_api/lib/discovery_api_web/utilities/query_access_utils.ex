@@ -4,8 +4,8 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @moduledoc """
   Provides authentication and authorization helper methods
   """
+  alias RaptorService
   alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApi.Services.RaptorService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 

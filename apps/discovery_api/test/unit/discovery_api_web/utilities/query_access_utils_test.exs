@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
 
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApi.Services.RaptorService
+  alias RaptorService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils

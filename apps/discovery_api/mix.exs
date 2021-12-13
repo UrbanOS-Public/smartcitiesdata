@@ -74,6 +74,7 @@ defmodule DiscoveryApi.Mixfile do
       {:properties, in_umbrella: true},
       {:quantum, "~>2.4"},
       {:ranch, "~> 1.7.1", override: true},
+      {:raptor_service, in_umbrella: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
       {:smart_city, "~> 3.0"},

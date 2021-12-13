@@ -3,7 +3,7 @@ defmodule RaptorService.MixProject do
 
   def project do
     [
-      app: :raptorservice,
+      app: :raptor_service,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

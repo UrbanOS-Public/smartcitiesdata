@@ -1,5 +1,5 @@
 defmodule RaptorService do
-  use Properties, otp_app: :discovery_api
+  use Properties, otp_app: :raptor_service
   require Logger
 
   getter(:raptor_url, generic: true)

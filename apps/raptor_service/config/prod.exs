@@ -1,4 +1,4 @@
 use Mix.Config
 
-config :raptorservice,
-  url: "http://raptor.admin/api/authorize"
+config :raptor_service,
+  raptor_url: "http://raptor.admin/api/authorize"
