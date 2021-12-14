@@ -1,5 +1,3 @@
-require Logger
-
 defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @moduledoc """
   Provides authentication and authorization helper methods

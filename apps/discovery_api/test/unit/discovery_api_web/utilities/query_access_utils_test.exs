@@ -2,11 +2,9 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
   use ExUnit.Case
   use Placebo
 
-  require Logger
-
+  alias RaptorService
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApi.Services.PrestoService
-  alias RaptorService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
