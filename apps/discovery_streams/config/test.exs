@@ -7,7 +7,7 @@ config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001],
   server: false
 
-config :discovery_streams,
+config :raptor_service,
   raptor_url: "raptor/test/"
 
 config :discovery_streams, endpoints: [localhost: 9092]

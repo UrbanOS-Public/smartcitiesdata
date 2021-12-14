@@ -4,7 +4,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     After a client joins the channel, it pushes the datasets cache to the client,
     and then begins sending new data as it arrives.
   """
-  alias DiscoveryStreams.Services.RaptorService
+  alias RaptorService
 
   use DiscoveryStreamsWeb, :channel
 
