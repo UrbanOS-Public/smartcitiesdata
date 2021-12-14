@@ -10,6 +10,9 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   version: Application.spec(:discovery_api, :vsn),
   check_origin: false
 
+config :raptor_service,
+  raptor_url: "http://raptor.admin/api/authorize"
+
 # Do not print debug messages in production
 config :logger, level: :info
 

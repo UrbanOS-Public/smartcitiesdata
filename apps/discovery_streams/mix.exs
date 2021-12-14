@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "3.0.1",
+      version: "3.0.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -62,6 +62,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:properties, in_umbrella: true},
       {:plug_cowboy, "~> 2.1"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:raptor_service, in_umbrella: true},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city, "~> 3.0"},

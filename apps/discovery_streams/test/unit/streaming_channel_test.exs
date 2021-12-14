@@ -1,5 +1,5 @@
 defmodule DiscoveryStreamsWeb.StreamingChannelTest do
-  alias DiscoveryStreams.Services.RaptorService
+  alias RaptorService
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 

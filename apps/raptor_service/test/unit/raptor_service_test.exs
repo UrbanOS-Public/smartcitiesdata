@@ -1,8 +1,6 @@
-defmodule DiscoveryStreams.Services.RaptorServiceTest do
+defmodule RaptorServiceTest do
   use ExUnit.Case
   use Placebo
-
-  alias DiscoveryStreams.Services.RaptorService
 
   describe "is_authorized/2" do
     test "returns true if authorized in Raptor" do
