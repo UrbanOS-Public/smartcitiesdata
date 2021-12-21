@@ -20,6 +20,10 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
     end
   end
 
+  def user_is_authorized?(affected_models, current_user, api_key) do
+    api_key_can_access_models?(affected_models, api_key) || user_can_access_models?(affected_models, current_user)
+  end
+
   def get_affected_models(statement) do
     with true <- PrestoService.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
