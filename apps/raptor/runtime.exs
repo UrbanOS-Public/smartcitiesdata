@@ -1,6 +1,6 @@
 use Mix.Config
 
-get_redix_args = fn (host, port, password, ssl) ->
+get_redix_args = fn host, port, password, ssl ->
   [host: host, port: port, password: password, ssl: ssl]
   |> Enum.filter(fn
     {_, nil} -> false
@@ -12,8 +12,13 @@ end
 ssl_enabled = Regex.match?(~r/^true$/i, System.get_env("REDIS_SSL"))
 {redis_port, ""} = Integer.parse(System.get_env("REDIS_PORT"))
 
-redix_args = get_redix_args.(System.get_env("REDIS_HOST"), redis_port, System.get_env("REDIS_PASSWORD"), ssl_enabled)
-
+redix_args =
+  get_redix_args.(
+    System.get_env("REDIS_HOST"),
+    redis_port,
+    System.get_env("REDIS_PASSWORD"),
+    ssl_enabled
+  )
 
 config :redix,
   args: redix_args
