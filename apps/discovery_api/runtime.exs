@@ -212,3 +212,8 @@ config :telemetry_event,
       metric_type: :counter
     ]
   ]
+
+
+if System.get_env("RAPTOR_URL") do
+  config :discovery_api, raptor_url: System.get_env("RAPTOR_URL")
+end

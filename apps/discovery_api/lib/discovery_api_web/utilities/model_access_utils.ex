@@ -5,6 +5,9 @@ defmodule DiscoveryApiWeb.Utilities.ModelAccessUtils do
   @behaviour DiscoveryApiWeb.Utilities.AccessUtils
   alias RaptorService
   alias DiscoveryApi.Data.Model
+  use Properties, otp_app: :discovery_api
+
+  getter(:raptor_url, generic: true)
 
   def has_access?(%Model{private: false} = _dataset, _username), do: true
   def has_access?(%Model{private: true} = _dataset, nil), do: false
@@ -14,7 +17,7 @@ defmodule DiscoveryApiWeb.Utilities.ModelAccessUtils do
   end
 
   def has_access?(%Model{private: true, systemName: systemName} = _dataset, [apiKey]) do
-    RaptorService.is_authorized(apiKey, systemName)
+    RaptorService.is_authorized(raptor_url(), apiKey, systemName)
   end
 
   def has_access?(_base, _case), do: false

@@ -6,6 +6,9 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
+  use Properties, otp_app: :discovery_api
+
+  getter(:raptor_url, generic: true)
 
   def authorized_session(conn, affected_models) do
     current_user = conn.assigns.current_user
@@ -47,7 +50,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def api_key_can_access_models?(affected_models, [api_key]) do
-    Enum.all?(affected_models, &RaptorService.is_authorized(api_key, &1[:systemName]))
+    Enum.all?(affected_models, &RaptorService.is_authorized(raptor_url(), api_key, &1[:systemName]))
   end
 
   defp map_affected_tables_to_models(affected_tables) do

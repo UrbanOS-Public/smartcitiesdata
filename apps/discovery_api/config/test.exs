@@ -19,6 +19,9 @@ config :discovery_api,
 
 config :logger, level: :warn
 
+config :discovery_api,
+  raptor_url: "raptor.url"
+
 config :ex_json_schema,
        :remote_schema_resolver,
        fn url -> URLResolver.resolve_url(url) end

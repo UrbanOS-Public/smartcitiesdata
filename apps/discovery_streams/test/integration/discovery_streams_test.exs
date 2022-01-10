@@ -30,7 +30,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       end
     end)
 
-    System.put_env("RAPTOR_URL", "http://localhost:#{bypass.port}/api/authorize")
+    Application.put_env(:discovery_streams, :raptor_url, "http://localhost:#{bypass.port}/api/authorize")
     :ok
   end
 
