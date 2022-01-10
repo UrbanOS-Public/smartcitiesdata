@@ -14,9 +14,6 @@ config :discovery_streams, endpoints: endpoints
 
 config :discovery_streams, topic_subscriber_interval: 1_000
 
-config :raptor_service,
-  raptor_url: "http://localhost:4002/api/authorize"
-
 config :discovery_streams, :brook,
   instance: :discovery_streams,
   driver: [

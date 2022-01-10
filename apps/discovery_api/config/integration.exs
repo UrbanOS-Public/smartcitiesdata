@@ -18,9 +18,6 @@ config :discovery_api,
   hosted_region: aws_region,
   hsts_enabled: false
 
-config :raptor_service,
-  raptor_url: "http://localhost:4002/api/authorize"
-
 config :redix,
   args: redix_args
 
