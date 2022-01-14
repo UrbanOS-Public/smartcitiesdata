@@ -100,6 +100,16 @@ config :discovery_api,
 config :ex_aws,
   region: System.get_env("HOSTED_FILE_REGION")
 
+if System.get_env("S3_HOST_NAME") do
+  config :ex_aws, :s3,
+    scheme: "http://",
+    region: "local",
+    host: %{
+      "local" => System.get_env("S3_HOST_NAME")
+    },
+    port: System.get_env("S3_PORT") |> String.to_integer()
+end
+
 config :discovery_api, :brook,
   instance: :discovery_api,
   driver: [
