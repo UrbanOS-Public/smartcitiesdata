@@ -17,10 +17,10 @@ config :discovery_api,
   test_mode: true,
   hsts_enabled: false
 
-config :raptor_service,
-  raptor_url: "raptor/test/"
-
 config :logger, level: :warn
+
+config :discovery_api,
+  raptor_url: "raptor.url"
 
 config :ex_json_schema,
        :remote_schema_resolver,

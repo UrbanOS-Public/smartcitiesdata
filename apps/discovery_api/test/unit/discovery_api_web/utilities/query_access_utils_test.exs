@@ -84,7 +84,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
 
       allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
-      allow RaptorService.is_authorized(expected_api_key, model[:systemName]), return: false
+      allow RaptorService.is_authorized("raptor.url", expected_api_key, model[:systemName]), return: false
 
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
     end
@@ -112,7 +112,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
 
       allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
-      allow RaptorService.is_authorized(expected_api_key, model[:systemName]), return: true
+      allow RaptorService.is_authorized("raptor.url", expected_api_key, model[:systemName]), return: true
 
       assert {:ok, authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
     end

@@ -8,7 +8,7 @@ defmodule RaptorServiceTest do
         return: {:ok, %{body: "{\"is_authorized\":true}"}}
       )
 
-      assert RaptorService.is_authorized("ap1K3y", "system__name")
+      assert RaptorService.is_authorized("raptor_url", "ap1K3y", "system__name")
     end
 
     test "returns false if unauthorized in Raptor" do
@@ -16,7 +16,7 @@ defmodule RaptorServiceTest do
         return: {:ok, %{body: "{\"is_authorized\":false}"}}
       )
 
-      assert not RaptorService.is_authorized("ap1K3y", "system__name")
+      assert not RaptorService.is_authorized("raptor_url", "ap1K3y", "system__name")
     end
   end
 end
