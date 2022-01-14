@@ -5,7 +5,7 @@
   "main": "connector.js",
   "scripts": {
     "test": "jest",
-    "es-check": "es-check es5 connector.js connector.config.js auth0-wrapper.js"
+    "es-check": "es-check es5 connector.js connector.config.js"
   },
   "author": "",
   "license": "ISC",

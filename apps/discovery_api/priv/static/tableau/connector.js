@@ -27,12 +27,11 @@ window.DiscoveryAuthHandler = {
 }
 
 function login() {
-  auth0Client.authorize();
+  tableau.password = document.getElementById("apiKey").value
 }
 
 function logout() {
   delete tableau.password
-  auth0Client.logout();
 }
 
 var datasetLimit = "1000000";
@@ -73,22 +72,8 @@ function _setupConnector() {
       return
     }
 
-    var code = _getUrlParameterByName('code')
     window.history.replaceState(null, null, window.location.pathname);
-
-    if (code) {
-      _fetchRefreshToken(code)
-        .then(function (refreshToken) { tableau.password = refreshToken; })
-        .then(function () {
-          document.getElementById('login-text').textContent = 'Logged In';
-          document.getElementById('login-button').removeAttribute('onclick');
-          document.getElementById('login-button').className = 'login-link';
-        })
-        .catch(function (error) { _displayLoginError(error) })
-        .then(function () { initCallback() })
-    } else {
-      initCallback();
-    }
+    initCallback();
   }
 }
 
@@ -153,12 +138,9 @@ function _convertToTableSchema(info) {
 function _authorizedFetch(url, params) {
   var fetchParams = params || {};
   if (tableau.password) {
-    return _fetchAccessToken(tableau.password)
-      .then(function (token) {
-        var headersWithAuth = Object.assign(fetchParams.headers || {}, { "Authorization": "Bearer " + token })
-        var authorizedParams = Object.assign(fetchParams, { headers: headersWithAuth })
-        return fetch(url, authorizedParams);
-      })
+    var headersWithAuth = Object.assign(fetchParams.headers || {}, { "api_key": tableau.password })
+    var authorizedParams = Object.assign(fetchParams, { headers: headersWithAuth })
+    return fetch(url, authorizedParams);
   } else {
     return fetch(url, fetchParams);
   }
@@ -280,42 +262,6 @@ function _getUrlParameterByName(name) {
   return results && results[2] ? decodeURIComponent(results[2].replace(/\+/g, ' ')) : null;
 }
 
-function _fetchRefreshToken(code) {
-  var params = {
-    grant_type: 'authorization_code',
-    client_id: window.config.client_id,
-    code: code,
-    redirect_uri: window.config.redirect_uri
-  };
-  return fetch(window.config.auth_url + '/oauth/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: _encodeAsUriQueryString(params)
-  })
-    .then(_decodeAsJson)
-    .then(function (body) { return body.refresh_token })
-}
-
-function _fetchAccessToken(refreshToken) {
-  if (window.accessToken) {
-    return Promise.resolve(window.accessToken)
-  }
-  var params = {
-    grant_type: 'refresh_token',
-    client_id: window.config.client_id,
-    refresh_token: refreshToken
-  };
-  return fetch(window.config.auth_url + '/oauth/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: _encodeAsUriQueryString(params)
-  })
-    .then(_decodeAsJson)
-    .then(function (body) {
-      window.accessToken = body.access_token
-      return body.access_token
-    })
-}
 
 function _encodeAsUriQueryString(obj) {
   var queryString = ''
