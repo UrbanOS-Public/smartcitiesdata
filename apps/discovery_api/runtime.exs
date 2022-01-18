@@ -49,14 +49,22 @@ config :discovery_api, DiscoveryApi.Repo,
   port: System.get_env("POSTGRES_PORT"),
   ssl: true,
   ssl_opts: [
-    verify: :verify_peer,
     versions: [:"tlsv1.2"],
-    cacertfile: System.get_env("CA_CERTFILE_PATH"),
+    cacertfile: System.get_env("CA_CERTFILE_PATH")
+  ]
+
+postgres_verify_sni = Regex.match?(~r/^true$/i, System.get_env("POSTGRES_VERIFY_SNI"))
+
+if postgres_verify_sni do
+  config :discovery_api, DiscoveryApi.Repo,
+  ssl_opts: [
+    verify: :verify_peer,
     server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
     verify_fun:
     {&:ssl_verify_hostname.verify_fun/3,
      [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
   ]
+end
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
 
