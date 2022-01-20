@@ -53,6 +53,49 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Search (v2)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:4000/api/v2/dataset/search?offset=0&limit=10&sort=relevance&query=transportation&apiAccessible=true",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"v2",
+						"dataset",
+						"search"
+					],
+					"query": [
+						{
+							"key": "offset",
+							"value": "0"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "sort",
+							"value": "relevance"
+						},
+						{
+							"key": "query",
+							"value": "transportation"
+						},
+						{
+							"key": "apiAccessible",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
