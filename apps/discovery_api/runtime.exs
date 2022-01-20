@@ -1,7 +1,7 @@
 use Mix.Config
 
-get_redix_args = fn host, password ->
-  [host: host, password: password]
+get_redix_args = fn (host, port, password, ssl) ->
+  [host: host, port: port, password: password, ssl: ssl]
   |> Enum.filter(fn
     {_, nil} -> false
     {_, ""} -> false
@@ -9,7 +9,10 @@ get_redix_args = fn host, password ->
   end)
 end
 
-redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+ssl_enabled = Regex.match?(~r/^true$/i, System.get_env("REDIS_SSL"))
+{redis_port, ""} = Integer.parse(System.get_env("REDIS_PORT"))
+
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), redis_port, System.get_env("REDIS_PASSWORD"), ssl_enabled)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
@@ -46,14 +49,22 @@ config :discovery_api, DiscoveryApi.Repo,
   port: System.get_env("POSTGRES_PORT"),
   ssl: true,
   ssl_opts: [
-    verify: :verify_peer,
     versions: [:"tlsv1.2"],
-    cacertfile: System.get_env("CA_CERTFILE_PATH"),
+    cacertfile: System.get_env("CA_CERTFILE_PATH")
+  ]
+
+postgres_verify_sni = Regex.match?(~r/^true$/i, System.get_env("POSTGRES_VERIFY_SNI"))
+
+if postgres_verify_sni do
+  config :discovery_api, DiscoveryApi.Repo,
+  ssl_opts: [
+    verify: :verify_peer,
     server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
     verify_fun:
     {&:ssl_verify_hostname.verify_fun/3,
      [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
   ]
+end
 
 required_envars = ["REDIS_HOST", "PRESTO_URL", "ALLOWED_ORIGINS", "PRESIGN_KEY"]
 
@@ -68,15 +79,8 @@ allowed_origins =
   |> String.split(",")
   |> Enum.map(&String.trim/1)
 
-secrets_endpoint =
-  case System.get_env("SECRETS_ENDPOINT") do
-    "" -> nil
-    val -> val
-  end
-
 config :discovery_api,
-  allowed_origins: allowed_origins,
-  secrets_endpoint: secrets_endpoint
+  allowed_origins: allowed_origins
 
 config :redix,
   args: redix_args
@@ -96,6 +100,16 @@ config :discovery_api,
 
 config :ex_aws,
   region: System.get_env("HOSTED_FILE_REGION")
+
+if System.get_env("S3_HOST_NAME") do
+  config :ex_aws, :s3,
+    scheme: "http://",
+    region: "local",
+    host: %{
+      "local" => System.get_env("S3_HOST_NAME")
+    },
+    port: System.get_env("S3_PORT") |> String.to_integer()
+end
 
 config :discovery_api, :brook,
   instance: :discovery_api,
