@@ -15,15 +15,8 @@ global.tableau = {
   connectionData: "{}"
 }
 global.fetch = jest.fn()
-global.auth0Client = {
-  authorize: jest.fn(),
-  parseHash: jest.fn(),
-  logout: jest.fn()
-}
+
 global.config = {
-  client_id: 'this-is-an-id',
-  auth_domain: 'localhost',
-  auth_url: 'http://localhost',
   redirect_uri: 'http://localhost'
 }
 
@@ -78,7 +71,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
     beforeEach(() => {
       global.tableau.connectionData = "{}"
       global.tableau.registerConnector = (connector) => { registeredConnector = connector }
-      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div>'
+      document.body.innerHTML =  '<div class="login-bar"><input type="text" id="apiKey" placeholder="Enter an API Key"></input><button class="clickable" onclick="login()">Submit API Key</button></div>'
     })
 
     const expectedTableSchemaForDatasetOne = {
@@ -170,63 +163,10 @@ describe('Discovery API Tableau Web Data Connector', () => {
 
       expect(initCallback).toHaveBeenCalled()
     })
-    test('sets up the connector with a refresh token if a code is found', (done) => {
-      mockFetches({
-        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
-      })
-      history.pushState({}, 'Test Title', '/connector.html?code=bobthecode');
+    
 
-      DiscoveryWDCTranslator.setupConnector()
-      registeredConnector.init(() => {
-        expect(global.fetch).toHaveBeenCalledWithBodyContaining('token', 'bobthecode')
-        expect(global.tableau.password).toBe('this-is-a-refresh-token')
-        done()
-      })
-    })
 
-    test('after fetching the refresh token, clears the code param from the url', (done) => {
-      mockFetches({
-        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
-      })
-      history.pushState({}, 'Test Title', '/connector.html?code=bobtheothercode');
 
-      DiscoveryWDCTranslator.setupConnector()
-      registeredConnector.init(() => {
-        expect(window.location.search).toBe('')
-        done()
-      })
-    })
-
-    test('after fetching the refresh token, prevents the user from logging in again', (done) => {
-      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div>'
-      var expectedHtml = '<div id="login-button" class="login-link"><span id="login-text">Logged In</span></div>'
-      mockFetches({
-        'token': {body: {refresh_token: 'this-is-a-refresh-token'}}
-      })
-      history.pushState({}, 'Test Title', '/connector.html?code=bobtheotherothercode');
-
-      DiscoveryWDCTranslator.setupConnector()
-      registeredConnector.init(() => {
-        expect(document.body.innerHTML).toEqual(expectedHtml)
-        done()
-      })
-    })
-
-    test('after failing to fetch the refresh token, shows an error and allows user to login again', (done) => {
-      document.body.innerHTML = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div><div class="content" id="login-error" style="display:none"><p id="login-error-text" class="error">A log in error occurred.</p></div>'
-      var expectedHtml = '<div id="login-button" class="clickable login-link" onclick="login()"><span id="login-text">Log In to Access Private Datasets</span></div><div class="content" id="login-error" style="display: block;"><p id="login-error-text" class="error">Unable to authenticate: Request failed: 500 Real Bad | If you need to access private datasets, contact your data curator.</p></div>'
-
-      mockFetches({
-        'token': {ok: false, status: 500, statusText: 'Real Bad'}
-      })
-      history.pushState({}, 'Test Title', '/connector.html?code=bobtheotherothercode');
-
-      DiscoveryWDCTranslator.setupConnector()
-      registeredConnector.init(() => {
-        expect(document.body.innerHTML).toEqual(expectedHtml)
-        done()
-      })
-    })
 
     test('sets the query box to a pre-existing query', (done) => {
       document.body.innerHTML = '<textarea id="query" placeholder="select * from..."></textarea>'
@@ -533,36 +473,7 @@ describe('Discovery API Tableau Web Data Connector', () => {
             })
           })
 
-          test('gets an access token using the refresh token before making other requests', (done) => {
-            const table = {
-              appendRows: jest.fn(),
-              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
-            }
-            const doneCallback = () => {
-              const firstCallUrl = global.fetch.mock.calls[0][0];
-              expect(firstCallUrl).toContain('token')
-              const firstCallParams = global.fetch.mock.calls[0][1];
-              expect(firstCallParams.body).toContain('grant_type=refresh_token')
-              expect(firstCallParams.body).toContain(`refresh_token=${global.tableau.password}`)
-              done()
-            }
-
-            registeredConnector.getData(table, doneCallback)
-          })
-
-          test('uses fetched access token for all subsequent calls', (done) => {
-            const table = {
-              appendRows: jest.fn(),
-              tableInfo: {...expectedTableSchemaForDatasetTwo, ...{description: query}}
-            }
-            const doneCallback = () => {
-              expect(global.fetch).toHaveBeenCalledWithHeader('query', 'Authorization', `Bearer ${successfulAccessTokenResponse.access_token}`)
-
-              done()
-            }
-
-            registeredConnector.getData(table, doneCallback)
-          })
+  
         })
       })
     })
@@ -666,18 +577,8 @@ describe('Discovery API Tableau Web Data Connector', () => {
   })
 
   describe('auth', () => {
-    test('login calls auth0.authorize', () => {
-      DiscoveryAuthHandler.login()
-
-      expect(auth0Client.authorize).toHaveBeenCalled()
-    })
-
+    
     describe('logout', () => {
-      test('calls auth0.logout', () => {
-        DiscoveryAuthHandler.logout()
-
-        expect(auth0Client.logout).toHaveBeenCalled()
-      })
 
       test('clears the saved token', () => {
         global.tableau.password = "BobTheToken"
