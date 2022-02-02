@@ -28,5 +28,7 @@ node_modules/
 .DS_Store
 
 .vscode/
+.idea/
+*.iml
 
 compaction-test-fixtures/
