@@ -4,6 +4,7 @@ defmodule Alchemist.MixProject do
   def project do
     [
       app: :alchemist,
+      compilers: [:phoenix] ++ Mix.compilers(),
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -11,23 +12,49 @@ defmodule Alchemist.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_paths: test_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env()),
+      aliases: aliases()
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      mod: {Alchemist.Application, []},
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
-      # {:sibling_app_in_umbrella, in_umbrella: true}
+      {:brook, "~> 0.4"},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:phoenix, "~> 1.4"},
+      {:phoenix_html, "~> 2.14.1"},
+      {:phoenix_pubsub, "~> 2.0"},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:plug_heartbeat, "~> 0.2.0"},
+      {:properties, in_umbrella: true},
+      {:redix, "~> 0.10"},
+      {:smart_city, "~> 3.0"},
+      {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
+      {:tasks, in_umbrella: true, only: :dev},
+      {:telemetry_event, in_umbrella: true},
+      {:distillery, "~> 2.1"}
+    ]
+  end
+
+  defp test_paths(:integration), do: ["test/integration"]
+  defp test_paths(_), do: ["test/unit"]
+
+  defp elixirc_paths(:test), do: ["test/utils", "test/unit/support", "lib"]
+  defp elixirc_paths(:integration), do: ["test/utils", "test/integration/support", "lib"]
+  defp elixirc_paths(_), do: ["lib"]
+
+  defp aliases() do
+    [
+      start: ["phx.server"]
     ]
   end
 end
