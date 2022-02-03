@@ -3,7 +3,7 @@ use Mix.Config
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 live_view_salt = System.get_env("LIVEVIEW_SALT")
 
-get_redix_args = fn (host, port, password, ssl) ->
+get_redix_args = fn host, port, password, ssl ->
   [host: host, port: port, password: password, ssl: ssl]
   |> Enum.filter(fn
     {_, nil} -> false
@@ -80,20 +80,18 @@ config :andi, Andi.Repo,
   ssl: true,
   ssl_opts: [
     versions: [:"tlsv1.2"],
-    cacertfile: System.get_env("CA_CERTFILE_PATH"),
+    cacertfile: System.get_env("CA_CERTFILE_PATH")
   ]
 
 postgres_verify_sni = Regex.match?(~r/^true$/i, System.get_env("POSTGRES_VERIFY_SNI"))
 
 if postgres_verify_sni do
   config :discovery_api, DiscoveryApi.Repo,
-  ssl_opts: [
-    verify: :verify_peer,
-    server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
-    verify_fun:
-    {&:ssl_verify_hostname.verify_fun/3,
-      [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
-  ]
+    ssl_opts: [
+      verify: :verify_peer,
+      server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
+      verify_fun: {&:ssl_verify_hostname.verify_fun/3, [check_hostname: String.to_charlist(System.get_env("POSTGRES_HOST", ""))]}
+    ]
 end
 
 config :andi, :auth0,
