@@ -1,8 +1,8 @@
 use Mix.Config
 import_config "../test/integration/divo_minio.ex"
 
-System.put_env("AUTH0_DOMAIN", "smartcolumbusos-demo.auth0.com")
-System.put_env("AUTH0_CLIENT_ID", "KrA99qgUDwRWvbI07YOknIZSS1jzdXUr")
+System.put_env("AUTH0_DOMAIN", "project-hercules.us.auth0.com")
+System.put_env("AUTH0_CLIENT_ID", "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY")
 
 host =
   case System.get_env("HOST_IP") do
@@ -88,8 +88,8 @@ config :andi, :brook,
   ]
 
 config :andi, :auth0,
-  url: "https://smartcolumbusos-demo.auth0.com/oauth/token",
-  audience: "https://smartcolumbusos-demo.auth0.com/api/v2/"
+  url: "https://project-hercules.us.auth0.com/oauth/token",
+  audience: "https://project-hercules.us.auth0.com/api/v2/"
 
 config :andi, AndiWeb.Endpoint,
   pubsub_server: Andi.PubSub,
@@ -138,12 +138,12 @@ config :ueberauth, Ueberauth,
   ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-  domain: "smartcolumbusos-demo.auth0.com",
-  client_id: "KrA99qgUDwRWvbI07YOknIZSS1jzdXUr",
+  domain: "project-hercules.us.auth0.com",
+  client_id: "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY",
   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
 
 config :andi, AndiWeb.Auth.TokenHandler,
-  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  issuer: "https://project-hercules.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000
