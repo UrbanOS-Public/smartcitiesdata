@@ -40,14 +40,14 @@ defmodule Odo.MixProject do
       {:properties, in_umbrella: true},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14.0"},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, "~> 5.0"},
       {:streaming_metrics, "~> 2.2.0"},
       {:sweet_xml, "~> 0.6"},
       {:tasks, in_umbrella: true, only: :dev},
       {:tesla, "~> 1.3"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
-      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.0.2", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true}
     ]
