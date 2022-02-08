@@ -27,7 +27,7 @@ defmodule Forklift.MixProject do
 
   defp deps do
     [
-      {:brod, "~> 3.8", override: true},
+      {:brod, "~> 3.14.0", override: true},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 1.0"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
@@ -49,8 +49,8 @@ defmodule Forklift.MixProject do
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14"},
-      {:smart_city, "~> 3.0"},
-      {:smart_city_test, "~> 0.7"},
+      {:smart_city, "~> 5.0"},
+      {:smart_city_test, "~> 2.0.2"},
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
