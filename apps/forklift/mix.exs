@@ -27,7 +27,7 @@ defmodule Forklift.MixProject do
 
   defp deps do
     [
-      {:brod, "~> 3.8", override: true},
+      {:brod, "~> 3.14.0", override: true},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 1.0"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
