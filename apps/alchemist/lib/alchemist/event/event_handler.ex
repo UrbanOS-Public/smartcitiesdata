@@ -56,7 +56,7 @@ defmodule Alchemist.Event.EventHandler do
            author: author
          } = event
        ) do
-     IO.inspect(data, label: "I received this ingestion event")
+      Brook.Event.send(:valkyrie, ingestion_update(), @instance_name, data)
      :discard
    end
 end

@@ -28,6 +28,18 @@ To test that the event stream is working, you can send a smart city event throug
 ```
   organization = SmartCity.TestDataGenerator.create_organization(%{})
   Brook.Event.send(Alchemist.instance_name(), "organization:update", :testing, organization)
+
+  ingestion = %SmartCity.Ingestion{
+    id: 1,
+    allow_duplicates: true,
+    cadence: "",
+    extractSteps: [],
+    schema: [],
+    sourceFormat: "",
+    targetDataset: "",
+    topLevelSelector: ""
+  }
+  Brook.Event.send(Alchemist.instance_name(), "ingestion:update", :testing, ingestion)
 ```
 
 To run unit tests: `mix test`
