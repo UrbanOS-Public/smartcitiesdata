@@ -5,7 +5,7 @@ defmodule Alchemist.Event.EventHandler do
 
   import SmartCity.Event,
     only: [
-      # ingestion_update: 0,
+      ingestion_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
       user_organization_disassociate: 0
@@ -14,8 +14,8 @@ defmodule Alchemist.Event.EventHandler do
   alias SmartCity.{
     UserOrganizationAssociate,
     UserOrganizationDisassociate,
-    Organization
-    # Ingestion
+    Organization,
+    Ingestion
   }
 
   @instance_name Alchemist.instance_name()
@@ -49,14 +49,14 @@ defmodule Alchemist.Event.EventHandler do
     :discard
   end
 
-  # def handle_event(
-  #       %Brook.Event{
-  #         type: ingestion_update(),
-  #         data: %Ingestion{} = data,
-  #         author: author
-  #       } = event
-  #     ) do
-  #   IO.inspect(data, label: "I received this ingestion event")
-  #   :discard
-  # end
+   def handle_event(
+         %Brook.Event{
+           type: ingestion_update(),
+           data: %Ingestion{} = data,
+           author: author
+         } = event
+       ) do
+     IO.inspect(data, label: "I received this ingestion event")
+     :discard
+   end
 end

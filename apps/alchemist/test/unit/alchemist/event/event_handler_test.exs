@@ -4,6 +4,7 @@ defmodule Alchemist.Event.EventHandlerTest do
 
   import SmartCity.Event,
     only: [
+      ingestion_update: 0,
       organization_update: 0,
       user_organization_associate: 0,
       user_organization_disassociate: 0
@@ -69,6 +70,38 @@ defmodule Alchemist.Event.EventHandlerTest do
           Brook.Event.new(
             type: user_organization_disassociate(),
             data: disassociation_event,
+            author: :author
+          )
+        )
+
+      assert result == :discard
+    end
+  end
+
+  describe "handle_event/1 ingestion_update" do
+    setup do
+      ingestion_event = %SmartCity.Ingestion{
+        id: 1,
+        allow_duplicates: true,
+        cadence: "",
+        extractSteps: [],
+        schema: [],
+        sourceFormat: "",
+        targetDataset: "",
+        topLevelSelector: ""
+      }
+
+      %{ingestion_event: ingestion_event}
+    end
+
+    test "should return :discard when an event is received", %{
+      ingestion_event: ingestion_event
+    } do
+      result =
+        EventHandler.handle_event(
+          Brook.Event.new(
+            type: ingestion_update(),
+            data: ingestion_event,
             author: :author
           )
         )
