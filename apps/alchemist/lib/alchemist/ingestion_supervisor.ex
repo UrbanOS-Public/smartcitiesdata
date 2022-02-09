@@ -1,6 +1,6 @@
 defmodule Alchemist.IngestionSupervisor do
   @moduledoc """
-  Supervisor for each dataset that supervises the elsa producer and broadway pipeline.
+  Supervisor for each ingestion that supervises the elsa producer and broadway pipeline.
   """
   use Supervisor
   use Properties, otp_app: :alchemist
@@ -11,9 +11,9 @@ defmodule Alchemist.IngestionSupervisor do
   def name(id), do: :"#{id}_supervisor"
 
   def ensure_started(start_options) do
-    dataset = Keyword.fetch!(start_options, :dataset)
+    ingestion = Keyword.fetch!(start_options, :ingestion)
 
-    case get_dataset_supervisor(dataset.id) do
+    case get_ingestion_supervisor(ingestion.id) do
       nil ->
         {:ok, _pid} =
           DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options})
@@ -23,26 +23,26 @@ defmodule Alchemist.IngestionSupervisor do
     end
   end
 
-  def ensure_stopped(dataset_id), do: stop_dataset_supervisor(dataset_id)
+  def ensure_stopped(ingestion_id), do: stop_ingestion_supervisor(ingestion_id)
 
-  def is_started?(dataset_id), do: get_dataset_supervisor(dataset_id) != nil
+  def is_started?(ingestion_id), do: get_ingestion_supervisor(ingestion_id) != nil
 
   def child_spec(args) do
-    dataset = Keyword.fetch!(args, :dataset)
+    ingestion = Keyword.fetch!(args, :ingestion)
 
     super(args)
-    |> Map.put(:id, name(dataset.id))
+    |> Map.put(:id, name(ingestion.id))
   end
 
   def start_link(opts) do
-    dataset = Keyword.fetch!(opts, :dataset)
-    Supervisor.start_link(__MODULE__, opts, name: name(dataset.id))
+    ingestion = Keyword.fetch!(opts, :ingestion)
+    Supervisor.start_link(__MODULE__, opts, name: name(ingestion.id))
   end
 
-  def get_dataset_supervisor(dataset_id), do: Process.whereis(name(dataset_id))
+  def get_ingestion_supervisor(ingestion_id), do: Process.whereis(name(ingestion_id))
 
-  defp stop_dataset_supervisor(dataset_id) do
-    name = name(dataset_id)
+  defp stop_ingestion_supervisor(ingestion_id) do
+    name = name(ingestion_id)
 
     case Process.whereis(name) do
       nil -> :ok
@@ -52,34 +52,34 @@ defmodule Alchemist.IngestionSupervisor do
 
   @impl Supervisor
   def init(opts) do
-    dataset = Keyword.fetch!(opts, :dataset)
+    ingestion = Keyword.fetch!(opts, :ingestion)
     input_topic = Keyword.fetch!(opts, :input_topic)
     output_topic = Keyword.fetch!(opts, :output_topic)
-    producer = :"#{dataset.id}_producer"
+    producer = :"#{ingestion.id}_producer"
 
     children = [
-      elsa_producer(dataset, output_topic, producer),
-      broadway(dataset, input_topic, output_topic, producer)
+      elsa_producer(ingestion, output_topic, producer),
+      broadway(ingestion, input_topic, output_topic, producer)
     ]
 
     Supervisor.init(children, strategy: :one_for_all)
   end
 
-  defp elsa_producer(dataset, topic, producer) do
+  defp elsa_producer(ingestion, topic, producer) do
     Supervisor.child_spec({Elsa.Supervisor, endpoints: elsa_brokers(), connection: producer, producer: [topic: topic]},
-      id: :"#{dataset.id}_elsa_producer"
+      id: :"#{ingestion.id}_elsa_producer"
     )
   end
 
-  defp broadway(dataset, input_topic, output_topic, producer) do
+  defp broadway(ingestion, input_topic, output_topic, producer) do
     config = [
-      dataset: dataset,
+      ingestion: ingestion,
       output: [
         connection: producer,
         topic: output_topic
       ],
       input: [
-        connection: :"#{dataset.id}_elsa_consumer",
+        connection: :"#{ingestion.id}_elsa_consumer",
         endpoints: elsa_brokers(),
         group_consumer: [
           group: "alchemist-#{input_topic}",

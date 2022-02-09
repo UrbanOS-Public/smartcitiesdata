@@ -7,7 +7,7 @@ config :alchemist,
   retry_initial_delay: 100,
   max_outgoing_bytes: 900_000,
   input_topic_prefix: "raw",
-  output_topic_prefix: "validated",
+  output_topic_prefix: "transformed",
   topic_subscriber_config: [
     begin_offset: :earliest,
     offset_reset_policy: :reset_to_earliest,

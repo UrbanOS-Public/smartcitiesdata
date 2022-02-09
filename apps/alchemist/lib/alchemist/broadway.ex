@@ -17,11 +17,11 @@ defmodule Alchemist.Broadway do
 
   defp broadway_config(opts) do
     output = Keyword.fetch!(opts, :output)
-    dataset = Keyword.fetch!(opts, :dataset)
+    ingestion = Keyword.fetch!(opts, :ingestion)
     input = Keyword.fetch!(opts, :input)
 
     [
-      name: :"#{dataset.id}_broadway",
+      name: :"#{ingestion.id}_broadway",
       producer: [
         module: {@producer_module, input},
         concurrency: 1
@@ -39,15 +39,21 @@ defmodule Alchemist.Broadway do
         ]
       ],
       context: %{
-        dataset: dataset,
+        ingestion: ingestion,
         output_topic: Keyword.fetch!(output, :topic),
         producer: Keyword.fetch!(output, :connection)
       }
     ]
   end
 
-  # used by processor
-  def handle_message(_processor, message, _dataset) do
+  # used by processor.
+  # This is where we'll alter the message to be transformed
+  #   on it's way out of alchemist.
+  # Transformation will be handled by a separate elixir library that we create.
+  # (This way, UI clients can import this transformation library for validation
+  # stuff in the future )
+  def handle_message(_processor, message, _ingestion) do
+    # don't alter the message right now, just forward it along unchanged
     message
   end
 

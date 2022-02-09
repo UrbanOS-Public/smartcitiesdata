@@ -11,10 +11,10 @@ defmodule Alchemist.TopicManager do
   getter(:output_topic_prefix, generic: true)
   getter(:input_topic_prefix, generic: true)
 
-  @spec setup_topics(%SmartCity.Dataset{}) :: %{input_topic: String.t(), output_topic: String.t()}
-  def setup_topics(dataset) do
-    input_topic = input_topic(dataset.id)
-    output_topic = output_topic(dataset.id)
+  @spec setup_topics(%SmartCity.Ingestion{}) :: %{input_topic: String.t(), output_topic: String.t()}
+  def setup_topics(ingestion) do
+    input_topic = input_topic(ingestion.id)
+    output_topic = output_topic(ingestion.id)
 
     Elsa.create_topic(elsa_brokers(), input_topic)
     Elsa.create_topic(elsa_brokers(), output_topic)
@@ -24,9 +24,9 @@ defmodule Alchemist.TopicManager do
     %{input_topic: input_topic, output_topic: output_topic}
   end
 
-  def delete_topics(dataset_id) do
-    input_topic = input_topic(dataset_id)
-    output_topic = output_topic(dataset_id)
+  def delete_topics(ingestion_id) do
+    input_topic = input_topic(ingestion_id)
+    output_topic = output_topic(ingestion_id)
     Elsa.delete_topic(elsa_brokers(), input_topic)
     Elsa.delete_topic(elsa_brokers(), output_topic)
   end
@@ -42,6 +42,6 @@ defmodule Alchemist.TopicManager do
     end
   end
 
-  defp output_topic(dataset_id), do: "#{output_topic_prefix()}-#{dataset_id}"
-  defp input_topic(dataset_id), do: "#{input_topic_prefix()}-#{dataset_id}"
+  defp output_topic(ingestion_id), do: "#{output_topic_prefix()}-#{ingestion_id}"
+  defp input_topic(ingestion_id), do: "#{input_topic_prefix()}-#{ingestion_id}"
 end

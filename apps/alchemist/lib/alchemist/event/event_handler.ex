@@ -1,6 +1,6 @@
 defmodule Alchemist.Event.EventHandler do
   @moduledoc """
-  MessageHandler to receive updated datasets and add to the cache
+  MessageHandler to receive updated ingestions and add to the cache
   """
   alias SmartCity.Ingestion
   use Brook.Event.Handler
@@ -12,16 +12,15 @@ defmodule Alchemist.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: ingestion_update(),
-        data: %Ingestion{targetDataset: targetDataset} = ingestion
+        data: %Ingestion{} = ingestion
       }) do
-    Logger.debug("#{__MODULE__}: Begin transformation for dataset: #{targetDataset}")
-    IO.inspect(ingestion, label: "I got ingestion")
-    # Alchemist.IngestionProcessor.start(targetDataset)
-    # merge(:ingestions, ingestion.id, ingestion)
-    :discard
+    Logger.debug("#{__MODULE__}: Begin transformation processor for ingestion: #{ingestion.id}")
+    IO.inspect(ingestion, label: "Begin transformation processor for ingestion: #{ingestion.id}")
+    Alchemist.IngestionProcessor.start(ingestion)
+    merge(:ingestions, ingestion.id, ingestion)
   end
 
-  # TODO: Support ingestion deletions
+  # TODOLater: Support ingestion deletions
   # https://github.com/UrbanOS-Public/internal/issues/535
   # def handle_event(%Brook.Event{
   #       type: dataset_delete(),

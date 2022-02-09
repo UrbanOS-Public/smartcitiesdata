@@ -2,12 +2,12 @@ defmodule Alchemist.IngestionProcessor do
   @moduledoc false
   require Logger
 
-  def start(dataset) do
-    topics = Alchemist.TopicManager.setup_topics(dataset)
-    Logger.debug("#{__MODULE__}: Starting Datatset: #{dataset.id}")
+  def start(ingestion) do
+    topics = Alchemist.TopicManager.setup_topics(ingestion)
+    Logger.debug("#{__MODULE__}: Starting Ingestion: #{ingestion.id}")
 
     start_options = [
-      dataset: dataset,
+      ingestion: ingestion,
       input_topic: topics.input_topic,
       output_topic: topics.output_topic
     ]
@@ -15,13 +15,13 @@ defmodule Alchemist.IngestionProcessor do
     Alchemist.IngestionSupervisor.ensure_started(start_options)
   end
 
-  def stop(dataset_id) do
-    Alchemist.IngestionSupervisor.ensure_stopped(dataset_id)
+  def stop(ingestion_id) do
+    Alchemist.IngestionSupervisor.ensure_stopped(ingestion_id)
   end
 
-  def delete(dataset_id) do
-    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset_id}")
-    Alchemist.IngestionSupervisor.ensure_stopped(dataset_id)
-    Alchemist.TopicManager.delete_topics(dataset_id)
+  def delete(ingestion_id) do
+    Logger.debug("#{__MODULE__}: Deleting Ingestion: #{ingestion_id}")
+    Alchemist.IngestionSupervisor.ensure_stopped(ingestion_id)
+    Alchemist.TopicManager.delete_topics(ingestion_id)
   end
 end
