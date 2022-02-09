@@ -1,112 +1,103 @@
 defmodule Alchemist.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
-
-  import SmartCity.Event,
-    only: [
-      ingestion_update: 0,
-      organization_update: 0,
-      user_organization_associate: 0,
-      user_organization_disassociate: 0
-    ]
+  use Brook.Event.Handler
+  import Checkov
+  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Alchemist.Event.EventHandler
+  alias Alchemist.DatasetProcessor
 
-  describe "handle_event/1 organization_update" do
-    test "should return :discard when an event is received" do
-      org = TDG.create_organization(%{})
+  @instance_name Alchemist.instance_name()
 
-      result =
-        EventHandler.handle_event(
-          Brook.Event.new(type: organization_update(), data: org, author: :author)
-        )
+  setup do
+    allow(Alchemist.DatasetProcessor.start(any()), return: :does_not_matter, meck_options: [:passthrough])
 
-      assert result == :discard
-    end
+    :ok
   end
 
-  describe "handle_event/1 user_organization_associate" do
-    setup do
-      {:ok, association_event} =
-        SmartCity.UserOrganizationAssociate.new(%{
-          subject_id: "user_id",
-          org_id: "org_id",
-          email: "bob@example.com"
-        })
+  data_test "Processes datasets with #{source_type} " do
+    dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
 
-      %{association_event: association_event}
+    Brook.Test.with_event(@instance_name, fn ->
+      EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+    end)
+
+    assert called == called?(Alchemist.DatasetProcessor.start(dataset))
+
+    where([
+      [:source_type, :called],
+      ["ingest", true],
+      ["stream", true],
+      ["host", false],
+      ["remote", false],
+      ["invalid", false]
+    ])
+  end
+
+  describe "handle_event/1" do
+    setup do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+      :ok
     end
 
-    test "should return :discard when an event is received", %{
-      association_event: association_event
-    } do
-      result =
+    test "Should modify viewstate when handled" do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+
+      Brook.Test.with_event(@instance_name, fn ->
+        EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+      end)
+
+      assert Brook.get!(@instance_name, :datasets, dataset.id) == dataset
+    end
+
+    test "Deletes dataset from viewstate when data:standarization:end event fires" do
+      Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
           Brook.Event.new(
-            type: user_organization_associate(),
-            data: association_event,
+            type: data_standardization_end(),
+            data: %{"dataset_id" => "ds1"},
             author: :author
           )
         )
+      end)
 
-      assert result == :discard
-    end
-  end
-
-  describe "handle_event/1 user_organization_disassociate" do
-    setup do
-      {:ok, disassociation_event} =
-        SmartCity.UserOrganizationDisassociate.new(%{subject_id: "subject_id", org_id: "org_id"})
-
-      %{disassociation_event: disassociation_event}
+      assert Brook.get!(@instance_name, :datasets, "ds1") == nil
     end
 
-    test "should return :discard when an event is received", %{
-      disassociation_event: disassociation_event
-    } do
-      result =
+    test "Calls DatasetProcessor.stop when data:standardization:end event fires" do
+      allow(DatasetProcessor.stop("ds1"), return: :does_not_matter)
+
+      Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
           Brook.Event.new(
-            type: user_organization_disassociate(),
-            data: disassociation_event,
+            type: data_standardization_end(),
+            data: %{"dataset_id" => "ds1"},
             author: :author
           )
         )
+      end)
 
-      assert result == :discard
-    end
-  end
-
-  describe "handle_event/1 ingestion_update" do
-    setup do
-      ingestion_event = %SmartCity.Ingestion{
-        id: 1,
-        allow_duplicates: true,
-        cadence: "",
-        extractSteps: [],
-        schema: [],
-        sourceFormat: "",
-        targetDataset: "",
-        topLevelSelector: ""
-      }
-
-      %{ingestion_event: ingestion_event}
+      assert_called(DatasetProcessor.stop("ds1"))
     end
 
-    test "should return :discard when an event is received", %{
-      ingestion_event: ingestion_event
-    } do
-      result =
+    test "should delete dataset when dataset:delete event fires" do
+      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+      allow(DatasetProcessor.delete(any()), return: :ok)
+
+      Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
           Brook.Event.new(
-            type: ingestion_update(),
-            data: ingestion_event,
+            type: dataset_delete(),
+            data: dataset,
             author: :author
           )
         )
+      end)
 
-      assert result == :discard
+      assert_called(DatasetProcessor.delete(dataset.id))
     end
   end
 end

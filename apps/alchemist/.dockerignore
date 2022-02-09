@@ -1,6 +1,4 @@
-.git
-_build
-.gitignore
-Dockerfile
-Jenkinsfile
-deps
+deps/
+_build/
+helm-config/
+chart/
