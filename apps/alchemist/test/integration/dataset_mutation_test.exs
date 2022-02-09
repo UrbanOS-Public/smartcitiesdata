@@ -96,7 +96,7 @@ defmodule Alchemist.DatasetMutationTest do
   end
 
   defp is_dataset_supervisor_alive(dataset_id) do
-    name = Alchemist.DatasetSupervisor.name(dataset_id)
+    name = Alchemist.IngestionSupervisor.name(dataset_id)
 
     case Process.whereis(name) do
       nil -> false

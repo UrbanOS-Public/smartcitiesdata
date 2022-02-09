@@ -1,4 +1,4 @@
-defmodule Alchemist.DatasetProcessor do
+defmodule Alchemist.IngestionProcessor do
   @moduledoc false
   require Logger
 
@@ -12,16 +12,16 @@ defmodule Alchemist.DatasetProcessor do
       output_topic: topics.output_topic
     ]
 
-    Alchemist.DatasetSupervisor.ensure_started(start_options)
+    Alchemist.IngestionSupervisor.ensure_started(start_options)
   end
 
   def stop(dataset_id) do
-    Alchemist.DatasetSupervisor.ensure_stopped(dataset_id)
+    Alchemist.IngestionSupervisor.ensure_stopped(dataset_id)
   end
 
   def delete(dataset_id) do
     Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset_id}")
-    Alchemist.DatasetSupervisor.ensure_stopped(dataset_id)
+    Alchemist.IngestionSupervisor.ensure_stopped(dataset_id)
     Alchemist.TopicManager.delete_topics(dataset_id)
   end
 end

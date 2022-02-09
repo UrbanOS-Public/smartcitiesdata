@@ -192,19 +192,19 @@ defmodule AlchemistTest do
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     eventually fn ->
-      assert Alchemist.DatasetSupervisor.is_started?(dataset.id) == true
+      assert Alchemist.IngestionSupervisor.is_started?(dataset.id) == true
     end
 
     Brook.Event.send(@instance_name, data_standardization_end(), :alchemist, %{"dataset_id" => dataset.id})
 
     eventually fn ->
-      assert Alchemist.DatasetSupervisor.is_started?(dataset.id) == false
+      assert Alchemist.IngestionSupervisor.is_started?(dataset.id) == false
     end
 
     Brook.Event.send(@instance_name, dataset_update(), :alchemist, dataset)
 
     eventually fn ->
-      assert Alchemist.DatasetSupervisor.is_started?(dataset.id) == false
+      assert Alchemist.IngestionSupervisor.is_started?(dataset.id) == false
     end
   end
 

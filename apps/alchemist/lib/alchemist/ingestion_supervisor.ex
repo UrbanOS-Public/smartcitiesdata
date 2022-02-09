@@ -1,4 +1,4 @@
-defmodule Alchemist.DatasetSupervisor do
+defmodule Alchemist.IngestionSupervisor do
   @moduledoc """
   Supervisor for each dataset that supervises the elsa producer and broadway pipeline.
   """
@@ -16,7 +16,7 @@ defmodule Alchemist.DatasetSupervisor do
     case get_dataset_supervisor(dataset.id) do
       nil ->
         {:ok, _pid} =
-          DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.DatasetSupervisor, start_options})
+          DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options})
 
       pid ->
         {:ok, pid}

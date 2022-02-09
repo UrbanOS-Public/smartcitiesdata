@@ -6,16 +6,6 @@ defmodule Alchemist.Broadway do
   use Broadway
   use Properties, otp_app: :alchemist
 
-  import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0]
-
-  alias Broadway.Message
-  alias SmartCity.Data
-
-  @instance_name Alchemist.instance_name()
-  @app_name "Alchemist"
-
-  getter(:profiling_enabled, generic: true)
   getter(:processor_stages, generic: true, default: 1)
   getter(:batch_stages, generic: true, default: 1)
   getter(:batch_size, generic: true, default: 1_000)
@@ -56,56 +46,15 @@ defmodule Alchemist.Broadway do
     ]
   end
 
-  def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{dataset: dataset}) do
-    Brook.Event.send(@instance_name, data_standardization_end(), :alchemist, %{"dataset_id" => dataset.id})
+  # used by processor
+  def handle_message(_processor, message, _dataset) do
     message
   end
 
-  def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
-    start_time = Data.Timing.current_time()
-
-    with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
-         {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
-         smart_city_data <- %{smart_city_data | payload: standardized_payload},
-         smart_city_data <- add_timing(smart_city_data, start_time),
-         {:ok, json_data} <- Jason.encode(smart_city_data) do
-      %{message | data: %{message.data | value: json_data}}
-    else
-      {:failed_schema_validation, reason} ->
-        DeadLetter.process(dataset.id, message_data.value, @app_name,
-          error: :failed_schema_validation,
-          reason: reason
-        )
-
-        Message.failed(message, reason)
-
-      {:error, reason} ->
-        DeadLetter.process(dataset.id, message_data.value, @app_name, reason: reason)
-        Message.failed(message, reason)
-    end
-  end
-
+  # used by batcher
   def handle_batch(_batch, messages, _batch_info, context) do
     data_messages = messages |> Enum.map(fn message -> message.data.value end)
     Elsa.produce(context.producer, context.output_topic, data_messages, partition: 0)
     messages
-  end
-
-  defp standardize_data(dataset, payload) do
-    case Alchemist.standardize_data(dataset, payload) do
-      {:ok, new_payload} -> {:ok, new_payload}
-      {:error, reason} -> {:failed_schema_validation, reason}
-    end
-  end
-
-  defp add_timing(smart_city_data, start_time) do
-    case profiling_enabled() do
-      true -> Data.add_timing(smart_city_data, create_timing(start_time))
-      _ -> smart_city_data
-    end
-  end
-
-  defp create_timing(start_time) do
-    Data.Timing.new("alchemist", "timing", start_time, Data.Timing.current_time())
   end
 end

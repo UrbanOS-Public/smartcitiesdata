@@ -78,7 +78,7 @@ defmodule Alchemist.EndOfDataTest do
   end
 
   def dataset_supervisor_killed(dataset_id) do
-    name = Alchemist.DatasetSupervisor.name(dataset_id)
+    name = Alchemist.IngestionSupervisor.name(dataset_id)
 
     case Process.whereis(name) do
       nil -> true

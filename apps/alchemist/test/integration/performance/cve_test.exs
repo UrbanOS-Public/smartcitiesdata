@@ -65,7 +65,7 @@ defmodule Alchemist.Performance.CveTest do
         dataset
       end,
       after_each: fn dataset ->
-        Alchemist.DatasetProcessor.stop(dataset.id)
+        Alchemist.IngestionProcessor.stop(dataset.id)
 
         delete_kafka_topics(dataset)
       end,

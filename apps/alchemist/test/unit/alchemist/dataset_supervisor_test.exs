@@ -1,8 +1,8 @@
-defmodule Alchemist.DatasetSupervisorTest do
+defmodule Alchemist.IngestionSupervisorTest do
   use ExUnit.Case
   use Placebo
 
-  alias Alchemist.DatasetSupervisor
+  alias Alchemist.IngestionSupervisor
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "ensure_started/1" do
@@ -27,7 +27,7 @@ defmodule Alchemist.DatasetSupervisorTest do
       DatasetSupervisor.ensure_started(start_options)
 
       assert_called(
-        DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.DatasetSupervisor, start_options})
+        DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options})
       )
     end
 
@@ -37,7 +37,7 @@ defmodule Alchemist.DatasetSupervisorTest do
       assert {:ok, ^first_pid} = DatasetSupervisor.ensure_started(start_options)
 
       assert_called(
-        DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.DatasetSupervisor, start_options}),
+        DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options}),
         once()
       )
     end

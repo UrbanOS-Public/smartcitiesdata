@@ -7,12 +7,12 @@ defmodule Alchemist.Event.EventHandlerTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Alchemist.Event.EventHandler
-  alias Alchemist.DatasetProcessor
+  alias Alchemist.IngestionProcessor
 
   @instance_name Alchemist.instance_name()
 
   setup do
-    allow(Alchemist.DatasetProcessor.start(any()), return: :does_not_matter, meck_options: [:passthrough])
+    allow(Alchemist.IngestionProcessor.start(any()), return: :does_not_matter, meck_options: [:passthrough])
 
     :ok
   end
@@ -24,7 +24,7 @@ defmodule Alchemist.Event.EventHandlerTest do
       EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
     end)
 
-    assert called == called?(Alchemist.DatasetProcessor.start(dataset))
+    assert called == called?(Alchemist.IngestionProcessor.start(dataset))
 
     where([
       [:source_type, :called],
@@ -67,8 +67,8 @@ defmodule Alchemist.Event.EventHandlerTest do
       assert Brook.get!(@instance_name, :datasets, "ds1") == nil
     end
 
-    test "Calls DatasetProcessor.stop when data:standardization:end event fires" do
-      allow(DatasetProcessor.stop("ds1"), return: :does_not_matter)
+    test "Calls IngestionProcessor.stop when data:standardization:end event fires" do
+      allow(IngestionProcessor.stop("ds1"), return: :does_not_matter)
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
@@ -80,12 +80,12 @@ defmodule Alchemist.Event.EventHandlerTest do
         )
       end)
 
-      assert_called(DatasetProcessor.stop("ds1"))
+      assert_called(IngestionProcessor.stop("ds1"))
     end
 
     test "should delete dataset when dataset:delete event fires" do
       dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
-      allow(DatasetProcessor.delete(any()), return: :ok)
+      allow(IngestionProcessor.delete(any()), return: :ok)
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
@@ -97,7 +97,7 @@ defmodule Alchemist.Event.EventHandlerTest do
         )
       end)
 
-      assert_called(DatasetProcessor.delete(dataset.id))
+      assert_called(IngestionProcessor.delete(dataset.id))
     end
   end
 end

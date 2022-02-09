@@ -6,6 +6,6 @@ defmodule Alchemist.Init do
 
   def do_init(_opts) do
     Brook.get_all_values!(@instance_name, :datasets)
-    |> Enum.each(&Alchemist.DatasetProcessor.start/1)
+    |> Enum.each(&Alchemist.IngestionProcessor.start/1)
   end
 end
