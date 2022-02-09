@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="combinatorics" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combinatorics/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combinatorics/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combinatorics/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combinatorics/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/combinatorics/lib" />
+      <root url="file://$PROJECT_DIR$/deps/combinatorics/lib" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="phoenix_live_reload" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/phoenix_live_reload/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/phoenix_live_reload/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/phoenix_live_reload/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/phoenix_live_reload/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/phoenix_live_reload/lib" />
+      <root url="file://$PROJECT_DIR$/deps/phoenix_live_reload/priv" />
+      <root url="file://$PROJECT_DIR$/deps/phoenix_live_reload/lib" />
+      <root url="file://$PROJECT_DIR$/deps/phoenix_live_reload/priv" />
+    </SOURCES>
+  </library>
+</component>

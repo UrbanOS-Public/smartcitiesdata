@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="ueberauth_auth0" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ueberauth_auth0/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ueberauth_auth0/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ueberauth_auth0/lib" />
+      <root url="file://$PROJECT_DIR$/deps/ueberauth_auth0/lib" />
+    </SOURCES>
+  </library>
+</component>

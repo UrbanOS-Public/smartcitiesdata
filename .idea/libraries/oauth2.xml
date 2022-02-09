@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="oauth2" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/oauth2/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/oauth2/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/oauth2/lib" />
+      <root url="file://$PROJECT_DIR$/deps/oauth2/lib" />
+    </SOURCES>
+  </library>
+</component>

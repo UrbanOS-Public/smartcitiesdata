@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="file_system" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/file_system/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/file_system/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/file_system/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/file_system/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/file_system/lib" />
+      <root url="file://$PROJECT_DIR$/deps/file_system/priv" />
+      <root url="file://$PROJECT_DIR$/deps/file_system/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/file_system/lib" />
+      <root url="file://$PROJECT_DIR$/deps/file_system/priv" />
+      <root url="file://$PROJECT_DIR$/deps/file_system/c_src" />
+    </SOURCES>
+  </library>
+</component>

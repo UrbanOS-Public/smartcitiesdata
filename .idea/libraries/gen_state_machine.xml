@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="gen_state_machine" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/gen_state_machine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/gen_state_machine/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/gen_state_machine/lib" />
+      <root url="file://$PROJECT_DIR$/deps/gen_state_machine/lib" />
+    </SOURCES>
+  </library>
+</component>

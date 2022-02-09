@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="dialyxir" type="mix">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/dialyxir/lib" />
+      <root url="file://$PROJECT_DIR$/deps/dialyxir/lib" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="bypass" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/bypass/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/bypass/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/bypass/lib" />
+      <root url="file://$PROJECT_DIR$/deps/bypass/lib" />
+    </SOURCES>
+  </library>
+</component>

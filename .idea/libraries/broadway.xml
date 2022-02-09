@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="broadway" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/broadway/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/broadway/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/broadway/lib" />
+      <root url="file://$PROJECT_DIR$/deps/broadway/lib" />
+    </SOURCES>
+  </library>
+</component>

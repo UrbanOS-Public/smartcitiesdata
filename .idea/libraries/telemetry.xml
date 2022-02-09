@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="telemetry" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/telemetry/src" />
+      <root url="file://$PROJECT_DIR$/deps/telemetry/src" />
+      <root url="file://$PROJECT_DIR$/deps/telemetry/src" />
+    </SOURCES>
+  </library>
+</component>

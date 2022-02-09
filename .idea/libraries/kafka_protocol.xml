@@ -1,0 +1,57 @@
+<component name="libraryTable">
+  <library name="kafka_protocol" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kafka_protocol/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kafka_protocol/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/src" />
+      <root url="file://$PROJECT_DIR$/deps/kafka_protocol/priv" />
+    </SOURCES>
+  </library>
+</component>

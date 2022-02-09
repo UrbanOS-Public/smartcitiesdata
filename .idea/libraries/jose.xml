@@ -1,0 +1,23 @@
+<component name="libraryTable">
+  <library name="jose" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/jose/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/jose/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/jose/lib" />
+      <root url="file://$PROJECT_DIR$/deps/jose/src" />
+      <root url="file://$PROJECT_DIR$/deps/jose/priv" />
+      <root url="file://$PROJECT_DIR$/deps/jose/lib" />
+      <root url="file://$PROJECT_DIR$/deps/jose/src" />
+      <root url="file://$PROJECT_DIR$/deps/jose/priv" />
+    </SOURCES>
+  </library>
+</component>

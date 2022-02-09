@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="temp" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temp/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temp/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/temp/lib" />
+      <root url="file://$PROJECT_DIR$/deps/temp/lib" />
+    </SOURCES>
+  </library>
+</component>

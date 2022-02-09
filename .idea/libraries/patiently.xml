@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="patiently" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/patiently/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/patiently/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/patiently/lib" />
+      <root url="file://$PROJECT_DIR$/deps/patiently/lib" />
+      <root url="file://$PROJECT_DIR$/deps/patiently/lib" />
+    </SOURCES>
+  </library>
+</component>

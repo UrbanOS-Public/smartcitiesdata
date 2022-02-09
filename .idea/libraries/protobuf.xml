@@ -1,0 +1,23 @@
+<component name="libraryTable">
+  <library name="protobuf" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/protobuf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/protobuf/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/protobuf/lib" />
+      <root url="file://$PROJECT_DIR$/deps/protobuf/src" />
+      <root url="file://$PROJECT_DIR$/deps/protobuf/priv" />
+      <root url="file://$PROJECT_DIR$/deps/protobuf/lib" />
+      <root url="file://$PROJECT_DIR$/deps/protobuf/src" />
+      <root url="file://$PROJECT_DIR$/deps/protobuf/priv" />
+    </SOURCES>
+  </library>
+</component>

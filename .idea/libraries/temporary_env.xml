@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="temporary_env" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/temporary_env/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/temporary_env/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/temporary_env/lib" />
+      <root url="file://$PROJECT_DIR$/deps/temporary_env/lib" />
+    </SOURCES>
+  </library>
+</component>

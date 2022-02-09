@@ -6,11 +6,11 @@ defmodule Reaper.AuthRetriever do
   alias Reaper.Cache.AuthCache
   alias Reaper.Util
 
-  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) when is_list(headers) do
-    authorize(dataset_id, url, body, encode_method, Enum.into(headers, %{}), cache_ttl)
+  def authorize(ingestion_id, url, body, encode_method, headers, cache_ttl) when is_list(headers) do
+    authorize(ingestion_id, url, body, encode_method, Enum.into(headers, %{}), cache_ttl)
   end
 
-  def authorize(dataset_id, url, body, encode_method, headers, cache_ttl) do
+  def authorize(ingestion_id, url, body, encode_method, headers, cache_ttl) do
     cache_ttl = cache_ttl || 10_000
 
     complete_headers = headers |> add_content_type(body, encode_method)
@@ -19,7 +19,7 @@ defmodule Reaper.AuthRetriever do
 
     case AuthCache.get(cache_id) do
       nil ->
-        auth = make_auth_request(dataset_id, url, body, complete_headers)
+        auth = make_auth_request(ingestion_id, url, body, complete_headers)
         AuthCache.put(cache_id, auth, ttl: cache_ttl)
         auth
 
@@ -61,17 +61,17 @@ defmodule Reaper.AuthRetriever do
     :crypto.hash(:md5, json)
   end
 
-  defp make_auth_request(dataset_id, url, body, headers) do
+  defp make_auth_request(ingestion_id, url, body, headers) do
     case HTTPoison.post(url, body, headers) do
       {:ok, %{status_code: code, body: body, headers: headers}} when code < 400 ->
         content_encoding = Util.get_header_value(headers, "content-encoding")
         handle_content_encoding(body, content_encoding)
 
       {:ok, %{status_code: code}} ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with status #{code}"
+        raise "Unable to retrieve auth credentials for dataset #{ingestion_id} with status #{code}"
 
       error ->
-        raise "Unable to retrieve auth credentials for dataset #{dataset_id} with error #{inspect(error)}"
+        raise "Unable to retrieve auth credentials for dataset #{ingestion_id} with error #{inspect(error)}"
     end
   end
 

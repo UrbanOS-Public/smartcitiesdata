@@ -1,0 +1,78 @@
+<component name="libraryTable">
+  <library name="crc32cer" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crc32cer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crc32cer/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/src" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/crc32cer/c_src" />
+    </SOURCES>
+  </library>
+</component>

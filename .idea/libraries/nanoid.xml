@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="nanoid" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/nanoid/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/nanoid/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/nanoid/lib" />
+      <root url="file://$PROJECT_DIR$/deps/nanoid/lib" />
+    </SOURCES>
+  </library>
+</component>

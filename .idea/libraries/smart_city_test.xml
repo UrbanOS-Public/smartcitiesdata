@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="smart_city_test" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/smart_city_test/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/smart_city_test/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/smart_city_test/lib" />
+      <root url="file://$PROJECT_DIR$/deps/smart_city_test/lib" />
+    </SOURCES>
+  </library>
+</component>

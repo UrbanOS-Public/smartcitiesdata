@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="mint" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/mint/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/mint/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/mint/lib" />
+      <root url="file://$PROJECT_DIR$/deps/mint/src" />
+      <root url="file://$PROJECT_DIR$/deps/mint/lib" />
+      <root url="file://$PROJECT_DIR$/deps/mint/src" />
+    </SOURCES>
+  </library>
+</component>

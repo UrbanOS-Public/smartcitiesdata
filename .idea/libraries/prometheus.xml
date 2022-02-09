@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="prometheus" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prometheus/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prometheus/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/prometheus/src" />
+      <root url="file://$PROJECT_DIR$/deps/prometheus/src" />
+    </SOURCES>
+  </library>
+</component>

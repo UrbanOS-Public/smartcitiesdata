@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="divo_redis" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/divo_redis/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/divo_redis/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/divo_redis/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/divo_redis/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/divo_redis/lib" />
+      <root url="file://$PROJECT_DIR$/deps/divo_redis/lib" />
+    </SOURCES>
+  </library>
+</component>

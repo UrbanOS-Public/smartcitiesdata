@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="geomancer" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/geomancer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/geomancer/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/geomancer/lib" />
+      <root url="file://$PROJECT_DIR$/deps/geomancer/lib" />
+    </SOURCES>
+  </library>
+</component>

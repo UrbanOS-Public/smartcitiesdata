@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="prestige" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/prestige/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/prestige/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/prestige/lib" />
+      <root url="file://$PROJECT_DIR$/deps/prestige/lib" />
+    </SOURCES>
+  </library>
+</component>

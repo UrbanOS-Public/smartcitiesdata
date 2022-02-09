@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="plug_heartbeat" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/plug_heartbeat/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/plug_heartbeat/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/plug_heartbeat/lib" />
+      <root url="file://$PROJECT_DIR$/deps/plug_heartbeat/lib" />
+      <root url="file://$PROJECT_DIR$/deps/plug_heartbeat/lib" />
+    </SOURCES>
+  </library>
+</component>

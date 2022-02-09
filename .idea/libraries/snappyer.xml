@@ -1,0 +1,71 @@
+<component name="libraryTable">
+  <library name="snappyer" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/snappyer/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/snappyer/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/src" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/priv" />
+      <root url="file://$PROJECT_DIR$/deps/snappyer/c_src" />
+    </SOURCES>
+  </library>
+</component>

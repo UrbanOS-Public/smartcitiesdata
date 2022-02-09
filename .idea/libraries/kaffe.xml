@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="kaffe" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/kaffe/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/kaffe/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/kaffe/lib" />
+      <root url="file://$PROJECT_DIR$/deps/kaffe/lib" />
+    </SOURCES>
+  </library>
+</component>

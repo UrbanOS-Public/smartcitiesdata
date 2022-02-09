@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="ranch" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ranch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ranch/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ranch/src" />
+      <root url="file://$PROJECT_DIR$/deps/ranch/src" />
+      <root url="file://$PROJECT_DIR$/deps/ranch/src" />
+    </SOURCES>
+  </library>
+</component>

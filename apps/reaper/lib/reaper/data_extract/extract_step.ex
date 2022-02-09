@@ -9,23 +9,23 @@ defmodule Reaper.DataExtract.ExtractStep do
   alias Reaper.UrlBuilder
   alias Reaper.Decoder
 
-  def execute_extract_steps(dataset, steps) do
+  def execute_extract_steps(ingestion, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
       step = AtomicMap.convert(step, underscore: false)
-      execute_extract_step(dataset, step, acc)
+      execute_extract_step(ingestion, step, acc)
     end)
   end
 
-  defp execute_extract_step(dataset, step, assigns_accumulator) do
+  defp execute_extract_step(ingestion, step, assigns_accumulator) do
     step = Map.put(step, :assigns, Map.merge(step.assigns, assigns_accumulator))
-    process_extract_step(dataset, step)
+    process_extract_step(ingestion, step)
   rescue
     error ->
       Logger.error(Exception.format(:error, error, __STACKTRACE__))
-      reraise "Unable to process #{step.type} step for dataset #{dataset.id}.", __STACKTRACE__
+      reraise "Unable to process #{step.type} step for ingestion #{ingestion.id}.", __STACKTRACE__
   end
 
-  defp process_extract_step(dataset, %{type: "http"} = step) do
+  defp process_extract_step(ingestion, %{type: "http"} = step) do
     {body, headers} = evaluate_body_and_headers(step)
 
     output_file =
@@ -83,7 +83,7 @@ defmodule Reaper.DataExtract.ExtractStep do
     url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
 
     response =
-      Reaper.AuthRetriever.authorize(dataset.id, url, body, step.context.encodeMethod, headers, step.context.cacheTtl)
+      Reaper.AuthRetriever.authorize(ingestion.id, url, body, step.context.encodeMethod, headers, step.context.cacheTtl)
       |> Jason.decode!()
       |> get_in(step.context.path)
 

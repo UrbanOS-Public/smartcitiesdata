@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="brook" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/brook/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/brook/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/brook/lib" />
+      <root url="file://$PROJECT_DIR$/deps/brook/lib" />
+      <root url="file://$PROJECT_DIR$/deps/brook/lib" />
+    </SOURCES>
+  </library>
+</component>

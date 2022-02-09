@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="libring" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libring/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libring/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/libring/lib" />
+      <root url="file://$PROJECT_DIR$/deps/libring/lib" />
+    </SOURCES>
+  </library>
+</component>

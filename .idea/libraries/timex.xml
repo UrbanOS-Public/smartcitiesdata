@@ -1,0 +1,29 @@
+<component name="libraryTable">
+  <library name="timex" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/timex/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/timex/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/timex/lib" />
+      <root url="file://$PROJECT_DIR$/deps/timex/priv" />
+      <root url="file://$PROJECT_DIR$/deps/timex/lib" />
+      <root url="file://$PROJECT_DIR$/deps/timex/priv" />
+      <root url="file://$PROJECT_DIR$/deps/timex/lib" />
+      <root url="file://$PROJECT_DIR$/deps/timex/priv" />
+    </SOURCES>
+  </library>
+</component>

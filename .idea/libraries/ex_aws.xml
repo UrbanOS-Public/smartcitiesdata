@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="ex_aws" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ex_aws/lib" />
+      <root url="file://$PROJECT_DIR$/deps/ex_aws/priv" />
+      <root url="file://$PROJECT_DIR$/deps/ex_aws/lib" />
+      <root url="file://$PROJECT_DIR$/deps/ex_aws/priv" />
+    </SOURCES>
+  </library>
+</component>

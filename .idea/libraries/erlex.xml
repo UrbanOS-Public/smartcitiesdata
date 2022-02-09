@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="erlex" type="mix">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/erlex/lib" />
+      <root url="file://$PROJECT_DIR$/deps/erlex/src" />
+      <root url="file://$PROJECT_DIR$/deps/erlex/lib" />
+      <root url="file://$PROJECT_DIR$/deps/erlex/src" />
+    </SOURCES>
+  </library>
+</component>

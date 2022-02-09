@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="elastix" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elastix/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elastix/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/elastix/lib" />
+      <root url="file://$PROJECT_DIR$/deps/elastix/lib" />
+    </SOURCES>
+  </library>
+</component>

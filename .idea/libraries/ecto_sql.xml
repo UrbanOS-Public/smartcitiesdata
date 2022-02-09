@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="ecto_sql" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ecto_sql/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ecto_sql/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ecto_sql/lib" />
+      <root url="file://$PROJECT_DIR$/deps/ecto_sql/lib" />
+    </SOURCES>
+  </library>
+</component>

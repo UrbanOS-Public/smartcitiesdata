@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="libvault" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/libvault/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/libvault/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/libvault/lib" />
+      <root url="file://$PROJECT_DIR$/deps/libvault/lib" />
+    </SOURCES>
+  </library>
+</component>

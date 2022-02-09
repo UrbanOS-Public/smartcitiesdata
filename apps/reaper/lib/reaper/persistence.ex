@@ -86,8 +86,8 @@ defmodule Reaper.Persistence do
     Redix.command!(@redix, ["SET", "reaper:#{dataset_id}:last_processed_index", index])
   end
 
-  def remove_last_processed_index(dataset_id) do
-    Redix.command!(@redix, ["DEL", "reaper:#{dataset_id}:last_processed_index"])
+  def remove_last_processed_index(ingestion_id) do
+    Redix.command!(@redix, ["DEL", "reaper:#{ingestion_id}:last_processed_index"])
   end
 
   @doc """

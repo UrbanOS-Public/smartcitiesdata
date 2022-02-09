@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="ex_aws_cloudwatch" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/ex_aws_cloudwatch/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/ex_aws_cloudwatch/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/ex_aws_cloudwatch/lib" />
+      <root url="file://$PROJECT_DIR$/deps/ex_aws_cloudwatch/lib" />
+    </SOURCES>
+  </library>
+</component>

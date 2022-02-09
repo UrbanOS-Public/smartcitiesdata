@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="combine" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/combine/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/combine/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/combine/lib" />
+      <root url="file://$PROJECT_DIR$/deps/combine/lib" />
+      <root url="file://$PROJECT_DIR$/deps/combine/lib" />
+    </SOURCES>
+  </library>
+</component>

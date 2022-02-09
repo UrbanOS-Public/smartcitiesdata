@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="atomic_map" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/atomic_map/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/atomic_map/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/atomic_map/lib" />
+      <root url="file://$PROJECT_DIR$/deps/atomic_map/lib" />
+    </SOURCES>
+  </library>
+</component>

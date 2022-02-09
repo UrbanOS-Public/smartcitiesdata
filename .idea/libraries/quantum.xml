@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="quantum" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/quantum/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/quantum/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/quantum/lib" />
+      <root url="file://$PROJECT_DIR$/deps/quantum/lib" />
+    </SOURCES>
+  </library>
+</component>

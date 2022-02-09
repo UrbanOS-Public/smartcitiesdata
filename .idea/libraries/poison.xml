@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="poison" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/poison/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/poison/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/poison/lib" />
+      <root url="file://$PROJECT_DIR$/deps/poison/lib" />
+    </SOURCES>
+  </library>
+</component>

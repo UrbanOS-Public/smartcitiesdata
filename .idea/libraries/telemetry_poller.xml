@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="telemetry_poller" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/telemetry_poller/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/telemetry_poller/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/telemetry_poller/src" />
+      <root url="file://$PROJECT_DIR$/deps/telemetry_poller/src" />
+      <root url="file://$PROJECT_DIR$/deps/telemetry_poller/src" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="exshape" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/exshape/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exshape/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/exshape/lib" />
+      <root url="file://$PROJECT_DIR$/deps/exshape/lib" />
+    </SOURCES>
+  </library>
+</component>

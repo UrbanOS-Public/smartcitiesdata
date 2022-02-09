@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="elsa" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/dev/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/elsa/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/elsa/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/elsa/lib" />
+      <root url="file://$PROJECT_DIR$/deps/elsa/lib" />
+      <root url="file://$PROJECT_DIR$/deps/elsa/lib" />
+    </SOURCES>
+  </library>
+</component>

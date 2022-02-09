@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="crontab" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/crontab/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/crontab/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/crontab/lib" />
+      <root url="file://$PROJECT_DIR$/deps/crontab/lib" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,27 @@
+<component name="libraryTable">
+  <library name="makeup_erlang" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/makeup_erlang/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/test/lib/makeup_erlang/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+      <root url="file://$PROJECT_DIR$/deps/makeup_erlang/lib" />
+    </SOURCES>
+  </library>
+</component>

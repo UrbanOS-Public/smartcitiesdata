@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="exprintf" type="mix">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exprintf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exprintf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exprintf/ebin" />
+      <root url="file://$PROJECT_DIR$/_build/integration/lib/exprintf/ebin" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/deps/exprintf/lib" />
+      <root url="file://$PROJECT_DIR$/deps/exprintf/lib" />
+    </SOURCES>
+  </library>
+</component>
