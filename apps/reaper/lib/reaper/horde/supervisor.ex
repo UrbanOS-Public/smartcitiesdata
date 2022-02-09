@@ -48,6 +48,21 @@ defmodule Reaper.Horde.Supervisor do
     )
   end
 
+  def start_data_extract(%SmartCity.Ingestion{} = ingestion) do
+    Logger.debug(fn -> "#{__MODULE__} Start data extract process for ingestion #{ingestion.id}" end)
+
+    send_extract_complete_event = fn ->
+      Brook.Event.send(@instance_name, data_extract_end(), :reaper, ingestion)
+    end
+
+    start_child(
+      {Reaper.RunTask,
+       name: ingestion.id,
+       mfa: {Reaper.DataExtract.Processor, :process, [ingestion]},
+       completion_callback: send_extract_complete_event}
+    )
+  end
+
   def start_file_ingest(%SmartCity.Dataset{} = dataset) do
     send_file_ingest_end_event = fn ->
       Brook.Event.send(@instance_name, file_ingest_end(), :reaper, dataset)

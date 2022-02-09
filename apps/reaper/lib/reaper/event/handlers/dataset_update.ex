@@ -16,32 +16,32 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     10_000 => "*/10 * * * * * *"
   }
 
-  def handle(%SmartCity.Dataset{technical: %{cadence: "never"}} = dataset) do
-    delete_job(dataset)
+  def handle(%SmartCity.Ingestion{cadence: "never"} = ingestion) do
+    delete_job(ingestion)
 
-    if Extractions.get_dataset!(dataset.id) != nil do
-      Extractions.disable_dataset(dataset.id)
+    if Extractions.get_ingestion!(ingestion.id) != nil do
+      Extractions.disable_ingestion(ingestion.id)
     end
 
     :ok
   end
 
-  def handle(%SmartCity.Dataset{technical: %{cadence: "once"}} = dataset) do
-    case Extractions.get_last_fetched_timestamp!(dataset.id) do
+  def handle(%SmartCity.Ingestion{cadence: "once"} = ingestion) do
+    case Extractions.get_last_fetched_timestamp!(ingestion.id) do
       nil ->
-        delete_job(dataset)
-        Brook.Event.send(@instance_name, determine_event(dataset), :reaper, dataset)
+        delete_job(ingestion)
+        Brook.Event.send(@instance_name, data_extract_start(), :reaper, ingestion)
 
       _ ->
         :ok
     end
   end
 
-  def handle(%SmartCity.Dataset{technical: %{cadence: cadence}} = dataset) do
-    with {:ok, _} <- check_job_disabled(dataset),
+  def handle(%SmartCity.Ingestion{cadence: cadence} = ingestion) do
+    with {:ok, _} <- check_job_disabled(ingestion),
          {:ok, cron} <- parse_cron(cadence),
-         :ok <- delete_job(dataset) do
-      create_job(cron, dataset)
+         :ok <- delete_job(ingestion) do
+      create_job(cron, ingestion)
     else
       {:error, reason} -> Logger.warn(reason)
     end
@@ -49,17 +49,17 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     :ok
   end
 
-  defp check_job_disabled(dataset) do
-    case Reaper.Scheduler.find_job(String.to_atom(dataset.id)) do
-      %{state: :inactive} -> {:error, "dataset #{dataset.id} is disabled"}
-      _ -> {:ok, dataset}
+  defp check_job_disabled(ingestion) do
+    case Reaper.Scheduler.find_job(String.to_atom(ingestion.id)) do
+      %{state: :inactive} -> {:error, "ingestion #{ingestion.id} is disabled"}
+      _ -> {:ok, ingestion}
     end
   end
 
   defp parse_cron(cron_int) when is_integer(cron_int) do
     case Map.get(@cron_conversions, cron_int) do
       nil ->
-        {:error, "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring dataset"}
+        {:error, "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring ingestion"}
 
       expression ->
         parse_cron(expression)
@@ -72,7 +72,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     case Crontab.CronExpression.Parser.parse(cron_string, extended?) do
       {:error, reason} ->
         {:error,
-         "event(dataset:update) unable to parse cadence(#{cron_string}) as cron expression, error reason: #{
+         "event(ingestion:update) unable to parse cadence(#{cron_string}) as cron expression, error reason: #{
            inspect(reason)
          }"}
 
@@ -81,39 +81,25 @@ defmodule Reaper.Event.Handlers.DatasetUpdate do
     end
   end
 
-  defp delete_job(dataset) do
-    dataset.id
+  defp delete_job(ingestion) do
+    ingestion.id
     |> String.to_atom()
     |> Reaper.Scheduler.delete_job()
   end
 
-  defp create_job(cron_expression, dataset) do
-    {:ok, serialized_dataset} = Brook.Serializer.serialize(dataset)
+  defp create_job(cron_expression, ingestion) do
+    {:ok, serialized_ingestion} = Brook.Serializer.serialize(ingestion)
 
     Reaper.Scheduler.new_job()
-    |> Job.set_name(String.to_atom(dataset.id))
+    |> Job.set_name(String.to_atom(ingestion.id))
     |> Job.set_schedule(cron_expression)
-    |> Job.set_task({__MODULE__, :protected_event_send, [serialized_dataset]})
+    |> Job.set_task({__MODULE__, :protected_event_send, [serialized_ingestion]})
     |> Reaper.Scheduler.add_job()
   end
 
-  def protected_event_send(dataset_json) do
-    {:ok, safe_dataset} = Brook.Deserializer.deserialize(dataset_json)
+  def protected_event_send(ingestion_json) do
+    {:ok, safe_ingestion} = Brook.Deserializer.deserialize(ingestion_json)
 
-    Brook.Event.send(@instance_name, determine_event(safe_dataset), :reaper, safe_dataset)
-  end
-
-  defp determine_event(%SmartCity.Dataset{technical: %{sourceType: "host"}}) do
-    file_ingest_start()
-  end
-
-  defp determine_event(%SmartCity.Dataset{
-         technical: %{sourceType: "ingest", sourceFormat: "application/zip"}
-       }) do
-    file_ingest_start()
-  end
-
-  defp determine_event(_) do
-    data_extract_start()
+    Brook.Event.send(@instance_name, data_extract_start(), :reaper, safe_ingestion)
   end
 end

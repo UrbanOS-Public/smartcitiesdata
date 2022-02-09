@@ -41,6 +41,11 @@ defmodule Reaper.Event.EventHandlerTest do
     :ok
   end
 
+  # describe "#{ingestion_update()}" do
+  #   test "" do 
+  #   end
+  # end
+
   describe "#{dataset_update()}" do
     test "sends error event for known bad case of nil cadence" do
       allow(Reaper.Scheduler.find_job(any()), return: nil)

@@ -49,6 +49,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
       assert true == Extractions.is_enabled?(id)
     end
 
+    @tag :skip
     test "a dataset that has a definition in the view state (via update), but has no enabled flag explicitly set IS enabled" do
       dataset = TDG.create_dataset(%{})
 
@@ -59,6 +60,17 @@ defmodule Reaper.Collections.BaseDatasetTest do
       assert true == Extractions.is_enabled?(dataset.id)
     end
 
+    test "an ingestion that has a definition in the view state (via update), but has no enabled flag explicitly set IS enabled" do
+      ingestion = TDG.create_ingestion(%{})
+
+      Brook.Test.with_event(@instance_name, fn ->
+        Extractions.update_ingestion(ingestion)
+      end)
+
+      assert true == Extractions.is_enabled?(ingestion.id)
+    end
+
+    @tag :skip
     test "a dataset that has a definition in the view state (via update), but has its enabled flag explicitly set, reflects that" do
       dataset = TDG.create_dataset(%{})
 
@@ -68,6 +80,17 @@ defmodule Reaper.Collections.BaseDatasetTest do
       end)
 
       assert false == Extractions.is_enabled?(dataset.id)
+    end
+
+    test "a ingestion that has a definition in the view state (via update), but has its enabled flag explicitly set, reflects that" do
+      ingestion = TDG.create_ingestion(%{})
+
+      Brook.Test.with_event(@instance_name, fn ->
+        Extractions.update_ingestion(ingestion)
+        Extractions.disable_ingestion(ingestion.id)
+      end)
+
+      assert false == Extractions.is_enabled?(ingestion.id)
     end
   end
 
