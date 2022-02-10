@@ -36,7 +36,8 @@ defmodule DiscoveryApi.Mixfile do
       {
         :ex_aws_s3,
         "~> 2.0",
-        git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+        git: "https://github.com/ex-aws/ex_aws_s3",
+        ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
       },
       {:ibrowse, "~> 4.4"},
       {:libvault, "~> 0.2"},
@@ -77,8 +78,8 @@ defmodule DiscoveryApi.Mixfile do
       {:raptor_service, in_umbrella: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 5.0"},
-      {:smart_city_test, "~> 2.0.2", only: [:test, :integration]},
+      {:smart_city, "~> 5.0.3"},
+      {:smart_city_test, "~> 2.0.4", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~> 3.0"},
