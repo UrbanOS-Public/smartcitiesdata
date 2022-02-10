@@ -12,7 +12,7 @@ defmodule Reaper.Event.EventHandler do
       error_ingestion_update: 0
     ]
 
-  alias Reaper.Collections.{Extractions, FileIngestions}
+  alias Reaper.Collections.Extractions
 
   @instance_name Reaper.instance_name()
 
@@ -21,8 +21,7 @@ defmodule Reaper.Event.EventHandler do
     |> add_event_count(ingestion.targetDataset)
 
     Extractions.update_ingestion(ingestion)
-    FileIngestions.update_ingestion(ingestion)
-    Reaper.Event.Handlers.DatasetUpdate.handle(ingestion)
+    Reaper.Event.Handlers.IngestionUpdate.handle(ingestion)
   rescue
     reason ->
       Brook.Event.send(@instance_name, error_ingestion_update(), :reaper, %{"reason" => reason, "ingestion" => ingestion})
@@ -35,7 +34,6 @@ defmodule Reaper.Event.EventHandler do
 
     Reaper.Event.Handlers.IngestionDelete.handle(ingestion)
     Extractions.delete_ingestion(ingestion.id)
-    FileIngestions.disable_ingestion(ingestion.id)
   end
 
   def handle_event(%Brook.Event{type: data_extract_start(), data: %SmartCity.Ingestion{} = ingestion}) do

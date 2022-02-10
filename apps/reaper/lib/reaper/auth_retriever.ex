@@ -58,18 +58,6 @@ defmodule Reaper.AuthRetriever do
 
   defp handle_content_encoding(body, _), do: body
 
-  defp evaluate_eex_map(nil), do: %{}
-
-  defp evaluate_eex_map(map) do
-    map
-    |> Enum.map(&evaluate_eex(&1))
-    |> Enum.into(%{})
-  end
-
-  defp evaluate_eex({key, value}) do
-    {key, EEx.eval_string(value, [])}
-  end
-
   defp encode_body(body, "json"), do: Jason.encode!(body)
   defp encode_body(body, _), do: URI.encode_query(body)
 

@@ -1,4 +1,4 @@
-defmodule Reaper.Event.Handlers.DatasetUpdateTest do
+defmodule Reaper.Event.Handlers.IngestionUpdateTest do
   use ExUnit.Case
   use Placebo
   use Properties, otp_app: :reaper
@@ -6,7 +6,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
   import Checkov
   import ExUnit.CaptureLog
 
-  alias Reaper.Event.Handlers.DatasetUpdate
+  alias Reaper.Event.Handlers.IngestionUpdate
   alias SmartCity.TestDataGenerator, as: TDG
   alias Quantum.Job
   alias Reaper.Collections.Extractions
@@ -34,7 +34,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     test "sends data_extract_start() event for all source types when cadence is once" do
       ingestion = TDG.create_ingestion(%{cadence: "once"})
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       assert_receive {:brook_event, %Brook.Event{type: "data:extract:start", data: ingestion}}
     end
@@ -43,7 +43,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       ingestion = TDG.create_ingestion(%{cadence: "once"})
       create_job(ingestion.id)
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       assert_receive {:brook_event, %Brook.Event{type: "data:extract:start", data: ^ingestion}}
       assert 0 == Reaper.Scheduler.jobs() |> length()
@@ -56,7 +56,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
         Extractions.update_last_fetched_timestamp(ingestion.id)
       end)
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       refute_receive {:brook_event, %Brook.Event{type: "data:extract:start", data: ingestion}}
     end
@@ -64,26 +64,26 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     test "adds job to quantum when cadence is a cron expression" do
       ingestion = TDG.create_ingestion(%{id: "ds2", cadence: "* * * * *"})
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       job = Reaper.Scheduler.find_job(:ds2)
       {:ok, expected_ingestion} = Brook.Serializer.serialize(ingestion)
       assert job.schedule == ~e[* * * * *]
-      assert job.task == {DatasetUpdate, :protected_event_send, [expected_ingestion]}
+      assert job.task == {IngestionUpdate, :protected_event_send, [expected_ingestion]}
 
     end
 
     test "jobs that are added to quantum when cadence is a cron expression work, even with missing optional fields" do
       # gotta go fast
       {:ok, cadence} = Crontab.CronExpression.Parser.parse("*/5 * * * * * *", true)
-      dataset = TDG.create_ingestion(%{topLevelSelector: "remove me"})
-      ingestion_that_is_missing_top_level_selector = pop_in(dataset, [:topLevelSelector]) |> elem(1)
+      ingestion = TDG.create_ingestion(%{topLevelSelector: "remove me"})
+      ingestion_that_is_missing_top_level_selector = pop_in(ingestion, [:topLevelSelector]) |> elem(1)
       {:ok, serialized_ingestion} = Brook.Serializer.serialize(ingestion_that_is_missing_top_level_selector)
 
       Reaper.Scheduler.new_job()
       |> Job.set_name(:do_it)
       |> Job.set_schedule(cadence)
-      |> Job.set_task({DatasetUpdate, :protected_event_send, [serialized_ingestion]})
+      |> Job.set_task({IngestionUpdate, :protected_event_send, [serialized_ingestion]})
       |> Reaper.Scheduler.add_job()
 
       assert_receive {:brook_event,
@@ -94,7 +94,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
     data_test "adds job to quantum with schedule of #{schedule} when cadence is #{cadence}" do
       ingestion = TDG.create_ingestion(%{id: "ds9", cadence: cadence})
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       extended = length(String.split(schedule)) > 5
       {:ok, expected_cron_expression} = Crontab.CronExpression.Parser.parse(schedule, extended)
@@ -117,7 +117,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       {:error, reason} = Crontab.CronExpression.Parser.parse(ingestion.cadence)
 
       assert capture_log([level: :warn], fn ->
-               :ok = DatasetUpdate.handle(ingestion)
+               :ok = IngestionUpdate.handle(ingestion)
              end) =~
                "event(ingestion:update) unable to parse cadence(once per minute) as cron expression, error reason: #{
                  inspect(reason)
@@ -128,7 +128,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
       ingestion = TDG.create_ingestion(%{cadence: "never"})
 
       assert capture_log(fn ->
-               assert :ok == DatasetUpdate.handle(ingestion)
+               assert :ok == IngestionUpdate.handle(ingestion)
              end) == ""
     end
 
@@ -140,7 +140,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       assert nil != Reaper.Scheduler.find_job(ingestion_id)
 
-      assert :ok == DatasetUpdate.handle(ingestion)
+      assert :ok == IngestionUpdate.handle(ingestion)
 
       assert nil == Reaper.Scheduler.find_job(ingestion_id)
     end
@@ -150,7 +150,7 @@ defmodule Reaper.Event.Handlers.DatasetUpdateTest do
 
       Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_ingestion(ingestion)
-        :ok = DatasetUpdate.handle(ingestion)
+        :ok = IngestionUpdate.handle(ingestion)
       end)
 
       assert false == Extractions.is_enabled?(ingestion.id)

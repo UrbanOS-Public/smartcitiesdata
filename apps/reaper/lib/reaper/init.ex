@@ -6,7 +6,6 @@ defmodule Reaper.Init do
   require Logger
 
   alias Reaper.Collections.Extractions
-  alias Reaper.Collections.FileIngestions
 
   def start_link(_opts) do
     Task.start_link(__MODULE__, :run, [])

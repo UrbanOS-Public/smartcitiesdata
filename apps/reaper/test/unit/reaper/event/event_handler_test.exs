@@ -41,11 +41,6 @@ defmodule Reaper.Event.EventHandlerTest do
     :ok
   end
 
-  # describe "#{ingestion_update()}" do
-  #   test "" do 
-  #   end
-  # end
-
   describe "#{dataset_update()}" do
     test "sends error event for known bad case of nil cadence" do
       allow(Reaper.Scheduler.find_job(any()), return: nil)
@@ -166,119 +161,6 @@ defmodule Reaper.Event.EventHandlerTest do
         extraction = Brook.get!(@instance_name, :extractions, dataset.id)
         assert extraction != nil
         assert date == Map.get(extraction, "last_fetched_timestamp", nil)
-      end)
-    end
-  end
-
-  describe "#{file_ingest_start()}" do
-    test "should start the file ingest processor" do
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-      Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
-      Brook.Test.send(@instance_name, file_ingest_start(), :reaper, dataset)
-
-      eventually(fn ->
-        assert_called Reaper.FileIngest.Processor.process(dataset)
-      end)
-    end
-
-    test "persists the dataset and start timestamp in view state" do
-      date = DateTime.utc_now()
-      allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-      Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
-      Brook.Test.send(@instance_name, file_ingest_start(), :reaper, dataset)
-
-      eventually(fn ->
-        view_state = Brook.get!(@instance_name, :file_ingestions, dataset.id)
-        assert view_state != nil
-        assert dataset == Map.get(view_state, "dataset")
-        assert date == Map.get(view_state, "started_timestamp")
-      end)
-    end
-
-    test "sends file ingest end event when process completes" do
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-      Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.FileIngestions.update_dataset(dataset) end)
-      Brook.Test.send(@instance_name, file_ingest_start(), :reaper, dataset)
-
-      assert_receive {:brook_event, %Brook.Event{type: file_ingest_end(), data: ^dataset}}
-    end
-  end
-
-  describe "#{file_ingest_end()}" do
-    setup do
-      date = DateTime.utc_now()
-      allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
-
-      [date: date]
-    end
-
-    test "persists the last_fetched_timestamp into the file_ingestions collection", %{date: date} do
-      dataset = TDG.create_dataset(id: "ds2", technical: %{sourceType: "ingest"})
-      Brook.Test.send(@instance_name, file_ingest_end(), :reaper, dataset)
-
-      eventually(fn ->
-        view_state = Brook.get!(@instance_name, :file_ingestions, dataset.id)
-        assert view_state != nil
-        assert date == view_state["last_fetched_timestamp"]
-      end)
-    end
-
-    test "triggers ingest of geojson from shapefile transformation" do
-      shapefile_dataset = TDG.create_dataset(id: "ds3", technical: %{sourceFormat: "zip"})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        FileIngestions.update_dataset(shapefile_dataset)
-      end)
-
-      allow Reaper.Horde.Supervisor.start_data_extract(any()), return: {:ok, :pid}
-
-      {:ok, hosted_file} =
-        SmartCity.HostedFile.new(%{
-          dataset_id: "ds3",
-          bucket: "geojson",
-          key: "file.geojson",
-          mime_type: "application/geo+json"
-        })
-
-      Brook.Test.send(@instance_name, file_ingest_end(), :odo, hosted_file)
-
-      geojson_dataset = %{
-        shapefile_dataset
-        | technical: %{
-            shapefile_dataset.technical
-            | sourceFormat: "application/geo+json",
-              extractSteps: [
-                %{
-                  type: "s3",
-                  context: %{url: "s3://geojson/file.geojson", headers: %{}},
-                  assigns: %{}
-                }
-              ]
-          }
-      }
-
-      assert_receive {:brook_event, %Brook.Event{type: data_extract_start(), data: ^geojson_dataset}}
-    end
-  end
-
-  describe "#{dataset_disable()}" do
-    test "should stop and disable the dataset if it is a successful stop" do
-      allow Reaper.Event.Handlers.DatasetDisable.handle(any()), return: :result_not_relevant
-      allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
-
-      dataset = TDG.create_dataset(id: Faker.UUID.v4())
-      Brook.Test.send(@instance_name, data_extract_start(), :author, dataset)
-      Brook.Test.send(@instance_name, dataset_disable(), :author, dataset)
-
-      eventually(fn ->
-        view_state = Brook.get!(@instance_name, :extractions, dataset.id)
-        assert view_state != nil
-        assert false == Map.get(view_state, "enabled")
-        assert_called Reaper.Event.Handlers.DatasetDisable.handle(dataset)
       end)
     end
   end
