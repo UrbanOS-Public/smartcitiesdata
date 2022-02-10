@@ -1,4 +1,4 @@
-defmodule Reaper.Collections.BaseDataset do
+defmodule Reaper.Collections.BaseIngestion do
   @moduledoc false
 
   defmacro __using__(opts) do
@@ -6,11 +6,6 @@ defmodule Reaper.Collections.BaseDataset do
     collection = Keyword.fetch!(opts, :collection)
 
     quote do
-      # def update_dataset(%SmartCity.Dataset{} = dataset) do
-      #   Brook.ViewState.merge(unquote(collection), dataset.id, %{
-      #     "dataset" => dataset
-      #   })
-      # end
 
       def update_ingestion(%SmartCity.Ingestion{} = ingestion) do
         Brook.ViewState.merge(unquote(collection), ingestion.id, %{
@@ -26,20 +21,14 @@ defmodule Reaper.Collections.BaseDataset do
         Brook.ViewState.merge(unquote(collection), id, %{"started_timestamp" => started_time})
       end
 
-      def disable_dataset(dataset_id) do
-        Brook.ViewState.merge(unquote(collection), dataset_id, %{
-          "enabled" => false
-        })
+      def delete_ingestion(ingestion_id) do
+        Brook.ViewState.delete(unquote(collection), ingestion_id)
       end
 
       def disable_ingestion(ingestion_id) do
         Brook.ViewState.merge(unquote(collection), ingestion_id, %{
           "enabled" => false
         })
-      end
-
-      def delete_dataset(dataset_id) do
-        Brook.ViewState.delete(unquote(collection), dataset_id)
       end
 
       def is_enabled?(ingestion_id) do
@@ -55,13 +44,6 @@ defmodule Reaper.Collections.BaseDataset do
       defp is_ingestion_entry_enabled?(incomplete_ingestion_entry),
         do: Map.get(incomplete_ingestion_entry, "enabled", false)
 
-      def get_dataset!(id) do
-        case Brook.get!(unquote(instance), unquote(collection), id) do
-          nil -> nil
-          value -> value["dataset"]
-        end
-      end
-
       def get_ingestion!(id) do
         case Brook.get!(unquote(instance), unquote(collection), id) do
           nil -> nil
@@ -69,8 +51,8 @@ defmodule Reaper.Collections.BaseDataset do
         end
       end
 
-      def get_started_timestamp!(dataset_id) do
-        case Brook.get!(unquote(instance), unquote(collection), dataset_id) do
+      def get_started_timestamp!(ingestion_id) do
+        case Brook.get!(unquote(instance), unquote(collection), ingestion_id) do
           nil -> nil
           value -> Map.get(value, "started_timestamp", nil)
         end
@@ -86,7 +68,7 @@ defmodule Reaper.Collections.BaseDataset do
       def get_all_non_completed!() do
         Brook.get_all_values!(unquote(instance), unquote(collection))
         |> Enum.filter(&should_start/1)
-        |> Enum.map(&Map.get(&1, "dataset"))
+        |> Enum.map(&Map.get(&1, "ingestion"))
       end
 
       defp should_start(%{"started_timestamp" => start_time, "last_fetched_timestamp" => end_time} = ingestion_entry)

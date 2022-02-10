@@ -40,7 +40,7 @@ defmodule Reaper.DataExtract.Processor do
     generated_time_stamp = DateTime.utc_now()
 
     {:ok, producer_stage} = create_producer_stage(ingestion)
-    # TODO: Talk to Tim
+    # TODO: Talk to Tim. Can you give us an overview of how this works?
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
     {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
@@ -64,55 +64,8 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
-  # @spec process(SmartCity.Ingestion.t()) :: Redix.Protocol.redis_value() | no_return()
-  # def process(%SmartCity.Ingestion{} = unprovisioned_ingestion) do
-  #   Process.flag(:trap_exit, true)
-
-  #   dataset =
-  #     unprovisioned_ingestion
-  #     |> Providers.Helpers.Provisioner.provision()
-
-  #   validate_destination(dataset)
-  #   validate_cache(dataset)
-
-  #   generated_time_stamp = DateTime.utc_now()
-
-  #   {:ok, producer_stage} = create_producer_stage(dataset)
-  #   {:ok, validation_stage} = ValidationStage.start_link(cache: dataset.id, dataset: dataset)
-  #   {:ok, schema_stage} = SchemaStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
-  #   {:ok, load_stage} = LoadStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
-
-  #   GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
-  #   GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
-  #   GenStage.sync_subscribe(validation_stage, to: producer_stage, min_demand: @min_demand, max_demand: @max_demand)
-
-  #   wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
-
-  #   Persistence.remove_last_processed_index(dataset.id)
-  # rescue
-  #   error ->
-  #     Logger.error(Exception.format_stacktrace(__STACKTRACE__))
-  #     Logger.error("Unable to continue processing dataset #{inspect(unprovisioned_dataset)} - Error #{inspect(error)}")
-
-  #     reraise error, __STACKTRACE__
-  # after
-  #   unprovisioned_dataset.id
-  #   |> DataSlurper.determine_filename()
-  #   |> File.rm()
-  # end
-
-  # TODO: Confirm with Tim this can be removed
-#  defp create_producer_stage(%SmartCity.Dataset{extractSteps: extract_steps} = dataset)
-#       when is_nil(extract_steps) or extract_steps == [] do
-#    dataset
-#    |> UrlBuilder.build()
-#    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
-#    |> Decoder.decode(dataset)
-#    |> Stream.with_index()
-#    |> GenStage.from_enumerable()
-#  end
-
-  defp create_producer_stage(%SmartCity.Ingestion{extractSteps: extract_steps} = ingestion)
+ 
+  defp create_producer_stage(%SmartCity.Ingestion{extractSteps: extract_steps} = ingestion) do
     %{output_file: output_file} = ExtractStep.execute_extract_steps(ingestion, extract_steps)
 
     output_file

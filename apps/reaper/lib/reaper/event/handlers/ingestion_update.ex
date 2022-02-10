@@ -1,4 +1,4 @@
-defmodule Reaper.Event.Handlers.DatasetUpdate do
+defmodule Reaper.Event.Handlers.IngestionUpdate do
   @moduledoc false
   require Logger
 

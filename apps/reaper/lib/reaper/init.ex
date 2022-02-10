@@ -14,16 +14,10 @@ defmodule Reaper.Init do
 
   def run() do
     Extractions.get_all_non_completed!()
-    |> Enum.each(fn dataset ->
-      Logger.debug("Migrating extraction dataset #{dataset.id}")
-      Reaper.Horde.Supervisor.start_data_extract(dataset)
+    |> Enum.each(fn ingestion ->
+      Logger.debug("Migrating extraction ingestion #{ingestion.id}")
+      Reaper.Horde.Supervisor.start_data_extract(ingestion)
       Process.sleep(250)
-    end)
-
-    FileIngestions.get_all_non_completed!()
-    |> Enum.each(fn dataset ->
-      Logger.debug("Migrating ingestion dataset #{dataset.id}")
-      Reaper.Horde.Supervisor.start_file_ingest(dataset)
     end)
   end
 end

@@ -30,7 +30,7 @@ defmodule Reaper.DataExtract.ExtractStep do
 
     output_file =
       UrlBuilder.decode_http_extract_step(step)
-      |> DataSlurper.slurp(dataset.id, headers, step.context.protocol, step.context.action, body)
+      |> DataSlurper.slurp(ingestion.id, headers, step.context.protocol, step.context.action, body)
 
     Map.put(step.assigns, :output_file, output_file)
   end
@@ -77,7 +77,7 @@ defmodule Reaper.DataExtract.ExtractStep do
     Map.put(step.assigns, step.context.destination |> String.to_atom(), secret)
   end
 
-  defp process_extract_step(dataset, %{type: "auth"} = step) do
+  defp process_extract_step(ingestion, %{type: "auth"} = step) do
     {body, headers} = evaluate_body_and_headers(step)
 
     url = UrlBuilder.build_safe_url_path(step.context.url, step.assigns)

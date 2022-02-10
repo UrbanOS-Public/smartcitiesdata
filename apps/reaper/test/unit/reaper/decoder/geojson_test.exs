@@ -28,11 +28,11 @@ defmodule Reaper.Decoder.GeoJsonTest do
         data
         |> Jason.encode!()
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "geojson"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceFormat: "geojson"})
 
       File.write!(@filename, structure)
 
-      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, dataset)
+      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, ingestion)
 
       assert %{"feature" => Enum.at(data.features, 0)} == Enum.at(response, 0)
       assert %{"feature" => Enum.at(data.features, 1)} == Enum.at(response, 1)
@@ -52,11 +52,11 @@ defmodule Reaper.Decoder.GeoJsonTest do
         data
         |> Jason.encode!()
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "zip"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceFormat: "zip"})
 
       File.write!(@filename, structure)
 
-      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, dataset)
+      {:ok, response} = Reaper.Decoder.GeoJson.decode({:file, @filename}, ingestion)
 
       assert %{"feature" => Enum.at(data.features, 0)} == Enum.at(response, 0)
       assert %{"feature" => Enum.at(data.features, 1)} == Enum.at(response, 1)

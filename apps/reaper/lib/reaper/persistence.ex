@@ -75,8 +75,8 @@ defmodule Reaper.Persistence do
     Redix.command(@redix, ["DEL", @name_space_derived <> dataset_id])
   end
 
-  def get_last_processed_index(dataset_id) do
-    case Redix.command!(@redix, ["GET", "reaper:#{dataset_id}:last_processed_index"]) do
+  def get_last_processed_index(ingestion_id) do
+    case Redix.command!(@redix, ["GET", "reaper:#{ingestion_id}:last_processed_index"]) do
       nil -> -1
       last_processed_index -> String.to_integer(last_processed_index)
     end
