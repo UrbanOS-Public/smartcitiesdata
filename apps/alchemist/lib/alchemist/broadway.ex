@@ -51,7 +51,7 @@ defmodule Alchemist.Broadway do
   #   on it's way out of alchemist.
   def handle_message(_processor, message, _ingestion) do
     # don't alter the message right now, just forward it along unchanged
-    message
+    Transformers.NoOp.transform!(message)
   end
 
   # used by batcher

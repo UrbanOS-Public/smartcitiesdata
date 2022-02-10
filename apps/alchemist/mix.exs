@@ -57,6 +57,7 @@ defmodule Alchemist.MixProject do
       {:smart_city_test, "~> 2.0.4", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
+      {:transformers, in_umbrella: true},
       {:performance, in_umbrella: true, only: :integration}
     ]
   end
