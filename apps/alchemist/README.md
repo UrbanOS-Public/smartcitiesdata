@@ -39,3 +39,21 @@ Validates data by evaluating each message and verifying that it has the required
 ### To run inside a container(from the smartcitiesdata folder):
 
 - Build the docker with `./scripts/build.sh alchemist <your tag>`
+
+Creating ingestion events
+
+```
+  ingestion = SmartCity.TestDataGenerator.create_ingestion(%{})
+  Brook.Event.send(Alchemist.instance_name(), "ingestion:update", :testing, ingestion)
+```
+
+### How alchemist interacts with kafka topics (message sequence)
+
+- Alchemist listens for an `ingestion_update()` event on the `event_streams` topic.
+  - The ingestion supervisor / processor setup the `broadway` library to listen
+    to the associated data topic `raw-{datasetid}`. It's created if it doesn't
+    already exist. Data from datasets being fetched will be placed on that topic
+    from reaper.
+  - `handle_message` performs the transform on data, and what's returned from
+    that method is sent to the output topic. The output topic is configured as
+    `transformed-{datasetid}`.
