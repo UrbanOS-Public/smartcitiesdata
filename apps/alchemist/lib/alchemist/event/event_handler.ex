@@ -6,7 +6,7 @@ defmodule Alchemist.Event.EventHandler do
   use Brook.Event.Handler
 
   import SmartCity.Event,
-    only: [ingestion_update: 0]
+    only: [ingestion_update: 0, ingestion_delete: 0]
 
   require Logger
 
@@ -20,26 +20,20 @@ defmodule Alchemist.Event.EventHandler do
     merge(:ingestions, ingestion.id, ingestion)
   end
 
-  # TODOLater: Support ingestion deletions
-  # https://github.com/UrbanOS-Public/internal/issues/535
-  # def handle_event(%Brook.Event{
-  #       type: dataset_delete(),
-  #       data: %Dataset{} = dataset,
-  #       author: author
-  #     }) do
-  #   dataset_delete()
-  #   |> add_event_count(author, dataset.id)
+  def handle_event(%Brook.Event{
+        type: ingestion_delete(),
+        data: %Ingestion{} = ingestion
+      }) do
+    case Alchemist.IngestionProcessor.delete(ingestion.id) do
+      :ok ->
+        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{ingestion.id}")
 
-  #   case Alchemist.IngestionProcessor.delete(dataset.id) do
-  #     :ok ->
-  #       Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{dataset.id}")
+      {:error, error} ->
+        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{ingestion.id}, Reason: #{inspect(error)}")
+    end
 
-  #     {:error, error} ->
-  #       Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
-  #   end
-
-  #   delete(:datasets, dataset.id)
-  # end
+    delete(:ingestions, ingestion.id)
+  end
 
   # defp add_event_count(event_type, author, dataset_id) do
   #   [
