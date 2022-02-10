@@ -47,11 +47,8 @@ defmodule Alchemist.Broadway do
   end
 
   # used by processor.
-  # This is where we'll alter the message to be transformed
+  # This is where we alter the message to be transformed
   #   on it's way out of alchemist.
-  # Transformation will be handled by a separate elixir library that we create.
-  # (This way, UI clients can import this transformation library for validation
-  # stuff in the future )
   def handle_message(_processor, message, _ingestion) do
     # don't alter the message right now, just forward it along unchanged
     message
