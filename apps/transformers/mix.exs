@@ -27,7 +27,7 @@ defmodule Transformers.MixProject do
   defp deps do
     [
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:smart_city, "~> 5.0.3"},
+      {:smart_city, "~> 5.0.4"},
       {:smart_city_test, "~> 2.0.4", only: [:test, :integration]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:timex, "~> 3.6"}
