@@ -4,7 +4,7 @@ defmodule Alchemist.MixProject do
   def project do
     [
       app: :alchemist,
-      version: "1.7.0",
+      version: "0.1.0",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

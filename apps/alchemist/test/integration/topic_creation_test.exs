@@ -17,7 +17,7 @@ defmodule Alchemist.TopicCreationTest do
     ingestion_id = Faker.UUID.v4()
     dataset_id = Faker.UUID.v4()
     input_topic = "#{input_topic_prefix()}-#{ingestion_id}"
-    output_topic = "#{output_topic_prefix()}-#{ingestion_id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
 
     dataset =
       TDG.create_dataset(
@@ -29,7 +29,7 @@ defmodule Alchemist.TopicCreationTest do
         }
       )
 
-    ingestion = TDG.create_ingestion(%{id: ingestion_id})
+    ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset_id})
 
     data_message =
       TestHelpers.create_data(%{
