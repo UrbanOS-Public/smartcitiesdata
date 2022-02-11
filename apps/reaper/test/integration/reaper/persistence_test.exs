@@ -16,18 +16,6 @@ defmodule PersistenceTest do
     assert nil == Persistence.get("123456")
   end
 
-  test "ReaperConfig saves data to Redis" do
-    reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
-    Persistence.persist(reaper_config)
-
-    actual_map =
-      Redix.command!(@redix, ["GET", "reaper:reaper_config:#{reaper_config.dataset_id}"])
-      |> Jason.decode!(keys: :atoms)
-
-    actual = struct(%ReaperConfig{}, actual_map)
-    assert actual == reaper_config
-  end
-
   test "get should return a single reaper_config" do
     reaper_config = FixtureHelper.new_reaper_config(%{dataset_id: @dataset_id})
     reaper_config_json_string = ReaperConfig.encode!(reaper_config)

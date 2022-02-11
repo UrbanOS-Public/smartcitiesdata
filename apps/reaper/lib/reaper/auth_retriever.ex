@@ -1,6 +1,6 @@
 defmodule Reaper.AuthRetriever do
   @moduledoc """
-  Call the authUrl of a dataset, passing the authHeaders, and returning the response.
+  Call the authUrl of an ingestion, passing the authHeaders, and returning the response.
   """
   alias Reaper.Collections.Extractions
   alias Reaper.Cache.AuthCache
@@ -40,10 +40,10 @@ defmodule Reaper.AuthRetriever do
         handle_content_encoding(body, content_encoding)
 
       {:ok, %{status_code: code}} ->
-        raise "Unable to retrieve auth credentials for dataset #{ingestion_id} with status #{code}"
+        raise "Unable to retrieve auth credentials for ingestion #{ingestion_id} with status #{code}"
 
       error ->
-        raise "Unable to retrieve auth credentials for dataset #{ingestion_id} with error #{inspect(error)}"
+        raise "Unable to retrieve auth credentials for ingestion #{ingestion_id} with error #{inspect(error)}"
     end
   end
 

@@ -20,7 +20,7 @@ defmodule Reaper.Decoder.Json do
 
   def decode({:file, filename}, _ingestion) do
     data = File.read!(filename)
-
+    
     case Jason.decode(data) do
       {:ok, response} ->
         {:ok, List.wrap(response)}

@@ -18,7 +18,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   def init(args) do
     state = %{
-      dataset: Keyword.fetch!(args, :dataset),
+      ingestion: Keyword.fetch!(args, :ingestion),
       cache: Keyword.fetch!(args, :cache),
       batch: [],
       bytes: 0,
@@ -30,6 +30,7 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   def handle_events(events, _from, state) do
+    IO.inspect(events, label: "******************")
     new_state = Enum.reduce(events, state, &process_event/2)
 
     {:noreply, [], new_state}
@@ -42,6 +43,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp process_event({message, _index} = original, state) do
     {:ok, data_message} = convert_to_data_message(message, state)
+    IO.inspect(data_message, label: "NOD")
     encoded_message = Jason.encode!(data_message)
     bytes = byte_size(encoded_message)
 
@@ -72,20 +74,20 @@ defmodule Reaper.DataExtract.LoadStage do
     cache_batch(state)
   end
 
-  defp send_to_kafka(%{dataset: dataset, batch: batch}) do
-    topic = "#{output_topic_prefix()}-#{dataset.id}"
+  defp send_to_kafka(%{ingestion: ingestion, batch: batch}) do
+    topic = "#{output_topic_prefix()}-#{ingestion.targetDataset}"
     :ok = Elsa.produce(:"#{topic}_producer", topic, Enum.reverse(batch), partition: 0)
   end
 
-  defp mark_batch_processed(%{dataset: dataset, originals: originals}) do
+  defp mark_batch_processed(%{ingestion: ingestion, originals: originals}) do
     {_message, max_index} =
       originals
       |> Enum.max_by(fn {_message, index} -> index end)
 
-    Persistence.record_last_processed_index(dataset.id, max_index)
+    Persistence.record_last_processed_index(ingestion.id, max_index)
   end
 
-  defp cache_batch(%{cache: cache, originals: originals, dataset: %{technical: %{allow_duplicates: false}}}) do
+  defp cache_batch(%{cache: cache, originals: originals, ingestion: %{allow_duplicates: false}}) do
     Enum.each(originals, fn {message, _index} ->
       Cache.cache(cache, message)
     end)
@@ -95,7 +97,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp convert_to_data_message(payload, state) do
     data = %{
-      dataset_id: state.dataset.id,
+      ingestion_id: state.ingestion.id,
       operational: %{timing: add_timing(state)},
       payload: payload,
       _metadata: %{}

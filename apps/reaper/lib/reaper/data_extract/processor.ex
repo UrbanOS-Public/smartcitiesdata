@@ -40,7 +40,6 @@ defmodule Reaper.DataExtract.Processor do
     generated_time_stamp = DateTime.utc_now()
 
     {:ok, producer_stage} = create_producer_stage(ingestion)
-    # TODO: Talk to Tim. Can you give us an overview of how this works?
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
     {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
@@ -80,12 +79,11 @@ defmodule Reaper.DataExtract.Processor do
     start_topic_producer(topic)
   end
 
-# TODO ask tim if we should use targetDataset or ingestion id for caching here
-  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false, targetDataset: targetDataset}) do
-    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: targetDataset})
+  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false, id: id}) do
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
   end
 
-  defp validate_cache(_dataset), do: nil
+  defp validate_cache(_ingestion), do: nil
 
   defp wait_for_completion([]), do: true
 

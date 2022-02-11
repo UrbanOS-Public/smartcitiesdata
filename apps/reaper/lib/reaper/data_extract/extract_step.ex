@@ -1,6 +1,6 @@
 defmodule Reaper.DataExtract.ExtractStep do
   @moduledoc """
-  This module processes extract steps as defined in a dataset definition.  After
+  This module processes extract steps as defined in an ingestion definition.  After
   iterating through the steps, accumulating any destination values in the assigns block
   it is assumed the final step will be http (at this time) which returns a data stream
   """
@@ -35,27 +35,27 @@ defmodule Reaper.DataExtract.ExtractStep do
     Map.put(step.assigns, :output_file, output_file)
   end
 
-  defp process_extract_step(dataset, %{type: "s3"} = step) do
+  defp process_extract_step(ingestion, %{type: "s3"} = step) do
     headers =
       UrlBuilder.safe_evaluate_parameters(step.context.headers, step.assigns)
       |> Enum.into(%{})
 
     output_file =
       UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
-      |> DataSlurper.slurp(dataset.id, headers)
+      |> DataSlurper.slurp(ingestion.id, headers)
 
     Map.put(step.assigns, :output_file, output_file)
   end
 
-  defp process_extract_step(dataset, %{type: "sftp"} = step) do
+  defp process_extract_step(ingestion, %{type: "sftp"} = step) do
     output_file =
       UrlBuilder.build_safe_url_path(step.context.url, step.assigns)
-      |> DataSlurper.slurp(dataset.id)
+      |> DataSlurper.slurp(ingestion.id)
 
     Map.put(step.assigns, :output_file, output_file)
   end
 
-  defp process_extract_step(_dataset, %{type: "date"} = step) do
+  defp process_extract_step(_ingestion, %{type: "date"} = step) do
     date =
       case step.context.deltaTimeUnit do
         nil ->
@@ -70,7 +70,7 @@ defmodule Reaper.DataExtract.ExtractStep do
     Map.put(step.assigns, step.context.destination |> String.to_atom(), formatted_date)
   end
 
-  defp process_extract_step(_dataset, %{type: "secret"} = step) do
+  defp process_extract_step(_ingestion, %{type: "secret"} = step) do
     {:ok, cred} = Reaper.SecretRetriever.retrieve_dataset_credentials(step.context.key)
     secret = Map.get(cred, step.context.sub_key)
 

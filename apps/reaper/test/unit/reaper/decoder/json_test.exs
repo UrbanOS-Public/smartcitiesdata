@@ -12,11 +12,11 @@ defmodule Reaper.Decoder.JsonTest do
       File.rm(@filename)
     end)
 
-    [dataset: TDG.create_dataset(id: "ds1", technical: %{sourceFormat: "json"})]
+    [ingestion: TDG.create_ingestion(%{id: "ds1", sourceFormat: "json", topLevelSelector: nil})]
   end
 
   describe "decode/2" do
-    test "when given a JSON string it returns it as a List of Maps", %{dataset: dataset} do
+    test "when given a JSON string it returns it as a List of Maps", %{ingestion: ingestion} do
       expected = [
         %{"id" => Faker.UUID.v4()}
       ]
@@ -24,38 +24,38 @@ defmodule Reaper.Decoder.JsonTest do
       structure = expected |> Jason.encode!()
       File.write!(@filename, structure)
 
-      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset)
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, ingestion)
 
       assert expected == result
     end
 
-    test "when given a JSON object it returns it as a List of Maps", %{dataset: dataset} do
+    test "when given a JSON object it returns it as a List of Maps", %{ingestion: ingestion} do
       structure = "{}"
 
       File.write!(@filename, structure)
-      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset)
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, ingestion)
 
       assert is_list(result)
       assert is_map(hd(result))
     end
 
-    test "bad json messages return error tuple", %{dataset: dataset} do
+    test "bad json messages return error tuple", %{ingestion: ingestion} do
       body = "baaad json"
       File.write!(@filename, body)
 
       assert {:error, body, Jason.DecodeError.exception(data: body, position: 0)} ==
-               Reaper.Decoder.Json.decode({:file, @filename}, dataset)
+               Reaper.Decoder.Json.decode({:file, @filename}, ingestion)
     end
 
     test "Decodes json data using the top level selector key" do
-      dataset_with_selector =
-        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data", sourceFormat: "json"})
+      ingestion_with_selector =
+        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
 
       body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
       expected = [%{"name" => "Bob"}, %{"name" => "Fred"}]
       File.write!(@filename, body)
 
-      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, ingestion_with_selector)
 
       assert is_list(result)
       assert is_map(hd(result))
@@ -64,12 +64,12 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     data_test "json decoder handles empty arrays with topLevelSelector: #{selector}" do
-      dataset_with_selector = TDG.create_dataset(%{technical: %{sourceFormat: "json", topLevelSelector: selector}})
+      ingestion_with_selector = TDG.create_ingestion(%{sourceFormat: "json", topLevelSelector: selector})
 
       body = body |> Jason.encode!()
       File.write!(@filename, body)
 
-      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, ingestion_with_selector)
 
       assert result == []
 
@@ -82,8 +82,8 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "Decodes json array using the top level selector key" do
-      dataset_with_selector =
-        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.[*].data", sourceFormat: "json"})
+      ingestion_with_selector =
+        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.[*].data", sourceFormat: "json"})
 
       body =
         [
@@ -95,7 +95,7 @@ defmodule Reaper.Decoder.JsonTest do
       expected = [%{"name" => "Bob"}, %{"name" => "Fred"}, %{"name" => "Rob"}, %{"name" => "Gred"}]
       File.write!(@filename, body)
 
-      {:ok, result} = Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+      {:ok, result} = Decoder.Json.decode({:file, @filename}, ingestion_with_selector)
 
       assert is_list(result)
       assert is_map(hd(result))
@@ -104,25 +104,25 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "bad topLevelSelector returns error tuple" do
-      dataset_with_selector =
-        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data[XX]", sourceFormat: "json"})
+      ingestion_with_selector =
+        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data[XX]", sourceFormat: "json"})
 
       body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
       File.write!(@filename, body)
 
       assert {:error, ^body, %Jaxon.ParseError{}} =
-               Reaper.Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+               Reaper.Decoder.Json.decode({:file, @filename}, ingestion_with_selector)
     end
 
     test "bad json with topLevelSelector returns error tuple" do
-      dataset_with_selector =
-        TDG.create_dataset(id: "ds1", technical: %{topLevelSelector: "$.data", sourceFormat: "json"})
+      ingestion_with_selector =
+        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
 
       bad_body = "{\"data\":[{\"name\":QuotelessBob\"},{\"name\":\"Fred\"}],\"type\":\"Madness\"}"
       File.write!(@filename, bad_body)
 
       assert {:error, ^bad_body, %Jaxon.ParseError{}} =
-               Reaper.Decoder.Json.decode({:file, @filename}, dataset_with_selector)
+               Reaper.Decoder.Json.decode({:file, @filename}, ingestion_with_selector)
     end
   end
 
