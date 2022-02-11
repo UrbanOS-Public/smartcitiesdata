@@ -25,10 +25,10 @@ defmodule Alchemist.Event.EventHandler do
       }) do
     case Alchemist.IngestionProcessor.delete(ingestion.id) do
       :ok ->
-        Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{ingestion.id}")
+        Logger.debug("#{__MODULE__}: Deleted ingestion for #{ingestion.id}")
 
       {:error, error} ->
-        Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{ingestion.id}, Reason: #{inspect(error)}")
+        Logger.error("#{__MODULE__}: Failed to delete ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
     end
 
     delete(:ingestions, ingestion.id)

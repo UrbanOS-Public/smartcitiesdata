@@ -62,9 +62,8 @@ if kafka_brokers do
       redix_args: redix_args,
       namespace: "alchemist:view",
       event_limits: %{
-        "data:ingest:start" => 100,
-        "data:standardization:end" => 100,
-        "dataset:delete" => 100
+        "ingestion:update" => 100,
+        "ingestion:delete" => 100
       }
     ]
   ]

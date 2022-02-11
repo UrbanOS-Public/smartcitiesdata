@@ -1,4 +1,4 @@
-ExUnit.start(exclude: [:performance])
+ExUnit.start()
 
 defmodule TestHelpers do
   require Elsa.Message

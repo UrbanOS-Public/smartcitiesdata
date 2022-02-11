@@ -14,7 +14,7 @@ defmodule Alchemist.TopicManager do
   @spec setup_topics(%SmartCity.Ingestion{}) :: %{input_topic: String.t(), output_topic: String.t()}
   def setup_topics(ingestion) do
     input_topic = input_topic(ingestion.id)
-    output_topic = output_topic(ingestion.id)
+    output_topic = output_topic(ingestion.targetDataset)
 
     Elsa.create_topic(elsa_brokers(), input_topic)
     Elsa.create_topic(elsa_brokers(), output_topic)
