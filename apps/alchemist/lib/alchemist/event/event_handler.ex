@@ -23,7 +23,7 @@ defmodule Alchemist.Event.EventHandler do
         type: ingestion_delete(),
         data: %Ingestion{} = ingestion
       }) do
-    case Alchemist.IngestionProcessor.delete(ingestion.id) do
+    case Alchemist.IngestionProcessor.delete(ingestion) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted ingestion for #{ingestion.id}")
 

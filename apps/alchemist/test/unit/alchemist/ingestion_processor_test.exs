@@ -32,8 +32,8 @@ defmodule Alchemist.IngestionProcessorTest do
     end
 
     test "should delete the ingestion and the topics", setup_params do
-      Alchemist.IngestionProcessor.delete(setup_params.ingestion.id)
-      assert_called(Alchemist.TopicManager.delete_topics(setup_params.ingestion.id))
+      Alchemist.IngestionProcessor.delete(setup_params.ingestion)
+      assert_called(Alchemist.TopicManager.delete_topics(setup_params.ingestion))
     end
   end
 end

@@ -47,8 +47,6 @@ defmodule Alchemist.BroadwayTest do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "21"})
     kafka_message = %{value: Jason.encode!(data)}
 
-    allow Transformers.NoOp.transform!(kafka_message), return: kafka_message
-
     Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000

@@ -24,9 +24,9 @@ defmodule Alchemist.TopicManager do
     %{input_topic: input_topic, output_topic: output_topic}
   end
 
-  def delete_topics(ingestion_id) do
-    input_topic = input_topic(ingestion_id)
-    output_topic = output_topic(ingestion_id)
+  def delete_topics(ingestion) do
+    input_topic = input_topic(ingestion.id)
+    output_topic = output_topic(ingestion.targetDataset)
     Elsa.delete_topic(elsa_brokers(), input_topic)
     Elsa.delete_topic(elsa_brokers(), output_topic)
   end
@@ -42,6 +42,6 @@ defmodule Alchemist.TopicManager do
     end
   end
 
-  defp output_topic(ingestion_id), do: "#{output_topic_prefix()}-#{ingestion_id}"
+  defp output_topic(dataset_id), do: "#{output_topic_prefix()}-#{dataset_id}"
   defp input_topic(ingestion_id), do: "#{input_topic_prefix()}-#{ingestion_id}"
 end

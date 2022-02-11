@@ -53,7 +53,7 @@ defmodule Alchemist.Event.EventHandlerTest do
         )
       end)
 
-      assert_called(IngestionProcessor.delete(ingestion.id))
+      assert_called(IngestionProcessor.delete(ingestion))
     end
   end
 end
