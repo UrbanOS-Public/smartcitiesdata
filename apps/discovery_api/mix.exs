@@ -36,8 +36,7 @@ defmodule DiscoveryApi.Mixfile do
       {
         :ex_aws_s3,
         "~> 2.0",
-        git: "https://github.com/ex-aws/ex_aws_s3",
-        ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+        git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
       },
       {:ibrowse, "~> 4.4"},
       {:libvault, "~> 0.2"},
