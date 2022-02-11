@@ -77,6 +77,12 @@ release :valkyrie do
   set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
 end
 
+release :alchemist do
+  set version: current_version(:alchemist)
+  set applications: [:runtime_tools, :alchemist]
+  set overlays: [{:copy, "apps/alchemist/runtime.exs", "etc/runtime.exs"}]
+end
+
 release :discovery_api do
   set version: current_version(:discovery_api)
   set applications: [:runtime_tools, :discovery_api]
