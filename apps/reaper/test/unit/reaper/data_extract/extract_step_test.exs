@@ -28,7 +28,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   attainable,with a,post body
   """
 
-
   setup do
     bypass = Bypass.open()
 
@@ -603,7 +602,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     test "successfully constructs the S3 request", %{ingestion: ingestion} do
       allow Reaper.DataSlurper.S3.slurp(
               "s3://some-bucket/subdir/blaster.exe",
-              ingestion.id, # TODO:  TIM HAAAAAAALP
+              ingestion.id,
               %{"x-scos-amzn-s3-region": "us-east-2"},
               any(),
               any(),
@@ -635,7 +634,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     test "successfully constructs the sftp request", %{ingestion: ingestion} do
       allow Reaper.DataSlurper.Sftp.slurp(
               "sftp://host:port/wow/such/path",
-              ingestion.id, # TODO TIIIIIIM
+              ingestion.id,
               any(),
               any(),
               any(),

@@ -29,7 +29,6 @@ defmodule Reaper.DataExtract.Processor do
   @spec process(SmartCity.Ingestion.t()) :: Redix.Protocol.redis_value() | no_return()
   def process(%SmartCity.Ingestion{} = unprovisioned_ingestion) do
     Process.flag(:trap_exit, true)
-
     ingestion =
       unprovisioned_ingestion
       |> Providers.Helpers.Provisioner.provision()
@@ -41,8 +40,12 @@ defmodule Reaper.DataExtract.Processor do
 
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
-    {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
+
+    {:ok, schema_stage} =
+      SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
+
+    {:ok, load_stage} =
+      LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -54,7 +57,10 @@ defmodule Reaper.DataExtract.Processor do
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
-      Logger.error("Unable to continue processing ingestion #{inspect(unprovisioned_ingestion)} - Error #{inspect(error)}")
+
+      Logger.error(
+        "Unable to continue processing ingestion #{inspect(unprovisioned_ingestion)} - Error #{inspect(error)}"
+      )
 
       reraise error, __STACKTRACE__
   after
@@ -63,7 +69,6 @@ defmodule Reaper.DataExtract.Processor do
     |> File.rm()
   end
 
- 
   defp create_producer_stage(%SmartCity.Ingestion{extractSteps: extract_steps} = ingestion) do
     %{output_file: output_file} = ExtractStep.execute_extract_steps(ingestion, extract_steps)
 

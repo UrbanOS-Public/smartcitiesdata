@@ -70,7 +70,6 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
       {:ok, expected_ingestion} = Brook.Serializer.serialize(ingestion)
       assert job.schedule == ~e[* * * * *]
       assert job.task == {IngestionUpdate, :protected_event_send, [expected_ingestion]}
-
     end
 
     test "jobs that are added to quantum when cadence is a cron expression work, even with missing optional fields" do

@@ -30,7 +30,6 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   def handle_events(events, _from, state) do
-    IO.inspect(events, label: "******************")
     new_state = Enum.reduce(events, state, &process_event/2)
 
     {:noreply, [], new_state}
@@ -43,7 +42,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp process_event({message, _index} = original, state) do
     {:ok, data_message} = convert_to_data_message(message, state)
-    IO.inspect(data_message, label: "NOD")
+
     encoded_message = Jason.encode!(data_message)
     bytes = byte_size(encoded_message)
 
@@ -97,7 +96,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp convert_to_data_message(payload, state) do
     data = %{
-      ingestion_id: state.ingestion.id,
+      dataset_id: state.ingestion.targetDataset,
       operational: %{timing: add_timing(state)},
       payload: payload,
       _metadata: %{}

@@ -80,8 +80,7 @@ defmodule Reaper.Decoder.GeoJsonTest do
         data
         |> Jason.encode!()
 
-      ingestion =
-        TDG.create_ingestion(%{id: "ds1", sourceFormat: "geojson", topLevelSelector: "$.nested.moreNested"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceFormat: "geojson", topLevelSelector: "$.nested.moreNested"})
 
       File.write!(@filename, structure)
 
@@ -104,8 +103,7 @@ defmodule Reaper.Decoder.GeoJsonTest do
     end
 
     test "bad json with topLevelSelector returns error tuple" do
-      ingestion_with_selector =
-        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
+      ingestion_with_selector = TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
 
       bad_body = "{\"data\":{\"features\":[{\"geometry\":no_quotes}]}}"
       File.write!(@filename, bad_body)

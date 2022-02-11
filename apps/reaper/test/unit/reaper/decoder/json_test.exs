@@ -48,8 +48,7 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "Decodes json data using the top level selector key" do
-      ingestion_with_selector =
-        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
+      ingestion_with_selector = TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
 
       body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
       expected = [%{"name" => "Bob"}, %{"name" => "Fred"}]
@@ -82,8 +81,7 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "Decodes json array using the top level selector key" do
-      ingestion_with_selector =
-        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.[*].data", sourceFormat: "json"})
+      ingestion_with_selector = TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.[*].data", sourceFormat: "json"})
 
       body =
         [
@@ -104,8 +102,7 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "bad topLevelSelector returns error tuple" do
-      ingestion_with_selector =
-        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data[XX]", sourceFormat: "json"})
+      ingestion_with_selector = TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data[XX]", sourceFormat: "json"})
 
       body = %{data: [%{name: "Bob"}, %{name: "Fred"}], type: "Madness"} |> Jason.encode!()
       File.write!(@filename, body)
@@ -115,8 +112,7 @@ defmodule Reaper.Decoder.JsonTest do
     end
 
     test "bad json with topLevelSelector returns error tuple" do
-      ingestion_with_selector =
-        TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
+      ingestion_with_selector = TDG.create_ingestion(%{id: "ds1", topLevelSelector: "$.data", sourceFormat: "json"})
 
       bad_body = "{\"data\":[{\"name\":QuotelessBob\"},{\"name\":\"Fred\"}],\"type\":\"Madness\"}"
       File.write!(@filename, bad_body)

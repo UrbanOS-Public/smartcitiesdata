@@ -47,5 +47,4 @@ defmodule Reaper.Horde.Supervisor do
        completion_callback: send_extract_complete_event}
     )
   end
-
 end

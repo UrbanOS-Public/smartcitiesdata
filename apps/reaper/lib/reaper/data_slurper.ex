@@ -27,8 +27,8 @@ defmodule Reaper.DataSlurper do
     |> apply(:slurp, [url, ingestion_id, headers, protocol, action, body])
   end
 
-  def determine_filename(dataset_id) do
-    download_dir() <> dataset_id
+  def determine_filename(ingestion_id) do
+    download_dir() <> ingestion_id
   end
 
   defp handle?(implementation, url) do

@@ -124,19 +124,19 @@ defmodule Reaper.Event.EventHandlerTest do
       assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ingestion}}
     end
 
-  # TODO:  Streaming stuff
-#    test "should not send ingest_start event for streaming data on subsequent events" do
-#      allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
-#      ingestion = TDG.create_ingestion(%{id: "ds2"})
-#      Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
-#      Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
-#      Brook.Test.send(@instance_name, data_extract_end(), :reaper, ingestion)
-#
-#      assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}
-#
-#      Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
-#      refute_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}, 1_000
-#    end
+    # TODO:  Streaming stuff
+    #    test "should not send ingest_start event for streaming data on subsequent events" do
+    #      allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+    #      ingestion = TDG.create_ingestion(%{id: "ds2"})
+    #      Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
+    #      Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
+    #      Brook.Test.send(@instance_name, data_extract_end(), :reaper, ingestion)
+    #
+    #      assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}
+    #
+    #      Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
+    #      refute_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}, 1_000
+    #    end
 
     test "should send #{data_extract_end()} when processor is completed" do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok

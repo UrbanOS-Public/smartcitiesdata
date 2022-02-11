@@ -19,7 +19,7 @@ defmodule Reaper.Decoder.CsvTest do
       ingestion =
         TDG.create_ingestion(%{
           id: "with-headers",
-          sourceFormat: "csv", 
+          sourceFormat: "csv",
           schema: [%{name: "iD"}, %{name: "name"}]
         })
 
@@ -42,7 +42,7 @@ defmodule Reaper.Decoder.CsvTest do
       ingestion =
         TDG.create_ingestion(%{
           id: "cool",
-          sourceFormat: "csv", 
+          sourceFormat: "csv",
           schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
         })
 

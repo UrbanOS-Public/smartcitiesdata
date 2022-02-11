@@ -6,7 +6,6 @@ defmodule Reaper.Collections.BaseIngestion do
     collection = Keyword.fetch!(opts, :collection)
 
     quote do
-
       def update_ingestion(%SmartCity.Ingestion{} = ingestion) do
         Brook.ViewState.merge(unquote(collection), ingestion.id, %{
           "ingestion" => ingestion

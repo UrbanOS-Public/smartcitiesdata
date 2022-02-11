@@ -24,7 +24,11 @@ defmodule Reaper.Event.EventHandler do
     Reaper.Event.Handlers.IngestionUpdate.handle(ingestion)
   rescue
     reason ->
-      Brook.Event.send(@instance_name, error_ingestion_update(), :reaper, %{"reason" => reason, "ingestion" => ingestion})
+      Brook.Event.send(@instance_name, error_ingestion_update(), :reaper, %{
+        "reason" => reason,
+        "ingestion" => ingestion
+      })
+
       :discard
   end
 

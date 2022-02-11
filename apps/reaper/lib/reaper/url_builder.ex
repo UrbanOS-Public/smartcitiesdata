@@ -56,5 +56,4 @@ defmodule Reaper.UrlBuilder do
 
     {key, value}
   end
-
 end
