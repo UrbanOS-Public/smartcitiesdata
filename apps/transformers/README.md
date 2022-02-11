@@ -16,3 +16,4 @@ end
 ## Commands
 
 - `mix test` to run unit tests
+- `mix integration` to run integration tests
