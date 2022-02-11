@@ -4,7 +4,7 @@ defmodule Odo.MixProject do
   def project do
     [
       app: :odo,
-      version: "1.0.0",
+      version: "1.0.1",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
