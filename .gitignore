@@ -32,3 +32,6 @@ node_modules/
 .atom/
 
 compaction-test-fixtures/
+
+# Ignore test-generated files
+12345-6789

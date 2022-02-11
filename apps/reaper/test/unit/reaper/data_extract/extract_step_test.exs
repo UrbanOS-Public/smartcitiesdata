@@ -160,7 +160,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
+      assert_raise RuntimeError, "Unable to process auth step for ingestion 12345-6789.", fn ->
         ExtractStep.execute_extract_steps(dataset, steps)
       end
     end
@@ -693,7 +693,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert_raise RuntimeError, "Unable to process date step for dataset 12345-6789.", fn ->
+      assert_raise RuntimeError, "Unable to process date step for ingestion 12345-6789.", fn ->
         ExtractStep.execute_extract_steps(dataset, steps)
       end
     end
