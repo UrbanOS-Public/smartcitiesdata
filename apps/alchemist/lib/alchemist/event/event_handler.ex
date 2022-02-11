@@ -15,7 +15,6 @@ defmodule Alchemist.Event.EventHandler do
         data: %Ingestion{} = ingestion
       }) do
     Logger.debug("#{__MODULE__}: Begin transformation processor for ingestion: #{ingestion.id}")
-    IO.inspect(ingestion, label: "Begin transformation processor for ingestion: #{ingestion.id}")
     Alchemist.IngestionProcessor.start(ingestion)
     merge(:ingestions, ingestion.id, ingestion)
   end

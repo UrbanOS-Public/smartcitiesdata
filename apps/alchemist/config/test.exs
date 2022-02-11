@@ -15,3 +15,7 @@ config :alchemist, :brook,
     init_arg: []
   ],
   hosted_file_bucket: "hosted-dataset-files"
+
+config :logger,
+  backends: [:console],
+  compile_time_purge_level: :debug
