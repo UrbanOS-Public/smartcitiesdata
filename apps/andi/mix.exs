@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.0.3",
+      version: "2.0.4",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -53,7 +53,12 @@ defmodule Andi.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:elixir_uuid, "~> 1.2"},
       {:ex_aws, "~> 2.1"},
-      {:ex_aws_s3, "~> 2.0", [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
+      {:ex_aws_s3, "~> 2.0",
+       [
+         env: :prod,
+         git: "https://github.com/ex-aws/ex_aws_s3",
+         ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+       ]},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:guardian, "~> 2.0"},
@@ -79,8 +84,8 @@ defmodule Andi.MixProject do
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 3.0"},
-      {:smart_city_test, "~> 0.10.1", only: [:test, :integration]},
+      {:smart_city, "~> 5.0.4"},
+      {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},
       {:sweet_xml, "~> 0.6"},
@@ -97,7 +102,11 @@ defmodule Andi.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ],
       start:
         ensure_generated_certs([
           "ecto.create --quiet",

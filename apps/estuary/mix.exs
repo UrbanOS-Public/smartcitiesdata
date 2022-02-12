@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.7",
+      version: "0.11.8",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -49,7 +49,7 @@ defmodule Estuary.MixProject do
       {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},
-      {:smart_city_test, "~> 0.8", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.4"},
       {:timex, "~> 3.6"}

@@ -28,5 +28,9 @@ node_modules/
 .DS_Store
 
 .vscode/
+.idea/
+*.iml
 
 compaction-test-fixtures/
+
+apps/reaper/12345-6789
