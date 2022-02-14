@@ -64,7 +64,7 @@ defmodule Reaper.DataExtract.Processor do
 
       reraise error, __STACKTRACE__
   after
-    unprovisioned_ingestion.targetDataset
+    unprovisioned_ingestion.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end
@@ -79,7 +79,7 @@ defmodule Reaper.DataExtract.Processor do
   end
 
   defp validate_destination(ingestion) do
-    topic = "#{output_topic_prefix()}-#{ingestion.targetDataset}"
+    topic = "#{output_topic_prefix()}-#{ingestion.id}"
     create_topic(topic)
     start_topic_producer(topic)
   end

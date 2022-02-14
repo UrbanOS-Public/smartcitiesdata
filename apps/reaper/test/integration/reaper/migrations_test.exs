@@ -20,8 +20,8 @@ defmodule Reaper.MigrationsTest do
       Process.unlink(redix)
       Process.unlink(scheduler)
 
-      dataset_id = String.to_atom("old-cron-schedule")
-      create_job(dataset_id)
+      ingestion_id = String.to_atom("old-cron-schedule")
+      create_job(ingestion_id)
 
       kill(scheduler)
       kill(redix)
@@ -31,19 +31,19 @@ defmodule Reaper.MigrationsTest do
       Process.sleep(10_000)
 
       eventually(fn ->
-        job = Reaper.Scheduler.find_job(dataset_id)
-        assert job.task == {Brook.Event, :send, [@instance_name, "migration:test", :reaper, dataset_id]}
+        job = Reaper.Scheduler.find_job(ingestion_id)
+        assert job.task == {Brook.Event, :send, [@instance_name, "migration:test", :reaper, ingestion_id]}
       end)
 
       Application.stop(:reaper)
     end
   end
 
-  defp create_job(dataset_id) do
+  defp create_job(ingestion_id) do
     Reaper.Scheduler.new_job()
-    |> Quantum.Job.set_name(dataset_id)
+    |> Quantum.Job.set_name(ingestion_id)
     |> Quantum.Job.set_schedule(Crontab.CronExpression.Parser.parse!("* * * * *"))
-    |> Quantum.Job.set_task({Brook.Event, :send, ["migration:test", :reaper, dataset_id]})
+    |> Quantum.Job.set_task({Brook.Event, :send, ["migration:test", :reaper, ingestion_id]})
     |> Reaper.Scheduler.add_job()
   end
 
@@ -75,16 +75,16 @@ defmodule Reaper.MigrationsTest do
         Brook.Event.new(type: "reaper_config:migration", author: "migration", data: %{}),
         fn ->
           Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
-            dataset: TDG.create_dataset(id: extraction_without_enabled_flag_id)
+            ingestion: TDG.create_ingestion(id: extraction_without_enabled_flag_id)
           })
 
           Brook.ViewState.merge(:extractions, extraction_with_enabled_true_id, %{
-            dataset: TDG.create_dataset(id: extraction_with_enabled_true_id),
+            ingestion: TDG.create_ingestion(id: extraction_with_enabled_true_id),
             enabled: true
           })
 
           Brook.ViewState.merge(:extractions, extraction_with_enabled_false_id, %{
-            dataset: TDG.create_dataset(id: extraction_with_enabled_false_id),
+            ingestion: TDG.create_ingestion(id: extraction_with_enabled_false_id),
             enabled: false
           })
 

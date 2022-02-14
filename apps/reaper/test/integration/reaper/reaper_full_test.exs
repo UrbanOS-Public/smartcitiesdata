@@ -13,13 +13,17 @@ defmodule Reaper.FullTest do
 
   import SmartCity.Event,
     only: [
+      data_ingest_start: 0,
+      data_extract_start: 0,
+      data_extract_end: 0,
+      ingestion_update: 0,
+      ingestion_delete: 0,
+      error_ingestion_update: 0,
       dataset_update: 0,
       dataset_disable: 0,
-      dataset_delete: 0,
-      data_extract_start: 0,
       file_ingest_start: 0,
-      data_extract_end: 0,
-      file_ingest_end: 0
+      file_ingest_end: 0,
+      dataset_delete: 0 
     ]
 
   alias Reaper.Collections.Extractions
@@ -31,8 +35,9 @@ defmodule Reaper.FullTest do
   @instance_name Reaper.instance_name()
   @redix Reaper.Application.redis_client()
 
-  @pre_existing_dataset_id "00000-0000"
-  @partial_load_dataset_id "11111-1112"
+  @pre_existing_ingestion_id "00000-0000"
+  @pre_existing_target_dataset "1701-1701"
+  @partial_load_ingestion_id "11111-1112"
 
   @json_file_name "vehicle_locations.json"
   @nested_data_file_name "nested_data.json"
@@ -73,32 +78,43 @@ defmodule Reaper.FullTest do
     :ok
   end
 
-  describe "pre-existing dataset" do
+  describe "pre-existing ingestion" do
     setup %{bypass: bypass} do
-      pre_existing_dataset =
-        TDG.create_dataset(%{
-          id: @pre_existing_dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
-            sourceFormat: "json",
-            schema: [
-              %{name: "latitude"},
-              %{name: "vehicle_id"},
-              %{name: "update_time"},
-              %{name: "longitude"}
-            ]
-          }
+      pre_existing_ingestion =
+        TDG.create_ingestion(%{
+          id: @pre_existing_ingestion_id,
+          targetDataset: @pre_existing_target_dataset,
+          cadence: "once",
+          sourceFormat: "json",
+          schema: [
+            %{name: "latitude"},
+            %{name: "vehicle_id"},
+            %{name: "update_time"},
+            %{name: "longitude"}
+          ],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@json_file_name}"
+              }, 
+              type: "http"}
+          ],
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, pre_existing_ingestion)
       :ok
     end
 
     test "configures and ingests a json-source that was added before reaper started" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: @pre_existing_dataset_id,
+          dataset_id: @pre_existing_target_dataset,
           payload: %{
             "latitude" => 39.9613,
             "vehicle_id" => 41_015,
@@ -107,7 +123,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{output_topic_prefix()}-#{@pre_existing_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@pre_existing_ingestion_id}"
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())

@@ -147,9 +147,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
               headers: [], 
               protocol: nil, 
               queryParams: [], 
-              url: "/api/prov_csv"
+              url: "http://localhost:#{bypass.port}/api/prov_csv"
               }, 
-            sequence: 13033, 
             type: "http"}
         ],
       })

@@ -1,6 +1,6 @@
 defmodule Reaper.SecretRetriever do
   @moduledoc """
-  Retrieves credentials for use in accessing restricted ingestions.
+  Retrieves credentials for use in accessing restricted apis.
   """
   use Properties, otp_app: :reaper
 
