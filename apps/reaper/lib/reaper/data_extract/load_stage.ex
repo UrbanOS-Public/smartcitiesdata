@@ -74,7 +74,7 @@ defmodule Reaper.DataExtract.LoadStage do
   end
 
   defp send_to_kafka(%{ingestion: ingestion, batch: batch}) do
-    topic = "#{output_topic_prefix()}-#{ingestion.targetDataset}"
+    topic = "#{output_topic_prefix()}-#{ingestion.id}"
     :ok = Elsa.produce(:"#{topic}_producer", topic, Enum.reverse(batch), partition: 0)
   end
 

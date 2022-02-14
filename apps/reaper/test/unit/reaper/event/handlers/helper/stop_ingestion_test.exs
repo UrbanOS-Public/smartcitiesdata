@@ -12,7 +12,7 @@ defmodule Reaper.Event.Handlers.Helper.StopIngestionTest do
     {:ok, scheduler} = Reaper.Scheduler.start_link()
 
     allow(Reaper.DataExtract.Processor.process(any()),
-      exec: fn _dataset -> Process.sleep(10 * 60_000) end
+      exec: fn _ingestion -> Process.sleep(10 * 60_000) end
     )
 
     ingestion = TDG.create_ingestion(%{id: "ds-to-kill"})
@@ -72,31 +72,31 @@ defmodule Reaper.Event.Handlers.Helper.StopIngestionTest do
     end
 
     test "stops the ingestion job in quantum", %{ingestion: ingestion} do
-      dataset_id = ingestion.id |> String.to_atom()
+      ingestion_id = ingestion.id |> String.to_atom()
 
-      create_job(dataset_id)
+      create_job(ingestion_id)
 
       :ok = StopIngestion.deactivate_quantum_job(ingestion.id)
 
-      job = Reaper.Scheduler.find_job(dataset_id)
+      job = Reaper.Scheduler.find_job(ingestion_id)
 
       assert job.state == :inactive
     end
 
     test "should delete the quantum job", %{ingestion: ingestion} do
-      dataset_id = ingestion.id |> String.to_atom()
+      ingestion_id = ingestion.id |> String.to_atom()
 
-      create_job(dataset_id)
+      create_job(ingestion_id)
 
       :ok = StopIngestion.delete_quantum_job(ingestion.id)
 
-      assert nil == Reaper.Scheduler.find_job(dataset_id)
+      assert nil == Reaper.Scheduler.find_job(ingestion_id)
     end
   end
 
-  defp create_job(dataset_id) do
+  defp create_job(ingestion_id) do
     Reaper.Scheduler.new_job()
-    |> Job.set_name(dataset_id)
+    |> Job.set_name(ingestion_id)
     |> Job.set_schedule(Crontab.CronExpression.Parser.parse!("* * * * *"))
     |> Job.set_task(fn -> IO.puts("Test Job is running") end)
     |> Reaper.Scheduler.add_job()

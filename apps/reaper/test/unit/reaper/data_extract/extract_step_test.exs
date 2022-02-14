@@ -385,7 +385,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     test "puts a secret into assigns block", %{ingestion: ingestion} do
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
 
-      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+      allow Reaper.SecretRetriever.retrieve_ingestion_credentials("the_key"),
         return:
           {:ok,
            %{

@@ -3,8 +3,6 @@ defmodule Reaper.Persistence do
   This module provides functionality for interacting with Redis
   """
 
-  alias Reaper.ReaperConfig
-
   @name_space_derived "reaper:derived:"
   @redix Reaper.Application.redis_client()
 

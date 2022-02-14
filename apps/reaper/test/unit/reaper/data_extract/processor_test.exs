@@ -41,6 +41,20 @@ defmodule Reaper.DataExtract.ProcessorTest do
           %{name: "b", type: "string"},
           %{name: "c", type: "string"}
         ],
+        extractSteps: [
+          %{
+            assigns: %{}, 
+            context: %{
+              action: "GET", 
+              body: %{}, 
+              headers: [], 
+              protocol: nil, 
+              queryParams: [], 
+              url: sourceUrl
+              }, 
+            sequence: 13033, 
+            type: "http"}
+        ],
         allow_duplicates: false
       })
 
@@ -123,7 +137,21 @@ defmodule Reaper.DataExtract.ProcessorTest do
           %{name: "b", type: "string"},
           %{name: "c", type: "string"}
         ],
-        allow_duplicates: false
+        allow_duplicates: false,
+        extractSteps: [
+          %{
+            assigns: %{}, 
+            context: %{
+              action: "GET", 
+              body: %{}, 
+              headers: [], 
+              protocol: nil, 
+              queryParams: [], 
+              url: "/api/prov_csv"
+              }, 
+            sequence: 13033, 
+            type: "http"}
+        ],
       })
 
     Processor.process(ingestion)
@@ -303,6 +331,20 @@ defmodule Reaper.DataExtract.ProcessorTest do
                 version: "1"
               }
             }
+          ],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/api/csv"
+                }, 
+              sequence: 13033, 
+              type: "http"}
           ],
           allow_duplicates: false
         })

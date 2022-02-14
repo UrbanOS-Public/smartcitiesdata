@@ -156,8 +156,8 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
     end
   end
 
-  defp create_job(dataset_id) do
-    id = dataset_id |> String.to_atom()
+  defp create_job(ingestion_id) do
+    id = ingestion_id |> String.to_atom()
 
     Reaper.Scheduler.new_job()
     |> Job.set_name(id)

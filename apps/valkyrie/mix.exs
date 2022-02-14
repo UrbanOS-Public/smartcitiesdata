@@ -53,8 +53,8 @@ defmodule Valkyrie.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 5.0.3"},
-      {:smart_city_test, "~> 2.0.4", only: [:test, :integration]},
+      {:smart_city, "~> 5.0.4"},
+      {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:performance, in_umbrella: true, only: :integration}

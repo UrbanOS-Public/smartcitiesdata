@@ -7,7 +7,6 @@ defmodule Reaper.DataExtract.ExtractStep do
   require Logger
   alias Reaper.DataSlurper
   alias Reaper.UrlBuilder
-  alias Reaper.Decoder
 
   def execute_extract_steps(ingestion, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
@@ -71,7 +70,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(_ingestion, %{type: "secret"} = step) do
-    {:ok, cred} = Reaper.SecretRetriever.retrieve_dataset_credentials(step.context.key)
+    {:ok, cred} = Reaper.SecretRetriever.retrieve_ingestion_credentials(step.context.key)
     secret = Map.get(cred, step.context.sub_key)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), secret)

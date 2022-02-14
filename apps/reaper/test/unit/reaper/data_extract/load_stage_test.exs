@@ -37,7 +37,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
       state = %{
         cache: @cache,
-        ingestion: TDG.create_ingestion(%{targetDataset: "ds1", allow_duplicates: false}),
+        ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -107,7 +107,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
     state = %{
       cache: @cache,
-      ingestion: TDG.create_ingestion(%{id: "ds1", allow_duplicates: false}),
+      ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
       batch: [],
       bytes: 0,
       originals: [],
@@ -132,12 +132,12 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end)
   end
 
-  defp create_data_messages(range, ingestion_id) do
+  defp create_data_messages(range, dataset_id) do
     range
     |> create_messages()
     |> Enum.map(fn payload ->
       %{
-        ingestion_id: ingestion_id,
+        dataset_id: dataset_id,
         payload: payload,
         operational: %{timing: add_timing()},
         _metadata: %{}

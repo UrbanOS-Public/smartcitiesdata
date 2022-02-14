@@ -17,7 +17,7 @@ defmodule Reaper.Decoder.GeoJsonTest do
   describe "decode/2" do
     test "should return a list of feature maps when sourceFormat is geojson" do
       data = %{
-        name: "cool dataset",
+        name: "cool ingestion",
         features: [
           %{"geometry" => "data"},
           %{"geometry" => "more data"}
@@ -41,7 +41,7 @@ defmodule Reaper.Decoder.GeoJsonTest do
 
     test "should return a list of feature maps when sourceFormat is zip" do
       data = %{
-        name: "cool dataset",
+        name: "cool ingestion",
         features: [
           %{"geometry" => "data"},
           %{"geometry" => "more data"}
@@ -65,7 +65,7 @@ defmodule Reaper.Decoder.GeoJsonTest do
 
     test "should return a list of feature maps within a top level selector" do
       data = %{
-        name: "cool dataset",
+        name: "cool ingestion",
         nested: %{
           moreNested: %{
             features: [
