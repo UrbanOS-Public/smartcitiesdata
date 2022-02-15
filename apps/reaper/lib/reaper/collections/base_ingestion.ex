@@ -10,7 +10,6 @@ defmodule Reaper.Collections.BaseIngestion do
         Brook.ViewState.merge(unquote(collection), ingestion.id, %{
           "ingestion" => ingestion
         })
-        |> IO.inspect(label: "HERE I AM IN Extractions.update_ingestion")
       end
 
       def update_last_fetched_timestamp(id, fetched_time \\ DateTime.utc_now()) do
@@ -32,8 +31,8 @@ defmodule Reaper.Collections.BaseIngestion do
       end
 
       def is_enabled?(ingestion_id) do
-        Brook.get!(unquote(instance), unquote(collection), ingestion_id) |> IO.inspect(label: "GOT THIS FROM THE VIEW STATE in is_enabled?")
-        |> is_ingestion_entry_enabled?() |> IO.inspect(label: "Well? AM I??!!!")
+        Brook.get!(unquote(instance), unquote(collection), ingestion_id)
+        |> is_ingestion_entry_enabled?()
       end
 
       defp is_ingestion_entry_enabled?(nil = _missing_ingestion_entry), do: false

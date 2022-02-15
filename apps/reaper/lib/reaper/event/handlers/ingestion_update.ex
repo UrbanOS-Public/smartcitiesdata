@@ -82,9 +82,9 @@ defmodule Reaper.Event.Handlers.IngestionUpdate do
   end
 
   defp delete_job(ingestion) do
-    ingestion.id |> IO.inspect(label: "I AM DELETING THE JOB")
+    ingestion.id
     |> String.to_atom()
-    |> Reaper.Scheduler.delete_job() |> IO.inspect(label: "I HAVE SCHEDULED DELETING THE JOB")
+    |> Reaper.Scheduler.delete_job()
   end
 
   defp create_job(cron_expression, ingestion) do

@@ -75,16 +75,16 @@ defmodule Reaper.MigrationsTest do
         Brook.Event.new(type: "reaper_config:migration", author: "migration", data: %{}),
         fn ->
           Brook.ViewState.merge(:extractions, extraction_without_enabled_flag_id, %{
-            ingestion: TDG.create_ingestion(id: extraction_without_enabled_flag_id)
+            ingestion: TDG.create_ingestion(%{id: extraction_without_enabled_flag_id})
           })
 
           Brook.ViewState.merge(:extractions, extraction_with_enabled_true_id, %{
-            ingestion: TDG.create_ingestion(id: extraction_with_enabled_true_id),
+            ingestion: TDG.create_ingestion(%{id: extraction_with_enabled_true_id}),
             enabled: true
           })
 
           Brook.ViewState.merge(:extractions, extraction_with_enabled_false_id, %{
-            ingestion: TDG.create_ingestion(id: extraction_with_enabled_false_id),
+            ingestion: TDG.create_ingestion(%{id: extraction_with_enabled_false_id}),
             enabled: false
           })
 

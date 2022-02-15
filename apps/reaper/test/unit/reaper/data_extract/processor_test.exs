@@ -43,17 +43,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
         ],
         extractSteps: [
           %{
-            assigns: %{}, 
+            assigns: %{},
             context: %{
-              action: "GET", 
-              body: %{}, 
-              headers: [], 
-              protocol: nil, 
-              queryParams: [], 
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
               url: sourceUrl
-              }, 
-            sequence: 13033, 
-            type: "http"}
+            },
+            sequence: 13033,
+            type: "http"
+          }
         ],
         allow_duplicates: false
       })
@@ -140,17 +141,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
         allow_duplicates: false,
         extractSteps: [
           %{
-            assigns: %{}, 
+            assigns: %{},
             context: %{
-              action: "GET", 
-              body: %{}, 
-              headers: [], 
-              protocol: nil, 
-              queryParams: [], 
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
               url: "http://localhost:#{bypass.port}/api/prov_csv"
-              }, 
-            type: "http"}
-        ],
+            },
+            type: "http"
+          }
+        ]
       })
 
     Processor.process(ingestion)
@@ -333,17 +335,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
           ],
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/api/csv"
-                }, 
-              sequence: 13033, 
-              type: "http"}
+              },
+              sequence: 13033,
+              type: "http"
+            }
           ],
           allow_duplicates: false
         })

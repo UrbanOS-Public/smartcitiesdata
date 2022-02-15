@@ -18,7 +18,7 @@ defmodule Reaper.FullTest do
       data_extract_end: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      error_ingestion_update: 0,
+      error_ingestion_update: 0
     ]
 
   alias Reaper.Collections.Extractions
@@ -91,17 +91,18 @@ defmodule Reaper.FullTest do
           topLevelSelector: nil,
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@json_file_name}"
-              }, 
-              type: "http"}
-          ],
+              },
+              type: "http"
+            }
+          ]
         })
 
       Brook.Event.send(@instance_name, ingestion_update(), :reaper, pre_existing_ingestion)
@@ -168,16 +169,17 @@ defmodule Reaper.FullTest do
           topLevelSelector: nil,
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/partial.csv"
-              }, 
-              type: "http"}
+              },
+              type: "http"
+            }
           ]
         })
 
@@ -211,22 +213,22 @@ defmodule Reaper.FullTest do
           id: ingestion_id,
           targetDataset: dataset_id,
           cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
           sourceFormat: "gtfs",
           topLevelSelector: nil,
           schema: [],
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
-                url: "http://localhost:#{bypass.port}/partial.csv"
-              }, 
-              type: "http"}
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
+                url: "http://localhost:#{bypass.port}/#{@gtfs_file_name}"
+              },
+              type: "http"
+            }
           ]
         })
 
@@ -247,19 +249,21 @@ defmodule Reaper.FullTest do
         TDG.create_ingestion(%{
           id: ingestion_id,
           topLevelSelector: nil,
+          sourceFormat: "json",
           schema: [],
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@json_file_name}"
-              }, 
-              type: "http"}
+              },
+              type: "http"
+            }
           ],
           cadence: "once"
         })
@@ -281,17 +285,18 @@ defmodule Reaper.FullTest do
         TDG.create_ingestion(%{
           id: ingestion_id,
           schema: [],
+          sourceFormat: "json",
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@json_file_name_subpath}"
-              }, 
+              },
               type: "http"
             }
           ],
@@ -317,15 +322,15 @@ defmodule Reaper.FullTest do
           id: ingestion_id,
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
-              }, 
+              },
               type: "http"
             }
           ],
@@ -333,7 +338,6 @@ defmodule Reaper.FullTest do
           sourceFormat: "csv",
           topLevelSelector: nil,
           schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-          
         })
 
       Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
@@ -359,15 +363,15 @@ defmodule Reaper.FullTest do
           cadence: "once",
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
-              }, 
+              },
               type: "http"
             }
           ],
@@ -435,7 +439,6 @@ defmodule Reaper.FullTest do
           sourceFormat: "csv",
           schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
           topLevelSelector: nil
-          
         })
 
       Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
@@ -562,15 +565,15 @@ defmodule Reaper.FullTest do
           topLevelSelector: nil,
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@nested_data_file_name}"
-              }, 
+              },
               type: "http"
             }
           ],
@@ -620,29 +623,27 @@ defmodule Reaper.FullTest do
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
-          targetDataset: @pre_existing_dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceFormat: "xml",
-            schema: [
-              %{name: "first_name", selector: "//person/firstName/text()"}
-            ],
-            topLevelSelector: "top/middle/rows/person",
-            extractSteps: [
-              %{
-                assigns: %{}, 
-                context: %{
-                  action: "GET", 
-                  body: %{}, 
-                  headers: [], 
-                  protocol: nil, 
-                  queryParams: [], 
-                  url: "http://localhost:#{bypass.port}/#{@xml_file_name}"
-                }, 
-                type: "http"
-              }
-            ]
-          }
+          targetDataset: @pre_existing_target_dataset,
+          cadence: "once",
+          sourceFormat: "xml",
+          schema: [
+            %{name: "first_name", selector: "//person/firstName/text()"}
+          ],
+          topLevelSelector: "top/middle/rows/person",
+          extractSteps: [
+            %{
+              assigns: %{},
+              context: %{
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
+                url: "http://localhost:#{bypass.port}/#{@xml_file_name}"
+              },
+              type: "http"
+            }
+          ]
         })
 
       Brook.Event.send(@instance_name, ingestion_update(), :reaper, pre_existing_ingestion)
@@ -652,7 +653,7 @@ defmodule Reaper.FullTest do
     test "is processed successfully" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: @pre_existing_dataset_id,
+          dataset_id: @pre_existing_target_dataset,
           payload: %{
             "first_name" => "John"
           }
@@ -678,15 +679,15 @@ defmodule Reaper.FullTest do
           schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
           extractSteps: [
             %{
-              assigns: %{}, 
+              assigns: %{},
               context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
+                action: "GET",
+                body: %{},
+                headers: [],
+                protocol: nil,
+                queryParams: [],
                 url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
-              }, 
+              },
               type: "http"
             }
           ],
@@ -704,24 +705,24 @@ defmodule Reaper.FullTest do
   data_test "extracts and ingests update started_timestamp in view state", %{bypass: bypass} do
     ingestion =
       TDG.create_ingestion(%{
-          cadence: "once",
-          sourceFormat: "csv",
-          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
-          extractSteps: [
-            %{
-              assigns: %{}, 
-              context: %{
-                action: "GET", 
-                body: %{}, 
-                headers: [], 
-                protocol: nil, 
-                queryParams: [], 
-                url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
-              }, 
-              type: "http"
-            }
-          ],
-          topLevelSelector: nil  
+        cadence: "once",
+        sourceFormat: "csv",
+        schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+            },
+            type: "http"
+          }
+        ],
+        topLevelSelector: nil
       })
 
     Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
@@ -745,10 +746,9 @@ defmodule Reaper.FullTest do
 
     where([
       [:start_event_type, :source_type, :view_state_module],
-      [data_extract_start(), "ingest", Reaper.Collections.Extractions],
+      [data_extract_start(), "ingest", Reaper.Collections.Extractions]
     ])
   end
-
 
   defp fetch_event_messages_of_type(type) do
     Elsa.Fetch.search_keys([localhost: 9092], "event-stream", type)
@@ -766,7 +766,7 @@ defmodule Reaper.FullTest do
     ingestion =
       TDG.create_ingestion(%{
         id: ingestion_id,
-        allow_duplicates: false, 
+        allow_duplicates: false,
         cadence: "*/5 * * * * * *"
       })
 

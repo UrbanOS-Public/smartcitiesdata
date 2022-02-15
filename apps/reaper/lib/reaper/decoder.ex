@@ -45,7 +45,7 @@ defmodule Reaper.Decoder do
     apply(implementation, :handle?, [source_format])
   end
 
-  defp throw_error(%SmartCity.Ingestion{id: id}, message, error) do
+  defp throw_error(%SmartCity.Ingestion{targetDataset: id}, message, error) do
     DeadLetter.process(id, message, "reaper", error: error)
   end
 end
