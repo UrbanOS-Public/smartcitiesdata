@@ -435,7 +435,7 @@ defmodule Reaper.FullTest do
           sourceFormat: "csv",
           schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
           topLevelSelector: nil
-          }
+          
         })
 
       Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
