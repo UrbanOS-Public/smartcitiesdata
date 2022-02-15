@@ -95,6 +95,17 @@ defmodule Alchemist.BroadwayTest do
     assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
     assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
   end
+
+  test "should not send messages that don't match the SmartCity.Message struct", %{broadway: broadway} do
+    badData = %{bad_field: "junk"}
+    kafka_messages = [%{value: Jason.encode!(badData)}]
+    Broadway.test_batch(broadway, kafka_messages)
+
+    assert_receive {:ack, _ref, _, [message]}, 5_000
+    assert {:failed, "Invalid data message: %{\"bad_field\" => \"junk\"}"} == message.status
+
+    # TODO: assert that dlq stuff happens with the message fails
+  end
 end
 
 defmodule Fake.Producer do

@@ -6,6 +6,8 @@ defmodule Alchemist.Broadway do
   use Broadway
   use Properties, otp_app: :alchemist
 
+  alias Broadway.Message
+
   getter(:processor_stages, generic: true, default: 1)
   getter(:batch_stages, generic: true, default: 1)
   getter(:batch_size, generic: true, default: 1_000)
@@ -49,11 +51,17 @@ defmodule Alchemist.Broadway do
   # used by processor.
   # This is where we alter the message to be transformed
   #   on it's way out of alchemist.
-  def handle_message(_processor, message, _ingestion) do
-    # don't alter the message right now, just forward it along unchanged
-    # TODO: https://app.zenhub.com/workspaces/mdot-615b97c1a5fde400126174f8/issues/urbanos-public/internal/508
-    # Choose which transformation to call based on ingestion type
-    Transformers.NoOp.transform!(message)
+  def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion}) do
+    with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
+         transformed <- Transformers.NoOp.transform!(smart_city_data),
+         {:ok, json_data} <- Jason.encode(transformed) do
+      %{message | data: %{message.data | value: json_data}}
+    else
+      {:error, reason} ->
+        Message.failed(message, reason)
+    end
+
+    # TODO: How / where to choose which transformation to call based on ingestion type
   end
 
   # used by batcher
