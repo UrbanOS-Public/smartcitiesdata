@@ -22,8 +22,8 @@ defmodule Reaper.DataSlurper.Http do
 
   @impl DataSlurper
   def slurp(url, ingestion_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
-    filename = DataSlurper.determine_filename(ingestion_id)
-    download(ingestion_id, url, filename, headers, protocol, action, body)
+    filename = DataSlurper.determine_filename(ingestion_id) |> IO.inspect(label: "I AM THE FILENAME")
+    download(ingestion_id, url, filename, headers, protocol, action, body) |> IO.inspect(label: "DOWNLAOD RETURNED")
     {:file, filename}
   rescue
     error ->

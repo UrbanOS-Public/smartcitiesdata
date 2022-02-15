@@ -22,7 +22,7 @@ defmodule Reaper.DataExtract.ValidationStage do
 
   def handle_events(incoming, _from, state) do
     outgoing =
-      incoming
+      incoming |> IO.inspect(label: "HERE ARE THE INCOMING EVENTS")
       |> Enum.reduce([], &handle_event(state, &1, &2))
       |> Enum.reverse()
 

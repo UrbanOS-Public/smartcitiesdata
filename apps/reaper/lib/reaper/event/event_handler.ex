@@ -19,7 +19,7 @@ defmodule Reaper.Event.EventHandler do
   def handle_event(%Brook.Event{type: ingestion_update(), data: %SmartCity.Ingestion{} = ingestion}) do
     ingestion_update()
     |> add_event_count(ingestion.targetDataset)
-
+    IO.inspect(ingestion, label: "I ENTERED THE EVENT HANDLER")
     Extractions.update_ingestion(ingestion)
     Reaper.Event.Handlers.IngestionUpdate.handle(ingestion)
   rescue

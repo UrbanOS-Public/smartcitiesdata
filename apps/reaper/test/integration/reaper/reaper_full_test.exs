@@ -37,6 +37,7 @@ defmodule Reaper.FullTest do
 
   @pre_existing_ingestion_id "00000-0000"
   @pre_existing_target_dataset "1701-1701"
+  @partial_load_dataset_id "11111-1113"
   @partial_load_ingestion_id "11111-1112"
 
   @json_file_name "vehicle_locations.json"
@@ -92,6 +93,7 @@ defmodule Reaper.FullTest do
             %{name: "update_time"},
             %{name: "longitude"}
           ],
+          topLevelSelector: nil,
           extractSteps: [
             %{
               assigns: %{}, 
@@ -134,7 +136,7 @@ defmodule Reaper.FullTest do
     end
   end
 
-  describe "partial-existing dataset" do
+  describe "partial-existing ingestion" do
     setup %{bypass: bypass} do
       {:ok, pid} = Agent.start_link(fn -> %{has_raised: false, invocations: 0} end)
 
@@ -161,25 +163,36 @@ defmodule Reaper.FullTest do
         Plug.Conn.send_resp(conn, 200, data)
       end)
 
-      pre_existing_dataset =
+      pre_existing_ingestion =
         TDG.create_dataset(%{
-          id: @partial_load_dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/partial.csv",
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "name", type: "string"}]
-          }
+          id: @partial_load_ingestion_id,
+          targetDataset: @partial_load_dataset_id,
+          cadence: "once",
+          sourceFormat: "csv",
+          schema: [%{name: "name", type: "string"}],
+          topLevelSelector: nil,
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/partial.csv"
+              }, 
+              type: "http"}
+          ]
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_ingestion)
       :ok
     end
 
     @tag capture_log: true
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
-      topic = "#{output_topic_prefix()}-#{@partial_load_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@partial_load_ingestion_id}"
 
       eventually(
         fn ->
@@ -194,20 +207,35 @@ defmodule Reaper.FullTest do
 
   describe "No pre-existing datasets" do
     test "configures and ingests a gtfs source", %{bypass: bypass} do
-      dataset_id = "12345-6789"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "12345-6789"
+      dataset_id = "0123-4567"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      gtfs_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
-            sourceFormat: "gtfs"
-          }
+      gtfs_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          targetDataset: dataset_id,
+          cadence: "once",
+          sourceUrl: "http://localhost:#{bypass.port}/#{@gtfs_file_name}",
+          sourceFormat: "gtfs",
+          topLevelSelector: nil,
+          schema: [],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/partial.csv"
+              }, 
+              type: "http"}
+          ]
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, gtfs_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, gtfs_ingestion)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
@@ -217,20 +245,31 @@ defmodule Reaper.FullTest do
     end
 
     test "configures and ingests a json source", %{bypass: bypass} do
-      dataset_id = "23456-7891"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "23456-7891"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      json_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name}",
-            sourceFormat: "json"
-          }
+      json_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          topLevelSelector: nil,
+          schema: [],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@json_file_name}"
+              }, 
+              type: "http"}
+          ],
+          cadence: "once"
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, json_ingestion)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
@@ -240,21 +279,32 @@ defmodule Reaper.FullTest do
     end
 
     test "configures and ingests a json source using topLevelSelector", %{bypass: bypass} do
-      dataset_id = "topLevelSelectorId"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "topLevelSelectorId"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      json_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@json_file_name_subpath}",
-            sourceFormat: "json",
-            topLevelSelector: "$.sub.path"
-          }
+      json_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          schema: [],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@json_file_name_subpath}"
+              }, 
+              type: "http"
+            }
+          ],
+          cadence: "once",
+          topLevelSelector: "$.sub.path"
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, json_ingestion)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
@@ -264,100 +314,74 @@ defmodule Reaper.FullTest do
     end
 
     test "configures and ingests a csv source", %{bypass: bypass} do
-      dataset_id = "34567-8912"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "34567-8912"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      csv_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-          }
+      csv_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+              }, 
+              type: "http"
+            }
+          ],
+          cadence: "once",
+          sourceFormat: "csv",
+          topLevelSelector: nil,
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+          
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
         assert [%{payload: %{"name" => "Austin"}} | _] = results
-        assert false == File.exists?(dataset_id)
+        assert false == File.exists?(ingestion_id)
       end)
-    end
-
-    test "configures and ingests a hosted dataset", %{bypass: bypass} do
-      dataset_id = "1-22-333-4444"
-
-      hosted_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  url: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-                  queryParams: %{},
-                  headers: %{},
-                  protocol: nil,
-                  action: "GET"
-                },
-                assigns: %{}
-              }
-            ],
-            sourceFormat: "csv",
-            sourceType: "host"
-          }
-        })
-
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, hosted_dataset)
-
-      eventually(fn ->
-        expected = File.read!("test/support/#{@csv_file_name}")
-
-        case ExAws.S3.get_object(
-               hosted_file_bucket(),
-               "#{hosted_dataset.technical.orgName}/#{hosted_dataset.technical.dataName}.csv"
-             )
-             |> ExAws.request() do
-          {:ok, resp} ->
-            assert Map.get(resp, :body) == expected
-
-          _other ->
-            Logger.info("File not uploaded yet")
-            flunk("File should have been uploaded")
-        end
-      end)
-
-      {:ok, _, messages} = Elsa.fetch(elsa_brokers(), "event-stream", partition: 0)
-      assert Enum.any?(messages, fn %Elsa.Message{key: key} -> key == "file:ingest:end" end)
     end
   end
 
   describe "One time Ingest" do
     @tag timeout: 120_000
     test "cadence of once is only processed once", %{bypass: bypass} do
-      dataset_id = "only-once"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "only-once"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      csv_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-          }
+      csv_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          cadence: "once",
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+              }, 
+              type: "http"
+            }
+          ],
+          sourceFormat: "csv",
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+          topLevelSelector: nil
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
 
       eventually(
         fn ->
@@ -382,46 +406,44 @@ defmodule Reaper.FullTest do
 
       allow Timex.now(), return: DateTime.from_naive!(~N[2018-01-01 13:26:08.003], "Etc/UTC")
 
-      dataset_id = "only-once-extract-steps"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "only-once-extract-steps"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      csv_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "",
-            extractSteps: [
-              %{
-                type: "date",
-                context: %{
-                  destination: "currentDate",
-                  deltaTimeUnit: "years",
-                  deltaTimeValue: -1,
-                  format: "{YYYY}-{0M}"
-                },
-                assigns: %{}
+      csv_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          cadence: "once",
+          extractSteps: [
+            %{
+              type: "date",
+              context: %{
+                destination: "currentDate",
+                deltaTimeUnit: "years",
+                deltaTimeValue: -1,
+                format: "{YYYY}-{0M}"
               },
-              %{
-                type: "http",
-                context: %{
-                  url: "http://localhost:#{bypass.port}/{{currentDate}}",
-                  action: "GET",
-                  body: %{},
-                  protocol: nil,
-                  queryParams: %{},
-                  headers: %{}
-                },
-                assigns: %{}
-              }
-            ],
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+              assigns: %{}
+            },
+            %{
+              type: "http",
+              context: %{
+                url: "http://localhost:#{bypass.port}/{{currentDate}}",
+                action: "GET",
+                body: %{},
+                protocol: nil,
+                queryParams: %{},
+                headers: %{}
+              },
+              assigns: %{}
+            }
+          ],
+          sourceFormat: "csv",
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+          topLevelSelector: nil
           }
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
 
       eventually(
         fn ->
@@ -436,37 +458,34 @@ defmodule Reaper.FullTest do
 
     @tag timeout: 120_000
     test "cadence of once is only processed once, extract steps s3", %{bypass: bypass} do
-      dataset_id = "only-once-extract-steps-s3"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "only-once-extract-steps-s3"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
       "./test/support/random_stuff.csv"
       |> ExAws.S3.Upload.stream_file()
       |> ExAws.S3.upload(hosted_file_bucket(), "fake_data")
       |> ExAws.request!()
 
-      csv_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "",
-            extractSteps: [
-              %{
-                type: "s3",
-                context: %{
-                  url: "s3://#{hosted_file_bucket()}/fake_data",
-                  headers: %{}
-                },
-                assigns: %{}
-              }
-            ],
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}]
-          }
+      csv_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          cadence: "once",
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "s3://#{hosted_file_bucket()}/fake_data",
+                headers: %{}
+              },
+              assigns: %{}
+            }
+          ],
+          sourceFormat: "csv",
+          schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}],
+          topLevelSelector: nil
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
 
       eventually(
         fn ->
@@ -481,10 +500,10 @@ defmodule Reaper.FullTest do
 
     @tag timeout: 120_000
     test "cadence of once is only processed once, extract steps sftp", %{bypass: bypass} do
-      dataset_id = "only-once-extract-steps-sftp"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "only-once-extract-steps-sftp"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
         return: {:ok, %{"username" => @sftp.user, "password" => @sftp.password}}
       )
 
@@ -500,32 +519,29 @@ defmodule Reaper.FullTest do
       |> Stream.into(SftpEx.stream!(connection, "/upload/random_stuff.csv"))
       |> Stream.run()
 
-      csv_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "",
-            extractSteps: [
-              %{
-                type: "sftp",
-                context: %{
-                  url: "sftp://{{host}}:{{port}}{{path}}"
-                },
-                assigns: %{
-                  path: "/upload/random_stuff.csv",
-                  host: "#{@host}",
-                  port: "#{@sftp.port}"
-                }
+      csv_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          cadence: "once",
+          extractSteps: [
+            %{
+              type: "sftp",
+              context: %{
+                url: "sftp://{{host}}:{{port}}{{path}}"
+              },
+              assigns: %{
+                path: "/upload/random_stuff.csv",
+                host: "#{@host}",
+                port: "#{@sftp.port}"
               }
-            ],
-            sourceFormat: "csv",
-            sourceType: "ingest",
-            schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}]
-          }
+            }
+          ],
+          sourceFormat: "csv",
+          schema: [%{name: "col1"}, %{name: "col2"}, %{name: "col3"}],
+          topLevelSelector: nil
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, csv_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, csv_ingestion)
 
       eventually(
         fn ->
@@ -540,34 +556,46 @@ defmodule Reaper.FullTest do
 
   describe "Schema Stage" do
     test "fills nested nils", %{bypass: bypass} do
-      dataset_id = "alzenband"
-      topic = "#{output_topic_prefix()}-#{dataset_id}"
+      ingestion_id = "alzenband"
+      topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      json_dataset =
-        TDG.create_dataset(%{
-          id: dataset_id,
-          technical: %{
-            cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@nested_data_file_name}",
-            sourceFormat: "json",
-            schema: [
-              %{name: "id", type: "string"},
-              %{
-                name: "grandParent",
-                type: "map",
-                subSchema: [
-                  %{
-                    name: "parentMap",
-                    type: "map",
-                    subSchema: [%{name: "fieldA", type: "string"}, %{name: "fieldB", type: "string"}]
-                  }
-                ]
-              }
-            ]
-          }
+      json_ingestion =
+        TDG.create_ingestion(%{
+          id: ingestion_id,
+          cadence: "once",
+          sourceFormat: "json",
+          topLevelSelector: nil,
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@nested_data_file_name}"
+              }, 
+              type: "http"
+            }
+          ],
+          schema: [
+            %{name: "id", type: "string"},
+            %{
+              name: "grandParent",
+              type: "map",
+              subSchema: [
+                %{
+                  name: "parentMap",
+                  type: "map",
+                  subSchema: [%{name: "fieldA", type: "string"}, %{name: "fieldB", type: "string"}]
+                }
+              ]
+            }
+          ]
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, json_ingestion)
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
@@ -592,23 +620,37 @@ defmodule Reaper.FullTest do
     end
   end
 
-  describe "xml dataset" do
+  describe "xml ingestion" do
     setup %{bypass: bypass} do
-      pre_existing_dataset =
-        TDG.create_dataset(%{
-          id: @pre_existing_dataset_id,
+      pre_existing_ingestion =
+        TDG.create_ingestion(%{
+          id: @pre_existing_ingestion_id,
+          targetDataset: @pre_existing_dataset_id,
           technical: %{
             cadence: "once",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@xml_file_name}",
             sourceFormat: "xml",
             schema: [
               %{name: "first_name", selector: "//person/firstName/text()"}
             ],
-            topLevelSelector: "top/middle/rows/person"
+            topLevelSelector: "top/middle/rows/person",
+            extractSteps: [
+              %{
+                assigns: %{}, 
+                context: %{
+                  action: "GET", 
+                  body: %{}, 
+                  headers: [], 
+                  protocol: nil, 
+                  queryParams: [], 
+                  url: "http://localhost:#{bypass.port}/#{@xml_file_name}"
+                }, 
+                type: "http"
+              }
+            ]
           }
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, pre_existing_ingestion)
       :ok
     end
 
@@ -621,7 +663,7 @@ defmodule Reaper.FullTest do
           }
         })
 
-      topic = "#{output_topic_prefix()}-#{@pre_existing_dataset_id}"
+      topic = "#{output_topic_prefix()}-#{@pre_existing_ingestion_id}"
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
@@ -632,61 +674,32 @@ defmodule Reaper.FullTest do
     end
   end
 
-  describe "#{dataset_disable()} then a #{dataset_update()}" do
-    setup %{bypass: bypass} do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            cadence: "*/5 * * * * * *",
-            sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-            sourceFormat: "csv",
-            sourceType: "stream",
-            schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-          }
-        })
-
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
-
-      eventually(fn ->
-        assert %{state: :active} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
-        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == true
-      end)
-
-      Brook.Event.send(@instance_name, dataset_disable(), :reaper, dataset)
-
-      eventually(fn ->
-        assert %{state: :inactive} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
-        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == false
-      end)
-
-      [dataset: dataset]
-    end
-
-    test "sending an update for the disabled dataset does NOT re-enable it", %{dataset: dataset} do
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
-
-      Process.sleep(5_000)
-
-      eventually(fn ->
-        assert %{state: :inactive} = Reaper.Scheduler.find_job(String.to_atom(dataset.id))
-        assert Reaper.Collections.Extractions.is_enabled?(dataset.id) == false
-      end)
-    end
-  end
-
-  test "dataset:update updates dataset definition in view state", %{bypass: bypass} do
-    dataset =
-      TDG.create_dataset(%{
+  test "ingestion:update updates ingestion definition in view state", %{bypass: bypass} do
+    ingestion =
+      TDG.create_ingestion(%{
         technical: %{
           cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
           sourceFormat: "csv",
-          sourceType: "ingest",
-          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+              }, 
+              type: "http"
+            }
+          ],
+          topLevelSelector: nil
         }
       })
 
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
 
     eventually(fn ->
       assert Reaper.Collections.Extractions.get_dataset!(dataset.id) == dataset
@@ -694,122 +707,53 @@ defmodule Reaper.FullTest do
   end
 
   data_test "extracts and ingests update started_timestamp in view state", %{bypass: bypass} do
-    dataset =
-      TDG.create_dataset(%{
-        technical: %{
+    ingestion =
+      TDG.create_ingestion(%{
           cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
           sourceFormat: "csv",
-          sourceType: source_type,
-          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-        }
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+          extractSteps: [
+            %{
+              assigns: %{}, 
+              context: %{
+                action: "GET", 
+                body: %{}, 
+                headers: [], 
+                protocol: nil, 
+                queryParams: [], 
+                url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+              }, 
+              type: "http"
+            }
+          ],
+          topLevelSelector: nil  
       })
 
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
 
     eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == true
+      assert view_state_module.is_enabled?(ingestion.id) == true
     end)
 
-    Brook.Event.send(@instance_name, start_event_type, :reaper, dataset)
+    Brook.Event.send(@instance_name, start_event_type, :reaper, ingestion)
 
     eventually(fn ->
-      assert nil != view_state_module.get_started_timestamp!(dataset.id)
+      assert nil != view_state_module.get_started_timestamp!(ingestion.id)
     end)
 
     now = DateTime.utc_now()
-    Brook.Event.send(@instance_name, start_event_type, :reaper, dataset)
+    Brook.Event.send(@instance_name, start_event_type, :reaper, ingestion)
 
     eventually(fn ->
-      assert DateTime.compare(view_state_module.get_started_timestamp!(dataset.id), now) == :gt
+      assert DateTime.compare(view_state_module.get_started_timestamp!(ingestion.id), now) == :gt
     end)
 
     where([
       [:start_event_type, :source_type, :view_state_module],
       [data_extract_start(), "ingest", Reaper.Collections.Extractions],
-      [file_ingest_start(), "host", Reaper.Collections.FileIngestions]
     ])
   end
 
-  data_test "dataset:disable followed by a ingest or extract start", %{bypass: bypass} do
-    dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-          sourceFormat: "csv",
-          sourceType: source_type,
-          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-        }
-      })
-
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == true
-    end)
-
-    Brook.Event.send(@instance_name, dataset_disable(), :reaper, dataset)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == false
-    end)
-
-    marked_dataset = TDG.create_dataset(Map.merge(dataset, %{business: %{dataTitle: "this-should-not-extract"}}))
-    Brook.Event.send(@instance_name, start_event_type, :reaper, marked_dataset)
-
-    Process.sleep(5_000)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == false
-      assert not (marked_dataset in fetch_event_messages_of_type(end_event_type))
-    end)
-
-    where([
-      [:start_event_type, :end_event_type, :source_type, :view_state_module],
-      [data_extract_start(), data_extract_end(), "ingest", Reaper.Collections.Extractions],
-      [file_ingest_start(), file_ingest_end(), "host", Reaper.Collections.FileIngestions]
-    ])
-  end
-
-  data_test "dataset:disable followed by a ingest or extract end or file ingest end", %{bypass: bypass} do
-    dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@csv_file_name}",
-          sourceFormat: "csv",
-          sourceType: source_type,
-          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
-        }
-      })
-
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == true
-    end)
-
-    Brook.Event.send(@instance_name, dataset_delete(), :reaper, dataset)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == false
-    end)
-
-    Brook.Event.send(@instance_name, end_event_type, :reaper, dataset)
-
-    Process.sleep(5_000)
-
-    eventually(fn ->
-      assert view_state_module.is_enabled?(dataset.id) == false
-    end)
-
-    where([
-      [:end_event_type, :source_type, :view_state_module],
-      [data_extract_end(), "ingest", Reaper.Collections.Extractions],
-      [file_ingest_end(), "host", Reaper.Collections.FileIngestions]
-    ])
-  end
 
   defp fetch_event_messages_of_type(type) do
     Elsa.Fetch.search_keys([localhost: 9092], "event-stream", type)
@@ -820,24 +764,25 @@ defmodule Reaper.FullTest do
     end)
   end
 
-  test "should delete the dataset and the view state when delete event is called" do
-    dataset_id = Faker.UUID.v4()
-    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
+  test "should delete the ingestion and the view state when delete event is called" do
+    ingestion_id = Faker.UUID.v4()
+    output_topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-    dataset =
-      TDG.create_dataset(
-        id: dataset_id,
-        technical: %{allow_duplicates: false, cadence: "*/5 * * * * * *"}
-      )
+    ingestion =
+      TDG.create_ingestion(%{
+        id: ingestion_id,
+        allow_duplicates: false, 
+        cadence: "*/5 * * * * * *"
+      })
 
-    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :author, ingestion)
 
     eventually(
       fn ->
-        assert String.to_atom(dataset_id) == find_quantum_job(dataset_id)
-        assert nil != Reaper.Horde.Registry.lookup(dataset_id)
-        assert nil != Reaper.Cache.Registry.lookup(dataset_id)
-        assert dataset == Extractions.get_dataset!(dataset.id)
+        assert String.to_atom(ingestion_id) == find_quantum_job(ingestion_id)
+        assert nil != Reaper.Horde.Registry.lookup(ingestion_id)
+        assert nil != Reaper.Cache.Registry.lookup(ingestion_id)
+        assert ingestion == Extractions.get_ingestion!(ingestion.id)
         assert true == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
       2_000,

@@ -28,19 +28,21 @@ defmodule Reaper.DataExtract.Processor do
 
   @spec process(SmartCity.Ingestion.t()) :: Redix.Protocol.redis_value() | no_return()
   def process(%SmartCity.Ingestion{} = unprovisioned_ingestion) do
+    IO.inspect(unprovisioned_ingestion, label: "GOT INTO THE PROCESSOR")
     Process.flag(:trap_exit, true)
     ingestion =
       unprovisioned_ingestion
       |> Providers.Helpers.Provisioner.provision()
 
-    validate_destination(ingestion)
+    validate_destination(ingestion) |> IO.inspect(label: "DESTINATION")
     validate_cache(ingestion)
 
     generated_time_stamp = DateTime.utc_now()
 
     {:ok, producer_stage} = create_producer_stage(ingestion)
+    IO.inspect(producer_stage, label: "PRODUCER")
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
-
+    IO.inspect(validation_stage, label: "VALIDATION")
     {:ok, schema_stage} =
       SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
 
@@ -71,7 +73,7 @@ defmodule Reaper.DataExtract.Processor do
 
   defp create_producer_stage(%SmartCity.Ingestion{extractSteps: extract_steps} = ingestion) do
     %{output_file: output_file} = ExtractStep.execute_extract_steps(ingestion, extract_steps)
-
+    IO.inspect(output_file, label: "HERE IS THE OUTPUT FILE")
     output_file
     |> Decoder.decode(ingestion)
     |> Stream.with_index()
@@ -124,6 +126,6 @@ defmodule Reaper.DataExtract.Processor do
     {:ok, _pid} =
       Elsa.Supervisor.start_link(connection: connection_name, endpoints: elsa_brokers(), producer: [topic: topic])
 
-    Elsa.Producer.ready?(connection_name)
+    Elsa.Producer.ready?(connection_name) |> IO.inspect(label: "WAS I STARTED?")
   end
 end
