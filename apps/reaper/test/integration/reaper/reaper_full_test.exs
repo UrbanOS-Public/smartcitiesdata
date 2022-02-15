@@ -19,11 +19,6 @@ defmodule Reaper.FullTest do
       ingestion_update: 0,
       ingestion_delete: 0,
       error_ingestion_update: 0,
-      dataset_update: 0,
-      dataset_disable: 0,
-      file_ingest_start: 0,
-      file_ingest_end: 0,
-      dataset_delete: 0 
     ]
 
   alias Reaper.Collections.Extractions
@@ -164,7 +159,7 @@ defmodule Reaper.FullTest do
       end)
 
       pre_existing_ingestion =
-        TDG.create_dataset(%{
+        TDG.create_ingestion(%{
           id: @partial_load_ingestion_id,
           targetDataset: @partial_load_dataset_id,
           cadence: "once",
@@ -186,7 +181,7 @@ defmodule Reaper.FullTest do
           ]
         })
 
-      Brook.Event.send(@instance_name, dataset_update(), :reaper, pre_existing_ingestion)
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, pre_existing_ingestion)
       :ok
     end
 
@@ -205,7 +200,7 @@ defmodule Reaper.FullTest do
     end
   end
 
-  describe "No pre-existing datasets" do
+  describe "No pre-existing ingestions" do
     test "configures and ingests a gtfs source", %{bypass: bypass} do
       ingestion_id = "12345-6789"
       dataset_id = "0123-4567"
@@ -702,7 +697,7 @@ defmodule Reaper.FullTest do
     Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
 
     eventually(fn ->
-      assert Reaper.Collections.Extractions.get_dataset!(dataset.id) == dataset
+      assert Reaper.Collections.Extractions.get_ingestion!(ingestion.id) == ingestion
     end)
   end
 
@@ -789,14 +784,14 @@ defmodule Reaper.FullTest do
       10
     )
 
-    Brook.Event.send(@instance_name, dataset_delete(), :author, dataset)
+    Brook.Event.send(@instance_name, ingestion_delete(), :author, ingestion)
 
     eventually(
       fn ->
-        assert nil == find_quantum_job(dataset_id)
-        assert nil == Reaper.Horde.Registry.lookup(dataset_id)
-        assert nil == Reaper.Cache.Registry.lookup(dataset_id)
-        assert nil == Extractions.get_dataset!(dataset.id)
+        assert nil == find_quantum_job(ingestion_id)
+        assert nil == Reaper.Horde.Registry.lookup(ingestion_id)
+        assert nil == Reaper.Cache.Registry.lookup(ingestion_id)
+        assert nil == Extractions.get_ingestion!(ingestion.id)
         assert false == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
       2_000,
@@ -810,8 +805,8 @@ defmodule Reaper.FullTest do
     |> binary_part(0, length)
   end
 
-  defp find_quantum_job(dataset_id) do
-    dataset_id
+  defp find_quantum_job(ingestion_id) do
+    ingestion_id
     |> String.to_atom()
     |> Reaper.Scheduler.find_job()
     |> quantum_job_name()
