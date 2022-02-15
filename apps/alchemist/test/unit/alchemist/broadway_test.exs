@@ -104,6 +104,17 @@ defmodule Alchemist.BroadwayTest do
     assert_receive {:ack, _ref, _, [message]}, 5_000
     assert {:failed, "Invalid data message: %{\"bad_field\" => \"junk\"}"} == message.status
 
+    eventually(fn ->
+      {:ok, dead_message} = DeadLetter.Carrier.Test.receive()
+      refute dead_message == :empty
+
+      assert dead_message.app == "Alchemist"
+      # assert dead_message.dataset_id == @dataset_id
+      # IO.inspect(dead_message)
+      # assert dead_message.dataset_id == @dataset_id
+      # assert dead_message.original_value == Jason.encode!(badData)
+      # assert dead_message.readon == "Invalid data message: %{\"bad_field\" => \"junk\"}"
+    end)
     # TODO: assert that dlq stuff happens with the message fails
   end
 end

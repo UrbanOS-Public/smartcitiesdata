@@ -8,6 +8,8 @@ defmodule Alchemist.Broadway do
 
   alias Broadway.Message
 
+  @app_name "Alchemist"
+
   getter(:processor_stages, generic: true, default: 1)
   getter(:batch_stages, generic: true, default: 1)
   getter(:batch_size, generic: true, default: 1_000)
@@ -58,6 +60,7 @@ defmodule Alchemist.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
+        DeadLetter.process(ingestion.id, message_data.value, @app_name, reason: reason)
         Message.failed(message, reason)
     end
 
