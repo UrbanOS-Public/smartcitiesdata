@@ -61,10 +61,6 @@ defmodule Alchemist.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
-        # IO.inspect(ingestion.targetDataset)
-        # IO.inspect(message_data.value)
-        # IO.inspect(reason)
-        IO.inspect("CAUGHT_ERROR")
         DeadLetter.process(ingestion.targetDataset, message_data.value, @app_name, reason: reason)
         Message.failed(message, reason)
     end
