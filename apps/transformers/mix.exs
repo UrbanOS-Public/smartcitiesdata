@@ -29,6 +29,7 @@ defmodule Transformers.MixProject do
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:smart_city, "~> 5.0.4"},
       {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:timex, "~> 3.6"}
     ]
