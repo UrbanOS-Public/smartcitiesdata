@@ -55,8 +55,7 @@ defmodule Alchemist.Broadway do
   #   on it's way out of alchemist.
   def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion}) do
     with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
-         # TODO: How / where to choose which transformation to call based on ingestion type
-         transformed <- Transformers.NoOp.transform!(smart_city_data),
+         transformed <- Transformers.NoOp.transform(smart_city_data, {}),
          {:ok, json_data} <- Jason.encode(transformed) do
       %{message | data: %{message.data | value: json_data}}
     else

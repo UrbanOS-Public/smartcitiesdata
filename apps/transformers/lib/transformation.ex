@@ -5,5 +5,6 @@ defmodule Transformation do
   @doc """
   Transforms an incoming message
   """
-  @callback transform!(message :: SmartCity.Data.t()) :: SmartCity.Data.t()
+  @callback transform(message :: SmartCity.Data.t(), parameters :: Map.t()) ::
+              {:ok, SmartCity.Data.t()} | {:error, String.t()}
 end

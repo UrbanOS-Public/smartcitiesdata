@@ -15,6 +15,10 @@ defmodule Transformers.NoOpFunction do
   # def parse(:no_op, parameters) do
   #   fn message -> NoOpFunction.transform(message, parameters) end
   # end
+
+  # def parse(_unsupported, parameters) do
+  #   type missmatch -> {:error, "unsupported transformation type #{_unsupported}}
+  # end
   #
   # def transform(message, parameters) do
   #   sourceField = Map.get(parameters, "sourceField")

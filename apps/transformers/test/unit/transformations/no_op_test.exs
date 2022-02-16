@@ -7,7 +7,7 @@ defmodule Transformers.NoOpTest do
     test "does not alter the message it recieves" do
       original_message = TDG.create_data(%{})
 
-      result = Transformers.NoOp.transform!(original_message)
+      result = Transformers.NoOp.transform(original_message, {})
 
       assert result == original_message
     end
