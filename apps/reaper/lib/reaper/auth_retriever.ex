@@ -13,7 +13,9 @@ defmodule Reaper.AuthRetriever do
   def authorize(ingestion_id, url, body, encode_method, headers, cache_ttl) do
     cache_ttl = cache_ttl || 10_000
 
-    complete_headers = headers |> add_content_type(body, encode_method)
+    complete_headers =
+      headers
+      |> add_content_type(body, encode_method)
 
     cache_id = hash_config(%{url: url, body: body, headers: complete_headers})
 
