@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.0.3",
+      version: "2.0.4",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -53,7 +53,12 @@ defmodule Andi.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:elixir_uuid, "~> 1.2"},
       {:ex_aws, "~> 2.1"},
-      {:ex_aws_s3, "~> 2.0", [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
+      {:ex_aws_s3, "~> 2.0",
+       [
+         env: :prod,
+         git: "https://github.com/ex-aws/ex_aws_s3",
+         ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+       ]},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:gettext, "~> 0.17"},
       {:guardian, "~> 2.0"},
@@ -97,7 +102,11 @@ defmodule Andi.MixProject do
 
   defp aliases do
     [
-      verify: ["format --check-formatted", "credo", "sobelow -i Config.HTTPS --skip --compact --exit low"],
+      verify: [
+        "format --check-formatted",
+        "credo",
+        "sobelow -i Config.HTTPS --skip --compact --exit low"
+      ],
       start:
         ensure_generated_certs([
           "ecto.create --quiet",

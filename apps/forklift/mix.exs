@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.17.14",
+      version: "0.17.15",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -27,7 +27,7 @@ defmodule Forklift.MixProject do
 
   defp deps do
     [
-      {:brod, "~> 3.8", override: true},
+      {:brod, "~> 3.14.0", override: true},
       {:brook, "~> 0.4.0"},
       {:checkov, "~> 1.0"},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

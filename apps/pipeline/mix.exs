@@ -4,7 +4,7 @@ defmodule Pipeline.MixProject do
   def project do
     [
       app: :pipeline,
-      version: "0.1.0",
+      version: "0.1.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -30,7 +30,11 @@ defmodule Pipeline.MixProject do
       {:elsa, "~> 0.12", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
-       [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
+       [
+         env: :prod,
+         git: "https://github.com/ex-aws/ex_aws_s3",
+         ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"
+       ]},
       {:configparser_ex, "~> 4.0"},
       {:ex_aws_sts, "~> 2.0"},
       {:retry, "~> 0.13"},
