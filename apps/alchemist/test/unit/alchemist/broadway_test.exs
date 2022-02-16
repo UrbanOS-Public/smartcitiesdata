@@ -20,10 +20,12 @@ defmodule Alchemist.BroadwayTest do
     allow Elsa.produce(any(), any(), any(), any()), return: :ok
     allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
 
-    ingestion = TDG.create_ingestion(%{id: @ingestion_id})
+    ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDataset: @dataset_id})
 
     {:ok, broadway} =
       Alchemist.Broadway.start_link(
+        # ingestion is destructured in handle message as the th~ird argument
+        #   it serves as context for an incoming SmartCity.data message
         ingestion: ingestion,
         output: [
           topic: :output_topic,
@@ -96,7 +98,7 @@ defmodule Alchemist.BroadwayTest do
     assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
   end
 
-  test "should not send messages that don't match the SmartCity.Message struct", %{broadway: broadway} do
+  test "should dead letter messages that don't match the SmartCity.Message struct", %{broadway: broadway} do
     badData = %{bad_field: "junk"}
     kafka_messages = [%{value: Jason.encode!(badData)}]
     Broadway.test_batch(broadway, kafka_messages)
@@ -109,14 +111,35 @@ defmodule Alchemist.BroadwayTest do
       refute dead_message == :empty
 
       assert dead_message.app == "Alchemist"
-      # assert dead_message.dataset_id == @dataset_id
-      # IO.inspect(dead_message)
-      # assert dead_message.dataset_id == @dataset_id
-      # assert dead_message.original_value == Jason.encode!(badData)
-      # assert dead_message.readon == "Invalid data message: %{\"bad_field\" => \"junk\"}"
+      assert dead_message.dataset_id == @dataset_id
+      assert dead_message.original_message == Jason.encode!(badData)
+      assert dead_message.reason == "Invalid data message: %{\"bad_field\" => \"junk\"}"
     end)
-    # TODO: assert that dlq stuff happens with the message fails
   end
+
+  # test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
+  #   # TODO: Change this mock to reflect the new Transformers api when it's named
+  #   # for now .NoOp is what we have to represent all Transformation logic
+  #   allow Transformers.NoOp.transform!(any()), exec: fn _ -> raise("Transform Failed") end
+
+  #   data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+
+  #   kafka_messages = [%{value: Jason.encode!(data1)}]
+
+  #   Broadway.test_batch(broadway, kafka_messages)
+
+  #   assert_receive {:ack, _ref, _, failed_messages}, 5_000
+  #   assert 1 == length(failed_messages)
+
+  #   eventually(fn ->
+  #     {:ok, dead_message} = DeadLetter.Carrier.Test.receive()
+  #     refute dead_message == :empty
+
+  #     assert dead_message.app == "Alchemist"
+  #     assert dead_message.dataset_id == "ds1"
+  #     assert dead_message.original_message == Jason.encode!(data1)
+  #   end)
+  # end
 end
 
 defmodule Fake.Producer do
