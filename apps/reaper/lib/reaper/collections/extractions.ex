@@ -5,10 +5,15 @@ defmodule Reaper.Collections.Extractions do
 
   use Reaper.Collections.BaseIngestion, instance: @instance_name, collection: :extractions
 
-  # TODO: If there is an asterisk in the second or minute of crontab, do not send data_ingest 
   def should_send_data_ingest_start?(%SmartCity.Ingestion{} = ingestion) do
-    get_last_fetched_timestamp!(ingestion.id) == nil
+    # starting at the beginning of the string (^)
+    # match any pattern "* [ANY][ANY]" (\*\s.+)
+    # or (|)
+    # match any pattern "[ANY] *[ANY]" (.+\s\*)
+    if(Regex.match?(~r/^(\*\s.+)|(.+\s\*)/, ingestion.cadence)) do
+      get_last_fetched_timestamp!(ingestion.id) == nil
+    else
+      true
+    end
   end
-
-  def should_send_data_ingest_start?(_ingestion), do: true
 end
