@@ -163,7 +163,38 @@ defmodule Reaper.Event.EventHandlerTest do
     end
   end
 
-  # TODO:  Write tests for ingestion delete
+  describe "#{ingestion_delete()}" do
+    test "successfully deletes an ingestion when event is sent" do
+      ingestion = TDG.create_ingestion(%{id: "ds9"})
+
+      allow Reaper.Event.Handlers.IngestionDelete.handle(any()), return: :result_not_relevant
+      allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
+
+       Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
+       Brook.Test.send(@instance_name, ingestion_delete(), :author, ingestion)
+
+       eventually(fn ->
+         assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
+         assert_called Reaper.Event.Handlers.IngestionDelete.handle(ingestion)
+       end)
+
+    end
+
+    test "sends error event for raised errors while performing ingestion update" do
+      allow(Reaper.Event.Handlers.IngestionUpdate.handle(any()), exec: fn _ -> raise "bad stuff" end)
+
+      ingestion = TDG.create_ingestion(%{})
+
+      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
+
+      assert_receive {:brook_event,
+                      %Brook.Event{
+                        type: "error:ingestion:update",
+                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "ingestion" => _}
+                      }},
+                     10_000
+    end
+  end
 
   defp kill(pid) do
     ref = Process.monitor(pid)
