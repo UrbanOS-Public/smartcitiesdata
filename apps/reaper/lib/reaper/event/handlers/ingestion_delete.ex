@@ -16,7 +16,7 @@ defmodule Reaper.Event.Handlers.IngestionDelete do
     else
       error ->
         Logger.error(
-          "#{__MODULE__}: Error occured while deleting the ingestion: #{ingestion_id}, Reason: #{inspect(error)}"
+          "#{__MODULE__}: Error occurred while deleting the ingestion: #{ingestion_id}, Reason: #{inspect(error)}"
         )
     end
   end
