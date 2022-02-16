@@ -169,14 +169,13 @@ defmodule Reaper.Event.EventHandlerTest do
       allow Reaper.Event.Handlers.IngestionDelete.handle(any()), return: :result_not_relevant
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
 
-       Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
-       Brook.Test.send(@instance_name, ingestion_delete(), :author, ingestion)
+      Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
+      Brook.Test.send(@instance_name, ingestion_delete(), :author, ingestion)
 
-       eventually(fn ->
-         assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
-         assert_called Reaper.Event.Handlers.IngestionDelete.handle(ingestion)
-       end)
-
+      eventually(fn ->
+        assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
+        assert_called Reaper.Event.Handlers.IngestionDelete.handle(ingestion)
+      end)
     end
 
     test "sends error event for raised errors while performing ingestion update" do

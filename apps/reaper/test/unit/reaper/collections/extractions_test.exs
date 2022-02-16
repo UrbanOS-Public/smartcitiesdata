@@ -26,19 +26,21 @@ defmodule Reaper.Collections.ExtractionsTest do
 
   describe "should_send_data_ingest_start?/1" do
     test "returns true when cadence of ingestion is less frequent than once per minute" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "2 4 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "2 4 6 * * *"
+        })
 
       assert true == Extractions.should_send_data_ingest_start?(ingestion)
     end
 
     test "returns false when last fetched timestamp exists and cadence of ingestion is every second" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "* 4 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "* 4 6 * * *"
+        })
 
       Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_last_fetched_timestamp(ingestion.id)
@@ -48,19 +50,21 @@ defmodule Reaper.Collections.ExtractionsTest do
     end
 
     test "returns true when cadence of ingestion is every second but last fetched timestamp is nil" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "* 4 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "* 4 6 * * *"
+        })
 
       assert true == Extractions.should_send_data_ingest_start?(ingestion)
     end
 
     test "returns false when last fetched timestamp exists and cadence of ingestion is every minute" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "4 * 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "4 * 6 * * *"
+        })
 
       Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_last_fetched_timestamp(ingestion.id)
@@ -70,19 +74,21 @@ defmodule Reaper.Collections.ExtractionsTest do
     end
 
     test "returns true when cadence of ingestion is every minute but last fetched timestamp is nil" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "4 * 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "4 * 6 * * *"
+        })
 
       assert true == Extractions.should_send_data_ingest_start?(ingestion)
     end
 
-   test "returns false when last fetched timestamp exists and cadence of ingestion is every second of every minute" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "* * 6 * * *"
-      })
+    test "returns false when last fetched timestamp exists and cadence of ingestion is every second of every minute" do
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "* * 6 * * *"
+        })
 
       Brook.Test.with_event(@instance_name, fn ->
         Extractions.update_last_fetched_timestamp(ingestion.id)
@@ -92,10 +98,11 @@ defmodule Reaper.Collections.ExtractionsTest do
     end
 
     test "returns true when cadence of ingestion is every second of every minute but last fetched timestamp is nil" do
-      ingestion = TDG.create_ingestion(%{
-        id: "ds9",
-        cadence: "* * 6 * * *"
-      })
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "ds9",
+          cadence: "* * 6 * * *"
+        })
 
       assert true == Extractions.should_send_data_ingest_start?(ingestion)
     end
