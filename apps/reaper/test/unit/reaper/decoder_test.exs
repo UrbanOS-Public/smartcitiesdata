@@ -17,49 +17,54 @@ defmodule Reaper.DecoderTest do
   end
 
   describe "failure to decode" do
-    # TODO Fix decoder issues
-    #    test "csv messages yoted and raises error" do
-    #      body = "baaad csv"
-    #      File.write(@filename, body)
-    #      ingestion = TDG.create_ingestion(%{id: "ds1", sourceFormat: "csv"})
-    #
-    #      allow Decoder.Csv.decode(any(), any()),
-    #        return: {:error, "this is the data part", "bad Csv"},
-    #        meck_options: [:passthrough]
-    #
-    #      assert_raise RuntimeError, "bad Csv", fn ->
-    #        Decoder.decode({:file, @filename}, ingestion)
-    #      end
-    #
-    #      eventually(fn ->
-    #        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
-    #        refute dlqd_message == :empty
-    #
-    #        assert dlqd_message.app == "reaper"
-    #        assert dlqd_message.original_message == "this is the data part"
-    #        assert dlqd_message.dataset_id == "ds1"
-    #        assert dlqd_message.error == "bad Csv"
-    #      end)
-    #    end
-    #
-    #    test "invalid format messages yoted and raises error" do
-    #      body = "c,s,v"
-    #      File.write!(@filename, body)
-    #      ingestion = TDG.create_ingestion(%{id: "ds1", sourceFormat: "CSY"})
-    #
-    #      assert_raise RuntimeError, "application/octet-stream is an invalid format", fn ->
-    #        Reaper.Decoder.decode({:file, @filename}, ingestion)
-    #      end
-    #
-    #      eventually(fn ->
-    #        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
-    #        refute dlqd_message == :empty
-    #
-    #        assert dlqd_message.app == "reaper"
-    #        assert dlqd_message.dataset_id == "ds1"
-    #        assert dlqd_message.error == "** (RuntimeError) application/octet-stream is an invalid format"
-    #        assert dlqd_message.original_message == ""
-    #      end)
-    #    end
+    test "csv messages deadlettered and error raised" do
+      body = "baaad csv"
+      File.write(@filename, body)
+
+      ingestion = TDG.create_ingestion(%{id: "ingestion-id", targetDataset: "ds1", sourceFormat: "csv"})
+
+      allow(Decoder.Csv.decode(any(), any()),
+        return: {:error, "this is the data part", "bad Csv"},
+        meck_options: [:passthrough]
+      )
+
+      assert_raise RuntimeError, "bad Csv", fn ->
+        Decoder.decode({:file, @filename}, ingestion)
+      end
+
+      eventually(fn ->
+        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+
+        refute dlqd_message == :empty
+
+        assert dlqd_message.app == "reaper"
+        assert dlqd_message.original_message == "this is the data part"
+        assert dlqd_message.dataset_id == "ds1"
+        assert dlqd_message.error == "bad Csv"
+      end)
+    end
+
+    test "invalid format messages deadlettered and error raised" do
+      body = "c,s,v"
+      File.write!(@filename, body)
+      ingestion = TDG.create_ingestion(%{id: "ingestion-id", targetDataset: "ds1", sourceFormat: "CSY"})
+
+      assert_raise RuntimeError, "application/octet-stream is an invalid format", fn ->
+        Reaper.Decoder.decode({:file, @filename}, ingestion)
+      end
+
+      eventually(fn ->
+        {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
+        refute dlqd_message == :empty
+
+        assert dlqd_message.app == "reaper"
+        assert dlqd_message.dataset_id == "ds1"
+
+        assert dlqd_message.error ==
+                 "** (RuntimeError) application/octet-stream is an invalid format"
+
+        assert dlqd_message.original_message == ""
+      end)
+    end
   end
 end
