@@ -54,9 +54,10 @@ defmodule Alchemist.Broadway do
   # This is where we alter the message to be transformed
   #   on it's way out of alchemist.
   def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion}) do
-    with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
-         transformed <- Transformers.NoOp.transform(smart_city_data, {}),
-         {:ok, json_data} <- Jason.encode(transformed) do
+    with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
+         transformed_payload <- Transformers.NoOp.transform(payload, {}),
+         transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
+         {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->

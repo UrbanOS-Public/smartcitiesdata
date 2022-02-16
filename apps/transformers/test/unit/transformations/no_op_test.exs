@@ -5,11 +5,11 @@ defmodule Transformers.NoOpTest do
 
   describe "The No Op Transform" do
     test "does not alter the message it recieves" do
-      original_message = TDG.create_data(%{})
+      %{payload: payload} = TDG.create_data(%{})
 
-      result = Transformers.NoOp.transform(original_message, {})
+      result = Transformers.NoOp.transform(payload, {})
 
-      assert result == original_message
+      assert result == payload
     end
   end
 end
