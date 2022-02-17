@@ -139,6 +139,7 @@ defmodule E2ETest do
 
       assert resp.status_code == 201
     end
+
     @tag :skip
     test "persists the organization for downstream use" do
       base = Application.get_env(:paddle, Paddle)[:base]
@@ -164,6 +165,7 @@ defmodule E2ETest do
 
       assert resp.status_code == 201
     end
+
     @tag :skip
     test "creates a PrestoDB table" do
       expected = [
@@ -182,6 +184,7 @@ defmodule E2ETest do
         20
       )
     end
+
     @tag :skip
     test "stores a definition that can be retrieved", %{dataset: expected} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
@@ -202,6 +205,7 @@ defmodule E2ETest do
         assert %{"one" => "true", "two" => "foobar", "three" => "10"} == data.payload
       end)
     end
+
     @tag :skip
     test "is standardized by valkyrie", %{dataset: ds} do
       topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
@@ -214,7 +218,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip, timeout: :infinity, capture_log: true
+    @tag(:skip, timeout: :infinity, capture_log: true)
     test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -243,6 +247,7 @@ defmodule E2ETest do
         10_000
       )
     end
+
     @tag :skip
     test "forklift sends event to update last ingested time", %{dataset: _ds} do
       eventually(fn ->
@@ -253,6 +258,7 @@ defmodule E2ETest do
         assert 1 == length(messages)
       end)
     end
+
     @tag :skip
     test "is profiled by flair", %{dataset: ds} do
       table = Application.get_env(:flair, :table_name_timing)
@@ -265,6 +271,7 @@ defmodule E2ETest do
         Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
       end)
     end
+
     @tag :skip
     test "events have been stored in estuary" do
       table = Application.get_env(:estuary, :table_name)
@@ -277,6 +284,7 @@ defmodule E2ETest do
       end)
     end
   end
+
   @tag :skip
   test "should return status code 200, when estuary is called to get the events" do
     resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
@@ -294,6 +302,7 @@ defmodule E2ETest do
 
       assert resp.status_code == 201
     end
+
     @tag :skip
     test "is written by reaper", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
@@ -305,6 +314,7 @@ defmodule E2ETest do
         assert %{"one" => "true", "two" => "foobar", "three" => "10"} == data.payload
       end)
     end
+
     @tag :skip
     test "is standardized by valkyrie", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
@@ -317,7 +327,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip, timeout: :infinity, capture_log: true
+    @tag(:skip, timeout: :infinity, capture_log: true)
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -345,6 +355,7 @@ defmodule E2ETest do
         5_000
       )
     end
+
     @tag :skip
     test "is available through socket connection", %{streaming_dataset: ds} do
       {:ok, _, _} =
@@ -357,6 +368,7 @@ defmodule E2ETest do
 
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
+
     @tag :skip
     test "forklift sends event to update last ingested time for streaming datasets", %{
       streaming_dataset: _ds
@@ -369,6 +381,7 @@ defmodule E2ETest do
         assert length(messages) > 0
       end)
     end
+
     @tag :skip
     test "is profiled by flair", %{streaming_dataset: ds} do
       table = Application.get_env(:flair, :table_name_timing)
@@ -394,7 +407,7 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    @tag :skip, timeout: :infinity, capture_log: true
+    @tag(:skip, timeout: :infinity, capture_log: true)
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
 
