@@ -90,26 +90,6 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
                      10_000
     end
 
-    data_test "adds job to quantum with schedule of #{schedule} when cadence is #{cadence}" do
-      ingestion = TDG.create_ingestion(%{id: "ds9", cadence: cadence})
-
-      assert :ok == IngestionUpdate.handle(ingestion)
-
-      extended = length(String.split(schedule)) > 5
-      {:ok, expected_cron_expression} = Crontab.CronExpression.Parser.parse(schedule, extended)
-
-      job = Reaper.Scheduler.find_job(:ds9)
-      assert job.schedule == expected_cron_expression
-
-      where([
-        [:cadence, :schedule],
-        [86_400_000, "0 6 * * *"],
-        [3_600_000, "0 * * * *"],
-        [30_000, "*/30 * * * * * *"],
-        [10_000, "*/10 * * * * * *"]
-      ])
-    end
-
     test "logs message when crontab is unable to be parsed" do
       ingestion = TDG.create_ingestion(%{cadence: "once per minute"})
 

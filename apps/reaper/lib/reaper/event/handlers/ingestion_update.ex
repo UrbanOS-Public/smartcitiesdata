@@ -9,13 +9,6 @@ defmodule Reaper.Event.Handlers.IngestionUpdate do
 
   @instance_name Reaper.instance_name()
 
-  @cron_conversions %{
-    86_400_000 => "0 6 * * *",
-    3_600_000 => "0 * * * *",
-    30_000 => "*/30 * * * * * *",
-    10_000 => "*/10 * * * * * *"
-  }
-
   def handle(%SmartCity.Ingestion{cadence: "never"} = ingestion) do
     delete_job(ingestion)
 
@@ -53,16 +46,6 @@ defmodule Reaper.Event.Handlers.IngestionUpdate do
     case Reaper.Scheduler.find_job(String.to_atom(ingestion.id)) do
       %{state: :inactive} -> {:error, "ingestion #{ingestion.id} is disabled"}
       _ -> {:ok, ingestion}
-    end
-  end
-
-  defp parse_cron(cron_int) when is_integer(cron_int) do
-    case Map.get(@cron_conversions, cron_int) do
-      nil ->
-        {:error, "#Unable to convert cadence #{cron_int} to a valid cron expression: Ignoring ingestion"}
-
-      expression ->
-        parse_cron(expression)
     end
   end
 
