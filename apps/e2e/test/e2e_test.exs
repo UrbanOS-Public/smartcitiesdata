@@ -218,7 +218,8 @@ defmodule E2ETest do
       end)
     end
 
-    @tag(:skip, timeout: :infinity, capture_log: true)
+    @tag :skip
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -327,7 +328,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag(:skip, timeout: :infinity, capture_log: true)
+    @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
@@ -407,7 +408,7 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    @tag(:skip, timeout: :infinity, capture_log: true)
+    @tag timeout: :infinity, capture_log: true
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
 
