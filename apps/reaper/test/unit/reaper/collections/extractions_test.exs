@@ -108,6 +108,24 @@ defmodule Reaper.Collections.ExtractionsTest do
     end
   end
 
+  describe "is_streaming_source_type?/1" do
+    test "returns false when cadence format is atypical, but sourceType would not be streaming: '0-10 0-20/2 6 * * *'" do
+      assert false == Extractions.is_streaming_source_type?("0-10 0-20/2 6 * * *")
+    end
+
+    test "returns true when cadence format is atypical with asterisk in seconds: '*/10 0-20/2 6 * * *'" do
+      assert true == Extractions.is_streaming_source_type?("*/10 0-20/2 6 * * *")
+    end
+
+    test "returns true when cadence format is atypical with asterisk in minutes: '10 0-20/* 6 * * *'" do
+      assert true == Extractions.is_streaming_source_type?("10 0-20/* 6 * * *")
+    end
+
+    test "returns true when cadence format is atypical with asterisk in seconds and minutes: '*/10 0-20/* 6 * * *'" do
+      assert true == Extractions.is_streaming_source_type?("*/10 0-20/* 6 * * *")
+    end
+  end
+
   defp kill(pid) do
     ref = Process.monitor(pid)
     Process.exit(pid, :normal)
