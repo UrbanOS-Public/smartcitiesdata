@@ -74,7 +74,7 @@ defmodule E2ETest do
       Plug.Conn.resp(conn, 200, shapefile)
     end)
 
-    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, :reaper))
+    {:ok, brook} = Brook.start_link(:brook |> Keyword.put(:instance, :reaper))
 
     dataset =
       @overrides
