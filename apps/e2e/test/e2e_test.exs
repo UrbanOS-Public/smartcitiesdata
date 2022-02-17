@@ -76,6 +76,7 @@ defmodule E2ETest do
     Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
       Plug.Conn.resp(conn, 200, shapefile)
     end)
+
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, :reaper))
 
     dataset =
