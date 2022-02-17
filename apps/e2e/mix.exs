@@ -26,6 +26,7 @@ defmodule E2E.MixProject do
   defp deps do
     [
       {:andi, in_umbrella: true},
+      {:brook, "~> 0.4.0"},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},

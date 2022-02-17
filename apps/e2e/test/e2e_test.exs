@@ -96,7 +96,60 @@ defmodule E2ETest do
       )
       |> TDG.create_dataset()
 
+      ingestion = TDG.create_ingestion(%{
+        id: "dataset_ingestion",
+        targetDataset: dataset.id,
+        extractSteps: [
+          %{
+            type: "http",
+            context: %{
+              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+              action: "GET",
+              queryParams: %{},
+              headers: %{},
+              protocol: nil,
+              body: %{}
+            },
+            assigns: %{}
+          }
+        ],
+        schema: [
+          %{name: "one", type: "boolean"},
+          %{name: "two", type: "string"},
+          %{name: "three", type: "integer"}
+        ],
+        sourceFormat: "text/csv",
+        cadence: "once",
+        topLevelSelector: nil
+      })
+
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
+
+    streaming_ingestion = TDG.create_ingestion(%{
+      id: "streaming_ingestion",
+      targetDataset: streaming_dataset.id,
+      extractSteps: [
+        %{
+          type: "http",
+          context: %{
+            url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+            action: "GET",
+            queryParams: %{},
+            headers: %{},
+            protocol: nil,
+            body: %{}
+          },
+          assigns: %{}
+        }
+      ],
+      schema: [
+        %{name: "one", type: "boolean"},
+        %{name: "two", type: "string"},
+        %{name: "three", type: "integer"}
+      ],
+      cadence: "*/10 * * * * *",
+      topLevelSelector: nil
+    })
 
     geo_dataset =
       @geo_overrides
@@ -119,10 +172,38 @@ defmodule E2ETest do
       )
       |> TDG.create_dataset()
 
+      geo_ingestion = TDG.create_ingestion(%{
+        id: "geo_ingestion",
+        targetDataset: geo_dataset.id,
+        extractSteps: [
+          %{
+            type: "http",
+            context: %{
+              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+              action: "GET",
+              queryParams: %{},
+              headers: %{},
+              protocol: nil,
+              body: %{}
+            },
+            assigns: %{}
+          }
+        ],
+        schema: [%{name: "feature", type: "json"}],
+        sourceFormat: "application/zip",
+        cadence: "once",
+        topLevelSelector: nil
+      })
+
+      Brook.Event.send(:reaper, ingestion_update(), :testing, ingestion)
+
     [
       dataset: dataset,
+      ingestion: ingestion,
       streaming_dataset: streaming_dataset,
+      streaming_ingestion: streaming_ingestion,
       geo_dataset: geo_dataset,
+      geo_ingestion: geo_ingestion,
       bypass: bypass
     ]
   end
@@ -189,7 +270,6 @@ defmodule E2ETest do
   end
 
   # This series of tests should be extended as more apps are added to the umbrella.
-  @tag :skip
   describe "ingested data" do
     test "is written by reaper", %{dataset: ds} do
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
