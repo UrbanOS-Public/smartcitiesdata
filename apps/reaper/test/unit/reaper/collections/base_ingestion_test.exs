@@ -1,4 +1,4 @@
-defmodule Reaper.Collections.BaseDatasetTest do
+defmodule Reaper.Collections.BaseIngestionTest do
   use ExUnit.Case
   use Placebo
   use Properties, otp_app: :reaper
@@ -25,11 +25,11 @@ defmodule Reaper.Collections.BaseDatasetTest do
   end
 
   describe "is_enabled?/1" do
-    test "a dataset that is not in the view state is not enabled" do
+    test "an ingestion that is not in the view state is not enabled" do
       assert false == Extractions.is_enabled?("not-there?")
     end
 
-    test "a dataset that has no definition in the view state is not enabled" do
+    test "an ingestion that has no definition in the view state is not enabled" do
       id = "almost-there"
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -39,7 +39,7 @@ defmodule Reaper.Collections.BaseDatasetTest do
       assert false == Extractions.is_enabled?(id)
     end
 
-    test "a dataset that has no definition in the view state, but has its enabled flag explicitly set, reflects it" do
+    test "an ingestion that has no definition in the view state, but has its enabled flag explicitly set, reflects it" do
       id = "explicitly-there"
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -49,25 +49,25 @@ defmodule Reaper.Collections.BaseDatasetTest do
       assert true == Extractions.is_enabled?(id)
     end
 
-    test "a dataset that has a definition in the view state (via update), but has no enabled flag explicitly set IS enabled" do
-      dataset = TDG.create_dataset(%{})
+    test "an ingestion that has a definition in the view state (via update), but has no enabled flag explicitly set IS enabled" do
+      ingestion = TDG.create_ingestion(%{})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
+        Extractions.update_ingestion(ingestion)
       end)
 
-      assert true == Extractions.is_enabled?(dataset.id)
+      assert true == Extractions.is_enabled?(ingestion.id)
     end
 
-    test "a dataset that has a definition in the view state (via update), but has its enabled flag explicitly set, reflects that" do
-      dataset = TDG.create_dataset(%{})
+    test "a ingestion that has a definition in the view state (via update), but has its enabled flag explicitly set, reflects that" do
+      ingestion = TDG.create_ingestion(%{})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
-        Extractions.disable_dataset(dataset.id)
+        Extractions.update_ingestion(ingestion)
+        Extractions.disable_ingestion(ingestion.id)
       end)
 
-      assert false == Extractions.is_enabled?(dataset.id)
+      assert false == Extractions.is_enabled?(ingestion.id)
     end
   end
 

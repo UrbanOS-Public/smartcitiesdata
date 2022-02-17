@@ -11,13 +11,13 @@ defmodule Reaper.Quantum.StorageTest do
   describe "add_job/2" do
     test "persists job into redis" do
       allow Redix.command(any(), any()), return: {:ok, "OK"}
-      job = job(name: :dataset_1)
+      job = job(name: :ingestion_1)
 
       assert :ok == Storage.add_job(Reaper.Scheduler, job)
 
       assert_called Redix.command(@conn, [
                       "SET",
-                      "reaper:quantum:elixir.reaper.scheduler:job:dataset_1",
+                      "reaper:quantum:elixir.reaper.scheduler:job:ingestion_1",
                       :erlang.term_to_binary(job)
                     ])
     end
@@ -26,19 +26,19 @@ defmodule Reaper.Quantum.StorageTest do
   describe "delete_job/2" do
     test "removes the job from redis" do
       allow Redix.command(any(), any()), return: {:ok, 1}
-      job = job(name: :dataset_2)
+      job = job(name: :ingestion_2)
 
       assert :ok == Storage.delete_job(Reaper.Scheduler, job.name)
-      assert_called Redix.command(@conn, ["DEL", "reaper:quantum:elixir.reaper.scheduler:job:dataset_2"])
+      assert_called Redix.command(@conn, ["DEL", "reaper:quantum:elixir.reaper.scheduler:job:ingestion_2"])
     end
   end
 
   describe "jobs/1" do
     test "returns all jobs currently persisted" do
       jobs = [
-        job(name: :dataset_1),
-        job(name: :dataset_2),
-        job(name: :dataset_3)
+        job(name: :ingestion_1),
+        job(name: :ingestion_2),
+        job(name: :ingestion_3)
       ]
 
       binary_jobs = Enum.map(jobs, &:erlang.term_to_binary/1)
@@ -108,18 +108,18 @@ defmodule Reaper.Quantum.StorageTest do
 
   describe "update_job_state/3" do
     test "updates existing job state" do
-      job = job(name: :dataset_1)
+      job = job(name: :ingestion_1)
       allow Redix.command(any(), ["GET" | any()]), return: {:ok, :erlang.term_to_binary(job)}
       allow Redix.command(any(), ["SET" | any()]), return: {:ok, "OK"}
 
-      assert :ok == Storage.update_job_state(Reaper.Scheduler, :dataset_1, :inactive)
+      assert :ok == Storage.update_job_state(Reaper.Scheduler, :ingestion_1, :inactive)
 
       updated_job = %{job | state: :inactive}
-      assert_called Redix.command(@conn, ["GET", "reaper:quantum:elixir.reaper.scheduler:job:dataset_1"])
+      assert_called Redix.command(@conn, ["GET", "reaper:quantum:elixir.reaper.scheduler:job:ingestion_1"])
 
       assert_called Redix.command(@conn, [
                       "SET",
-                      "reaper:quantum:elixir.reaper.scheduler:job:dataset_1",
+                      "reaper:quantum:elixir.reaper.scheduler:job:ingestion_1",
                       :erlang.term_to_binary(updated_job)
                     ])
     end

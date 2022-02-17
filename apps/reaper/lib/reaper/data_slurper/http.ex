@@ -21,25 +21,25 @@ defmodule Reaper.DataSlurper.Http do
   end
 
   @impl DataSlurper
-  def slurp(url, dataset_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
-    filename = DataSlurper.determine_filename(dataset_id)
-    download(dataset_id, url, filename, headers, protocol, action, body)
+  def slurp(url, ingestion_id, headers \\ %{}, protocol \\ nil, action \\ "GET", body \\ "") do
+    filename = DataSlurper.determine_filename(ingestion_id)
+    download(ingestion_id, url, filename, headers, protocol, action, body)
     {:file, filename}
   rescue
     error ->
       Logger.error(fn ->
-        "Unable to retrieve data for #{dataset_id}: #{Exception.message(error)}"
+        "Unable to retrieve data for #{ingestion_id}: #{Exception.message(error)}"
       end)
 
       reraise error, __STACKTRACE__
   end
 
-  defp download(dataset_id, url, filename, headers, protocol, action, body) do
+  defp download(ingestion_id, url, filename, headers, protocol, action, body) do
     Task.async(fn -> Downloader.download(url, headers, to: filename, protocol: protocol, action: action, body: body) end)
     |> Task.await(http_download_timeout())
   catch
     :exit, {:timeout, _} ->
-      message = "Timed out downloading dataset #{dataset_id} at #{url} in #{http_download_timeout()} ms"
+      message = "Timed out downloading ingestion #{ingestion_id} at #{url} in #{http_download_timeout()} ms"
 
       raise HttpDownloadTimeoutError, message
 

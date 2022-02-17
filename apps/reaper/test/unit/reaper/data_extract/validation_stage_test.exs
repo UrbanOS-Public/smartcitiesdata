@@ -33,7 +33,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        dataset: dataset(id: "ds1", allow_duplicates: false),
+        ingestion: ingestion(id: "ds1", allow_duplicates: false),
         last_processed_index: -1
       }
 
@@ -51,7 +51,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        dataset: dataset(id: "ds1"),
+        ingestion: ingestion(id: "ds1"),
         last_processed_index: -1
       }
 
@@ -62,7 +62,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     test "will remove any events that have already been processed" do
       state = %{
         cache: @cache,
-        dataset: dataset(id: "ds2"),
+        ingestion: ingestion(id: "ds2"),
         last_processed_index: 5
       }
 
@@ -82,7 +82,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
 
       state = %{
         cache: @cache,
-        dataset: dataset(id: "ds2", allow_duplicates: false),
+        ingestion: ingestion(id: "ds2", allow_duplicates: false),
         last_processed_index: -1
       }
 
@@ -99,21 +99,19 @@ defmodule Reaper.DataExtract.ValidationStageTest do
         refute dlqd_message == :empty
 
         assert dlqd_message.app == "reaper"
-        assert dlqd_message.dataset_id == "ds2"
+        assert dlqd_message.dataset_id == "ds9"
         assert dlqd_message.original_message == {%{three: 3, four: 4}, 2}
         assert dlqd_message.reason == "bad stuff"
       end)
     end
   end
 
-  defp dataset(opts) do
-    TDG.create_dataset(
+  defp ingestion(opts) do
+    TDG.create_ingestion(%{
       id: Keyword.get(opts, :id, "ds1"),
-      technical: %{
-        sourceType: Keyword.get(opts, :sourceType, "ingest"),
-        allow_duplicates: Keyword.get(opts, :allow_duplicates, true)
-      }
-    )
+      targetDataset: "ds9",
+      allow_duplicates: Keyword.get(opts, :allow_duplicates, true)
+    })
   end
 
   defp kill(pid) do

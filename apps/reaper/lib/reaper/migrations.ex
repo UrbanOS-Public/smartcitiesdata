@@ -68,19 +68,19 @@ defmodule Reaper.Migrations do
     Logger.info("Nothing to migrate")
   end
 
-  defp migrate_extractions(%{"dataset" => %{id: dataset_id}}) do
-    Logger.info("Migrating : #{dataset_id}")
+  defp migrate_extractions(%{"ingestion" => %{id: ingestion_id}}) do
+    Logger.info("Migrating : #{ingestion_id}")
 
     Brook.Test.with_event(
       @instance_name,
-      Brook.Event.new(type: "reaper_config:migration", author: "migration", data: dataset_id),
+      Brook.Event.new(type: "reaper_config:migration", author: "migration", data: ingestion_id),
       fn ->
-        Brook.ViewState.merge(:extractions, dataset_id, %{"enabled" => true})
+        Brook.ViewState.merge(:extractions, ingestion_id, %{"enabled" => true})
       end
     )
   end
 
-  defp migrate_extractions(_dataset) do
+  defp migrate_extractions(_ingestion) do
     Logger.info("Nothing to migrate")
   end
 

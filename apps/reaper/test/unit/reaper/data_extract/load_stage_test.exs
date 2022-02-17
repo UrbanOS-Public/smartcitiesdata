@@ -37,7 +37,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
       state = %{
         cache: @cache,
-        dataset: TDG.create_dataset(id: "ds1", technical: %{allow_duplicates: false}),
+        ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -82,7 +82,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
       state = %{
         cache: @cache,
-        dataset: TDG.create_dataset(id: "ds2"),
+        ingestion: TDG.create_ingestion(%{id: "ds2"}),
         batch: [],
         bytes: 0,
         originals: [],
@@ -107,7 +107,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
     state = %{
       cache: @cache,
-      dataset: TDG.create_dataset(id: "ds1", technical: %{allow_duplicates: false}),
+      ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
       batch: [],
       bytes: 0,
       originals: [],

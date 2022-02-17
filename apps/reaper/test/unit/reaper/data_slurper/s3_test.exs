@@ -11,10 +11,10 @@ defmodule Reaper.DataSlurper.S3Test do
       allow ExAws.request(any()), return: {:ok, any()}
 
       source_url = "s3://bucket/subdir/file.ext"
-      dataset_id = "12345-6789"
-      filename = "#{@download_dir}#{dataset_id}"
+      ingestion_id = "12345-6789"
+      filename = "#{@download_dir}#{ingestion_id}"
 
-      assert {:file, filename} == Reaper.DataSlurper.S3.slurp(source_url, dataset_id)
+      assert {:file, filename} == Reaper.DataSlurper.S3.slurp(source_url, ingestion_id)
       assert_called ExAws.S3.download_file("bucket", "subdir/file.ext", filename)
     end
 
@@ -23,11 +23,11 @@ defmodule Reaper.DataSlurper.S3Test do
       allow ExAws.request(any(), any()), return: {:ok, any()}
 
       source_url = "s3://bucket/subdir/file.ext"
-      dataset_id = "12345-6789"
-      filename = "#{@download_dir}#{dataset_id}"
+      ingestion_id = "12345-6789"
+      filename = "#{@download_dir}#{ingestion_id}"
 
       assert {:file, filename} ==
-               Reaper.DataSlurper.S3.slurp(source_url, dataset_id, %{"x-scos-amzn-s3-region": "us-east-1"})
+               Reaper.DataSlurper.S3.slurp(source_url, ingestion_id, %{"x-scos-amzn-s3-region": "us-east-1"})
 
       assert_called ExAws.request(any(), region: "us-east-1")
       refute_called ExAws.request(any(), [])

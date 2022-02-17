@@ -42,7 +42,7 @@ config :discovery_api,
   user_visualization_limit: 4
 
 config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
-  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  issuer: "https://project-hercules.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000

@@ -26,23 +26,27 @@ defmodule Reaper.DataExtract.Processor do
   getter(:elsa_brokers, generic: true)
   getter(:output_topic_prefix, generic: true)
 
-  @spec process(SmartCity.Dataset.t()) :: Redix.Protocol.redis_value() | no_return()
-  def process(%SmartCity.Dataset{} = unprovisioned_dataset) do
+  @spec process(SmartCity.Ingestion.t()) :: Redix.Protocol.redis_value() | no_return()
+  def process(%SmartCity.Ingestion{} = unprovisioned_ingestion) do
     Process.flag(:trap_exit, true)
 
-    dataset =
-      unprovisioned_dataset
+    ingestion =
+      unprovisioned_ingestion
       |> Providers.Helpers.Provisioner.provision()
 
-    validate_destination(dataset)
-    validate_cache(dataset)
+    validate_destination(ingestion)
+    validate_cache(ingestion)
 
     generated_time_stamp = DateTime.utc_now()
 
-    {:ok, producer_stage} = create_producer_stage(dataset)
-    {:ok, validation_stage} = ValidationStage.start_link(cache: dataset.id, dataset: dataset)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
-    {:ok, load_stage} = LoadStage.start_link(cache: dataset.id, dataset: dataset, start_time: generated_time_stamp)
+    {:ok, producer_stage} = create_producer_stage(ingestion)
+    {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
+
+    {:ok, schema_stage} =
+      SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
+
+    {:ok, load_stage} =
+      LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -50,49 +54,42 @@ defmodule Reaper.DataExtract.Processor do
 
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
 
-    Persistence.remove_last_processed_index(dataset.id)
+    Persistence.remove_last_processed_index(ingestion.id)
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
-      Logger.error("Unable to continue processing dataset #{inspect(unprovisioned_dataset)} - Error #{inspect(error)}")
+
+      Logger.error(
+        "Unable to continue processing ingestion #{inspect(unprovisioned_ingestion)} - Error #{inspect(error)}"
+      )
 
       reraise error, __STACKTRACE__
   after
-    unprovisioned_dataset.id
+    unprovisioned_ingestion.id
     |> DataSlurper.determine_filename()
     |> File.rm()
   end
 
-  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: extract_steps}} = dataset)
-       when is_nil(extract_steps) or extract_steps == [] do
-    dataset
-    |> UrlBuilder.build()
-    |> DataSlurper.slurp(dataset.id, dataset.technical.sourceHeaders, dataset.technical.protocol)
-    |> Decoder.decode(dataset)
-    |> Stream.with_index()
-    |> GenStage.from_enumerable()
-  end
-
-  defp create_producer_stage(%SmartCity.Dataset{technical: %{extractSteps: steps}} = dataset) do
-    %{output_file: output_file} = ExtractStep.execute_extract_steps(dataset, steps)
+  defp create_producer_stage(%SmartCity.Ingestion{extractSteps: extract_steps} = ingestion) do
+    %{output_file: output_file} = ExtractStep.execute_extract_steps(ingestion, extract_steps)
 
     output_file
-    |> Decoder.decode(dataset)
+    |> Decoder.decode(ingestion)
     |> Stream.with_index()
     |> GenStage.from_enumerable()
   end
 
-  defp validate_destination(dataset) do
-    topic = "#{output_topic_prefix()}-#{dataset.id}"
+  defp validate_destination(ingestion) do
+    topic = "#{output_topic_prefix()}-#{ingestion.id}"
     create_topic(topic)
     start_topic_producer(topic)
   end
 
-  defp validate_cache(%SmartCity.Dataset{id: id, technical: %{allow_duplicates: false}}) do
+  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false, id: id}) do
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
   end
 
-  defp validate_cache(_dataset), do: nil
+  defp validate_cache(_ingestion), do: nil
 
   defp wait_for_completion([]), do: true
 
