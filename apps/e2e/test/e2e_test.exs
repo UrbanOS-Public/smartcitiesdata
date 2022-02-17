@@ -10,9 +10,6 @@ defmodule E2ETest do
   alias SmartCity.TestDataGenerator, as: TDG
   import Phoenix.ChannelTest
   import SmartCity.TestHelper
-
-  getter(:brook, generic: true)
-
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
     technical: %{
