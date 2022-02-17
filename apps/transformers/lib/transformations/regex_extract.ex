@@ -19,6 +19,7 @@ defmodule Transformers.RegexExtract do
 
           [extracted_value | _] ->
             transformed_payload = Map.put(payload, parameters.targetField, extracted_value)
+
             {:ok, transformed_payload}
         end
     end
