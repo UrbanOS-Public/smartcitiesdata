@@ -198,7 +198,7 @@ defmodule E2ETest do
         topLevelSelector: nil
       })
 
-    Brook.Event.send(:reaper, ingestion_update(), :testing, ingestion)
+    Brook.Event.send(:reaper, "ingestion:update", :testing, ingestion)
 
     [
       dataset: dataset,
