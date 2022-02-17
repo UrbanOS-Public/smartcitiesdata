@@ -409,6 +409,7 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
+    @tag :skip
     @tag timeout: :infinity, capture_log: true
     test "persists geojson in PrestoDB", %{geo_dataset: ds} do
       table = ds.technical.systemName
@@ -442,7 +443,6 @@ defmodule E2ETest do
     end
   end
 
-  # TODO when ANDI is updated to send ingestions, rewrite this test and remove the skip indicator
   @tag :skip
   describe "extract steps" do
     test "from andi are executable by reaper", %{bypass: bypass} do
