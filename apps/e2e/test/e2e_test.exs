@@ -189,6 +189,7 @@ defmodule E2ETest do
   end
 
   # This series of tests should be extended as more apps are added to the umbrella.
+  @tag :skip
   describe "ingested data" do
     test "is written by reaper", %{dataset: ds} do
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
@@ -423,6 +424,8 @@ defmodule E2ETest do
     end
   end
 
+  # TODO when ANDI is updated to send ingestions, rewrite this test and remove the skip indicator
+  @tag :e2e
   describe "extract steps" do
     test "from andi are executable by reaper", %{bypass: bypass} do
       smrt_dataset =
