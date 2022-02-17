@@ -11,6 +11,8 @@ defmodule E2ETest do
   import Phoenix.ChannelTest
   import SmartCity.TestHelper
 
+  getter(:brook, generic: true)
+
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
     technical: %{
@@ -74,6 +76,7 @@ defmodule E2ETest do
     Bypass.stub(bypass, "GET", "/path/to/the/geo_data.shapefile", fn conn ->
       Plug.Conn.resp(conn, 200, shapefile)
     end)
+    {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, :reaper))
 
     dataset =
       @overrides
