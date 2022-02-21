@@ -61,7 +61,18 @@ defmodule Transformers.RegexExtractTest do
       assert reason == "Field source_field not found"
     end
 
-    #  Error case: if regex does not compile, message is sent to dead letter queue
-    #  Error case: if no matching source field, message is sent to dead letter queue
+    test "returns an error if the regex does not compile" do
+      params = %{
+        sourceField: "source_field",
+        targetField: "target_field",
+        regex: "^\((\d{3})"
+      }
+
+      message_payload = %{"source_field" => "field"}
+
+      {:error, reason} = Transformers.RegexExtract.transform(message_payload, params)
+
+      assert reason == "Invalid regular expression: missing ) at index 8"
+    end
   end
 end

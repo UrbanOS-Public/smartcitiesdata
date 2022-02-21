@@ -10,17 +10,21 @@ defmodule Transformers.RegexExtract do
         {:error, "Field #{source_field} not found"}
 
       {:ok, value} ->
-        {:ok, regex} = Regex.compile(parameters.regex)
+        case Regex.compile(parameters.regex) do
+          {:error, {message, index}} ->
+            {:error, "Invalid regular expression: #{message} at index #{index}"}
 
-        case Regex.run(regex, value, capture: :all_but_first) do
-          nil ->
-            transformed_payload = Map.put(payload, parameters.targetField, nil)
-            {:ok, transformed_payload}
+          {:ok, regex} ->
+            case Regex.run(regex, value, capture: :all_but_first) do
+              nil ->
+                transformed_payload = Map.put(payload, parameters.targetField, nil)
+                {:ok, transformed_payload}
 
-          [extracted_value | _] ->
-            transformed_payload = Map.put(payload, parameters.targetField, extracted_value)
+              [extracted_value | _] ->
+                transformed_payload = Map.put(payload, parameters.targetField, extracted_value)
 
-            {:ok, transformed_payload}
+                {:ok, transformed_payload}
+            end
         end
     end
   end
