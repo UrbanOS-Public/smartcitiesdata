@@ -17,5 +17,9 @@ defmodule Andi.Repo.Migrations.AddIngestionTable do
       add :ingestion_id, references(:ingestions, type: :uuid, on_delete: :delete_all)
     end
 
+    alter table(:data_dictionary) do
+      add :ingestion_id, references(:ingestions, type: :uuid, on_delete: :delete_all)
+    end
+
   end
 end
