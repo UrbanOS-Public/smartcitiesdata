@@ -56,7 +56,7 @@ defmodule Alchemist.Broadway do
   def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion}) do
     with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
          # TODO: replace NoOp.transform with arranged transform function from broadway context
-         transformed_payload <- Transformers.NoOp.transform(payload, {}),
+        {:ok, transformed_payload} <- Transformers.RegexExtract.transform(payload, %{}),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
       %{message | data: %{message.data | value: json_data}}
