@@ -1,4 +1,0 @@
-deps/
-_build/
-helm-config/
-test/support/minio_data/

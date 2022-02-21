@@ -57,8 +57,6 @@ defmodule E2ETest do
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
-    Temp.track!()
-    Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()
     shapefile = File.read!("test/support/shapefile.zip")
 
@@ -398,6 +396,7 @@ defmodule E2ETest do
     end
   end
 
+  # TODO This functionality may be deprecated and we should investigate if we want to remove these tests
   describe "geospatial data" do
     @tag :skip
     test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
