@@ -14,9 +14,9 @@ defmodule Andi.InputSchemas.Ingestion do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.Schemas.Validation.CadenceValidator
-  alias Andi.InputSchemas.Datasets.DataDictionary
   alias AndiWeb.Helpers.ExtractStepHelpers
   alias AndiWeb.Views.Options
+  alias Andi.InputSchemas.DatasetSchemaValidator
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "ingestions" do
@@ -36,18 +36,13 @@ defmodule Andi.InputSchemas.Ingestion do
     :cadence,
     :sourceFormat,
     :topLevelSelector,
-    :targetDataset,
-    :schema,
-    :extractSteps
+    :targetDataset
   ]
 
   @required_fields [
-    :id,
     :cadence,
     :sourceFormat,
-    :targetDataset,
-    :schema,
-    :extractSteps
+    :targetDataset
   ]
 
   @submission_cast_fields [
@@ -93,7 +88,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> foreign_key_constraint(:targetDataset)
     |> validate_required(@submission_required_fields, message: "is required")
-    |> validate_source_format()
+  #  |> validate_source_format()
     |> validate_submission_schema()
   end
 
@@ -122,7 +117,7 @@ defmodule Andi.InputSchemas.Ingestion do
     end
   end
 
-  defp validate_source_format(changeset), do: changeset
+  defp validate_source_format(changeset, source_type), do: changeset
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")
