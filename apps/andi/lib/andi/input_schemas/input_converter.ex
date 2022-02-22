@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.InputConverter do
   """
 
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.FormTools
@@ -101,6 +102,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(%Dataset{}, dataset_as_map)
   end
 
+  def andi_ingestion_to_full_ui_changeset(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Ingestion.full_validation_changeset(%Ingestion{}, ingestion_as_map)
+  end
+
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
     dataset_as_map = StructTools.to_map(dataset)
 
@@ -111,6 +118,18 @@ defmodule Andi.InputSchemas.InputConverter do
     dataset_as_map = StructTools.to_map(dataset)
 
     Andi.InputSchemas.Datasets.full_validation_submission_changeset_for_publish(%Dataset{}, dataset_as_map)
+  end
+
+  def andi_ingestion_to_full_ui_changeset_for_publish(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Andi.InputSchemas.Ingestions.full_validation_changeset_for_publish(%Ingestion{}, ingestion_as_map)
+  end
+
+  def andi_ingestion_to_full_submission_changeset_for_publish(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Andi.InputSchemas.Ingestions.full_validation_submission_changeset_for_publish(%Ingestion{}, ingestion_as_map)
   end
 
   def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
