@@ -79,6 +79,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_extract_steps(source_type)
   end
 
+  # TODO 549: update for ingestion
   def submission_changeset(ingestion, changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
@@ -88,10 +89,11 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> foreign_key_constraint(:targetDataset)
     |> validate_required(@submission_required_fields, message: "is required")
-  #  |> validate_source_format()
+    # |> validate_source_format()
     |> validate_submission_schema()
   end
 
+  # TODO 549: update for ingestion
   def changeset_for_draft(technical, changes) do
     changes_with_id = StructTools.ensure_id(technical, changes)
 
