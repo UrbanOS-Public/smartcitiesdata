@@ -48,6 +48,18 @@ defmodule Andi.InputSchemas.InputConverter do
     |> convert_smrt_technical()
   end
 
+  def prepare_smrt_ingestion_for_casting(ingestion) do
+    ingestion
+    |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
+    |> FormTools.replace(:schema, fn schema ->
+      schema
+      |> Enum.map(&add_dataset_id(&1, ingestion.targetDataset))
+      |> Enum.map(&convert_default/1)
+    end)
+  end
+
   def form_data_to_ui_changeset(form_data \\ %{}) do
     form_data_as_params =
       form_data
