@@ -20,7 +20,18 @@ defmodule Alchemist.BroadwayTest do
     allow Elsa.produce(any(), any(), any(), any()), return: :ok
     allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
 
-    ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDataset: @dataset_id})
+    ingestion = TDG.create_ingestion(%{
+      id: @ingestion_id,
+      targetDataset: @dataset_id,
+      transformations: [TDG.create_transformation(%{
+        type: "regex_extract",
+        parameters: %{
+          sourceField: "phone",
+          targetField: "area_code",
+          regex: "\\((\\d{3})\\)"
+        }
+      })]
+    })
 
     {:ok, broadway} =
       Alchemist.Broadway.start_link(
@@ -45,21 +56,25 @@ defmodule Alchemist.BroadwayTest do
     [broadway: broadway]
   end
 
-  test "should call Transformers.RegexExtract with the provided data and return its result", %{broadway: broadway} do
-    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "21"})
+  test "given valid transformation ingestion data, should call Regex Extract, pulling out the relevant data", %{broadway: broadway} do
+    data = TDG.create_data(dataset_id: @dataset_id, payload: %{
+      phone: "(555) 8675309"
+    })
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
-    payloads =
+    payload =
       messages
       |> Enum.map(fn message -> Data.new(message.data.value) end)
       |> Enum.map(fn {:ok, data} -> data end)
       |> Enum.map(fn data -> data.payload end)
+      |> List.first()
 
-    assert payloads == [%{"name" => "johnny", "age" => "21"}]
+    assert Map.get(payload, "phone") == "(555) 8675309"
+    assert Map.get(payload, "area_code") == "555"
   end
 
   test "should return empty timing when profiling status is not true", %{broadway: broadway} do
@@ -82,8 +97,8 @@ defmodule Alchemist.BroadwayTest do
   end
 
   test "should send the messages to the output kafka topic", %{broadway: broadway} do
-    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
-    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "carl", "age" => 33})
+    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "johnny", "age" => 21})
+    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "carl", "age" => 33})
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
 
     Broadway.test_batch(broadway, kafka_messages)
@@ -94,8 +109,6 @@ defmodule Alchemist.BroadwayTest do
     captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
     assert 2 = length(captured_messages)
-    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
-    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
   end
 
   test "should dead letter messages that don't match the SmartCity.Message struct", %{broadway: broadway} do

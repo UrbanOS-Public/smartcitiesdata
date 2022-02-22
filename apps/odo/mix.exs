@@ -51,7 +51,7 @@ defmodule Odo.MixProject do
       {:tesla, "~> 1.3"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 2.0.0-rc2", only: [:test, :integration]},
-      {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.1.0", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true}
     ]
