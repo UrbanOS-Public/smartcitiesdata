@@ -131,10 +131,6 @@ defmodule Alchemist.BroadwayTest do
   end
 
    test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
-     # TODO: Change this mock to reflect the new Transformers api when it's named
-     # for now .NoOp is what we have to represent all Transformation logic
-     allow Transformers.RegexExtract.transform(%{}, %{}), return: {:error, "Field phone not found"}
-
      data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
 
      kafka_messages = [%{value: Jason.encode!(data1)}]
