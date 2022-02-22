@@ -93,15 +93,12 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_submission_schema()
   end
 
-  # TODO 549: update for ingestion
-  def changeset_for_draft(technical, changes) do
-    changes_with_id = StructTools.ensure_id(technical, changes)
+  def changeset_for_draft(ingestion, changes) do
+    changes_with_id = StructTools.ensure_id(ingestion, changes)
 
     technical
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
-    |> cast_assoc(:sourceHeaders, with: &Header.changeset_for_draft/2)
-    |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset_for_draft/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> foreign_key_constraint(:dataset_id)
   end
