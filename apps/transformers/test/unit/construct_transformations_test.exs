@@ -43,8 +43,8 @@ defmodule Transformers.ConstructTest do
   end
 
   @tag :skip
-  test "when given non transformations ... ?" do
-    result = Transformers.Construct.constructTransformation([1, 2, 3])
+  test "when type is missing result is an error" do
+    result = Transformers.Construct.constructTransformation([1,2,3])
     assert result == {:error, "Map provided is not a valid transformation"}
   end
 
