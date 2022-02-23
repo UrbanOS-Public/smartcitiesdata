@@ -49,7 +49,6 @@ defmodule Transformers.ConstructTest do
     assert result == [{:error, "Map provided is not a valid transformation"}]
   end
 
-  @tag :skip
   test "when parameters are missing result is an error" do
     result = Transformers.Construct.constructTransformation([%{type: :regex_extract}])
     assert result == [{:error, "Map provided is not a valid transformation"}]
