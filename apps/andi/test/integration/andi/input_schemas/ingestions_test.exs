@@ -14,10 +14,8 @@ defmodule Andi.InputSchemas.IngestionsTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.ExtractStep
 
-
   describe "get_all/0" do
     test "given existing ingestions, it returns them with extract steps and schema preloaded" do
-
       dataset_one = TDG.create_dataset(%{})
       dataset_two = TDG.create_dataset(%{})
 
@@ -41,11 +39,16 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
       ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
-      {:ok, %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} = _andi_ingestion} =
-        Ingestions.update(ingestion)
+      {:ok,
+       %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} =
+         _andi_ingestion} = Ingestions.update(ingestion)
 
-      assert %{id: ^ingestion_id, targetDataset: ^target_dataset,  extractSteps: [%{id: ^extract_steps_id} | _], schema: [%{id: ^schema_id} | _]} =
-               Ingestions.get(ingestion.id)
+      assert %{
+               id: ^ingestion_id,
+               targetDataset: ^target_dataset,
+               extractSteps: [%{id: ^extract_steps_id} | _],
+               schema: [%{id: ^schema_id} | _]
+             } = Ingestions.get(ingestion.id)
     end
 
     test "given a non-existing ingestion, it returns nil" do
@@ -59,11 +62,16 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert {:ok, _} = Datasets.update(dataset)
       ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
-     {:ok, %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} = _andi_ingestino} =
-        Ingestions.update(ingestion)
+      {:ok,
+       %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} =
+         _andi_ingestion} = Ingestions.update(ingestion)
 
-      assert %{id: ^ingestion_id, targetDataset: ^target_dataset,  extractSteps: [%{id: ^extract_steps_id} | _], schema: [%{id: ^schema_id} | _]} =
-              Ingestions.get(ingestion.id)
+      assert %{
+               id: ^ingestion_id,
+               targetDataset: ^target_dataset,
+               extractSteps: [%{id: ^extract_steps_id} | _],
+               schema: [%{id: ^schema_id} | _]
+             } = Ingestions.get(ingestion.id)
 
       assert {:ok, _} = Ingestions.delete(ingestion.id)
       assert nil == Andi.Repo.get(Ingestion, ingestion_id)
@@ -86,8 +94,10 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
       assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
       refute ingestion_changeset.valid?
-      assert ingestion_changeset.errors == [targetDataset: {"does not exist", [constraint: :foreign, constraint_name: "ingestions_targetDataset_fkey"]}]
 
+      assert ingestion_changeset.errors == [
+               targetDataset: {"does not exist", [constraint: :foreign, constraint_name: "ingestions_targetDataset_fkey"]}
+             ]
     end
 
     test "given an existing smart city ingestion, updates it" do
@@ -104,14 +114,15 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
       assert {:ok,
               %Ingestion{
-               id: ^original_ingestion_id,
-               topLevelSelector: "$.Penny.Floofer"
+                id: ^original_ingestion_id,
+                topLevelSelector: "$.Penny.Floofer"
               }} = Ingestions.update(updated_ingestion)
     end
 
     test "given a blank extract step body, retains it" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
+
       smrt_ingestion =
         TDG.create_ingestion(%{
           targetDataset: dataset.id,
@@ -144,7 +155,6 @@ defmodule Andi.InputSchemas.IngestionsTest do
       Ingestions.update_cadence(ingestion.id, new_cadence)
 
       assert %Ingestion{cadence: "once"} = Ingestions.get(ingestion.id)
-      
     end
   end
 

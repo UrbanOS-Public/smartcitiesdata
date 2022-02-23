@@ -11,6 +11,7 @@ defmodule Andi.Repo.Migrations.AddIngestionTable do
       add :targetDataset, references(:datasets, type: :string, on_delete: :delete_all), null: false
       add :sourceFormat, :string
       add :topLevelSelector, :string
+      add :ingestedTime, :utc_datetime
     end
 
     alter table(:extract_step) do

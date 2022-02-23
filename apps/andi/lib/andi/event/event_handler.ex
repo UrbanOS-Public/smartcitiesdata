@@ -13,10 +13,12 @@ defmodule Andi.Event.EventHandler do
       dataset_delete: 0,
       dataset_harvest_start: 0,
       dataset_harvest_end: 0,
-      user_login: 0
+      user_login: 0,
+      ingestion_update: 0,
+      ingestion_delete: 0
     ]
 
-  alias SmartCity.{Dataset, Organization}
+  alias SmartCity.{Dataset, Organization, Ingestion}
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
 
@@ -26,6 +28,8 @@ defmodule Andi.Event.EventHandler do
   alias Andi.Schemas.User
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Ingestions
+  alias Andi.Services.IngestionStore
 
   @instance_name Andi.instance_name()
 
@@ -40,6 +44,28 @@ defmodule Andi.Event.EventHandler do
 
     Datasets.update(data)
     DatasetStore.update(data)
+  end
+
+  def handle_event(%Brook.Event{type: ingestion_update(), data: %Ingestion{} = data, author: author}) do
+    ingestion_update()
+    |> add_event_count(author, data.id)
+
+    Ingestions.update_ingested_time(data.id, DateTime.utc_now())
+
+    Ingestions.update(data)
+    IngestionStore.update(data)
+  end
+
+  def handle_event(%Brook.Event{
+        type: ingestion_delete(),
+        data: %Ingestion{} = ingestion,
+        author: author
+      }) do
+    ingestion_delete()
+    |> add_event_count(author, ingestion.id)
+
+    Ingestions.delete(ingestion.id)
+    IngestionStore.delete(ingestion.id)
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do

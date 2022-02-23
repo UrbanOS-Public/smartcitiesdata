@@ -55,7 +55,9 @@ defmodule Andi.InputSchemas.Ingestions do
         nil -> %Ingestion{}
         ingestion -> ingestion
       end
+
     changes = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
     andi_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema])
     |> Ingestion.changeset_for_draft(changes)
@@ -68,7 +70,7 @@ defmodule Andi.InputSchemas.Ingestions do
         nil -> %Ingestion{}
         ingestion -> ingestion
       end
-     
+
     update(original_ingestion, andi_ingestion)
   end
 
@@ -130,5 +132,12 @@ defmodule Andi.InputSchemas.Ingestions do
 
   def full_validation_submission_changeset_for_publish(schema, changes) do
     Ingestion.submission_changeset(schema, changes)
+  end
+
+  def update_ingested_time(ingestion_id, ingested_time) do
+    from_ingestion = get(ingestion_id) || %Ingestion{id: ingestion_id}
+    iso_ingested_time = DateTime.to_iso8601(ingested_time)
+
+    update(from_ingestion, %{ingestedTime: iso_ingested_time})
   end
 end
