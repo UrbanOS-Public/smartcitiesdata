@@ -93,4 +93,12 @@ defmodule Transformers.PerformTest do
     {:ok, result} = Perform.performTransformations([], payload)
     assert result == payload
   end
+
+  @tag :skip
+  test "what happens when opsList includes an error" do
+    payload = %{name: "ben"}
+    transformations = [{:error, "kaboom"}]
+    result = Perform.performTransformations([], payload)
+    assert :error == elem(result, 0)
+  end
 end
