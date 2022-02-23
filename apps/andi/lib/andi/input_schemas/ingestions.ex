@@ -1,6 +1,7 @@
 defmodule Andi.InputSchemas.Ingestions do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestion
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
@@ -21,7 +22,16 @@ defmodule Andi.InputSchemas.Ingestions do
     |> Ingestion.preload()
   end
 
-  def get_all(), do: Repo.all(Ingestion)
+  def get_all() do
+    query =
+      from(ingestion in Ingestion,
+        join: extractSteps in assoc(ingestion, :extractSteps),
+        join: schema in assoc(ingestion, :schema),
+        preload: [extractSteps: extractSteps, schema: schema]
+      )
+
+    Repo.all(query)
+  end
 
   def create(dataset_id) do
     new_ingestion_id = UUID.uuid4()
@@ -45,9 +55,7 @@ defmodule Andi.InputSchemas.Ingestions do
         nil -> %Ingestion{}
         ingestion -> ingestion
       end
-
-    changes = InputConverter.prepare_smrt_ignestion_for_casting(smrt_ingestion)
-
+    changes = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
     andi_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema])
     |> Ingestion.changeset_for_draft(changes)
@@ -60,7 +68,7 @@ defmodule Andi.InputSchemas.Ingestions do
         nil -> %Ingestion{}
         ingestion -> ingestion
       end
-
+     
     update(original_ingestion, andi_ingestion)
   end
 

@@ -24,7 +24,7 @@ defmodule Andi.InputSchemas.Ingestion do
     field(:cadence, :string)
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
-    belongs_to(:dataset, Dataset, type: Ecto.UUID, foreign_key: :targetDataset)
+    belongs_to(:dataset, Dataset, type: :string, foreign_key: :targetDataset)
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:extractSteps, ExtractStep, on_replace: :delete)
   end
