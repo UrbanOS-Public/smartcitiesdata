@@ -16,6 +16,7 @@ defmodule Transformers.ConstructTest do
     result = Transformers.Construct.constructTransformation(sc_transformations)
 
     assert 1 == length(result)
+    assert true == allResultItemsAreFunctions(result)
   end
 
   test "when given 3 transformations, builds a list of 3 operations" do
@@ -34,6 +35,7 @@ defmodule Transformers.ConstructTest do
     result = Transformers.Construct.constructTransformation(sc_transformations)
 
     assert 3 == length(result)
+    assert true == allResultItemsAreFunctions(result)
   end
 
   test "when given an empty array, returns an empty array" do
@@ -47,5 +49,8 @@ defmodule Transformers.ConstructTest do
     assert result == [{:error, "Map provided is not a valid transformation"}]
   end
 
+  def allResultItemsAreFunctions(result) do
+    Enum.all?(result, fn item -> is_function(item) end)
+  end
   # test "when given an invalid transformation type ... see error"
 end
