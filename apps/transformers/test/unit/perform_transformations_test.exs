@@ -1,5 +1,7 @@
-defmodule Transformers.FunctionBuilderTest do
+defmodule Transformers.PerformTest do
   use ExUnit.Case
+
+  alias Transformers.Perform
 
   test "given a list of one transformation, the payload matches that of what is expected" do
     payload = %{"name" => "elizabeth bennet"}
@@ -13,9 +15,11 @@ defmodule Transformers.FunctionBuilderTest do
     first_name_extractor_function =
       Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
 
-    {:ok, resultant_payload} = Transformers.performTransformations([first_name_extractor_function], payload)
+    {:ok, resultant_payload} =
+      Perform.performTransformations([first_name_extractor_function], payload)
 
-    assert {:ok, resultant_payload} == Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
+    assert {:ok, resultant_payload} ==
+             Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
   end
 
   test "multiple transformations return a payload that matches multiple manual transformation" do
@@ -35,13 +39,21 @@ defmodule Transformers.FunctionBuilderTest do
 
     first_name_extractor_function =
       Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+
     first_letter_extractor_function =
       Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
 
-    {:ok, resultant_payload} = Transformers.performTransformations([first_name_extractor_function, first_letter_extractor_function], payload)
+    {:ok, resultant_payload} =
+      Perform.performTransformations(
+        [first_name_extractor_function, first_letter_extractor_function],
+        payload
+      )
 
-    {:ok, firstNamePayload} = Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
-    {:ok, firstLetterPayload} = Transformers.RegexExtract.transform(firstNamePayload, first_letter_extractor)
+    {:ok, firstNamePayload} =
+      Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
+
+    {:ok, firstLetterPayload} =
+      Transformers.RegexExtract.transform(firstNamePayload, first_letter_extractor)
 
     assert {:ok, resultant_payload} = {:ok, firstLetterPayload}
   end
@@ -63,11 +75,22 @@ defmodule Transformers.FunctionBuilderTest do
 
     first_name_extractor_function =
       Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+
     first_letter_extractor_function =
       Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
 
-    {:error, reason} = Transformers.performTransformations([first_name_extractor_function, first_letter_extractor_function], payload)
+    {:error, reason} =
+      Perform.performTransformations(
+        [first_name_extractor_function, first_letter_extractor_function],
+        payload
+      )
 
     assert resultant_payload = "Error name not found"
+  end
+
+  test "when provided an empty opsList, the inital payload is returned" do
+    payload = %{name: "ben"}
+    {:ok, result} = Perform.performTransformations([], payload)
+    assert result == payload
   end
 end
