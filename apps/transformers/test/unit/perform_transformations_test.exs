@@ -1,14 +1,73 @@
-# Tests to write?:
+defmodule Transformers.FunctionBuilderTest do
+  use ExUnit.Case
 
-# when given a list of transformations, returns a function that calls all
-#   each transform function in order
+  test "given a list of one transformation, the payload matches that of what is expected" do
+    payload = %{"name" => "elizabeth bennet"}
 
-# when one transform function fails in the sequence, the result
-#   of the constructTransformation is a function that returns {:error, reason}
+    first_name_extractor_parameters = %{
+      sourceField: "name",
+      targetField: "firstName",
+      regex: "^(\\w+)"
+    }
 
-# Notes for how to use this in alchemist:
+    first_name_extractor_function =
+      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
 
-# in broadway:
-# [SC_Transformations] -> map (atom, params) -> FunctionBuilder.build(atom, params) -> [operation1, op2, op3] (opsList)
+    {:ok, resultant_payload} = Transformers.performTransformations([first_name_extractor_function], payload)
 
-# that result, opsList, goes onto the context for handle message to call
+    assert {:ok, resultant_payload} == Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
+  end
+
+  test "multiple transformations return a payload that matches multiple manual transformation" do
+    payload = %{"name" => "elizabeth bennet"}
+
+    first_name_extractor_parameters = %{
+      sourceField: "name",
+      targetField: "firstName",
+      regex: "^(\\w+)"
+    }
+
+    first_letter_extractor = %{
+      sourceField: "firstName",
+      targetField: "firstLetter",
+      regex: "^(\\w)"
+    }
+
+    first_name_extractor_function =
+      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+    first_letter_extractor_function =
+      Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
+
+    {:ok, resultant_payload} = Transformers.performTransformations([first_name_extractor_function, first_letter_extractor_function], payload)
+
+    {:ok, firstNamePayload} = Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
+    {:ok, firstLetterPayload} = Transformers.RegexExtract.transform(firstNamePayload, first_letter_extractor)
+
+    assert {:ok, resultant_payload} = {:ok, firstLetterPayload}
+  end
+
+  test "when any operation fails, execution halts and error is returned" do
+    payload = %{"phone" => "elizabeth bennet"}
+
+    first_name_extractor_parameters = %{
+      sourceField: "name",
+      targetField: "firstName",
+      regex: "^(\\w+)"
+    }
+
+    first_letter_extractor = %{
+      sourceField: "firstName",
+      targetField: "firstLetter",
+      regex: "^(\\w)"
+    }
+
+    first_name_extractor_function =
+      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+    first_letter_extractor_function =
+      Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
+
+    {:error, reason} = Transformers.performTransformations([first_name_extractor_function, first_letter_extractor_function], payload)
+
+    assert resultant_payload = "Error name not found"
+  end
+end
