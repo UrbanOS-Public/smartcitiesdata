@@ -133,47 +133,20 @@ defmodule Andi.InputSchemas.IngestionsTest do
     end
   end
 
-  # describe "full_validation_changeset/1" do
-  #   test "requires unique orgName and dataName" do
-  #     existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-  #     {:ok, _} = Datasets.update(existing_dataset)
+  describe "update_cadence/2" do
+    test "given an ingestion id and a cadence, the cadence is successfully updated" do
+      dataset = TDG.create_dataset(%{})
+      assert {:ok, _} = Datasets.update(dataset)
+      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, cadence: "never"})
+      assert {:ok, %Ingestion{cadence: "never"} = _} = Ingestions.update(ingestion)
 
-  #     changeset =
-  #       existing_dataset
-  #       |> StructTools.to_map()
-  #       |> Map.put(:id, UUID.uuid4())
-  #       |> InputConverter.smrt_dataset_to_full_changeset()
+      new_cadence = "once"
+      Ingestions.update_cadence(ingestion.id, new_cadence)
 
-  #     technical_changeset = Ecto.Changeset.get_change(changeset, :technical)
-
-  #     refute changeset.valid?
-  #     assert technical_changeset.errors == [{:dataName, {"existing dataset has the same orgName and dataName", []}}]
-  #   end
-
-  #   test "allows same orgName and dataName when id is same" do
-  #     existing_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-  #     {:ok, _} = Datasets.update(existing_dataset)
-
-  #     changeset = InputConverter.smrt_dataset_to_full_changeset(existing_dataset)
-
-  #     assert changeset.valid?
-  #     assert changeset.errors == []
-  #   end
-
-  #   test "includes light validation" do
-  #     dataset = TDG.create_dataset(%{})
-  #     {:ok, _} = Datasets.update(dataset)
-
-  #     changeset =
-  #       dataset
-  #       |> StructTools.to_map()
-  #       |> put_in([:business, :contactEmail], "nope")
-  #       |> delete_in([:technical, :sourceFormat])
-  #       |> InputConverter.smrt_dataset_to_full_changeset()
-
-  #     refute changeset.valid?
-  #   end
-  # end
+      assert %Ingestion{cadence: "once"} = Ingestions.get(ingestion.id)
+      
+    end
+  end
 
   defp delete_in(data, path) do
     pop_in(data, path) |> elem(1)
