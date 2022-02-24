@@ -4,6 +4,6 @@ defmodule Transformers.FunctionBuilder do
   end
 
   def build(unsupported, _) do
-    raise "Unsupported transformation type: #{unsupported}"
+    {:error, "Unsupported transformation type: #{unsupported}"}
   end
 end

@@ -1,5 +1,6 @@
 defmodule Transformers.FunctionBuilderTest do
   use ExUnit.Case
+  alias Transformers.FunctionBuilder
 
   test "regex extract function" do
     payload = %{"name" => "elizabeth bennet"}
@@ -11,15 +12,16 @@ defmodule Transformers.FunctionBuilderTest do
     }
 
     first_name_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+      FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
 
     assert first_name_extractor_function.(payload) ==
              Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
   end
 
   test "attempting to build function for unsupported transformation raises error" do
-    assert_raise RuntimeError,
-                 "Unsupported transformation type: unsupported_transformation",
-                 fn -> Transformers.FunctionBuilder.build(:unsupported_transformation, %{}) end
+    bad_transformation_type = :ok
+    assert {:error, "Unsupported transformation type: #{bad_transformation_type}"} == FunctionBuilder.build(bad_transformation_type, %{
+      "foo" => "bar"
+    })
   end
 end
