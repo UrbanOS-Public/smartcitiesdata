@@ -5,8 +5,6 @@ defmodule Alchemist.BroadwayTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
-  import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @ingestion_id "ingestion1"
