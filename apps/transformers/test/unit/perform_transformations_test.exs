@@ -88,17 +88,16 @@ defmodule Transformers.PerformTest do
     assert resultant_payload = "Error name not found"
   end
 
-  test "when provided an empty opsList, the inital payload is returned" do
+  test "when provided an empty opsList, the initial payload is returned" do
     payload = %{name: "ben"}
     {:ok, result} = Perform.performTransformations([], payload)
     assert result == payload
   end
 
-  @tag :skip
   test "what happens when opsList includes an error" do
     payload = %{name: "ben"}
     transformations = [{:error, "kaboom"}]
-    result = Perform.performTransformations([], payload)
+    result = Perform.performTransformations(transformations, payload)
     assert :error == elem(result, 0)
   end
 end
