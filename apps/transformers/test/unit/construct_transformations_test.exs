@@ -54,6 +54,4 @@ defmodule Transformers.ConstructTest do
     result = Transformers.Construct.constructTransformation([%{type: :regex_extract}])
     assert result == [{:error, "Map provided is not a valid transformation"}]
   end
-
-  # test "when given an invalid transformation type ... see error"
 end
