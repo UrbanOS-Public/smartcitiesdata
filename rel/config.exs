@@ -53,12 +53,6 @@ release :forklift do
   set overlays: [{:copy, "apps/forklift/runtime.exs", "etc/runtime.exs"}]
 end
 
-release :odo do
-  set version: current_version(:odo)
-  set applications: [:runtime_tools, :odo]
-  set overlays: [{:copy, "apps/odo/runtime.exs", "etc/runtime.exs"}]
-end
-
 release :raptor do
   set version: current_version(:raptor)
   set applications: [:runtime_tools, :raptor]

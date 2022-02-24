@@ -1,6 +1,6 @@
 defmodule Reaper.Decoder do
   @moduledoc """
-  This module decodes datasets of different types into JSON
+  This module decodes ingestions of different types into JSON
   """
   require Logger
 
@@ -9,7 +9,7 @@ defmodule Reaper.Decoder do
   @type reason :: any()
   @type data :: any()
 
-  @callback decode({:file, filename()}, %SmartCity.Dataset{}) ::
+  @callback decode({:file, filename()}, %SmartCity.Ingestion{}) ::
               {:ok, Enumerable.t()} | {:error, data(), reason()}
   @callback handle?(format()) :: boolean()
 
@@ -23,20 +23,20 @@ defmodule Reaper.Decoder do
   ]
 
   @doc """
-  Converts a dataset into JSON based on it's `sourceFormat`
+  Converts an ingestion into JSON based on it's `sourceFormat`
   """
-  def decode({:file, filename}, %SmartCity.Dataset{technical: %{sourceFormat: source_format}} = dataset) do
+  def decode({:file, filename}, %SmartCity.Ingestion{sourceFormat: source_format} = ingestion) do
     response =
       @implementations
       |> Enum.find(&handle?(&1, source_format))
-      |> apply(:decode, [{:file, filename}, dataset])
+      |> apply(:decode, [{:file, filename}, ingestion])
 
     case response do
       {:ok, data} ->
         data
 
       {:error, data, reason} ->
-        yeet_error(dataset, data, reason)
+        throw_error(ingestion, data, reason)
         raise reason
     end
   end
@@ -45,7 +45,7 @@ defmodule Reaper.Decoder do
     apply(implementation, :handle?, [source_format])
   end
 
-  defp yeet_error(%SmartCity.Dataset{id: dataset_id}, message, error) do
-    DeadLetter.process(dataset_id, message, "reaper", error: error)
+  defp throw_error(%SmartCity.Ingestion{targetDataset: id}, message, error) do
+    DeadLetter.process(id, message, "reaper", error: error)
   end
 end

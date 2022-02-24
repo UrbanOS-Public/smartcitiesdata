@@ -1,6 +1,6 @@
 defmodule Reaper.SecretRetriever do
   @moduledoc """
-  Retrieves credentials for use in accessing restricted datasets.
+  Retrieves credentials for use in accessing restricted apis.
   """
   use Properties, otp_app: :reaper
 
@@ -10,8 +10,8 @@ defmodule Reaper.SecretRetriever do
 
   getter(:secrets_endpoint, generic: true)
 
-  def retrieve_dataset_credentials(dataset_id) do
-    retrieve("ingestion/#{dataset_id}")
+  def retrieve_ingestion_credentials(ingestion_id) do
+    retrieve("ingestion/#{ingestion_id}")
   end
 
   defp retrieve(path) do
@@ -23,7 +23,7 @@ defmodule Reaper.SecretRetriever do
       {:ok, credentials}
     else
       {:error, reason} ->
-        Logger.error("Unable to retrieve dataset credential; #{reason}")
+        Logger.error("Unable to retrieve ingestion credential; #{reason}")
         {:error, :retrieve_credential_failed}
     end
   end

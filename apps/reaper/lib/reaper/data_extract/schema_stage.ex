@@ -10,7 +10,7 @@ defmodule Reaper.DataExtract.SchemaStage do
 
   def init(args) do
     state = %{
-      dataset: Keyword.fetch!(args, :dataset)
+      ingestion: Keyword.fetch!(args, :ingestion)
     }
 
     {:producer_consumer, state}
@@ -23,6 +23,6 @@ defmodule Reaper.DataExtract.SchemaStage do
   end
 
   defp handle_event(state, {payload, number}) do
-    {SchemaFiller.fill(state.dataset.technical.schema, payload), number}
+    {SchemaFiller.fill(state.ingestion.schema, payload), number}
   end
 end

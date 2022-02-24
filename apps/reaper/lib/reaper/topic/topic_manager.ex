@@ -9,8 +9,8 @@ defmodule Reaper.Topic.TopicManager do
   getter(:elsa_brokers, generic: true)
   getter(:output_topic_prefix, generic: true)
 
-  def delete_topic(dataset_id) do
-    output_topic = output_topic(dataset_id)
+  def delete_topic(ingestion_id) do
+    output_topic = output_topic(ingestion_id)
 
     case Elsa.delete_topic(elsa_brokers(), output_topic) do
       :ok ->
@@ -21,5 +21,5 @@ defmodule Reaper.Topic.TopicManager do
     end
   end
 
-  defp output_topic(dataset_id), do: "#{output_topic_prefix()}-#{dataset_id}"
+  defp output_topic(ingestion_id), do: "#{output_topic_prefix()}-#{ingestion_id}"
 end

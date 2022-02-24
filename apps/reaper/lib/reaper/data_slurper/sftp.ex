@@ -11,11 +11,11 @@ defmodule Reaper.DataSlurper.Sftp do
   end
 
   @impl DataSlurper
-  def slurp(url, dataset_id, _headers \\ [], _protocol \\ nil, _action \\ nil, _body \\ "") do
-    filename = DataSlurper.determine_filename(dataset_id)
+  def slurp(url, ingestion_id, _headers \\ [], _protocol \\ nil, _action \\ nil, _body \\ "") do
+    filename = DataSlurper.determine_filename(ingestion_id)
     %{host: host, path: path, port: port} = URI.parse(url)
 
-    case connect(host, port, dataset_id) do
+    case connect(host, port, ingestion_id) do
       {:ok, connection} ->
         stream_file(connection, path, filename)
 
@@ -33,8 +33,8 @@ defmodule Reaper.DataSlurper.Sftp do
     {:file, filename}
   end
 
-  defp connect(host, port, dataset_id) do
-    case Reaper.SecretRetriever.retrieve_dataset_credentials(dataset_id) do
+  defp connect(host, port, ingestion_id) do
+    case Reaper.SecretRetriever.retrieve_ingestion_credentials(ingestion_id) do
       {:ok, %{"username" => username, "password" => password}} ->
         SftpEx.connect(
           host: to_charlist(host),
@@ -44,7 +44,7 @@ defmodule Reaper.DataSlurper.Sftp do
         )
 
       {:ok, _} ->
-        {:error, "Dataset credentials are not of the correct type"}
+        {:error, "Ingestion credentials are not of the correct type"}
 
       error ->
         error

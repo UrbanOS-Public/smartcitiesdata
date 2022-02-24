@@ -29,6 +29,7 @@ node_modules/
 
 .vscode/
 .idea/
+.atom/
 *.iml
 
 compaction-test-fixtures/

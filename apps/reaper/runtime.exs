@@ -83,12 +83,9 @@ config :reaper, :brook,
         "data:extract:start" => 100,
         "data:extract:end" => 100,
         "data:ingest:start" => 100,
-        "file:ingest:start" => 100,
-        "file:ingest:end" => 100,
-        "error:dataset:update" => 100,
-        "dataset:update" => 100,
-        "dataset:disable" => 100,
-        "dataset:delete" => 100
+        "error:ingestion:update" => 100,
+        "ingestion:update" => 100,
+        "ingestion:delete" => 100
       }
     ]
   },

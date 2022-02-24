@@ -30,7 +30,6 @@ defmodule E2E.MixProject do
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},
       {:forklift, in_umbrella: true},
-      {:odo, in_umbrella: true},
       {:estuary, in_umbrella: true, only: [:integration]},
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},

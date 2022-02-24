@@ -5,7 +5,7 @@ defmodule Reaper.Decoder.Unknown do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
-  def decode({:file, _filename}, %SmartCity.Dataset{technical: %{sourceFormat: other}}) do
+  def decode({:file, _filename}, %SmartCity.Ingestion{sourceFormat: other}) do
     {:error, "", %RuntimeError{message: "#{other} is an invalid format"}}
   end
 

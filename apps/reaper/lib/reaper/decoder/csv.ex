@@ -12,7 +12,7 @@ defmodule Reaper.Decoder.Csv do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, %SmartCity.Dataset{technical: %{schema: schema}} = dataset) do
+  def decode({:file, filename}, %SmartCity.Ingestion{schema: schema} = ingestion) do
     try do
       keys = Enum.map(schema, fn el -> el.name end)
 
@@ -27,7 +27,7 @@ defmodule Reaper.Decoder.Csv do
       {:ok, stream}
     rescue
       error ->
-        {:error, "DatasetId: #{dataset.id}", error}
+        {:error, "IngestionId: #{ingestion.id}", error}
     end
   end
 

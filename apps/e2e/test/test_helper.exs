@@ -1,1 +1,1 @@
-ExUnit.start(exclude: [:e2e], seed: 0)
+ExUnit.start(exclude: [:e2e, :skip], seed: 0)

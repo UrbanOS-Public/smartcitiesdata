@@ -6,7 +6,7 @@ defmodule Reaper.SftpExtractorTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [ingestion_update: 0]
 
   @host to_charlist(System.get_env("HOST"))
   @instance_name Reaper.instance_name()
@@ -34,30 +34,42 @@ defmodule Reaper.SftpExtractorTest do
   end
 
   test "reaps a json file from sftp" do
-    dataset_id = "23456-7891"
-    topic = "#{output_topic_prefix()}-#{dataset_id}"
+    ingestion_id = "23456-7891"
+    topic = "#{output_topic_prefix()}-#{ingestion_id}"
     Elsa.create_topic(elsa_brokers(), topic)
 
-    allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+    allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
       return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
     )
 
-    dataset =
-      TDG.create_dataset(%{
-        id: dataset_id,
-        technical: %{
-          cadence: "once",
-          sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.json",
-          sourceQueryParams: %{},
-          sourceFormat: "json",
-          schema: [
-            %{name: "datum"},
-            %{name: "sanctum"}
-          ]
-        }
+    ingestion =
+      TDG.create_ingestion(%{
+        id: ingestion_id,
+        cadence: "once",
+        sourceQueryParams: %{},
+        sourceFormat: "json",
+        schema: [
+          %{name: "datum"},
+          %{name: "sanctum"}
+        ],
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "sftp://#{@host}:#{@sftp.port}/upload/file.json"
+            },
+            type: "sftp"
+          }
+        ],
+        topLevelSelector: nil
       })
 
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
 
     payload = %{
       "datum" => "Bobber",
@@ -72,30 +84,42 @@ defmodule Reaper.SftpExtractorTest do
   end
 
   test "reaps a csv file from sftp" do
-    dataset_id = "34567-8912"
-    topic = "#{output_topic_prefix()}-#{dataset_id}"
+    ingestion_id = "34567-8912"
+    topic = "#{output_topic_prefix()}-#{ingestion_id}"
     Elsa.create_topic(elsa_brokers(), topic)
 
-    allow(Reaper.SecretRetriever.retrieve_dataset_credentials(any()),
+    allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
       return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
     )
 
-    dataset =
-      TDG.create_dataset(%{
-        id: dataset_id,
-        technical: %{
-          cadence: "once",
-          sourceUrl: "sftp://#{@host}:#{@sftp.port}/upload/file.csv",
-          sourceQueryParams: %{},
-          sourceFormat: "csv",
-          schema: [
-            %{name: "datum"},
-            %{name: "sanctum"}
-          ]
-        }
+    ingestion =
+      TDG.create_ingestion(%{
+        id: ingestion_id,
+        cadence: "once",
+        sourceQueryParams: %{},
+        sourceFormat: "csv",
+        schema: [
+          %{name: "datum"},
+          %{name: "sanctum"}
+        ],
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "sftp://#{@host}:#{@sftp.port}/upload/file.csv"
+            },
+            type: "sftp"
+          }
+        ],
+        topLevelSelector: nil
       })
 
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
     payload = %{"sanctum" => "Bobbero", "datum" => "Alice"}
 
     eventually(fn ->
