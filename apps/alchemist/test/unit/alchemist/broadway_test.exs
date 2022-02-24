@@ -19,18 +19,27 @@ defmodule Alchemist.BroadwayTest do
   setup do
     allow Elsa.produce(any(), any(), any(), any()), return: :ok
     allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
+    transform1 = TDG.create_transformation(%{
+      type: "regex_extract",
+      parameters: %{
+        sourceField: "phone",
+        targetField: "area_code",
+        regex: "\\((\\d{3})\\)"
+      }
+    })
+    transform2 = TDG.create_transformation(%{
+      type: "regex_extract",
+      parameters: %{
+        sourceField: "first_name",
+        targetField: "first_letter",
+        regex: "^(\\w)"
+      }
+    })
 
     ingestion = TDG.create_ingestion(%{
       id: @ingestion_id,
       targetDataset: @dataset_id,
-      transformations: [TDG.create_transformation(%{
-        type: "regex_extract",
-        parameters: %{
-          sourceField: "phone",
-          targetField: "area_code",
-          regex: "\\((\\d{3})\\)"
-        }
-      })]
+      transformations: [transform1, transform2]
     })
 
     {:ok, broadway} =
@@ -58,13 +67,16 @@ defmodule Alchemist.BroadwayTest do
 
   test "given valid transformation ingestion data, should call Regex Extract, pulling out the relevant data", %{broadway: broadway} do
     data = TDG.create_data(dataset_id: @dataset_id, payload: %{
-      phone: "(555) 8675309"
+      phone: "(555) 8675309",
+      first_name: "Nicole"
     })
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
+
+    assert 1 == length(messages)
 
     payload =
       messages
@@ -75,6 +87,8 @@ defmodule Alchemist.BroadwayTest do
 
     assert Map.get(payload, "phone") == "(555) 8675309"
     assert Map.get(payload, "area_code") == "555"
+    assert Map.get(payload, "first_name") == "Nicole"
+    assert Map.get(payload, "first_letter") == "N"
   end
 
   test "should return empty timing when profiling status is not true", %{broadway: broadway} do
@@ -97,8 +111,8 @@ defmodule Alchemist.BroadwayTest do
   end
 
   test "should send the messages to the output kafka topic", %{broadway: broadway} do
-    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "johnny", "age" => 21})
-    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "carl", "age" => 33})
+    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+    data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(123) 456-7890", "first_name" => "carl"})
     kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
 
     Broadway.test_batch(broadway, kafka_messages)

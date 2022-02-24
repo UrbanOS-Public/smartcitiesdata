@@ -13,7 +13,7 @@ defmodule Transformers.PerformTest do
     }
 
     first_name_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+      Transformers.FunctionBuilder.build("regex_extract", first_name_extractor_parameters)
 
     {:ok, resultant_payload} =
       Perform.performTransformations([first_name_extractor_function], payload)
@@ -38,10 +38,10 @@ defmodule Transformers.PerformTest do
     }
 
     first_name_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+      Transformers.FunctionBuilder.build("regex_extract", first_name_extractor_parameters)
 
     first_letter_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
+      Transformers.FunctionBuilder.build("regex_extract", first_letter_extractor)
 
     {:ok, resultant_payload} =
       Perform.performTransformations(
@@ -74,10 +74,10 @@ defmodule Transformers.PerformTest do
     }
 
     first_name_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+      Transformers.FunctionBuilder.build("regex_extract", first_name_extractor_parameters)
 
     first_letter_extractor_function =
-      Transformers.FunctionBuilder.build(:regex_extract, first_letter_extractor)
+      Transformers.FunctionBuilder.build("regex_extract", first_letter_extractor)
 
     {:error, reason} =
       Perform.performTransformations(

@@ -12,7 +12,7 @@ defmodule Transformers.FunctionBuilderTest do
     }
 
     first_name_extractor_function =
-      FunctionBuilder.build(:regex_extract, first_name_extractor_parameters)
+      FunctionBuilder.build("regex_extract", first_name_extractor_parameters)
 
     assert first_name_extractor_function.(payload) ==
              Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
