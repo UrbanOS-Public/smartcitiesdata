@@ -8,6 +8,7 @@ defmodule Transformers.ConstructAndPerformTest do
       targetField: "first_name",
       regex: "^(\\w+)"
     }
+
     transformation1 = Transformation.new(%{type: "regex_extract", parameters: parameters})
 
     parameters = %{
@@ -15,10 +16,12 @@ defmodule Transformers.ConstructAndPerformTest do
       targetField: "last_name",
       regex: "(\\w+)$"
     }
+
     transformation2 = Transformation.new(%{type: "regex_extract", parameters: parameters})
     transformations = [transformation1, transformation2]
 
     operations = Transformers.construct(transformations)
+
     payload = %{
       "full_name" => "Emily Shire"
     }

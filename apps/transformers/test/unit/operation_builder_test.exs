@@ -20,8 +20,10 @@ defmodule Transformers.OperationBuilderTest do
 
   test "attempting to build function for unsupported transformation raises error" do
     bad_transformation_type = :ok
-    assert {:error, "Unsupported transformation type: #{bad_transformation_type}"} == OperationBuilder.build(bad_transformation_type, %{
-      "foo" => "bar"
-    })
+
+    assert {:error, "Unsupported transformation type: #{bad_transformation_type}"} ==
+             OperationBuilder.build(bad_transformation_type, %{
+               "foo" => "bar"
+             })
   end
 end
