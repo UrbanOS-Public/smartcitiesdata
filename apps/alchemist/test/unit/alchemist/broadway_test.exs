@@ -144,25 +144,25 @@ defmodule Alchemist.BroadwayTest do
     end)
   end
 
-   test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
-     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+  test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
+    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
 
-     kafka_messages = [%{value: Jason.encode!(data1)}]
+    kafka_messages = [%{value: Jason.encode!(data1)}]
 
-     Broadway.test_batch(broadway, kafka_messages)
+    Broadway.test_batch(broadway, kafka_messages)
 
-     assert_receive {:ack, _ref, _, failed_messages}, 5_000
-     assert 1 == length(failed_messages)
+    assert_receive {:ack, _ref, _, failed_messages}, 5_000
+    assert 1 == length(failed_messages)
 
-     eventually(fn ->
+    eventually(fn ->
        {:ok, dead_message} = DeadLetter.Carrier.Test.receive()
        refute dead_message == :empty
 
        assert dead_message.app == "Alchemist"
        assert dead_message.dataset_id == "ds1"
        assert dead_message.original_message == Jason.encode!(data1)
-     end)
-   end
+    end)
+  end
 end
 
 defmodule Fake.Producer do
