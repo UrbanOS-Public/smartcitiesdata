@@ -74,5 +74,19 @@ defmodule Transformers.RegexExtractTest do
 
       assert reason == "Invalid regular expression: missing ) at index 8"
     end
+
+    test "if source and target field are the same overwrite original value" do
+      params = %{
+        sourceField: "name",
+        targetField: "name",
+        regex: "^(\\w+)"
+      }
+
+      message_payload = %{"name" => "Emily Wilkenson"}
+
+      {:ok, transformed_payload} = Transformers.RegexExtract.transform(message_payload, params)
+
+      assert transformed_payload == %{"name" => "Emily"}
+    end
   end
 end
