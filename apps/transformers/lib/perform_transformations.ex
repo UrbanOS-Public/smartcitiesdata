@@ -1,7 +1,5 @@
 defmodule Transformers.Perform do
-  defp allResultItemsAreFunctions(result) do
-    Enum.all?(result, fn item -> is_function(item) end)
-  end
+  alias Transformers.Utils
 
   defp executeOperations(operations, initial_payload) do
     Enum.reduce_while(operations, {:ok, initial_payload}, fn op, {:ok, acc_payload} ->
@@ -16,7 +14,7 @@ defmodule Transformers.Perform do
   end
 
   def performTransformations(operations, initial_payload) do
-    if(allResultItemsAreFunctions(operations)) do
+    if(Utils.allOperationsItemsAreFunctions(operations)) do
       executeOperations(operations, initial_payload)
     else
       {:error, "Invalid list of functions passed to performTransformations"}
