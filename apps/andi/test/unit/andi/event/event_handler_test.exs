@@ -4,7 +4,9 @@ defmodule Andi.Event.EventHandlerTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
-  import SmartCity.Event, only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0, ingestion_delete: 0, ingestion_update: 0]
+  import SmartCity.Event,
+    only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0, ingestion_delete: 0, ingestion_update: 0]
+
   import SmartCity.TestHelper, only: [eventually: 1]
 
   alias Andi.Event.EventHandler
@@ -23,6 +25,7 @@ defmodule Andi.Event.EventHandlerTest do
     allow(IngestionStore.delete(any()), return: :ok)
     allow(Ingestions.delete(any()), return: {:ok, "good"})
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
     Brook.Event.new(type: ingestion_delete(), data: ingestion, author: :author)
     |> EventHandler.handle_event()
 
@@ -30,6 +33,7 @@ defmodule Andi.Event.EventHandlerTest do
     assert_called IngestionStore.delete(ingestion.id)
   end
 
+  @tag :skip
   test "should update the view state and the postgres entry when ingestion update event is called" do
     ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
     allow(IngestionStore.update(any()), return: :ok)
@@ -45,7 +49,6 @@ defmodule Andi.Event.EventHandlerTest do
     assert_called Ingestions.update(ingestion)
     assert_called IngestionStore.update(ingestion)
   end
-
 
   test "should delete the view state when dataset delete event is called" do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
