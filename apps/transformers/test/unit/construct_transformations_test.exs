@@ -14,7 +14,7 @@ defmodule Transformers.ConstructTest do
 
     sc_transformations = [regex_transformation]
 
-    result = Transformers.Construct.constructTransformation(sc_transformations)
+    result = Transformers.construct(sc_transformations)
 
     assert 1 == length(result)
     assert true == Utils.allOperationsItemsAreFunctions(result)
@@ -33,25 +33,25 @@ defmodule Transformers.ConstructTest do
 
     sc_transformations = [regex_transformation1, regex_transformation2, regex_transformation3]
 
-    result = Transformers.Construct.constructTransformation(sc_transformations)
+    result = Transformers.construct(sc_transformations)
 
     assert 3 == length(result)
     assert true == Utils.allOperationsItemsAreFunctions(result)
   end
 
   test "when given an empty array, returns an empty array" do
-    result = Transformers.Construct.constructTransformation([])
+    result = Transformers.construct([])
 
     assert result == []
   end
 
   test "when type is missing result is an error" do
-    result = Transformers.Construct.constructTransformation([%{parameters: {}}])
+    result = Transformers.construct([%{parameters: {}}])
     assert result == [{:error, "Map provided is not a valid transformation"}]
   end
 
   test "when parameters are missing result is an error" do
-    result = Transformers.Construct.constructTransformation([%{type: "regex_extract"}])
+    result = Transformers.construct([%{type: "regex_extract"}])
     assert result == [{:error, "Map provided is not a valid transformation"}]
   end
 end

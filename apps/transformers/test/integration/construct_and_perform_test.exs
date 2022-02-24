@@ -18,12 +18,12 @@ defmodule Transformers.ConstructAndPerformTest do
     transformation2 = Transformation.new(%{type: "regex_extract", parameters: parameters})
     transformations = [transformation1, transformation2]
 
-    operations = Transformers.Construct.constructTransformation(transformations)
+    operations = Transformers.construct(transformations)
     payload = %{
       "full_name" => "Emily Shire"
     }
 
-    {:ok, result} = Transformers.Perform.performTransformations(operations, payload)
+    {:ok, result} = Transformers.perform(operations, payload)
 
     assert Map.get(result, "full_name") == "Emily Shire"
     assert Map.get(result, "first_name") == "Emily"

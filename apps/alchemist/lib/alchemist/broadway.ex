@@ -44,7 +44,7 @@ defmodule Alchemist.Broadway do
       ],
       context: %{
         ingestion: ingestion,
-        transformations: Transformers.Construct.constructTransformation(ingestion.transformations),
+        transformations: Transformers.construct(ingestion.transformations),
         output_topic: Keyword.fetch!(output, :topic),
         producer: Keyword.fetch!(output, :connection)
       }
@@ -56,7 +56,7 @@ defmodule Alchemist.Broadway do
   #   on it's way out of alchemist.
   def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion, transformations: transformations}) do
     with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
-         {:ok, transformed_payload} <- Transformers.Perform.performTransformations(transformations, payload),
+         {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
       %{message | data: %{message.data | value: json_data}}

@@ -1,5 +1,16 @@
-defmodule Transformers.Perform do
+defmodule Transformers do
   alias Transformers.Utils
+
+  def construct(transformations) do
+    Enum.map(transformations, fn transformation ->
+      with {:ok, type} <- Map.fetch(transformation, :type),
+           {:ok, parameters} <- Map.fetch(transformation, :parameters) do
+        Transformers.OperationBuilder.build(type, parameters)
+      else
+        :error -> {:error, "Map provided is not a valid transformation"}
+      end
+    end)
+  end
 
   defp executeOperations(operations, initial_payload) do
     Enum.reduce_while(operations, {:ok, initial_payload}, fn op, {:ok, acc_payload} ->
@@ -13,7 +24,7 @@ defmodule Transformers.Perform do
     end)
   end
 
-  def performTransformations(operations, initial_payload) do
+  def perform(operations, initial_payload) do
     if(Utils.allOperationsItemsAreFunctions(operations)) do
       executeOperations(operations, initial_payload)
     else

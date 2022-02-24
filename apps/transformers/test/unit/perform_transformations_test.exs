@@ -1,7 +1,7 @@
 defmodule Transformers.PerformTest do
   use ExUnit.Case
 
-  alias Transformers.Perform
+  alias Transformers
   alias Transformers.OperationBuilder
 
   test "given a list of one transformation, the payload matches that of what is expected" do
@@ -17,7 +17,7 @@ defmodule Transformers.PerformTest do
       OperationBuilder.build("regex_extract", first_name_extractor_parameters)
 
     {:ok, resultant_payload} =
-      Perform.performTransformations([first_name_extractor_function], payload)
+      Transformers.perform([first_name_extractor_function], payload)
 
     assert {:ok, resultant_payload} ==
              Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
@@ -45,7 +45,7 @@ defmodule Transformers.PerformTest do
       OperationBuilder.build("regex_extract", first_letter_extractor)
 
     {:ok, resultant_payload} =
-      Perform.performTransformations(
+      Transformers.perform(
         [first_name_extractor_function, first_letter_extractor_function],
         payload
       )
@@ -81,7 +81,7 @@ defmodule Transformers.PerformTest do
       OperationBuilder.build("regex_extract", first_letter_extractor)
 
     {:error, reason} =
-      Perform.performTransformations(
+      Transformers.perform(
         [first_name_extractor_function, first_letter_extractor_function],
         payload
       )
@@ -91,14 +91,14 @@ defmodule Transformers.PerformTest do
 
   test "when provided an empty opsList, the initial payload is returned" do
     payload = %{name: "ben"}
-    {:ok, result} = Perform.performTransformations([], payload)
+    {:ok, result} = Transformers.perform([], payload)
     assert result == payload
   end
 
   test "what happens when opsList includes an error" do
     payload = %{name: "ben"}
     transformations = [{:error, "kaboom"}]
-    result = Perform.performTransformations(transformations, payload)
+    result = Transformers.perform(transformations, payload)
     assert :error == elem(result, 0)
   end
 end
