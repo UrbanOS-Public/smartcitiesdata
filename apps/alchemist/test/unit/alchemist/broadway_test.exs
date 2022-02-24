@@ -12,7 +12,6 @@ defmodule Alchemist.BroadwayTest do
   @topic "raw-ds1"
   @producer :ds1_producer
   @current_time "2019-07-17T14:45:06.123456Z"
-  @instance_name Alchemist.instance_name()
 
   setup do
     allow Elsa.produce(any(), any(), any(), any()), return: :ok
