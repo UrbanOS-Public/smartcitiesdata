@@ -28,6 +28,12 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
     changeset(technical_changes)
   end
 
+  def changeset_from_andi_ingestion(ingestion) do
+    ingestion = StructTools.to_map(ingestion)
+
+    changeset(ingestion)
+  end
+
   def changeset_from_form_data(form_data) do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)

@@ -6,6 +6,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
   import Checkov
 
   @moduletag shared_data_connection: true
+  @moduletag :skip
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -20,6 +21,7 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Ingestions
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.FinalizeFormSchema
@@ -29,14 +31,17 @@ defmodule AndiWeb.EditLiveView.FinalizeFormTest do
 
   describe "one-time ingestion" do
     setup %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            cadence: "once"
-          }
-        })
+      smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          targetDataset: smrt_dataset.id,
+          cadence: "once"
+        })
+
+      {:ok, ingestion} = Ingestions.update(smrt_ingestion)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 

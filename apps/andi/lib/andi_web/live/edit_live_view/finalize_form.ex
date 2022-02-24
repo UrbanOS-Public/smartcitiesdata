@@ -19,18 +19,18 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
     "yearly" => "0 0 0 1 1 *"
   }
 
-  def mount(_, %{"dataset" => dataset}, socket) do
-    new_changeset = FinalizeFormSchema.changeset_from_andi_dataset(dataset)
+  def mount(_, %{"ingestion" => ingestion}, socket) do
+    new_changeset = FinalizeFormSchema.changeset_from_andi_ingestion(ingestion)
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
 
     default_cron =
-      case dataset.technical.cadence do
+      case ingestion.cadence do
         cadence when cadence in ["once", "never", "", nil] -> "0 * * * * *"
         cron -> cron
       end
 
-    repeat_ingestion? = dataset.technical.cadence not in ["once", "never", "", nil]
+    repeat_ingestion? = ingestion.cadence not in ["once", "never", "", nil]
 
     {:ok,
      assign(socket,
@@ -40,7 +40,7 @@ defmodule AndiWeb.EditLiveView.FinalizeForm do
        crontab: default_cron,
        validation_status: "collapsed",
        crontab_list: parse_crontab(default_cron),
-       dataset_id: dataset.id
+       dataset_id: ingestion.targetDataset
      )}
   end
 
