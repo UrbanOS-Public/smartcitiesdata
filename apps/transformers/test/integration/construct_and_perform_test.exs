@@ -1,4 +1,4 @@
-defmodule Transformers.IntegrationTest do
+defmodule Transformers.ConstructAndPerformTest do
   use ExUnit.Case
   alias SmartCity.Ingestion.Transformation
 
