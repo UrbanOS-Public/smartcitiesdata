@@ -53,10 +53,7 @@ defmodule Transformers.PerformTest do
     {:ok, firstNamePayload} =
       Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
 
-    {:ok, firstLetterPayload} =
-      Transformers.RegexExtract.transform(firstNamePayload, first_letter_extractor)
-
-    assert {:ok, resultant_payload} = {:ok, firstLetterPayload}
+    assert Transformers.RegexExtract.transform(firstNamePayload, first_letter_extractor) == {:ok, resultant_payload}
   end
 
   test "when any operation fails, execution halts and error is returned" do
@@ -80,7 +77,7 @@ defmodule Transformers.PerformTest do
     first_letter_extractor_function =
       OperationBuilder.build("regex_extract", first_letter_extractor)
 
-    {:error, reason} =
+    {:error, _reason} =
       Transformers.perform(
         [first_name_extractor_function, first_letter_extractor_function],
         payload
