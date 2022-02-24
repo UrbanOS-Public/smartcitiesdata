@@ -16,7 +16,6 @@ defmodule Alchemist.TopicManagerTest do
   test "returns the input and output topic names" do
     allow Elsa.create_topic(any(), any()), return: :doesnt_matter
     allow Elsa.topic?(any(), any()), return: true
-    dataset = TDG.create_dataset(%{id: @dataset_id})
     ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDataset: @dataset_id})
 
     topics = TopicManager.setup_topics(ingestion)
