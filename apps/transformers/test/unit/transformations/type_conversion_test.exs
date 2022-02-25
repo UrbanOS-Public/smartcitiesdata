@@ -90,4 +90,13 @@ defmodule Transformers.TypeConversionTest do
 
     assert %{"thing" => "300"} == result
   end
+
+  test "convert from float to string" do
+    payload = %{"thing" => 45.67}
+    parameters = %{field: "thing", sourceType: "float", targetType: "string"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => "45.67"} == result
+  end
 end

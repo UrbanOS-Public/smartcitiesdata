@@ -23,6 +23,7 @@ defmodule Transformers.TypeConversion do
   defp pick_conversion(source_type, target_type) do
     case {source_type, target_type} do
       {"integer", "string"} -> {:ok, fn value -> to_string(value) end}
+      {"float", "string"} -> {:ok, fn value -> to_string(value) end}
     end
   end
 
