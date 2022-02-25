@@ -3,6 +3,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.RegexExtract.transform(payload, parameters) end
   end
 
+  def build("conversion", parameters) do
+    fn payload -> Transformers.TypeConversion.transform(payload, parameters) end
+  end
+
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
