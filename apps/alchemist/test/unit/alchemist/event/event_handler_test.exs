@@ -2,7 +2,6 @@ defmodule Alchemist.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
   use Brook.Event.Handler
-  import Checkov
   import SmartCity.Event, only: [ingestion_delete: 0, ingestion_update: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
