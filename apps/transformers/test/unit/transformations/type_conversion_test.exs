@@ -63,4 +63,13 @@ defmodule Transformers.TypeConversionTest do
 
     assert {:error, "Field some_int not of expected type: integer"} == result
   end
+
+  test "if field supposed to be string but is not, return error" do
+    payload = %{"some_string" => 1}
+    parameters = %{field: "some_string", sourceType: "string", targetType: "float"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Field some_string not of expected type: string"} == result
+  end
 end
