@@ -3,6 +3,10 @@ defmodule Transformers.TypeConversion do
 
   @impl Transformation
   def transform(payload, params) do
-    payload
+    field = Map.get(params, :field)
+    value = Map.get(payload, field)
+    if(value == nil or value == "") do
+      Map.put(payload, field, nil)
+    end
   end
 end

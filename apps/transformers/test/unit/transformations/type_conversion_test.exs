@@ -10,4 +10,12 @@ defmodule Transformers.TypeConversionTest do
     assert payload = result
   end
 
+  test "when field is empty string do nothing" do
+    payload = %{"nothing" => ""}
+    parameters = %{field: "nothing", sourceType: "string", targetType: "float"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"nothing" => nil} = result
+  end
 end
