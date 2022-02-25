@@ -126,4 +126,40 @@ defmodule Transformers.TypeConversionTest do
 
     assert %{"thing" => 1} == result
   end
+
+  test "convert from float to integer" do
+    payload = %{"thing" => 1.0}
+    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => 1} == result
+  end
+
+  test "converting from float to integer rounds up when decimal .5 or higher" do
+    payload = %{"thing" => 1.5}
+    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => 2} == result
+  end
+
+  test "converting from float to integer rounds down when decimal below .5" do
+    payload = %{"thing" => 1.4999999}
+    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => 1} == result
+  end
+
+  test "remember that floating numbers are imprecise" do
+    payload = %{"thing" => 1.4999999999999999}
+    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => 2} == result
+  end
 end
