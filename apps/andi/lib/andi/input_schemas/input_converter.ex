@@ -29,6 +29,28 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(andi_dataset, changes)
   end
 
+  def smrt_ingestion_to_full_changeset(smrt_ingestion) do
+    smrt_ingestion_to_full_changeset(%Ingestion{}, smrt_ingestion)
+  end
+
+  def smrt_ingestion_to_full_changeset(nil, smrt_ingestion) do
+    smrt_ingestion_to_full_changeset(%Ingestion{}, smrt_ingestion)
+  end
+
+  def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, %{"id" => _} = smrt_ingestion) do
+    IO.inspect(andi_ingestion, label: "ANDI")
+    IO.inspect(smrt_ingestion, label: "SMRT")
+    changes = atomize_ingestion_map(smrt_ingestion)
+
+    smrt_ingestion_to_full_changeset(andi_ingestion, changes)
+  end
+
+  def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, smrt_ingestion) do
+    changes = prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+    Ingestion.full_validation_changeset(andi_ingestion, changes)
+  end
+
   def smrt_dataset_to_changeset(smrt_dataset) do
     changes = prepare_smrt_dataset_for_casting(smrt_dataset)
 
@@ -414,6 +436,13 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:business, nil, &atomize_top_level/1)
     |> Map.update(:technical, nil, &atomize_top_level/1)
     |> update_in([:technical, :schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end)
+  end
+
+  defp atomize_ingestion_map(ingestion) when is_map(ingestion) do
+    ingestion |> IO.inspect(label: "I AM INSIDE ATOMIZE")
+    |> atomize_top_level() |> IO.inspect(label: "I AM INSIDE ATOMIZE2")
+    |> Map.update(:extractSteps, nil, &atomize_top_level/1) |> IO.inspect(label: "I AM INSIDE ATOMIZE3")
+    |> update_in([:schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end) |> IO.inspect(label: "I AM INSIDE ATOMIZE4")
   end
 
   defp atomize_top_level(map) do

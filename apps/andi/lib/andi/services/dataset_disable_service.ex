@@ -1,3 +1,4 @@
+# TODO - reaper no longer listens for dataset_disable() events. This is dead code to remove.
 defmodule Andi.Services.DatasetDisable do
   @moduledoc """
   Service for disabling datasets

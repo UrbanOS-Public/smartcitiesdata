@@ -1,4 +1,4 @@
-defmodule Andi.Services.DatasetDelete do
+defmodule Andi.Services.IngestionDelete do
   @moduledoc """
   Service for deleting ingestions
   """
