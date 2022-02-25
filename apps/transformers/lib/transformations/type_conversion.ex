@@ -11,13 +11,21 @@ defmodule Transformers.TypeConversion do
          {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
-           transformed_value = conversion_function.(value)
-           Map.put(payload, field, transformed_value)
+           parse_or_error(conversion_function, payload, field, value, target_type)
     else
       {:error, reason} -> {:error, reason}
       nil_payload -> nil_payload
     end
 
+  end
+
+  defp parse_or_error(conversion_function, payload, field, value, target_type) do
+    try do
+      transformed_value = conversion_function.(value)
+      Map.put(payload, field, transformed_value)
+    rescue
+      _ -> {:error, "Cannot parse field #{field} with value #{value} into #{target_type}"}
+    end
   end
 
   defp pick_conversion(source_type, target_type) do

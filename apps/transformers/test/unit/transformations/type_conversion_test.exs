@@ -171,4 +171,22 @@ defmodule Transformers.TypeConversionTest do
 
     assert {:error, "Conversion from boolean to string is not supported"} == result
   end
+
+  test "if string cannot be parsed into integer return error" do
+    payload = %{"thing" => "one"}
+    parameters = %{field: "thing", sourceType: "string", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Cannot parse field thing with value one into integer"} == result
+  end
+
+  test "if string cannot be parsed into float return error" do
+    payload = %{"thing" => "1/4"}
+    parameters = %{field: "thing", sourceType: "string", targetType: "float"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Cannot parse field thing with value 1/4 into float"} == result
+  end
 end
