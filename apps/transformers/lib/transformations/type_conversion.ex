@@ -3,7 +3,6 @@ defmodule Transformers.TypeConversion do
 
   @impl Transformation
   def transform(payload, params) do
-
     with {:ok, field} <- fetch_parameter(params, :field),
          {:ok, source_type} <- fetch_parameter(params, :sourceType),
          {:ok, target_type} <- fetch_parameter(params, :targetType),
@@ -11,12 +10,11 @@ defmodule Transformers.TypeConversion do
          {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
-           parse_or_error(conversion_function, payload, field, value, target_type)
+      parse_or_error(conversion_function, payload, field, value, target_type)
     else
       {:error, reason} -> {:error, reason}
       nil_payload -> nil_payload
     end
-
   end
 
   defp fetch_parameter(params, field_name) do
@@ -54,11 +52,13 @@ defmodule Transformers.TypeConversion do
   end
 
   defp check_field_is_of_sourcetype(field, value, source_type) do
-    function = case source_type do
-      "float" -> fn value -> is_float(value) end
-      "integer" -> fn value -> is_integer(value) end
-      "string" -> fn value -> is_bitstring(value) end
-    end
+    function =
+      case source_type do
+        "float" -> fn value -> is_float(value) end
+        "integer" -> fn value -> is_integer(value) end
+        "string" -> fn value -> is_bitstring(value) end
+      end
+
     if function.(value) do
       :ok
     else
@@ -74,6 +74,4 @@ defmodule Transformers.TypeConversion do
       _ -> {:error, "Cannot parse field #{field} with value #{value} into #{target_type}"}
     end
   end
-
-
 end
