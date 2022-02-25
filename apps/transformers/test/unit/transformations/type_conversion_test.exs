@@ -18,4 +18,13 @@ defmodule Transformers.TypeConversionTest do
 
     assert %{"nothing" => nil} = result
   end
+
+  test "when field is missing return error" do
+    payload = %{}
+    parameters = %{field: "something", sourceType: "string", targetType: "float"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Field to convert does not exist in message"} = result
+  end
 end
