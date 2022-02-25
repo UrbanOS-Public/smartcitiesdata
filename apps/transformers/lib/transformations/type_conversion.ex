@@ -5,6 +5,7 @@ defmodule Transformers.TypeConversion do
   def transform(payload, params) do
 
     with {:ok, field} <- fetchParameter(params, :field),
+         {:ok, source_type} <- fetchParameter(params, :sourceType),
          {:ok, value} <- fetchPayloadValue(payload, field) do
       if(value == nil or value == "") do
         Map.put(payload, field, nil)
