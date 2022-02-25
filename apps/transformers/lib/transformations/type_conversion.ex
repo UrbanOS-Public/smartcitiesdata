@@ -13,7 +13,7 @@ defmodule Transformers.TypeConversion do
       parse_or_error(conversion_function, payload, field, value, target_type)
     else
       {:error, reason} -> {:error, reason}
-      nil_payload -> nil_payload
+      nil_payload -> {:ok, nil_payload}
     end
   end
 
@@ -69,7 +69,8 @@ defmodule Transformers.TypeConversion do
   defp parse_or_error(conversion_function, payload, field, value, target_type) do
     try do
       transformed_value = conversion_function.(value)
-      Map.put(payload, field, transformed_value)
+      transformed_payload = Map.put(payload, field, transformed_value)
+      {:ok, transformed_payload}
     rescue
       _ -> {:error, "Cannot parse field #{field} with value #{value} into #{target_type}"}
     end

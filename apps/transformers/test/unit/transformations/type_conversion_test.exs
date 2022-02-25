@@ -7,7 +7,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert payload == result
+    assert {:ok, payload} == result
   end
 
   test "when field is empty string do nothing" do
@@ -16,7 +16,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"nothing" => nil} == result
+    assert {:ok, %{"nothing" => nil}} == result
   end
 
   test "when field is missing return error" do
@@ -88,7 +88,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => "300"} == result
+    assert {:ok, %{"thing" => "300"}} == result
   end
 
   test "convert from float to string" do
@@ -97,7 +97,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => "45.67"} == result
+    assert {:ok, %{"thing" => "45.67"}} == result
   end
 
   test "convert from integer to float" do
@@ -106,7 +106,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 1.0} == result
+    assert {:ok, %{"thing" => 1.0}} == result
   end
 
   test "convert from string to float" do
@@ -115,7 +115,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 1.12} == result
+    assert {:ok, %{"thing" => 1.12}} == result
   end
 
   test "convert from string to integer" do
@@ -124,7 +124,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 1} == result
+    assert {:ok, %{"thing" => 1}} == result
   end
 
   test "convert from float to integer" do
@@ -133,7 +133,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 1} == result
+    assert {:ok, %{"thing" => 1}} == result
   end
 
   test "converting from float to integer rounds up when decimal .5 or higher" do
@@ -142,7 +142,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 2} == result
+    assert {:ok, %{"thing" => 2}} == result
   end
 
   test "converting from float to integer rounds down when decimal below .5" do
@@ -151,7 +151,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 1} == result
+    assert {:ok, %{"thing" => 1}} == result
   end
 
   test "remember that floating numbers are imprecise" do
@@ -160,7 +160,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert %{"thing" => 2} == result
+    assert {:ok, %{"thing" => 2}} == result
   end
 
   test "if conversion is not supported return error" do
