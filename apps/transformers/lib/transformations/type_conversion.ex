@@ -9,7 +9,8 @@ defmodule Transformers.TypeConversion do
          {:ok, value} <- fetch_payload_value(payload, field),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
-
+           transformed_value = to_string(value)
+           Map.put(payload, field, transformed_value)
     else
       {:error, reason} -> {:error, reason}
       nil_payload -> nil_payload
