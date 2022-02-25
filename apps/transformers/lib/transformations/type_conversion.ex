@@ -8,9 +8,9 @@ defmodule Transformers.TypeConversion do
          {:ok, source_type} <- fetch_parameter(params, :sourceType),
          {:ok, target_type} <- fetch_parameter(params, :targetType),
          {:ok, value} <- fetch_payload_value(payload, field),
+         {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
-         :ok <- check_field_is_of_sourcetype(field, value, source_type),
-         {:ok, conversion_function} <- pick_conversion(source_type, target_type) do
+         :ok <- check_field_is_of_sourcetype(field, value, source_type) do
            transformed_value = conversion_function.(value)
            Map.put(payload, field, transformed_value)
     else
@@ -28,6 +28,7 @@ defmodule Transformers.TypeConversion do
       {"float", "string"} -> {:ok, fn value -> to_string(value) end}
       {"string", "integer"} -> {:ok, fn value -> String.to_integer(value) end}
       {"string", "float"} -> {:ok, fn value -> String.to_float(value) end}
+      _ -> {:error, "Conversion from #{source_type} to #{target_type} is not supported"}
     end
   end
 

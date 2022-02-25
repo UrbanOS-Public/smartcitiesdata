@@ -162,4 +162,13 @@ defmodule Transformers.TypeConversionTest do
 
     assert %{"thing" => 2} == result
   end
+
+  test "if conversion is not supported return error" do
+    payload = %{"thing" => true}
+    parameters = %{field: "thing", sourceType: "boolean", targetType: "string"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Conversion from boolean to string is not supported"} == result
+  end
 end
