@@ -7,7 +7,7 @@ defmodule Transformers.TypeConversion do
     with {:ok, field} <- fetch_parameter(params, :field),
          {:ok, source_type} <- fetch_parameter(params, :sourceType),
          {:ok, target_type} <- fetch_parameter(params, :targetType),
-         {:ok, value} <- fetch_payload_value(payload, field),
+         {:ok, value} <- fetch_value(payload, field),
          {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
@@ -55,7 +55,7 @@ defmodule Transformers.TypeConversion do
     end
   end
 
-  defp fetch_payload_value(payload, field_name) do
+  defp fetch_value(payload, field_name) do
     case Map.fetch(payload, field_name) do
       {:ok, field} -> {:ok, field}
       :error -> {:error, "Missing field in payload: #{field_name}"}
