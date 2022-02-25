@@ -6,14 +6,23 @@ defmodule Transformers.TypeConversion do
 
     with {:ok, field} <- fetchParameter(params, :field),
          {:ok, source_type} <- fetchParameter(params, :sourceType),
-         {:ok, value} <- fetchPayloadValue(payload, field) do
-      if(value == nil or value == "") do
-        Map.put(payload, field, nil)
-      end
+         {:ok, value} <- fetchPayloadValue(payload, field),
+         :ok <- abortIfMissingValue(payload, field, value),
+         :ok <- checkFieldIsOfSourceType(field, value, source_type) do
+
     else
       {:error, reason} -> {:error, reason}
+      nil_payload -> nil_payload
     end
 
+  end
+
+  defp abortIfMissingValue(payload, field, value) do
+    if(value == nil or value == "") do
+      Map.put(payload, field, nil)
+    else
+      :ok
+    end
   end
 
   defp fetchParameter(params, field_name) do
@@ -27,6 +36,18 @@ defmodule Transformers.TypeConversion do
     case Map.fetch(payload, field_name) do
       {:ok, field} -> {:ok, field}
       :error -> {:error, "Missing field in payload: #{field_name}"}
+    end
+  end
+
+  defp checkFieldIsOfSourceType(field, value, source_type) do
+    function = case source_type do
+      "float" -> fn value -> is_float(value) end
+      # "integer" -> fn value -> is_integer(value) end
+    end
+    if function.(value) do
+      :ok
+    else
+      {:error, "Field #{field} not of expected type: #{source_type}"}
     end
   end
 end
