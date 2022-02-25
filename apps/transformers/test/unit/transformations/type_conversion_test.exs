@@ -25,7 +25,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Field to convert does not exist in message"} == result
+    assert {:error, "Missing field in payload: something"} == result
   end
 
   test "if params do not contain field return error" do

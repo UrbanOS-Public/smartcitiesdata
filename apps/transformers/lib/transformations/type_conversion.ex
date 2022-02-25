@@ -5,13 +5,12 @@ defmodule Transformers.TypeConversion do
   def transform(payload, params) do
 
     with {:ok, field} <- fetchParameter(params, :field),
-         {:ok, value} <- Map.fetch(payload, field) do
+         {:ok, value} <- fetchPayloadValue(payload, field) do
       if(value == nil or value == "") do
         Map.put(payload, field, nil)
       end
     else
       {:error, reason} -> {:error, reason}
-      :error -> {:error, "Field to convert does not exist in message"}
     end
 
   end
@@ -20,6 +19,13 @@ defmodule Transformers.TypeConversion do
     case Map.fetch(params, field_name) do
       {:ok, field} -> {:ok, field}
       :error -> {:error, "Missing transformation parameter: #{field_name}"}
+    end
+  end
+
+  defp fetchPayloadValue(payload, field_name) do
+    case Map.fetch(payload, field_name) do
+      {:ok, field} -> {:ok, field}
+      :error -> {:error, "Missing field in payload: #{field_name}"}
     end
   end
 end
