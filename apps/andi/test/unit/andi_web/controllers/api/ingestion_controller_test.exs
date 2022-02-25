@@ -39,7 +39,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       "id" => uuid,
       "sourceFormat" => "gtfs",
       "cadence" => "once",
-      "schema" => [%{name: "billy", type: "writer"}],
+      "schema" => [%{name: "billy", type: "writer"}]
     }
 
     message =
@@ -159,6 +159,10 @@ defmodule AndiWeb.API.IngestionControllerTest do
   end
 
   describe "PUT /ingestion" do
+    @tag :skip
+    test "happy path put" do
+    end
+
     @tag capture_log: true
     test "PUT /api/ without data returns 500", %{conn: conn} do
       conn = put(conn, @route)
@@ -171,9 +175,6 @@ defmodule AndiWeb.API.IngestionControllerTest do
       assert json_response(conn, 500) =~ "Unable to process your request"
     end
   end
-
- 
-
 
   defp struct_to_map_with_string_keys(dataset) do
     dataset

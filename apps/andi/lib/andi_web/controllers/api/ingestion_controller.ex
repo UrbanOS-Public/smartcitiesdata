@@ -29,9 +29,9 @@ defmodule AndiWeb.API.IngestionController do
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     with message <- add_uuid(conn.body_params),
-         #{:ok, parsed_message} <- trim_fields(message),
-         :valid <- validate_changes(message),
-         {:ok, ingestion} <- new_ingestion(message),
+         {:ok, parsed_message} <- trim_required_fields(message),
+         :valid <- validate_changes(parsed_message),
+         ingestion <- new_ingestion(parsed_message),
          :ok <- write_ingestion(ingestion) do
       respond(conn, :created, ingestion)
     else
@@ -45,7 +45,7 @@ defmodule AndiWeb.API.IngestionController do
   end
 
   def validate_changes(ingestion) do
-    changeset = InputConverter.smrt_ingestion_to_full_changeset(ingestion) 
+    changeset = InputConverter.smrt_ingestion_to_full_changeset(ingestion)
 
     if changeset.valid? do
       :valid
@@ -82,8 +82,12 @@ defmodule AndiWeb.API.IngestionController do
   @spec get(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def get(conn, params) do
     case IngestionStore.get(Map.get(params, "ingestion_id")) do
-      {:ok, nil} -> respond(conn, :not_found, "Ingestion not found")
-      {:ok, ingestion} -> respond(conn, :ok, ingestion)
+      {:ok, nil} ->
+        respond(conn, :not_found, "Ingestion not found")
+
+      {:ok, ingestion} ->
+        respond(conn, :ok, ingestion)
+
       error ->
         Logger.error("Failed to retrieve ingestion by id: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")
@@ -123,7 +127,7 @@ defmodule AndiWeb.API.IngestionController do
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
 
-  defp trim_fields(%{"id" => id, "schema" => schema, "extractSteps" => extract_steps} = map) do
+  defp trim_required_fields(%{"id" => id, "schema" => schema, "extractSteps" => extract_steps} = map) do
     {:ok,
      %{
        map
@@ -133,25 +137,24 @@ defmodule AndiWeb.API.IngestionController do
      }}
   end
 
-  defp trim_fields(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
+  defp trim_required_fields(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
+
+  defp trim_list(data) do
+    Enum.map(data, fn
+      item when is_binary(item) -> String.trim(item)
+      item when is_map(item) -> trim_map(item)
+      item -> item
+    end)
+  end
 
   defp trim_map(data) do
     data
     |> Enum.map(fn
       {key, val} when is_binary(val) -> {key, String.trim(val)}
-      {key, val} when is_list(val) -> {key, trim_list(val)}
       field -> field
     end)
     |> Enum.into(Map.new())
   end
-
-  defp trim_list(data) do
-    Enum.map(data, fn
-      item when is_binary(item) -> String.trim(item)
-      item -> item
-    end)
-  end
-
 
   defp new_ingestion(message) do
     message
