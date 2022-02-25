@@ -6,6 +6,7 @@ defmodule Transformers.TypeConversion do
 
     with {:ok, field} <- fetch_parameter(params, :field),
          {:ok, source_type} <- fetch_parameter(params, :sourceType),
+         {:ok, target_type} <- fetch_parameter(params, :targetType),
          {:ok, value} <- fetch_payload_value(payload, field),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do

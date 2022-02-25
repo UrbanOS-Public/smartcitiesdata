@@ -37,13 +37,22 @@ defmodule Transformers.TypeConversionTest do
     assert {:error, "Missing transformation parameter: field"} == result
   end
 
-  test "if params do not contain source_type return error" do
+  test "if params do not contain source type return error" do
     payload = %{"something" => "some_value"}
     parameters = %{field: "something", targetType: "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
     assert {:error, "Missing transformation parameter: sourceType"} == result
+  end
+
+  test "if params do not contain target type return error" do
+    payload = %{"something" => "some_value"}
+    parameters = %{field: "something", sourceType: "string"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, "Missing transformation parameter: targetType"} == result
   end
 
   test "if field supposed to be float but is not, return error" do
