@@ -25,6 +25,7 @@ defmodule Transformers.TypeConversion do
       {"integer", "float"} -> {:ok, fn value -> value / 1 end}
       {"integer", "string"} -> {:ok, fn value -> to_string(value) end}
       {"float", "string"} -> {:ok, fn value -> to_string(value) end}
+      {"string", "float"} -> {:ok, fn value -> String.to_float(value) end}
     end
   end
 
