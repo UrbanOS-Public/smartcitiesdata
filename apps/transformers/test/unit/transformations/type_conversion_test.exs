@@ -117,4 +117,13 @@ defmodule Transformers.TypeConversionTest do
 
     assert %{"thing" => 1.12} == result
   end
+
+  test "convert from string to integer" do
+    payload = %{"thing" => "1"}
+    parameters = %{field: "thing", sourceType: "string", targetType: "integer"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert %{"thing" => 1} == result
+  end
 end
