@@ -42,7 +42,7 @@ defmodule Transformers.TypeConversion do
   defp check_field_is_of_sourcetype(field, value, source_type) do
     function = case source_type do
       "float" -> fn value -> is_float(value) end
-      # "integer" -> fn value -> is_integer(value) end
+      "integer" -> fn value -> is_integer(value) end
     end
     if function.(value) do
       :ok
