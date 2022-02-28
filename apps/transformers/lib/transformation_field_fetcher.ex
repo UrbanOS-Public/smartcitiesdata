@@ -7,7 +7,6 @@ defmodule Transformations.FieldFetcher do
     fetch_or_error(payload, field_name, "Missing field in payload: #{field_name}")
   end
 
-  # defp fetch refactor?
   defp fetch_or_error(map, field_name, error_msg) do
     case Map.fetch(map, field_name) do
       {:ok, field} -> {:ok, field}
