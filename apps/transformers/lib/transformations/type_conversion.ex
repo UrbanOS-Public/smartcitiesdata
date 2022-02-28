@@ -1,12 +1,14 @@
 defmodule Transformers.TypeConversion do
   @behaviour Transformation
 
+  alias Transformations.FieldFetcher
+
   @impl Transformation
   def transform(payload, params) do
-    with {:ok, field} <- fetch_parameter(params, :field),
-         {:ok, source_type} <- fetch_parameter(params, :sourceType),
-         {:ok, target_type} <- fetch_parameter(params, :targetType),
-         {:ok, value} <- fetch_value(payload, field),
+    with {:ok, field} <- FieldFetcher.fetch_parameter(params, :field),
+         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, :sourceType),
+         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, :targetType),
+         {:ok, value} <- FieldFetcher.fetch_value(payload, field),
          {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
@@ -14,20 +16,6 @@ defmodule Transformers.TypeConversion do
     else
       {:error, reason} -> {:error, reason}
       nil_payload -> {:ok, nil_payload}
-    end
-  end
-
-  defp fetch_parameter(params, field_name) do
-    case Map.fetch(params, field_name) do
-      {:ok, field} -> {:ok, field}
-      :error -> {:error, "Missing transformation parameter: #{field_name}"}
-    end
-  end
-
-  defp fetch_value(payload, field_name) do
-    case Map.fetch(payload, field_name) do
-      {:ok, field} -> {:ok, field}
-      :error -> {:error, "Missing field in payload: #{field_name}"}
     end
   end
 
