@@ -33,20 +33,21 @@ defmodule Transformers.ConstructAndPerformTest do
     assert Map.get(result, "last_name") == "Shire"
   end
 
-  @tag :skip
   test "two transforms of different kinds" do
     regex_params = %{
-      regex: "^[0-9]",
+      regex: "^([0-9])",
       sourceField: "thing",
       targetField: "number"
     }
+
     transformation1 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
 
     conversion_params = %{
-      "field": "number",
-      "sourceType": "string",
-      "targetType": "integer"
+      field: "number",
+      sourceType: "string",
+      targetType: "integer"
     }
+
     transformation2 = Transformation.new(%{type: "conversion", parameters: conversion_params})
 
     transformations = [transformation1, transformation2]
