@@ -26,4 +26,18 @@ defmodule Transformers.OperationBuilderTest do
                "foo" => "bar"
              })
   end
+
+  test "type conversion function" do
+    payload = %{"number" => "1"}
+
+    parameters = %{
+      field: "number",
+      sourceType: "string",
+      targetType: "integer"
+    }
+
+    function = OperationBuilder.build("conversion", parameters)
+
+    assert function.(payload) == Transformers.TypeConversion.transform(payload, parameters)
+  end
 end

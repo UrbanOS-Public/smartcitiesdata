@@ -58,7 +58,7 @@ defmodule Transformers.RegexExtractTest do
 
       {:error, reason} = Transformers.RegexExtract.transform(message_payload, params)
 
-      assert reason == "Field source_field not found"
+      assert reason == "Missing field in payload: source_field"
     end
 
     test "returns an error if the regex does not compile" do
