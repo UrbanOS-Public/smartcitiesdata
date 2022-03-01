@@ -44,7 +44,7 @@ defmodule Transformers.TypeConversion do
       case source_type do
         "float" -> fn value -> is_float(value) end
         "integer" -> fn value -> is_integer(value) end
-        "string" -> fn value -> is_bitstring(value) end
+        "string" -> fn value -> is_binary(value) end
       end
 
     if function.(value) do
