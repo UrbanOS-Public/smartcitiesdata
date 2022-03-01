@@ -6,6 +6,7 @@ defmodule Transformers.RegexExtract do
   @impl Transformation
 
   def transform(payload, parameters) do
+    # TODO refactor to use fetch_parameter for this in with block
     source_field = parameters.sourceField
 
     with {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
