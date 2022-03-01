@@ -11,8 +11,8 @@ defmodule Transformers.DateTime do
          {:ok, targetField} <- FieldFetcher.fetch_parameter(parameters, :targetField),
          {:ok, targetFormat} <- FieldFetcher.fetch_parameter(parameters, :targetFormat),
          {:ok, payloadSourceValue} <- FieldFetcher.fetch_value(payload, sourceField),
-         {:ok, sourceDatetime} <- parseSourceTime(payloadSourceValue, sourceFormat, sourceField),
-         {:ok, transformedDatetime} <- Timex.format(sourceDatetime, targetFormat) do
+         {:ok, sourceDatetime} <- parseTime(payloadSourceValue, sourceFormat, sourceField),
+         {:ok, transformedDatetime} <- formatDateTime(sourceDatetime, targetFormat) do
       {:ok, %{targetField => transformedDatetime}}
     else
       {:error, reason} ->
@@ -23,7 +23,7 @@ defmodule Transformers.DateTime do
     end
   end
 
-  defp parseSourceTime(dateString, dateFormat, sourceField) do
+  defp parseTime(dateString, dateFormat, sourceField) do
     with {:ok, result} <- Timex.parse(dateString, dateFormat) do
       {:ok, result}
     else
@@ -32,6 +32,15 @@ defmodule Transformers.DateTime do
          "Unable to parse datetime from \"#{sourceField}\" in format \"#{dateFormat}\": #{
            timexReason
          }"}
+    end
+  end
+
+  defp formatDateTime(dateTime, format) do
+    with {:ok, result} <- Timex.format(dateTime, format) do
+      {:ok, result}
+    else
+      {:error, {:format, reason}} ->
+        {:error, "Unable to format datetime in format \"#{format}\": #{reason}"}
     end
   end
 end

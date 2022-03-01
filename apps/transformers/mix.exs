@@ -26,13 +26,15 @@ defmodule Transformers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:checkov, "~> 1.0", only: [:test]},
+      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:smart_city, "~> 5.0.5"},
       {:smart_city_test, "~> 2.1.0", only: [:test, :integration]},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:timex, "~> 3.6"},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]}
+      {:timex, "~> 3.6"}
     ]
   end
 
