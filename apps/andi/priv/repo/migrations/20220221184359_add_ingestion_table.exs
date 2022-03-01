@@ -8,7 +8,7 @@ defmodule Andi.Repo.Migrations.AddIngestionTable do
       add :cadence, :string
       add :schema, {:array, :map}, default: []
       add :extractSteps, {:array, :map}, default: []
-      add :targetDataset, references(:datasets, type: :string, on_delete: :delete_all), null: false
+      add :targetDataset, references(:datasets, type: :string, on_delete: :delete_all)
       add :sourceFormat, :string
       add :topLevelSelector, :string
       add :ingestedTime, :utc_datetime

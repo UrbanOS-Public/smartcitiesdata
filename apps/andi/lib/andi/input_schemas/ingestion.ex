@@ -63,8 +63,6 @@ defmodule Andi.InputSchemas.Ingestion do
   def changeset(ingestion, changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
-    dataset = Datasets.get(ingestion.targetDataset)
-    source_type = dataset.technical.sourceType
 
     ingestion
     |> cast(changes_with_id, @cast_fields, empty_values: [])
@@ -72,11 +70,11 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> foreign_key_constraint(:targetDataset)
-    |> validate_source_format(source_type)
+    |> validate_source_format()
     |> CadenceValidator.validate()
     |> validate_top_level_selector()
-    |> validate_schema(source_type)
-    |> validate_extract_steps(source_type)
+    |> validate_schema()
+    |> validate_extract_steps()
   end
 
   # TODO 549: update for ingestion
@@ -89,7 +87,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> foreign_key_constraint(:targetDataset)
     |> validate_required(@submission_required_fields, message: "is required")
-    # |> validate_source_format()
+    |> validate_source_format()
     |> validate_submission_schema()
   end
 
@@ -111,8 +109,7 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(schema, changes)
   end
 
-  defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset, source_type)
-       when source_type in ["ingest", "stream"] do
+  defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset) do
     format_values = Options.source_format() |> Map.new() |> Map.values()
 
     if source_format in format_values do
@@ -122,7 +119,9 @@ defmodule Andi.InputSchemas.Ingestion do
     end
   end
 
-  defp validate_source_format(changeset, source_type), do: changeset
+  defp validate_source_format(changeset) do
+    validate_required(changeset, [:sourceFormat], message: "is required")
+  end
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")
@@ -138,16 +137,13 @@ defmodule Andi.InputSchemas.Ingestion do
 
   defp validate_top_level_selector(changeset), do: changeset
 
-  defp validate_schema(changeset, source_type)
-       when source_type in ["ingest", "stream"] do
+  defp validate_schema(changeset) do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
       _ -> validate_schema_internals(changeset)
     end
   end
-
-  defp validate_schema(changeset, _), do: changeset
 
   defp validate_submission_schema(%{changes: %{schema: _}} = changeset) do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
@@ -166,14 +162,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
   end
 
-  defp validate_extract_steps(changeset, source_type)
-       when source_type in ["remote"] do
-    changeset
-  end
-
-  defp validate_extract_steps(%{changes: %{cadence: "continuous"}} = changeset, _source_type), do: changeset
-
-  defp validate_extract_steps(changeset, _source_type) do
+  defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
 
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do

@@ -38,8 +38,6 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, %{"id" => _} = smrt_ingestion) do
-    IO.inspect(andi_ingestion, label: "ANDI")
-    IO.inspect(smrt_ingestion, label: "SMRT")
     changes = atomize_ingestion_map(smrt_ingestion)
 
     smrt_ingestion_to_full_changeset(andi_ingestion, changes)
@@ -78,6 +76,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
     |> FormTools.replace(:schema, fn schema ->
       schema
+      |> Enum.map(&add_ingestion_id(&1, ingestion.id))
       |> Enum.map(&add_dataset_id(&1, ingestion.targetDataset))
       |> Enum.map(&convert_default/1)
     end)
@@ -270,6 +269,17 @@ defmodule Andi.InputSchemas.InputConverter do
     end)
   end
 
+  defp add_ingestion_id(schema, ingestion_id, parent_bread_crumb \\ "") do
+    bread_crumb = parent_bread_crumb <> schema.name
+
+    schema
+    |> Map.put(:ingestion_id, ingestion_id)
+    |> Map.put(:bread_crumb, bread_crumb)
+    |> FormTools.replace(:subSchema, fn sub_schema ->
+      Enum.map(sub_schema, &add_ingestion_id(&1, ingestion_id, bread_crumb <> " > "))
+    end)
+  end
+
   defp convert_default(%{type: "date", default: _} = field) do
     {default, updated_field} = Map.pop(field, :default)
     offset = default |> Map.get(:opts) |> Map.get(:offset_in_days, 0)
@@ -441,7 +451,7 @@ defmodule Andi.InputSchemas.InputConverter do
   defp atomize_ingestion_map(ingestion) when is_map(ingestion) do
     ingestion
     |> atomize_top_level()
-    |> Map.update(:extractSteps, nil, &atomize_top_level/1)
+    |> update_in([:extractSteps], fn extractSteps -> Enum.map(extractSteps, &atomize_top_level/1) end)
     |> update_in([:schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end)
   end
 

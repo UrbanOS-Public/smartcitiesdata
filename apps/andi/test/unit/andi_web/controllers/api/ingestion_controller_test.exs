@@ -7,7 +7,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.IngestionStore
 
-  import SmartCity.Event, only: [ingestion_delete: 0]
+  import SmartCity.Event, only: [ingestion_delete: 0, ingestion_update: 0]
 
   @instance_name Andi.instance_name()
 
@@ -159,8 +159,14 @@ defmodule AndiWeb.API.IngestionControllerTest do
   end
 
   describe "PUT /ingestion" do
-    @tag :skip
-    test "happy path put" do
+
+    test "PUT /api/ with data returns a 201", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{})
+      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      conn = put(conn, @route, ingestion)
+      assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion))
     end
 
     @tag capture_log: true

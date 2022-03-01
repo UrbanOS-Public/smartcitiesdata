@@ -106,19 +106,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       )
     end
 
-    test "a missing schema is valid when the sourceType is not ingest or stream" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "remote"}}
-
-      changes =
-        @valid_changes
-        |> delete_in([:schema])
-
-      changeset = Ingestion.changeset(changes)
-
-      assert changeset.valid? == true
-      assert Enum.empty?(changeset.errors)
-    end
-
     test "xml source format requires all fields in the schema to have selectors" do
       allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
 
@@ -250,18 +237,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         ["*/1 * * * * *"],
         ["a b c d e f"]
       ])
-    end
-
-    test "extract steps can be empty when the sourceType is remote" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "remote"}}
-
-      changes =
-        @valid_changes
-        |> delete_in([:extractSteps])
-
-      changeset = Ingestion.changeset(changes)
-
-      assert changeset.valid?
     end
 
     test "extract steps are valid when http step is last" do

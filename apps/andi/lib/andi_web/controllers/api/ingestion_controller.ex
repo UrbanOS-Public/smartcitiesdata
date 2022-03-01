@@ -16,7 +16,6 @@ defmodule AndiWeb.API.IngestionController do
     create: [:private],
     get: [:private],
     get_all: [:private],
-    disable: [:private],
     delete: [:private]
   )
 
@@ -110,7 +109,7 @@ defmodule AndiWeb.API.IngestionController do
         respond(conn, 404, "Ingestion not found")
 
       error ->
-        Logger.error("Could not delete ignestion due to #{inspect(error)}")
+        Logger.error("Could not delete ingestion due to #{inspect(error)}")
         respond(conn, 500, "An error occcured when deleting the ingestion")
     end
   end
@@ -127,14 +126,8 @@ defmodule AndiWeb.API.IngestionController do
     Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
   end
 
-  defp trim_required_fields(%{"id" => id, "schema" => schema, "extractSteps" => extract_steps} = map) do
-    {:ok,
-     %{
-       map
-       | "id" => String.trim(id),
-         "extractSteps" => trim_list(extract_steps),
-         "schema" => trim_list(schema)
-     }}
+  defp trim_required_fields(%{"id" => _, "schema" => _, "extractSteps" => _} = map) do
+    {:ok, trim_map(map)}
   end
 
   defp trim_required_fields(msg), do: {:error, "Cannot parse message: #{inspect(msg)}"}
@@ -151,6 +144,7 @@ defmodule AndiWeb.API.IngestionController do
     data
     |> Enum.map(fn
       {key, val} when is_binary(val) -> {key, String.trim(val)}
+      {key, val} when is_list(val) -> {key, trim_list(val)}
       field -> field
     end)
     |> Enum.into(Map.new())
