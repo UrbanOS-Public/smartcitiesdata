@@ -19,7 +19,39 @@ defmodule Transformers.DateTimeTest do
     assert actual_transformed_field == "February 28, 2022 4:53 PM"
   end
 
-  # TODO: "parses date and overwrites an existing payload field"
+  test "when source and target are the same field, source is overwritten" do
+    params = %{
+      sourceField: "date1",
+      targetField: "date1",
+      sourceFormat: "{YYYY}-{0M}-{D} {h24}:{m}",
+      targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+    }
+
+    message_payload = %{"date1" => "2022-02-28 16:53"}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params.targetField)
+    assert actual_transformed_field == "February 28, 2022 4:53 PM"
+  end
+
+  test "non source/target payload values are unaltered" do
+    params = %{
+      sourceField: "date1",
+      targetField: "date1",
+      sourceFormat: "{YYYY}-{0M}-{D} {h24}:{m}",
+      targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+    }
+
+    message_payload = %{"date1" => "2022-02-28 16:53", "other_field" => "other_data"}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    assert transformed_payload == %{
+             "date1" => "February 28, 2022 4:53 PM",
+             "other_field" => "other_data"
+           }
+  end
 
   describe "error handling" do
     data_test "returns error when #{parameter} not there" do

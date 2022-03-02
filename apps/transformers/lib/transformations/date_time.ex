@@ -13,7 +13,7 @@ defmodule Transformers.DateTime do
          {:ok, payloadSourceValue} <- FieldFetcher.fetch_value(payload, sourceField),
          {:ok, sourceDatetime} <- parseTime(payloadSourceValue, sourceFormat, sourceField),
          {:ok, transformedDatetime} <- formatDateTime(sourceDatetime, targetFormat) do
-      {:ok, %{targetField => transformedDatetime}}
+      {:ok, payload |> Map.put(targetField, transformedDatetime)}
     else
       {:error, reason} ->
         {:error, reason}
