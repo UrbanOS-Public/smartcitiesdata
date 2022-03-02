@@ -50,7 +50,7 @@ defmodule TestHelpers do
       endpoints,
       topic,
       {"jerks", Jason.encode!(message)},
-      parition: 0
+      partition: 0
     )
   end
 
