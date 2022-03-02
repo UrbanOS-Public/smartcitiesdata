@@ -41,7 +41,26 @@ defmodule Transformers.DateTimeTest do
       where(parameter: [:sourceField, :sourceFormat, :targetField, :targetFormat])
     end
 
-    # TODO: error fetching payload value
+    test "returns error when sourceField is missing from payload" do
+      sourceField = "missing"
+
+      params = %{
+        sourceField: sourceField,
+        targetField: "date2",
+        sourceFormat: "{YYYY}-{0M}-{D} {h24}:{m}",
+        targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+      }
+
+      allow(Transformations.FieldFetcher.fetch_value(any(), sourceField),
+        return: {:error, "couldn't fetch param"}
+      )
+
+      message_payload = %{"date1" => "2022-02-28 16:53"}
+
+      {:error, reason} = Transformers.DateTime.transform(message_payload, params)
+
+      assert reason == "couldn't fetch param"
+    end
 
     test "returns error when sourceFormat doesn't match sourceField value" do
       sourceField = "date1"
