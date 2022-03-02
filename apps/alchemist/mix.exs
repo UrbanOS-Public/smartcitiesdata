@@ -4,7 +4,7 @@ defmodule Alchemist.MixProject do
   def project do
     [
       app: :alchemist,
-      version: "0.1.0",
+      version: "0.2.1",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -53,8 +53,8 @@ defmodule Alchemist.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 5.0.4"},
-      {:smart_city_test, "~> 2.0.5", only: [:test, :integration]},
+      {:smart_city, "~> 5.0.5"},
+      {:smart_city_test, "~> 2.1.0", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:transformers, in_umbrella: true},

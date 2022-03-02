@@ -16,4 +16,5 @@ end
 ## Commands
 
 - `mix test` to run unit tests
+- `mix test.watch` to run unit tests in watch mode
 - `mix integration` to run integration tests

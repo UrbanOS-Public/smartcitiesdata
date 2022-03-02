@@ -6,6 +6,10 @@ defmodule Alchemist.Broadway do
   use Broadway
   use Properties, otp_app: :alchemist
 
+  alias Broadway.Message
+
+  @app_name "Alchemist"
+
   getter(:processor_stages, generic: true, default: 1)
   getter(:batch_stages, generic: true, default: 1)
   getter(:batch_size, generic: true, default: 1_000)
@@ -40,6 +44,7 @@ defmodule Alchemist.Broadway do
       ],
       context: %{
         ingestion: ingestion,
+        transformations: Transformers.construct(ingestion.transformations),
         output_topic: Keyword.fetch!(output, :topic),
         producer: Keyword.fetch!(output, :connection)
       }
@@ -49,11 +54,20 @@ defmodule Alchemist.Broadway do
   # used by processor.
   # This is where we alter the message to be transformed
   #   on it's way out of alchemist.
-  def handle_message(_processor, message, _ingestion) do
-    # don't alter the message right now, just forward it along unchanged
-    # TODO: https://app.zenhub.com/workspaces/mdot-615b97c1a5fde400126174f8/issues/urbanos-public/internal/508
-    # Choose which transformation to call based on ingestion type
-    Transformers.NoOp.transform!(message)
+  def handle_message(_processor, %Message{data: message_data} = message, %{
+        ingestion: ingestion,
+        transformations: transformations
+      }) do
+    with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
+         {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
+         transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
+         {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
+      %{message | data: %{message.data | value: json_data}}
+    else
+      {:error, reason} ->
+        DeadLetter.process(ingestion.targetDataset, message_data.value, @app_name, reason: reason)
+        Message.failed(message, reason)
+    end
   end
 
   # used by batcher
