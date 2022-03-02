@@ -161,6 +161,18 @@ defmodule Andi.InputSchemas.InputConverter do
     |> SmartCity.Dataset.new()
   end
 
+  def andi_ingestion_to_smrt_ingestion(%Ingestion{} = ingestion) do
+    ingestion
+    |> StructTools.to_map()
+    |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
+    |> Map.update(:schema, nil, fn schema ->
+      schema
+      |> Enum.map(&drop_fields_from_dictionary_item/1)
+      |> Enum.map(&populate_schema_field_default/1)
+    end)
+    |> SmartCity.Ingestion.new()
+  end
+
   def andi_org_to_smrt_org(%Organization{} = org) do
     org
     |> StructTools.to_map()
