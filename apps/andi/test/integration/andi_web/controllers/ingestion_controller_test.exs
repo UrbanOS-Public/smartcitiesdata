@@ -174,41 +174,36 @@ defmodule Andi.IngestionControllerTest do
         assert List.first(response["schema"])["type"] == "writer"
       end
   
-    #   test "PUT /api/ingestion passed without UUID generates UUID for dataset" do
-    #     dataset = TDG.create_dataset(%{})
-    #     uuid = Faker.UUID.v4()
-    #     {:ok, _} = create_dataset(dataset)
-    #     eventually(fn ->
-    #         {:ok, value} = DatasetStore.get(dataset.id)
-    #         assert value != nil
-    #       end)
-    #     new_ingestion = TDG.create_ingestion(
-    #         %{
-    #             targetDataset: dataset.id,
-    #             extractSteps: [
-    #                 %{
-    #                     type: "http", 
-    #                     context: %{
-    #                         action: "GET", 
-    #                         url: "example.com"
-    #                     }
-    #                 }
-    #             ]
-    #         })
-    #     {_, new_dataset} = pop_in(new_dataset, ["id"])
+      test "PUT /api/ingestion passed without UUID generates UUID for dataset" do
+        dataset = setup_dataset()
+        uuid = Faker.UUID.v4()
+        new_ingestion = TDG.create_ingestion(
+            %{
+                targetDataset: dataset.id,
+                extractSteps: [
+                    %{
+                        type: "http", 
+                        context: %{
+                            action: "GET", 
+                            url: "example.com"
+                        }
+                    }
+                ]
+            })
+        {_, new_ingestion} = pop_in(new_ingestion, ["id"])
   
-    #     {:ok, %{status: 201, body: body}} = create(new_dataset)
+        {:ok, %{status: 201, body: body}} = create_ingestion(new_ingestion)
   
-    #     eventually(fn ->
-    #       assert DatasetStore.get(new_dataset.id) != {:ok, nil}
-    #     end)
+        eventually(fn ->
+          assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
+        end)
   
-    #     uuid =
-    #       Jason.decode!(body)
-    #       |> get_in(["id"])
+        uuid =
+          Jason.decode!(body)
+          |> get_in(["id"])
   
-    #     assert uuid != nil
-    #   end
+        assert uuid != nil
+      end
   
       test "returns 400 when cron string is longer than 6 characters" do
         dataset = setup_dataset()
@@ -222,7 +217,6 @@ defmodule Andi.IngestionControllerTest do
             }
           )
         {:ok, %{status: 400, body: body}} = create_ingestion(new_ingestion)
-        IO.inspect(body, label: "body")
       end
     end
   

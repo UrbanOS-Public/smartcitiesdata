@@ -77,7 +77,6 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_extract_steps()
   end
 
-  # TODO 549: update for ingestion
   def submission_changeset(ingestion, changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
