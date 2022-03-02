@@ -159,7 +159,6 @@ defmodule AndiWeb.API.IngestionControllerTest do
   end
 
   describe "PUT /ingestion" do
-
     test "PUT /api/ with data returns a 201", %{conn: conn} do
       smrt_ingestion = TDG.create_ingestion(%{})
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()

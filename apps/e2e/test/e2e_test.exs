@@ -115,9 +115,10 @@ defmodule E2ETest do
         ]
       )
       |> TDG.create_dataset()
-    
-      ingestion = TDG.create_ingestion(%{
-        targetDataset: dataset.id, 
+
+    ingestion =
+      TDG.create_ingestion(%{
+        targetDataset: dataset.id,
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean"},
@@ -142,8 +143,9 @@ defmodule E2ETest do
         ]
       })
 
-      streaming_ingestion = TDG.create_ingestion(%{
-        targetDataset: streaming_dataset.id, 
+    streaming_ingestion =
+      TDG.create_ingestion(%{
+        targetDataset: streaming_dataset.id,
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -241,7 +243,6 @@ defmodule E2ETest do
 
   describe "creating an ingestion" do
     test "via RESTful PUT", %{dataset: ds, ingestion: ingestion} do
-      
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
           {"Content-Type", "application/json"}
@@ -259,7 +260,6 @@ defmodule E2ETest do
         500,
         20
       )
-      
     end
   end
 
