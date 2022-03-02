@@ -6,14 +6,15 @@ defmodule Transformers.DateTime do
   @impl Transformation
 
   def transform(payload, parameters) do
-    with {:ok, sourceField} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
-         {:ok, sourceFormat} <- FieldFetcher.fetch_parameter(parameters, :sourceFormat),
-         {:ok, targetField} <- FieldFetcher.fetch_parameter(parameters, :targetField),
-         {:ok, targetFormat} <- FieldFetcher.fetch_parameter(parameters, :targetFormat),
-         {:ok, payloadSourceValue} <- FieldFetcher.fetch_value(payload, sourceField),
-         {:ok, sourceDatetime} <- parseTime(payloadSourceValue, sourceFormat, sourceField),
-         {:ok, transformedDatetime} <- formatDateTime(sourceDatetime, targetFormat) do
-      {:ok, payload |> Map.put(targetField, transformedDatetime)}
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
+         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, :sourceFormat),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
+         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, :targetFormat),
+         {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
+         {:ok, source_datetime} <-
+           string_to_datetime(payload_source_value, source_format, source_field),
+         {:ok, transformed_datetime} <- format_datetime(source_datetime, target_format) do
+      {:ok, payload |> Map.put(target_field, transformed_datetime)}
     else
       {:error, reason} ->
         {:error, reason}
@@ -23,19 +24,19 @@ defmodule Transformers.DateTime do
     end
   end
 
-  defp parseTime(dateString, dateFormat, sourceField) do
-    with {:ok, result} <- Timex.parse(dateString, dateFormat) do
+  defp string_to_datetime(date_string, date_format, source_field) do
+    with {:ok, result} <- Timex.parse(date_string, date_format) do
       {:ok, result}
     else
       {:error, timexReason} ->
         {:error,
-         "Unable to parse datetime from \"#{sourceField}\" in format \"#{dateFormat}\": #{
+         "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
            timexReason
          }"}
     end
   end
 
-  defp formatDateTime(dateTime, format) do
+  defp format_datetime(dateTime, format) do
     with {:ok, result} <- Timex.format(dateTime, format) do
       {:ok, result}
     else
