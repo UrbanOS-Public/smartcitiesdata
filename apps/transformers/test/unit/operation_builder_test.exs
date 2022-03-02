@@ -40,4 +40,19 @@ defmodule Transformers.OperationBuilderTest do
 
     assert function.(payload) == Transformers.TypeConversion.transform(payload, parameters)
   end
+
+  test "datetime function" do
+    params = %{
+      sourceField: "date1",
+      targetField: "date2",
+      sourceFormat: "{YYYY}-{0M}-{D} {h24}:{m}",
+      targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+    }
+
+    payload = %{"date1" => "2022-02-28 16:53"}
+
+    function = OperationBuilder.build("datetime", params)
+
+    assert function.(payload) == Transformers.DateTime.transform(payload, params)
+  end
 end
