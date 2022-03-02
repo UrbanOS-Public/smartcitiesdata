@@ -57,3 +57,67 @@ Creating ingestion events
   - `handle_message` performs the transform on data, and what's returned from
     that method is sent to the output topic. The output topic is configured as
     `transformed-{datasetid}`.
+
+### Example Transformations
+
+These commands can be run in the elixir console while alchemist is running
+to demonstrate transformations running correctly. Transformed messages
+can be viewed on the output kafka topic.
+
+```
+datasetId = "2222demo"
+ingestId = "1111demo"
+rawTopic = "raw-#{ingestId}"
+
+payloadToTransform = %{"thing" => "123abc"}
+
+t1 =
+  %SmartCity.Ingestion.Transformation{
+    type: "regex_extract",
+    parameters: %{
+      regex: "^([0-9])",
+      sourceField: "thing",
+      targetField: "number"
+    }
+  }
+
+# Resulting in:
+# %{"thing" => "123abc", "number": "1"}
+
+t2 =
+  %SmartCity.Ingestion.Transformation{
+    type: "conversion",
+    parameters: %{
+      field: "number",
+      sourceType: "string",
+      targetType: "integer"
+    }
+  }
+
+# Resulting in:
+# %{"thing" => "123abc", "number": 1}
+
+ingestion =
+  SmartCity.TestDataGenerator.create_ingestion(%{
+    id: ingestId,
+    targetDataset: datasetId,
+    transformations: [t1, t2]
+  })
+
+Brook.Event.send(Alchemist.instance_name(), "ingestion:update", :testing, ingestion)
+
+msg = %SmartCity.Data{
+  _metadata: %{name: "fake name", org: "fake org"},
+  dataset_id: datasetId,
+  operational: %{timing: []},
+  payload: payloadToTransform,
+  version: "0.1"
+}
+
+Elsa.Producer.produce(
+      Application.get_env(:alchemist, :elsa_brokers),
+      rawTopic,
+      {"jerks", Jason.encode!(msg)},
+      partition: 0
+    )
+```
