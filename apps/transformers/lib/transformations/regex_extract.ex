@@ -6,18 +6,18 @@ defmodule Transformers.RegexExtract do
   @impl Transformation
 
   def transform(payload, parameters) do
-    # TODO refactor to use fetch_parameter for this in with block
-    source_field = parameters.sourceField
-
-    with {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
-         {:ok, regex} <- regex_compile(parameters.regex) do
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
+         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, :regex),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
+         {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
+         {:ok, regex} <- regex_compile(regex_pattern) do
       case Regex.run(regex, value, capture: :all_but_first) do
         nil ->
-          transformed_payload = Map.put(payload, parameters.targetField, nil)
+          transformed_payload = Map.put(payload, target_field, nil)
           {:ok, transformed_payload}
 
         [extracted_value | _] ->
-          transformed_payload = Map.put(payload, parameters.targetField, extracted_value)
+          transformed_payload = Map.put(payload, target_field, extracted_value)
           {:ok, transformed_payload}
       end
     else
