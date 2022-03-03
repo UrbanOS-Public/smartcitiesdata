@@ -14,12 +14,28 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
   end
 
   describe "data:ingest:start event" do
+    test "should start a stream supervisor child" do
+      ingestion =
+        TDG.create_ingestion(%{
+          id: Faker.UUID.v4()
+        })
+
+      event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
+      response = EventHandler.handle_event(event)
+
+      assert_called DiscoveryStreams.Stream.Supervisor.start_child(ingestion.targetDataset), once()
+      assert :ok == response
+    end
+  end
+
+  describe "dataset:update event" do
     setup do
+      allow Brook.ViewState.delete(any(), any()), return: :does_not_matter
       allow Brook.ViewState.create(any(), any(), any()), return: :does_not_matter
       :ok
     end
 
-    test "should store dataset.id by dataset.technical.systemName and vice versa" do
+    test "should store dataset.id by dataset.technical.systemName and vice versa when the dataset has a sourceType of stream" do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset =
@@ -28,7 +44,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           technical: %{sourceType: "stream", systemName: "fake_system_name"}
         )
 
-      event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
+      event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
 
       response = EventHandler.handle_event(event)
 
@@ -44,53 +60,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
       assert :ok == response
     end
 
-    test "should start a stream supervisor child" do
-      dataset =
-        TDG.create_dataset(
-          id: Faker.UUID.v4(),
-          technical: %{sourceType: "stream", systemName: "fake_system_name"}
-        )
-
-      event = Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author)
-      response = EventHandler.handle_event(event)
-
-      assert_called DiscoveryStreams.Stream.Supervisor.start_child(dataset.id), once()
-      assert :ok == response
-    end
-  end
-
-  describe "dataset:update event" do
-    setup do
-      allow Brook.ViewState.delete(any(), any()), return: :does_not_matter
-
-      :ok
-    end
-
-    data_test "when sourceType is '#{source_type}' and private is '#{private}' stream_terminated == #{stream_terminated}" do
-      system_name = Faker.UUID.v4()
-
-      dataset =
-        TDG.create_dataset(
-          id: Faker.UUID.v4(),
-          technical: %{sourceType: source_type, private: private, systemName: system_name}
-        )
-
-      event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
-
-      EventHandler.handle_event(event)
-
-      assert stream_terminated == called?(DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id))
-
-      where([
-        [:source_type, :private, :stream_terminated],
-        ["ingest", false, true],
-        ["ingest", true, true],
-        ["stream", false, false],
-        ["stream", true, true]
-      ])
-    end
-
-    data_test "when sourceType is '#{source_type}' dataset_deleted == #{delete_called}" do
+    data_test "when sourceType is '#{source_type}' discovery_streams event handler discards non-streaming datasets" do
       system_name = Faker.UUID.v4()
 
       dataset =
@@ -101,16 +71,14 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
 
       event = Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
 
-      EventHandler.handle_event(event)
+      response = EventHandler.handle_event(event)
 
-      assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_id, dataset.id))
-      assert delete_called == called?(Brook.ViewState.delete(:streaming_datasets_by_system_name, system_name))
-      assert delete_called == called?(DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id))
+      response == :discard
 
       where([
-        [:source_type, :delete_called],
-        ["ingest", true],
-        ["stream", false]
+        [:source_type],
+        ["ingest"],
+        ["remote"]
       ])
     end
 
