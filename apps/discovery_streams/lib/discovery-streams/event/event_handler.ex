@@ -21,12 +21,24 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_update(),
-        data: %Dataset{technical: %{sourceType: "stream", systemName: system_name}} = dataset,
+        data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: false}} = dataset,
         author: author
       }) do
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
+    :ok
+  end
+
+  def handle_event(%Brook.Event{
+        type: dataset_update(),
+        data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: true}} = dataset,
+        author: author
+      }) do
+    add_event_count(dataset_update(), author, dataset.id)
+
+    save_dataset_to_viewstate(dataset.id, system_name)
+    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     :ok
   end
 

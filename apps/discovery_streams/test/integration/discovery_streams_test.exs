@@ -88,6 +88,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
         id: Faker.UUID.v4(),
         technical: %{sourceType: "stream", private: true, systemName: @unauthorized_private_system_name}
       )
+
     ingestion = TDG.create_ingestion(%{targetDataset: private_dataset.id})
     Brook.Test.send(@instance_name, dataset_update(), :author, private_dataset)
     Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
@@ -150,6 +151,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     where([
       [:scenario, :event, :update_path, :update_value],
       ["dataset deleted", dataset_delete(), nil, nil],
+      ["made private by update", dataset_update(), [:technical, :private], true]
     ])
   end
 
