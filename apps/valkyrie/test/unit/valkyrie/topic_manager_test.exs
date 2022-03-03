@@ -15,9 +15,8 @@ defmodule Valkyrie.TopicManagerTest do
   test "returns the input and output topic names" do
     allow Elsa.create_topic(any(), any()), return: :doesnt_matter
     allow Elsa.topic?(any(), any()), return: true
-    dataset = TDG.create_dataset(id: @dataset_id)
 
-    topics = TopicManager.setup_topics(dataset)
+    topics = TopicManager.setup_topics(@dataset_id)
 
     assert "#{input_topic_prefix()}-#{@dataset_id}" == Map.get(topics, :input_topic)
     assert "#{output_topic_prefix()}-#{@dataset_id}" == Map.get(topics, :output_topic)
@@ -26,9 +25,8 @@ defmodule Valkyrie.TopicManagerTest do
   test "creates a topic with the provided input topic name" do
     allow Elsa.create_topic(any(), any()), return: :doesnt_matter
     allow Elsa.topic?(any(), any()), return: true
-    dataset = TDG.create_dataset(id: @dataset_id)
 
-    TopicManager.setup_topics(dataset)
+    TopicManager.setup_topics(@dataset_id)
 
     assert_called Elsa.create_topic(elsa_brokers(), "#{input_topic_prefix()}-#{@dataset_id}")
   end
@@ -37,9 +35,8 @@ defmodule Valkyrie.TopicManagerTest do
     allow Elsa.create_topic(any(), any()), return: :doesnt_matter
     allow Elsa.topic?(any(), "#{input_topic_prefix()}-#{@dataset_id}"), seq: [false, false, true]
     allow Elsa.topic?(any(), "#{output_topic_prefix()}-#{@dataset_id}"), seq: [false, false, true]
-    dataset = TDG.create_dataset(id: @dataset_id)
 
-    TopicManager.setup_topics(dataset)
+    TopicManager.setup_topics(@dataset_id)
 
     assert_called Elsa.topic?(elsa_brokers(), "#{input_topic_prefix()}-#{@dataset_id}"), times(3)
     assert_called Elsa.topic?(elsa_brokers(), "#{output_topic_prefix()}-#{@dataset_id}"), times(3)
@@ -49,10 +46,9 @@ defmodule Valkyrie.TopicManagerTest do
     allow Elsa.create_topic(any(), any()), return: :doesnt_matter
     allow Elsa.topic?(any(), "#{input_topic_prefix()}-#{@dataset_id}"), return: true
     allow Elsa.topic?(any(), "#{output_topic_prefix()}-#{@dataset_id}"), return: false
-    dataset = TDG.create_dataset(id: @dataset_id)
 
     assert_raise RuntimeError, "Timed out waiting for #{output_topic_prefix()}-#{@dataset_id} to be available", fn ->
-      TopicManager.setup_topics(dataset)
+      TopicManager.setup_topics(@dataset_id)
     end
   end
 
