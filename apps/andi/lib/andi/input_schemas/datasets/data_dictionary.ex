@@ -3,6 +3,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   use Ecto.Schema
   import Ecto.Changeset
   alias Timex.Format.DateTime.Formatter
+  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.StructTools
@@ -28,6 +29,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
 
     belongs_to(:data_dictionary, __MODULE__, type: Ecto.UUID, foreign_key: :parent_id)
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
+    belongs_to(:ingestion, Ingestion, type: Ecto.UUID, foreign_key: :ingestion_id)
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :dataset_id)
   end
 

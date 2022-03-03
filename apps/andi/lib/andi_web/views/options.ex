@@ -103,7 +103,6 @@ defmodule AndiWeb.Views.Options do
       "" => "",
       "ingest" => "Ingest",
       "stream" => "Stream",
-      "host" => "Host",
       "remote" => "Remote"
     }
   end

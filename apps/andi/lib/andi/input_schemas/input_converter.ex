@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.InputConverter do
   """
 
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.FormTools
@@ -28,6 +29,26 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(andi_dataset, changes)
   end
 
+  def smrt_ingestion_to_full_changeset(smrt_ingestion) do
+    smrt_ingestion_to_full_changeset(%Ingestion{}, smrt_ingestion)
+  end
+
+  def smrt_ingestion_to_full_changeset(nil, smrt_ingestion) do
+    smrt_ingestion_to_full_changeset(%Ingestion{}, smrt_ingestion)
+  end
+
+  def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, %{"id" => _} = smrt_ingestion) do
+    changes = atomize_ingestion_map(smrt_ingestion)
+
+    smrt_ingestion_to_full_changeset(andi_ingestion, changes)
+  end
+
+  def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, smrt_ingestion) do
+    changes = prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+    Ingestion.full_validation_changeset(andi_ingestion, changes)
+  end
+
   def smrt_dataset_to_changeset(smrt_dataset) do
     changes = prepare_smrt_dataset_for_casting(smrt_dataset)
 
@@ -46,6 +67,19 @@ defmodule Andi.InputSchemas.InputConverter do
     |> AtomicMap.convert(safe: false, underscore: false)
     |> convert_smrt_business()
     |> convert_smrt_technical()
+  end
+
+  def prepare_smrt_ingestion_for_casting(ingestion) do
+    ingestion
+    |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
+    |> FormTools.replace(:schema, fn schema ->
+      schema
+      |> Enum.map(&add_ingestion_id(&1, ingestion.id))
+      |> Enum.map(&add_dataset_id(&1, ingestion.targetDataset))
+      |> Enum.map(&convert_default/1)
+    end)
   end
 
   def form_data_to_ui_changeset(form_data \\ %{}) do
@@ -89,6 +123,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.full_validation_changeset(%Dataset{}, dataset_as_map)
   end
 
+  def andi_ingestion_to_full_ui_changeset(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Ingestion.full_validation_changeset(%Ingestion{}, ingestion_as_map)
+  end
+
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
     dataset_as_map = StructTools.to_map(dataset)
 
@@ -101,12 +141,36 @@ defmodule Andi.InputSchemas.InputConverter do
     Andi.InputSchemas.Datasets.full_validation_submission_changeset_for_publish(%Dataset{}, dataset_as_map)
   end
 
+  def andi_ingestion_to_full_ui_changeset_for_publish(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Andi.InputSchemas.Ingestions.full_validation_changeset_for_publish(%Ingestion{}, ingestion_as_map)
+  end
+
+  def andi_ingestion_to_full_submission_changeset_for_publish(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Andi.InputSchemas.Ingestions.full_validation_submission_changeset_for_publish(%Ingestion{}, ingestion_as_map)
+  end
+
   def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
     dataset
     |> StructTools.to_map()
     |> convert_andi_business()
     |> convert_andi_technical()
     |> SmartCity.Dataset.new()
+  end
+
+  def andi_ingestion_to_smrt_ingestion(%Ingestion{} = ingestion) do
+    ingestion
+    |> StructTools.to_map()
+    |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
+    |> Map.update(:schema, nil, fn schema ->
+      schema
+      |> Enum.map(&drop_fields_from_dictionary_item/1)
+      |> Enum.map(&populate_schema_field_default/1)
+    end)
+    |> SmartCity.Ingestion.new()
   end
 
   def andi_org_to_smrt_org(%Organization{} = org) do
@@ -214,6 +278,17 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.put(:bread_crumb, bread_crumb)
     |> FormTools.replace(:subSchema, fn sub_schema ->
       Enum.map(sub_schema, &add_dataset_id(&1, dataset_id, bread_crumb <> " > "))
+    end)
+  end
+
+  defp add_ingestion_id(schema, ingestion_id, parent_bread_crumb \\ "") do
+    bread_crumb = parent_bread_crumb <> schema.name
+
+    schema
+    |> Map.put(:ingestion_id, ingestion_id)
+    |> Map.put(:bread_crumb, bread_crumb)
+    |> FormTools.replace(:subSchema, fn sub_schema ->
+      Enum.map(sub_schema, &add_ingestion_id(&1, ingestion_id, bread_crumb <> " > "))
     end)
   end
 
@@ -383,6 +458,13 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.update(:business, nil, &atomize_top_level/1)
     |> Map.update(:technical, nil, &atomize_top_level/1)
     |> update_in([:technical, :schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end)
+  end
+
+  defp atomize_ingestion_map(ingestion) when is_map(ingestion) do
+    ingestion
+    |> atomize_top_level()
+    |> update_in([:extractSteps], fn extractSteps -> Enum.map(extractSteps, &atomize_top_level/1) end)
+    |> update_in([:schema], fn schema -> Enum.map(schema, &atomize_top_level/1) end)
   end
 
   defp atomize_top_level(map) do
