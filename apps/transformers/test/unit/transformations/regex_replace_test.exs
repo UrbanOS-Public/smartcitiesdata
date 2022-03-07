@@ -9,11 +9,13 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
 
-    parameters = %{
-      "sourceField" => "something",
-      "regex" => "a",
-      "replacement" => "123"
-    } |> Map.delete(parameter)
+    parameters =
+      %{
+        "sourceField" => "something",
+        "regex" => "a",
+        "replacement" => "123"
+      }
+      |> Map.delete(parameter)
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
