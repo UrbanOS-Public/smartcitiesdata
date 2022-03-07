@@ -1,7 +1,7 @@
 defmodule Transformers.DateTime do
   @behaviour Transformation
 
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
 
   @impl Transformation
 

@@ -1,7 +1,7 @@
 defmodule Transformers.TypeConversion do
   @behaviour Transformation
 
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
 
   @impl Transformation
   def transform(payload, params) do

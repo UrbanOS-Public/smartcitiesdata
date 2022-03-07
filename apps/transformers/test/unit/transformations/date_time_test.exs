@@ -62,7 +62,7 @@ defmodule Transformers.DateTimeTest do
         targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 
-      allow(Transformations.FieldFetcher.fetch_parameter(any(), parameter),
+      allow(Transformers.FieldFetcher.fetch_parameter(any(), parameter),
         return: {:error, "couldn't fetch param"}
       )
 
@@ -83,7 +83,7 @@ defmodule Transformers.DateTimeTest do
         targetFormat: "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 
-      allow(Transformations.FieldFetcher.fetch_value(any(), sourceField),
+      allow(Transformers.FieldFetcher.fetch_value(any(), sourceField),
         return: {:error, "couldn't fetch param"}
       )
 

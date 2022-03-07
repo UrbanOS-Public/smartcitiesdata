@@ -1,7 +1,7 @@
 defmodule Transformers.RegexExtract do
   @behaviour Transformation
 
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
   alias Transformers.RegexUtils
 
   @impl Transformation
