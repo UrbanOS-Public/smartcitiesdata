@@ -60,4 +60,19 @@ defmodule Transformers.RegexReplaceTest do
     assert reason == "Missing field in payload: something"
   end
 
+  test "when regex does not compile, return error" do
+    payload = %{
+      "something" => "abc"
+    }
+    parameters = %{
+      "source_field" => "something",
+      "regex" => "(()",
+      "replacement" => "123"
+    }
+
+    {:error, reason} = RegexReplace.transform(payload, parameters)
+
+    assert reason == "Invalid regular expression: missing ) at index 3"
+  end
+
 end
