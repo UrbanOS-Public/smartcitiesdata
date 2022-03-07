@@ -11,7 +11,8 @@ defmodule Transformers.RegexReplace do
          {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, regex} <- RegexUtils.regex_compile(regex_pattern),
-         :ok <- abort_if_not_string(replacement) do
+         :ok <- abort_if_not_string(value, source_field),
+         :ok <- abort_if_not_string(replacement, "replacement") do
            transformed_value = Regex.replace(regex, value, replacement)
            transformed_payload = Map.put(payload, source_field, transformed_value)
            {:ok, transformed_payload}
@@ -21,11 +22,11 @@ defmodule Transformers.RegexReplace do
 
   end
 
-  defp abort_if_not_string(replacement) do
-    if is_bitstring(replacement) do
+  defp abort_if_not_string(value, field_name) do
+    if is_bitstring(value) do
       :ok
     else
-      {:error, "Replacement value is not a string: #{replacement}"}
+      {:error, "Value of field #{field_name} is not a string: #{value}"}
     end
   end
 
