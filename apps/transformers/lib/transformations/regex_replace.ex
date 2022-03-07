@@ -13,13 +13,12 @@ defmodule Transformers.RegexReplace do
          {:ok, regex} <- RegexUtils.regex_compile(regex_pattern),
          :ok <- abort_if_not_string(value, source_field),
          :ok <- abort_if_not_string(replacement, "replacement") do
-           transformed_value = Regex.replace(regex, value, replacement)
-           transformed_payload = Map.put(payload, source_field, transformed_value)
-           {:ok, transformed_payload}
+      transformed_value = Regex.replace(regex, value, replacement)
+      transformed_payload = Map.put(payload, source_field, transformed_value)
+      {:ok, transformed_payload}
     else
       {:error, reason} -> {:error, reason}
     end
-
   end
 
   defp abort_if_not_string(value, field_name) do
@@ -29,5 +28,4 @@ defmodule Transformers.RegexReplace do
       {:error, "Value of field #{field_name} is not a string: #{value}"}
     end
   end
-
 end

@@ -25,5 +25,4 @@ defmodule Transformers.RegexExtract do
         {:error, reason}
     end
   end
-
 end

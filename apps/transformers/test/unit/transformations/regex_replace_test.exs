@@ -7,6 +7,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "123"
     }
+
     parameters = %{
       "regex" => "^(\\w+)",
       "replacement" => "a"
@@ -21,6 +22,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "123"
     }
+
     parameters = %{
       "sourceField" => "something",
       "replacement" => "a"
@@ -35,6 +37,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "123"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "^(\\w+)"
@@ -49,6 +52,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something_unexpected" => "123"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "^(\\w+)",
@@ -64,6 +68,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "abc"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "(()",
@@ -79,6 +84,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "abc"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "^(\\w+)",
@@ -94,6 +100,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => 123
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "123",
@@ -103,13 +110,13 @@ defmodule Transformers.RegexReplaceTest do
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
     assert reason == "Value of field something is not a string: 123"
-
   end
 
   test "if no regex match, payload is unchanged" do
     payload = %{
       "something" => "abc"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "def",
@@ -125,6 +132,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "abc"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "a",
@@ -140,6 +148,7 @@ defmodule Transformers.RegexReplaceTest do
     payload = %{
       "something" => "abcabcdefabc"
     }
+
     parameters = %{
       "sourceField" => "something",
       "regex" => "abc",
@@ -150,5 +159,4 @@ defmodule Transformers.RegexReplaceTest do
 
     assert result == %{"something" => "123123def123"}
   end
-
 end
