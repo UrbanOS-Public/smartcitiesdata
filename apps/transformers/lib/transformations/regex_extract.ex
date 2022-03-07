@@ -5,7 +5,6 @@ defmodule Transformers.RegexExtract do
   alias Transformers.RegexUtils
 
   @impl Transformation
-
   def transform(payload, parameters) do
     with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
          {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, :regex),
