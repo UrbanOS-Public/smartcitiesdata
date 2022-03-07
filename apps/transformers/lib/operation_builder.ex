@@ -3,6 +3,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.RegexExtract.transform(payload, parameters) end
   end
 
+  def build("regex_replace", parameters) do
+    fn payload -> Transformers.RegexReplace.transform(payload, parameters) end
+  end
+
   def build("conversion", parameters) do
     fn payload -> Transformers.TypeConversion.transform(payload, parameters) end
   end

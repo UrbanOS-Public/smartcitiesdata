@@ -1,10 +1,9 @@
 defmodule Transformers.DateTime do
   @behaviour Transformation
 
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
 
   @impl Transformation
-
   def transform(payload, parameters) do
     with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
          {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, :sourceFormat),

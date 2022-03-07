@@ -1,6 +1,6 @@
 defmodule Transformers.FieldFetcherTest do
   use ExUnit.Case
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
 
   test "fetch parameter returns the value inside the provided params" do
     params = %{

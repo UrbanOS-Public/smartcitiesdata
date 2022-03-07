@@ -55,4 +55,18 @@ defmodule Transformers.OperationBuilderTest do
 
     assert function.(payload) == Transformers.DateTime.transform(payload, params)
   end
+
+  test "regex replace function" do
+    params = %{
+      sourceField: "arbitrary",
+      regex: "abc",
+      replacement: "123"
+    }
+
+    payload = %{"arbitrary" => "abc"}
+
+    function = OperationBuilder.build("regex_replace", params)
+
+    assert function.(payload) == Transformers.RegexReplace.transform(payload, params)
+  end
 end
