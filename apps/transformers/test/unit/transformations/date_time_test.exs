@@ -54,12 +54,14 @@ defmodule Transformers.DateTimeTest do
 
   describe "error handling" do
     data_test "returns error when #{parameter} not there" do
-      params = %{
-        "sourceField" => "date1",
-        "targetField" => "date2",
-        "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-        "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
-      } |> Map.delete(parameter)
+      params =
+        %{
+          "sourceField" => "date1",
+          "targetField" => "date2",
+          "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+          "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+        |> Map.delete(parameter)
 
       {:error, reason} = Transformers.DateTime.transform(%{}, params)
 
