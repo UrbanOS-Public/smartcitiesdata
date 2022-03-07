@@ -2,12 +2,12 @@ defmodule Valkyrie.DatasetProcessor do
   @moduledoc false
   require Logger
 
-  def start(dataset_id) do
-    topics = Valkyrie.TopicManager.setup_topics(dataset_id)
-    Logger.debug("#{__MODULE__}: Starting Datatset: #{dataset_id}")
+  def start(dataset) do
+    topics = Valkyrie.TopicManager.setup_topics(dataset)
+    Logger.debug("#{__MODULE__}: Starting Datatset: #{dataset.id}")
 
     start_options = [
-      dataset_id: dataset_id,
+      dataset: dataset,
       input_topic: topics.input_topic,
       output_topic: topics.output_topic
     ]

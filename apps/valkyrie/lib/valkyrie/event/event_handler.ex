@@ -9,6 +9,7 @@ defmodule Valkyrie.Event.EventHandler do
   import SmartCity.Event,
     only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
 
+  @instance_name Valkyrie.instance_name()
   require Logger
 
   def handle_event(%Brook.Event{
@@ -18,9 +19,11 @@ defmodule Valkyrie.Event.EventHandler do
       }) do
     data_ingest_start()
     |> add_event_count(author, ingestion.targetDataset)
-
-    Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{ingestion.targetDataset}")
-    Valkyrie.DatasetProcessor.start(ingestion.targetDataset)
+    dataset = Brook.get!(@instance_name, :datasets, ingestion.targetDataset)
+    if dataset != nil do
+      Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{ingestion.targetDataset}")
+      Valkyrie.DatasetProcessor.start(dataset)
+    end
   end
 
   def handle_event(%Brook.Event{
@@ -46,10 +49,10 @@ defmodule Valkyrie.Event.EventHandler do
 
     if Valkyrie.DatasetSupervisor.is_started?(dataset.id) do
       Valkyrie.DatasetProcessor.stop(dataset.id)
-      Valkyrie.DatasetProcessor.start(dataset.id)
+      Valkyrie.DatasetProcessor.start(dataset)
     end
 
-    merge(:datasets, dataset.id, dataset)
+    merge(:datasets, dataset.id, dataset) |> IO.inspect(label: "GOT HERE 123")
   end
 
   def handle_event(%Brook.Event{

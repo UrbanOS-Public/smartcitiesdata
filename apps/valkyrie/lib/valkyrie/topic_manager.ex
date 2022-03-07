@@ -11,10 +11,10 @@ defmodule Valkyrie.TopicManager do
   getter(:output_topic_prefix, generic: true)
   getter(:input_topic_prefix, generic: true)
 
-  @spec setup_topics(String.t()) :: %{input_topic: String.t(), output_topic: String.t()}
-  def setup_topics(dataset_id) do
-    input_topic = input_topic(dataset_id)
-    output_topic = output_topic(dataset_id)
+  @spec setup_topics(%SmartCity.Dataset{}) :: %{input_topic: String.t(), output_topic: String.t()}
+  def setup_topics(dataset) do
+    input_topic = input_topic(dataset.id)
+    output_topic = output_topic(dataset.id)
 
     Elsa.create_topic(elsa_brokers(), input_topic)
     Elsa.create_topic(elsa_brokers(), output_topic)

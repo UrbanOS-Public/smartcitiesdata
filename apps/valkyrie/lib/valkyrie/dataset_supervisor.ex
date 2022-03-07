@@ -8,14 +8,12 @@ defmodule Valkyrie.DatasetSupervisor do
   getter(:topic_subscriber_config, generic: true)
   getter(:elsa_brokers, generic: true)
 
-  @instance_name Valkyrie.instance_name()
-
   def name(id), do: :"#{id}_supervisor"
 
   def ensure_started(start_options) do
-    dataset_id = Keyword.fetch!(start_options, :dataset_id)
+    dataset = Keyword.fetch!(start_options, :dataset)
 
-    case get_dataset_supervisor(dataset_id) do
+    case get_dataset_supervisor(dataset.id) do
       nil ->
         {:ok, _pid} =
           DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
@@ -30,15 +28,15 @@ defmodule Valkyrie.DatasetSupervisor do
   def is_started?(dataset_id), do: get_dataset_supervisor(dataset_id) != nil
 
   def child_spec(args) do
-    dataset_id = Keyword.fetch!(args, :dataset_id)
+    dataset = Keyword.fetch!(args, :dataset)
 
     super(args)
-    |> Map.put(:id, name(dataset_id))
+    |> Map.put(:id, name(dataset.id))
   end
 
   def start_link(opts) do
-    dataset_id = Keyword.fetch!(opts, :dataset_id)
-    Supervisor.start_link(__MODULE__, opts, name: name(dataset_id))
+    dataset = Keyword.fetch!(opts, :dataset)
+    Supervisor.start_link(__MODULE__, opts, name: name(dataset.id))
   end
 
   def get_dataset_supervisor(dataset_id), do: Process.whereis(name(dataset_id))
@@ -54,27 +52,26 @@ defmodule Valkyrie.DatasetSupervisor do
 
   @impl Supervisor
   def init(opts) do
-    dataset_id = Keyword.fetch!(opts, :dataset_id)
+    dataset = Keyword.fetch!(opts, :dataset)
     input_topic = Keyword.fetch!(opts, :input_topic)
     output_topic = Keyword.fetch!(opts, :output_topic)
-    producer = :"#{dataset_id}_producer"
+    producer = :"#{dataset.id}_producer"
 
     children = [
-      elsa_producer(dataset_id, output_topic, producer),
-      broadway(dataset_id, input_topic, output_topic, producer)
+      elsa_producer(dataset, output_topic, producer),
+      broadway(dataset, input_topic, output_topic, producer)
     ]
 
     Supervisor.init(children, strategy: :one_for_all)
   end
 
-  defp elsa_producer(dataset_id, topic, producer) do
+  defp elsa_producer(dataset, topic, producer) do
     Supervisor.child_spec({Elsa.Supervisor, endpoints: elsa_brokers(), connection: producer, producer: [topic: topic]},
-      id: :"#{dataset_id}_elsa_producer"
+      id: :"#{dataset.id}_elsa_producer"
     )
   end
 
-  defp broadway(dataset_id, input_topic, output_topic, producer) do
-    dataset = Brook.get(@instance_name, :datasets, dataset_id)
+  defp broadway(dataset, input_topic, output_topic, producer) do
 
     config = [
       dataset: dataset,
@@ -83,7 +80,7 @@ defmodule Valkyrie.DatasetSupervisor do
         topic: output_topic
       ],
       input: [
-        connection: :"#{dataset_id}_elsa_consumer",
+        connection: :"#{dataset.id}_elsa_consumer",
         endpoints: elsa_brokers(),
         group_consumer: [
           group: "valkyrie-#{input_topic}",
