@@ -8,9 +8,9 @@ defmodule Valkyrie.Event.EventHandler do
 
   import SmartCity.Event,
     only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
-
-  @instance_name Valkyrie.instance_name()
+  
   require Logger
+  @instance_name Valkyrie.instance_name()
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
@@ -52,7 +52,7 @@ defmodule Valkyrie.Event.EventHandler do
       Valkyrie.DatasetProcessor.start(dataset)
     end
 
-    merge(:datasets, dataset.id, dataset) |> IO.inspect(label: "GOT HERE 123")
+    merge(:datasets, dataset.id, dataset)
   end
 
   def handle_event(%Brook.Event{

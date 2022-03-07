@@ -20,13 +20,15 @@ defmodule Valkyrie.Event.EventHandlerTest do
   end
 
   test "Processes ingestions when data:ingest:start event fires" do
-    ingestion = TDG.create_ingestion(%{targetDataset: "dataset id"})
+    ingestion = TDG.create_ingestion(%{targetDataset: "dataset-id"})
+    dataset = TDG.create_dataset(%{id: "dataset-id"})
+    allow(Brook.get!(any(), any(), any()), return: dataset)
 
     Brook.Test.with_event(@instance_name, fn ->
       EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author))
     end)
 
-    assert called?(Valkyrie.DatasetProcessor.start("dataset id"))
+    assert called?(Valkyrie.DatasetProcessor.start(dataset))
   end
 
   describe "handle_event/1" do
