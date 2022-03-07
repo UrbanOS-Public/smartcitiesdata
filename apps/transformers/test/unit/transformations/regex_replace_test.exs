@@ -90,6 +90,11 @@ defmodule Transformers.RegexReplaceTest do
     assert reason == "Replacement value is not a string: 123"
   end
 
+  @tag :skip
+  test "if source field is not a string, return error" do
+
+  end
+
   test "if no regex match, payload is unchanged" do
     payload = %{
       "something" => "abc"
@@ -103,6 +108,21 @@ defmodule Transformers.RegexReplaceTest do
     {:ok, result} = RegexReplace.transform(payload, parameters)
 
     assert result == payload
+  end
+
+  test "if regex matches once, single match is replaced" do
+    payload = %{
+      "something" => "abc"
+    }
+    parameters = %{
+      "source_field" => "something",
+      "regex" => "a",
+      "replacement" => "123"
+    }
+
+    {:ok, result} = RegexReplace.transform(payload, parameters)
+
+    assert result == %{"something" => "123bc"}
   end
 
 end

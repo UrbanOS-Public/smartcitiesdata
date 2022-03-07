@@ -12,7 +12,9 @@ defmodule Transformers.RegexReplace do
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, regex} <- RegexUtils.regex_compile(regex_pattern),
          :ok <- abort_if_not_string(replacement) do
-           {:ok, payload}
+           transformed_value = Regex.replace(regex, value, replacement)
+           transformed_payload = Map.put(payload, source_field, transformed_value)
+           {:ok, transformed_payload}
     else
       {:error, reason} -> {:error, reason}
     end
