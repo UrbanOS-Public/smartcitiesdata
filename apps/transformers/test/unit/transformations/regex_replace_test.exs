@@ -1,51 +1,25 @@
 defmodule Transformers.RegexReplaceTest do
   use ExUnit.Case
+  use Checkov
 
   alias Transformers.RegexReplace
 
-  test "when source field not specified, return error" do
+  data_test "returns error when #{parameter} not there" do
     payload = %{
-      "something" => "123"
-    }
-
-    parameters = %{
-      "regex" => "^(\\w+)",
-      "replacement" => "a"
-    }
-
-    {:error, reason} = RegexReplace.transform(payload, parameters)
-
-    assert reason == "Missing transformation parameter: sourceField"
-  end
-
-  test "when regex not specified, return error" do
-    payload = %{
-      "something" => "123"
+      "something" => "abc"
     }
 
     parameters = %{
       "sourceField" => "something",
-      "replacement" => "a"
-    }
+      "regex" => "a",
+      "replacement" => "123"
+    } |> Map.delete(parameter)
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Missing transformation parameter: regex"
-  end
+    assert reason == "Missing transformation parameter: #{parameter}"
 
-  test "when replacement not specified, return error" do
-    payload = %{
-      "something" => "123"
-    }
-
-    parameters = %{
-      "sourceField" => "something",
-      "regex" => "^(\\w+)"
-    }
-
-    {:error, reason} = RegexReplace.transform(payload, parameters)
-
-    assert reason == "Missing transformation parameter: replacement"
+    where(parameter: ["sourceField", "regex", "replacement"])
   end
 
   test "when source field not on message, return error" do
