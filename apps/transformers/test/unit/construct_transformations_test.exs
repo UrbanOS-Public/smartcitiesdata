@@ -1,7 +1,7 @@
 defmodule Transformers.ConstructTest do
   use ExUnit.Case
   alias SmartCity.Ingestion.Transformation
-  alias Transformers.Utils
+  alias Transformers.OperationUtils
 
   test "when given 1 transformation, builds a list of 1 operation" do
     regex_params = %{
@@ -17,7 +17,7 @@ defmodule Transformers.ConstructTest do
     result = Transformers.construct(sc_transformations)
 
     assert 1 == length(result)
-    assert true == Utils.allOperationsItemsAreFunctions(result)
+    assert true == OperationUtils.allOperationsItemsAreFunctions(result)
   end
 
   test "when given 3 transformations, builds a list of 3 operations" do
@@ -36,7 +36,7 @@ defmodule Transformers.ConstructTest do
     result = Transformers.construct(sc_transformations)
 
     assert 3 == length(result)
-    assert true == Utils.allOperationsItemsAreFunctions(result)
+    assert true == OperationUtils.allOperationsItemsAreFunctions(result)
   end
 
   test "when given an empty array, returns an empty array" do
