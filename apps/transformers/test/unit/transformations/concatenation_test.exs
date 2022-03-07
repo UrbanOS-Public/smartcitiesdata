@@ -24,4 +24,26 @@ defmodule Transformers.ConcatenationTest do
 
     where(parameter: ["sourceFields", "separator", "targetField"])
   end
+
+  @tag :skip
+  test "error if a source field is missing" do
+    payload = %{
+      "first_name" => "Sam"
+    }
+
+    parameters = %{
+      "sourceFields" => ["first_name", "middle_initial", "last_name"],
+      "separator" => ".",
+      "targetField" => "full_name"
+    }
+
+    {:error, reason} = Concatenation.transform(payload, parameters)
+
+    assert reason == "Missing field in payload: [middle_initial, last_name]"
+  end
+
+  @tag :skip
+  test "return error if source fields not a list" do
+
+  end
 end
