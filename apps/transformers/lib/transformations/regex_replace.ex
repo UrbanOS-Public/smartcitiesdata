@@ -11,8 +11,8 @@ defmodule Transformers.RegexReplace do
          {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, regex} <- RegexUtils.regex_compile(regex_pattern),
-         {:ok} <- abort_if_not_string(replacement) do
-
+         :ok <- abort_if_not_string(replacement) do
+           {:ok, payload}
     else
       {:error, reason} -> {:error, reason}
     end
