@@ -5,7 +5,7 @@ defmodule Transformers.RemoveTest do
 
   test "if source field not specified, return error" do
     payload = %{
-      dead_field: "goodbye"
+      "dead_field" => "goodbye"
     }
 
     parameters = %{}
@@ -17,7 +17,7 @@ defmodule Transformers.RemoveTest do
 
   test "if source field not on payload, return error" do
     payload = %{
-      undead_field: "goodbye"
+      "undead_field" => "goodbye"
     }
 
     parameters = %{
@@ -27,5 +27,20 @@ defmodule Transformers.RemoveTest do
     {:error, reason} = Remove.transform(payload, parameters)
 
     assert reason == "Missing field in payload: dead_field"
+  end
+
+  test "remove specified field" do
+    payload = %{
+      "good_field" => "hello",
+      "dead_field" => "goodbye"
+    }
+
+    parameters = %{
+      sourceField: "dead_field"
+    }
+
+    {:ok, result} = Remove.transform(payload, parameters)
+
+    assert result == %{"good_field" => "hello"}
   end
 end
