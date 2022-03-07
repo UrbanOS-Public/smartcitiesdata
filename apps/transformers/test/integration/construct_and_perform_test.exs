@@ -43,9 +43,9 @@ defmodule Transformers.ConstructAndPerformTest do
     transformation1 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
 
     conversion_params = %{
-      field: "number",
-      sourceType: "string",
-      targetType: "integer"
+      "field" => "number",
+      "sourceType" => "string",
+      "targetType" => "integer"
     }
 
     transformation2 = Transformation.new(%{type: "conversion", parameters: conversion_params})

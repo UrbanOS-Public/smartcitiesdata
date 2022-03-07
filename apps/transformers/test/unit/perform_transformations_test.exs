@@ -87,13 +87,13 @@ defmodule Transformers.PerformTest do
   end
 
   test "when provided an empty opsList, the initial payload is returned" do
-    payload = %{name: "ben"}
+    payload = %{"name" => "ben"}
     {:ok, result} = Transformers.perform([], payload)
     assert result == payload
   end
 
   test "what happens when opsList includes an error" do
-    payload = %{name: "ben"}
+    payload = %{"name" => "ben"}
     transformations = [{:error, "kaboom"}]
     result = Transformers.perform(transformations, payload)
     assert :error == elem(result, 0)

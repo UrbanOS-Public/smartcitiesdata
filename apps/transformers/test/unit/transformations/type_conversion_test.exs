@@ -3,7 +3,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "when field is nil do nothing" do
     payload = %{"nothing" => nil}
-    parameters = %{field: "nothing", sourceType: "integer", targetType: "string"}
+    parameters = %{"field" => "nothing", "sourceType" => "integer", "targetType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -12,7 +12,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "when field is empty string do nothing" do
     payload = %{"nothing" => ""}
-    parameters = %{field: "nothing", sourceType: "string", targetType: "float"}
+    parameters = %{"field" => "nothing", "sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -21,7 +21,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "when field is missing return error" do
     payload = %{}
-    parameters = %{field: "something", sourceType: "string", targetType: "float"}
+    parameters = %{"field" => "something", "sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -30,7 +30,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if params do not contain field return error" do
     payload = %{"something" => "some_value"}
-    parameters = %{sourceType: "string", targetType: "float"}
+    parameters = %{"sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -39,7 +39,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if params do not contain source type return error" do
     payload = %{"something" => "some_value"}
-    parameters = %{field: "something", targetType: "float"}
+    parameters = %{"field" => "something", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -48,7 +48,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if params do not contain target type return error" do
     payload = %{"something" => "some_value"}
-    parameters = %{field: "something", sourceType: "string"}
+    parameters = %{"field" => "something", "sourceType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -57,7 +57,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if field supposed to be float but is not, return error" do
     payload = %{"some_float" => "surprise! a string!"}
-    parameters = %{field: "some_float", sourceType: "float", targetType: "integer"}
+    parameters = %{"field" => "some_float", "sourceType" => "float", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -66,7 +66,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if field supposed to be integer but is not, return error" do
     payload = %{"some_int" => "surprise! a string!"}
-    parameters = %{field: "some_int", sourceType: "integer", targetType: "string"}
+    parameters = %{"field" => "some_int", "sourceType" => "integer", "targetType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -75,7 +75,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if field supposed to be string but is not, return error" do
     payload = %{"some_string" => 1}
-    parameters = %{field: "some_string", sourceType: "string", targetType: "float"}
+    parameters = %{"field" => "some_string", "sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -84,7 +84,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from integer to string" do
     payload = %{"thing" => 300}
-    parameters = %{field: "thing", sourceType: "integer", targetType: "string"}
+    parameters = %{"field" => "thing", "sourceType" => "integer", "targetType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -93,7 +93,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from float to string" do
     payload = %{"thing" => 45.67}
-    parameters = %{field: "thing", sourceType: "float", targetType: "string"}
+    parameters = %{"field" => "thing", "sourceType" => "float", "targetType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -102,7 +102,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from integer to float" do
     payload = %{"thing" => 1}
-    parameters = %{field: "thing", sourceType: "integer", targetType: "float"}
+    parameters = %{"field" => "thing", "sourceType" => "integer", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -111,7 +111,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from string to float" do
     payload = %{"thing" => "1.12"}
-    parameters = %{field: "thing", sourceType: "string", targetType: "float"}
+    parameters = %{"field" => "thing", "sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -120,7 +120,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from string to integer" do
     payload = %{"thing" => "1"}
-    parameters = %{field: "thing", sourceType: "string", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "string", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -129,7 +129,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "convert from float to integer" do
     payload = %{"thing" => 1.0}
-    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "float", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -138,7 +138,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "converting from float to integer rounds up when decimal .5 or higher" do
     payload = %{"thing" => 1.5}
-    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "float", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -147,7 +147,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "converting from float to integer rounds down when decimal below .5" do
     payload = %{"thing" => 1.4999999}
-    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "float", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -156,7 +156,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "remember that floating numbers are imprecise" do
     payload = %{"thing" => 1.4999999999999999}
-    parameters = %{field: "thing", sourceType: "float", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "float", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -165,7 +165,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if conversion is not supported return error" do
     payload = %{"thing" => true}
-    parameters = %{field: "thing", sourceType: "boolean", targetType: "string"}
+    parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -174,7 +174,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if string cannot be parsed into integer return error" do
     payload = %{"thing" => "one"}
-    parameters = %{field: "thing", sourceType: "string", targetType: "integer"}
+    parameters = %{"field" => "thing", "sourceType" => "string", "targetType" => "integer"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
@@ -183,7 +183,7 @@ defmodule Transformers.TypeConversionTest do
 
   test "if string cannot be parsed into float return error" do
     payload = %{"thing" => "1/4"}
-    parameters = %{field: "thing", sourceType: "string", targetType: "float"}
+    parameters = %{"field" => "thing", "sourceType" => "string", "targetType" => "float"}
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
