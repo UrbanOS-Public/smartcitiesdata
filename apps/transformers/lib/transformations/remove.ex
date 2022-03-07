@@ -5,7 +5,7 @@ defmodule Transformers.Remove do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
          {:ok, _} <- FieldFetcher.fetch_value(payload, source_field) do
       transformed_payload = Map.delete(payload, source_field)
       {:ok, transformed_payload}

@@ -21,7 +21,7 @@ defmodule Transformers.RemoveTest do
     }
 
     parameters = %{
-      sourceField: "dead_field"
+      "sourceField" => "dead_field"
     }
 
     {:error, reason} = Remove.transform(payload, parameters)
@@ -36,7 +36,7 @@ defmodule Transformers.RemoveTest do
     }
 
     parameters = %{
-      sourceField: "dead_field"
+      "sourceField" => "dead_field"
     }
 
     {:ok, result} = Remove.transform(payload, parameters)
