@@ -22,7 +22,7 @@ defmodule Transformers.RegexReplace do
   end
 
   defp abort_if_not_string(value, field_name) do
-    if is_bitstring(value) do
+    if is_binary(value) do
       :ok
     else
       {:error, "Value of field #{field_name} is not a string: #{value}"}
