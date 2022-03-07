@@ -22,6 +22,6 @@ defmodule Transformers.ConcatenationTest do
 
     assert reason == "Missing transformation parameter: #{parameter}"
 
-    where(parameter: ["sourceFields"])
+    where(parameter: ["sourceFields", "separator"])
   end
 end

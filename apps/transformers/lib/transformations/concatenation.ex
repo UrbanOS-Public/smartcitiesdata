@@ -5,7 +5,8 @@ defmodule Transformers.Concatenation do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields") do
+    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
+         {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator") do
     else
       {:error, reason} -> {:error, reason}
     end
