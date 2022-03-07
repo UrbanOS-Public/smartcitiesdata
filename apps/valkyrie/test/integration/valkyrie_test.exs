@@ -31,7 +31,7 @@ defmodule ValkyrieTest do
           ]
         }
       })
-    
+
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
     pid = start_telemetry()
@@ -101,7 +101,7 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDataset: "pirates2"})
 
     messages = Enum.map(messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
 
@@ -110,13 +110,8 @@ defmodule ValkyrieTest do
 
     Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
 
-    eventually fn ->
-      IO.inspect(Brook.get!(@instance_name, :datasets, dataset.id), label: "HERE I AM IT IS I")
-      assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
-    end
-
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
-  
+
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     1..100
@@ -146,6 +141,7 @@ defmodule ValkyrieTest do
           ]
         }
       })
+
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
@@ -220,7 +216,7 @@ defmodule ValkyrieTest do
     eventually fn ->
       assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
     end
-    
+
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 

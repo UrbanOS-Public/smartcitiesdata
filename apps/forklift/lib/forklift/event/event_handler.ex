@@ -43,7 +43,7 @@ defmodule Forklift.Event.EventHandler do
       when type in ["stream", "ingest"] do
     dataset_update()
     |> add_event_count(author, dataset.id)
-      
+    
     Forklift.Datasets.update(dataset)
 
     [table: dataset.technical.systemName, schema: dataset.technical.schema]

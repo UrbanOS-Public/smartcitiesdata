@@ -29,6 +29,7 @@ defmodule Valkyrie.EndOfDataTest do
           ]
         }
       )
+
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
     data_message =

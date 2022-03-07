@@ -72,7 +72,6 @@ defmodule Valkyrie.DatasetSupervisor do
   end
 
   defp broadway(dataset, input_topic, output_topic, producer) do
-
     config = [
       dataset: dataset,
       output: [

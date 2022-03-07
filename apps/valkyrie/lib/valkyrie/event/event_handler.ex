@@ -8,22 +8,24 @@ defmodule Valkyrie.Event.EventHandler do
 
   import SmartCity.Event,
     only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
-  
+
   require Logger
   @instance_name Valkyrie.instance_name()
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{} = ingestion,
+        data: %Ingestion{targetDataset: target_dataset_id} = _ingestion,
         author: author
       }) do
-    data_ingest_start()
-    |> add_event_count(author, ingestion.targetDataset)
-    dataset = Brook.get!(@instance_name, :datasets, ingestion.targetDataset)
+    add_event_count(data_ingest_start(), author, target_dataset_id)
+    dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
+
     if dataset != nil do
-      Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{ingestion.targetDataset}")
+      Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
       Valkyrie.DatasetProcessor.start(dataset)
     end
+
+    :ok
   end
 
   def handle_event(%Brook.Event{
