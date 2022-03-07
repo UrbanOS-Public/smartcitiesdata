@@ -5,7 +5,7 @@ defmodule Valkyrie.EndOfDataTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_update: 0]
   import SmartCity.Data, only: [end_of_data: 0]
 
   @instance_name Valkyrie.instance_name()
@@ -29,6 +29,7 @@ defmodule Valkyrie.EndOfDataTest do
           ]
         }
       )
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
     data_message =
       TestHelpers.create_data(%{
@@ -41,7 +42,8 @@ defmodule Valkyrie.EndOfDataTest do
     message_to_not_consume =
       TestHelpers.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 

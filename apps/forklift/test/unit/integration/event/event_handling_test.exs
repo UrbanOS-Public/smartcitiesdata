@@ -70,7 +70,9 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
-      Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
+      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
 
       assert_receive %SmartCity.Dataset{id: "dataset-id"}
     end
