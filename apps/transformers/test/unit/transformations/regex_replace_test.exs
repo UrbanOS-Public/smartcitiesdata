@@ -136,4 +136,19 @@ defmodule Transformers.RegexReplaceTest do
     assert result == %{"something" => "123bc"}
   end
 
+  test "if regex matches multiple times, all matches are replaced" do
+    payload = %{
+      "something" => "abcabcdefabc"
+    }
+    parameters = %{
+      "sourceField" => "something",
+      "regex" => "abc",
+      "replacement" => "123"
+    }
+
+    {:ok, result} = RegexReplace.transform(payload, parameters)
+
+    assert result == %{"something" => "123123def123"}
+  end
+
 end
