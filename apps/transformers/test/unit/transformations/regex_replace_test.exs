@@ -14,7 +14,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Missing transformation parameter: source_field"
+    assert reason == "Missing transformation parameter: sourceField"
   end
 
   test "when regex not specified, return error" do
@@ -22,7 +22,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "123"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "replacement" => "a"
     }
 
@@ -36,7 +36,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "123"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "^(\\w+)"
     }
 
@@ -50,7 +50,7 @@ defmodule Transformers.RegexReplaceTest do
       "something_unexpected" => "123"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "^(\\w+)",
       "replacement" => "abc"
     }
@@ -65,7 +65,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "(()",
       "replacement" => "123"
     }
@@ -80,7 +80,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "^(\\w+)",
       "replacement" => 123
     }
@@ -95,7 +95,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => 123
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "123",
       "replacement" => "abc"
     }
@@ -111,7 +111,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "def",
       "replacement" => "123"
     }
@@ -126,7 +126,7 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
     parameters = %{
-      "source_field" => "something",
+      "sourceField" => "something",
       "regex" => "a",
       "replacement" => "123"
     }

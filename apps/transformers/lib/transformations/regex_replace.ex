@@ -6,7 +6,7 @@ defmodule Transformers.RegexReplace do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "source_field"),
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
          {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
          {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
