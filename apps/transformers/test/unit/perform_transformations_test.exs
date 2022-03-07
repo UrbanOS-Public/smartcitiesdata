@@ -8,9 +8,9 @@ defmodule Transformers.PerformTest do
     payload = %{"name" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_name_extractor_function =
@@ -26,15 +26,15 @@ defmodule Transformers.PerformTest do
     payload = %{"name" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_letter_extractor = %{
-      sourceField: "firstName",
-      targetField: "firstLetter",
-      regex: "^(\\w)"
+      "sourceField" => "firstName",
+      "targetField" => "firstLetter",
+      "regex" => "^(\\w)"
     }
 
     first_name_extractor_function =
@@ -60,15 +60,15 @@ defmodule Transformers.PerformTest do
     payload = %{"phone" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_letter_extractor = %{
-      sourceField: "firstName",
-      targetField: "firstLetter",
-      regex: "^(\\w)"
+      "sourceField" => "firstName",
+      "targetField" => "firstLetter",
+      "regex" => "^(\\w)"
     }
 
     first_name_extractor_function =

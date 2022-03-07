@@ -4,17 +4,17 @@ defmodule Transformers.ConstructAndPerformTest do
 
   test "two transforms of same kind" do
     parameters = %{
-      sourceField: "full_name",
-      targetField: "first_name",
-      regex: "^(\\w+)"
+      "sourceField" => "full_name",
+      "targetField" => "first_name",
+      "regex" => "^(\\w+)"
     }
 
     transformation1 = Transformation.new(%{type: "regex_extract", parameters: parameters})
 
     parameters = %{
-      sourceField: "full_name",
-      targetField: "last_name",
-      regex: "(\\w+)$"
+      "sourceField" => "full_name",
+      "targetField" => "last_name",
+      "regex" => "(\\w+)$"
     }
 
     transformation2 = Transformation.new(%{type: "regex_extract", parameters: parameters})
@@ -35,9 +35,9 @@ defmodule Transformers.ConstructAndPerformTest do
 
   test "two transforms of different kinds" do
     regex_params = %{
-      regex: "^([0-9])",
-      sourceField: "thing",
-      targetField: "number"
+      "regex" => "^([0-9])",
+      "sourceField" => "thing",
+      "targetField" => "number"
     }
 
     transformation1 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
