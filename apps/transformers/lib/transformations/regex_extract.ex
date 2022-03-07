@@ -2,6 +2,7 @@ defmodule Transformers.RegexExtract do
   @behaviour Transformation
 
   alias Transformations.FieldFetcher
+  alias Transformers.RegexUtils
 
   @impl Transformation
 
@@ -10,7 +11,7 @@ defmodule Transformers.RegexExtract do
          {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, :regex),
          {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
-         {:ok, regex} <- regex_compile(regex_pattern) do
+         {:ok, regex} <- RegexUtils.regex_compile(regex_pattern) do
       case Regex.run(regex, value, capture: :all_but_first) do
         nil ->
           transformed_payload = Map.put(payload, target_field, nil)
@@ -26,13 +27,4 @@ defmodule Transformers.RegexExtract do
     end
   end
 
-  defp regex_compile(regex) do
-    case Regex.compile(regex) do
-      {:ok, regex} ->
-        {:ok, regex}
-
-      {:error, {message, index}} ->
-        {:error, "Invalid regular expression: #{message} at index #{index}"}
-    end
-  end
 end
