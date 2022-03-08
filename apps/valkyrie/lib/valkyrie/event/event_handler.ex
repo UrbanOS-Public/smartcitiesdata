@@ -3,6 +3,7 @@ defmodule Valkyrie.Event.EventHandler do
   MessageHandler to receive updated datasets and add to the cache
   """
   alias SmartCity.Dataset
+  alias SmartCity.Ingestion
   use Brook.Event.Handler
 
   import SmartCity.Event,
@@ -13,16 +14,18 @@ defmodule Valkyrie.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{technical: %{sourceType: source_type}} = dataset,
+        data: %Ingestion{targetDataset: target_dataset_id} = _ingestion,
         author: author
-      })
-      when source_type in ["ingest", "stream"] do
-    data_ingest_start()
-    |> add_event_count(author, dataset.id)
+      }) do
+    add_event_count(data_ingest_start(), author, target_dataset_id)
+    dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
 
-    Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{dataset.id}")
-    Valkyrie.DatasetProcessor.start(dataset)
-    merge(:datasets, dataset.id, dataset)
+    if dataset != nil do
+      Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
+      Valkyrie.DatasetProcessor.start(dataset)
+    end
+
+    :ok
   end
 
   def handle_event(%Brook.Event{

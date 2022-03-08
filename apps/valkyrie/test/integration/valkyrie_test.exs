@@ -32,6 +32,8 @@ defmodule ValkyrieTest do
         }
       })
 
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+
     pid = start_telemetry()
 
     on_exit(fn ->
@@ -63,7 +65,13 @@ defmodule ValkyrieTest do
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
     output_topic = "#{output_topic_prefix()}-#{dataset.id}"
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
+
+    eventually fn ->
+      assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
+    end
+
+    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
@@ -93,17 +101,22 @@ defmodule ValkyrieTest do
         }
       })
 
+    ingestion = TDG.create_ingestion(%{targetDataset: "pirates2"})
+
     messages = Enum.map(messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
 
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
     output_topic = "#{output_topic_prefix()}-#{dataset.id}"
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
+
+    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
+
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     1..100
     |> Enum.each(fn _ ->
-      Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
+      Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     end)
 
     TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
@@ -129,10 +142,18 @@ defmodule ValkyrieTest do
         }
       })
 
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
     output_topic = "#{output_topic_prefix()}-#{dataset.id}"
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
+    eventually fn ->
+      dataset = Brook.get!(@instance_name, :datasets, dataset.id)
+      dataset != nil
+    end
+
+    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     updated_schema = [
@@ -159,7 +180,7 @@ defmodule ValkyrieTest do
     ]
 
     eventually fn ->
-      actual_schema = Brook.get!(Valkyrie.instance_name(), :datasets, dataset.id) |> get_in([:technical, :schema])
+      actual_schema = Brook.get!(@instance_name, :datasets, dataset.id) |> get_in([:technical, :schema])
       assert actual_schema == updated_schema
     end
 
@@ -186,9 +207,17 @@ defmodule ValkyrieTest do
         }
       })
 
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
+
+    eventually fn ->
+      assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
+    end
+
+    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     eventually fn ->

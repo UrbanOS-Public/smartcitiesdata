@@ -18,10 +18,11 @@ defmodule Valkyrie.DatasetMutationTest do
   test "a dataset with an updated schema properly parses new messages" do
     schema = [%{name: "age", type: "string"}]
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
+    ingestion = TDG.create_ingestion(%{targetDataset: @dataset_id})
 
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"age" => "21"})
-
-    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic())
     TestHelpers.wait_for_topic(elsa_brokers(), output_topic())
 
@@ -67,8 +68,9 @@ defmodule Valkyrie.DatasetMutationTest do
     input_topic = input_topic(dataset_id)
     output_topic = output_topic(dataset_id)
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
-
-    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     eventually(
       fn ->
