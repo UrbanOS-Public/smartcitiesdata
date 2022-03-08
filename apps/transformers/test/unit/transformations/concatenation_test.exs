@@ -25,7 +25,6 @@ defmodule Transformers.ConcatenationTest do
     where(parameter: ["sourceFields", "separator", "targetField"])
   end
 
-  @tag :skip
   test "error if a source field is missing" do
     payload = %{
       "first_name" => "Sam"
@@ -44,6 +43,5 @@ defmodule Transformers.ConcatenationTest do
 
   @tag :skip
   test "return error if source fields not a list" do
-
   end
 end
