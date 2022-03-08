@@ -47,16 +47,15 @@ defmodule Transformers.ConcatenationTest do
       "name2" => "two"
     }
 
-    parameters =
-      %{
-        "sourceFields" => "name",
-        "separator" => ".",
-        "targetField" => "full_name"
-      }
+    parameters = %{
+      "sourceFields" => "name",
+      "separator" => ".",
+      "targetField" => "full_name"
+    }
 
-      {:error, reason} = Concatenation.transform(payload, parameters)
+    {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == "Expected list but received single value: sourceFields"
+    assert reason == "Expected list but received single value: sourceFields"
   end
 
   test "concatenate string fields into new field" do
@@ -139,7 +138,7 @@ defmodule Transformers.ConcatenationTest do
   test "converts integers to strings before concatenating" do
     payload = %{
       "other" => 123,
-      "name" => "Sam",
+      "name" => "Sam"
     }
 
     parameters = %{
@@ -156,7 +155,7 @@ defmodule Transformers.ConcatenationTest do
   test "returns error if a source field cannot be converted to string" do
     payload = %{
       "other" => {:ok, "Hello"},
-      "name" => "Sam",
+      "name" => "Sam"
     }
 
     parameters = %{

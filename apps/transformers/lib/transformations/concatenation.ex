@@ -10,9 +10,9 @@ defmodule Transformers.Concatenation do
          {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
          {:ok, values} <- fetch_values(payload, source_fields),
          :ok <- can_convert_to_string?(values) do
-           joined_string = Enum.join(values, separator)
-           transformed = Map.put(payload, target_field, joined_string)
-           {:ok, transformed}
+      joined_string = Enum.join(values, separator)
+      transformed = Map.put(payload, target_field, joined_string)
+      {:ok, transformed}
     else
       {:error, reason} -> {:error, reason}
     end
@@ -54,9 +54,11 @@ defmodule Transformers.Concatenation do
   end
 
   def pretty_print_errors(results) do
-    errors = Map.get(results, :errors)
+    errors =
+      Map.get(results, :errors)
       |> Enum.map(&to_string/1)
       |> Enum.join(", ")
+
     "[#{errors}]"
   end
 
