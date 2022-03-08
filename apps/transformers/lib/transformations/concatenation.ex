@@ -10,7 +10,7 @@ defmodule Transformers.Concatenation do
          {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
          {:ok, values} <- fetch_values(payload, source_fields) do
            joined_string = Enum.join(values, separator)
-           transformed = Map.put_new(payload, target_field, joined_string)
+           transformed = Map.put(payload, target_field, joined_string)
            {:ok, transformed}
     else
       {:error, reason} -> {:error, reason}

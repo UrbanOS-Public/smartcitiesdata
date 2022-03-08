@@ -79,4 +79,24 @@ defmodule Transformers.ConcatenationTest do
     assert "I" == Map.get(result, "middle_initial")
     assert "Am" == Map.get(result, "last_name")
   end
+
+  test "concatenate string fields into existing field" do
+    payload = %{
+      "name" => "Sam",
+      "middle_initial" => "I",
+      "last_name" => "Am"
+    }
+
+    parameters = %{
+      "sourceFields" => ["name", "middle_initial", "last_name"],
+      "separator" => ".",
+      "targetField" => "name"
+    }
+
+    {:ok, result} = Concatenation.transform(payload, parameters)
+
+    assert "Sam.I.Am" == Map.get(result, "name")
+    assert "I" == Map.get(result, "middle_initial")
+    assert "Am" == Map.get(result, "last_name")
+  end
 end
