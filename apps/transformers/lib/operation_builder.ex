@@ -11,6 +11,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.TypeConversion.transform(payload, parameters) end
   end
 
+  def build("concatenation", parameters) do
+    fn payload -> Transformers.Concatenation.transform(payload, parameters) end
+  end
+
   def build("datetime", parameters) do
     fn payload -> Transformers.DateTime.transform(payload, parameters) end
   end
