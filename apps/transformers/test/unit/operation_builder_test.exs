@@ -69,4 +69,18 @@ defmodule Transformers.OperationBuilderTest do
 
     assert function.(payload) == Transformers.RegexReplace.transform(payload, params)
   end
+
+  test "concatenation function" do
+    params = %{
+      sourceFields: ["greeting", "target"],
+      targetField: "salutation",
+      separator: " "
+    }
+
+    payload = %{"greeting" => "Hello", "target" => "World"}
+
+    function = OperationBuilder.build("concatenation", params)
+
+    assert function.(payload) == Transformers.Concatenation.transform(payload, params)
+  end
 end
