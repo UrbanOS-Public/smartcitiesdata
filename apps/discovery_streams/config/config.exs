@@ -15,7 +15,7 @@ config :logger,
 
 config :discovery_streams,
   ttl: 600_000,
-  topic_prefix: "transformed-",
+  topic_prefix: "validated-",
   topic_subscriber_config: [
     begin_offset: :latest,
     offset_reset_policy: :reset_to_latest,

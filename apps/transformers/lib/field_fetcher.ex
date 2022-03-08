@@ -1,4 +1,4 @@
-defmodule Transformations.FieldFetcher do
+defmodule Transformers.FieldFetcher do
   def fetch_parameter(params, field_name) do
     fetch_or_error(params, field_name, "Missing transformation parameter: #{field_name}")
   end

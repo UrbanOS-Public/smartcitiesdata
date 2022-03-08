@@ -1,5 +1,5 @@
 defmodule Transformers do
-  alias Transformers.Utils
+  alias Transformers.OperationUtils
 
   def construct(transformations) do
     Enum.map(transformations, fn transformation ->
@@ -25,7 +25,7 @@ defmodule Transformers do
   end
 
   def perform(operations, initial_payload) do
-    if(Utils.allOperationsItemsAreFunctions(operations)) do
+    if(OperationUtils.allOperationsItemsAreFunctions(operations)) do
       executeOperations(operations, initial_payload)
     else
       {:error, "Invalid list of functions passed to performTransformations"}

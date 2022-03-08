@@ -39,20 +39,6 @@ defmodule E2ETest do
     }
   }
 
-  @geo_overrides %{
-    id: "geo_data",
-    technical: %{
-      orgName: "end_to",
-      dataName: "land",
-      systemName: "end_to__land",
-      schema: [%{name: "feature", type: "json"}],
-      sourceType: "ingest",
-      sourceFormat: "application/zip",
-      sourceUrl: "http://example.com",
-      cadence: "once"
-    }
-  }
-
   setup_all do
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
@@ -94,27 +80,6 @@ defmodule E2ETest do
       |> TDG.create_dataset()
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
-
-    geo_dataset =
-      @geo_overrides
-      |> put_in(
-        [:technical, :extractSteps],
-        [
-          %{
-            type: "http",
-            context: %{
-              url: "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile",
-              action: "GET",
-              queryParams: %{},
-              headers: %{},
-              protocol: nil,
-              body: %{}
-            },
-            assigns: %{}
-          }
-        ]
-      )
-      |> TDG.create_dataset()
 
     ingestion =
       TDG.create_ingestion(%{
@@ -175,7 +140,6 @@ defmodule E2ETest do
       ingestion: ingestion,
       streaming_dataset: streaming_dataset,
       streaming_ingestion: streaming_ingestion,
-      geo_dataset: geo_dataset,
       bypass: bypass
     ]
   end
@@ -276,9 +240,8 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
-    test "is standardized by valkyrie", %{ingestion: ingestion} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ingestion.id}"
+    test "is standardized by valkyrie", %{dataset: dataset} do
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset.id}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -288,10 +251,9 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
     @tag timeout: :infinity, capture_log: true
-    test "persists in PrestoDB", %{dataset: ds, ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ingestion.id}"
+    test "persists in PrestoDB", %{dataset: ds} do
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
       eventually(fn ->
@@ -319,7 +281,6 @@ defmodule E2ETest do
       )
     end
 
-    @tag :skip
     test "forklift sends event to update last ingested time", %{dataset: _ds} do
       eventually(fn ->
         messages =
@@ -361,7 +322,6 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
     test "is standardized by valkyrie", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
 
@@ -373,7 +333,6 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
@@ -403,7 +362,6 @@ defmodule E2ETest do
       )
     end
 
-    @tag :skip
     test "is available through socket connection", %{streaming_dataset: ds} do
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
@@ -416,7 +374,6 @@ defmodule E2ETest do
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
-    @tag :skip
     test "forklift sends event to update last ingested time for streaming datasets", %{
       streaming_dataset: _ds
     } do
@@ -427,52 +384,6 @@ defmodule E2ETest do
 
         assert length(messages) > 0
       end)
-    end
-  end
-
-  # TODO This functionality may be deprecated and we should investigate if we want to remove these tests
-  describe "geospatial data" do
-    @tag :skip
-    test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
-    @tag :skip
-    @tag timeout: :infinity, capture_log: true
-    test "persists geojson in PrestoDB", %{geo_dataset: ds} do
-      table = ds.technical.systemName
-
-      eventually(
-        fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
-        end,
-        5_000
-      )
-
-      eventually(
-        fn ->
-          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
-
-          assert [%{"feature" => actual} | _] = features = query("select * from #{table}", true)
-
-          assert Enum.count(features) <= 88
-
-          result = Jason.decode!(actual)
-
-          assert Map.keys(result) == ["bbox", "geometry", "properties", "type"]
-
-          [coordinates] = result["geometry"]["coordinates"]
-
-          assert Enum.count(coordinates) > 0
-        end,
-        10_000,
-        10
-      )
     end
   end
 

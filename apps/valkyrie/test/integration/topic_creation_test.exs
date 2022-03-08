@@ -5,7 +5,7 @@ defmodule Valkyrie.TopicCreationTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [data_ingest_start: 0]
+  import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0]
 
   @instance_name Valkyrie.instance_name()
 
@@ -28,13 +28,21 @@ defmodule Valkyrie.TopicCreationTest do
         }
       )
 
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+
+    eventually fn ->
+      assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
+    end
+
     data_message =
       TestHelpers.create_data(%{
         dataset_id: dataset.id,
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
-    Brook.Event.send(@instance_name, data_ingest_start(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
     TestHelpers.produce_message(data_message, input_topic, elsa_brokers())

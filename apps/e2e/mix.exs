@@ -4,7 +4,7 @@ defmodule E2E.MixProject do
   def project do
     [
       app: :e2e,
-      version: "0.1.1",
+      version: "0.1.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -25,6 +25,7 @@ defmodule E2E.MixProject do
 
   defp deps do
     [
+      {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},

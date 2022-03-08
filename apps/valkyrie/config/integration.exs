@@ -15,8 +15,8 @@ config :logger,
 
 config :valkyrie,
   elsa_brokers: endpoints,
-  input_topic_prefix: "raw",
-  output_topic_prefix: "transformed",
+  input_topic_prefix: "transformed",
+  output_topic_prefix: "validated",
   profiling_enabled: true,
   divo: [
     {DivoKafka,

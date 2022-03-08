@@ -55,4 +55,32 @@ defmodule Transformers.OperationBuilderTest do
 
     assert function.(payload) == Transformers.DateTime.transform(payload, params)
   end
+
+  test "regex replace function" do
+    params = %{
+      sourceField: "arbitrary",
+      regex: "abc",
+      replacement: "123"
+    }
+
+    payload = %{"arbitrary" => "abc"}
+
+    function = OperationBuilder.build("regex_replace", params)
+
+    assert function.(payload) == Transformers.RegexReplace.transform(payload, params)
+  end
+
+  test "remove function" do
+    params = %{
+      sourceField: "dead"
+    }
+
+    payload = %{
+      "dead" => "so long farewell"
+    }
+
+    function = OperationBuilder.build("remove", params)
+
+    assert function.(payload) == Transformers.Remove.transform(payload, params)
+  end
 end

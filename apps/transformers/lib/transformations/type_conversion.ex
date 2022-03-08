@@ -1,13 +1,13 @@
 defmodule Transformers.TypeConversion do
   @behaviour Transformation
 
-  alias Transformations.FieldFetcher
+  alias Transformers.FieldFetcher
 
   @impl Transformation
   def transform(payload, params) do
-    with {:ok, field} <- FieldFetcher.fetch_parameter(params, :field),
-         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, :sourceType),
-         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, :targetType),
+    with {:ok, field} <- FieldFetcher.fetch_parameter(params, "field"),
+         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, "sourceType"),
+         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, "targetType"),
          {:ok, value} <- FieldFetcher.fetch_value(payload, field),
          {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),

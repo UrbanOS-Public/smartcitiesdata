@@ -21,9 +21,9 @@ defmodule Alchemist.BroadwayTest do
       TDG.create_transformation(%{
         type: "regex_extract",
         parameters: %{
-          sourceField: "phone",
-          targetField: "area_code",
-          regex: "\\((\\d{3})\\)"
+          "sourceField" => "phone",
+          "targetField" => "area_code",
+          "regex" => "\\((\\d{3})\\)"
         }
       })
 
@@ -31,9 +31,9 @@ defmodule Alchemist.BroadwayTest do
       TDG.create_transformation(%{
         type: "regex_extract",
         parameters: %{
-          sourceField: "first_name",
-          targetField: "first_letter",
-          regex: "^(\\w)"
+          "sourceField" => "first_name",
+          "targetField" => "first_letter",
+          "regex" => "^(\\w)"
         }
       })
 
@@ -74,8 +74,8 @@ defmodule Alchemist.BroadwayTest do
       TDG.create_data(
         dataset_id: @dataset_id,
         payload: %{
-          phone: "(555) 8675309",
-          first_name: "Nicole"
+          "phone" => "(555) 8675309",
+          "first_name" => "Nicole"
         }
       )
 
