@@ -15,23 +15,30 @@ defmodule Transformers.Concatenation do
   end
 
   def fetch_values(payload, field_names) when is_list(field_names) do
-    results =
-      Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->
-        case Map.fetch(payload, field_name) do
-          {:ok, value} -> update_list_in_map(accumulator, :values, value)
-          :error -> update_list_in_map(accumulator, :errors, field_name)
-        end
-      end)
+    find_values_or_errors(payload, field_names)
+    |> all_values_if_present_else_error()
+  end
+
+  def find_values_or_errors(payload, field_names) do
+    Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->
+      case Map.fetch(payload, field_name) do
+        {:ok, value} -> update_list_in_map(accumulator, :values, value)
+        :error -> update_list_in_map(accumulator, :errors, field_name)
+      end
+    end)
+  end
+
+  def update_list_in_map(map, key, value) do
+    Map.update(map, key, [], fn current -> [value | current] end)
+  end
+
+  def all_values_if_present_else_error(results) do
     if length(Map.get(results, :errors)) == 0 do
       {:ok, Map.get(results, :values)}
     else
       errors = pretty_print_errors(results)
       {:error, "Missing field in payload: #{errors}"}
     end
-  end
-
-  def update_list_in_map(map, key, value) do
-    Map.update(map, key, [], fn current -> [value | current] end)
   end
 
   def pretty_print_errors(results) do
