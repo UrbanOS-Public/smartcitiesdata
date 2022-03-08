@@ -58,6 +58,16 @@ defmodule Forklift.Event.EventHandlingTest do
   end
 
   describe "on data:ingest:start event" do
+    test "ensures event is handled gracefully if no dataset exists for the ingestion" do
+      test = self()
+
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+      ingestion = TDG.create_ingestion(%{})
+      :ok = Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
+
+    end
+
     test "ensures dataset topic exists" do
       test = self()
 

@@ -22,7 +22,7 @@ defmodule Forklift.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDataset: dataset_id} = ingestion,
+        data: %Ingestion{targetDataset: dataset_id} = _ingestion,
         author: author
       }) do
     data_ingest_start()
@@ -33,6 +33,7 @@ defmodule Forklift.Event.EventHandler do
     if dataset != nil do
       :ok = Forklift.DataReaderHelper.init(dataset)
     end
+    :ok
   end
 
   def handle_event(%Brook.Event{
