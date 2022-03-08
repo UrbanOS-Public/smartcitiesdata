@@ -58,4 +58,25 @@ defmodule Transformers.ConcatenationTest do
 
       assert reason == "Expected list but received single value: sourceFields"
   end
+
+  test "concatenate string fields into new field" do
+    payload = %{
+      "first_name" => "Sam",
+      "middle_initial" => "I",
+      "last_name" => "Am"
+    }
+
+    parameters = %{
+      "sourceFields" => ["first_name", "middle_initial", "last_name"],
+      "separator" => ".",
+      "targetField" => "full_name"
+    }
+
+    {:ok, result} = Concatenation.transform(payload, parameters)
+
+    assert "Sam.I.Am" == Map.get(result, "full_name")
+    assert "Sam" == Map.get(result, "first_name")
+    assert "I" == Map.get(result, "middle_initial")
+    assert "Am" == Map.get(result, "last_name")
+  end
 end

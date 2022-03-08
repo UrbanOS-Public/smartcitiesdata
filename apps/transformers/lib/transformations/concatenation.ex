@@ -9,6 +9,9 @@ defmodule Transformers.Concatenation do
          {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
          {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
          {:ok, values} <- fetch_values(payload, source_fields) do
+           joined_string = Enum.join(values, separator)
+           transformed = Map.put_new(payload, target_field, joined_string)
+           {:ok, transformed}
     else
       {:error, reason} -> {:error, reason}
     end
@@ -28,10 +31,16 @@ defmodule Transformers.Concatenation do
         :error -> update_list_in_map(accumulator, :errors, field_name)
       end
     end)
+    |> reverse_list(:values)
+    |> reverse_list(:errors)
   end
 
   def update_list_in_map(map, key, value) do
     Map.update(map, key, [], fn current -> [value | current] end)
+  end
+
+  def reverse_list(map, key) do
+    Map.update(map, key, [], fn current -> Enum.reverse(current) end)
   end
 
   def all_values_if_present_else_error(results) do
@@ -45,7 +54,6 @@ defmodule Transformers.Concatenation do
 
   def pretty_print_errors(results) do
     errors = Map.get(results, :errors)
-      |> Enum.reverse()
       |> Enum.map(&to_string/1)
       |> Enum.join(", ")
     "[#{errors}]"
