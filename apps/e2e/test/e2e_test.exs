@@ -276,9 +276,8 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
-    test "is standardized by valkyrie", %{ingestion: ingestion} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ingestion.id}"
+    test "is standardized by valkyrie", %{dataset: dataset} do
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset.id}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -288,10 +287,9 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
     @tag timeout: :infinity, capture_log: true
-    test "persists in PrestoDB", %{dataset: ds, ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ingestion.id}"
+    test "persists in PrestoDB", %{dataset: ds} do
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
       eventually(fn ->
@@ -319,7 +317,6 @@ defmodule E2ETest do
       )
     end
 
-    @tag :skip
     test "forklift sends event to update last ingested time", %{dataset: _ds} do
       eventually(fn ->
         messages =
@@ -373,7 +370,7 @@ defmodule E2ETest do
       end)
     end
 
-    @tag :skip
+
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
@@ -403,7 +400,6 @@ defmodule E2ETest do
       )
     end
 
-    @tag :skip
     test "is available through socket connection", %{streaming_dataset: ds} do
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
@@ -416,7 +412,6 @@ defmodule E2ETest do
       assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
     end
 
-    @tag :skip
     test "forklift sends event to update last ingested time for streaming datasets", %{
       streaming_dataset: _ds
     } do
