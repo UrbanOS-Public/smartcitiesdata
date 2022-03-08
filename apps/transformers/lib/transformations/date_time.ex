@@ -5,10 +5,10 @@ defmodule Transformers.DateTime do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
-         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, :sourceFormat),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
-         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, :targetFormat),
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
+         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, "sourceFormat"),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
+         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, "targetFormat"),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime(payload_source_value, source_format, source_field),

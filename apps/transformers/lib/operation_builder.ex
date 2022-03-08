@@ -15,6 +15,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.DateTime.transform(payload, parameters) end
   end
 
+  def build("remove", parameters) do
+    fn payload -> Transformers.Remove.transform(payload, parameters) end
+  end
+
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
