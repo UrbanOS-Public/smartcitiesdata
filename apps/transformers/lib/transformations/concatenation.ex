@@ -8,7 +8,8 @@ defmodule Transformers.Concatenation do
     with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
          {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
          {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
-         {:ok, values} <- fetch_values(payload, source_fields) do
+         {:ok, values} <- fetch_values(payload, source_fields),
+         :ok <- can_convert_to_string?(values) do
            joined_string = Enum.join(values, separator)
            transformed = Map.put(payload, target_field, joined_string)
            {:ok, transformed}
@@ -57,5 +58,14 @@ defmodule Transformers.Concatenation do
       |> Enum.map(&to_string/1)
       |> Enum.join(", ")
     "[#{errors}]"
+  end
+
+  def can_convert_to_string?(values) do
+    try do
+      Enum.each(values, fn value -> to_string(value) end)
+      :ok
+    rescue
+      _ -> {:error, "Could not convert all source fields into strings"}
+    end
   end
 end

@@ -99,4 +99,74 @@ defmodule Transformers.ConcatenationTest do
     assert "I" == Map.get(result, "middle_initial")
     assert "Am" == Map.get(result, "last_name")
   end
+
+  test "concatenating an empty string works as expected" do
+    payload = %{
+      "name" => "Sam",
+      "other" => ""
+    }
+
+    parameters = %{
+      "sourceFields" => ["name", "other"],
+      "separator" => ".",
+      "targetField" => "name"
+    }
+
+    {:ok, result} = Concatenation.transform(payload, parameters)
+
+    assert "Sam." == Map.get(result, "name")
+    assert "" == Map.get(result, "other")
+  end
+
+  test "concatenating with nil works like empty string" do
+    payload = %{
+      "name" => "Sam",
+      "other" => nil
+    }
+
+    parameters = %{
+      "sourceFields" => ["name", "other"],
+      "separator" => ".",
+      "targetField" => "name"
+    }
+
+    {:ok, result} = Concatenation.transform(payload, parameters)
+
+    assert "Sam." == Map.get(result, "name")
+    assert nil == Map.get(result, "other")
+  end
+
+  test "converts integers to strings before concatenating" do
+    payload = %{
+      "other" => 123,
+      "name" => "Sam",
+    }
+
+    parameters = %{
+      "sourceFields" => ["other", "name"],
+      "separator" => ".",
+      "targetField" => "name"
+    }
+
+    {:ok, result} = Concatenation.transform(payload, parameters)
+
+    assert "123.Sam" == Map.get(result, "name")
+  end
+
+  test "returns error if a source field cannot be converted to string" do
+    payload = %{
+      "other" => {:ok, "Hello"},
+      "name" => "Sam",
+    }
+
+    parameters = %{
+      "sourceFields" => ["other", "name"],
+      "separator" => ".",
+      "targetField" => "name"
+    }
+
+    {:error, result} = Concatenation.transform(payload, parameters)
+
+    assert result == "Could not convert all source fields into strings"
+  end
 end
