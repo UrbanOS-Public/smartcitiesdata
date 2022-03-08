@@ -25,6 +25,7 @@ defmodule E2E.MixProject do
 
   defp deps do
     [
+      {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},

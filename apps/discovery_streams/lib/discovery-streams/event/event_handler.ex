@@ -8,14 +8,18 @@ defmodule DiscoveryStreams.Event.EventHandler do
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
   require Logger
 
+  @instance_name DiscoveryStreams.instance_name()
+
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
         data: %Ingestion{targetDataset: target_dataset_id} = _ingestion,
         author: author
       }) do
     add_event_count(data_ingest_start(), author, target_dataset_id)
-
-    DiscoveryStreams.Stream.Supervisor.start_child(target_dataset_id)
+    dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, target_dataset_id)
+    if dataset_name != nil do
+      DiscoveryStreams.Stream.Supervisor.start_child(target_dataset_id)
+    end
     :ok
   end
 
