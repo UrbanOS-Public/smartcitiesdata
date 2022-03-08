@@ -41,7 +41,21 @@ defmodule Transformers.ConcatenationTest do
     assert reason == "Missing field in payload: [middle_initial, last_name]"
   end
 
-  @tag :skip
   test "return error if source fields not a list" do
+    payload = %{
+      "name" => "one",
+      "name2" => "two"
+    }
+
+    parameters =
+      %{
+        "sourceFields" => "name",
+        "separator" => ".",
+        "targetField" => "full_name"
+      }
+
+      {:error, reason} = Concatenation.transform(payload, parameters)
+
+      assert reason == "Expected list but received single value: sourceFields"
   end
 end

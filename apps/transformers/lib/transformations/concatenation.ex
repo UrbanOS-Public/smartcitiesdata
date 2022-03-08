@@ -19,6 +19,8 @@ defmodule Transformers.Concatenation do
     |> all_values_if_present_else_error()
   end
 
+  def fetch_values(_, _), do: {:error, "Expected list but received single value: sourceFields"}
+
   def find_values_or_errors(payload, field_names) do
     Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->
       case Map.fetch(payload, field_name) do
