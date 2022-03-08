@@ -18,4 +18,4 @@ config :alchemist, :brook,
 
 config :logger,
   backends: [:console],
-  compile_time_purge_level: :debug
+  compile_time_purge_matching: [[lower_level_than: :debug]]

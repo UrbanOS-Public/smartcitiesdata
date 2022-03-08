@@ -36,7 +36,9 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   test "broadcasts data to end users" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset1)
+    ingestion1 = TDG.create_ingestion(%{targetDataset: dataset1.id})
+    Brook.Test.send(@instance_name, dataset_update(), :author, dataset1)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion1)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -49,7 +51,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       TopicHelper.get_endpoints(),
       TopicHelper.topic_name(dataset1.id),
       [create_message(%{foo: "bar"}, topic: dataset1.id)],
-      parition: 0
+      partition: 0
     )
 
     assert_push("update", %{"foo" => "bar"}, 15_000)
@@ -57,6 +59,8 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   test "broadcasts starting at latest offset" do
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
+    ingestion1 = TDG.create_ingestion(%{targetDataset: dataset1.id})
+    Brook.Test.send(@instance_name, dataset_update(), :author, dataset1)
     Elsa.create_topic(TopicHelper.get_endpoints(), TopicHelper.topic_name(dataset1.id))
 
     Process.sleep(10_000)
@@ -65,10 +69,10 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       TopicHelper.get_endpoints(),
       TopicHelper.topic_name(dataset1.id),
       [create_message(%{dont: "readme"}, topic: dataset1.id)],
-      parition: 0
+      partition: 0
     )
 
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset1)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion1)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -85,7 +89,9 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
         technical: %{sourceType: "stream", private: true, systemName: @unauthorized_private_system_name}
       )
 
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, private_dataset)
+    ingestion = TDG.create_ingestion(%{targetDataset: private_dataset.id})
+    Brook.Test.send(@instance_name, dataset_update(), :author, private_dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     assert {:error, _} =
              DiscoveryStreamsWeb.UserSocket
@@ -98,7 +104,9 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
 
   data_test "stops broadcasting after #{scenario}" do
     dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     {:ok, _, _socket} =
       DiscoveryStreamsWeb.UserSocket
@@ -151,8 +159,9 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     dataset_id = Faker.UUID.v4()
     system_name = Faker.UUID.v4()
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "stream", systemName: system_name})
-
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, dataset)
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     eventually(
       fn ->

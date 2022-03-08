@@ -3,7 +3,9 @@ defmodule Valkyrie.Event.EventHandlerTest do
   use Placebo
   use Brook.Event.Handler
   import Checkov
-  import SmartCity.Event, only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0]
+
+  import SmartCity.Event,
+    only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Valkyrie.Event.EventHandler
@@ -17,23 +19,16 @@ defmodule Valkyrie.Event.EventHandlerTest do
     :ok
   end
 
-  data_test "Processes datasets with #{source_type} " do
-    dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: source_type})
+  test "Processes ingestions when data:ingest:start event fires" do
+    ingestion = TDG.create_ingestion(%{targetDataset: "dataset-id"})
+    dataset = TDG.create_dataset(%{id: "dataset-id"})
+    allow(Brook.get!(any(), any(), any()), return: dataset)
 
     Brook.Test.with_event(@instance_name, fn ->
-      EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+      EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author))
     end)
 
-    assert called == called?(Valkyrie.DatasetProcessor.start(dataset))
-
-    where([
-      [:source_type, :called],
-      ["ingest", true],
-      ["stream", true],
-      ["host", false],
-      ["remote", false],
-      ["invalid", false]
-    ])
+    assert called?(Valkyrie.DatasetProcessor.start(dataset))
   end
 
   describe "handle_event/1" do
@@ -43,11 +38,11 @@ defmodule Valkyrie.Event.EventHandlerTest do
       :ok
     end
 
-    test "Should modify viewstate when handled" do
-      dataset = TDG.create_dataset(id: "does_not_matter", technical: %{sourceType: "ingest"})
+    test "Should modify viewstate when dataset:update event fires" do
+      dataset = TDG.create_dataset(id: "does_not_matter")
 
       Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(Brook.Event.new(type: data_ingest_start(), data: dataset, author: :author))
+        EventHandler.handle_event(Brook.Event.new(type: dataset_update(), data: dataset, author: :author))
       end)
 
       assert Brook.get!(@instance_name, :datasets, dataset.id) == dataset

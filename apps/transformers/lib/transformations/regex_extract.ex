@@ -6,9 +6,9 @@ defmodule Transformers.RegexExtract do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
-         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, :regex),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
+         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, regex} <- RegexUtils.regex_compile(regex_pattern) do
       case Regex.run(regex, value, capture: :all_but_first) do
