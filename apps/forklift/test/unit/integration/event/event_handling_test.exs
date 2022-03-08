@@ -65,7 +65,6 @@ defmodule Forklift.Event.EventHandlingTest do
 
       ingestion = TDG.create_ingestion(%{})
       :ok = Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
-
     end
 
     test "ensures dataset topic exists" do

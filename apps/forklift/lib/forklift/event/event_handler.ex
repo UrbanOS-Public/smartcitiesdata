@@ -33,6 +33,7 @@ defmodule Forklift.Event.EventHandler do
     if dataset != nil do
       :ok = Forklift.DataReaderHelper.init(dataset)
     end
+
     :ok
   end
 
