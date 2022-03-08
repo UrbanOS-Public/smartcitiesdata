@@ -14,16 +14,33 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
   end
 
   describe "data:ingest:start event" do
-    test "should start a stream supervisor child" do
+    test "should start a stream supervisor child when the dataset is a streaming dataset" do
       ingestion =
         TDG.create_ingestion(%{
           id: Faker.UUID.v4()
         })
 
+      allow(Brook.get!(any(), any(), any()), return: ingestion.id)
+
       event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
       response = EventHandler.handle_event(event)
 
       assert_called DiscoveryStreams.Stream.Supervisor.start_child(ingestion.targetDataset), once()
+      assert :ok == response
+    end
+
+    test "should not start a stream supervisor child when the dataset is not a streaming dataset" do
+      ingestion =
+        TDG.create_ingestion(%{
+          id: Faker.UUID.v4()
+        })
+
+      allow(Brook.get!(any(), any(), any()), return: nil)
+
+      event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
+      response = EventHandler.handle_event(event)
+
+      assert not called?(DiscoveryStreams.Stream.Supervisor.start_child(ingestion.targetDataset))
       assert :ok == response
     end
   end

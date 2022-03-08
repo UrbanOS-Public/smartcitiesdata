@@ -17,9 +17,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
       }) do
     add_event_count(data_ingest_start(), author, target_dataset_id)
     dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, target_dataset_id)
+
     if dataset_name != nil do
       DiscoveryStreams.Stream.Supervisor.start_child(target_dataset_id)
     end
+
     :ok
   end
 

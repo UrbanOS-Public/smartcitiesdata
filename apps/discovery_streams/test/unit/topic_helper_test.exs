@@ -5,19 +5,19 @@ defmodule DiscoveryStreams.TopicHelperTest do
 
   alias DiscoveryStreams.TopicHelper
 
-  getter(:topic_prefix, generic: true, default: "transformed-")
+  getter(:topic_prefix, generic: true, default: "validated-")
 
   describe "topic_name/1" do
     test "should return given dataset_id prefixed with the topic prefix" do
       dataset_id = Faker.UUID.v4()
-      assert "transformed-#{dataset_id}" == TopicHelper.topic_name(dataset_id)
+      assert "#{topic_prefix()}#{dataset_id}" == TopicHelper.topic_name(dataset_id)
     end
   end
 
   describe "dataset_id/1" do
     test "should return the dataset_id from the topic name" do
       dataset_id = Faker.UUID.v4()
-      topic_name = "transformed-#{dataset_id}"
+      topic_name = "#{topic_prefix()}#{dataset_id}"
       assert dataset_id == TopicHelper.dataset_id(topic_name)
     end
   end

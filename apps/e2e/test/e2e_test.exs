@@ -333,7 +333,6 @@ defmodule E2ETest do
       end)
     end
 
-
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
