@@ -1,7 +1,7 @@
 FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name discovery_streams
 
-FROM bitwalker/alpine-elixir:1.10.4
+FROM bitwalker/alpine-elixir:1.13.3
 ENV REPLACE_OS_VARS=true
 RUN apk upgrade && \
     apk add --no-cache bash openssl && \

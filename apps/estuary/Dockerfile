@@ -7,7 +7,7 @@ RUN cd apps/estuary/assets/ && \
     mix cmd --app estuary mix do compile, phx.digest
 RUN MIX_ENV=prod mix distillery.release --name estuary
 
-FROM bitwalker/alpine-elixir:1.10.4
+FROM bitwalker/alpine-elixir:1.13.3
 ENV REPLACE_OS_VARS=true
 RUN apk upgrade \
   && apk add --no-cache bash openssl \
