@@ -12,8 +12,10 @@ ENV REPLACE_OS_VARS=true
 RUN apk upgrade \
   && apk add --no-cache bash openssl \
   && rm -rf /var/cache/**/*
-WORKDIR /app
+RUN chgrp -R 0 ${HOME} && \
+    chmod -R g+rwX ${HOME}
 COPY --from=builder /app/_build/prod/rel/estuary/ .
+USER default
 ENV PORT=4000
 EXPOSE ${PORT}
 CMD ["bin/estuary", "foreground"]
