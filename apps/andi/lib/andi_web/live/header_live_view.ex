@@ -6,6 +6,7 @@ defmodule AndiWeb.HeaderLiveView do
 
   # TODO: update subclasses in access-group-link (it gets __icon from the sass extend?)
   # __icon as a subclass doesn't exist, probably can remove
+  # TODO: access groups font looks funky
   def render(assigns) do
     ~L"""
     <header class="root__header page-header">
@@ -20,7 +21,7 @@ defmodule AndiWeb.HeaderLiveView do
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
           <span class="access-group-link" phx-click="show-access-groups">
-            <span class="user-link__icon material-icons">people</span>
+            <span class="user-link__icon material-icons">lock</span>
             <span class="user-link__text">ACCESS GROUPS</span>
           </span>
           <span class="user-link" phx-click="show-users">

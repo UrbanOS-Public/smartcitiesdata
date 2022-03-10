@@ -27,18 +27,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @url_path "/datasets"
 
   describe "non-curator view" do
-    test "organization button is not shown", %{public_conn: conn} do
-      {:ok, _view, html} = live(conn, @url_path)
-
-      assert Enum.empty?(find_elements(html, ".organization-link"))
-    end
-
-    test "access groups button is not shown", %{public_conn: conn} do
-      {:ok, _view, html} = live(conn, @url_path)
-
-      assert Enum.empty?(find_elements(html, ".access-group-link"))
-    end
-
     test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
       {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
@@ -66,18 +54,6 @@ defmodule AndiWeb.DatasetLiveViewTest do
   end
 
   describe "curator view" do
-    test "organization button is shown", %{curator_conn: conn} do
-      {:ok, _view, html} = live(conn, @url_path)
-
-      refute Enum.empty?(find_elements(html, ".organization-link"))
-    end
-
-    test "access groups button is shown", %{curator_conn: conn} do
-      {:ok, _view, html} = live(conn, @url_path)
-
-      refute Enum.empty?(find_elements(html, ".access-group-link"))
-    end
-
     test "all datasets are shown", %{curator_conn: conn, public_subject: subject} do
       {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
