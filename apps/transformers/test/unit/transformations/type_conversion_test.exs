@@ -1,5 +1,8 @@
 defmodule Transformers.TypeConversionTest do
   use ExUnit.Case
+  use Checkov
+
+  alias Transformers.TypeConversion
 
   test "when field is nil do nothing" do
     payload = %{"nothing" => nil}
@@ -188,5 +191,45 @@ defmodule Transformers.TypeConversionTest do
     result = Transformers.TypeConversion.transform(payload, parameters)
 
     assert {:error, "Cannot parse field thing with value 1/4 into float"} == result
+  end
+
+  describe "validate/1" do
+    test "returns :ok if all parameters are present and the type conversion is valid" do
+      parameters = %{
+        "field" => "some_int",
+        "sourceType" => "integer",
+        "targetType" => "string"
+      }
+
+      {:ok, [field, source_type, target_type, conversion_function]} = TypeConversion.validate(parameters)
+
+      assert field == parameters["field"]
+      assert source_type == parameters["sourceType"]
+      assert target_type == parameters["targetType"]
+      assert is_function(conversion_function)
+    end
+
+    data_test "when missing parameter #{parameter} return error" do
+      parameters = %{
+        "field" => "some_int",
+        "sourceType" => "integer",
+        "targetType" => "string"
+      }
+        |> Map.delete(parameter)
+
+      {:error, reason} = TypeConversion.validate(parameters)
+
+      assert reason == "Missing transformation parameter: #{parameter}"
+
+      where(parameter: ["field", "sourceType", "targetType"])
+    end
+
+    test "if conversion is not supported return error" do
+      parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
+
+      result = TypeConversion.validate(parameters)
+
+      assert {:error, "Conversion from boolean to string is not supported"} == result
+    end
   end
 end

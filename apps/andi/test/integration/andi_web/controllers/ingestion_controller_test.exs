@@ -69,7 +69,8 @@ defmodule Andi.IngestionControllerTest do
         "cadence" => "*/9000 * * * * *",
         "schema" => [%{name: "billy", type: "writer"}],
         "targetDataset" => dataset.id,
-        "topLevelSelector" => "$.someValue"
+        "topLevelSelector" => "$.someValue",
+        "transformations" => []
       }
 
       message =
@@ -122,7 +123,8 @@ defmodule Andi.IngestionControllerTest do
           cadence: "*/9000 * * * * *",
           schema: [%{name: "billy", type: "writer"}],
           targetDataset: dataset.id,
-          topLevelSelector: "$.someValue"
+          topLevelSelector: "$.someValue",
+          transformations: []
         })
         |> struct_to_map_with_string_keys()
         |> delete_in([
@@ -156,7 +158,8 @@ defmodule Andi.IngestionControllerTest do
           cadence: "     */9000 * * * * *",
           schema: [%{name: "billy", type: "writer   "}],
           targetDataset: "#{dataset.id}   ",
-          topLevelSelector: "   $.someValue"
+          topLevelSelector: "   $.someValue",
+          transformations: []
         })
 
       {:ok, %{status: 201, body: body}} = create_ingestion(new_ingestion)
@@ -181,6 +184,7 @@ defmodule Andi.IngestionControllerTest do
       new_ingestion =
         TDG.create_ingestion(%{
           targetDataset: dataset.id,
+          transformations: [],
           extractSteps: [
             %{
               type: "http",

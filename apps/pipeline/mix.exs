@@ -26,7 +26,7 @@ defmodule Pipeline.MixProject do
 
   defp deps do
     [
-      {:smart_city, "~> 5.0.5"},
+      {:smart_city, "~> 5.0.6"},
       {:elsa, "~> 0.12", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
@@ -44,7 +44,7 @@ defmodule Pipeline.MixProject do
       {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 2.1.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.1.1", only: [:test, :integration]},
       {:divo, "~> 1.1", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:telemetry_event, in_umbrella: true}

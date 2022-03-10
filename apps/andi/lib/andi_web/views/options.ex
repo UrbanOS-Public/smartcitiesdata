@@ -150,6 +150,18 @@ defmodule AndiWeb.Views.Options do
     }
   end
 
+  def transformations() do
+    %{
+      "" => "",
+      "regex_extract" => "Regex Extract",
+      "regex_replace" => "Regex Replace",
+      "conversion" => "Conversion",
+      "concatenation" => "Concatenation",
+      "datetime" => "DateTime",
+      "remove" => "Remove"
+    }
+  end
+
   def organizations(stored_organizations) do
     case stored_organizations do
       {:ok, organizations} ->
