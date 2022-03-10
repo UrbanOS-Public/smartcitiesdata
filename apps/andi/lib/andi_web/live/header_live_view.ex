@@ -4,6 +4,8 @@ defmodule AndiWeb.HeaderLiveView do
   """
   use Phoenix.LiveComponent
 
+  # TODO: update subclasses in access-group-link (it gets __icon from the sass extend?)
+  # __icon as a subclass doesn't exist, probably can remove
   def render(assigns) do
     ~L"""
     <header class="root__header page-header">
@@ -16,6 +18,10 @@ defmodule AndiWeb.HeaderLiveView do
           <span class="organization-link" phx-click="show-organizations">
             <span class="organization-link__icon material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
+          </span>
+          <span class="access-group-link" phx-click="show-access-groups">
+            <span class="user-link__icon material-icons">people</span>
+            <span class="user-link__text">ACCESS GROUPS</span>
           </span>
           <span class="user-link" phx-click="show-users">
             <span class="user-link__icon material-icons">people</span>
@@ -47,6 +53,10 @@ defmodule AndiWeb.HeaderLiveView do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_users_path())
       end
 
+      def handle_event("show-access-groups", _, socket) do
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_access_groups_path())
+      end
+
       def handle_event("log-out", _, socket) do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
@@ -63,6 +73,10 @@ defmodule AndiWeb.HeaderLiveView do
 
   defmacro header_users_path() do
     "/users"
+  end
+
+  defmacro header_access_groups_path() do
+    "/access-groups"
   end
 
   defmacro header_log_out_path() do

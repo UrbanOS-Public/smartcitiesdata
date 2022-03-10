@@ -274,7 +274,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
 
-      where(event: ["cancel-edit", "show-organizations", "show-datasets"])
+      where(event: ["cancel-edit", "show-organizations", "show-datasets", "show-access-groups"])
     end
   end
 

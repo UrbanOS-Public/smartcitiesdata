@@ -293,8 +293,13 @@ body {
     }
 }
 
+// TODO: rename this to be a generic class instead of extending
 .user-link {
-  @extend .organization-link
+    @extend .organization-link
+}
+
+.access-groups-link {
+    @extend .organization-link
 }
 
 .log-out-link {
