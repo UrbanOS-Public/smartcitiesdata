@@ -20,7 +20,6 @@ defmodule Transformers do
           {:ok, _} -> {:ok, "Transformation valid."}
           {:error, _} -> {:error, "Transformation not valid."}
         end
-
       else
         :error -> {:error, "Map provided is not a valid transformation"}
       end

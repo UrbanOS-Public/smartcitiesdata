@@ -78,14 +78,14 @@ defmodule Andi.InputSchemas.TransformationsTest do
                  ingestion_id: ^ingestion_one_id
                },
                %{
-                type: "regex_extract",
-                parameters: %{
-                  "sourceField" => "name",
-                  "targetField" => "firstName",
-                  "regex" => "^(\\w+)"
-                },
-                ingestion_id: ^ingestion_one_id
-              }
+                 type: "regex_extract",
+                 parameters: %{
+                   "sourceField" => "name",
+                   "targetField" => "firstName",
+                   "regex" => "^(\\w+)"
+                 },
+                 ingestion_id: ^ingestion_one_id
+               }
              ] = Transformations.all_for_ingestion(ingestion_one_id)
     end
   end
@@ -133,6 +133,7 @@ defmodule Andi.InputSchemas.TransformationsTest do
   describe "create/1" do
     test "creates a new treansformation given valid input" do
       id = UUID.uuid4()
+
       transformation = %{
         id: id,
         type: "concatenation",
@@ -144,23 +145,25 @@ defmodule Andi.InputSchemas.TransformationsTest do
       }
 
       Transformations.create(transformation)
+
       assert %{
-        id: id,
-        ingestion_id: nil,
-        sequence: _,
-        type: "concatenation",
-        parameters: %{
-          "sourceFields" => ["other", "name"],
-          "separator" => ".",
-          "targetField" => "name"
-        }
-      } = Transformations.get(id)
+               id: id,
+               ingestion_id: nil,
+               sequence: _,
+               type: "concatenation",
+               parameters: %{
+                 "sourceFields" => ["other", "name"],
+                 "separator" => ".",
+                 "targetField" => "name"
+               }
+             } = Transformations.get(id)
     end
   end
 
   describe "delete/1" do
     test "given an existing transformation, it deletes it" do
       id = UUID.uuid4()
+
       transformation = %{
         id: id,
         type: "concatenation",
@@ -172,17 +175,18 @@ defmodule Andi.InputSchemas.TransformationsTest do
       }
 
       Transformations.create(transformation)
+
       assert %{
-        id: id,
-        ingestion_id: nil,
-        sequence: _,
-        type: "concatenation",
-        parameters: %{
-          "sourceFields" => ["other", "name"],
-          "separator" => ".",
-          "targetField" => "name"
-        }
-      } = Transformations.get(id)
+               id: id,
+               ingestion_id: nil,
+               sequence: _,
+               type: "concatenation",
+               parameters: %{
+                 "sourceFields" => ["other", "name"],
+                 "separator" => ".",
+                 "targetField" => "name"
+               }
+             } = Transformations.get(id)
 
       assert {:ok, _} = Transformations.delete(id)
       assert Transformations.get(id) == nil

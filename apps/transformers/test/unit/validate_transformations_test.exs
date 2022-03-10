@@ -2,7 +2,6 @@ defmodule Transformers.ValidateTest do
   use ExUnit.Case
 
   test "given a list of one valid transformation, a single valid transformation response is returned" do
-
     transformation = %{
       type: "regex_extract",
       parameters: %{
@@ -17,7 +16,6 @@ defmodule Transformers.ValidateTest do
   end
 
   test "returns an error when the transformation is formatted incorrectly" do
-
     invalid_transformation = %{
       parameters: %{
         "sourceField" => "name",
@@ -54,7 +52,6 @@ defmodule Transformers.ValidateTest do
   end
 
   test "returns results for both valid and invalid transformations" do
-
     transformation1 = %{
       type: "regex_extract",
       parameters: %{
@@ -66,16 +63,14 @@ defmodule Transformers.ValidateTest do
 
     transformation2 = %{
       type: "remove",
-      parameters: %{
-      }
+      parameters: %{}
     }
 
     assert Transformers.validate([transformation1, transformation2]) ==
-      [{:ok, "Transformation valid."}, {:error, "Transformation not valid."}]
+             [{:ok, "Transformation valid."}, {:error, "Transformation not valid."}]
   end
 
   test "when provided an empty transformations list, an empty list is returned" do
     assert Transformers.validate([]) == []
   end
-
 end

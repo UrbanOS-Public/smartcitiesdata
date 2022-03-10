@@ -201,7 +201,8 @@ defmodule Transformers.TypeConversionTest do
         "targetType" => "string"
       }
 
-      {:ok, [field, source_type, target_type, conversion_function]} = TypeConversion.validate(parameters)
+      {:ok, [field, source_type, target_type, conversion_function]} =
+        TypeConversion.validate(parameters)
 
       assert field == parameters["field"]
       assert source_type == parameters["sourceType"]
@@ -210,11 +211,12 @@ defmodule Transformers.TypeConversionTest do
     end
 
     data_test "when missing parameter #{parameter} return error" do
-      parameters = %{
-        "field" => "some_int",
-        "sourceType" => "integer",
-        "targetType" => "string"
-      }
+      parameters =
+        %{
+          "field" => "some_int",
+          "sourceType" => "integer",
+          "targetType" => "string"
+        }
         |> Map.delete(parameter)
 
       {:error, reason} = TypeConversion.validate(parameters)
