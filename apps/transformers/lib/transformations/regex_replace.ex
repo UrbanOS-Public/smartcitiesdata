@@ -6,16 +6,24 @@ defmodule Transformers.RegexReplace do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
-         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
-         {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
+    with {:ok, [source_field, replacement, regex]} <- validate(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
-         {:ok, regex} <- RegexUtils.regex_compile(regex_pattern),
          :ok <- abort_if_not_string(value, source_field),
          :ok <- abort_if_not_string(replacement, "replacement") do
       transformed_value = Regex.replace(regex, value, replacement)
       transformed_payload = Map.put(payload, source_field, transformed_value)
       {:ok, transformed_payload}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def validate(parameters) do
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
+         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
+         {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
+         {:ok, regex} <- RegexUtils.regex_compile(regex_pattern) do
+      {:ok, [source_field, replacement, regex]}
     else
       {:error, reason} -> {:error, reason}
     end
