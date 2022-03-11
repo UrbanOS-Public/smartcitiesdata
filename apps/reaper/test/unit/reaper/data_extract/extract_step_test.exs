@@ -6,7 +6,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   alias Reaper.Cache.AuthCache
   use Placebo
 
-  @dataset_id "12345-6789"
+  @ingestion_id "12345-6789"
 
   @csv """
   one,two,three
@@ -31,24 +31,22 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   setup do
     bypass = Bypass.open()
 
-    dataset =
-      TDG.create_dataset(
-        id: @dataset_id,
-        technical: %{
-          sourceType: "ingest",
-          sourceFormat: "csv",
-          sourceUrl: "http://localhost:#{bypass.port}/api/csv",
-          cadence: 100,
-          schema: [
-            %{name: "a", type: "string"},
-            %{name: "b", type: "string"},
-            %{name: "c", type: "string"}
-          ],
-          allow_duplicates: false
-        }
-      )
+    sourceUrl = "http://localhost:#{bypass.port}/api/csv"
 
-    [bypass: bypass, dataset: dataset]
+    ingestion =
+      TDG.create_ingestion(%{
+        id: @ingestion_id,
+        sourceFormat: "csv",
+        cadence: 100,
+        schema: [
+          %{name: "a", type: "string"},
+          %{name: "b", type: "string"},
+          %{name: "c", type: "string"}
+        ],
+        allow_duplicates: false
+      })
+
+    [bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl]
   end
 
   describe "execute_extract_steps/2 auth" do
@@ -59,7 +57,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       :ok
     end
 
-    test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, dataset: dataset} do
+    test "Calls the auth retriever and adds response token to assigns", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
@@ -86,12 +84,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{token: "auth_token"}
     end
 
-    test "Handles compressed auth bodies", %{bypass: bypass, dataset: dataset} do
+    test "Handles compressed auth bodies", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
@@ -123,12 +121,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{token: "thetokenstring"}
     end
 
-    test "Handles invalid compressed auth bodies", %{bypass: bypass, dataset: dataset} do
+    test "Handles invalid compressed auth bodies", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
@@ -160,12 +158,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
-        ExtractStep.execute_extract_steps(dataset, steps)
+      assert_raise RuntimeError, "Unable to process auth step for ingestion 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(ingestion, steps)
       end
     end
 
-    test "Can use assigns block for body", %{bypass: bypass, dataset: dataset} do
+    test "Can use assigns block for body", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
@@ -194,12 +192,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{key: "super secret", token: "auth_token"}
     end
 
-    test "Can use empty string for body", %{bypass: bypass, dataset: dataset} do
+    test "Can use empty string for body", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
 
@@ -227,12 +225,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{key: "super secret two", token: "auth_token2"}
     end
 
-    test "Can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
+    test "Can use assigns block for headers", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/headers", fn conn ->
         if Enum.any?(conn.req_headers, fn header -> header == {"header", "super secret"} end) do
           Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
@@ -259,12 +257,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{header: "super secret", token: "auth_token"}
     end
 
-    test "Can use assigns block for url", %{bypass: bypass, dataset: dataset} do
+    test "Can use assigns block for url", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/fancyurl", fn conn ->
         Plug.Conn.resp(conn, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
       end)
@@ -287,12 +285,12 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{path: "fancyurl", token: "auth_token"}
     end
 
-    test "fails with a reasonable error message", %{bypass: bypass, dataset: dataset} do
+    test "fails with a reasonable error message", %{bypass: bypass, ingestion: ingestion} do
       Bypass.stub(bypass, "POST", "/", fn conn ->
         Plug.Conn.resp(conn, 403, "No dice")
       end)
@@ -313,14 +311,14 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert_raise RuntimeError, "Unable to process auth step for dataset 12345-6789.", fn ->
-        ExtractStep.execute_extract_steps(dataset, steps)
+      assert_raise RuntimeError, "Unable to process auth step for ingestion 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(ingestion, steps)
       end
     end
   end
 
   describe "execute_extract_steps/2 date" do
-    test "puts current date with format into assigns block", %{dataset: dataset} do
+    test "puts current date with format into assigns block", %{ingestion: ingestion} do
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
 
       steps = [
@@ -336,13 +334,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+      assert ExtractStep.execute_extract_steps(ingestion, steps) ==
                %{
                  currentDate: "2020-08"
                }
     end
 
-    test "puts current date can do time delta", %{dataset: dataset} do
+    test "puts current date can do time delta", %{ingestion: ingestion} do
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:30:00.000], "Etc/UTC")
 
       steps = [
@@ -358,7 +356,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+      assert ExtractStep.execute_extract_steps(ingestion, steps) ==
                %{
                  currentDate: "1987-08"
                }
@@ -376,7 +374,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+      assert ExtractStep.execute_extract_steps(ingestion, steps) ==
                %{
                  currentDate: "2020-08-31 2:03"
                }
@@ -384,10 +382,10 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   end
 
   describe "execute_extract_steps/2 secret" do
-    test "puts a secret into assigns block", %{dataset: dataset} do
+    test "puts a secret into assigns block", %{ingestion: ingestion} do
       allow Timex.now(), return: DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC")
 
-      allow Reaper.SecretRetriever.retrieve_dataset_credentials("the_key"),
+      allow Reaper.SecretRetriever.retrieve_ingestion_credentials("the_key"),
         return:
           {:ok,
            %{
@@ -407,7 +405,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert ExtractStep.execute_extract_steps(dataset, steps) ==
+      assert ExtractStep.execute_extract_steps(ingestion, steps) ==
                %{
                  token: "mah_secret"
                }
@@ -415,7 +413,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   end
 
   describe "execute_extract_steps/2 http" do
-    test "simple http get", %{bypass: bypass, dataset: dataset} do
+    test "simple http get", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
@@ -427,7 +425,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             action: "GET",
             protocol: nil,
             body: %{},
-            url: dataset.technical.sourceUrl,
+            url: "#{sourceUrl}",
             queryParams: %{},
             headers: %{}
           },
@@ -435,13 +433,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{output_file: {:file, "12345-6789"}}
       assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
-    test "can use assigns block for query params", %{bypass: bypass, dataset: dataset} do
+    test "can use assigns block for query params", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv/query", fn conn ->
         token =
           conn
@@ -463,7 +461,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             action: "GET",
             protocol: nil,
             body: %{},
-            url: "#{dataset.technical.sourceUrl}/query",
+            url: "#{sourceUrl}/query",
             queryParams: %{
               token: "{{token}}"
             },
@@ -473,13 +471,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{output_file: {:file, "12345-6789"}, token: "secret tunnel"}
       assert File.read!("12345-6789") == "this,is,another\ncsv,with,columns\n"
     end
 
-    test "can use assigns block for headers", %{bypass: bypass, dataset: dataset} do
+    test "can use assigns block for headers", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv/headers", fn conn ->
         if Enum.any?(conn.req_headers, fn header -> header == {"bearer", "bear token"} end) do
           Plug.Conn.resp(conn, 200, @csvheaders)
@@ -495,7 +493,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             action: "GET",
             protocol: nil,
             body: %{},
-            url: "#{dataset.technical.sourceUrl}/headers",
+            url: "#{sourceUrl}/headers",
             queryParams: %{},
             headers: %{Bearer: "{{token}}"}
           },
@@ -503,13 +501,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{output_file: {:file, "12345-6789"}, token: "bear token"}
       assert File.read!("12345-6789") == "hello,it's,me\nyour,csv,friend\n"
     end
 
-    test "can use assigns block for url", %{bypass: bypass, dataset: dataset} do
+    test "can use assigns block for url", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv/fancyurl", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
@@ -521,7 +519,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             action: "GET",
             protocol: nil,
             body: %{},
-            url: "#{dataset.technical.sourceUrl}/{{path}}",
+            url: "#{sourceUrl}/{{path}}",
             queryParams: %{},
             headers: %{}
           },
@@ -529,13 +527,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert assigns == %{output_file: {:file, "12345-6789"}, path: "fancyurl"}
       assert File.read!("12345-6789") == "one,two,three\nfour,five,six\n"
     end
 
-    test "can post with an encoded post body", %{bypass: bypass, dataset: dataset} do
+    test "can post with an encoded post body", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "POST", "/api/csv/post", fn conn ->
         {:ok, body, conn} = Plug.Conn.read_body(conn)
         parsed = Jason.decode!(body)
@@ -557,7 +555,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                 date: "{{date}}"
               }
             },
-            url: "#{dataset.technical.sourceUrl}/post",
+            url: "#{sourceUrl}/post",
             queryParams: %{},
             headers: %{}
           },
@@ -565,13 +563,13 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{date: "2018-01-01", output_file: {:file, "12345-6789"}}
       assert File.read!("12345-6789") == "this,csv,is only\nattainable,with a,post body\n"
     end
 
-    test "sends through protocols", %{bypass: bypass, dataset: dataset} do
+    test "sends through protocols", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
         Plug.Conn.resp(conn, 200, @csv)
       end)
@@ -585,7 +583,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             action: "GET",
             protocol: ["http1"],
             body: %{},
-            url: "#{dataset.technical.sourceUrl}",
+            url: "#{sourceUrl}",
             queryParams: %{},
             headers: %{}
           },
@@ -593,7 +591,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{output_file: {:file, "12345-6789"}}
       assert_called Mint.HTTP.connect(:http, "localhost", any(), transport_opts: [timeout: 30_000], protocols: [:http1])
@@ -601,10 +599,10 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   end
 
   describe "execute_extract_steps/2 s3" do
-    test "successfully constructs the S3 request", %{dataset: dataset} do
+    test "successfully constructs the S3 request", %{ingestion: ingestion} do
       allow Reaper.DataSlurper.S3.slurp(
               "s3://some-bucket/subdir/blaster.exe",
-              dataset.id,
+              ingestion.id,
               %{"x-scos-amzn-s3-region": "us-east-2"},
               any(),
               any(),
@@ -626,17 +624,17 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{output_file: {:file, "somefile2"}}
     end
   end
 
   describe "execute_extract_steps/2 sftp" do
-    test "successfully constructs the sftp request", %{dataset: dataset} do
+    test "successfully constructs the sftp request", %{ingestion: ingestion} do
       allow Reaper.DataSlurper.Sftp.slurp(
               "sftp://host:port/wow/such/path",
-              dataset.id,
+              ingestion.id,
               any(),
               any(),
               any(),
@@ -658,7 +656,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      expected_assigns = ExtractStep.execute_extract_steps(dataset, steps)
+      expected_assigns = ExtractStep.execute_extract_steps(ingestion, steps)
 
       assert expected_assigns == %{
                host: "host",
@@ -670,7 +668,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   end
 
   describe "extract steps error paths" do
-    test "Set variable then single extract step for http get", %{dataset: dataset} do
+    test "Set variable then single extract step for http get", %{ingestion: ingestion, sourceUrl: sourceUrl} do
       steps = [
         %{
           type: "date",
@@ -685,7 +683,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         %{
           type: "http",
           context: %{
-            url: "#{dataset.technical.sourceUrl}/{{currentDate}}",
+            url: "#{sourceUrl}/{{currentDate}}",
             queryParams: %{},
             headers: %{}
           },
@@ -693,8 +691,8 @@ defmodule Reaper.DataExtract.ExtractStepTest do
         }
       ]
 
-      assert_raise RuntimeError, "Unable to process date step for dataset 12345-6789.", fn ->
-        ExtractStep.execute_extract_steps(dataset, steps)
+      assert_raise RuntimeError, "Unable to process date step for ingestion 12345-6789.", fn ->
+        ExtractStep.execute_extract_steps(ingestion, steps)
       end
     end
   end

@@ -7,9 +7,9 @@ defmodule Reaper.YeetTest do
   require Logger
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0]
+  import SmartCity.Event, only: [ingestion_update: 0]
 
-  @dataset_id "12345-6789"
+  @ingestion_id "12345-6789"
   @dlq_topic Application.get_env(:dead_letter, :driver) |> get_in([:init_args, :topic])
   @instance_name Reaper.instance_name()
 
@@ -35,17 +35,30 @@ defmodule Reaper.YeetTest do
       max_tries: 20
     )
 
-    json_dataset =
-      TDG.create_dataset(%{
-        id: @dataset_id,
-        technical: %{
-          cadence: "once",
-          sourceUrl: "http://localhost:#{bypass.port}/#{@invalid_json_file}",
-          sourceFormat: "json"
-        }
+    json_ingestion =
+      TDG.create_ingestion(%{
+        id: @ingestion_id,
+        cadence: "once",
+        sourceFormat: "json",
+        targetDataset: "noodles",
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: %{},
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "http://localhost:#{bypass.port}/#{@invalid_json_file}"
+            },
+            type: "http"
+          }
+        ],
+        topLevelSelector: nil
       })
 
-    Brook.Event.send(@instance_name, dataset_update(), :reaper, json_dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :reaper, json_ingestion)
 
     :ok
   end
@@ -55,14 +68,14 @@ defmodule Reaper.YeetTest do
       eventually(fn ->
         messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, elsa_brokers())
 
-        assert [%{app: "reaper", dataset_id: @dataset_id} | _] = messages
+        assert [%{app: "reaper", dataset_id: "noodles"} | _] = messages
       end)
     end
 
     test "no messages go on to the output topic" do
       eventually(fn ->
         result =
-          (output_topic_prefix() <> "-" <> @dataset_id)
+          (output_topic_prefix() <> "-" <> @ingestion_id)
           |> TestUtils.get_data_messages_from_kafka(elsa_brokers())
 
         assert result == []

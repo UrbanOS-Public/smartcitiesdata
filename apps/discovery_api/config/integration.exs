@@ -18,6 +18,9 @@ config :discovery_api,
   hosted_region: aws_region,
   hsts_enabled: false
 
+config :discovery_api,
+  raptor_url: "http://localhost:4002/api/authorize"
+
 config :redix,
   args: redix_args
 
@@ -111,7 +114,7 @@ config :discovery_api, DiscoveryApi.Repo,
   port: "5456"
 
 config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
-  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  issuer: "https://project-hercules.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000

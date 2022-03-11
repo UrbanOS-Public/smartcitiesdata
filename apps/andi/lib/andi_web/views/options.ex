@@ -103,7 +103,6 @@ defmodule AndiWeb.Views.Options do
       "" => "",
       "ingest" => "Ingest",
       "stream" => "Stream",
-      "host" => "Host",
       "remote" => "Remote"
     }
   end
@@ -148,6 +147,18 @@ defmodule AndiWeb.Views.Options do
       "hours" => "Hours",
       "minutes" => "Minutes",
       "seconds" => "Seconds"
+    }
+  end
+
+  def transformations() do
+    %{
+      "" => "",
+      "regex_extract" => "Regex Extract",
+      "regex_replace" => "Regex Replace",
+      "conversion" => "Conversion",
+      "concatenation" => "Concatenation",
+      "datetime" => "DateTime",
+      "remove" => "Remove"
     }
   end
 

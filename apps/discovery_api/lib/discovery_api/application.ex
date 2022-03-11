@@ -8,7 +8,6 @@ defmodule DiscoveryApi.Application do
   @instance_name DiscoveryApi.instance_name()
 
   getter(:brook, generic: true)
-  getter(:secrets_endpoint, generic: true)
   getter(:elasticsearch, generic: true)
 
   def start(_type, _args) do

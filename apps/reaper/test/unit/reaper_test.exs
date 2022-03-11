@@ -9,26 +9,26 @@ defmodule ReaperTests do
   setup do
     TestHelper.start_horde()
     {:ok, scheduler} = Reaper.Scheduler.start_link()
-    allow Reaper.DataExtract.Processor.process(any()), exec: fn _dataset -> Process.sleep(10 * 60_000) end
-    dataset = TDG.create_dataset(id: "ds-to-kill")
+    allow Reaper.DataExtract.Processor.process(any()), exec: fn _ingestion -> Process.sleep(10 * 60_000) end
+    ingestion = TDG.create_ingestion(%{id: "ds-to-kill"})
 
     on_exit(fn ->
       TestHelper.assert_down(scheduler)
     end)
 
-    [dataset: dataset]
+    [ingestion: ingestion]
   end
 
   describe("currently_running_jobs/0") do
     test "should return all jobs" do
-      dataset_1 = TDG.create_dataset(id: "ds-to-kill-1")
-      dataset_2 = TDG.create_dataset(id: "ds-to-kill-2")
-      Reaper.Horde.Supervisor.start_data_extract(dataset_1)
-      Reaper.Horde.Supervisor.start_data_extract(dataset_2)
+      ingest_1 = TDG.create_ingestion(%{id: "ds-to-kill-1"})
+      ingest_2 = TDG.create_ingestion(%{id: "ds-to-kill-2"})
+      Reaper.Horde.Supervisor.start_data_extract(ingest_1)
+      Reaper.Horde.Supervisor.start_data_extract(ingest_2)
 
       result = Reaper.currently_running_jobs()
 
-      assert [dataset_1.id, dataset_2.id] == result |> Enum.sort()
+      assert [ingest_1.id, ingest_2.id] == result |> Enum.sort()
     end
   end
 end

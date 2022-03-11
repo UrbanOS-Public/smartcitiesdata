@@ -1,5 +1,5 @@
 defmodule DiscoveryStreams.SourceHandlerTest do
-  alias DiscoveryStreams.Services.RaptorService
+  alias RaptorService
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
@@ -23,7 +23,7 @@ defmodule DiscoveryStreams.SourceHandlerTest do
       return: {:ok, @dataset_2_id}
     )
 
-    allow(RaptorService.is_authorized(any(), any()),
+    allow(RaptorService.is_authorized(any(), any(), any()),
       return: true
     )
 

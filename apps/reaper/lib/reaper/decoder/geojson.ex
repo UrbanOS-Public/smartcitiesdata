@@ -7,7 +7,7 @@ defmodule Reaper.Decoder.GeoJson do
   alias Reaper.Decoder.Json
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, %{technical: %{topLevelSelector: top_level_selector}} = _dataset)
+  def decode({:file, filename}, %{topLevelSelector: top_level_selector} = _ingestion)
       when not is_nil(top_level_selector) do
     with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
          {:ok, data} <- Json.json_file_query(filename, query),
@@ -19,7 +19,7 @@ defmodule Reaper.Decoder.GeoJson do
     end
   end
 
-  def decode({:file, filename}, _dataset) do
+  def decode({:file, filename}, _ingestion) do
     data = File.read!(filename)
 
     with {:ok, json} <- Jason.decode(data),
@@ -31,7 +31,7 @@ defmodule Reaper.Decoder.GeoJson do
     end
   end
 
-  defp extract_geojson_features(%{"features" => features}) when is_list(features) do
+  defp extract_geojson_features(%{"features" => features} = input) when is_list(features) do
     mapped_features = features |> Enum.map(fn feature -> %{"feature" => feature} end)
     {:ok, mapped_features}
   end

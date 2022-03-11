@@ -4,7 +4,7 @@ defmodule Reaper.InitTest do
   use Properties, otp_app: :reaper
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Reaper.Collections.{Extractions, FileIngestions}
+  alias Reaper.Collections.{Extractions}
   import SmartCity.TestHelper
 
   @instance_name Reaper.instance_name()
@@ -31,18 +31,18 @@ defmodule Reaper.InitTest do
     test "starts all extract processes that should be running" do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
-        Extractions.update_started_timestamp(dataset.id)
-        Extractions.update_last_fetched_timestamp(dataset.id, nil)
+        Extractions.update_ingestion(ingestion)
+        Extractions.update_started_timestamp(ingestion.id)
+        Extractions.update_last_fetched_timestamp(ingestion.id, nil)
       end)
 
       Reaper.Init.run()
 
       eventually(fn ->
-        assert_called Reaper.DataExtract.Processor.process(dataset)
+        assert_called Reaper.DataExtract.Processor.process(ingestion)
       end)
     end
 
@@ -52,35 +52,35 @@ defmodule Reaper.InitTest do
       start_time = DateTime.utc_now()
       end_time = start_time |> DateTime.add(3600, :second)
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
-        Extractions.update_started_timestamp(dataset.id, start_time)
-        Extractions.update_last_fetched_timestamp(dataset.id, end_time)
+        Extractions.update_ingestion(ingestion)
+        Extractions.update_started_timestamp(ingestion.id, start_time)
+        Extractions.update_last_fetched_timestamp(ingestion.id, end_time)
       end)
 
       Reaper.Init.run()
 
-      refute_called Reaper.DataExtract.Processor.process(dataset)
+      refute_called Reaper.DataExtract.Processor.process(ingestion)
     end
 
-    test "does not start a dataset that is disabled" do
+    test "does not start a ingestion that is disabled" do
       allow Reaper.DataExtract.Processor.process(any()), return: :ok
 
       start_time = DateTime.utc_now()
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
-        Extractions.update_started_timestamp(dataset.id, start_time)
-        Extractions.disable_dataset(dataset.id)
+        Extractions.update_ingestion(ingestion)
+        Extractions.update_started_timestamp(ingestion.id, start_time)
+        Extractions.disable_ingestion(ingestion.id)
       end)
 
       Reaper.Init.run()
 
-      refute_called Reaper.DataExtract.Processor.process(dataset)
+      refute_called Reaper.DataExtract.Processor.process(ingestion)
     end
 
     test "starts data extract process when started_timestamp > last_fetched_timestamp" do
@@ -89,18 +89,18 @@ defmodule Reaper.InitTest do
       start_time = DateTime.utc_now()
       end_time = start_time |> DateTime.add(-3600, :second)
 
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
+      ingestion = TDG.create_ingestion(%{id: "ds1", sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
-        Extractions.update_dataset(dataset)
-        Extractions.update_started_timestamp(dataset.id, start_time)
-        Extractions.update_last_fetched_timestamp(dataset.id, end_time)
+        Extractions.update_ingestion(ingestion)
+        Extractions.update_started_timestamp(ingestion.id, start_time)
+        Extractions.update_last_fetched_timestamp(ingestion.id, end_time)
       end)
 
       Reaper.Init.run()
 
       eventually(fn ->
-        assert_called Reaper.DataExtract.Processor.process(dataset)
+        assert_called Reaper.DataExtract.Processor.process(ingestion)
       end)
     end
 
@@ -115,65 +115,6 @@ defmodule Reaper.InitTest do
       Reaper.Init.run()
 
       refute_called Reaper.DataExtract.Processor.process(dataset)
-    end
-  end
-
-  describe "Ingestions" do
-    test "starts all ingest processes that should be running" do
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        FileIngestions.update_dataset(dataset)
-        FileIngestions.update_started_timestamp(dataset.id)
-      end)
-
-      Reaper.Init.run()
-
-      eventually(fn ->
-        assert_called Reaper.FileIngest.Processor.process(dataset)
-      end)
-    end
-
-    test "does not start successfully completed ingest processes" do
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-
-      start_time = DateTime.utc_now()
-      end_time = start_time |> DateTime.add(3600, :second)
-
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        FileIngestions.update_dataset(dataset)
-        FileIngestions.update_started_timestamp(dataset.id, start_time)
-        FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
-      end)
-
-      Reaper.Init.run()
-
-      refute_called Reaper.FileIngest.Processor.process(dataset)
-    end
-
-    test "starts data extract process when started_timestamp > last_fetched_timestamp" do
-      allow Reaper.FileIngest.Processor.process(any()), return: :ok
-
-      start_time = DateTime.utc_now()
-      end_time = start_time |> DateTime.add(-3600, :second)
-
-      dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "host"})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        FileIngestions.update_dataset(dataset)
-        FileIngestions.update_started_timestamp(dataset.id, start_time)
-        FileIngestions.update_last_fetched_timestamp(dataset.id, end_time)
-      end)
-
-      Reaper.Init.run()
-
-      eventually(fn ->
-        assert_called Reaper.FileIngest.Processor.process(dataset)
-      end)
     end
   end
 

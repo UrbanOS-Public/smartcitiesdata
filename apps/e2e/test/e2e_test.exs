@@ -10,7 +10,6 @@ defmodule E2ETest do
   alias SmartCity.TestDataGenerator, as: TDG
   import Phoenix.ChannelTest
   import SmartCity.TestHelper
-
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
     technical: %{
@@ -40,26 +39,10 @@ defmodule E2ETest do
     }
   }
 
-  @geo_overrides %{
-    id: "geo_data",
-    technical: %{
-      orgName: "end_to",
-      dataName: "land",
-      systemName: "end_to__land",
-      schema: [%{name: "feature", type: "json"}],
-      sourceType: "ingest",
-      sourceFormat: "application/zip",
-      sourceUrl: "http://example.com",
-      cadence: "once"
-    }
-  }
-
   setup_all do
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
-    Temp.track!()
-    Application.put_env(:odo, :working_dir, Temp.mkdir!())
     bypass = Bypass.open()
     shapefile = File.read!("test/support/shapefile.zip")
 
@@ -98,15 +81,22 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
-    geo_dataset =
-      @geo_overrides
-      |> put_in(
-        [:technical, :extractSteps],
-        [
+    ingestion =
+      TDG.create_ingestion(%{
+        targetDataset: dataset.id,
+        cadence: "once",
+        schema: [
+          %{name: "one", type: "boolean"},
+          %{name: "two", type: "string"},
+          %{name: "three", type: "integer"}
+        ],
+        sourceFormat: "text/csv",
+        topLevelSelector: nil,
+        extractSteps: [
           %{
             type: "http",
             context: %{
-              url: "http://localhost:#{bypass.port()}/path/to/the/geo_data.shapefile",
+              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
               action: "GET",
               queryParams: %{},
               headers: %{},
@@ -116,13 +106,40 @@ defmodule E2ETest do
             assigns: %{}
           }
         ]
-      )
-      |> TDG.create_dataset()
+      })
+
+    streaming_ingestion =
+      TDG.create_ingestion(%{
+        targetDataset: streaming_dataset.id,
+        cadence: "*/10 * * * * *",
+        schema: [
+          %{name: "one", type: "boolean"},
+          %{name: "two", type: "string"},
+          %{name: "three", type: "integer"}
+        ],
+        sourceFormat: "text/csv",
+        topLevelSelector: nil,
+        extractSteps: [
+          %{
+            type: "http",
+            context: %{
+              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+              action: "GET",
+              queryParams: %{},
+              headers: %{},
+              protocol: nil,
+              body: %{}
+            },
+            assigns: %{}
+          }
+        ]
+      })
 
     [
       dataset: dataset,
+      ingestion: ingestion,
       streaming_dataset: streaming_dataset,
-      geo_dataset: geo_dataset,
+      streaming_ingestion: streaming_ingestion,
       bypass: bypass
     ]
   end
@@ -188,10 +205,32 @@ defmodule E2ETest do
     end
   end
 
+  describe "creating an ingestion" do
+    test "via RESTful PUT", %{dataset: ds, ingestion: ingestion} do
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
+          {"Content-Type", "application/json"}
+        ])
+
+      assert resp.status_code == 201
+    end
+
+    test "stores a definition that can be retrieved", %{ingestion: expected} do
+      eventually(
+        fn ->
+          resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
+          assert resp.body == Jason.encode!([expected])
+        end,
+        500,
+        20
+      )
+    end
+  end
+
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
-    test "is written by reaper", %{dataset: ds} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
+    test "is written by reaper", %{ingestion: ingestion} do
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -201,8 +240,8 @@ defmodule E2ETest do
       end)
     end
 
-    test "is standardized by valkyrie", %{dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+    test "is standardized by valkyrie", %{dataset: dataset} do
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset.id}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -251,35 +290,6 @@ defmodule E2ETest do
         assert 1 == length(messages)
       end)
     end
-
-    test "is profiled by flair", %{dataset: ds} do
-      table = Application.get_env(:flair, :table_name_timing)
-
-      expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
-
-      eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}", true)
-
-        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
-      end)
-    end
-
-    test "events have been stored in estuary" do
-      table = Application.get_env(:estuary, :table_name)
-
-      eventually(fn ->
-        actual = query("SELECT count(1) FROM #{table}", false)
-        [row_count] = actual.rows
-
-        assert row_count > 0
-      end)
-    end
-  end
-
-  test "should return status code 200, when estuary is called to get the events" do
-    resp = HTTPoison.get!("http://localhost:4010/api/v1/events")
-
-    assert resp.status_code == 200
   end
 
   describe "streaming data" do
@@ -292,8 +302,17 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    test "is written by reaper", %{streaming_dataset: ds} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ds.id}"
+    test "creating an ingestion via RESTful PUT", %{streaming_ingestion: ingestion} do
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
+          {"Content-Type", "application/json"}
+        ])
+
+      assert resp.status_code == 201
+    end
+
+    test "is written by reaper", %{streaming_ingestion: ingestion} do
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
@@ -366,117 +385,62 @@ defmodule E2ETest do
         assert length(messages) > 0
       end)
     end
-
-    test "is profiled by flair", %{streaming_dataset: ds} do
-      table = Application.get_env(:flair, :table_name_timing)
-
-      expected = ["SmartCityOS", "forklift", "valkyrie", "reaper"]
-
-      eventually(fn ->
-        actual = query("select distinct dataset_id, app from #{table}", true)
-
-        Enum.each(expected, fn app -> assert %{"app" => app, "dataset_id" => ds.id} in actual end)
-      end)
-    end
-  end
-
-  describe "geospatial data" do
-    test "creating a dataset via RESTful PUT", %{geo_dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
-    @tag timeout: :infinity, capture_log: true
-    test "persists geojson in PrestoDB", %{geo_dataset: ds} do
-      table = ds.technical.systemName
-
-      eventually(
-        fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
-        end,
-        5_000
-      )
-
-      eventually(
-        fn ->
-          assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
-
-          assert [%{"feature" => actual} | _] = features = query("select * from #{table}", true)
-
-          assert Enum.count(features) <= 88
-
-          result = Jason.decode!(actual)
-
-          assert Map.keys(result) == ["bbox", "geometry", "properties", "type"]
-
-          [coordinates] = result["geometry"]["coordinates"]
-
-          assert Enum.count(coordinates) > 0
-        end,
-        10_000,
-        10
-      )
-    end
   end
 
   describe "extract steps" do
-    test "from andi are executable by reaper", %{bypass: bypass} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "date",
-                context: %{
-                  destination: "blah",
-                  format: "{YYYY}"
-                },
-                assigns: %{}
+    test "from andi are executable by reaper", %{bypass: bypass, dataset: ds} do
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          topLevelSelector: nil,
+          targetDataset: ds.id,
+          extractSteps: [
+            %{
+              type: "date",
+              context: %{
+                destination: "blah",
+                format: "{YYYY}"
               },
-              %{
-                type: "auth",
-                context: %{
-                  destination: "dest",
-                  url: "http://localhost:#{bypass.port()}/path/to/the/auth.json",
-                  path: ["token"],
-                  cacheTtl: 15_000
-                }
-              },
-              %{
-                type: "http",
-                context: %{
-                  url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
-                  action: "GET",
-                  headers: %{},
-                  queryParams: %{}
-                },
-                assigns: %{}
+              assigns: %{}
+            },
+            %{
+              type: "auth",
+              context: %{
+                destination: "dest",
+                url: "http://localhost:#{bypass.port()}/path/to/the/auth.json",
+                path: ["token"],
+                cacheTtl: 15_000
               }
-            ]
-          }
+            },
+            %{
+              type: "http",
+              context: %{
+                url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                action: "GET",
+                headers: %{},
+                queryParams: %{}
+              },
+              assigns: %{}
+            }
+          ]
         })
 
-      {:ok, andi_dataset} = Andi.InputSchemas.Datasets.update(smrt_dataset)
+      {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.update(smrt_ingestion)
 
-      dataset_changeset =
-        Andi.InputSchemas.InputConverter.andi_dataset_to_full_ui_changeset_for_publish(
-          andi_dataset
+      ingestion_changeset =
+        Andi.InputSchemas.InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(
+          andi_ingestion
         )
 
-      dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
+      ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
 
-      {:ok, converted_smrt_dataset} =
-        Andi.InputSchemas.InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+      converted_smrt_ingestion =
+        Andi.InputSchemas.InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 
-      converted_extract_steps = get_in(converted_smrt_dataset, [:technical, :extractSteps])
+      converted_extract_steps = get_in(converted_smrt_ingestion, [:extractSteps])
 
       assert %{output_file: _} =
                Reaper.DataExtract.ExtractStep.execute_extract_steps(
-                 converted_smrt_dataset,
+                 converted_smrt_ingestion,
                  converted_extract_steps
                )
     end

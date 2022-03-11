@@ -20,9 +20,9 @@ a RESTful API, or a web socket API for streaming data feeds.
 | [Discovery Streams](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/discovery_streams/README.md)   | Websocket connection to listen to streaming data              | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/discovery_streams.yml/badge.svg)  |
 | [Estuary](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/estuary/README.md)                       | Microservice to persist event stream events                   | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/estuary.yml/badge.svg)  |
 | [Forklift](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/forklift/README.md)                     | Microservice for saving data to Presto DB                     | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/forklift.yml/badge.svg)  |
-| [Odo](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/odo/README.md)                               | Microservice to convert Shapefiles to GeoJSON                 | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/odo.yml/badge.svg)  |
 | [Reaper](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/reaper/README.md)                         | Microservice to retrieve data                                 | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/reaper.yml/badge.svg)  |
 | [Valkyrie](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/valkyrie/README.md)                     | Microservice to validate data structure during ingestion      | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/valkyrie.yml/badge.svg)  |
+| [Alchemist](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/alchemist/README.md)                   | Microservice to alter data from its original format           | ![](https://github.com/UrbanOS-Public/smartcitiesdata/actions/workflows/alchemist.yml/badge.svg)  |
 
 # Prerequisites
 ### General Prerequisites
@@ -49,16 +49,19 @@ Each microservice under the [apps/](https://github.com/UrbanOS-Public/smartcitie
 ```
 docker build .
 ```
+
+Additional app specific build steps will be in the relative readme at `apps/{app}/readme.md`.
+
 ## Testing
-* Unit Tests.  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/UrbanOS-Public/smartcitiesdata/tree/master/apps) directory
+* Unit tests can be executed from the root of this repository or a specific application under the [apps/](https://github.com/UrbanOS-Public/smartcitiesdata/tree/master/apps) directory
 ```
 mix test
 ```
-* Integration Tests  Can be executed from the root of this repository or a specific application under the [apps/](https://github.com/UrbanOS-Public/smartcitiesdata/tree/master/apps) directory
+* Integration tests can be executed from the root of this repository or a specific application under the [apps/](https://github.com/UrbanOS-Public/smartcitiesdata/tree/master/apps) directory
 ```
 mix test.integration
 ```
-* End to End (E2E) Tests.  Can be executed from the root of this repository.
+* End to End (E2E) Tests can be executed from the root of this repository.
 ```
 mix test.e2e
 ```

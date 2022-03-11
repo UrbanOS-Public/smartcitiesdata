@@ -9,12 +9,12 @@ defmodule Reaper.DataExtract.ValidationStage do
   end
 
   def init(args) do
-    dataset = Keyword.fetch!(args, :dataset)
+    ingestion = Keyword.fetch!(args, :ingestion)
 
     state = %{
       cache: Keyword.fetch!(args, :cache),
-      dataset: dataset,
-      last_processed_index: Persistence.get_last_processed_index(dataset.id)
+      ingestion: ingestion,
+      last_processed_index: Persistence.get_last_processed_index(ingestion.id)
     }
 
     {:producer_consumer, state}
@@ -35,7 +35,7 @@ defmodule Reaper.DataExtract.ValidationStage do
       [message | acc]
     else
       {:error, reason} ->
-        DeadLetter.process(state.dataset.id, message, "reaper", reason: reason)
+        DeadLetter.process(state.ingestion.targetDataset, message, "reaper", reason: reason)
         acc
 
       _duplicate_or_index_failure ->
@@ -44,7 +44,7 @@ defmodule Reaper.DataExtract.ValidationStage do
   end
 
   defp check_cache(state, value) do
-    case state.dataset.technical.allow_duplicates do
+    case state.ingestion.allow_duplicates do
       true -> {:ok, value}
       false -> Cache.mark_duplicates(state.cache, value)
     end

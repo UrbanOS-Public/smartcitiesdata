@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "490bae1a-dbd5-4838-ad29-992aac2f7ef0",
+		"_postman_id": "159c8eef-19aa-4bad-9bd3-ca6b9d9eb2c5",
 		"name": "ANDI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -60,7 +60,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"loyce_waelchi@orn.com\",\n            \"contactName\": \"Christine Noodles\",\n            \"dataTitle\": \"Test\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.\",\n            \"homepage\": \"schoen.name\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [\n                \"client-server\",\n                \"bifurcated\",\n                \"web-enabled\",\n                \"bandwidth-monitored\",\n                \"dynamic\"\n            ],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"Happy_Turtles\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"Can one desire too much of a good thing?.\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"0 0 * * *\",\n            \"credentials\": false,\n            \"dataName\": \"Tawny_Green_SAXLW\",\n            \"extractSteps\": null,\n            \"orgId\": \"910660db-c12a-4f39-8d70-bee535910086\",\n            \"orgName\": \"Marrone_Lily\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"my_int\",\n                    \"type\": \"integer\"\n                },\n                {\n                    \"name\": \"my_string\",\n                    \"type\": \"string\"\n                },\n                {\n                    \"format\": \"{ISO:Extended:Z}\",\n                    \"name\": \"my_date\",\n                    \"type\": \"date\"\n                },\n                {\n                    \"name\": \"my_float\",\n                    \"type\": \"float\"\n                },\n                {\n                    \"name\": \"my_boolean\",\n                    \"type\": \"boolean\"\n                }\n            ],\n            \"sourceFormat\": \"application/gtfs+protobuf\",\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"zemlak.biz\",\n            \"systemName\": \"Marrone_Lily__Tawny_Green_SAXLW\",\n            \"topLevelSelector\": null\n        },\n        \"version\": \"0.6\"\n    }"
+							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"loyce_waelchi@orn.com\",\n            \"contactName\": \"Christine Noodles\",\n            \"dataTitle\": \"Test\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.\",\n            \"homepage\": \"schoen.name\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [\n                \"client-server\",\n                \"bifurcated\",\n                \"web-enabled\",\n                \"bandwidth-monitored\",\n                \"dynamic\"\n            ],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"Happy_Turtles\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"Can one desire too much of a good thing?.\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"0 0 * * *\",\n            \"credentials\": false,\n            \"dataName\": \"Tawny_Green_SAXLW\",\n            \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                }\n            }\n        ],\n            \"orgId\": \"910660db-c12a-4f39-8d70-bee535910086\",\n            \"orgName\": \"Marrone_Lily\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"my_int\",\n                    \"type\": \"integer\"\n                },\n                {\n                    \"name\": \"my_string\",\n                    \"type\": \"string\"\n                },\n                {\n                    \"format\": \"{ISO:Extended:Z}\",\n                    \"name\": \"my_date\",\n                    \"type\": \"date\"\n                },\n                {\n                    \"name\": \"my_float\",\n                    \"type\": \"float\"\n                },\n                {\n                    \"name\": \"my_boolean\",\n                    \"type\": \"boolean\"\n                }\n            ],\n            \"sourceFormat\": \"application/gtfs+protobuf\",\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"zemlak.biz\",\n            \"systemName\": \"Marrone_Lily__Tawny_Green_SAXLW\",\n            \"topLevelSelector\": null\n        },\n        \"version\": \"0.6\"\n    }"
 						},
 						"url": {
 							"raw": "http://localhost:4000/api/v1/dataset",
@@ -136,7 +136,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:4000/api/v1/dataset/406a35bb-7e4b-4077-85d2-64eb4f9a9bd5",
+							"raw": "http://localhost:4000/api/v1/dataset/406a35bb-7e4b-4077-85d2-64eb4f9a9bd6",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -146,10 +146,85 @@
 								"api",
 								"v1",
 								"dataset",
-								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd5"
+								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6"
 							]
 						},
 						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ingestion",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestion/406a35bb-7e4b-4077-85d2-64eb4f9a9bd7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestion",
+								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd7"
+							]
+						},
+						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Ingestions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestions"
+							]
+						},
+						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Ingestion",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bf1\",\n        \"name\": \"Name\",\n        \"targetDataset\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"allow_duplicates\": true,\n        \"cadence\": \"0 0 * * *\",\n        \"transformations\": [ \n            {\n              \"type\": \"concatenation\",\n               \"parameters\": {\n                    \"sourceFields\": [\"other\", \"name\"],\n                     \"separator\": \".\",\n                     \"targetField\": \"name\"\n               }\n            },\n            {\n              \"type\": \"remove\",\n               \"parameters\": {\n                    \"sourceField\": \"other\"\n               }\n            }\n        ],\n        \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                }\n            }\n        ],\n        \"schema\": [\n            {\n                \"name\": \"my_int\",\n                \"type\": \"integer\"\n            },\n            {\n                \"name\": \"my_string\",\n                \"type\": \"string\"\n            },\n            {\n                \"format\": \"{ISO:Extended:Z}\",\n                \"name\": \"my_date\",\n                \"type\": \"date\"\n            },\n            {\n                \"name\": \"my_float\",\n                \"type\": \"float\"\n            },\n            {\n                \"name\": \"my_boolean\",\n                \"type\": \"boolean\"\n            }\n        ],\n        \"sourceFormat\": \"application/gtfs+protobuf\",\n        \"topLevelSelector\": null \n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestion"
+							]
+						}
 					},
 					"response": []
 				}

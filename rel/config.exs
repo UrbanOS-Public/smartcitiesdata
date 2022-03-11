@@ -53,12 +53,6 @@ release :forklift do
   set overlays: [{:copy, "apps/forklift/runtime.exs", "etc/runtime.exs"}]
 end
 
-release :odo do
-  set version: current_version(:odo)
-  set applications: [:runtime_tools, :odo]
-  set overlays: [{:copy, "apps/odo/runtime.exs", "etc/runtime.exs"}]
-end
-
 release :raptor do
   set version: current_version(:raptor)
   set applications: [:runtime_tools, :raptor]
@@ -75,6 +69,12 @@ release :valkyrie do
   set version: current_version(:valkyrie)
   set applications: [:runtime_tools, :valkyrie]
   set overlays: [{:copy, "apps/valkyrie/runtime.exs", "etc/runtime.exs"}]
+end
+
+release :alchemist do
+  set version: current_version(:alchemist)
+  set applications: [:runtime_tools, :alchemist]
+  set overlays: [{:copy, "apps/alchemist/runtime.exs", "etc/runtime.exs"}]
 end
 
 release :discovery_api do

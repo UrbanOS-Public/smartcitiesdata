@@ -14,7 +14,7 @@ defmodule Reaper.Decoder.Xml do
   @impl Reaper.Decoder
   def decode(
         {:file, filename},
-        %SmartCity.Dataset{technical: %{schema: schema, topLevelSelector: selector}} = dataset
+        %SmartCity.Ingestion{schema: schema, topLevelSelector: selector} = ingestion
       ) do
     try do
       stream =
@@ -25,7 +25,7 @@ defmodule Reaper.Decoder.Xml do
       {:ok, stream}
     rescue
       error ->
-        {:error, "DatasetId: #{dataset.id}", error}
+        {:error, "IngestionId: #{ingestion.id}", error}
     end
   end
 

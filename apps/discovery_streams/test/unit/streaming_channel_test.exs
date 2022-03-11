@@ -1,5 +1,5 @@
 defmodule DiscoveryStreamsWeb.StreamingChannelTest do
-  alias DiscoveryStreams.Services.RaptorService
+  alias RaptorService
   use DiscoveryStreamsWeb.ChannelCase
   use Placebo
 
@@ -14,7 +14,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
       return: {:ok, @dataset_1_id}
     )
 
-    allow(RaptorService.is_authorized(any(), any()),
+    allow(RaptorService.is_authorized(any(), any(), any()),
       return: true
     )
 
@@ -115,7 +115,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "joining unauthorized topic returns error tuple" do
-    allow(RaptorService.is_authorized(any(), any()),
+    allow(RaptorService.is_authorized(any(), any(), any()),
       return: false
     )
 
@@ -136,6 +136,6 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
       socket(DiscoveryStreamsWeb.UserSocket)
     )
 
-    assert_called(RaptorService.is_authorized(api_key, "shuttle-position"))
+    assert_called(RaptorService.is_authorized("raptor.url", api_key, "shuttle-position"))
   end
 end

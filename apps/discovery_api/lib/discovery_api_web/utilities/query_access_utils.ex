@@ -2,20 +2,29 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @moduledoc """
   Provides authentication and authorization helper methods
   """
+  alias RaptorService
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
+  use Properties, otp_app: :discovery_api
 
-  def authorized_session(conn, authorized_models) do
+  getter(:raptor_url, generic: true)
+
+  def authorized_session(conn, affected_models) do
     current_user = conn.assigns.current_user
+    api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    if user_can_access_models?(authorized_models, current_user) do
+    if api_key_can_access_models?(affected_models, api_key) || user_can_access_models?(affected_models, current_user) do
       session_opts = DiscoveryApi.prestige_opts()
       session = Prestige.new_session(session_opts)
       {:ok, session}
     else
       {:error, "Session not authorized"}
     end
+  end
+
+  def user_is_authorized?(affected_models, current_user, api_key) do
+    api_key_can_access_models?(affected_models, api_key) || user_can_access_models?(affected_models, current_user)
   end
 
   def get_affected_models(statement) do
@@ -34,6 +43,14 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
 
   def user_can_access_models?(affected_models, user) do
     Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
+  end
+
+  def api_key_can_access_models?(_affected_models, []) do
+    false
+  end
+
+  def api_key_can_access_models?(affected_models, [api_key]) do
+    Enum.all?(affected_models, &RaptorService.is_authorized(raptor_url(), api_key, &1[:systemName]))
   end
 
   defp map_affected_tables_to_models(affected_tables) do

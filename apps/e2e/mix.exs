@@ -4,7 +4,7 @@ defmodule E2E.MixProject do
   def project do
     [
       app: :e2e,
-      version: "0.1.0",
+      version: "0.1.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -25,18 +25,18 @@ defmodule E2E.MixProject do
 
   defp deps do
     [
+      {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},
       {:forklift, in_umbrella: true},
-      {:odo, in_umbrella: true},
       {:estuary, in_umbrella: true, only: [:integration]},
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:ranch, "~> 1.7.1", override: true},
-      {:smart_city, "~> 3.0"},
+      {:smart_city, "~> 5.0.7"},
       {:jason, "~> 1.2", override: true}
     ]
   end

@@ -15,15 +15,20 @@ Enum.each(required_envars, fn var ->
 end)
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
-get_redix_args = fn (host, password) ->
-  [host: host, password: password]
+
+get_redix_args = fn (host, port, password, ssl) ->
+  [host: host, port: port, password: password, ssl: ssl]
   |> Enum.filter(fn
     {_, nil} -> false
     {_, ""} -> false
     _ -> true
   end)
 end
-redix_args = get_redix_args.(System.get_env("REDIS_HOST"), System.get_env("REDIS_PASSWORD"))
+
+ssl_enabled = Regex.match?(~r/^true$/i, System.get_env("REDIS_SSL"))
+{redis_port, ""} = Integer.parse(System.get_env("REDIS_PORT"))
+
+redix_args = get_redix_args.(System.get_env("REDIS_HOST"), redis_port, System.get_env("REDIS_PASSWORD"), ssl_enabled)
 
 endpoints =
   kafka_brokers
@@ -78,12 +83,9 @@ config :reaper, :brook,
         "data:extract:start" => 100,
         "data:extract:end" => 100,
         "data:ingest:start" => 100,
-        "file:ingest:start" => 100,
-        "file:ingest:end" => 100,
-        "error:dataset:update" => 100,
-        "dataset:update" => 100,
-        "dataset:disable" => 100,
-        "dataset:delete" => 100
+        "error:ingestion:update" => 100,
+        "ingestion:update" => 100,
+        "ingestion:delete" => 100
       }
     ]
   },

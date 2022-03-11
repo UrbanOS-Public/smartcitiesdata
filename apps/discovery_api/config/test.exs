@@ -19,6 +19,9 @@ config :discovery_api,
 
 config :logger, level: :warn
 
+config :discovery_api,
+  raptor_url: "raptor.url"
+
 config :ex_json_schema,
        :remote_schema_resolver,
        fn url -> URLResolver.resolve_url(url) end
@@ -39,7 +42,7 @@ config :discovery_api,
   user_visualization_limit: 4
 
 config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
-  issuer: "https://smartcolumbusos-demo.auth0.com/",
+  issuer: "https://project-hercules.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000

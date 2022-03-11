@@ -7,7 +7,7 @@ defmodule Reaper.Decoder.Gtfs do
   @behaviour Reaper.Decoder
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, _dataset) do
+  def decode({:file, filename}, _ingestion) do
     bytes = File.read!(filename)
 
     try do

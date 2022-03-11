@@ -16,10 +16,11 @@ defmodule Reaper.Decoder.CsvTest do
 
   describe "decode/2" do
     test "discards CSV headers and is case insensitive" do
-      dataset =
-        TDG.create_dataset(%{
+      ingestion =
+        TDG.create_ingestion(%{
           id: "with-headers",
-          technical: %{sourceFormat: "csv", schema: [%{name: "iD"}, %{name: "name"}]}
+          sourceFormat: "csv",
+          schema: [%{name: "iD"}, %{name: "name"}]
         })
 
       expected = [
@@ -32,16 +33,17 @@ defmodule Reaper.Decoder.CsvTest do
 
       {:ok, actual} =
         {:file, @filename}
-        |> Decoder.Csv.decode(dataset)
+        |> Decoder.Csv.decode(ingestion)
 
       assert Enum.into(actual, []) == expected
     end
 
     test "converts CSV to map" do
-      dataset =
-        TDG.create_dataset(%{
+      ingestion =
+        TDG.create_ingestion(%{
           id: "cool",
-          technical: %{sourceFormat: "csv", schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]}
+          sourceFormat: "csv",
+          schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}]
         })
 
       expected = [
@@ -54,7 +56,7 @@ defmodule Reaper.Decoder.CsvTest do
 
       {:ok, actual} =
         {:file, @filename}
-        |> Decoder.Csv.decode(dataset)
+        |> Decoder.Csv.decode(ingestion)
 
       assert Enum.into(actual, []) == expected
     end

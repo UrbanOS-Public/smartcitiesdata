@@ -3,6 +3,7 @@ defmodule Forklift.Event.EventHandler do
   use Brook.Event.Handler
 
   alias SmartCity.Dataset
+  alias SmartCity.Ingestion
   require Logger
 
   import SmartCity.Event,
@@ -21,16 +22,19 @@ defmodule Forklift.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Dataset{technical: %{sourceType: type}} = dataset,
+        data: %Ingestion{targetDataset: dataset_id} = _ingestion,
         author: author
-      })
-      when type in ["stream", "ingest"] do
+      }) do
     data_ingest_start()
-    |> add_event_count(author, dataset.id)
+    |> add_event_count(author, dataset_id)
 
-    :ok = Forklift.DataReaderHelper.init(dataset)
+    dataset = Forklift.Datasets.get!(dataset_id)
 
-    Forklift.Datasets.update(dataset)
+    if dataset != nil do
+      :ok = Forklift.DataReaderHelper.init(dataset)
+    end
+
+    :ok
   end
 
   def handle_event(%Brook.Event{
@@ -41,6 +45,8 @@ defmodule Forklift.Event.EventHandler do
       when type in ["stream", "ingest"] do
     dataset_update()
     |> add_event_count(author, dataset.id)
+
+    Forklift.Datasets.update(dataset)
 
     [table: dataset.technical.systemName, schema: dataset.technical.schema]
     |> Forklift.DataWriter.init()

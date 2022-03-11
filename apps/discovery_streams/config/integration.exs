@@ -4,6 +4,9 @@ host = "127.0.0.1"
 endpoints = [{String.to_atom(host), 9092}]
 
 config :discovery_streams,
+  raptor_url: "http://localhost:4002/api/authorize"
+
+config :discovery_streams,
   divo: [
     {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
     {DivoRedis, []}
@@ -13,9 +16,6 @@ config :discovery_streams,
 config :discovery_streams, endpoints: endpoints
 
 config :discovery_streams, topic_subscriber_interval: 1_000
-
-config :discovery_streams,
-  raptor_url: "http://localhost:4002/api/authorize"
 
 config :discovery_streams, :brook,
   instance: :discovery_streams,

@@ -6,7 +6,7 @@ defmodule Reaper.Decoder.Json do
 
   @impl Reaper.Decoder
 
-  def decode({:file, filename}, %{technical: %{topLevelSelector: top_level_selector}} = _dataset)
+  def decode({:file, filename}, %{topLevelSelector: top_level_selector} = _ingestion)
       when not is_nil(top_level_selector) do
     with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
          {:ok, data} <- json_file_query(filename, query) do
@@ -18,7 +18,7 @@ defmodule Reaper.Decoder.Json do
     end
   end
 
-  def decode({:file, filename}, _dataset) do
+  def decode({:file, filename}, _ingestion) do
     data = File.read!(filename)
 
     case Jason.decode(data) do

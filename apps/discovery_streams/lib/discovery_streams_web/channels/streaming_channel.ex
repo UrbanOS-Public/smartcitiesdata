@@ -4,9 +4,12 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     After a client joins the channel, it pushes the datasets cache to the client,
     and then begins sending new data as it arrives.
   """
-  alias DiscoveryStreams.Services.RaptorService
+  alias RaptorService
 
   use DiscoveryStreamsWeb, :channel
+  use Properties, otp_app: :discovery_streams
+
+  getter(:raptor_url, generic: true)
 
   @instance_name DiscoveryStreams.instance_name()
 
@@ -25,7 +28,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
       {:ok, _dataset_id} ->
         api_key = params["api_key"]
 
-        if RaptorService.is_authorized(api_key, system_name) do
+        if RaptorService.is_authorized(raptor_url(), api_key, system_name) do
           filter = Map.delete(params, "api_key")
           {:ok, assign(socket, :filter, create_filter_rules(filter))}
         else

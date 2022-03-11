@@ -7,6 +7,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   import Ecto.Changeset
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Technical
+  alias Andi.InputSchemas.Ingestion
 
   @cast_fields [:id, :context, :type, :technical_id, :sequence]
   @required_fields [:type, :context]
@@ -17,6 +18,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
     field(:context, :map)
     field(:sequence, :integer, read_after_writes: true)
     belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
+    belongs_to(:ingestion, Ingestion, type: Ecto.UUID, foreign_key: :ingestion_id)
   end
 
   use Accessible

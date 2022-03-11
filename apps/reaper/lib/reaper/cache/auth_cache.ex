@@ -1,6 +1,6 @@
 defmodule Reaper.Cache.AuthCache do
   @moduledoc """
-  Simple module to cache auth to dataset_id mapping
+  Simple module to cache auth to ingestion_id mapping
   """
   require Logger
 

@@ -48,7 +48,7 @@ defmodule Reaper.DataExtract.SchemaStageTest do
       ]
 
       state = %{
-        dataset: TDG.create_dataset(id: "ds1", technical: %{schema: schema})
+        ingestion: TDG.create_ingestion(%{id: "ds1", schema: schema})
       }
 
       {:noreply, outgoing_events, _new_state} = SchemaStage.handle_events(incoming_events, self(), state)
@@ -85,7 +85,7 @@ defmodule Reaper.DataExtract.SchemaStageTest do
       ]
 
       state = %{
-        dataset: TDG.create_dataset(id: "ds1", technical: %{schema: schema})
+        ingestion: TDG.create_ingestion(%{id: "ds1", schema: schema})
       }
 
       {:noreply, outgoing_events, _new_state} = SchemaStage.handle_events(incoming_events, self(), state)

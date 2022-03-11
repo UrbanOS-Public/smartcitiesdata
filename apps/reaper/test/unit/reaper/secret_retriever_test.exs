@@ -9,7 +9,7 @@ defmodule Reaper.SecretRetrieverTest do
       credentials = %{"username" => "admin", "password" => "1234"}
 
       %{
-        dataset_id: 1,
+        ingestion_id: 1,
         role: "reaper-role",
         jwt: "asjdhfsa",
         credentials: credentials,
@@ -17,22 +17,22 @@ defmodule Reaper.SecretRetrieverTest do
       }
     end
 
-    test "retrieves credentials for given dataset_id", values do
+    test "retrieves credentials for given ingestion_id", values do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:ok, values.jwt}
       allow Vault.new(any()), return: values.vault
       allow Vault.auth(values.vault, %{role: values.role, jwt: values.jwt}), return: {:ok, values.vault}
 
-      allow Vault.read(values.vault, "secrets/smart_city/ingestion/#{values.dataset_id}"),
+      allow Vault.read(values.vault, "secrets/smart_city/ingestion/#{values.ingestion_id}"),
         return: {:ok, values.credentials}
 
-      assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) == {:ok, values.credentials}
+      assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) == {:ok, values.credentials}
     end
 
     test "returns error when kubernetes token file is not found", values do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
-               assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) ==
+               assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
     end
@@ -45,7 +45,7 @@ defmodule Reaper.SecretRetrieverTest do
         return: {:error, ["Something bad happened"]}
 
       assert capture_log(fn ->
-               assert SecretRetriever.retrieve_dataset_credentials(values.dataset_id) ==
+               assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
     end
