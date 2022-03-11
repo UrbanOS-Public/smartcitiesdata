@@ -17,7 +17,6 @@ defmodule AndiWeb.HeaderLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
-  # TODO: Could we make this a unit test instead?
   describe "non-curator view" do
     test "organization button is not shown", %{public_conn: conn} do
       {:ok, _view, html} = live(conn, @url_path)
@@ -29,6 +28,12 @@ defmodule AndiWeb.HeaderLiveViewTest do
       {:ok, _view, html} = live(conn, @url_path)
 
       assert Enum.empty?(find_elements(html, ".access-group-link"))
+    end
+
+    test "users button is not shown", %{public_conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert Enum.empty?(find_elements(html, ".user-link"))
     end
   end
 
@@ -43,6 +48,12 @@ defmodule AndiWeb.HeaderLiveViewTest do
       {:ok, _view, html} = live(conn, @url_path)
 
       refute Enum.empty?(find_elements(html, ".access-group-link"))
+    end
+
+    test "users button is shown", %{curator_conn: conn} do
+      {:ok, _view, html} = live(conn, @url_path)
+
+      refute Enum.empty?(find_elements(html, ".user-link"))
     end
 
     test "access groups button links to the access groups page", %{curator_conn: conn} do
