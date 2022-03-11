@@ -5,14 +5,22 @@ defmodule Transformers.Concatenation do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
-         {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
+    with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
          {:ok, values} <- fetch_values(payload, source_fields),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)
       transformed = Map.put(payload, target_field, joined_string)
       {:ok, transformed}
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def validate(parameters) do
+    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
+         {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField") do
+      {:ok, [source_fields, separator, target_field]}
     else
       {:error, reason} -> {:error, reason}
     end

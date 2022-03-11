@@ -1,13 +1,9 @@
 defmodule Andi.InputSchemas.Ingestions do
   @moduledoc false
-  alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestion
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
-  alias Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.ExtractStep
 
   use Properties, otp_app: :andi
 
@@ -59,7 +55,7 @@ defmodule Andi.InputSchemas.Ingestions do
     changes = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
 
     andi_ingestion
-    |> Andi.Repo.preload([:extractSteps, :schema])
+    |> Andi.Repo.preload([:extractSteps, :schema, :transformations])
     |> Ingestion.changeset_for_draft(changes)
     |> save()
   end

@@ -23,6 +23,7 @@ defmodule Alchemist.Broadway do
     output = Keyword.fetch!(opts, :output)
     ingestion = Keyword.fetch!(opts, :ingestion)
     input = Keyword.fetch!(opts, :input)
+    transformations = Map.fetch!(ingestion, :transformations)
 
     [
       name: :"#{ingestion.id}_broadway",
@@ -44,7 +45,7 @@ defmodule Alchemist.Broadway do
       ],
       context: %{
         ingestion: ingestion,
-        transformations: Transformers.construct(ingestion.transformations),
+        transformations: Transformers.construct(transformations),
         output_topic: Keyword.fetch!(output, :topic),
         producer: Keyword.fetch!(output, :connection)
       }

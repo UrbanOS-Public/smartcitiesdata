@@ -26,4 +26,32 @@ defmodule Transformers.OperationBuilder do
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
+
+  def validate("regex_extract", parameters) do
+    Transformers.RegexExtract.validate(parameters)
+  end
+
+  def validate("regex_replace", parameters) do
+    Transformers.RegexReplace.validate(parameters)
+  end
+
+  def validate("conversion", parameters) do
+    Transformers.TypeConversion.validate(parameters)
+  end
+
+  def validate("concatenation", parameters) do
+    Transformers.Concatenation.validate(parameters)
+  end
+
+  def validate("datetime", parameters) do
+    Transformers.DateTime.validate(parameters)
+  end
+
+  def validate("remove", parameters) do
+    Transformers.Remove.validate(parameters)
+  end
+
+  def validate(unsupported, _) do
+    {:error, "Unsupported transformation validation type: #{unsupported}"}
+  end
 end

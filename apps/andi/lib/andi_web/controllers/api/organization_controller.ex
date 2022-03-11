@@ -136,7 +136,7 @@ defmodule AndiWeb.API.OrganizationController do
       true ->
         missing_user_ids =
           retrieved_users
-          |> Enum.filter(fn {id, user} -> user == nil end)
+          |> Enum.filter(fn {_id, user} -> user == nil end)
           |> Enum.map(fn {id, _user} -> id end)
 
         conn

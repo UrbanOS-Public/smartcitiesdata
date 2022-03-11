@@ -8,25 +8,26 @@ defmodule Andi.InputSchemas.Ingestion do
   import Ecto.Changeset
 
   alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Helpers.ExtractStepHelpers
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.DatasetSchemaValidator
+  alias Andi.InputSchemas.Ingestions.Transformation
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "ingestions" do
     field(:allow_duplicates, :boolean)
+    field(:name, :string)
     field(:cadence, :string)
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :targetDataset)
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:extractSteps, ExtractStep, on_replace: :delete)
+    has_many(:transformations, Transformation, on_replace: :delete)
   end
 
   use Accessible
@@ -36,13 +37,15 @@ defmodule Andi.InputSchemas.Ingestion do
     :cadence,
     :sourceFormat,
     :topLevelSelector,
-    :targetDataset
+    :targetDataset,
+    :name
   ]
 
   @required_fields [
     :cadence,
     :sourceFormat,
-    :targetDataset
+    :targetDataset,
+    :name
   ]
 
   @submission_cast_fields [
@@ -69,6 +72,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_required(@required_fields, message: "is required")
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+    |> cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> foreign_key_constraint(:targetDataset)
     |> validate_source_format()
     |> CadenceValidator.validate()
@@ -97,10 +101,11 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
     |> foreign_key_constraint(:targetDataset)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps])
+  def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
 
   def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
 

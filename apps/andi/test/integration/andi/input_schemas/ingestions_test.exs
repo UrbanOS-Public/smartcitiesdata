@@ -40,11 +40,17 @@ defmodule Andi.InputSchemas.IngestionsTest do
       ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
       {:ok,
-       %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} =
-         _andi_ingestion} = Ingestions.update(ingestion)
+       %{
+         id: ingestion_id,
+         name: name,
+         targetDataset: target_dataset,
+         extractSteps: [%{id: extract_steps_id} | _],
+         schema: [%{id: schema_id} | _]
+       } = _andi_ingestion} = Ingestions.update(ingestion)
 
       assert %{
                id: ^ingestion_id,
+               name: ^name,
                targetDataset: ^target_dataset,
                extractSteps: [%{id: ^extract_steps_id} | _],
                schema: [%{id: ^schema_id} | _]
