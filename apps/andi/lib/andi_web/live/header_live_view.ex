@@ -17,9 +17,9 @@ defmodule AndiWeb.HeaderLiveView do
             <span class="material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
-          <span class="access-groups-link" phx-click="show-access-groups">
+          <span class="access-group-link" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
-            <span class="access-groups-link__text">ACCESS GROUPS</span>
+            <span class="access-group-link__text">ACCESS GROUPS</span>
           </span>
           <span class="user-link" phx-click="show-users">
             <span class="material-icons">people</span>
