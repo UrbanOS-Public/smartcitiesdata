@@ -1,0 +1,48 @@
+.access-groups-view {
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: 100%;
+  margin: 1em;
+}
+
+.access-groups-index {
+  padding: 1rem 3rem;
+}
+
+.access-groups-index__title {
+  font-size: 1.5rem;
+}
+
+.access-groups-index__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.access-groups-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.access-groups-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.access-groups-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.access-groups-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.access-groups-table__status-cell {
+  width: 10%;
+}

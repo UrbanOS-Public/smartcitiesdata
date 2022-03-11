@@ -8,22 +8,26 @@ defmodule AndiWeb.HeaderLiveView do
     ~L"""
     <header class="root__header page-header">
       <span class="page-header__primary datasets-link" phx-click="show-datasets">
-        <span class="datasets-link__icon material-icons">home</span>
+        <span class="material-icons">home</span>
         <span class="datasets-link__text"><%= header_text(@is_curator) %></span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
           <span class="organization-link" phx-click="show-organizations">
-            <span class="organization-link__icon material-icons">settings</span>
+            <span class="material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
+          <span class="access-group-link" phx-click="show-access-groups">
+            <span class="material-icons">lock</span>
+            <span class="access-group-link__text">ACCESS GROUPS</span>
+          </span>
           <span class="user-link" phx-click="show-users">
-            <span class="user-link__icon material-icons">people</span>
+            <span class="material-icons">people</span>
             <span class="user-link__text">USERS</span>
           </span>
         <% end %>
         <span class="log-out-link" phx-click="log-out">
-          <span class="log-out-link__icon material-icons">person</span>
+          <span class="material-icons">person</span>
           <span class="log-out-link__text">LOG OUT</span>
         </span>
       </span>
@@ -47,6 +51,10 @@ defmodule AndiWeb.HeaderLiveView do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_users_path())
       end
 
+      def handle_event("show-access-groups", _, socket) do
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_access_groups_path())
+      end
+
       def handle_event("log-out", _, socket) do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
@@ -63,6 +71,10 @@ defmodule AndiWeb.HeaderLiveView do
 
   defmacro header_users_path() do
     "/users"
+  end
+
+  defmacro header_access_groups_path() do
+    "/access-groups"
   end
 
   defmacro header_log_out_path() do
