@@ -17,6 +17,7 @@ defmodule AndiWeb.HeaderLiveViewTest do
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
 
+  # TODO: Could we make this a unit test instead?
   describe "non-curator view" do
     test "organization button is not shown", %{public_conn: conn} do
       {:ok, _view, html} = live(conn, @url_path)

@@ -10,10 +10,14 @@ defmodule AndiWeb.AccessGroupLiveViewTest do
   @url_path "/access-groups"
   @user UserHelpers.create_user()
 
+  defp allowAuthUser do
+    allow(Andi.Repo.get_by(Andi.Schemas.User, any()), return: @user)
+    allow(User.get_all(), return: [@user])
+    allow(User.get_by_subject_id(any()), return: @user)
+  end
+
   setup do
-    allow(Andi.Repo.get_by(any(), any()), return: @user)
-    #   allow(User.get_all(), return: [@user])
-    #   allow(User.get_by_subject_id(any()), return: @user)
+    allowAuthUser()
     []
   end
 
@@ -22,36 +26,15 @@ defmodule AndiWeb.AccessGroupLiveViewTest do
     :ok
   end
 
-  describe "Basic live page load" do
-    # test "loads all datasets", %{conn: conn} do
-    #   datasets =
-    #     Enum.map(
-    #       1..3,
-    #       fn _x ->
-    #         DatasetHelpers.create_dataset(%{})
-    #       end
-    #     )
-
-    #   allow(Andi.Repo.all(any()), return: datasets)
-    #   DatasetHelpers.replace_all_datasets_in_repo(datasets)
-
-    #   assert {:ok, _view, html} = live(conn, @url_path)
-
-    #   table_text = get_text(html, ".datasets-index__table")
-
-    #   Enum.each(datasets, fn dataset ->
-    #     assert table_text =~ dataset.business.dataTitle
-    #   end)
-    # end
-
-    test "shows No Access Groups when there are no rows to show", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [])
-      # DatasetHelpers.replace_all_datasets_in_repo([])
-
+  describe "Basic access groups page load" do
+    test "shows \"No Access Groups\" when there are no rows to show", %{conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
 
-      assert get_text(html, ".access-groups-index__title") =~ "Access Groups"
-      assert get_text(html, ".access-groups-index__table") =~ "No Access Groups"
+      assert get_text(html, ".message") =~ "No Access Groups"
     end
+  end
+
+  defp encoded(url) do
+    String.replace(url, " ", "+")
   end
 end

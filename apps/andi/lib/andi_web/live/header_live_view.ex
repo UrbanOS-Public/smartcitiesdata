@@ -7,6 +7,7 @@ defmodule AndiWeb.HeaderLiveView do
   # TODO: update subclasses in access-group-link (it gets __icon from the sass extend?)
   # __icon as a subclass doesn't exist, probably can remove
   # TODO: access groups font looks funky
+  # TODO: Cursor doesn't indicate access-groups is clickable
   def render(assigns) do
     ~L"""
     <header class="root__header page-header">
