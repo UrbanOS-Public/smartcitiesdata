@@ -51,7 +51,7 @@ Channels are named with the form of `streaming:{dataset systemName}` (example: `
    MIX_ENV=integration iex -S mix phx.server
    ```
 1. Make a `PUT` request to the **Andi API** to add a dataset.
-   - For help with the API, see the Postman collection located [here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
+   - For help with the API, see the Postman collection located [here](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
    - Use the `central_ohio_transit_authority__cota_stream` dataset found [here](https://andi.prod.internal.smartcolumbusos.com/api/v1/dataset/90d51c3b-8c01-4ba4-ac24-a3206458f851), or create your own.
    - Before making the `PUT` request, make sure the dataset has `technical.sourceType` set to `"stream"`.
 1. Start websocat:

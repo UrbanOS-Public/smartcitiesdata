@@ -30,7 +30,7 @@ defmodule Smartcitiesdata.MixProject do
   defp docs() do
     [
       main: "readme",
-      source_url: "https://github.com/Datastillery/smartcitiesdata.git",
+      source_url: "https://github.com/UrbanOS-Public/smartcitiesdata.git",
       extras: [
         "README.md",
         "apps/andi/README.md",
