@@ -17,6 +17,10 @@ defmodule AndiWeb.HeaderLiveView do
             <span class="material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
+          <span class="ingestions-link" phx-click="show-ingestions">
+            <span class="material-icons">input</span>
+            <span class="user-link__text">INGESTIONS</span>
+          </span>
           <span class="access-groups-link" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
             <span class="access-groups-link__text">ACCESS GROUPS</span>
@@ -55,6 +59,10 @@ defmodule AndiWeb.HeaderLiveView do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_access_groups_path())
       end
 
+      def handle_event("show-ingestions", _, socket) do
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_ingestions_path())
+      end
+
       def handle_event("log-out", _, socket) do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
@@ -75,6 +83,10 @@ defmodule AndiWeb.HeaderLiveView do
 
   defmacro header_access_groups_path() do
     "/access-groups"
+  end
+
+  defmacro header_ingestions_path() do
+    "/ingestions"
   end
 
   defmacro header_log_out_path() do
