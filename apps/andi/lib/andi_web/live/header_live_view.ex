@@ -4,34 +4,30 @@ defmodule AndiWeb.HeaderLiveView do
   """
   use Phoenix.LiveComponent
 
-  # TODO: update subclasses in access-group-link (it gets __icon from the sass extend?)
-  # __icon as a subclass doesn't exist, probably can remove
-  # TODO: access groups font looks funky
-  # TODO: Cursor doesn't indicate access-groups is clickable
   def render(assigns) do
     ~L"""
     <header class="root__header page-header">
       <span class="page-header__primary datasets-link" phx-click="show-datasets">
-        <span class="datasets-link__icon material-icons">home</span>
+        <span class="material-icons">home</span>
         <span class="datasets-link__text"><%= header_text(@is_curator) %></span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
           <span class="organization-link" phx-click="show-organizations">
-            <span class="organization-link__icon material-icons">settings</span>
+            <span class="material-icons">settings</span>
             <span class="organization-link__text">ORGANIZATIONS</span>
           </span>
-          <span class="access-group-link" phx-click="show-access-groups">
-            <span class="user-link__icon material-icons">lock</span>
-            <span class="user-link__text">ACCESS GROUPS</span>
+          <span class="access-groups-link" phx-click="show-access-groups">
+            <span class="material-icons">lock</span>
+            <span class="access-groups-link__text">ACCESS GROUPS</span>
           </span>
           <span class="user-link" phx-click="show-users">
-            <span class="user-link__icon material-icons">people</span>
+            <span class="material-icons">people</span>
             <span class="user-link__text">USERS</span>
           </span>
         <% end %>
         <span class="log-out-link" phx-click="log-out">
-          <span class="log-out-link__icon material-icons">person</span>
+          <span class="material-icons">person</span>
           <span class="log-out-link__text">LOG OUT</span>
         </span>
       </span>
