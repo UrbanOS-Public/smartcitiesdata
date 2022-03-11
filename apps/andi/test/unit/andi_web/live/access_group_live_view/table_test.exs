@@ -1,10 +1,10 @@
-defmodule AndiWeb.AccessGroupLiveViewTest do
+defmodule AndiWeb.AccessGroupLiveView.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
-  import FlokiHelpers, only: [get_text: 2, get_values: 2]
+  import FlokiHelpers, only: [get_text: 2]
 
   @endpoint AndiWeb.Endpoint
   @url_path "/access-groups"
@@ -30,11 +30,7 @@ defmodule AndiWeb.AccessGroupLiveViewTest do
     test "shows \"No Access Groups\" when there are no rows to show", %{conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
 
-      assert get_text(html, ".message") =~ "No Access Groups"
+      assert get_text(html, ".access-groups-table__cell") =~ "No Access Groups"
     end
-  end
-
-  defp encoded(url) do
-    String.replace(url, " ", "+")
   end
 end
