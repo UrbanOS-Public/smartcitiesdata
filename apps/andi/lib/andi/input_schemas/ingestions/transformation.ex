@@ -62,7 +62,7 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   defp validate_parameters(%{changes: %{type: type, parameters: parameters}} = changeset) do
     transformation = %{
       type: type,
-      parameters: Map.new(parameters, fn {key, value} -> {Atom.to_string(key), value} end)
+      parameters: convert_parameters_from_atom_to_string(parameters)
     }
 
     case Transformers.validate([transformation]) do
@@ -72,6 +72,10 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   end
 
   defp validate_parameters(changeset), do: changeset
+
+  defp convert_parameters_from_atom_to_string(parameters) do
+    Map.new(parameters, fn {key, value} -> {Atom.to_string(key), value} end)
+  end
 
   def form_changeset_from_andi_transformation(transformation) do
     transformation

@@ -20,6 +20,7 @@ defmodule Andi.InputSchemas.Ingestion do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "ingestions" do
     field(:allow_duplicates, :boolean)
+    field(:name, :string)
     field(:cadence, :string)
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
@@ -36,13 +37,15 @@ defmodule Andi.InputSchemas.Ingestion do
     :cadence,
     :sourceFormat,
     :topLevelSelector,
-    :targetDataset
+    :targetDataset,
+    :name
   ]
 
   @required_fields [
     :cadence,
     :sourceFormat,
-    :targetDataset
+    :targetDataset,
+    :name
   ]
 
   @submission_cast_fields [

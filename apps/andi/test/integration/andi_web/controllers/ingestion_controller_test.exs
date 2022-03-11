@@ -64,6 +64,7 @@ defmodule Andi.IngestionControllerTest do
 
       request = %{
         "id" => uuid,
+        "name" => "Name",
         "extractSteps" => [%{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}],
         "sourceFormat" => "application/gtfs+protobuf",
         "cadence" => "*/9000 * * * * *",
@@ -183,6 +184,7 @@ defmodule Andi.IngestionControllerTest do
 
       new_ingestion =
         TDG.create_ingestion(%{
+          name: "Name",
           targetDataset: dataset.id,
           transformations: [],
           extractSteps: [
