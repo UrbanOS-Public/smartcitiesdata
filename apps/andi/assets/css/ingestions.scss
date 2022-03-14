@@ -18,3 +18,31 @@
   display: flex;
   justify-content: space-between;
 }
+
+.ingestions-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.ingestions-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.ingestions-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.ingestions-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.ingestions-table__status-cell {
+  width: 10%;
+}
