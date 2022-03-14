@@ -32,6 +32,4 @@ defmodule AndiWeb.IngestionLiveView.Table do
     </div>
     """
   end
-
-
 end

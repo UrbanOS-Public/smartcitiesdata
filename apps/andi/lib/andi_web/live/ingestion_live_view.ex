@@ -35,14 +35,13 @@ defmodule AndiWeb.IngestionLiveView do
   end
 
   def handle_params(params, _uri, socket) do
-
     ingestions = refresh_ingestions()
-    view_models = ingestions|> convert_to_view_models()
+    view_models = ingestions |> convert_to_view_models()
 
     {:noreply,
      assign(socket,
-     ingestions: ingestions,
-     view_models: view_models
+       ingestions: ingestions,
+       view_models: view_models
      )}
   end
 
@@ -53,10 +52,11 @@ defmodule AndiWeb.IngestionLiveView do
   end
 
   defp refresh_ingestions() do
-
     query =
       from(ingestion in Ingestion,
-        left_join: dataset in Dataset, as: :dataset, on: dataset.id == ingestion.targetDataset,
+        left_join: dataset in Dataset,
+        as: :dataset,
+        on: dataset.id == ingestion.targetDataset,
         preload: [dataset: dataset, dataset: :business],
         select: ingestion
       )
@@ -79,5 +79,4 @@ defmodule AndiWeb.IngestionLiveView do
 
   def dataset_name(%{dataset: %{business: %{dataTitle: dataTitle}}}), do: dataTitle
   def dataset_name(_ingestion), do: nil
-
 end
