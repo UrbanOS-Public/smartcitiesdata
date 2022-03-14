@@ -62,6 +62,7 @@ defmodule AndiWeb.Router do
       session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
 
     get "/datasets/:id", EditController, :edit_dataset
+    get "/ingestions/:id", EditController, :edit_ingestion
     get "/organizations/:id", EditController, :edit_organization
     get "/datasets/:id/sample", EditController, :download_dataset_sample
     get "/user/:id", EditController, :edit_user

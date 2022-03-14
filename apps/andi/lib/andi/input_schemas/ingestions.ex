@@ -45,6 +45,22 @@ defmodule Andi.InputSchemas.Ingestions do
     new_ingestion
   end
 
+  def create() do
+    new_ingestion_id = UUID.uuid4()
+
+    new_changeset =
+      Ingestion.changeset_for_draft(
+        %Ingestion{},
+        %{
+          id: new_ingestion_id
+        }
+      )
+
+    {:ok, new_ingestion} = save(new_changeset)
+    new_ingestion
+  end
+
+
   def update(%SmartCity.Ingestion{} = smrt_ingestion) do
     andi_ingestion =
       case get(smrt_ingestion.id) do

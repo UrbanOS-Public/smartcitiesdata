@@ -11,6 +11,7 @@ defmodule AndiWeb.IngestionLiveView do
       <div class="ingestions-index">
         <div class="ingestions-index__header">
           <h1 class="ingestions-index__title">All Data Ingestions</h1>
+          <button type="button" class="btn btn--add-ingestion btn--action" phx-click="add-ingestion">ADD DATA INGESTION</button>
         </div>
       </div>
     </div>
@@ -22,5 +23,12 @@ defmodule AndiWeb.IngestionLiveView do
      assign(socket,
        is_curator: is_curator
      )}
+  end
+
+  def handle_event("add-ingestion", _, socket) do
+    ingestion = Andi.InputSchemas.Ingestions.create()
+    IO.inspect(ingestion, label: "HERE")
+
+    {:noreply, push_redirect(socket, to: "/ingestions/#{ingestion.id}")}
   end
 end

@@ -102,7 +102,6 @@ defmodule Andi.InputSchemas.Ingestion do
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
-    |> foreign_key_constraint(:targetDataset)
   end
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
