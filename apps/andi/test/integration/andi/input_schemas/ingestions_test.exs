@@ -67,7 +67,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
       new_ingestion = Ingestions.create()
       assert is_binary(new_ingestion.id)
       assert new_ingestion.targetDataset == nil
-      assert Ingestions.get(new_ingestion.id) == new_ingestion
+      assert Ingestions.get(new_ingestion.id).id == new_ingestion.id
     end
   end
 
@@ -104,7 +104,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert {:ok, _} = Ingestions.update(ingestion)
     end
 
-    test "given a newly seen smart city ingestion, does not it into an Andi ingestion unless it is associated with a dataset" do
+    test "given a newly seen smart city ingestion, does not save it into an Andi ingestion unless it is associated with a dataset" do
       ingestion = TDG.create_ingestion(%{})
 
       assert {:error, ingestion_changeset} = Ingestions.update(ingestion)

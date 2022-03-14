@@ -71,7 +71,7 @@ defmodule Andi.InputSchemas.Ingestions do
 
     andi_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema, :transformations])
-    |> Ingestion.changeset_for_draft(changes)
+    |> Ingestion.changeset(changes)
     |> save()
   end
 
