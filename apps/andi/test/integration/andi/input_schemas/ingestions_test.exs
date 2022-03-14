@@ -143,7 +143,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
           targetDataset: dataset.id,
           extractSteps: [
             %{
-              type: "auth",
+              type: "s3",
               context: %{
                 url: "123.com",
                 body: "",
