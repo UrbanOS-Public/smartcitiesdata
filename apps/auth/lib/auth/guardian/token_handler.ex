@@ -39,7 +39,7 @@ defmodule Auth.Guardian.TokenHandler do
       @doc """
       Called after a token has been created by guardian
 
-      Not applicable for the Datastillery use case, but required by Guardian
+      Not applicable for the UrbanOS use case, but required by Guardian
       """
       def after_encode_and_sign(_resource, _claims, token, _options) do
         {:ok, token}

@@ -67,4 +67,4 @@ For integration testing, Andi encapsulates its external dependencies in Docker i
 
 ## Documentation
 
-For details on how to use the Raptor API, please review the Postman collection located [here](https://github.com/Datastillery/smartcitiesdata/blob/master/apps/raptor/Raptor.postman_collection.json).
+For details on how to use the Raptor API, please review the Postman collection located [here](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/raptor/Raptor.postman_collection.json).
