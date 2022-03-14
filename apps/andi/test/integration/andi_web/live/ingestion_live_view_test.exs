@@ -23,7 +23,6 @@ defmodule AndiWeb.IngestionLiveViewTest do
   @url_path "/ingestions"
 
   describe "public user access" do
-
     test "public users cannot view or edit ingestions", %{public_conn: conn} do
       assert {:error,
               {
@@ -36,10 +35,8 @@ defmodule AndiWeb.IngestionLiveViewTest do
   end
 
   describe "curator users access" do
-
     test "curators can view all the users", %{curator_conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
     end
-
   end
 end

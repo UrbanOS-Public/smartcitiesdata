@@ -60,7 +60,6 @@ defmodule Andi.InputSchemas.Ingestions do
     new_ingestion
   end
 
-
   def update(%SmartCity.Ingestion{} = smrt_ingestion) do
     andi_ingestion =
       case get(smrt_ingestion.id) do

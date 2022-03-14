@@ -7,7 +7,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   access_levels(render: [:private])
 
-
   def render(assigns) do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
@@ -20,5 +19,4 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        is_curator: is_curator
      )}
   end
-
 end
