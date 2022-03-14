@@ -3,6 +3,7 @@ defmodule AndiWeb.EditController do
   use Properties, otp_app: :andi
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Ingestions
   alias Andi.Schemas.DatasetDownload
   alias Andi.Schemas.User
 
@@ -12,6 +13,7 @@ defmodule AndiWeb.EditController do
 
   access_levels(
     edit_organization: [:private],
+    edit_ingestion: [:private],
     edit_user: [:private],
     edit_dataset: [:private],
     edit_submission: [:private, :public],
@@ -122,6 +124,21 @@ defmodule AndiWeb.EditController do
 
       org ->
         live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator})
+    end
+  end
+
+  def edit_ingestion(conn, %{"id" => id}) do
+    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    case Ingestions.get(id) do
+      nil ->
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+
+      ingestion ->
+        live_render(conn, AndiWeb.IngestionLiveView.EditIngestionLiveView, session: %{"ingestion" => ingestion, "is_curator" => is_curator})
     end
   end
 

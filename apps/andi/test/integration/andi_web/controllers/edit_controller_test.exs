@@ -6,15 +6,34 @@ defmodule AndiWeb.EditControllerTest do
   @moduletag shared_data_connection: true
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Ingestions
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
+  @ingestions_url_path "ingestions"
 
   describe "EditController" do
     test "gives 404 if dataset is not found", %{conn: conn} do
       conn = get(conn, "#{@url_path}/#{UUID.uuid4()}")
 
       assert response(conn, 404)
+    end
+
+    test "returns a 404 if an ingestion is not found", %{conn: conn} do
+      conn = get(conn, "#{@ingestions_url_path}/#{UUID.uuid4()}")
+
+      assert response(conn, 404)
+    end
+
+    test "returns a 200 if an ingestion is found", %{conn: conn} do
+      smrt_dataset = TDG.create_dataset(%{})
+      {:ok, dataset} = Datasets.update(smrt_dataset)
+
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: smrt_dataset.id})
+      {:ok, ingestion} = Ingestions.update(smrt_ingestion)
+
+      conn = get(conn, "#{@ingestions_url_path}/#{ingestion.id}")
+      assert response(conn, 200)
     end
 
     test "gives 200 if dataset is found", %{conn: conn} do
