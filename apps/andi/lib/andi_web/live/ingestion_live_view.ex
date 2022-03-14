@@ -21,6 +21,7 @@ defmodule AndiWeb.IngestionLiveView do
         </div>
 
         <%= live_component(@socket, Table, id: :ingestions_table, ingestions: @view_models, is_curator: @is_curator) %>
+
       </div>
     </div>
     """
@@ -79,4 +80,5 @@ defmodule AndiWeb.IngestionLiveView do
 
   def dataset_name(%{dataset: %{business: %{dataTitle: dataTitle}}}), do: dataTitle
   def dataset_name(_ingestion), do: nil
+
 end
