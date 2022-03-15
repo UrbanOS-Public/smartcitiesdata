@@ -47,12 +47,15 @@ defmodule Andi.InputSchemas.Ingestions do
 
   def create() do
     new_ingestion_id = UUID.uuid4()
+    current_date = Date.utc_today()
+    new_ingestion_title = "New Ingestion - #{current_date}"
 
     new_changeset =
       Ingestion.changeset_for_draft(
         %Ingestion{},
         %{
-          id: new_ingestion_id
+          id: new_ingestion_id,
+          name: new_ingestion_title
         }
       )
 
