@@ -80,5 +80,4 @@ defmodule AndiWeb.IngestionLiveView do
 
   def dataset_name(%{dataset: %{business: %{dataTitle: dataTitle}}}), do: dataTitle
   def dataset_name(_ingestion), do: nil
-
 end
