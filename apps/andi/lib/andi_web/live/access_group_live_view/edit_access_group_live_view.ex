@@ -29,7 +29,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("cancel-edit", _, socket) do
-       {:noreply, redirect(socket, to: header_access_groups_path())}
-    
+    {:noreply, redirect(socket, to: header_access_groups_path())}
   end
 end

@@ -34,11 +34,11 @@ defmodule AndiWeb.EditControllerTest do
     end
 
     test "returns a 200 if an access group is found", %{conn: conn} do
-      uuid = UUID.uuidv4()
-      access_group = %{name: "access group name", id: uuid}
+      uuid = UUID.uuid4()
+      {:ok, access_group} = SmartCity.AccessGroup.new(%{name: "Smrt Access Group", id: uuid})
       AccessGroups.update(access_group)
 
-      conn = get(conn, "#{@ingestions_url_path}/#{uuid}")
+      conn = get(conn, "#{@access_groups_url_path}/#{uuid}")
       assert response(conn, 200)
     end
 

@@ -155,7 +155,9 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       access_group ->
-        live_render(conn, AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView, session: %{"access-group" => access_group, "is_curator" => is_curator})
+        live_render(conn, AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView,
+          session: %{"access-group" => access_group, "is_curator" => is_curator}
+        )
     end
   end
 

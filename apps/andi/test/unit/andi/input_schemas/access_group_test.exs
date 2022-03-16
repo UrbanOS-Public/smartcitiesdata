@@ -57,7 +57,6 @@ defmodule Andi.Schemas.AccessGroupTest do
 
       errors = accumulate_errors(changeset)
       assert errors.id == [id: {"must be a valid UUID", []}, id: {"is invalid", [type: Ecto.UUID, validation: :cast]}]
-
     end
   end
 

@@ -20,10 +20,10 @@ defmodule Andi.InputSchemas.AccessGroupsTest do
       |> AccessGroups.save()
 
       assert %{
-        name: "Smrt Access Group",
-        id: ^uuid,
-        description: nil
-      } = AccessGroup.get(access_group.id)
+               name: "Smrt Access Group",
+               id: ^uuid,
+               description: nil
+             } = AccessGroups.get(access_group.id)
     end
   end
 
@@ -38,7 +38,7 @@ defmodule Andi.InputSchemas.AccessGroupsTest do
       andi_access_groups =
         Enum.map([access_group1, access_group2], fn access_group ->
           {:ok, andi_access_group} =
-            org
+            access_group
             |> AccessGroup.changeset()
             |> AccessGroups.save()
 
@@ -54,9 +54,11 @@ defmodule Andi.InputSchemas.AccessGroupsTest do
     test "a new access group is created with an id and a name" do
       new_org = AccessGroups.create()
       id = new_org.id
+      date = Date.utc_today()
+      name = "New Access Group - #{date}"
 
       eventually(fn ->
-        assert %{id: id, name: "New Access Group - #{Date.utc_today()}"} = AccessGroups.get(id)
+        assert %{id: ^id, name: ^name} = AccessGroups.get(id)
       end)
     end
   end
