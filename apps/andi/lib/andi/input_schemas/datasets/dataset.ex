@@ -11,6 +11,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.AccessGroup
 
   @primary_key {:id, :string, autogenerate: false}
   schema "datasets" do
@@ -23,6 +24,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
     has_many(:data_dictionaries, DataDictionary)
     has_one(:business, Business, on_replace: :update)
     has_one(:technical, Technical, on_replace: :update)
+    many_to_many(:access_groups, AccessGroup, join_through: Andi.Schemas.DatasetAccessGroup, on_replace: :delete)
   end
 
   use Accessible

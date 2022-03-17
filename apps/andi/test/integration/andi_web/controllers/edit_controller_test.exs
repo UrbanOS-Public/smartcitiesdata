@@ -7,10 +7,12 @@ defmodule AndiWeb.EditControllerTest do
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.AccessGroups
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
   @ingestions_url_path "ingestions"
+  @access_groups_url_path "access-groups"
 
   describe "EditController" do
     test "gives 404 if dataset is not found", %{conn: conn} do
@@ -23,6 +25,21 @@ defmodule AndiWeb.EditControllerTest do
       conn = get(conn, "#{@ingestions_url_path}/#{UUID.uuid4()}")
 
       assert response(conn, 404)
+    end
+
+    test "returns a 404 if an access group is not found", %{conn: conn} do
+      conn = get(conn, "#{@access_groups_url_path}/#{UUID.uuid4()}")
+
+      assert response(conn, 404)
+    end
+
+    test "returns a 200 if an access group is found", %{conn: conn} do
+      uuid = UUID.uuid4()
+      {:ok, access_group} = SmartCity.AccessGroup.new(%{name: "Smrt Access Group", id: uuid})
+      AccessGroups.update(access_group)
+
+      conn = get(conn, "#{@access_groups_url_path}/#{uuid}")
+      assert response(conn, 200)
     end
 
     test "returns a 200 if an ingestion is found", %{conn: conn} do

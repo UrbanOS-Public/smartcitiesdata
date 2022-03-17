@@ -4,6 +4,7 @@ defmodule AndiWeb.EditController do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.AccessGroups
   alias Andi.Schemas.DatasetDownload
   alias Andi.Schemas.User
 
@@ -17,7 +18,8 @@ defmodule AndiWeb.EditController do
     edit_user: [:private],
     edit_dataset: [:private],
     edit_submission: [:private, :public],
-    download_dataset_sample: [:private]
+    download_dataset_sample: [:private],
+    edit_access_group: [:private]
   )
 
   def edit_dataset(conn, %{"id" => id}) do
@@ -139,6 +141,23 @@ defmodule AndiWeb.EditController do
 
       ingestion ->
         live_render(conn, AndiWeb.IngestionLiveView.EditIngestionLiveView, session: %{"ingestion" => ingestion, "is_curator" => is_curator})
+    end
+  end
+
+  def edit_access_group(conn, %{"id" => id}) do
+    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    case AccessGroups.get(id) do
+      nil ->
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+
+      access_group ->
+        live_render(conn, AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView,
+          session: %{"access-group" => access_group, "is_curator" => is_curator}
+        )
     end
   end
 
