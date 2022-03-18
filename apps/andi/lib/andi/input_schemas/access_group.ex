@@ -10,7 +10,6 @@ defmodule Andi.InputSchemas.AccessGroup do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.Schemas.User
-  alias AndiWeb.Views.Options
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "access_groups" do
@@ -18,6 +17,8 @@ defmodule Andi.InputSchemas.AccessGroup do
     field(:description, :string)
     many_to_many(:users, User, join_through: Andi.Schemas.UserAccessGroup)
     many_to_many(:datasets, Dataset, join_through: Andi.Schemas.DatasetAccessGroup)
+
+    timestamps()
   end
 
   use Accessible
