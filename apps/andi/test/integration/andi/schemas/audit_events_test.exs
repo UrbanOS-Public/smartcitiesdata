@@ -123,7 +123,8 @@ defmodule Andi.Schemas.AuditEventsTest do
                  user_id: "auth0|1701D",
                  event_type: organization_update(),
                  event: ^org_json
-               } | _
+               }
+               | _
              ] = AuditEvents.get_all_in_range(start_date, end_date)
     end
 
