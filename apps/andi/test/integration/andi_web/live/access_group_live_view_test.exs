@@ -40,5 +40,27 @@ defmodule AndiWeb.AccessGroupLiveViewTest do
     test "curators can view all the access groups", %{curator_conn: conn} do
       assert {:ok, view, html} = live(conn, @url_path)
     end
+
+    test "all access groups are shown", %{curator_conn: conn} do
+      {:ok, access_group_a} = TDG.create_access_group(%{}) |> AccessGroups.update()
+      {:ok, access_group_b} = TDG.create_access_group(%{}) |> AccessGroups.update()
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      dataset_rows = find_elements(html, ".access-groups-table__tr")
+
+      assert Enum.count(dataset_rows) >= 2
+    end
+
+    test "edit button links to the access group edit page", %{curator_conn: conn} do
+      access_group = AccessGroups.create()
+
+      {:ok, view, _html} = live(conn, @url_path)
+
+      edit_access_group_button = element(view, ".btn", "Edit")
+
+      render_click(edit_access_group_button)
+      assert_redirected(view, "/access-groups/#{access_group.id}")
+    end
   end
 end

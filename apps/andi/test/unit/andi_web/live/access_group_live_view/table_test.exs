@@ -28,9 +28,48 @@ defmodule AndiWeb.AccessGroupLiveView.TableTest do
 
   describe "Basic access groups page load" do
     test "shows \"No Access Groups\" when there are no rows to show", %{conn: conn} do
+      allow(Andi.InputSchemas.AccessGroups.get_all(), return: [])
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".access-groups-table__cell") =~ "No Access Groups"
+    end
+
+    test "represents an Access Group when one exists", %{conn: conn} do
+      group_name = "group-one"
+      group_id = UUID.uuid4()
+      updated_at = DateTime.utc_now()
+      allow(Andi.InputSchemas.AccessGroups.get_all(), return: [%{name: group_name, id: group_id, updated_at: updated_at}])
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".access-groups-table__cell") =~ group_name
+    end
+
+    test "displays 'Modified Date' attribute correctly", %{conn: conn} do
+      group_name = "group-one"
+      group_id = UUID.uuid4()
+      updated_at = DateTime.utc_now()
+      allow(Andi.InputSchemas.AccessGroups.get_all(), return: [%{name: group_name, id: group_id, updated_at: updated_at}])
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      expected_time_string = Timex.format!(updated_at, "{M}-{D}-{YYYY}")
+      assert get_text(html, ".access-groups-table__cell") =~ expected_time_string
+    end
+
+    test "represents Access Groups when multiple exist", %{conn: conn} do
+      group_name = "group-one"
+      group_id = UUID.uuid4()
+      updated_at = DateTime.utc_now()
+
+      allow(Andi.InputSchemas.AccessGroups.get_all(),
+        return: [%{name: group_name, id: group_id, updated_at: updated_at}, %{name: "group2", id: UUID.uuid4(), updated_at: updated_at}]
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".access-groups-table__cell") =~ group_name
+      assert get_text(html, ".access-groups-table__cell") =~ "group2"
     end
   end
 end
