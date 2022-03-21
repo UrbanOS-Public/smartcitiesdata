@@ -13,7 +13,7 @@ defmodule AndiWeb.EditLiveView.DeleteDatasetModal do
         <br>
         <div class="button-container">
           <button type="button" class="btn" phx-click="cancel-delete">Cancel</button>
-          <button type="button" class="btn delete_button" phx-click="confirm-delete" phx-value-id=<%= @id %> >Delete</button>
+          <button type="button" class="btn delete-button" phx-click="confirm-delete" phx-value-id=<%= @id %> >Delete</button>
         </div>
       </div>
     </div>

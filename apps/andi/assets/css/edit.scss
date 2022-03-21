@@ -240,7 +240,7 @@ $component-header-height: 7.5rem;
 .confirm-delete-modal--visible {
     @include modal-wrapper();
 
-    .delete_button {
+    .delete-button {
         margin-left: 2rem;
         background-color: $color-error;
     }
