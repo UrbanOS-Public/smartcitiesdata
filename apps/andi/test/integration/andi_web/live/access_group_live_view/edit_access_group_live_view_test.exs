@@ -82,6 +82,19 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert has_element?(add_dataset_button)
     end
 
+    test "opens modal on click", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+
+      render_click(add_dataset_button)
+
+      add_dataset_modal = element(view, ".add-dataset-modal")
+
+      assert has_element?(add_dataset_modal)
+    end
+
   end
 
   defp create_access_group() do

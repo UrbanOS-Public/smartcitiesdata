@@ -66,3 +66,11 @@
         background-color: #2de000;
     }
 }
+
+.add-dataset-modal--visible {
+    @include modal-wrapper();
+}
+
+.add-dataset-modal--hidden {
+    display: none;
+}
