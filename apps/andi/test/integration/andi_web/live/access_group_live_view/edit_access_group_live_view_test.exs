@@ -69,5 +69,21 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(cancel_button)
       assert_redirected(view, @url_path)
     end
+    
+    test "there is an add dataset button", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+
+      assert has_element?(add_dataset_button)
+    end
+
+    defp create_access_group() do
+      uuid = UUID.uuid4()
+      access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
+      AccessGroups.update(access_group)
+      access_group
+    end
   end
 end

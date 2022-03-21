@@ -54,3 +54,15 @@
 .access-groups-table__status-cell {
   width: 10%;
 }
+
+.btn--add-dataset {
+    min-width: 100px;
+    height: 2.3rem;
+    background-color: #27cb00;
+    margin: 20px 0px;
+    padding: 0 50px;
+
+    &:hover {
+        background-color: #2de000;
+    }
+}

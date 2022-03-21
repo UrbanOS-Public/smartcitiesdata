@@ -26,6 +26,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
           <%= label(form, :name, class: "label label--required") do "Access Group Name" end %>
           <%= text_input(form, :name, class: "input") %>
         </div>
+
+        <div class="access-group-form__datasets">
+          <button class="btn btn--add-dataset" phx-click="nothing!">+ Add Dataset</button>
+        </div>
       </form>
 
       <div class="edit-button-group">
