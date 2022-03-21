@@ -6,7 +6,7 @@ defmodule AndiWeb.EditLiveView.DeleteDatasetModal do
 
   def render(assigns) do
     ~L"""
-    <div class="dataset-delete-modal dataset-delete-modal--<%= @visibility %>">
+    <div class="confirm-delete-modal confirm-delete-modal--<%= @visibility %>">
       <div class="modal-form-container">
         <h3>Delete Dataset</h3>
         <p>Are you sure? This dataset will be deleted permanently</p>
