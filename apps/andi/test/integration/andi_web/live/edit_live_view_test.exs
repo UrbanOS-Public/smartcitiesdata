@@ -140,6 +140,7 @@ defmodule AndiWeb.EditLiveViewTest do
           {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
 
           assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
+          assert Andi.Schemas.AuditEvents.get_all_by_event_id(dataset.id) != []
         end,
         10,
         1_000

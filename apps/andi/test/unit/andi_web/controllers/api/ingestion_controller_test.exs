@@ -12,6 +12,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
   @instance_name Andi.instance_name()
 
   setup do
+    allow(Andi.Schemas.AuditEvents.log_audit_event(any(), any(), any()), return: %{})
     example_ingestion_1 = TDG.create_ingestion(%{})
 
     example_ingestion_1 =
@@ -132,6 +133,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       |> json_response(200)
 
       assert_called(Brook.Event.send(@instance_name, ingestion_delete(), :andi, ingestion))
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_delete(), ingestion), once())
     end
 
     @tag capture_log: true
@@ -166,6 +168,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
       conn = put(conn, @route, ingestion)
       assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion))
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_update(), smrt_ingestion), once())
     end
 
     @tag capture_log: true

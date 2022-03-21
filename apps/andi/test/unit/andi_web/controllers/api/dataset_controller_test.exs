@@ -12,6 +12,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   @instance_name Andi.instance_name()
 
   setup do
+    allow(Andi.Schemas.AuditEvents.log_audit_event(any(), any(), any()), return: %{})
     example_dataset_1 = TDG.create_dataset(%{})
 
     example_dataset_1 =
@@ -143,6 +144,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(200)
 
       assert_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset), once())
     end
 
     @tag capture_log: true
@@ -157,6 +159,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(404)
 
       refute_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
+      refute_called(Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset), once())
     end
 
     @tag capture_log: true

@@ -115,7 +115,7 @@ defmodule AndiWeb.EditController do
   end
 
   def edit_organization(conn, %{"id" => id}) do
-    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case Organizations.get(id) do
       nil ->
@@ -125,7 +125,9 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       org ->
-        live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator})
+        live_render(conn, AndiWeb.EditOrganizationLiveView,
+          session: %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id}
+        )
     end
   end
 

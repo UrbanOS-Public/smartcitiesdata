@@ -93,7 +93,10 @@ defmodule AndiWeb.API.IngestionController do
     end
   end
 
-  defp write_ingestion(ingestion), do: Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+  defp write_ingestion(ingestion) do
+    Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_update(), ingestion)
+    Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+  end
 
   @doc """
   Delete an ingestion
