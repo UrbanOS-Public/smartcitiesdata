@@ -48,6 +48,7 @@ defmodule Andi.DatasetControllerTest do
 
       eventually(fn ->
         {:ok, value} = DatasetStore.get(dataset.id)
+        assert Andi.Schemas.AuditEvents.get_all_by_event_id(dataset.id) != []
         assert value != nil
       end)
 
@@ -143,6 +144,10 @@ defmodule Andi.DatasetControllerTest do
       {:ok, struct} = SmartCity.Dataset.new(message)
 
       assert system_name == struct.technical.orgName <> "__" <> struct.technical.dataName
+    end
+
+    test "writes an entry to the audit log", %{message: message} do
+      assert Andi.Schemas.AuditEvents.get_all_by_event_id(message["id"]) != []
     end
 
     test "writes data to event stream", %{message: message} do

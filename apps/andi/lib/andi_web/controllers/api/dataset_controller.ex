@@ -85,7 +85,10 @@ defmodule AndiWeb.API.DatasetController do
     end
   end
 
-  defp write_dataset(dataset), do: Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+  defp write_dataset(dataset) do
+    Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_update(), dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+  end
 
   @doc """
   Disable a dataset

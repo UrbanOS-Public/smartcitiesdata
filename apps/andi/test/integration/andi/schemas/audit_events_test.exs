@@ -9,6 +9,7 @@ defmodule Andi.Schemas.AuditEventsTest do
 
   alias Andi.Schemas.AuditEvents
   alias Andi.Schemas.AuditEvent
+  alias Andi.Schemas.User
 
   describe "get_all/0" do
     test "given existing audit events, all are returned" do
@@ -61,6 +62,36 @@ defmodule Andi.Schemas.AuditEventsTest do
     end
   end
 
+  describe "log_audit_event/3" do
+    test "given new audit event for an api user, creates an audit event" do
+      dataset = TDG.create_dataset(%{})
+      event = AuditEvents.log_audit_event(:api, dataset_update(), dataset)
+
+      audit_event_in_db = AuditEvents.get(event.id)
+
+      assert audit_event_in_db.id == event.id
+      assert audit_event_in_db.user_id == "api"
+      assert audit_event_in_db.event_type == dataset_update()
+      assert audit_event_in_db.event == dataset |> Jason.encode!() |> Jason.decode!()
+    end
+
+    test "given new audit event for a non-api user, creates an audit event with the user email address" do
+      user_subject_id = Ecto.UUID.generate()
+      {:ok, %{id: id}} = User.create_or_update(user_subject_id, %{email: "penny@woof.com"})
+
+      dataset = TDG.create_dataset(%{})
+      event = AuditEvents.log_audit_event(id, dataset_update(), dataset)
+
+      audit_event_in_db = AuditEvents.get(event.id)
+
+      assert audit_event_in_db.id == event.id
+      assert audit_event_in_db.user_id == "penny@woof.com"
+      assert audit_event_in_db.event_type == dataset_update()
+      assert audit_event_in_db.event == dataset |> Jason.encode!() |> Jason.decode!()
+    end
+  end
+
+
   describe "get_all_for_user/1" do
     test "given an existing audit event for that user, it returns it" do
       audit_event_id_1 = UUID.uuid4()
@@ -104,6 +135,37 @@ defmodule Andi.Schemas.AuditEventsTest do
 
     test "given there are no audit events for the event type, it returns an empty list" do
       assert [] == AuditEvents.get_all_of_type("event-with-no-audit-records")
+    end
+  end
+
+  describe "get_all_by_event_id/1" do
+    test "given existing audit events for the event id, it returns it" do
+      audit_event_id_1 = UUID.uuid4()
+      audit_event_id_2 = UUID.uuid4()
+      org = TDG.create_organization(%{})
+      org_json = org |> Jason.encode!() |> Jason.decode!()
+
+      Andi.Schemas.AuditEvents.create(%{id: audit_event_id_1, user_id: "auth0|1701A", event_type: organization_update(), event: org})
+      Andi.Schemas.AuditEvents.create(%{id: audit_event_id_2, user_id: "auth0|1701A", event_type: organization_update(), event: org})
+
+      assert [
+               %{
+                 id: ^audit_event_id_1,
+                 user_id: "auth0|1701A",
+                 event_type: organization_update(),
+                 event: ^org_json
+               },
+               %{
+                id: ^audit_event_id_2,
+                user_id: "auth0|1701A",
+                event_type: organization_update(),
+                event: ^org_json
+              }
+             ] = AuditEvents.get_all_by_event_id(org.id)
+    end
+
+    test "given there are no audit events with the given event id, it returns an empty list" do
+      assert [] == AuditEvents.get_all_by_event_id(UUID.uuid4())
     end
   end
 

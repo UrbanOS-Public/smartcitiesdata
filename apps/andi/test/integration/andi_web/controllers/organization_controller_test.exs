@@ -39,6 +39,7 @@ defmodule Andi.OrganizationControllerTest do
       {:ok, response} = create(org)
 
       assert %Tesla.Env{status: 201} = response
+      assert Andi.Schemas.AuditEvents.get_all_by_event_id(org.id) != []
     end
 
     test "A new org with a non unique id is rejected" do

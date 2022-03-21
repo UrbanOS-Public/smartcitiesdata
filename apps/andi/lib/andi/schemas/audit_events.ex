@@ -8,6 +8,25 @@ defmodule Andi.Schemas.AuditEvents do
 
   require Logger
 
+  def log_audit_event(user_id = :api, event_type, event_data) do
+    audit_event_changes = %{
+      user_id: "api",
+      event_type: event_type,
+      event: event_data
+    }
+    create(audit_event_changes)
+  end
+
+  def log_audit_event(user_id, event_type, event_data) do
+    user = Andi.Schemas.User.get_by_id(user_id)
+    audit_event_changes = %{
+      user_id: user.email,
+      event_type: event_type,
+      event: event_data
+    }
+    create(audit_event_changes)
+  end
+
   def create(new_audit_event_changes) do
     {:ok, new_changeset} =
       new_audit_event_changes
@@ -35,6 +54,15 @@ defmodule Andi.Schemas.AuditEvents do
       from(event in AuditEvent,
         where: event.event_type == ^event_type
       )
+
+    Repo.all(query)
+  end
+
+  def get_all_by_event_id(event_id) do
+    query =
+      from(event in AuditEvent,
+        where: fragment("? -> ?", event.event, "id") == ^event_id
+        )
 
     Repo.all(query)
   end

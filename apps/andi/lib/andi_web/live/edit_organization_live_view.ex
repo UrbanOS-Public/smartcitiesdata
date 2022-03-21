@@ -101,7 +101,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
     """
   end
 
-  def mount(_params, %{"organization" => org, "is_curator" => is_curator}, socket) do
+  def mount(_params, %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id}, socket) do
     changeset = Organization.changeset(org, %{}) |> Map.put(:errors, [])
 
     org_exists =
@@ -129,7 +129,8 @@ defmodule AndiWeb.EditOrganizationLiveView do
        order: %{"data_title" => "asc"},
        params: %{},
        harvested_datasets: harvested_datasets,
-       is_curator: is_curator
+       is_curator: is_curator,
+       user_id: user_id
      )}
   end
 
@@ -188,6 +189,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_org_to_smrt_org()
 
+      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, organization_update(), smrt_org)
       case Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_org) do
         :ok ->
           {:noreply,

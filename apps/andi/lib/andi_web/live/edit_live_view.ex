@@ -101,7 +101,7 @@ defmodule AndiWeb.EditLiveView do
     """
   end
 
-  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator}, socket) do
+  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator, "user_id" => user_id}, socket) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
@@ -127,7 +127,8 @@ defmodule AndiWeb.EditLiveView do
        unsaved_changes_modal_visibility: "hidden",
        publish_success_modal_visibility: "hidden",
        delete_dataset_modal_visibility: "hidden",
-       is_curator: is_curator
+       is_curator: is_curator,
+       user_id: user_id
      )}
   end
 
@@ -178,6 +179,7 @@ defmodule AndiWeb.EditLiveView do
         {:noreply, redirect(socket, to: header_datasets_path())}
 
       {:ok, smrt_dataset} ->
+        Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_delete(), smrt_dataset)
         Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset)
         {:noreply, redirect(socket, to: header_datasets_path())}
     end
@@ -291,6 +293,7 @@ defmodule AndiWeb.EditLiveView do
     if dataset_changeset.valid? do
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_update(),smrt_dataset)
 
       case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
         :ok ->

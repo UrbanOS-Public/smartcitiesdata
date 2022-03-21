@@ -76,12 +76,13 @@ For details on how to use the ANDI API, please review the Postman collection loc
 
 ### How to Access Log Events
 
-When ANDI emits events of various types, it logs the details of the event to a Postgres table called `audit_events`.
+When ANDI emits events of various types, it logs the details of the event to a Postgres table named `audit_events`.
 
 In order to access those logs, a user can run the following commands from the elixir console:
 
 1. To get all logs of all events, run the command `Andi.Schemas.AuditEvents.get_all()`. Note that this may result in a large volume of events.
 2. To get a specific log entry by id, run the command `Andi.Schemas.AuditEvents.get(audit_event_id)`.
-3. To get all log entries for a specific user, run the command `Andi.Schemas.AuditEvents.get_all_for_user(user_id)`. Note that the user_id will be the Auth0 user_id.
-4. To get all the log entries for a specific event type, run the command `Andi.Schemas.AuditEvents.get_all_of_type(event_type)`. Note that the event type will be a SmartCity.Event.
+3. To get a log of all events performed by a specific user, run the command `Andi.Schemas.AuditEvents.get_all_for_user(user_id)`. Note that the user_id is the user's email address.
+4. To get all log entries for a specific event type, run the command `Andi.Schemas.AuditEvents.get_all_of_type(event_type)`. Note that the event type will be a string matching a SmartCity.Event.
 5. To get all of the log entries for a specific date range, run the command `Andi.Schemas.AuditEvents.get_all_in_range(start_date, end_date)`. Note, start_date and end_date should be in the format `~D[YYYY-MM-DD]`. This can be generated using the command `{:ok, date} = Date.new(YYYY, MM, DD)`. Dates are in UTC time.
+6. To get all log entries for a specific event, run the command `Andi.Schemas.AuditEvents.get_all_by_event_id(event_id)`. Valid entries for `event_id` are a dataset_id, an organization_id, or an ingestion_id.

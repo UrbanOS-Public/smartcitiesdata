@@ -13,6 +13,7 @@ defmodule Andi.Services.DatasetDelete do
   @spec delete(term()) :: {:ok, SmartCity.Dataset.t()} | {:error, any()} | {:not_found, any()}
   def delete(dataset_id) do
     with {:ok, dataset} when not is_nil(dataset) <- DatasetStore.get(dataset_id),
+         _ <- Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset),
          :ok <- Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset) do
       {:ok, dataset}
     else

@@ -77,7 +77,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
          success_message: "",
          click_id: nil,
          selected_role: "",
-         self: is_self(signed_in_user, user)
+         self: is_self(signed_in_user, user),
+         signed_in_user_id: user_id
        )}
     else
       {:error, error} ->
@@ -96,7 +97,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
            success_message: "",
            click_id: nil,
            selected_role: "",
-           self: is_self(signed_in_user, user)
+           self: is_self(signed_in_user, user),
+           signed_in_user_id: user_id
          )}
     end
   end
@@ -136,7 +138,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
 
   def handle_event("associate", %{"organiation" => %{"org_id" => org_id}}, socket) do
     user = socket.assigns.user
-    send_event(org_id, user)
+    send_event(org_id, user, socket.assigns.signed_in_user_id)
 
     {:noreply,
      assign(socket,
@@ -154,6 +156,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     user = socket.assigns.user
 
     {:ok, user_org_disassociation} = SmartCity.UserOrganizationDisassociate.new(%{subject_id: user.subject_id, org_id: org_id})
+    Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.signed_in_user_id, user_organization_disassociate(), user_org_disassociation)
     Brook.Event.send(:andi, user_organization_disassociate(), :andi, user_org_disassociation)
 
     {:noreply,
@@ -180,8 +183,9 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     end
   end
 
-  defp send_event(org_id, user) do
+  defp send_event(org_id, user, signed_in_user_id) do
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
+    Andi.Schemas.AuditEvents.log_audit_event(signed_in_user_id, user_organization_associate(), event_data)
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
   end
 
