@@ -91,7 +91,6 @@ defmodule Andi.Schemas.AuditEventsTest do
     end
   end
 
-
   describe "get_all_for_user/1" do
     test "given an existing audit event for that user, it returns it" do
       audit_event_id_1 = UUID.uuid4()
@@ -156,11 +155,11 @@ defmodule Andi.Schemas.AuditEventsTest do
                  event: ^org_json
                },
                %{
-                id: ^audit_event_id_2,
-                user_id: "auth0|1701A",
-                event_type: organization_update(),
-                event: ^org_json
-              }
+                 id: ^audit_event_id_2,
+                 user_id: "auth0|1701A",
+                 event_type: organization_update(),
+                 event: ^org_json
+               }
              ] = AuditEvents.get_all_by_event_id(org.id)
     end
 

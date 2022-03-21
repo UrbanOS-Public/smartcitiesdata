@@ -81,6 +81,7 @@ defmodule AndiWeb.API.OrganizationController do
 
   defp write_organization(org) do
     Andi.Schemas.AuditEvents.log_audit_event(:api, organization_update(), org)
+
     case Brook.Event.send(@instance_name, organization_update(), :andi, org) do
       :ok ->
         :ok

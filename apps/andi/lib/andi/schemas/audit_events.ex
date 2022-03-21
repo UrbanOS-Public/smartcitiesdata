@@ -14,16 +14,19 @@ defmodule Andi.Schemas.AuditEvents do
       event_type: event_type,
       event: event_data
     }
+
     create(audit_event_changes)
   end
 
   def log_audit_event(user_id, event_type, event_data) do
     user = Andi.Schemas.User.get_by_id(user_id)
+
     audit_event_changes = %{
       user_id: user.email,
       event_type: event_type,
       event: event_data
     }
+
     create(audit_event_changes)
   end
 
@@ -62,7 +65,7 @@ defmodule Andi.Schemas.AuditEvents do
     query =
       from(event in AuditEvent,
         where: fragment("? -> ?", event.event, "id") == ^event_id
-        )
+      )
 
     Repo.all(query)
   end

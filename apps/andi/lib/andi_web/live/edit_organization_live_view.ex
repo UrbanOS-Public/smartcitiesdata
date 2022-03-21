@@ -190,6 +190,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
         |> InputConverter.andi_org_to_smrt_org()
 
       Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, organization_update(), smrt_org)
+
       case Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_org) do
         :ok ->
           {:noreply,

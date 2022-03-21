@@ -125,7 +125,9 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       org ->
-        live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id})
+        live_render(conn, AndiWeb.EditOrganizationLiveView,
+          session: %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id}
+        )
     end
   end
 

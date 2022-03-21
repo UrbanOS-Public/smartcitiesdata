@@ -293,7 +293,7 @@ defmodule AndiWeb.EditLiveView do
     if dataset_changeset.valid? do
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_update(),smrt_dataset)
+      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_update(), smrt_dataset)
 
       case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
         :ok ->
