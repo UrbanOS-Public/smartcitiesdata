@@ -10,3 +10,4 @@
 - [ ] If changing elixir code in an "app", did you update the relevant version
       in `mix.exs`?
 - [ ] If altering an API endpoint, was the relevant postman collection updated?
+  - [ ] If a new version of `smart_city` is being used (new fields on a struct), were the relevant postman collections updated?
