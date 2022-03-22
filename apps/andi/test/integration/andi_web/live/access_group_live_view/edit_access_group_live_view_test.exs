@@ -145,6 +145,22 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       refute get_text(html, ".search-table") =~ dataset_b.business.dataTitle
     end
 
+    test "filters on keywords", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{keywords: ["fun", "times"]}) |> Datasets.update()
+      {:ok, dataset_b} = TDG.create_dataset(business: %{keywords: ["sad", "times"]}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      html = render_submit(view, :search, %{"search-value" => "fun"})
+
+      assert get_text(html, ".search-table") =~ "fun"
+      refute get_text(html, ".search-table") =~ "sad"
+    end
+
     test "shows No Datasets if no results returned", %{curator_conn: conn} do
       {:ok, _dataset_a} = TDG.create_dataset(business: %{dataTitle: "data_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{dataTitle: "data_b"}) |> Datasets.update()

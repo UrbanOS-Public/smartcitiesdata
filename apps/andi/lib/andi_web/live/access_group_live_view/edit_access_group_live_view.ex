@@ -30,7 +30,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
 
         <div class="access-group-form__datasets">
-          <button class="btn btn--add-dataset" phx-click="add-dataset" type="button">+ Add Dataset</button>
+          <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">+ Add Dataset</button>
         </div>
       </form>
 
@@ -99,12 +99,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     datasets
   end
 
-  defp query_on_search_change(search_value, socket) do
+  defp query_on_search_change(search_value, _) do
     refresh_datasets(search_value)
   end
 
   defp refresh_datasets(search_value) do
-    search_string = "%#{search_value}%"
+    like_search_string = "%#{search_value}%"
 
     query =
       from(dataset in Dataset,
@@ -113,8 +113,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         preload: [business: business, technical: technical],
         where: not is_nil(technical.id),
         where: not is_nil(business.id),
-        where: ilike(business.dataTitle, type(^search_string, :string)),
-        or_where: ilike(business.orgTitle, type(^search_string, :string)),
+        where: ilike(business.dataTitle, type(^like_search_string, :string)),
+        or_where: ilike(business.orgTitle, type(^like_search_string, :string)),
+        or_where: ^search_value in business.keywords,
         select: dataset
       )
 
