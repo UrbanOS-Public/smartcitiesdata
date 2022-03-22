@@ -47,7 +47,7 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
     end
 
     test "represents a dataset when one exists", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: "Soup"}}])
+      allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       access_group = create_access_group()
@@ -67,8 +67,8 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
     test "represents multiple datasets", %{conn: conn} do
       allow(Andi.Repo.all(any()),
         return: [
-          %Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: "Soup"}},
-          %Dataset{business: %{dataTitle: "Flowers", orgTitle: "Gardener", keywords: "Pretty"}}
+          %Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}},
+          %Dataset{business: %{dataTitle: "Flowers", orgTitle: "Gardener", keywords: ["Pretty"]}}
         ]
       )
 
