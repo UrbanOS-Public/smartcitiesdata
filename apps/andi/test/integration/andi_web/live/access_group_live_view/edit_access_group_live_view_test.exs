@@ -109,7 +109,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(cancel_button)
 
       refute Enum.empty?(find_elements(html, ".add-dataset-modal--hidden"))
-
     end
   end
 

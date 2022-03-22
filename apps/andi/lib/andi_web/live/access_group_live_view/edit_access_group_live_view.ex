@@ -100,7 +100,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   defp query_on_search_change(search_value, socket) do
-
     refresh_datasets(search_value)
   end
 
