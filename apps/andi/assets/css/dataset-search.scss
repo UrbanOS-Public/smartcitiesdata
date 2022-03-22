@@ -1,0 +1,68 @@
+.search-view {
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    height: 100%;
+    margin: 1em;
+  }
+  
+  .search-title {
+    display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
+    margin-left: 1rem;
+    margin-right: 2rem;
+  }
+  
+  .search-index {
+    padding: 1rem 3rem;
+  }
+  
+  .search-index__title {
+    font-size: 1.5rem;
+  }
+  
+  .search-index__header {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .search-table {
+    width: 100%;
+    border: $table-border;
+    border-collapse: collapse;
+  }
+  
+  .search-table__tr:nth-child(odd) {
+    background-color: $color-table-stripe;
+  }
+  
+  .search-table__th {
+    padding: $table-padding;
+    border-right: $table-border;
+    text-align: left;
+    background: $color-table-header;
+  }
+  
+  .search-table__cell {
+    padding: $table-padding;
+    border-right: $table-border;
+    height: $table-height;
+    max-width: 30rem;
+  }
+  
+  .search-table__status-cell {
+    width: 10%;
+  }
+  
+  .btn--add-dataset {
+      min-width: 100px;
+      height: 2.3rem;
+      background-color: #27cb00;
+      margin: 20px 0px;
+      padding: 0 50px;
+  
+      &:hover {
+          background-color: #2de000;
+      }
+  }

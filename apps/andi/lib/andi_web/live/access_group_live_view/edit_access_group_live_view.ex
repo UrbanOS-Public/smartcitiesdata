@@ -4,9 +4,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   require Logger
 
   import Phoenix.HTML.Form
+  import Ecto.Query, only: [from: 2]
 
   alias Andi.InputSchemas.AccessGroup
   alias Andi.InputSchemas.AccessGroups
+  alias Andi.InputSchemas.Datasets.Dataset
 
   access_levels(render: [:private])
 
@@ -32,14 +34,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility) %>
+      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, datasets: @datasets, search_text: @search_text) %>
 
       <div class="edit-button-group">
         <div class="edit-button-group__cancel-btn">
-          <button type="button" class="btn btn--large" phx-click="cancel-edit">Cancel</button>
+          <button type="button" class="btn btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
         </div>
         <div class="edit-button-group__save-btn">
-          <button type="submit" id="save-button" name="save-button" phx-click="form_save" class="btn btn--action btn--large">Save</button>
+          <button type="submit" id="save-button" name="save-button" phx-click="form_save" class="btn btn--action btn--large save-edit">Save</button>
         </div>
       </div>
     </div>
@@ -54,12 +56,18 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        is_curator: is_curator,
        access_group: access_group,
        changeset: default_changeset,
-       add_dataset_modal_visibility: "hidden"
+       add_dataset_modal_visibility: "hidden",
+       datasets: [],
+       search_text: ""
      )}
   end
 
   def handle_event("cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: header_access_groups_path())}
+  end
+
+  def handle_event("cancel-search", _, socket) do
+    {:noreply, assign(socket, add_dataset_modal_visibility: "hidden")}
   end
 
   def handle_event("form_save", _, socket) do
@@ -80,5 +88,38 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("add-dataset", _, socket) do
     {:noreply, assign(socket, add_dataset_modal_visibility: "visible")}
+  end
+
+  def handle_event("search", %{"search-value" => search_value}, socket) do
+    datasets = query_on_search_change(search_value, socket)
+    {:noreply, assign(socket, add_dataset_modal_visibility: "visible", datasets: datasets)}
+  end
+
+  defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
+    datasets
+  end
+
+  defp query_on_search_change(search_value, socket) do
+
+    refresh_datasets(search_value)
+  end
+
+  defp refresh_datasets(search_value) do
+    search_string = "%#{search_value}%"
+
+    query =
+      from(dataset in Dataset,
+        join: technical in assoc(dataset, :technical),
+        join: business in assoc(dataset, :business),
+        preload: [business: business, technical: technical],
+        where: not is_nil(technical.id),
+        where: not is_nil(business.id),
+        where: ilike(business.dataTitle, type(^search_string, :string)),
+        or_where: ilike(business.orgTitle, type(^search_string, :string)),
+        select: dataset
+      )
+
+    query
+    |> Andi.Repo.all()
   end
 end
