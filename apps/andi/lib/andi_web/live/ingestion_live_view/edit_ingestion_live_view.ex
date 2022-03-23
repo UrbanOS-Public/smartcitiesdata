@@ -3,7 +3,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   use AndiWeb.HeaderLiveView
   require Logger
 
+  @instance_name Andi.instance_name()
+
+  import SmartCity.Event, only: [ingestion_delete: 0]
+
   alias Andi.InputSchemas.Ingestions
+  alias Andi.Services.IngestionStore
 
   access_levels(render: [:private])
 
@@ -42,7 +47,19 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("delete-confirmed", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
-    Ingestions.delete(ingestion_id)
+
+    case IngestionStore.get(ingestion_id) do
+      {:ok, nil} ->
+        Ingestions.delete(ingestion_id)
+        {:noreply, redirect(socket, to: header_ingestions_path())}
+
+      {:ok, smrt_ingestion} ->
+        # TODO: Add AuditEvents back in
+        # Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_delete(), smrt_ingestion)
+        Brook.Event.send(@instance_name, ingestion_delete(), :andi, smrt_ingestion)
+    end
+
+    # TODO: Sometimes the redirect reflects old state? (doesn't indicate that ingestion was deleted till refresh)
     {:noreply, redirect(socket, to: header_ingestions_path())}
   end
 

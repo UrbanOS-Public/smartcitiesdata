@@ -4,7 +4,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
   use AndiWeb.Test.AuthConnCase.IntegrationCase
 
   @moduletag shared_data_connection: true
+  @instance_name Andi.instance_name()
 
+  import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import Placebo
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
@@ -19,8 +21,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Ingestions
+  alias Andi.Services.IngestionStore
 
   @instance_name Andi.instance_name()
 
@@ -29,11 +31,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
   describe "ingestions" do
     setup do
       dataset = TDG.create_dataset(%{})
-      {:ok, _changeset} = Datasets.update(dataset)
-
       ingestion_id = UUID.uuid4()
       ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id})
-      {:ok, _changeset} = Ingestions.update(ingestion)
+
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
 
       %{ingestion: ingestion}
     end
@@ -44,6 +50,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
 
       eventually(fn ->
         assert Ingestions.get(ingestion.id) == nil
+        assert {:ok, nil} = IngestionStore.get(ingestion.id)
       end)
     end
 
