@@ -1,3 +1,4 @@
 priv/static/
 node_modules/
 *.pem
+*.dump
