@@ -38,10 +38,10 @@ defmodule AndiWeb.Search.AddDatasetModal do
         <p class="datasets-modal-section-header-text">Results</p>
         <table class="search-table">
           <thead>
-            <th class="search-table__th search-table__cell">Dataset</th>
-            <th class="search-table__th search-table__cell">Organization</th>
-            <th class="search-table__th search-table__cell">Keywords</th>
-            <th class="search-table__th search-table__cell">Action</th>
+            <th class="search-table__th search-table__cell wide-column">Dataset</th>
+            <th class="search-table__th search-table__cell wide-column">Organization</th>
+            <th class="search-table__th search-table__cell wide-column">Keywords</th>
+            <th class="search-table__th search-table__cell thin-column">Action</th>
           </thead>
 
           <%= if @datasets == [] do %>
@@ -49,10 +49,10 @@ defmodule AndiWeb.Search.AddDatasetModal do
           <% else %>
             <%= for dataset <- @datasets do %>
             <tr class="search-table__tr">
-                <td class="search-table__cell search-table__cell--break search-table__data-title-cell"><%= dataset.business.dataTitle %></td>
-                <td class="search-table__cell search-table__cell--break"><%= dataset.business.orgTitle %></td>
-                <td class="search-table__cell search-table__cell--break"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="search-table__cell search-table__cell--break modal-action-text" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
+                <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
+                <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
               </tr>
             <% end %>
           <% end %>

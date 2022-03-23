@@ -126,10 +126,11 @@
 .selected-datasets-from-search {
     display: flex;
     width: 50%;
-    height: 25px;
+    min-height: 40px;
     margin: 0.5rem 0rem;
     border: 1px solid $search-unfocused;
     line-height: 1;
+    padding: 0 3.5px;
 }
 
 .selected-dataset-from-search {
@@ -141,5 +142,13 @@
     background: #45CB01;
     border-radius: 5px;
     color: white;
-    top: 7px;
+    margin: 7px 3.5px;
+}
+
+.wide-column {
+  width: 30%
+}
+
+.thin-column {
+  width: 10%
 }
