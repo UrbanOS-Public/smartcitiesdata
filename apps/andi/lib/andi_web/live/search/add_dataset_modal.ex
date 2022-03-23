@@ -52,12 +52,20 @@ defmodule AndiWeb.Search.AddDatasetModal do
                 <td class="search-table__cell search-table__cell--break search-table__data-title-cell"><%= dataset.business.dataTitle %></td>
                 <td class="search-table__cell search-table__cell--break"><%= dataset.business.orgTitle %></td>
                 <td class="search-table__cell search-table__cell--break"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="search-table__cell search-table__cell--break modal-action-text">Select</td>
+                <td class="search-table__cell search-table__cell--break modal-action-text" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
               </tr>
             <% end %>
           <% end %>
         </table>
       </div>
+    </div>
+
+    <div class="dataset-search-selected-datasets">
+        <p class="datasets-modal-section-header-text">Selected Datasets</p>
+        <div class="selected-datasets-from-search"><%= for dataset_name <- selected_datasets(@datasets, @selected_datasets) do %>
+            <div class="selected-dataset-from-search"><%= dataset_name %></div>
+            <% end %>
+        </div>
     </div>
 
     <hr class="datasets-modal-divider">
@@ -69,5 +77,18 @@ defmodule AndiWeb.Search.AddDatasetModal do
       </div>
     </div>
     """
+  end
+
+  def selected_datasets(datasets, selected_datasets) do
+    Enum.map(selected_datasets, fn selected_dataset ->
+      Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end).business.dataTitle
+    end)
+  end
+
+  def selected_value(dataset_id, selected_datasets) do
+    case dataset_id in selected_datasets do
+      true -> "Selected"
+      _ -> "Select"
+    end
   end
 end

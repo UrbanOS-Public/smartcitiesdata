@@ -112,6 +112,64 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end
   end
 
+  describe "can select a dataset" do
+    test "a dataset can be selected", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      select_dataset = element(view, ".modal-action-text", "Select")
+
+      html = render_click(select_dataset)
+
+      assert get_text(html, ".search-table") =~ "Selected"
+    end
+
+    test "a dataset can be unselected", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      select_dataset = element(view, ".modal-action-text", "Select")
+      html = render_click(select_dataset)
+      assert get_text(html, ".search-table") =~ "Selected"
+
+      deselect_dataset = element(view, ".modal-action-text", "Selected")
+      html = render_click(deselect_dataset)
+      refute get_text(html, ".search-table") =~ "Selected"
+    end
+
+    test "a selected dataset appears in the selected dataset list", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+
+      select_dataset = element(view, ".modal-action-text", "Select")
+
+      html = render_click(select_dataset)
+
+      assert get_text(html, ".selected-datasets-from-search") =~ dataset_a.business.dataTitle
+    end
+  end
+
   describe "search" do
     test "filters on orgTitle", %{curator_conn: conn} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()

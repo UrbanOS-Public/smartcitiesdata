@@ -34,7 +34,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, datasets: @datasets, search_text: @search_text) %>
+      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, datasets: @datasets, search_text: @search_text, selected_datasets: @selected_datasets) %>
 
       <div class="edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -58,7 +58,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        changeset: default_changeset,
        add_dataset_modal_visibility: "hidden",
        datasets: [],
-       search_text: ""
+       search_text: "",
+       selected_datasets: []
      )}
   end
 
@@ -93,6 +94,18 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   def handle_event("search", %{"search-value" => search_value}, socket) do
     datasets = query_on_search_change(search_value, socket)
     {:noreply, assign(socket, add_dataset_modal_visibility: "visible", datasets: datasets)}
+  end
+
+  def handle_event("select-search", %{"id" => id}, socket) do
+    case id in socket.assigns.selected_datasets do
+      true ->
+        selected_datasets = List.delete(socket.assigns.selected_datasets, id)
+        {:noreply, assign(socket, add_dataset_modal_visibility: "visible", selected_datasets: selected_datasets)}
+
+      _ ->
+        selected_datasets = [id | socket.assigns.selected_datasets]
+        {:noreply, assign(socket, add_dataset_modal_visibility: "visible", selected_datasets: selected_datasets)}
+    end
   end
 
   defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do

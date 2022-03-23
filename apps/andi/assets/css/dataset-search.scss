@@ -122,3 +122,24 @@
 .save-search {
     float: right;
 }
+
+.selected-datasets-from-search {
+    display: flex;
+    width: 50%;
+    height: 25px;
+    margin: 0.5rem 0rem;
+    border: 1px solid $search-unfocused;
+    line-height: 1;
+}
+
+.selected-dataset-from-search {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    background: #45CB01;
+    border-radius: 5px;
+    color: white;
+    top: 7px;
+}
