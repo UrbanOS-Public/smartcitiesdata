@@ -62,9 +62,10 @@ defmodule AndiWeb.Search.AddDatasetModal do
 
     <div class="dataset-search-selected-datasets">
         <p class="datasets-modal-section-header-text">Selected Datasets</p>
-        <div class="selected-datasets-from-search"><%= for dataset_name <- selected_datasets(@datasets, @selected_datasets) do %>
-            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset_name %></span><i class="material-icons remove-selected-dataset">close</i></div>
-            <% end %>
+        <div class="selected-datasets-from-search">
+          <%= for dataset <- selected_datasets(@datasets, @selected_datasets) do %>
+            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
+          <% end %>
         </div>
     </div>
 
@@ -81,7 +82,7 @@ defmodule AndiWeb.Search.AddDatasetModal do
 
   def selected_datasets(datasets, selected_datasets) do
     Enum.map(selected_datasets, fn selected_dataset ->
-      Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end).business.dataTitle
+      Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end)
     end)
   end
 

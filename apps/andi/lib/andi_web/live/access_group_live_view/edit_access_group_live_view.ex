@@ -97,6 +97,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("select-search", %{"id" => id}, socket) do
+    update_selection(id, socket)
+  end
+
+  def handle_event("remove-dataset", %{"id" => id}, socket) do
+    update_selection(id, socket)
+  end
+
+  defp update_selection(id, socket) do
     case id in socket.assigns.selected_datasets do
       true ->
         selected_datasets = List.delete(socket.assigns.selected_datasets, id)
