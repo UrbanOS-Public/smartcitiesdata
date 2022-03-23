@@ -1,0 +1,124 @@
+.search-view {
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    height: 100%;
+    margin: 1em;
+}
+
+.dataset-search-modal {
+    width: 80%;
+}
+
+.datasets-modal-helper-text {
+    margin: 1.25rem 0;
+}
+
+.datasets-modal-divider {
+    border: 1px solid #C9C6C7;
+    margin: 1.25rem 0;
+}
+
+.datasets-modal__search {
+    width: 50%;
+    margin-right: 1rem;
+}
+
+.datasets-modal-section-header-text {
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #7F7676;
+    margin: 1.25rem 0 0 0;
+}
+
+.datasets-modal__search-input-container {
+  display: flex;
+  width: 100%;
+  margin: 0.5rem 0rem;
+  border: 1px solid $search-unfocused;
+}
+
+.datasets-modal__search-input-container:focus-within {
+  border: 1px solid $search-focused;
+}
+
+.datasets-modal__search-icon {
+  padding: 0.1rem;
+  color: $search-unfocused;
+  text-align: center;
+}
+
+.datasets-modal__search-input {
+  width: 100%;
+  padding: 0.1rem;
+  outline: none;
+  border: none;
+}
+
+.datasets-modal__search-input::placeholder,
+.datasets-modal__search-input::-webkit-input-placeholder,
+.datasets-modal__search-input::-ms-input-placeholder {
+  color: $search-unfocused;
+}
+
+.search-title {
+    display: inline-flex;
+    height: 3.5rem;
+    border-bottom: 1px solid $color-form-border;
+    margin-left: 1rem;
+    margin-right: 2rem;
+}
+
+.search-index {
+    padding: 1rem 3rem;
+}
+
+.search-index__title {
+    font-size: 2.0rem;
+    font-weight: normal;
+    margin: 2.8rem 0 0 0;
+}
+
+.search-index__header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.search-table {
+    width: 100%;
+    border: $table-border;
+    border-collapse: collapse;
+    margin: 0.5rem 0rem;
+}
+
+.search-table__tr:nth-child(odd) {
+    background-color: $color-table-stripe;
+}
+
+.search-table__th {
+    padding: $table-padding;
+    border-right: $table-border;
+    text-align: left;
+    background: $color-table-header;
+}
+
+.search-table__cell {
+    padding: $table-padding;
+    border-right: $table-border;
+    height: $table-height;
+    max-width: 30rem;
+}
+
+.search-table__status-cell {
+    width: 10%;
+}
+
+.modal-action-text {
+  color: #57ACE5;
+  font-size: 1.125rem;
+  font-weight: normal;
+}
+
+.save-search {
+    float: right;
+}
