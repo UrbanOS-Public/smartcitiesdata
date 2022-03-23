@@ -1,4 +1,4 @@
-defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
+defmodule AndiWeb.EditIngestionLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
