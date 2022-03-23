@@ -9,6 +9,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
+  alias Andi.Services.IngestionDelete
 
   access_levels(render: [:private])
 
@@ -32,10 +33,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     """
   end
 
-  def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion} = _session, socket) do
+  def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session, socket) do
     {:ok,
      assign(socket,
        is_curator: is_curator,
+       user_id: user_id,
        ingestion: ingestion,
        delete_ingestion_modal_visibility: "hidden"
      )}
@@ -47,19 +49,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("delete-confirmed", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
+    user_id = socket.assigns.user_id
 
     case IngestionStore.get(ingestion_id) do
       {:ok, nil} ->
         Ingestions.delete(ingestion_id)
-        {:noreply, redirect(socket, to: header_ingestions_path())}
 
       {:ok, smrt_ingestion} ->
-        # TODO: Add AuditEvents back in
-        # Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_delete(), smrt_ingestion)
-        Brook.Event.send(@instance_name, ingestion_delete(), :andi, smrt_ingestion)
+        IngestionDelete.delete(smrt_ingestion.id, user_id)
     end
 
-    # TODO: Sometimes the redirect reflects old state? (doesn't indicate that ingestion was deleted till refresh)
     {:noreply, redirect(socket, to: header_ingestions_path())}
   end
 

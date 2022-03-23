@@ -132,7 +132,7 @@ defmodule AndiWeb.EditController do
   end
 
   def edit_ingestion(conn, %{"id" => id}) do
-    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case Ingestions.get(id) do
       nil ->
@@ -142,7 +142,9 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       ingestion ->
-        live_render(conn, AndiWeb.IngestionLiveView.EditIngestionLiveView, session: %{"ingestion" => ingestion, "is_curator" => is_curator})
+        live_render(conn, AndiWeb.IngestionLiveView.EditIngestionLiveView,
+          session: %{"ingestion" => ingestion, "is_curator" => is_curator, "user_id" => user_id}
+        )
     end
   end
 
