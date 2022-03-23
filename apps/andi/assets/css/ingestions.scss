@@ -46,3 +46,10 @@
 .ingestions-table__status-cell {
   width: 10%;
 }
+
+.edit-ingestion-title {
+  display: inline-flex;
+  height: 3.5rem;
+  border-bottom: 1px solid $color-form-border;
+  margin-right: 2rem;
+}

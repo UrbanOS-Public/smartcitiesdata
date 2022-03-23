@@ -143,6 +143,34 @@ body {
     min-width: 6.5rem;
 }
 
+.btn--delete {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  
+  min-width: 10rem;
+  min-height: 2rem;
+  line-height: 2rem;
+  font-size: 1.2rem;
+
+  .delete-icon {
+    height: 1.65rem;
+    width: 1.5rem;
+    margin-right: .3em;
+    vertical-align: sub;
+  }
+
+  &:hover {
+    background-color: $color-error;
+    color: white;
+    border: 1px solid $color-error;
+  }
+}
+
 .btn--test {
   font-size: 1rem;
 
@@ -283,10 +311,6 @@ body {
     display: flex;
     align-items: center;
     font-size: 1.1rem;
-
-    .organization-link__text {
-        font-weight: bold;
-    }
 
     &:hover {
         cursor: pointer;
