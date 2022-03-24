@@ -131,6 +131,26 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert get_text(html, ".search-table") =~ "Selected"
     end
 
+    test "a selected dataset persists when the search input changes", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      select_dataset = element(view, ".modal-action-text", "Select")
+      html = render_click(select_dataset)
+
+      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+
+      html = render_submit(view, :search, %{"search-value" => "some new value"})
+
+      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+    end
+
     test "a dataset can be unselected", %{curator_conn: conn} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
 

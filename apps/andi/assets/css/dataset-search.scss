@@ -117,6 +117,9 @@
   color: #57ACE5;
   font-size: 1.125rem;
   font-weight: normal;
+  &:hover {
+    cursor: pointer;
+    }
 }
 
 .save-search {
@@ -159,4 +162,11 @@
 
 .remove-selected-dataset {
   font-size: 20px;
+  &:hover {
+    cursor: pointer;
+    }
+}
+
+#Selected {
+    color: black;
 }
