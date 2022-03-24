@@ -88,22 +88,23 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     changes_with_id = StructTools.ensure_id(technical, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 
-    technical
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-    |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
-    |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
-    |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> foreign_key_constraint(:dataset_id)
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_source_format()
-    |> CadenceValidator.validate()
-    |> validate_top_level_selector()
-    |> validate_schema()
-    |> validate_key_value_parameters()
-    |> validate_extract_steps()
+    res =
+      technical
+      |> cast(changes_with_id, @cast_fields, empty_values: [])
+      |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+      |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
+      |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
+      |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+      |> foreign_key_constraint(:dataset_id)
+      |> validate_required(@required_fields, message: "is required")
+      |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
+      |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+      |> validate_source_format()
+      |> CadenceValidator.validate()
+      |> validate_top_level_selector()
+      |> validate_schema()
+      |> validate_key_value_parameters()
+      |> validate_extract_steps()
   end
 
   def submission_changeset(technical, changes) do
@@ -194,6 +195,8 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
+
+    "YEP" |> IO.inspect(label: "This Validation Occurs")
 
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
       true -> add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")

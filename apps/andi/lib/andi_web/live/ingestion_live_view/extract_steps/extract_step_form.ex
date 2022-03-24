@@ -70,9 +70,10 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     ~L"""
       <%= for extract_step <- @extract_steps do %>
         <% component_module_to_render = render_extract_step_form(extract_step) %>
+        <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
 
         <hr>
-        <%= live_component(@socket, component_module_to_render, id: extract_step.id) %>
+        <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, changeset: step_changeset) %>
       <% end %>
 
       <div class="add-step">

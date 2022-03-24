@@ -8,6 +8,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   use Properties, otp_app: :andi
 
   @moduletag shared_data_connection: true
+  @moduletag :skip
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -61,7 +62,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     assert not Enum.empty?(find_elements(html, ".extract-date-step-form"))
   end
 
-  @tag :skip
   test "when the add step button is pressed, a new step is rendered", %{view: view} do
     editor = find_live_child(view, "extract_step_form_editor")
 
@@ -75,35 +75,38 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  # test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
-  #   extract_steps = []
-  #   andi_ingestion = create_ingestion_with_dataset(extract_steps)
+  @tag :skip
+  test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
+    # TODO: Could we avoid the weird validation error by not having these
+    # start as empty?
+    extract_steps = []
+    andi_ingestion = create_ingestion_with_dataset(extract_steps)
 
-  #   {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
+    {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
 
-  #   editor = find_live_child(view, "extract_step_form_editor")
+    editor = find_live_child(view, "extract_step_form_editor")
 
-  #   render_change(editor, "update_new_step_type", %{"value" => "http"})
+    render_change(editor, "update_new_step_type", %{"value" => "http"})
 
-  #   render_change(editor, "update_new_step_type", %{"value" => "http"})
-  #   render_click(editor, "add-extract-step")
+    render_change(editor, "update_new_step_type", %{"value" => "http"})
+    render_click(editor, "add-extract-step")
 
-  #   render_click(view, "save")
+    render_click(view, "save")
 
-  #   updated_andi_ingestion = Andi.InputSchemas.Ingestions.get(andi_ingestion.id)
-  #   extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
-  #   es_form = element(editor, "#step-#{extract_step_id} form")
+    updated_andi_ingestion = Andi.InputSchemas.Ingestions.get(andi_ingestion.id)
+    extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
+    es_form = element(editor, "#step-#{extract_step_id} form")
 
-  #   render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+    render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
 
-  #   render_click(view, "save")
+    render_click(view, "save")
 
-  #   eventually(fn ->
-  #     extract_step = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first()
-  #     assert extract_step != nil
-  #     assert Map.has_key?(extract_step.context, "body")
-  #   end)
-  # end
+    eventually(fn ->
+      extract_step = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first()
+      assert extract_step != nil
+      assert Map.has_key?(extract_step.context, "body")
+    end)
+  end
 
   # test "given an invalid extract http step, the section shows an invalid status", %{andi_ingestion: ingestion, view: view} do
   #   extract_step_id = get_extract_step_id(ingestion, 1)
