@@ -21,6 +21,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         <h2 class="component-title-text">Define Data Ingestion</h2>
       </div>
 
+      <div class="extract-steps-form-component">
+        <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion}) %>
+      </div>
+
       <div class="edit-page__btn-group">
         <button id="ingestion-delete-button" class="btn btn--delete" phx-click="prompt-ingestion-delete" type="button">
           <span class="delete-icon material-icons">delete_outline</span>
