@@ -300,6 +300,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     smrt_ingestion = TDG.create_ingestion(%{targetDataset: smrt_dataset.id, extractSteps: extract_steps})
 
     {:ok, _andi_dataset} = Datasets.update(smrt_dataset)
+    # TODO: Answer. Try .create() with the dataset ID. That should fix this.
+    # That's what the "Create" ingestion button on the ingestion live view does
     {:ok, andi_ingestion} = Ingestions.update(smrt_ingestion)
 
     andi_ingestion
