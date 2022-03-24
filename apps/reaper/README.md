@@ -1,5 +1,3 @@
-[![Master](https://travis-ci.org/Datastillery/reaper.svg?branch=master)](https://travis-ci.org/Datastillery/reaper)
-
 # Reaper
 
 Retrieves data, decodes it, and loads it onto a Kafka topic
@@ -149,4 +147,4 @@ The resulting supervision tree looks roughly like this:
 
 ## License
 
-Released under [Apache 2 license](https://github.com/Datastillery/reaper/blob/master/LICENSE).
+Released under [Apache 2 license](https://github.com/UrbanOS-Public/reaper/blob/master/LICENSE).

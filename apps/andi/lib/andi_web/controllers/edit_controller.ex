@@ -3,6 +3,8 @@ defmodule AndiWeb.EditController do
   use Properties, otp_app: :andi
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.AccessGroups
   alias Andi.Schemas.DatasetDownload
   alias Andi.Schemas.User
 
@@ -12,10 +14,12 @@ defmodule AndiWeb.EditController do
 
   access_levels(
     edit_organization: [:private],
+    edit_ingestion: [:private],
     edit_user: [:private],
     edit_dataset: [:private],
     edit_submission: [:private, :public],
-    download_dataset_sample: [:private]
+    download_dataset_sample: [:private],
+    edit_access_group: [:private]
   )
 
   def edit_dataset(conn, %{"id" => id}) do
@@ -111,7 +115,7 @@ defmodule AndiWeb.EditController do
   end
 
   def edit_organization(conn, %{"id" => id}) do
-    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case Organizations.get(id) do
       nil ->
@@ -121,7 +125,43 @@ defmodule AndiWeb.EditController do
         |> render("404.html")
 
       org ->
-        live_render(conn, AndiWeb.EditOrganizationLiveView, session: %{"organization" => org, "is_curator" => is_curator})
+        live_render(conn, AndiWeb.EditOrganizationLiveView,
+          session: %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id}
+        )
+    end
+  end
+
+  def edit_ingestion(conn, %{"id" => id}) do
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    case Ingestions.get(id) do
+      nil ->
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+
+      ingestion ->
+        live_render(conn, AndiWeb.IngestionLiveView.EditIngestionLiveView,
+          session: %{"ingestion" => ingestion, "is_curator" => is_curator, "user_id" => user_id}
+        )
+    end
+  end
+
+  def edit_access_group(conn, %{"id" => id}) do
+    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    case AccessGroups.get(id) do
+      nil ->
+        conn
+        |> put_view(AndiWeb.ErrorView)
+        |> put_status(404)
+        |> render("404.html")
+
+      access_group ->
+        live_render(conn, AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView,
+          session: %{"access_group" => access_group, "is_curator" => is_curator}
+        )
     end
   end
 

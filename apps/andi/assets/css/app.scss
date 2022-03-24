@@ -143,6 +143,34 @@ body {
     min-width: 6.5rem;
 }
 
+.btn--delete {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: black;
+  background-color: white;
+  border: 1px solid black;
+  
+  min-width: 10rem;
+  min-height: 2rem;
+  line-height: 2rem;
+  font-size: 1.2rem;
+
+  .delete-icon {
+    height: 1.65rem;
+    width: 1.5rem;
+    margin-right: .3em;
+    vertical-align: sub;
+  }
+
+  &:hover {
+    background-color: $color-error;
+    color: white;
+    border: 1px solid $color-error;
+  }
+}
+
 .btn--test {
   font-size: 1rem;
 
@@ -284,17 +312,21 @@ body {
     align-items: center;
     font-size: 1.1rem;
 
-    .organization-link__text {
-        font-weight: bold;
-    }
-
     &:hover {
         cursor: pointer;
     }
 }
 
 .user-link {
-  @extend .organization-link
+    @extend .organization-link
+}
+
+.access-groups-link {
+    @extend .organization-link
+}
+
+.ingestions-link {
+    @extend .organization-link
 }
 
 .log-out-link {
@@ -313,8 +345,10 @@ body {
 }
 
 @import "./datasets.scss";
+@import "./access-groups.scss";
 @import "./edit.scss";
 @import "./data_dictionary_form.scss";
+@import "./ingestions.scss";
 @import "./upload_data_dictionary.scss";
 @import "./metadata_form.scss";
 @import "./url_form.scss";
@@ -323,3 +357,4 @@ body {
 @import "./users.scss";
 @import "./extract_steps.scss";
 @import "./user.scss";
+@import "./dataset-search.scss"

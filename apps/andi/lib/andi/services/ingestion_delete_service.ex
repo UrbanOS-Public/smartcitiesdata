@@ -12,7 +12,12 @@ defmodule Andi.Services.IngestionDelete do
   """
   @spec delete(term()) :: {:ok, SmartCity.Ingestion.t()} | {:error, any()} | {:not_found, any()}
   def delete(ingestion_id) do
+    delete(ingestion_id, :api)
+  end
+
+  def delete(ingestion_id, user_id) do
     with {:ok, ingestion} when not is_nil(ingestion) <- IngestionStore.get(ingestion_id),
+         _ <- Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_delete(), ingestion),
          :ok <- Brook.Event.send(@instance_name, ingestion_delete(), :andi, ingestion) do
       {:ok, ingestion}
     else

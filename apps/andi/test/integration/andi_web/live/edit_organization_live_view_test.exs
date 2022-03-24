@@ -226,6 +226,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       eventually(
         fn ->
           assert {:ok, nil} != OrgStore.get(smrt_org.id)
+          assert Andi.Schemas.AuditEvents.get_all_by_event_id(smrt_org.id) != []
         end,
         1000,
         30
@@ -274,7 +275,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
 
-      where(event: ["cancel-edit", "show-organizations", "show-datasets"])
+      where(event: ["cancel-edit", "show-organizations", "show-datasets", "show-access-groups"])
     end
   end
 

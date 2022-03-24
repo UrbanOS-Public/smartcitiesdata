@@ -80,6 +80,8 @@ defmodule AndiWeb.API.OrganizationController do
   end
 
   defp write_organization(org) do
+    Andi.Schemas.AuditEvents.log_audit_event(:api, organization_update(), org)
+
     case Brook.Event.send(@instance_name, organization_update(), :andi, org) do
       :ok ->
         :ok
@@ -136,7 +138,7 @@ defmodule AndiWeb.API.OrganizationController do
       true ->
         missing_user_ids =
           retrieved_users
-          |> Enum.filter(fn {id, user} -> user == nil end)
+          |> Enum.filter(fn {_id, user} -> user == nil end)
           |> Enum.map(fn {id, _user} -> id end)
 
         conn

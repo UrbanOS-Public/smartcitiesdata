@@ -5,10 +5,8 @@ defmodule Transformers.DateTime do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, :sourceField),
-         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, :sourceFormat),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, :targetField),
-         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, :targetFormat),
+    with {:ok, [source_field, source_format, target_field, target_format]} <-
+           validate(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime(payload_source_value, source_format, source_field),
@@ -20,6 +18,19 @@ defmodule Transformers.DateTime do
 
       nil_payload ->
         {:ok, nil_payload}
+    end
+  end
+
+  def validate(parameters) do
+    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
+         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, "sourceFormat"),
+         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
+         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, "targetFormat"),
+         :ok <- validate_datetime_format(source_format),
+         :ok <- validate_datetime_format(target_format) do
+      {:ok, [source_field, source_format, target_field, target_format]}
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -35,12 +46,21 @@ defmodule Transformers.DateTime do
     end
   end
 
+  defp validate_datetime_format(format) do
+    with :ok <- Timex.Format.DateTime.Formatter.validate(format) do
+      :ok
+    else
+      {:error, reason} ->
+        {:error, "DateTime format \"#{format}\" is invalid: #{reason}"}
+    end
+  end
+
   defp format_datetime(dateTime, format) do
     with {:ok, result} <- Timex.format(dateTime, format) do
       {:ok, result}
     else
       {:error, {:format, reason}} ->
-        {:error, "Unable to format datetime in format \"#{format}\": #{reason}"}
+        {:error, "Unable to format datetime \"#{dateTime}\" in format \"#{format}\": #{reason}"}
     end
   end
 end

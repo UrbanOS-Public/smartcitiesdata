@@ -5,17 +5,25 @@ defmodule Transformers.TypeConversion do
 
   @impl Transformation
   def transform(payload, params) do
-    with {:ok, field} <- FieldFetcher.fetch_parameter(params, :field),
-         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, :sourceType),
-         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, :targetType),
+    with {:ok, [field, source_type, target_type, conversion_function]} <- validate(params),
          {:ok, value} <- FieldFetcher.fetch_value(payload, field),
-         {:ok, conversion_function} <- pick_conversion(source_type, target_type),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
       parse_or_error(conversion_function, payload, field, value, target_type)
     else
       {:error, reason} -> {:error, reason}
       nil_payload -> {:ok, nil_payload}
+    end
+  end
+
+  def validate(params) do
+    with {:ok, field} <- FieldFetcher.fetch_parameter(params, "field"),
+         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, "sourceType"),
+         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, "targetType"),
+         {:ok, conversion_function} <- pick_conversion(source_type, target_type) do
+      {:ok, [field, source_type, target_type, conversion_function]}
+    else
+      {:error, reason} -> {:error, reason}
     end
   end
 

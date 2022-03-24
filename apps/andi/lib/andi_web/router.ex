@@ -53,7 +53,17 @@ defmodule AndiWeb.Router do
       layout: {AndiWeb.LayoutView, :app},
       session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
 
+    live "/access-groups", AccessGroupLiveView,
+      layout: {AndiWeb.LayoutView, :app},
+      session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
+
+    live "/ingestions", IngestionLiveView,
+      layout: {AndiWeb.LayoutView, :app},
+      session: {AndiWeb.Auth.TokenHandler.Plug, :current_resource, []}
+
     get "/datasets/:id", EditController, :edit_dataset
+    get "/access-groups/:id", EditController, :edit_access_group
+    get "/ingestions/:id", EditController, :edit_ingestion
     get "/organizations/:id", EditController, :edit_organization
     get "/datasets/:id/sample", EditController, :download_dataset_sample
     get "/user/:id", EditController, :edit_user

@@ -40,6 +40,7 @@ defmodule Andi.Services.UserOrganizationAssociateService do
 
   defp send_event(org_id, user) do
     {:ok, event_data} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org_id, email: user.email})
+    Andi.Schemas.AuditEvents.log_audit_event(:api, user_organization_associate(), event_data)
     Brook.Event.send(:andi, user_organization_associate(), :andi, event_data)
   end
 

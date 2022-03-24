@@ -1,0 +1,76 @@
+.access-groups-view {
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: 100%;
+  margin: 1em;
+}
+
+.access-groups-title {
+  display: inline-flex;
+  height: 3.5rem;
+  border-bottom: 1px solid $color-form-border;
+  margin-left: 1rem;
+  margin-right: 2rem;
+}
+
+.access-groups-index {
+  padding: 1rem 3rem;
+}
+
+.access-groups-index__title {
+  font-size: 1.5rem;
+}
+
+.access-groups-index__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.access-groups-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.access-groups-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.access-groups-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.access-groups-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.access-groups-table__status-cell {
+  width: 10%;
+}
+
+.btn--add-dataset-search {
+    min-width: 100px;
+    height: 2.3rem;
+    background-color: #27cb00;
+    margin: 20px 0px;
+    padding: 0 50px;
+
+    &:hover {
+        background-color: #2de000;
+    }
+}
+
+.add-dataset-modal--visible {
+    @include modal-wrapper();
+}
+
+.add-dataset-modal--hidden {
+    display: none;
+}

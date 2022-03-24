@@ -8,9 +8,9 @@ defmodule Transformers.PerformTest do
     payload = %{"name" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_name_extractor_function =
@@ -26,15 +26,15 @@ defmodule Transformers.PerformTest do
     payload = %{"name" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_letter_extractor = %{
-      sourceField: "firstName",
-      targetField: "firstLetter",
-      regex: "^(\\w)"
+      "sourceField" => "firstName",
+      "targetField" => "firstLetter",
+      "regex" => "^(\\w)"
     }
 
     first_name_extractor_function =
@@ -60,15 +60,15 @@ defmodule Transformers.PerformTest do
     payload = %{"phone" => "elizabeth bennet"}
 
     first_name_extractor_parameters = %{
-      sourceField: "name",
-      targetField: "firstName",
-      regex: "^(\\w+)"
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
     }
 
     first_letter_extractor = %{
-      sourceField: "firstName",
-      targetField: "firstLetter",
-      regex: "^(\\w)"
+      "sourceField" => "firstName",
+      "targetField" => "firstLetter",
+      "regex" => "^(\\w)"
     }
 
     first_name_extractor_function =
@@ -87,13 +87,13 @@ defmodule Transformers.PerformTest do
   end
 
   test "when provided an empty opsList, the initial payload is returned" do
-    payload = %{name: "ben"}
+    payload = %{"name" => "ben"}
     {:ok, result} = Transformers.perform([], payload)
     assert result == payload
   end
 
   test "what happens when opsList includes an error" do
-    payload = %{name: "ben"}
+    payload = %{"name" => "ben"}
     transformations = [{:error, "kaboom"}]
     result = Transformers.perform(transformations, payload)
     assert :error == elem(result, 0)

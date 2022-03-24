@@ -8,6 +8,7 @@ defmodule Andi.Schemas.User do
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.AccessGroup
   import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -17,6 +18,7 @@ defmodule Andi.Schemas.User do
     field(:email, :string)
     has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :owner_id)
     many_to_many(:organizations, Organization, join_through: Andi.Schemas.UserOrganization, on_replace: :delete)
+    many_to_many(:access_groups, AccessGroup, join_through: Andi.Schemas.UserAccessGroup, on_replace: :delete)
   end
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)

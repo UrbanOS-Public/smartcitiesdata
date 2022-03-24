@@ -11,10 +11,13 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Organizations
 
+  import SmartCity.Event
+
   @instance_name Andi.instance_name()
 
   setup do
     allow(OrgStore.get(any()), return: {:ok, nil}, meck_options: [:passthrough])
+    allow(Andi.Schemas.AuditEvents.log_audit_event(any(), any(), any()), return: %{})
 
     request = %{
       "orgName" => "myOrg",
@@ -71,6 +74,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     test "writes organization to event stream", %{message: _message} do
       assert_called(Brook.Event.send(@instance_name, any(), :andi, any()), once())
+    end
+
+    test "writes event to audit_event table", %{message: _message} do
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, organization_update(), any()), once())
     end
   end
 
@@ -233,6 +240,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
       assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_1), once())
       assert_called(Brook.Event.send(@instance_name, any(), :andi, expected_2), once())
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, user_organization_associate(), expected_1), once())
+      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, user_organization_associate(), expected_2), once())
     end
 
     test "returns 400 if a user is not found", %{conn: conn, org: org, users: users} do

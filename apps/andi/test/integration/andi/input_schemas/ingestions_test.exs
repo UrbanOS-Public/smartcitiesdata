@@ -40,11 +40,17 @@ defmodule Andi.InputSchemas.IngestionsTest do
       ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
       {:ok,
-       %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} =
-         _andi_ingestion} = Ingestions.update(ingestion)
+       %{
+         id: ingestion_id,
+         name: name,
+         targetDataset: target_dataset,
+         extractSteps: [%{id: extract_steps_id} | _],
+         schema: [%{id: schema_id} | _]
+       } = _andi_ingestion} = Ingestions.update(ingestion)
 
       assert %{
                id: ^ingestion_id,
+               name: ^name,
                targetDataset: ^target_dataset,
                extractSteps: [%{id: ^extract_steps_id} | _],
                schema: [%{id: ^schema_id} | _]
@@ -53,6 +59,15 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
     test "given a non-existing ingestion, it returns nil" do
       assert nil == Ingestions.get(UUID.uuid4())
+    end
+  end
+
+  describe "create/0" do
+    test "given no parameters, creates a blank Andi ingestion with a random UUID" do
+      new_ingestion = Ingestions.create()
+      assert is_binary(new_ingestion.id)
+      assert new_ingestion.targetDataset == nil
+      assert Ingestions.get(new_ingestion.id).id == new_ingestion.id
     end
   end
 
@@ -89,7 +104,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert {:ok, _} = Ingestions.update(ingestion)
     end
 
-    test "given a newly seen smart city ingestion, does not it into an Andi ingestion unless it is associated with a dataset" do
+    test "given a newly seen smart city ingestion, does not save it into an Andi ingestion unless it is associated with a dataset" do
       ingestion = TDG.create_ingestion(%{})
 
       assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
@@ -128,7 +143,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
           targetDataset: dataset.id,
           extractSteps: [
             %{
-              type: "auth",
+              type: "s3",
               context: %{
                 url: "123.com",
                 body: "",

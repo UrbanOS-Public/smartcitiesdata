@@ -1,13 +1,9 @@
 defmodule Andi.InputSchemas.Ingestions do
   @moduledoc false
-  alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestion
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
-  alias Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.ExtractStep
 
   use Properties, otp_app: :andi
 
@@ -49,6 +45,24 @@ defmodule Andi.InputSchemas.Ingestions do
     new_ingestion
   end
 
+  def create() do
+    new_ingestion_id = UUID.uuid4()
+    current_date = Date.utc_today()
+    new_ingestion_title = "New Ingestion - #{current_date}"
+
+    new_changeset =
+      Ingestion.changeset_for_draft(
+        %Ingestion{},
+        %{
+          id: new_ingestion_id,
+          name: new_ingestion_title
+        }
+      )
+
+    {:ok, new_ingestion} = save(new_changeset)
+    new_ingestion
+  end
+
   def update(%SmartCity.Ingestion{} = smrt_ingestion) do
     andi_ingestion =
       case get(smrt_ingestion.id) do
@@ -59,8 +73,8 @@ defmodule Andi.InputSchemas.Ingestions do
     changes = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
 
     andi_ingestion
-    |> Andi.Repo.preload([:extractSteps, :schema])
-    |> Ingestion.changeset_for_draft(changes)
+    |> Andi.Repo.preload([:extractSteps, :schema, :transformations])
+    |> Ingestion.changeset(changes)
     |> save()
   end
 

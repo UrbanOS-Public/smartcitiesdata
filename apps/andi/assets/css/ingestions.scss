@@ -1,0 +1,55 @@
+.ingestions-view {
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: 100%;
+  margin: 1em;
+}
+
+.ingestions-index {
+  padding: 1rem 3rem;
+}
+
+.ingestions-index__title {
+  font-size: 1.5rem;
+}
+
+.ingestions-index__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ingestions-table {
+  width: 100%;
+  border: $table-border;
+  border-collapse: collapse;
+}
+
+.ingestions-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.ingestions-table__th {
+  padding: $table-padding;
+  border-right: $table-border;
+  text-align: left;
+  background: $color-table-header;
+}
+
+.ingestions-table__cell {
+  padding: $table-padding;
+  border-right: $table-border;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.ingestions-table__status-cell {
+  width: 10%;
+}
+
+.edit-ingestion-title {
+  display: inline-flex;
+  height: 3.5rem;
+  border-bottom: 1px solid $color-form-border;
+  margin-right: 2rem;
+}
