@@ -20,7 +20,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   alias AndiWeb.Helpers.ExtractStepHelpers
 
   def mount(_params, %{"ingestion" => ingestion}, socket) do
-    ingestion |> IO.inspect(label: "ingestion on mount:")
     extract_steps = Map.get(ingestion, :extractSteps)
 
     extract_step_changesets =
@@ -189,7 +188,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   def handle_event("add-extract-step", _, socket) do
     step_type = socket.assigns.new_step_type
     ingestion_id = socket.assigns.ingestion_id
-    ingestion_id |> IO.inspect(label: "ingestion_id")
     new_step_changes = %{type: step_type, context: %{}, ingestion_id: ingestion_id}
 
     {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
@@ -199,7 +197,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
     all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()
-    all_steps_for_ingestion |> IO.inspect(label: "all_steps_for_ingestion")
 
     {:noreply,
      assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
