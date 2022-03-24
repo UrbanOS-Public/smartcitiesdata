@@ -122,19 +122,12 @@
 }
 
 .modal-action-text {
+  color: #57ACE5;
   font-size: 1.125rem;
   font-weight: normal;
   &:hover {
     cursor: pointer;
     }
-}
-
-.blue-text {
-    color: #57ACE5;
-}
-
-.black-text {
-  color: black;
 }
 
 .save-search {
@@ -143,13 +136,17 @@
 
 .selected-datasets-from-search {
     display: flex;
-    width: 50%;
-    min-height: 44px;
+    flex-direction: columns;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 75%;
+    max-height: 9rem;
+    min-height: 2.75rem;
     margin: 0.5rem 0rem;
     border: 1px solid $search-unfocused;
     line-height: 1;
-    padding: 0 3.5px;
-    overflow-x: auto;
+    padding: 3.5px;
+    overflow-y: auto;
     white-space: nowrap;
 }
 
@@ -162,7 +159,7 @@
     background: #45CB01;
     border-radius: 5px;
     color: white;
-    margin: 7px 3.5px;
+    margin: 3.5px;
 }
 
 .wide-column {

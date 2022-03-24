@@ -128,7 +128,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       html = render_click(select_dataset)
 
-      assert get_text(html, ".search-table") =~ "Selected"
+      assert get_text(html, ".search-table") =~ "Remove"
     end
 
     test "a selected dataset persists when the search input changes", %{curator_conn: conn} do
@@ -151,7 +151,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
     end
 
-    test "a dataset can be unselected", %{curator_conn: conn} do
+    test "a dataset can be removed", %{curator_conn: conn} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
 
       access_group = create_access_group()
@@ -164,11 +164,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
-      assert get_text(html, ".search-table") =~ "Selected"
+      assert get_text(html, ".search-table") =~ "Remove"
 
-      deselect_dataset = element(view, ".modal-action-text", "Selected")
-      html = render_click(deselect_dataset)
-      refute get_text(html, ".search-table") =~ "Selected"
+      remove_dataset = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_dataset)
+      refute get_text(html, ".search-table") =~ "Remove"
     end
 
     test "a selected dataset appears in the selected dataset list", %{curator_conn: conn} do
@@ -202,13 +202,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
-      assert get_text(html, ".search-table") =~ "Selected"
+      assert get_text(html, ".search-table") =~ "Remove"
       assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
 
       deselect_dataset = element(view, ".remove-selected-dataset")
       html = render_click(deselect_dataset)
 
-      refute get_text(html, ".search-table") =~ "Selected"
+      refute get_text(html, ".search-table") =~ "Remove"
       refute get_text(html, ".selected-dataset-from-search") =~ dataset_a.business.dataTitle
     end
   end

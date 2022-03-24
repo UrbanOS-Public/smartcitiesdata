@@ -53,7 +53,7 @@ defmodule AndiWeb.Search.AddDatasetModal do
                   <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                   <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                   <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                  <td class="<%= "search-table__cell search-table__cell--break modal-action-text #{pick_text_color(dataset.id, @selected_datasets)} thin-column" %>" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
                 </tr>
               <% end %>
             <% end %>
@@ -93,16 +93,8 @@ defmodule AndiWeb.Search.AddDatasetModal do
 
   def selected_value(dataset_id, selected_datasets) do
     case dataset_id in selected_datasets do
-      true -> "Selected"
+      true -> "Remove"
       false -> "Select"
-    end
-  end
-
-  def pick_text_color(dataset_id, selected_datasets) do
-    if selected_value(dataset_id, selected_datasets) == "Selected" do
-      "black-text"
-    else
-      "blue-text"
     end
   end
 end
