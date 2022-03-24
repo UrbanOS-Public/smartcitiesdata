@@ -93,7 +93,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("search", %{"search-value" => search_value}, socket) do
     datasets = query_on_search_change(search_value, socket)
-    {:noreply, assign(socket, add_dataset_modal_visibility: "visible", datasets: datasets, selected_datasets: socket.assigns.selected_datasets)}
+
+    {:noreply,
+     assign(socket, add_dataset_modal_visibility: "visible", datasets: datasets, selected_datasets: socket.assigns.selected_datasets)}
   end
 
   def handle_event("select-search", %{"id" => id}, socket) do
