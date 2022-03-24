@@ -122,19 +122,19 @@
 }
 
 .modal-action-text {
-  color: #57ACE5;
   font-size: 1.125rem;
   font-weight: normal;
-  &:visited {
-      color: black;
-  }
   &:hover {
     cursor: pointer;
     }
 }
 
-.modal-action-text:visited {
-    color: black;
+.blue-text {
+    color: #57ACE5;
+}
+
+.black-text {
+  color: black;
 }
 
 .save-search {
