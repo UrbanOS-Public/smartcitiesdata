@@ -93,6 +93,7 @@
 .search-table {
     width: 100%;
     border: $table-border;
+    border-top: 0;
     border-collapse: separate;
     border-spacing: 0;
     max-height: 200px;
