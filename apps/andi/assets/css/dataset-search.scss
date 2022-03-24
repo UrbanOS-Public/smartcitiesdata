@@ -1,13 +1,7 @@
-.search-view {
-    flex: 1;
-    background: $color-content-background;
-    box-shadow: $box-shadow;
-    height: 100%;
-    margin: 1em;
-}
-
 .dataset-search-modal {
     width: 80%;
+    max-height: 90%;
+    overflow-y: auto;
 }
 
 .dataset-modal-search-table {
