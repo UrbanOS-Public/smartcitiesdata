@@ -13,6 +13,7 @@
 .dataset-modal-search-table {
     max-height: 250px;
     overflow-y: auto;
+    margin: 0.5rem 0rem;
 }
 
 .datasets-modal-helper-text {
@@ -92,8 +93,8 @@
 .search-table {
     width: 100%;
     border: $table-border;
-    border-collapse: collapse;
-    margin: 0.5rem 0rem;
+    border-collapse: separate;
+    border-spacing: 0;
     max-height: 200px;
 }
 
@@ -103,7 +104,6 @@
 
 .search-table__th {
     padding: $table-padding;
-    border-right: $table-border;
     border-top: $table-border;
     text-align: left;
     background: $color-table-header;
@@ -113,7 +113,6 @@
 
 .search-table__cell {
     padding: $table-padding;
-    border-right: $table-border;
     height: $table-height;
     max-width: 30rem;
 }
