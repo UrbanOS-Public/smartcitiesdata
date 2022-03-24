@@ -36,28 +36,39 @@ defmodule AndiWeb.Search.AddDatasetModal do
 
       <div class="dataset-modal-search-results">
         <p class="datasets-modal-section-header-text">Results</p>
-        <table class="search-table">
-          <thead>
-            <th class="search-table__th search-table__cell">Dataset</th>
-            <th class="search-table__th search-table__cell">Organization</th>
-            <th class="search-table__th search-table__cell">Keywords</th>
-            <th class="search-table__th search-table__cell">Action</th>
-          </thead>
+        <div class="dataset-modal-search-table">
+          <table class="search-table">
+            <thead>
+              <th class="search-table__th search-table__cell wide-column">Dataset</th>
+              <th class="search-table__th search-table__cell wide-column">Organization</th>
+              <th class="search-table__th search-table__cell wide-column">Keywords</th>
+              <th class="search-table__th search-table__cell thin-column">Action</th>
+            </thead>
 
-          <%= if @datasets == [] do %>
-            <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
-          <% else %>
-            <%= for dataset <- @datasets do %>
-            <tr class="search-table__tr">
-                <td class="search-table__cell search-table__cell--break search-table__data-title-cell"><%= dataset.business.dataTitle %></td>
-                <td class="search-table__cell search-table__cell--break"><%= dataset.business.orgTitle %></td>
-                <td class="search-table__cell search-table__cell--break"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="search-table__cell search-table__cell--break modal-action-text">Select</td>
-              </tr>
+            <%= if @datasets == [] do %>
+              <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
+            <% else %>
+              <%= for dataset <- @datasets do %>
+              <tr class="search-table__tr">
+                  <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
+                  <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
+                  <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                </tr>
+              <% end %>
             <% end %>
-          <% end %>
-        </table>
+          </table>
+        </div>
       </div>
+    </div>
+
+    <div class="dataset-search-selected-datasets">
+        <p class="datasets-modal-section-header-text">Selected Datasets</p>
+        <div class="selected-datasets-from-search">
+          <%= for dataset <- selected_datasets(@datasets, @selected_datasets) do %>
+            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
+          <% end %>
+        </div>
     </div>
 
     <hr class="datasets-modal-divider">
@@ -69,5 +80,21 @@ defmodule AndiWeb.Search.AddDatasetModal do
       </div>
     </div>
     """
+  end
+
+  def selected_datasets(datasets, selected_datasets) do
+    Enum.map(selected_datasets, fn selected_dataset ->
+      case Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end) do
+        nil -> Andi.InputSchemas.Datasets.get(selected_dataset)
+        result -> result
+      end
+    end)
+  end
+
+  def selected_value(dataset_id, selected_datasets) do
+    case dataset_id in selected_datasets do
+      true -> "Remove"
+      false -> "Select"
+    end
   end
 end

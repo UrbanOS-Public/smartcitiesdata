@@ -1,13 +1,13 @@
-.search-view {
-    flex: 1;
-    background: $color-content-background;
-    box-shadow: $box-shadow;
-    height: 100%;
-    margin: 1em;
-}
-
 .dataset-search-modal {
     width: 80%;
+    max-height: 90%;
+    overflow-y: auto;
+}
+
+.dataset-modal-search-table {
+    max-height: 250px;
+    overflow-y: auto;
+    margin: 0.5rem 0rem;
 }
 
 .datasets-modal-helper-text {
@@ -87,8 +87,10 @@
 .search-table {
     width: 100%;
     border: $table-border;
-    border-collapse: collapse;
-    margin: 0.5rem 0rem;
+    border-top: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    max-height: 200px;
 }
 
 .search-table__tr:nth-child(odd) {
@@ -97,14 +99,15 @@
 
 .search-table__th {
     padding: $table-padding;
-    border-right: $table-border;
+    border-top: $table-border;
     text-align: left;
     background: $color-table-header;
+    position: sticky;
+    top: 0;
 }
 
 .search-table__cell {
     padding: $table-padding;
-    border-right: $table-border;
     height: $table-height;
     max-width: 30rem;
 }
@@ -117,8 +120,58 @@
   color: #57ACE5;
   font-size: 1.125rem;
   font-weight: normal;
+  &:hover {
+    cursor: pointer;
+    }
 }
 
 .save-search {
     float: right;
+}
+
+.selected-datasets-from-search {
+    display: flex;
+    flex-direction: columns;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    width: 75%;
+    max-height: 9rem;
+    min-height: 2.75rem;
+    margin: 0.5rem 0rem;
+    border: 1px solid $search-unfocused;
+    line-height: 1;
+    padding: 3.5px;
+    overflow-y: auto;
+    white-space: nowrap;
+}
+
+.selected-dataset-from-search {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 10px;
+    background: #45CB01;
+    border-radius: 5px;
+    color: white;
+    margin: 3.5px;
+}
+
+.wide-column {
+  width: 30%
+}
+
+.thin-column {
+  width: 10%
+}
+
+.selected-dataset-text {
+  padding: 0 10px 0 0;
+}
+
+.remove-selected-dataset {
+  font-size: 20px;
+  &:hover {
+    cursor: pointer;
+    }
 }
