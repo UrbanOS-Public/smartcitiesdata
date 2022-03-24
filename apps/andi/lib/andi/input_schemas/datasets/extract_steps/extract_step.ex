@@ -9,7 +9,7 @@ defmodule Andi.InputSchemas.Datasets.ExtractStep do
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Ingestion
 
-  @cast_fields [:id, :context, :type, :technical_id, :sequence]
+  @cast_fields [:id, :context, :type, :technical_id, :sequence, :ingestion_id]
   @required_fields [:type, :context]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
