@@ -32,30 +32,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
           <%= text_input(form, :name, class: "input") %>
         </div>
 
-        <div class="dataset-modal-search-results">
-          <h2 class="component-title-text">Datasets Assigned to This Access Group</h2>
-          <div class="access-groups-dataset-table-container">
-            <table class="access-groups-dataset-table">
-              <thead>
-                <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Dataset</th>
-                <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Organization</th>
-                <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Keywords</th>
-              </thead>
-
-              <%= if @selected_datasets == [] and @associated_datasets == [] do %>
-                <tr><td class="access-groups-dataset-table__cell" colspan="100%">No Associated Datasets</td></tr>
-              <% else %>
-                <%= for dataset <- datasets_to_display(@associated_datasets, @selected_datasets) do %>
-                <tr class="access-groups-dataset-table__tr">
-                    <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break access-groups-dataset-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
-                    <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
-                    <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                  </tr>
-                <% end %>
-              <% end %>
-            </table>
-          </div>
-        </div>
+        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, associated_datasets: @associated_datasets, selected_datasets: @selected_datasets) %>
 
         <div class="access-group-form__datasets">
           <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">+ Add Dataset</button>
@@ -76,13 +53,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     """
   end
 
-  def mount(_params, %{"is_curator" => is_curator, "access_group" => access_group} = _session, socket) do
+  def mount(_params, %{"is_curator" => is_curator, "access_group" => access_group, "user_id" => user_id} = _session, socket) do
     default_changeset = AccessGroup.changeset(access_group, %{}) |> Map.put(:errors, [])
     access_group_with_datasets = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id) |> Andi.Repo.preload(:datasets)
 
     {:ok,
      assign(socket,
        is_curator: is_curator,
+       user_id: user_id,
        access_group: access_group,
        changeset: default_changeset,
        add_dataset_modal_visibility: "hidden",
@@ -111,7 +89,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("access-group-form_save", _, socket) do
-    associate_datasets_with_access_group(socket.assigns.selected_datasets, socket.assigns.access_group.id)
+    associate_datasets_with_access_group(socket.assigns.selected_datasets, socket.assigns.access_group.id, socket.assigns.user_id)
 
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
@@ -187,18 +165,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     |> Andi.Repo.all()
   end
 
-  def datasets_to_display(associated_datasets, selected_dataset_ids) do
-    associated_dataset_ids = Enum.map(associated_datasets, fn associated_dataset -> associated_dataset.id end)
-    datasets_to_display = Enum.uniq(associated_dataset_ids ++ selected_dataset_ids)
-    Enum.map(datasets_to_display, fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
-  end
-
-  def associate_datasets_with_access_group(selected_datasets, access_group_id) do
+  def associate_datasets_with_access_group(selected_datasets, access_group_id, user_id) do
     Enum.map(selected_datasets, fn selected_dataset ->
       {:ok, dataset_access_group_association} =
         SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: selected_dataset, access_group_id: access_group_id})
 
-      # Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.signed_in_user_id, dataset_access_group_associate(), dataset_access_group_association)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_associate(), dataset_access_group_association)
       Brook.Event.send(:andi, dataset_access_group_associate(), :andi, dataset_access_group_association)
     end)
   end
