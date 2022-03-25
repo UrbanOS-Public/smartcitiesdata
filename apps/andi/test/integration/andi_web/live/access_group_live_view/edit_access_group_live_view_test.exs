@@ -22,6 +22,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   alias Andi.InputSchemas.AccessGroup
   alias Andi.InputSchemas.AccessGroups
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
 
   @instance_name Andi.instance_name()
 
@@ -275,6 +276,86 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
 
       assert get_text(html, ".search-table") =~ "No Matching Datasets"
+    end
+  end
+
+  describe "save a dataset search" do
+    test "closes the search modal when save is clicked", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      # add a new dataset to the access group
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      # save the datasets to the access group
+      save_button = element(view, ".save-search", "Save")
+      render_click(save_button)
+
+      # verify that the search modal is closed
+      refute Enum.empty?(find_elements(html, ".add-dataset-modal--hidden"))
+    end
+
+    test "saves the results of the search to the dataset table", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      # add a new dataset to the access group
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      # search for the dataset by name and select it
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      select_dataset = element(view, ".modal-action-text", "Select")
+      html = render_click(select_dataset)
+      assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
+
+      # save the search
+      save_button = element(view, ".save-search", "Save")
+      html = render_click(save_button)
+
+      # verfy that the selected datasets appear in the datasets table
+      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.orgTitle
+      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.dataTitle
+    end
+  end
+
+  describe "emits a dataset_access_group_associate event" do
+    test "when the access group is saved, the association is updated", %{curator_conn: conn} do
+      {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
+      dataset_id = dataset_a.id
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      # add a new dataset to the access group
+      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      render_click(add_dataset_button)
+
+      # search for the dataset by name and select it
+      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      select_dataset = element(view, ".modal-action-text", "Select")
+      html = render_click(select_dataset)
+      assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
+
+      # save the search
+      save_button = element(view, ".save-search", "Save")
+      html = render_click(save_button)
+
+      # verfy that the selected datasets appear in the datasets table
+      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.orgTitle
+      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.dataTitle
+
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets) |> IO.inspect(label: "here")
+        assert [%Dataset{id: ^dataset_id}] = access_group.datasets
+      end)
     end
   end
 
