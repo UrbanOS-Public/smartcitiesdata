@@ -36,6 +36,9 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -50,6 +53,8 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -74,6 +79,8 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
 
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 

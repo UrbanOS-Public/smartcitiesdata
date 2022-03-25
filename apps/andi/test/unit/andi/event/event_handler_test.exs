@@ -4,8 +4,7 @@ defmodule Andi.Event.EventHandlerTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
-  import SmartCity.Event,
-    only: [dataset_delete: 0, dataset_harvest_start: 0, organization_update: 0, ingestion_delete: 0, ingestion_update: 0]
+  import SmartCity.Event
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
@@ -17,8 +16,35 @@ defmodule Andi.Event.EventHandlerTest do
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
+  alias SmartCity.DatasetAccessGroupRelation
 
   @instance_name Andi.instance_name()
+
+  test "should successfully handle a dataset_access_group_associate() event" do
+    dataset_id = UUID.uuid4()
+    access_group_id = UUID.uuid4()
+    {:ok, assoc} = DatasetAccessGroupRelation.new(%{dataset_id: dataset_id, access_group_id: access_group_id})
+    allow(Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset_id), return: :ok)
+    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+    event = Brook.Event.new(type: dataset_access_group_associate(), data: assoc, author: :author)
+    EventHandler.handle_event(event)
+
+    assert_called(Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset_id))
+  end
+
+  test "should successfully handle a dataset_access_group_disassociate() event" do
+    dataset_id = UUID.uuid4()
+    access_group_id = UUID.uuid4()
+    {:ok, assoc} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset_id, access_group_id: access_group_id})
+    allow(Andi.InputSchemas.Datasets.Dataset.disassociate_with_access_group(access_group_id, dataset_id), return: :ok)
+    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+    Brook.Event.new(type: dataset_access_group_disassociate(), data: assoc, author: :author)
+    |> EventHandler.handle_event()
+
+    assert_called(Andi.InputSchemas.Datasets.Dataset.disassociate_with_access_group(access_group_id, dataset_id))
+  end
 
   test "should delete the view state and the postgres entry when ingestion delete event is called" do
     ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
