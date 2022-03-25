@@ -379,6 +379,33 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
   end
 
+  test "dissociates dataset after removing from current datasets", %{curator_conn: conn} do
+    access_group = create_access_group()
+    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "dissociate_org"}) |> Datasets.update()
+    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+    dataset_id = dataset.id
+    eventually(fn ->
+      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+      assert [%Dataset{id: dataset_id}] = access_group.datasets
+    end)
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    remove_action = element(view, ".modal-action-text", "Remove")
+    html = render_click(remove_action)
+
+    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+
+    # save the changes to the access group
+    save_button = element(view, ".save-edit", "Save")
+    html = render_click(save_button)
+
+    eventually(fn ->
+      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+      assert [] = access_group.datasets
+    end)
+  end
+
   defp create_access_group() do
     uuid = UUID.uuid4()
     access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})

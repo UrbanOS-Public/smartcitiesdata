@@ -61,7 +61,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
      assign(socket,
        is_curator: is_curator,
        user_id: user_id,
-       access_group: access_group,
+       access_group: access_group_with_datasets, # TODO check if this has other consequences
        changeset: default_changeset,
        add_dataset_modal_visibility: "hidden",
        datasets: [],
@@ -90,6 +90,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("access-group-form_save", _, socket) do
     associate_datasets_with_access_group(socket.assigns.selected_datasets, socket.assigns.access_group.id, socket.assigns.user_id)
+    dissociate_datasets_with_access_group(socket.assigns.associated_datasets, socket.assigns.access_group, socket.assigns.user_id)
 
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
@@ -126,20 +127,33 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   defp update_selection(id, socket) do
+    # TODO Tidy looking code...which breaks the functionality around adding datasets from the search modal when the dataset is already associated with the access group. I want to write a test for that. 
     cond do
-      id in socket.assigns.selected_datasets ->
-        selected_datasets = List.delete(socket.assigns.selected_datasets, id)
-        {:noreply, assign(socket, selected_datasets: selected_datasets)}
-
-      id in Enum.map(socket.assigns.associated_datasets, fn dataset -> dataset.id end) ->
-        found_dataset_index = Enum.find_index(socket.assigns.associated_datasets, fn dataset -> dataset.id == id end)
-        associated_datasets = List.delete_at(socket.assigns.associated_datasets, found_dataset_index)
-        {:noreply, assign(socket, associated_datasets: associated_datasets)}
-
-      true ->
-        selected_datasets = [id | socket.assigns.selected_datasets]
-        {:noreply, assign(socket, selected_datasets: selected_datasets)}
+      id in socket.assigns.selected_datasets -> remove_from_selected_datasets(id, socket)
+      id in associated_datasets_ids(socket) -> remove_from_associated_datasets(id, socket)
+      true -> add_to_selected_datasets(id, socket)
     end
+  end
+
+  defp associated_datasets_ids(socket) do
+    Enum.map(socket.assigns.associated_datasets, fn dataset -> dataset.id end)
+  end
+
+  defp remove_from_selected_datasets(id, socket) do
+    selected_datasets = List.delete(socket.assigns.selected_datasets, id)
+    {:noreply, assign(socket, selected_datasets: selected_datasets)}
+  end
+
+  defp add_to_selected_datasets(id, socket) do
+    selected_datasets = [id | socket.assigns.selected_datasets]
+    {:noreply, assign(socket, selected_datasets: selected_datasets)}
+  end
+
+  defp remove_from_associated_datasets(id, socket) do
+    # TODO test that this works fine when many deletes happen quickly, trying to delete by a matching dataset wasn't deleting successfully for some reason
+    found_dataset_index = Enum.find_index(socket.assigns.associated_datasets, fn dataset -> dataset.id == id end)
+    associated_datasets = List.delete_at(socket.assigns.associated_datasets, found_dataset_index)
+    {:noreply, assign(socket, associated_datasets: associated_datasets)}
   end
 
   defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
@@ -177,6 +191,17 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_associate(), dataset_access_group_association)
       Brook.Event.send(:andi, dataset_access_group_associate(), :andi, dataset_access_group_association)
+    end)
+  end
+
+  def dissociate_datasets_with_access_group(associated_datasets, access_group, user_id) do
+    Enum.filter(access_group.datasets, fn current_dataset -> current_dataset not in associated_datasets end)
+    |> Enum.map(fn removed_dataset ->
+      {:ok, dataset_access_group_disassociation} =
+        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: removed_dataset.id, access_group_id: access_group.id})
+
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_disassociate(), dataset_access_group_disassociation)
+      Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, dataset_access_group_disassociation)
     end)
   end
 end
