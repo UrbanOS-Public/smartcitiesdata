@@ -273,16 +273,17 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
   end
 
-  # def handle_info(
-  #       %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},
-  #       %{assigns: %{dataset_id: dataset_id}} = socket
-  #     ) do
-  #   {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
-  # end
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
 
-  # def handle_info(%{topic: "toggle-visibility"}, socket) do
-  #   {:noreply, socket}
-  # end
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
+
+    {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
+  end
 
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},

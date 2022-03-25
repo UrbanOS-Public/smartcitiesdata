@@ -289,6 +289,22 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
+  test "clicking the edit button reveals the step contents", %{conn: conn, andi_ingestion: andi_ingestion} do
+    {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    html = render(extract_steps_form_view)
+
+    assert not Enum.empty?(find_elements(html, ".component-edit-section--collapsed"))
+
+    html = render_click(extract_steps_form_view, "toggle-component-visibility")
+
+    assert not Enum.empty?(find_elements(html, ".component-edit-section--expanded"))
+
+    html = render_click(extract_steps_form_view, "toggle-component-visibility")
+
+    assert not Enum.empty?(find_elements(html, ".component-edit-section--collapsed"))
+  end
+
   defp create_ingestion_with_dataset(extract_steps) do
     ingestion = Ingestions.create()
     {:ok, andi_ingestion} = Ingestions.update(Map.merge(ingestion, %{extractSteps: extract_steps}))
