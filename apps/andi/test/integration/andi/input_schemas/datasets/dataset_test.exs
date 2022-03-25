@@ -1,4 +1,4 @@
-defmodule Andi.Schemas.UserTest do
+defmodule Andi.InputSchemas.Datasets.DatasetTest do
   use ExUnit.Case
   use Andi.DataCase
 
