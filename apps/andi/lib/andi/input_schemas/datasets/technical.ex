@@ -196,8 +196,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   defp validate_extract_steps(changeset) do
     extract_steps = get_field(changeset, :extractSteps)
 
-    "YEP" |> IO.inspect(label: "This Validation Occurs")
-
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
       true -> add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")
       false -> changeset

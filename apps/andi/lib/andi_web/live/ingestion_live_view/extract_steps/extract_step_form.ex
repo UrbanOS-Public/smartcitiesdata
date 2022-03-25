@@ -194,7 +194,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
     {:ok, _} = ExtractSteps.update(new_extract_step)
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
-    IO.inspect(new_extract_step, label: "new_extract_step")
     updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
 
     all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()

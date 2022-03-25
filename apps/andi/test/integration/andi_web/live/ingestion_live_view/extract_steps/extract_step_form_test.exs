@@ -8,7 +8,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   use Properties, otp_app: :andi
 
   @moduletag shared_data_connection: true
-  @moduletag :skip
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
@@ -247,7 +246,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   #   where(extract_steps: [nil, []])
   # end
 
-  # # TODO: We don't really need a whole dataset for every test
   # test "extract steps without a trailing http or s3 step are invalid", %{conn: conn} do
   #   andi_ingestion = create_ingestion_with_dataset([%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}])
 
@@ -295,14 +293,13 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   #   assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   # end
 
+  # TODO: We don't really need a new dataset for every test. Just new ingestions for one dataset.
   defp create_ingestion_with_dataset(extract_steps) do
     smrt_dataset = TDG.create_dataset(%{})
-    smrt_ingestion = TDG.create_ingestion(%{targetDataset: smrt_dataset.id, extractSteps: extract_steps})
+    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 
-    {:ok, _andi_dataset} = Datasets.update(smrt_dataset)
-    # TODO: Answer. Try .create() with the dataset ID. That should fix this.
-    # That's what the "Create" ingestion button on the ingestion live view does
-    {:ok, andi_ingestion} = Ingestions.update(smrt_ingestion)
+    ingestion = Ingestions.create(smrt_dataset.id)
+    {:ok, andi_ingestion} = Ingestions.update(Map.merge(ingestion, %{extractSteps: extract_steps}))
 
     andi_ingestion
   end
