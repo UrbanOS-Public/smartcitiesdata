@@ -74,7 +74,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  @tag :skip
   test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
     extract_steps = []
     andi_ingestion = create_ingestion_with_dataset(extract_steps)

@@ -31,7 +31,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           <span class="delete-icon material-icons">delete_outline</span>
           DELETE
         </button>
-        <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save</button>
+
       </div>
 
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
@@ -56,6 +56,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        success_message: "",
        user_id: user_id
      )}
+  end
+
+  def handle_info(:form_update, socket) do
+    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   def handle_event("prompt-ingestion-delete", _, socket) do

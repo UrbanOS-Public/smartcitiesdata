@@ -251,13 +251,13 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   #   {:noreply, socket}
   # end
 
-  # def handle_info({:step_update, step_id, new_changeset}, socket) do
-  #   updated_extract_step_changesets =
-  #     socket.assigns.extract_step_changesets
-  #     |> Map.put(step_id, new_changeset)
+  def handle_info({:step_update, step_id, new_changeset}, socket) do
+    updated_extract_step_changesets =
+      socket.assigns.extract_step_changesets
+      |> Map.put(step_id, new_changeset)
 
-  #   {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
-  # end
+    {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
+  end
 
   # def handle_info(
   #       {:validation_status, {step_id, status}},
