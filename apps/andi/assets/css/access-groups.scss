@@ -1,3 +1,8 @@
+#access-groups-edit-page {
+  grid-row-gap: 0;
+  padding-top: 0.5rem;
+}
+
 .access-groups-view {
   flex: 1;
   background: $color-content-background;
@@ -12,6 +17,10 @@
   border-bottom: 1px solid $color-form-border;
   margin-left: 1rem;
   margin-right: 2rem;
+}
+
+.access-groups-component-title-text {
+  margin-bottom: 0;
 }
 
 .access-groups-index {
@@ -55,6 +64,11 @@
   width: 10%;
 }
 
+#access-groups-edit-button-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 .btn--add-dataset-search {
     min-width: 100px;
     height: 2.3rem;
@@ -73,4 +87,42 @@
 
 .add-dataset-modal--hidden {
     display: none;
+}
+
+.access-groups-dataset-table-container {
+  max-height: 250px;
+  overflow-y: auto;
+  margin: 0.5rem 0rem;
+}
+
+.access-groups-dataset-table {
+  width: 100%;
+  border: $table-border;
+  border-top: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  max-height: 200px;
+}
+
+.access-groups-dataset-table__tr:nth-child(odd) {
+  background-color: $color-table-stripe;
+}
+
+.access-groups-dataset-table__th {
+  padding: $table-padding;
+  border-top: $table-border;
+  text-align: left;
+  background: $color-table-header;
+  position: sticky;
+  top: 0;
+}
+
+.access-groups-dataset-table__cell {
+  padding: $table-padding;
+  height: $table-height;
+  max-width: 30rem;
+}
+
+.access-groups-dataset-table__status-cell {
+  width: 10%;
 }

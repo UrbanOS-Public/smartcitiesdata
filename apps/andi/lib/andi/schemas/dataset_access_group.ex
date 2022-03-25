@@ -9,9 +9,9 @@ defmodule Andi.Schemas.DatasetAccessGroup do
 
   @primary_key false
 
-  schema "user_access_groups" do
+  schema "dataset_access_groups" do
     belongs_to(:access_group, AccessGroup, type: Ecto.UUID, primary_key: true)
-    belongs_to(:dataset, Dataset, type: Ecto.UUID, primary_key: true)
+    belongs_to(:dataset, Dataset, type: :string, primary_key: true)
 
     timestamps()
   end
