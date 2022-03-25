@@ -6,9 +6,9 @@ ENV REPLACE_OS_VARS=true
 RUN apk upgrade && \
     apk add --no-cache bash openssl && \
     rm -rf /var/cache/**/*
+COPY --from=builder /app/_build/prod/rel/discovery_streams/ .
 RUN chgrp -R 0 ${HOME} && \
     chmod -R g+rwX ${HOME}
-COPY --from=builder /app/_build/prod/rel/discovery_streams/ .
 USER default
 ENV PORT 4000
 EXPOSE ${PORT}
