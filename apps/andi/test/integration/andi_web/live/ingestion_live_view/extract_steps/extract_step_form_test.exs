@@ -289,12 +289,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
-  # TODO: We don't really need a new dataset for every test. Just new ingestions for one dataset.
   defp create_ingestion_with_dataset(extract_steps) do
-    smrt_dataset = TDG.create_dataset(%{})
-    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
-
-    ingestion = Ingestions.create(smrt_dataset.id)
+    ingestion = Ingestions.create()
     {:ok, andi_ingestion} = Ingestions.update(Map.merge(ingestion, %{extractSteps: extract_steps}))
 
     andi_ingestion
