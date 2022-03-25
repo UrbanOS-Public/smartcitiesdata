@@ -225,69 +225,69 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  # data_test "empty extract steps are invalid", %{conn: conn} do
-  #   andi_ingestion = create_ingestion_with_dataset(extract_steps)
+  data_test "empty extract steps are invalid", %{conn: conn} do
+    andi_ingestion = create_ingestion_with_dataset(extract_steps)
 
-  #   {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
-  #   assert get_text(html, ".extract-steps__error-message") == "Extract steps cannot be empty"
+    assert get_text(html, ".extract-steps__error-message") == "Extract steps cannot be empty"
 
-  #   html = render_click(extract_steps_form_view, "save")
+    html = render_click(extract_steps_form_view, "save")
 
-  #   eventually(fn ->
-  #     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
-  #   end)
+    eventually(fn ->
+      assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    end)
 
-  #   where(extract_steps: [nil, []])
-  # end
+    where(extract_steps: [nil, []])
+  end
 
-  # test "extract steps without a trailing http or s3 step are invalid", %{conn: conn} do
-  #   andi_ingestion = create_ingestion_with_dataset([%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}])
+  test "extract steps without a trailing http or s3 step are invalid", %{conn: conn} do
+    andi_ingestion = create_ingestion_with_dataset([%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}])
 
-  #   {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
-  #   assert get_text(html, ".extract-steps__error-message") == "Extract steps must end with a HTTP or S3 step"
+    assert get_text(html, ".extract-steps__error-message") == "Extract steps must end with a HTTP or S3 step"
 
-  #   html = render_click(extract_steps_form_view, "save")
+    html = render_click(extract_steps_form_view, "save")
 
-  #   eventually(fn ->
-  #     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
-  #   end)
-  # end
+    eventually(fn ->
+      assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    end)
+  end
 
-  # test "validation is updated when steps are added and removed", %{conn: conn} do
-  #   extract_steps = []
-  #   andi_ingestion = create_ingestion_with_dataset(extract_steps)
+  test "validation is updated when steps are added and removed", %{conn: conn} do
+    extract_steps = []
+    andi_ingestion = create_ingestion_with_dataset(extract_steps)
 
-  #   {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
-  #   html = render_click(extract_steps_form_view, "save")
+    html = render_click(extract_steps_form_view, "save")
 
-  #   assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+    assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
 
-  #   render_click(extract_steps_form_view, "update_new_step_type", %{"value" => "http"})
-  #   html = render_click(extract_steps_form_view, "add-extract-step")
+    render_click(extract_steps_form_view, "update_new_step_type", %{"value" => "http"})
+    html = render_click(extract_steps_form_view, "add-extract-step")
 
-  #   assert get_text(html, ".extract-steps__error-message") == ""
+    assert get_text(html, ".extract-steps__error-message") == ""
 
-  #   render_click(extract_steps_form_view, "save")
-  #   extract_step_id = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first() |> Map.get(:id)
+    render_click(extract_steps_form_view, "save")
+    extract_step_id = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first() |> Map.get(:id)
 
-  #   form_data = %{"url" => "cam", "action" => "GET"}
-  #   es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+    form_data = %{"url" => "cam", "action" => "GET"}
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
-  #   render_change(es_form, %{"form_data" => form_data})
-  #   html = render(extract_steps_form_view)
+    render_change(es_form, %{"form_data" => form_data})
+    html = render(extract_steps_form_view)
 
-  #   assert not Enum.empty?(find_elements(html, ".component-number-status--valid"))
+    assert not Enum.empty?(find_elements(html, ".component-number-status--valid"))
 
-  #   html = render_click(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
+    html = render_click(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
 
-  #   assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
-  # end
+    assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
+  end
 
   # TODO: We don't really need a new dataset for every test. Just new ingestions for one dataset.
   defp create_ingestion_with_dataset(extract_steps) do
