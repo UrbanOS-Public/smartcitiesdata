@@ -158,61 +158,60 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  # # TODO: Any change to ingest steps appears to persist even without hitting save--reflect in tests?
-  # test "pressing the up arrow on an extract step moves it up the list of extract steps", %{
-  #   view: view,
-  #   andi_ingestion: ingestion,
-  #   html: html
-  # } do
-  #   extract_step_id = get_extract_step_id(ingestion, 1)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-  #   original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
-  #   expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
+  test "pressing the up arrow on an extract step moves it up the list of extract steps", %{
+    view: view,
+    andi_ingestion: ingestion,
+    html: html
+  } do
+    extract_step_id = get_extract_step_id(ingestion, 1)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+    expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
 
-  #   render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "-1"})
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "-1"})
 
-  #   eventually(fn ->
-  #     html = render(extract_steps_form_view)
-  #     assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
-  #   end)
-  # end
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
+    end)
+  end
 
-  # test "pressing the down arrow on an extract step moves it down the list of extract steps", %{
-  #   view: view,
-  #   andi_ingestion: ingestion,
-  #   html: html
-  # } do
-  #   extract_step_id = get_extract_step_id(ingestion, 0)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-  #   original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
-  #   expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
+  test "pressing the down arrow on an extract step moves it down the list of extract steps", %{
+    view: view,
+    andi_ingestion: ingestion,
+    html: html
+  } do
+    extract_step_id = get_extract_step_id(ingestion, 0)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+    expected_extract_ids_from_html = Enum.reverse(original_extract_ids_from_html)
 
-  #   render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "1"})
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => "1"})
 
-  #   eventually(fn ->
-  #     html = render(extract_steps_form_view)
-  #     assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
-  #   end)
-  # end
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == expected_extract_ids_from_html
+    end)
+  end
 
-  # data_test "attempting to move an extract step out of index bounds does nothing", %{view: view, andi_ingestion: ingestion, html: html} do
-  #   extract_step_id = get_extract_step_id(ingestion, original_index)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-  #   original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
+  data_test "attempting to move an extract step out of index bounds does nothing", %{view: view, andi_ingestion: ingestion, html: html} do
+    extract_step_id = get_extract_step_id(ingestion, original_index)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    original_extract_ids_from_html = find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html()
 
-  #   render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string})
+    render_change(extract_steps_form_view, "move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string})
 
-  #   eventually(fn ->
-  #     html = render(extract_steps_form_view)
-  #     assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == original_extract_ids_from_html
-  #   end)
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert find_elements(html, ".extract-step-container") |> get_extract_step_ids_from_html() == original_extract_ids_from_html
+    end)
 
-  #   where([
-  #     [:original_index, :move_index_string],
-  #     [0, "-1"],
-  #     [1, "1"]
-  #   ])
-  # end
+    where([
+      [:original_index, :move_index_string],
+      [0, "-1"],
+      [1, "1"]
+    ])
+  end
 
   # test "pressing step delete button removes it from ecto", %{view: view, andi_ingestion: ingestion} do
   #   extract_step_id = get_extract_step_id(ingestion, 0)

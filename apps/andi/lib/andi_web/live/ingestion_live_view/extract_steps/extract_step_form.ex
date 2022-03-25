@@ -91,8 +91,15 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         </div>
       </div>
 
-      <!-- <div class="form-section"> -->
-        <!-- <div class="component-edit-section--<%= @visibility %>"> -->
+      <div class="form-section">
+        <div class="component-edit-section--<%= @visibility %>">
+
+          <div class="add-step">
+            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+            <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+          </div>
+
+          <div class="extract-steps__error-message"><%= extract_steps_error_message(@extract_steps) %></div>
 
           <%= for extract_step <- @extract_steps do %>
             <% component_module_to_render = render_extract_step_form(extract_step) %>
@@ -102,13 +109,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
             <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, changeset: step_changeset) %>
           <% end %>
 
-          <div class="add-step">
-            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
-          <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
-          </div>
-
-        <!-- </div> -->
-      <!-- </div> -->
+        </div>
+      </div>
     </div>
     """
   end
@@ -139,6 +141,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   #       <div class="form-section">
   #         <div class="component-edit-section--<%= @visibility %>">
 
+  # TODO: What is dataset_link. should this just be axed for ingestions.
   #           <%= if @dataset_link != nil do %>
   #             <div class="download_dataset_sample">
   #               <h4>Dataset Link:</h4>
@@ -250,16 +253,16 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      |> update_validation_status()}
   end
 
-  # def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
-  #   move_index = String.to_integer(move_index_string)
-  #   extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
-  #   target_index = extract_step_index + move_index
+  def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
+    move_index = String.to_integer(move_index_string)
+    extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
+    target_index = extract_step_index + move_index
 
-  #   case target_index >= 0 && target_index < Enum.count(socket.assigns.extract_steps) do
-  #     true -> move_extract_step(socket, extract_step_index, target_index)
-  #     false -> {:noreply, socket}
-  #   end
-  # end
+    case target_index >= 0 && target_index < Enum.count(socket.assigns.extract_steps) do
+      true -> move_extract_step(socket, extract_step_index, target_index)
+      false -> {:noreply, socket}
+    end
+  end
 
   # def handle_event("remove-extract-step", %{"id" => extract_step_id}, %{assigns: %{technical_id: technical_id}} = socket) do
   #   ExtractSteps.delete(extract_step_id)
