@@ -10,7 +10,6 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
   alias Andi.InputSchemas.AccessGroups
   alias Andi.InputSchemas.AccessGroup
 
-
   @endpoint AndiWeb.Endpoint
   @url_path "/access-groups"
   @user UserHelpers.create_user()
@@ -77,8 +76,5 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_1.business.dataTitle
       assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_2.business.dataTitle
     end
-
-
-
   end
 end
