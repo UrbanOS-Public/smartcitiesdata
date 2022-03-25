@@ -77,8 +77,6 @@ defmodule AndiWeb.ExtractStepFormTest do
   end
 
   test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
-    # TODO: Current Issue, why do these lines work fine, our helper method for ingestions
-    # doesn't. Can test in shell. Both have the same validation 🤔
     smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: []}})
     {:ok, andi_dataset} = Datasets.update(smrt_dataset)
 

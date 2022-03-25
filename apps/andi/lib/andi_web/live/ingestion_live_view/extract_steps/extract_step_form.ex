@@ -68,18 +68,46 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   # end
 
   def render(assigns) do
+    action =
+      case assigns.visibility do
+        "collapsed" -> "EDIT"
+        "expanded" -> "MINIMIZE"
+      end
+
     ~L"""
-      <%= for extract_step <- @extract_steps do %>
-        <% component_module_to_render = render_extract_step_form(extract_step) %>
-        <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
+    <div id="extract-step-form" class="form-component">
+      <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
+        <div class="section-number">
+          <h3 class="component-number component-number--<%= @validation_status %>">1</h3>
+          <div class="component-number-status--<%= @validation_status %>"></div>
+        </div>
+        <div class="component-title full-width">
+          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Ingest Steps</h2>
+          <div class="component-title-action">
+            <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+            <div class="component-title-icon--<%= @visibility %>"></div>
+          </div>
+        </div>
+      </div>
 
-        <hr>
-        <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, changeset: step_changeset) %>
-      <% end %>
+      <!-- <div class="form-section"> -->
+        <!-- <div class="component-edit-section--<%= @visibility %>"> -->
 
-      <div class="add-step">
-        <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
-      <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+          <%= for extract_step <- @extract_steps do %>
+            <% component_module_to_render = render_extract_step_form(extract_step) %>
+            <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
+
+            <hr>
+            <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, changeset: step_changeset) %>
+          <% end %>
+
+          <div class="add-step">
+            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+          <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+          </div>
+
+        <!-- </div> -->
+      <!-- </div> -->
     </div>
     """
   end
@@ -168,12 +196,19 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   #   {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   # end
 
-  def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
+  def handle_event(
+        "save",
+        _,
+        %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket
+      ) do
     save_step_changesets(extract_step_changesets)
 
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: socket.assigns.ingestion_id})
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{
+      ingestion_id: socket.assigns.ingestion_id
+    })
 
     new_validation_status = get_new_validation_status(extract_step_changesets, socket.assigns.extract_steps)
+
     send(socket.parent_pid, {:update_save_message, new_validation_status})
 
     {:noreply, assign(socket, validation_status: new_validation_status)}
@@ -194,13 +229,24 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
     {:ok, _} = ExtractSteps.update(new_extract_step)
+
     new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
-    updated_changeset_map = Map.put(socket.assigns.extract_step_changesets, new_extract_step.id, new_extract_step_changeset)
+
+    updated_changeset_map =
+      Map.put(
+        socket.assigns.extract_step_changesets,
+        new_extract_step.id,
+        new_extract_step_changeset
+      )
 
     all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()
 
     {:noreply,
-     assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+     assign(socket,
+       extract_steps: all_steps_for_ingestion,
+       extract_step_changesets: updated_changeset_map
+     )
+     |> update_validation_status()}
   end
 
   # def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
@@ -236,11 +282,20 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{assigns: %{extract_step_changesets: extract_step_changesets, ingestion_id: ingestion_id, extract_steps: extract_steps}} = socket
+        %{
+          assigns: %{
+            extract_step_changesets: extract_step_changesets,
+            ingestion_id: ingestion_id,
+            extract_steps: extract_steps
+          }
+        } = socket
       ) do
     save_step_changesets(extract_step_changesets)
 
-    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets, extract_steps))}
+    {:noreply,
+     assign(socket,
+       validation_status: get_new_validation_status(extract_step_changesets, extract_steps)
+     )}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
@@ -256,7 +311,9 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       socket.assigns.extract_step_changesets
       |> Map.put(step_id, new_changeset)
 
-    {:noreply, assign(socket, extract_step_changesets: updated_extract_step_changesets) |> update_validation_status()}
+    {:noreply,
+     assign(socket, extract_step_changesets: updated_extract_step_changesets)
+     |> update_validation_status()}
   end
 
   # def handle_info(
@@ -332,28 +389,41 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   defp get_extract_step_types(), do: map_to_dropdown_options(Options.extract_step_type())
 
   defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
+    Enum.map(options, fn {actual_value, description} ->
+      [key: description, value: actual_value]
+    end)
   end
 
   defp update_validation_status(
-         %{assigns: %{validation_status: validation_status, visibility: visibility, extract_steps: extract_steps}} = socket
+         %{
+           assigns: %{
+             validation_status: validation_status,
+             visibility: visibility,
+             extract_steps: extract_steps
+           }
+         } = socket
        )
        when validation_status in ["valid", "invalid"] or visibility == "collapsed" do
-    assign(socket, validation_status: get_new_validation_status(socket.assigns.extract_step_changesets, extract_steps))
+    assign(socket,
+      validation_status: get_new_validation_status(socket.assigns.extract_step_changesets, extract_steps)
+    )
   end
 
-  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket), do: assign(socket, validation_status: visibility)
+  defp update_validation_status(%{assigns: %{visibility: visibility}} = socket),
+    do: assign(socket, validation_status: visibility)
 
   defp get_new_validation_status(step_changesets, []) when step_changesets == %{}, do: "invalid"
 
   defp get_new_validation_status(step_changesets, extract_steps) do
-    case ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) and extract_step_changesets_valid?(step_changesets) do
+    case ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) and
+           extract_step_changesets_valid?(step_changesets) do
       true -> "valid"
       false -> "invalid"
     end
   end
 
-  defp extract_steps_error_message(extract_steps) when extract_steps in [nil, []], do: "Extract steps cannot be empty"
+  defp extract_steps_error_message(extract_steps) when extract_steps in [nil, []],
+    do: "Extract steps cannot be empty"
 
   defp extract_steps_error_message(extract_steps) do
     case ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do

@@ -104,7 +104,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  @tag :skip
   test "given an invalid extract http step, the section shows an invalid status", %{andi_ingestion: ingestion, view: view} do
     extract_step_id = get_extract_step_id(ingestion, 1)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
