@@ -7,3 +7,5 @@ config :raptor, RaptorWeb.Endpoint,
 
 # Do not print debug messages in production
 config :logger, level: :info
+
+config :tzdata, :data_dir, "./tzdata"

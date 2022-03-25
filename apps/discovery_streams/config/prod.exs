@@ -14,3 +14,5 @@ config :logger,
 
 config :ex_aws,
   debug_requests: false
+
+config :tzdata, :data_dir, "./tzdata"
