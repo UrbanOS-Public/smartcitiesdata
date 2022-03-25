@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
+  alias Andi.InputSchemas.InputConverter
 
   access_levels(render: [:private])
 
@@ -30,6 +31,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           <span class="delete-icon material-icons">delete_outline</span>
           DELETE
         </button>
+        <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save</button>
       </div>
 
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
@@ -37,13 +39,22 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     """
   end
 
+  # TODO: Does the save button look right on the page
+  # TODO: "Save" vs "Safe Draft"? What's in figma
+
   def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session, socket) do
+    default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
+
     {:ok,
      assign(socket,
+       changeset: default_changeset,
+       click_id: nil,
+       delete_ingestion_modal_visibility: "hidden",
        is_curator: is_curator,
-       user_id: user_id,
        ingestion: ingestion,
-       delete_ingestion_modal_visibility: "hidden"
+       save_success: false,
+       success_message: "",
+       user_id: user_id
      )}
   end
 
@@ -69,4 +80,23 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_event("delete-canceled", _, socket) do
     {:noreply, assign(socket, delete_ingestion_modal_visibility: "hidden")}
   end
+
+  def handle_event("save", _, socket) do
+    ingestion_id = socket.assigns.ingestion.id
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
+
+    andi_ingestion = Ingestions.get(ingestion_id)
+    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
+
+    {:noreply,
+     assign(socket,
+       changeset: ingestion_changeset,
+       save_success: true,
+       click_id: UUID.uuid4(),
+       success_message: save_message(ingestion_changeset.valid?)
+     )}
+  end
+
+  defp save_message(true = _valid?), do: "Saved successfully."
+  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 end

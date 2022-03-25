@@ -76,8 +76,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
   @tag :skip
   test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
-    # TODO: Could we avoid the weird validation error by not having these
-    # start as empty?
     extract_steps = []
     andi_ingestion = create_ingestion_with_dataset(extract_steps)
 

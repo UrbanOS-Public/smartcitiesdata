@@ -21,6 +21,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
   def mount(_params, %{"ingestion" => ingestion}, socket) do
     extract_steps = Map.get(ingestion, :extractSteps)
+    AndiWeb.Endpoint.subscribe("form-save")
 
     extract_step_changesets =
       Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
@@ -167,16 +168,16 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   #   {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
   # end
 
-  # def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
-  #   save_step_changesets(extract_step_changesets)
+  def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
+    save_step_changesets(extract_step_changesets)
 
-  #   AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
 
-  #   new_validation_status = get_new_validation_status(extract_step_changesets, socket.assigns.extract_steps)
-  #   send(socket.parent_pid, {:update_save_message, new_validation_status})
+    new_validation_status = get_new_validation_status(extract_step_changesets, socket.assigns.extract_steps)
+    send(socket.parent_pid, {:update_save_message, new_validation_status})
 
-  #   {:noreply, assign(socket, validation_status: new_validation_status)}
-  # end
+    {:noreply, assign(socket, validation_status: new_validation_status)}
+  end
 
   def handle_event("update_new_step_type", %{"value" => value}, socket) do
     {:noreply, assign(socket, new_step_type: value)}
@@ -233,18 +234,18 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   #   {:noreply, socket}
   # end
 
-  # def handle_info(
-  #       %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
-  #       %{assigns: %{extract_step_changesets: extract_step_changesets, dataset_id: dataset_id, extract_steps: extract_steps}} = socket
-  #     ) do
-  #   save_step_changesets(extract_step_changesets)
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{assigns: %{extract_step_changesets: extract_step_changesets, ingestion_id: ingestion_id, extract_steps: extract_steps}} = socket
+      ) do
+    save_step_changesets(extract_step_changesets)
 
-  #   {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets, extract_steps))}
-  # end
+    {:noreply, assign(socket, validation_status: get_new_validation_status(extract_step_changesets, extract_steps))}
+  end
 
-  # def handle_info(%{topic: "form-save"}, socket) do
-  #   {:noreply, socket}
-  # end
+  def handle_info(%{topic: "form-save"}, socket) do
+    {:noreply, socket}
+  end
 
   # def handle_info(%{topic: "toggle-component-visibility"}, socket) do
   #   {:noreply, socket}
