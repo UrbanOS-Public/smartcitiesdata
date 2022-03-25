@@ -264,14 +264,14 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     end
   end
 
-  # def handle_event("remove-extract-step", %{"id" => extract_step_id}, %{assigns: %{technical_id: technical_id}} = socket) do
-  #   ExtractSteps.delete(extract_step_id)
-  #   updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
-  #   all_steps_for_technical = ExtractSteps.all_for_technical(technical_id) |> StructTools.sort_if_sequenced()
+  def handle_event("remove-extract-step", %{"id" => extract_step_id}, %{assigns: %{ingestion_id: ingestion_id}} = socket) do
+    ExtractSteps.delete(extract_step_id)
+    updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
+    all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()
 
-  #   {:noreply,
-  #    assign(socket, extract_steps: all_steps_for_technical, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
-  # end
+    {:noreply,
+     assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+  end
 
   # def handle_info(
   #       %{topic: "toggle-visibility", payload: %{expand: "extract_step_form", dataset_id: dataset_id}},

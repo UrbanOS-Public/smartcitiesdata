@@ -213,17 +213,17 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     ])
   end
 
-  # test "pressing step delete button removes it from ecto", %{view: view, andi_ingestion: ingestion} do
-  #   extract_step_id = get_extract_step_id(ingestion, 0)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+  test "pressing step delete button removes it from ecto", %{view: view, andi_ingestion: ingestion} do
+    extract_step_id = get_extract_step_id(ingestion, 0)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
-  #   html = render_change(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
+    html = render_change(extract_steps_form_view, "remove-extract-step", %{"id" => extract_step_id})
 
-  #   eventually(fn ->
-  #     assert Enum.empty?(find_elements(html, "#step-#{extract_step_id}"))
-  #     assert ExtractSteps.get(extract_step_id) == nil
-  #   end)
-  # end
+    eventually(fn ->
+      assert Enum.empty?(find_elements(html, "#step-#{extract_step_id}"))
+      assert ExtractSteps.get(extract_step_id) == nil
+    end)
+  end
 
   # data_test "empty extract steps are invalid", %{conn: conn} do
   #   andi_ingestion = create_ingestion_with_dataset(extract_steps)
