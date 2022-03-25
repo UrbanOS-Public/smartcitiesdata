@@ -62,6 +62,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
 
+  def handle_info({:update_save_message, status}, socket) do
+    message = save_message(status == "valid" && socket.assigns.changeset.valid?)
+
+    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message)}
+  end
+
   def handle_event("prompt-ingestion-delete", _, socket) do
     {:noreply, assign(socket, delete_ingestion_modal_visibility: "visible")}
   end

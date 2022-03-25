@@ -171,7 +171,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   def handle_event("save", _, %{assigns: %{extract_step_changesets: extract_step_changesets}} = socket) do
     save_step_changesets(extract_step_changesets)
 
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: socket.assigns.ingestion_id})
 
     new_validation_status = get_new_validation_status(extract_step_changesets, socket.assigns.extract_steps)
     send(socket.parent_pid, {:update_save_message, new_validation_status})
