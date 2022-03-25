@@ -23,6 +23,7 @@ defmodule Andi.Event.EventHandler do
   alias SmartCity.{Dataset, Organization, Ingestion}
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
+  alias SmartCity.DatasetAccessGroupRelation
 
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
@@ -122,13 +123,11 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_access_group_associate(),
-        data: %SmartCity.DatasetAccessGroupRelation{dataset_id: dataset_id, access_group_id: access_group_id},
+        data: %DatasetAccessGroupRelation{dataset_id: dataset_id, access_group_id: access_group_id},
         author: author
       }) do
     dataset_access_group_associate()
     |> add_event_count(author, nil)
-
-    IO.inspect(dataset_id, label: "REACHED EVENT HANDLER")
 
     case Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset_id) do
       {:error, error} ->
@@ -143,7 +142,7 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_access_group_disassociate(),
-        data: %SmartCity.DatasetAccessGroupRelation{dataset_id: dataset_id, access_group_id: access_group_id},
+        data: %DatasetAccessGroupRelation{dataset_id: dataset_id, access_group_id: access_group_id},
         author: author
       }) do
     dataset_access_group_disassociate()
