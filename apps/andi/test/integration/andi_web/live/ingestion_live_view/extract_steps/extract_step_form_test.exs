@@ -120,43 +120,43 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  # test "given an invalid extract date step, the section shows an invalid status", %{andi_ingestion: ingestion, view: view} do
-  #   extract_step_id = get_extract_step_id(ingestion, 0)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-  #   es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+  test "given an invalid extract date step, the section shows an invalid status", %{andi_ingestion: ingestion, view: view} do
+    extract_step_id = get_extract_step_id(ingestion, 0)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
-  #   form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
-  #   render_change(es_form, %{"form_data" => form_data})
+    form_data = %{"destination" => "some_field", "deltaTimeUnit" => "", "deltaTimeValue" => 1, "format" => ""}
+    render_change(es_form, %{"form_data" => form_data})
 
-  #   render_change(extract_steps_form_view, "save")
+    render_change(extract_steps_form_view, "save")
 
-  #   eventually(fn ->
-  #     html = render(extract_steps_form_view)
-  #     assert not Enum.empty?(find_elements(html, ".component-number--invalid"))
-  #   end)
-  # end
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert not Enum.empty?(find_elements(html, ".component-number--invalid"))
+    end)
+  end
 
-  # test "given a previously invalid extract step, and it's made valid, the section shows a valid status", %{
-  #   andi_ingestion: ingestion,
-  #   view: view
-  # } do
-  #   extract_step_id = get_extract_step_id(ingestion, 0)
-  #   extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
-  #   es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
+  test "given a previously invalid extract step, and it's made valid, the section shows a valid status", %{
+    andi_ingestion: ingestion,
+    view: view
+  } do
+    extract_step_id = get_extract_step_id(ingestion, 0)
+    extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
-  #   form_data = %{"action" => "GET", "url" => ""}
-  #   render_change(es_form, %{"form_data" => form_data})
+    form_data = %{"action" => "GET", "url" => ""}
+    render_change(es_form, %{"form_data" => form_data})
 
-  #   render_change(extract_steps_form_view, "save")
+    render_change(extract_steps_form_view, "save")
 
-  #   form_data = %{"action" => "GET", "url" => "bob.com"}
-  #   render_change(es_form, %{"form_data" => form_data})
+    form_data = %{"action" => "GET", "url" => "bob.com"}
+    render_change(es_form, %{"form_data" => form_data})
 
-  #   eventually(fn ->
-  #     html = render(extract_steps_form_view)
-  #     assert not Enum.empty?(find_elements(html, ".component-number--valid"))
-  #   end)
-  # end
+    eventually(fn ->
+      html = render(extract_steps_form_view)
+      assert not Enum.empty?(find_elements(html, ".component-number--valid"))
+    end)
+  end
 
   # # TODO: Any change to ingest steps appears to persist even without hitting save--reflect in tests?
   # test "pressing the up arrow on an extract step moves it up the list of extract steps", %{

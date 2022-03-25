@@ -29,12 +29,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractHttpStepForm do
      )}
   end
 
-  # def render(assigns) do
-  #   ~L"""
-  #     <div id="step-<%= @id %>" class="extract-step-container extract-http-step-form">
-  #   """
-  # end
-
   def render(assigns) do
     ~L"""
         <div id="step-<%= @id %>" class="extract-step-container extract-http-step-form">
