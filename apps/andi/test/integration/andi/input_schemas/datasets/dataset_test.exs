@@ -28,19 +28,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
         assert [%{id: ^access_group_id}] = Map.get(dataset, :access_groups)
       end)
     end
-
-    test "a dataset can be associated with multiple access groups", %{dataset_id: dataset_id, access_group_id: access_group_id} do
-      access_group_2 = TDG.create_access_group(%{})
-      access_group_2_id = access_group_2.id
-      {:ok, _andi_access_group} = AccessGroups.update(access_group_2)
-
-      {:ok, dataset} = Dataset.associate_with_access_group(access_group_id, dataset_id)
-      {:ok, dataset} = Dataset.associate_with_access_group(access_group_2.id, dataset_id)
-
-      eventually(fn ->
-        assert [%{id: ^access_group_id}, %{id: ^access_group_2_id}] = Map.get(dataset, :access_groups)
-      end)
-    end
   end
 
   describe "disassociate_with_access_group/2" do
