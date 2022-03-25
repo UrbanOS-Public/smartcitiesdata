@@ -7,6 +7,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
   import Placebo
   import Phoenix.LiveViewTest
+  import SmartCity.Event
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
@@ -23,6 +24,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   alias Andi.InputSchemas.AccessGroups
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias SmartCity.DatasetAccessGroupRelation
 
   @instance_name Andi.instance_name()
 
@@ -167,7 +169,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ "Remove"
 
-      remove_dataset = element(view, ".modal-action-text", "Remove")
+      remove_dataset = element(view, ".search-table__cell", "Remove")
       html = render_click(remove_dataset)
       refute get_text(html, ".search-table") =~ "Remove"
     end
@@ -353,10 +355,28 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_click(save_button)
 
       eventually(fn ->
-        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets) |> IO.inspect(label: "here")
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
         assert [%Dataset{id: ^dataset_id}] = access_group.datasets
       end)
     end
+  end
+
+  test "removes a dataset when remove action is clicked", %{curator_conn: conn} do
+    access_group = create_access_group()
+    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "remove_org"}) |> Datasets.update()
+    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+    dataset_id = dataset.id
+    eventually(fn ->
+      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+      assert [%Dataset{id: dataset_id}] = access_group.datasets
+    end)
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    remove_action = element(view, ".modal-action-text", "Remove")
+    html = render_click(remove_action)
+
+    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
   end
 
   defp create_access_group() do

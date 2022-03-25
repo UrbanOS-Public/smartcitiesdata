@@ -126,14 +126,19 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   defp update_selection(id, socket) do
-    case id in socket.assigns.selected_datasets do
-      true ->
+    cond do
+      id in socket.assigns.selected_datasets ->
         selected_datasets = List.delete(socket.assigns.selected_datasets, id)
-        {:noreply, assign(socket, add_dataset_modal_visibility: "visible", selected_datasets: selected_datasets)}
+        {:noreply, assign(socket, selected_datasets: selected_datasets)}
 
-      _ ->
+      id in Enum.map(socket.assigns.associated_datasets, fn dataset -> dataset.id end) ->
+        found_dataset_index = Enum.find_index(socket.assigns.associated_datasets, fn dataset -> dataset.id == id end)
+        associated_datasets = List.delete_at(socket.assigns.associated_datasets, found_dataset_index)
+        {:noreply, assign(socket, associated_datasets: associated_datasets)}
+
+      true ->
         selected_datasets = [id | socket.assigns.selected_datasets]
-        {:noreply, assign(socket, add_dataset_modal_visibility: "visible", selected_datasets: selected_datasets)}
+        {:noreply, assign(socket, selected_datasets: selected_datasets)}
     end
   end
 
