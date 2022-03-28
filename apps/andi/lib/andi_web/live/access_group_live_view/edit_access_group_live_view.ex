@@ -68,7 +68,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        add_dataset_modal_visibility: "hidden",
        datasets: [],
        search_text: "",
-       selected_datasets: [],
+       selected_datasets: associated_datasets,
        associated_datasets: associated_datasets
      )}
   end
@@ -94,16 +94,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     access_group_id = socket.assigns.access_group.id
     user_id = socket.assigns.user_id
 
-    removed_datasets = socket.assigns.access_group.datasets
-      |> Enum.map(fn dataset -> dataset.id end)
-      |> Enum.filter(fn original -> original not in socket.assigns.associated_datasets end)
+    original_ids = Enum.map(socket.assigns.access_group.datasets, fn dataset -> dataset.id end)
 
-    no_op_datasets = Enum.filter(removed_datasets, fn removal -> removal in socket.assigns.selected_datasets end)
-    filtered_removes = Enum.filter(removed_datasets, fn removal -> removal not in no_op_datasets end)
-    filtered_selects = Enum.filter(socket.assigns.selected_datasets, fn selection -> selection not in no_op_datasets end)
+    datasets_to_dissociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
 
-    send_associate_event(filtered_selects, access_group_id, user_id)
-    send_dissociate_event(filtered_removes, access_group_id, user_id)
+    datasets_to_associate = socket.assigns.selected_datasets
+      |> Enum.filter(fn selected -> selected not in original_ids end)
+
+    send_associate_event(datasets_to_associate, access_group_id, user_id)
+    send_dissociate_event(datasets_to_dissociate, access_group_id, user_id)
 
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
@@ -139,11 +138,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     update_selection(id, socket)
   end
 
-  def handle_event("remove-dataset", %{"id" => id}, socket) do
-    updated_associations = update_list(id, socket.assigns.associated_datasets)
-    selected_datasets = update_list(id, socket.assigns.selected_datasets)
-    {:noreply, assign(socket, selected_datasets: selected_datasets, associated_datasets: updated_associations)}
-  end
+  # def handle_event("remove-dataset", %{"id" => id}, socket) do
+  #   updated_associations = update_list(id, socket.assigns.associated_datasets)
+  #   selected_datasets = update_list(id, socket.assigns.selected_datasets)
+  #   {:noreply, assign(socket, selected_datasets: selected_datasets, associated_datasets: updated_associations)}
+  # end
 
   defp update_list(id, dataset_list) do
     if id in dataset_list do

@@ -18,15 +18,15 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
             <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Action</th>
           </thead>
 
-          <%= if @selected_datasets == [] and @associated_datasets == [] do %>
+          <%= if @selected_datasets == [] do %>
             <tr><td class="access-groups-dataset-table__cell" colspan="100%">No Associated Datasets</td></tr>
           <% else %>
-            <%= for dataset <- datasets_to_display(@associated_datasets, @selected_datasets) do %>
+            <%= for dataset <- datasets_to_display(@selected_datasets) do %>
             <tr class="access-groups-dataset-table__tr">
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break access-groups-dataset-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break modal-action-text thin-column" phx-click="remove-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
+                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break modal-action-text thin-column" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
               </tr>
             <% end %>
           <% end %>
@@ -36,9 +36,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
     """
   end
 
-  defp datasets_to_display(associated_dataset_ids, selected_dataset_ids) do
-    associated_dataset_ids ++ selected_dataset_ids
-      |> Enum.uniq()
-      |> Enum.map(fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
+  defp datasets_to_display(selected_datasets) do
+    Enum.map(selected_datasets, fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
   end
 end
