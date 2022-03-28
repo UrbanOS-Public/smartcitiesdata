@@ -149,7 +149,7 @@ defmodule AndiWeb.EditController do
   end
 
   def edit_access_group(conn, %{"id" => id}) do
-    %{"is_curator" => is_curator} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
     case AccessGroups.get(id) do
       nil ->
@@ -160,7 +160,7 @@ defmodule AndiWeb.EditController do
 
       access_group ->
         live_render(conn, AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView,
-          session: %{"access_group" => access_group, "is_curator" => is_curator}
+          session: %{"access_group" => access_group, "is_curator" => is_curator, "user_id" => user_id}
         )
     end
   end

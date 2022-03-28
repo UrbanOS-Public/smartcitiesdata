@@ -12,6 +12,7 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.AccessGroup
+  alias Andi.InputSchemas.AccessGroups
 
   @primary_key {:id, :string, autogenerate: false}
   schema "datasets" do
@@ -117,5 +118,28 @@ defmodule Andi.InputSchemas.Datasets.Dataset do
       |> Keyword.drop([:dataName])
 
     Map.put(technical_changeset, :errors, cleared_errors)
+  end
+
+  def associate_with_access_group(access_group_id, dataset_id) do
+    with dataset <- Andi.Repo.get(__MODULE__, dataset_id) |> Andi.Repo.preload(:access_groups),
+         access_group <- AccessGroups.get(access_group_id) do
+      dataset
+      |> Andi.Repo.preload(:access_groups)
+      |> change()
+      |> put_assoc(:access_groups, [access_group | dataset.access_groups])
+      |> Andi.Repo.update()
+    else
+      error -> error
+    end
+  end
+
+  def disassociate_with_access_group(access_group_id, dataset_id) do
+    with dataset <- Andi.Repo.get_by(__MODULE__, id: dataset_id) |> Andi.Repo.preload(:access_groups),
+         access_group <- AccessGroups.get(access_group_id) do
+      updated_access_groups = List.delete(dataset.access_groups, access_group)
+      dataset |> Andi.Repo.preload(:access_groups) |> change() |> put_assoc(:access_groups, updated_access_groups) |> Andi.Repo.update()
+    else
+      error -> error
+    end
   end
 end
