@@ -90,8 +90,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("access-group-form_save", _, socket) do
-    associate_datasets_with_access_group(socket.assigns.selected_datasets, socket.assigns.access_group.id, socket.assigns.user_id)
-    dissociate_datasets_with_access_group(socket.assigns.removed_datasets, socket.assigns.access_group.id, socket.assigns.user_id)
+    access_group_id = socket.assigns.access_group.id
+    user_id = socket.assigns.user_id
+    send_relation_event(dataset_access_group_associate(), socket.assigns.selected_datasets, access_group_id, user_id)
+    send_relation_event(dataset_access_group_disassociate(), socket.assigns.removed_datasets, access_group_id, user_id)
 
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
@@ -187,23 +189,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     |> Andi.Repo.all()
   end
 
-  def associate_datasets_with_access_group(selected_datasets, access_group_id, user_id) do
-    Enum.map(selected_datasets, fn selected_dataset ->
-      {:ok, dataset_access_group_association} =
-        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: selected_dataset, access_group_id: access_group_id})
-
-      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_associate(), dataset_access_group_association)
-      Brook.Event.send(:andi, dataset_access_group_associate(), :andi, dataset_access_group_association)
-    end)
-  end
-
-  def dissociate_datasets_with_access_group(removed_datasets, access_group_id, user_id) do
-    Enum.map(removed_datasets, fn removed_dataset ->
-      {:ok, relation} =
-        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: removed_dataset, access_group_id: access_group_id})
-
-      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_disassociate(), relation)
-      Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation)
+  defp send_relation_event(event_type, datasets, access_group_id, user_id) do
+    Enum.map(datasets, fn dataset ->
+      properties = %{dataset_id: dataset, access_group_id: access_group_id}
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, event_type, relation)
+      Brook.Event.send(:andi, event_type, :andi, relation)
     end)
   end
 end
