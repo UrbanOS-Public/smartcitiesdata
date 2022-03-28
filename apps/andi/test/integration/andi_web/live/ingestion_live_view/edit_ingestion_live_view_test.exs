@@ -45,6 +45,26 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       %{ingestion: ingestion}
     end
 
+    test "clicking cancel takes you back to the ingestions page without saved changes", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+
+      # metadata_view = find_live_child(view, "metadata_form_editor")
+
+      # form_data = %{"dataTitle" => "new dataset title"}
+
+      # render_change(metadata_view, "validate", %{"form_data" => form_data})
+      cancel_button = element(view, ".btn--cancel", "Cancel")
+      render_click(cancel_button)
+
+      # refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
+
+      # render_change(view, "force-cancel-edit", %{})
+
+      #assert "new dataset title" != Datasets.get(dataset.id) |> get_in([:business, :dataTitle])
+
+      assert_redirect(view, "/ingestions")
+    end
+
     test "are able to be deleted", %{curator_conn: conn, ingestion: ingestion} do
       assert {:ok, view, _html} = live(conn, "#{@url_path}/#{ingestion.id}")
       delete_ingestion_in_ui(view)

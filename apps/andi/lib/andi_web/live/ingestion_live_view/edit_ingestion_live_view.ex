@@ -27,9 +27,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       </div>
 
       <div class="edit-page__btn-group">
+        <div class="btn-group__standard">
+          <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+        </div>
+
+        <hr></hr>
+
         <button id="ingestion-delete-button" class="btn btn--delete" phx-click="prompt-ingestion-delete" type="button">
           <span class="delete-icon material-icons">delete_outline</span>
-          DELETE
+            DELETE
         </button>
 
       </div>
@@ -51,6 +58,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        click_id: nil,
        delete_ingestion_modal_visibility: "hidden",
        is_curator: is_curator,
+       unsaved_changes: false,
        ingestion: ingestion,
        save_success: false,
        success_message: "",
@@ -105,6 +113,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        click_id: UUID.uuid4(),
        success_message: save_message(ingestion_changeset.valid?)
      )}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_ingestions_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_ingestions_path())}
+    end
   end
 
   defp save_message(true = _valid?), do: "Saved successfully."
