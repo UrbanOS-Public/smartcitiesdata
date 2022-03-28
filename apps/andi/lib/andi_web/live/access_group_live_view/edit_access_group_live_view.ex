@@ -94,11 +94,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     user_id = socket.assigns.user_id
 
     original_ids = Enum.map(socket.assigns.access_group.datasets, fn dataset -> dataset.id end)
-
     datasets_to_dissociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
-
-    datasets_to_associate = socket.assigns.selected_datasets
-      |> Enum.filter(fn selected -> selected not in original_ids end)
+    datasets_to_associate = Enum.filter(socket.assigns.selected_datasets, fn selected -> selected not in original_ids end)
 
     send_associate_event(datasets_to_associate, access_group_id, user_id)
     send_dissociate_event(datasets_to_dissociate, access_group_id, user_id)
