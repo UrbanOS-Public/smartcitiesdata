@@ -66,7 +66,7 @@ defmodule AndiWeb.Search.AddDatasetModal do
         <p class="datasets-modal-section-header-text">Selected Datasets</p>
         <div class="selected-datasets-from-search">
           <%= for dataset <- selected_datasets(@datasets, @selected_datasets) do %>
-            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
+            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
           <% end %>
         </div>
     </div>

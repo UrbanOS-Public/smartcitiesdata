@@ -4,7 +4,6 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
   """
 
   use Phoenix.LiveComponent
-  alias Phoenix.HTML.Link
 
   def render(assigns) do
     ~L"""
@@ -22,7 +21,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
           <%= if @selected_datasets == [] and @associated_datasets == [] do %>
             <tr><td class="access-groups-dataset-table__cell" colspan="100%">No Associated Datasets</td></tr>
           <% else %>
-            <%= for dataset <- datasets_to_display(@associated_datasets, @selected_datasets) do %>
+            <%= for dataset <- datasets_to_display(@associated_datasets, @selected_datasets, @removed_datasets) do %>
             <tr class="access-groups-dataset-table__tr">
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break access-groups-dataset-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
@@ -37,9 +36,11 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
     """
   end
 
-  defp datasets_to_display(associated_datasets, selected_dataset_ids) do
-    associated_dataset_ids = Enum.map(associated_datasets, fn associated_dataset -> associated_dataset.id end)
-    datasets_to_display = Enum.uniq(associated_dataset_ids ++ selected_dataset_ids)
-    Enum.map(datasets_to_display, fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
+  defp datasets_to_display(associated_datasets, selected_dataset_ids, removed_dataset_ids) do
+    Enum.map(associated_datasets, fn associated_dataset -> associated_dataset.id end)
+      |> Enum.filter(fn associated_dataset_id -> associated_dataset_id not in removed_dataset_ids end)
+      |> (fn current_ids, selected_dataset_ids -> current_ids ++ selected_dataset_ids end).(selected_dataset_ids)
+      |> Enum.uniq()
+      |> Enum.map(fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
   end
 end
