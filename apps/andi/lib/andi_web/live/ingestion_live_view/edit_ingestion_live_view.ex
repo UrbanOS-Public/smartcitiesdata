@@ -41,13 +41,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       </div>
 
+      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
+
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
     </div>
     """
   end
-
-  # TODO: Does the save button look right on the page
-  # TODO: "Save" vs "Safe Draft"? What's in figma
 
   def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session, socket) do
     default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
@@ -57,6 +56,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        changeset: default_changeset,
        click_id: nil,
        delete_ingestion_modal_visibility: "hidden",
+       unsaved_changes_modal_visibility: "hidden",
        is_curator: is_curator,
        unsaved_changes: false,
        ingestion: ingestion,
@@ -120,6 +120,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       true -> {:noreply, assign(socket, unsaved_changes_link: header_ingestions_path(), unsaved_changes_modal_visibility: "visible")}
       false -> {:noreply, redirect(socket, to: header_ingestions_path())}
     end
+  end
+
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "hidden")}
+  end
+
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
   end
 
   defp save_message(true = _valid?), do: "Saved successfully."

@@ -88,23 +88,22 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     changes_with_id = StructTools.ensure_id(technical, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 
-    res =
-      technical
-      |> cast(changes_with_id, @cast_fields, empty_values: [])
-      |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-      |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
-      |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
-      |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-      |> foreign_key_constraint(:dataset_id)
-      |> validate_required(@required_fields, message: "is required")
-      |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
-      |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-      |> validate_source_format()
-      |> CadenceValidator.validate()
-      |> validate_top_level_selector()
-      |> validate_schema()
-      |> validate_key_value_parameters()
-      |> validate_extract_steps()
+    technical
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
+    |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
+    |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+    |> foreign_key_constraint(:dataset_id)
+    |> validate_required(@required_fields, message: "is required")
+    |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
+    |> validate_source_format()
+    |> CadenceValidator.validate()
+    |> validate_top_level_selector()
+    |> validate_schema()
+    |> validate_key_value_parameters()
+    |> validate_extract_steps()
   end
 
   def submission_changeset(technical, changes) do
