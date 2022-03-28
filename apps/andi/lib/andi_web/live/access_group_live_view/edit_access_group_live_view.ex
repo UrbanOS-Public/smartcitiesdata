@@ -32,7 +32,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
           <%= text_input(form, :name, class: "input") %>
         </div>
 
-        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, associated_datasets: @associated_datasets, selected_datasets: @selected_datasets, removed_datasets: @removed_datasets) %>
+        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, associated_datasets: @associated_datasets, selected_datasets: @selected_datasets) %>
 
         <div class="access-group-form__datasets">
           <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">+ Add Dataset</button>
@@ -55,20 +55,21 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def mount(_params, %{"is_curator" => is_curator, "access_group" => access_group, "user_id" => user_id} = _session, socket) do
     default_changeset = AccessGroup.changeset(access_group, %{}) |> Map.put(:errors, [])
-    access_group_with_datasets = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id) |> Andi.Repo.preload(:datasets)
+    access_group_with_datasets = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
+      |> Andi.Repo.preload(:datasets)
+    associated_datasets = Enum.map(access_group_with_datasets.datasets, fn dataset -> dataset.id end)
 
     {:ok,
      assign(socket,
        is_curator: is_curator,
        user_id: user_id,
-       access_group: access_group,
+       access_group: access_group_with_datasets,
        changeset: default_changeset,
        add_dataset_modal_visibility: "hidden",
        datasets: [],
        search_text: "",
        selected_datasets: [],
-       associated_datasets: access_group_with_datasets.datasets,
-       removed_datasets: []
+       associated_datasets: associated_datasets
      )}
   end
 
@@ -92,8 +93,17 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   def handle_event("access-group-form_save", _, socket) do
     access_group_id = socket.assigns.access_group.id
     user_id = socket.assigns.user_id
-    send_relation_event(dataset_access_group_associate(), socket.assigns.selected_datasets, access_group_id, user_id)
-    send_relation_event(dataset_access_group_disassociate(), socket.assigns.removed_datasets, access_group_id, user_id)
+
+    removed_datasets = socket.assigns.access_group.datasets
+      |> Enum.map(fn dataset -> dataset.id end)
+      |> Enum.filter(fn original -> original not in socket.assigns.associated_datasets end)
+
+    no_op_datasets = Enum.filter(removed_datasets, fn removal -> removal in socket.assigns.selected_datasets end)
+    filtered_removes = Enum.filter(removed_datasets, fn removal -> removal not in no_op_datasets end)
+    filtered_selects = Enum.filter(socket.assigns.selected_datasets, fn selection -> selection not in no_op_datasets end)
+
+    send_associate_event(filtered_selects, access_group_id, user_id)
+    send_dissociate_event(filtered_removes, access_group_id, user_id)
 
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
@@ -130,8 +140,16 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("remove-dataset", %{"id" => id}, socket) do
-    cond do
-      id in associated_datasets_ids(socket) -> remove_from_associated_datasets(id, socket)
+    updated_associations = update_list(id, socket.assigns.associated_datasets)
+    selected_datasets = update_list(id, socket.assigns.selected_datasets)
+    {:noreply, assign(socket, selected_datasets: selected_datasets, associated_datasets: updated_associations)}
+  end
+
+  defp update_list(id, dataset_list) do
+    if id in dataset_list do
+      List.delete(dataset_list, id)
+    else
+      dataset_list
     end
   end
 
@@ -142,10 +160,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     end
   end
 
-  defp associated_datasets_ids(socket) do
-    Enum.map(socket.assigns.associated_datasets, fn dataset -> dataset.id end)
-  end
-
   defp remove_from_selected_datasets(id, socket) do
     selected_datasets = List.delete(socket.assigns.selected_datasets, id)
     {:noreply, assign(socket, selected_datasets: selected_datasets)}
@@ -154,11 +168,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   defp add_to_selected_datasets(id, socket) do
     selected_datasets = [id | socket.assigns.selected_datasets]
     {:noreply, assign(socket, selected_datasets: selected_datasets)}
-  end
-
-  defp remove_from_associated_datasets(id, socket) do
-    removed_datasets = [id | socket.assigns.removed_datasets]
-    {:noreply, assign(socket, removed_datasets: removed_datasets)}
   end
 
   defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
@@ -189,12 +198,21 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     |> Andi.Repo.all()
   end
 
-  defp send_relation_event(event_type, datasets, access_group_id, user_id) do
+  defp send_associate_event(datasets, access_group_id, user_id) do
     Enum.map(datasets, fn dataset ->
       properties = %{dataset_id: dataset, access_group_id: access_group_id}
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
-      Andi.Schemas.AuditEvents.log_audit_event(user_id, event_type, relation)
-      Brook.Event.send(:andi, event_type, :andi, relation)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_associate(), relation)
+      Brook.Event.send(:andi, dataset_access_group_associate(), :andi, relation)
+    end)
+  end
+
+  defp send_dissociate_event(datasets, access_group_id, user_id) do
+    Enum.map(datasets, fn dataset ->
+      properties = %{dataset_id: dataset, access_group_id: access_group_id}
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_disassociate(), relation)
+      Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation)
     end)
   end
 end

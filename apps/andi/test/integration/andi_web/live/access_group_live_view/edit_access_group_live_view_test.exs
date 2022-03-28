@@ -406,6 +406,56 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end)
   end
 
+  test "keeps the dataset if user removes and re-selects", %{curator_conn: conn} do
+    access_group = create_access_group()
+    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "mistake_org"}) |> Datasets.update()
+    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+    dataset_id = dataset.id
+    eventually(fn ->
+      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+      assert [%Dataset{id: dataset_id}] = access_group.datasets
+    end)
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+    remove_action = element(view, ".modal-action-text", "Remove")
+    html = render_click(remove_action)
+
+    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+
+    add_dataset_button = element(view, ".btn", "+ Add Dataset")
+    render_click(add_dataset_button)
+
+    # search for the dataset by org and select it
+    html = render_submit(view, :search, %{"search-value" => dataset.business.orgTitle})
+    select_dataset = element(view, ".modal-action-text", "Select")
+    html = render_click(select_dataset)
+    assert get_text(html, ".search-table") =~ dataset.business.orgTitle
+
+    # save the search
+    save_button = element(view, ".save-search", "Save")
+    html = render_click(save_button)
+
+    # verfy that the selected dataset appear in the datasets table
+    assert get_text(html, ".access-groups-dataset-table") =~ dataset.business.orgTitle
+    assert get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+
+    # save the changes to the access group
+    save_button = element(view, ".save-edit", "Save")
+    html = render_click(save_button)
+
+    eventually(fn ->
+      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+      assert [%Dataset{id: ^dataset_id}] = access_group.datasets
+    end)
+  end
+
+  test "clicking remove does not open the modal" do
+  end
+
+  test "clicking remove for a dataset which is associated and selected removes that dataset" do
+
+  end
+
   defp create_access_group() do
     uuid = UUID.uuid4()
     access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
