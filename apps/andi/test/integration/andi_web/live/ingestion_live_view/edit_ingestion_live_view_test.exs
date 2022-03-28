@@ -47,12 +47,14 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       %{ingestion: ingestion}
     end
 
-    test "clicking cancel takes you back to the ingestions page when there are no unsaved changes", %{curator_conn: conn, ingestion: ingestion} do
+    test "clicking cancel takes you back to the ingestions page when there are no unsaved changes", %{
+      curator_conn: conn,
+      ingestion: ingestion
+    } do
       assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
 
       cancel_button = element(view, ".btn--cancel", "Cancel")
       render_click(cancel_button)
-
 
       assert_redirect(view, "/ingestions")
     end
