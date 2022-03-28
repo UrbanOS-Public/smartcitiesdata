@@ -32,14 +32,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
           <%= text_input(form, :name, class: "input") %>
         </div>
 
-        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, associated_datasets: @associated_datasets, selected_datasets: @selected_datasets) %>
+        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>
 
         <div class="access-group-form__datasets">
           <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">+ Add Dataset</button>
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, datasets: @datasets, search_text: @search_text, selected_datasets: @selected_datasets) %>
+      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, search_results: @search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
 
       <div class="edit-button-group" id="access-groups-edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -57,7 +57,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     default_changeset = AccessGroup.changeset(access_group, %{}) |> Map.put(:errors, [])
     access_group_with_datasets = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
       |> Andi.Repo.preload(:datasets)
-    associated_datasets = Enum.map(access_group_with_datasets.datasets, fn dataset -> dataset.id end)
+    starting_dataset_ids = Enum.map(access_group_with_datasets.datasets, fn dataset -> dataset.id end)
 
     {:ok,
      assign(socket,
@@ -66,10 +66,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        access_group: access_group_with_datasets,
        changeset: default_changeset,
        add_dataset_modal_visibility: "hidden",
-       datasets: [],
+       search_results: [],
        search_text: "",
-       selected_datasets: associated_datasets,
-       associated_datasets: associated_datasets
+       selected_datasets: starting_dataset_ids
      )}
   end
 
@@ -85,7 +84,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply,
      assign(socket,
        add_dataset_modal_visibility: "hidden",
-       datasets: socket.assigns.datasets,
+       search_results: socket.assigns.search_results,
        selected_datasets: socket.assigns.selected_datasets
      )}
   end
@@ -124,10 +123,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("search", %{"search-value" => search_value}, socket) do
-    datasets = query_on_search_change(search_value, socket)
+    search_results = query_on_search_change(search_value, socket)
 
     {:noreply,
-     assign(socket, add_dataset_modal_visibility: "visible", datasets: datasets, selected_datasets: socket.assigns.selected_datasets)}
+     assign(socket, add_dataset_modal_visibility: "visible", search_results: search_results, selected_datasets: socket.assigns.selected_datasets)}
   end
 
   def handle_event("select-search", %{"id" => id}, socket) do
@@ -136,20 +135,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("remove-selected-dataset", %{"id" => id}, socket) do
     update_selection(id, socket)
-  end
-
-  # def handle_event("remove-dataset", %{"id" => id}, socket) do
-  #   updated_associations = update_list(id, socket.assigns.associated_datasets)
-  #   selected_datasets = update_list(id, socket.assigns.selected_datasets)
-  #   {:noreply, assign(socket, selected_datasets: selected_datasets, associated_datasets: updated_associations)}
-  # end
-
-  defp update_list(id, dataset_list) do
-    if id in dataset_list do
-      List.delete(dataset_list, id)
-    else
-      dataset_list
-    end
   end
 
   defp update_selection(id, socket) do
@@ -169,15 +154,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply, assign(socket, selected_datasets: selected_datasets)}
   end
 
-  defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, datasets: datasets}}) do
-    datasets
+  defp query_on_search_change(search_value, %{assigns: %{search_text: search_value, search_results: search_results}}) do
+    search_results
   end
 
   defp query_on_search_change(search_value, _) do
-    refresh_datasets(search_value)
+    refresh_search_results(search_value)
   end
 
-  defp refresh_datasets(search_value) do
+  defp refresh_search_results(search_value) do
     like_search_string = "%#{search_value}%"
 
     query =

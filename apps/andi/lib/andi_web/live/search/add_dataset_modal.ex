@@ -45,10 +45,10 @@ defmodule AndiWeb.Search.AddDatasetModal do
               <th class="search-table__th search-table__cell thin-column">Action</th>
             </thead>
 
-            <%= if @datasets == [] do %>
+            <%= if @search_results == [] do %>
               <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
             <% else %>
-              <%= for dataset <- @datasets do %>
+              <%= for dataset <- @search_results do %>
               <tr class="search-table__tr">
                   <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                   <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
@@ -65,7 +65,7 @@ defmodule AndiWeb.Search.AddDatasetModal do
     <div class="dataset-search-selected-datasets">
         <p class="datasets-modal-section-header-text">Selected Datasets</p>
         <div class="selected-datasets-from-search">
-          <%= for dataset <- selected_datasets(@datasets, @selected_datasets) do %>
+          <%= for dataset <- selected_datasets(@search_results, @selected_datasets) do %>
             <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
           <% end %>
         </div>
