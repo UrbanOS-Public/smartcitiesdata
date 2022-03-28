@@ -32,18 +32,28 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
         </div>
 
-        <hr></hr>
+        <hr>
 
         <button id="ingestion-delete-button" class="btn btn--delete" phx-click="prompt-ingestion-delete" type="button">
           <span class="delete-icon material-icons">delete_outline</span>
-            DELETE
+          DELETE
         </button>
 
       </div>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
-
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
+
+      <div id="edit-page-snackbar" phx-hook="showSnackbar">
+        <div style="display: none;"><%= @click_id %></div>
+          <%= if @save_success do %>
+            <div id="snackbar" class="success-message"><%= @success_message %></div>
+          <% end %>
+
+          <%= if @page_error do %>
+            <div id="snackbar" class="error-message">A page error occurred</div>
+          <% end %>
+      </div>
     </div>
     """
   end
@@ -59,6 +69,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        unsaved_changes_modal_visibility: "hidden",
        is_curator: is_curator,
        unsaved_changes: false,
+       page_error: false,
        ingestion: ingestion,
        save_success: false,
        success_message: "",
@@ -74,6 +85,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
 
     {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message)}
+  end
+
+  # This handle_info takes care of all exceptions in a generic way.
+  # Expected errors should be handled in specific handlers.
+  # Flags should be reset here.
+  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
+    {:noreply, assign(socket, page_error: true, save_success: false)}
   end
 
   def handle_event("prompt-ingestion-delete", _, socket) do

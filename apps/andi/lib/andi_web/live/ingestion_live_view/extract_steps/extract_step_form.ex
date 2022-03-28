@@ -40,33 +40,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      )}
   end
 
-  # def mount(_params, %{"dataset" => dataset}, socket) do
-  #   AndiWeb.Endpoint.subscribe("toggle-visibility")
-  #   AndiWeb.Endpoint.subscribe("form-save")
-
-  #   extract_steps = get_in(dataset, [:technical, :extractSteps])
-
-  #   extract_step_changesets =
-  #     Enum.reduce(extract_steps, %{}, fn extract_step, acc ->
-  #       changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
-  #       Map.put(acc, extract_step.id, changeset)
-  #     end)
-
-  #   {:ok,
-  #    assign(socket,
-  #      extract_steps: extract_steps,
-  #      extract_step_changesets: extract_step_changesets,
-  #      testing: false,
-  #      visibility: "collapsed",
-  #      validation_status: "collapsed",
-  #      validation_map: %{},
-  #      dataset_id: dataset.id,
-  #      technical_id: dataset.technical.id,
-  #      new_step_type: "",
-  #      dataset_link: dataset.datasetLink
-  #    )}
-  # end
-
   def render(assigns) do
     action =
       case assigns.visibility do
@@ -113,91 +86,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     </div>
     """
   end
-
-  # def render(assigns) do
-  #   action =
-  #     case assigns.visibility do
-  #       "collapsed" -> "EDIT"
-  #       "expanded" -> "MINIMIZE"
-  #     end
-
-  #   ~L"""
-  #     <div id="extract-step-form" class="form-component">
-  #       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
-  #         <div class="section-number">
-  #           <h3 class="component-number component-number--<%= @validation_status %>">3</h3>
-  #           <div class="component-number-status--<%= @validation_status %>"></div>
-  #         </div>
-  #         <div class="component-title full-width">
-  #           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Configure Ingest Steps</h2>
-  #           <div class="component-title-action">
-  #             <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
-  #             <div class="component-title-icon--<%= @visibility %>"></div>
-  #           </div>
-  #         </div>
-  #       </div>
-
-  #       <div class="form-section">
-  #         <div class="component-edit-section--<%= @visibility %>">
-
-  # TODO: What is dataset_link. should this just be axed for ingestions.
-  #           <%= if @dataset_link != nil do %>
-  #             <div class="download_dataset_sample">
-  #               <h4>Dataset Link:</h4>
-  #               <a id="download_dataset_sample_link" target="_blank" href="/datasets/<%= @dataset_id %>/sample">
-  #                 <%= get_file_name_from_dataset_link(@dataset_link) %>
-  #               </a>
-  #             </div>
-  #           <% end %>
-
-  #           <div class="add-step">
-  #             <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
-  #             <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
-  #           </div>
-
-  #           <div class="extract-steps__error-message"><%= extract_steps_error_message(@extract_steps) %></div>
-
-  #           <%= for extract_step <- @extract_steps do %>
-  #             <% component_module_to_render = render_extract_step_form(extract_step) %>
-  #             <% step_changeset = Map.get(@extract_step_changesets, extract_step.id) %>
-
-  #             <hr>
-  #             <%= live_component(@socket, component_module_to_render, id: extract_step.id, extract_step: extract_step, technical_id: @technical_id, dataset_id: @dataset_id, changeset: step_changeset) %>
-  #           <% end %>
-
-  #           <div class="edit-button-group form-grid">
-  #             <a href="#data-dictionary-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Back</a>
-
-  #             <a href="#finalize_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="finalize_form">Next</a>
-  #           </div>
-  #         </div>
-  #       </div>
-  #     </div>
-  #   """
-  # end
-
-  # def handle_event("toggle-component-visibility", %{"component-expand" => next_component}, socket) do
-  #   new_validation_status = get_new_validation_status(socket.assigns.extract_step_changesets, socket.assigns.extract_steps)
-
-  #   AndiWeb.Endpoint.broadcast_from(self(), "toggle-visibility", "toggle-component-visibility", %{
-  #     expand: next_component,
-  #     dataset_id: socket.assigns.dataset_id
-  #   })
-
-  #   {:noreply, assign(socket, visibility: "collapsed", validation_status: new_validation_status)}
-  # end
-
-  # def handle_event("toggle-component-visibility", _, socket) do
-  #   current_visibility = Map.get(socket.assigns, :visibility)
-
-  #   new_visibility =
-  #     case current_visibility do
-  #       "expanded" -> "collapsed"
-  #       "collapsed" -> "expanded"
-  #     end
-
-  #   {:noreply, assign(socket, visibility: new_visibility) |> update_validation_status()}
-  # end
 
   def handle_event(
         "save",
@@ -306,10 +194,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     {:noreply, socket}
   end
 
-  # def handle_info(%{topic: "toggle-component-visibility"}, socket) do
-  #   {:noreply, socket}
-  # end
-
   def handle_info({:step_update, step_id, new_changeset}, socket) do
     updated_extract_step_changesets =
       socket.assigns.extract_step_changesets
@@ -319,34 +203,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      assign(socket, extract_step_changesets: updated_extract_step_changesets)
      |> update_validation_status()}
   end
-
-  # def handle_info(
-  #       {:validation_status, {step_id, status}},
-  #       %{assigns: %{validation_map: validation_map}} = socket
-  #     ) do
-  #   new_map = Map.put(validation_map, step_id, status)
-
-  #   new_status =
-  #     case Enum.any?(new_map, fn {_, status} -> status == "invalid" end) do
-  #       false -> "valid"
-  #       true -> "invalid"
-  #     end
-
-  #   {:noreply, assign(socket, validation_map: new_map, validation_status: new_status)}
-  # end
-
-  # # This handle_info takes care of all exceptions in a generic way.
-  # # Expected errors should be handled in specific handlers.
-  # # Flags should be reset here.
-  # def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
-  #   send(socket.parent_pid, :page_error)
-  #   {:noreply, assign(socket, page_error: true, testing: false, save_success: false)}
-  # end
-
-  # def handle_info(message, socket) do
-  #   Logger.debug(inspect(message))
-  #   {:noreply, socket}
-  # end
 
   defp get_file_name_from_dataset_link(dataset_link) do
     dataset_link
