@@ -52,6 +52,19 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert element(view, ".manage-users-modal--hidden") |> has_element?
       refute element(view, ".manage-users-modal--visible") |> has_element?
     end
+
+    test "contains a user search field", %{conn: conn} do
+      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      get_manage_users_button(view) |> render_click()
+
+      assert element(view, ".manage-users-modal .search-modal__search_bar-input") |> has_element?
+    end
   end
 
   # describe "Basic dataset search load" do
