@@ -21,7 +21,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <h2 class="component-title-text access-groups-component-title-text">Edit Access Group </h2>
       </div>
 
-      <hr class="datasets-modal-divider">
+      <hr class="search-modal-divider">
 
       <%= form = form_for @changeset, "#", [as: :form_data, phx_change: :form_change] %>
       <%= hidden_input(form, :id) %>
@@ -146,6 +146,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        search_results: search_results,
        selected_datasets: socket.assigns.selected_datasets
      )}
+  end
+
+  def handle_event("user-search", %{"search-value" => _search_value}, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do

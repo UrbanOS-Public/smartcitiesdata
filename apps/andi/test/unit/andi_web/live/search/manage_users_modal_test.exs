@@ -131,6 +131,6 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   end
 
   defp get_save_users_button(view) do
-    element(view, ".save-user-search")
+    element(view, ".manage-users-modal .save-search")
   end
 end

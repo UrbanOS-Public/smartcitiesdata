@@ -147,11 +147,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
 
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
 
       html = render_submit(view, "dataset-search", %{"search-value" => "some new value"})
 
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
     end
 
     test "a dataset can be removed", %{curator_conn: conn} do
@@ -189,7 +189,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       html = render_click(select_dataset)
 
-      assert get_text(html, ".selected-datasets-from-search") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-results-from-search") =~ dataset_a.business.dataTitle
     end
 
     test "a dataset can be unselected by clicking close", %{curator_conn: conn} do
@@ -206,13 +206,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ "Remove"
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
 
-      deselect_dataset = element(view, ".remove-selected-dataset")
+      deselect_dataset = element(view, ".remove-selected-result")
       html = render_click(deselect_dataset)
 
       refute get_text(html, ".search-table") =~ "Remove"
-      refute get_text(html, ".selected-dataset-from-search") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".selected-result-from-search") =~ dataset_a.business.dataTitle
     end
   end
 
