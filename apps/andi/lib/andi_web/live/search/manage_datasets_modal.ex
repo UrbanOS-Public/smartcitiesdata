@@ -15,7 +15,7 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
 
         <div class="datasets-modal__search">
             <p class="datasets-modal-section-header-text">Search</p>
-            <form phx-change="search" phx-submit="search">
+            <form phx-change="dataset-search" phx-submit="dataset-search">
               <div class="datasets-modal__search-input-container">
                 <label for="datasets-modal__search-input">
                   <i class="material-icons datasets-modal__search-icon">search</i>
@@ -53,7 +53,7 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
                   <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                   <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                   <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
                 </tr>
               <% end %>
             <% end %>
@@ -74,7 +74,7 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
     <hr class="datasets-modal-divider">
 
     <div class="btn-group__standard">
-          <button id="save-search-button" name="save-search-button" class="btn btn--large btn--action save-search" type="button" phx-click="save-search">Save</button>
+          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--large btn--action save-dataset-search" type="button" phx-click="save-dataset-search">Save</button>
         </div>
       </div>
     </div>
