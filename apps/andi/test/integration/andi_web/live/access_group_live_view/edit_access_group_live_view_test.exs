@@ -38,12 +38,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       element(view, ".btn", "Manage Users") |> render_click
 
-      assert element(view, ".manage-users-modal") |> has_element?
-    end
-
-    # todo:
-    @tag :skip
-    test "save closes the user search modal" do
+      assert element(view, ".manage-users-modal--visible") |> has_element?
     end
   end
 

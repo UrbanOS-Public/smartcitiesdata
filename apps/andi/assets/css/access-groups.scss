@@ -93,6 +93,14 @@
     display: none;
 }
 
+.manage-users-modal--visible {
+  @include modal-wrapper();
+}
+
+.manage-users-modal--hidden {
+    display: none;
+}
+
 .access-groups-dataset-table-container {
   max-height: 250px;
   overflow-y: auto;

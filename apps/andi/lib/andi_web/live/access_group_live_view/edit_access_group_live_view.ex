@@ -44,9 +44,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
 
-      <%= if @manage_users_modal_visibility == "visible" do %>
-        <p class="manage-users-modal">Users Search Modal</p>
-      <% end %>
+      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility) %>
 
       <div class="edit-button-group" id="access-groups-edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -96,6 +94,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
      )}
   end
 
+  def handle_event("save-user-search", _, socket) do
+    {:noreply,
+     assign(socket,
+       manage_users_modal_visibility: "hidden"
+       #  search_results: socket.assigns.search_results,
+       #  selected_datasets: socket.assigns.selected_datasets
+     )}
+  end
+
   def handle_event("access-group-form_save", _, socket) do
     access_group_id = socket.assigns.access_group.id
     user_id = socket.assigns.user_id
@@ -127,7 +134,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("manage-users", _, socket) do
-    "manage users" |> IO.inspect(label: "hit event")
     {:noreply, assign(socket, manage_users_modal_visibility: "visible")}
   end
 
