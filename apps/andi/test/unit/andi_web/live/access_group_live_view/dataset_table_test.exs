@@ -32,11 +32,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
 
   describe "Basic associated datasets table load" do
     test "shows \"No Associated Datasets\" when there are no rows to show", %{conn: conn} do
-      access_group = TDG.create_access_group(%{})
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(Andi.InputSchemas.AccessGroup.changeset(any(), any()), return: AccessGroup.changeset(access_group))
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      access_group = setup_access_group()
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -45,11 +41,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
     end
 
     test "shows an associated dataset", %{conn: conn} do
-      access_group = TDG.create_access_group(%{})
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(Andi.InputSchemas.AccessGroup.changeset(any(), any()), return: AccessGroup.changeset(access_group))
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      access_group = setup_access_group()
       dataset = TDG.create_dataset(%{})
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [%{id: dataset.id}]})
       allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
@@ -60,11 +52,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
     end
 
     test "shows multiple associated datasets", %{conn: conn} do
-      access_group = TDG.create_access_group(%{})
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
-      allow(Andi.InputSchemas.AccessGroup.changeset(any(), any()), return: AccessGroup.changeset(access_group))
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      access_group = setup_access_group()
       dataset_1 = TDG.create_dataset(%{})
       dataset_2 = TDG.create_dataset(%{})
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [%{id: dataset_1.id}, %{id: dataset_2.id}]})
@@ -75,6 +63,30 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
 
       assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_1.business.dataTitle
       assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_2.business.dataTitle
+    end
+
+    test "shows a remove button for each dataset", %{conn: conn} do
+      access_group = setup_access_group()
+      dataset_1 = TDG.create_dataset(%{})
+      dataset_2 = TDG.create_dataset(%{})
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [%{id: dataset_1.id}, %{id: dataset_2.id}]})
+      allow(Andi.InputSchemas.Datasets.get(dataset_1.id), return: dataset_1)
+      allow(Andi.InputSchemas.Datasets.get(dataset_2.id), return: dataset_2)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      text = get_text(html, ".access-groups-dataset-table__cell")
+      results = Regex.scan(~r/Remove/, text)
+
+      assert length(results) == 2
+    end
+
+    defp setup_access_group() do
+      access_group = TDG.create_access_group(%{})
+      allow(AccessGroups.update(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
+      allow(AccessGroups.get(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
+      allow(Andi.InputSchemas.AccessGroup.changeset(any(), any()), return: AccessGroup.changeset(access_group))
+      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      access_group
     end
   end
 end
