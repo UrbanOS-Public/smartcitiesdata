@@ -437,15 +437,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end)
   end
 
-  @tag :skip
-  test "clicking remove does not open the modal" do
-  end
-
-  @tag :skip
-  test "clicking remove for a dataset which is associated and selected removes that dataset" do
-
-  end
-
   defp create_access_group() do
     uuid = UUID.uuid4()
     access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
