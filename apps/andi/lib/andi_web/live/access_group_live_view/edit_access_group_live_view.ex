@@ -35,7 +35,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>
 
         <div class="access-group-form__datasets">
-          <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">+ Add Dataset</button>
+          <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">Manage Datasets</button>
         </div>
       </form>
 
@@ -74,10 +74,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: header_access_groups_path())}
-  end
-
-  def handle_event("cancel-search", _, socket) do
-    {:noreply, assign(socket, add_dataset_modal_visibility: "hidden")}
   end
 
   def handle_event("save-search", _, socket) do

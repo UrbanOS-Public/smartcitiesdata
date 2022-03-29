@@ -42,7 +42,7 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      add_dataset_button = element(view, ".btn", "Manage Dataset")
 
       render_click(add_dataset_button)
 
@@ -58,7 +58,7 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      add_dataset_button = element(view, ".btn", "Manage Dataset")
 
       render_click(add_dataset_button)
 
@@ -84,7 +84,7 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      add_dataset_button = element(view, ".btn", "Manage Dataset")
 
       render_click(add_dataset_button)
 
