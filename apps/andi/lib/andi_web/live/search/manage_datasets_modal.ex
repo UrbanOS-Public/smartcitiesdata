@@ -34,33 +34,33 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
         </div>
         <div id="<%= @id %>">
 
-      <div class="dataset-modal-search-results">
-        <p class="search-modal-section-header-text">Results</p>
-        <div class="search-modal-results-table">
-          <table class="search-table">
-            <thead>
-              <th class="search-table__th search-table__cell wide-column">Dataset</th>
-              <th class="search-table__th search-table__cell wide-column">Organization</th>
-              <th class="search-table__th search-table__cell wide-column">Keywords</th>
-              <th class="search-table__th search-table__cell thin-column">Action</th>
-            </thead>
+        <div class="dataset-modal-search-results">
+          <p class="search-modal-section-header-text">Results</p>
+          <div class="search-modal-results-table">
+            <table class="search-table">
+              <thead>
+                <th class="search-table__th search-table__cell wide-column">Dataset</th>
+                <th class="search-table__th search-table__cell wide-column">Organization</th>
+                <th class="search-table__th search-table__cell wide-column">Keywords</th>
+                <th class="search-table__th search-table__cell thin-column">Action</th>
+              </thead>
 
-            <%= if @search_results == [] do %>
-              <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
-            <% else %>
-              <%= for dataset <- @search_results do %>
-              <tr class="search-table__tr">
-                  <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
-                  <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
-                  <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
-                </tr>
+              <%= if @search_results == [] do %>
+                <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
+              <% else %>
+                <%= for dataset <- @search_results do %>
+                <tr class="search-table__tr">
+                    <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
+                    <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
+                    <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                  </tr>
+                <% end %>
               <% end %>
-            <% end %>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
     <div class="dataset-search-selected-datasets">
         <p class="search-modal-section-header-text">Selected Datasets</p>

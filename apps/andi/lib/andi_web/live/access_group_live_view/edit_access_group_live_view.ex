@@ -10,6 +10,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   alias Andi.InputSchemas.AccessGroup
   alias Andi.InputSchemas.AccessGroups
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.Schemas.User
 
   access_levels(render: [:private])
 
@@ -42,9 +43,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
+      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @dataset_search_text, selected_datasets: @selected_datasets) %>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility) %>
+      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text) %>
 
       <div class="edit-button-group" id="access-groups-edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -76,8 +77,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        manage_datasets_modal_visibility: "hidden",
        manage_users_modal_visibility: "hidden",
        dataset_search_results: [],
-       search_text: "",
-       selected_datasets: starting_dataset_ids
+       user_search_results: [],
+       dataset_search_text: "",
+       user_search_text: "",
+       selected_datasets: starting_dataset_ids,
+       selected_users: []
      )}
   end
 
@@ -148,8 +152,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
      )}
   end
 
-  def handle_event("user-search", %{"search-value" => _search_value}, socket) do
-    {:noreply, socket}
+  def handle_event("user-search", %{"search-value" => search_value}, socket) do
+    search_results = query_on_user_search_change(search_value, socket)
+    {:noreply,
+     assign(socket,
+       manage_users_modal_visibility: "visible",
+       user_search_results: search_results,
+       selected_users: socket.assigns.selected_users
+     )}
   end
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
@@ -177,7 +187,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply, assign(socket, selected_datasets: selected_datasets)}
   end
 
-  defp query_on_dataset_search_change(search_value, %{assigns: %{search_text: search_value, dataset_search_results: search_results}}) do
+  defp query_on_dataset_search_change(search_value, %{assigns: %{dataset_search_text: search_value, dataset_search_results: search_results}}) do
     search_results
   end
 
@@ -199,6 +209,27 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         or_where: ilike(business.orgTitle, type(^like_search_string, :string)),
         or_where: ^search_value in business.keywords,
         select: dataset
+      )
+
+    query
+    |> Andi.Repo.all()
+  end
+
+  defp query_on_user_search_change(search_value, %{assigns: %{user_search_text: search_value, user_search_results: search_results}}) do
+    search_results
+  end
+
+  defp query_on_user_search_change(search_value, _) do
+    refresh_user_search_results(search_value)
+  end
+
+  defp refresh_user_search_results(search_value) do
+    like_search_string = "%#{search_value}%"
+
+    query =
+      from(user in User,
+        where: ilike(user.email, type(^like_search_string, :string)),
+        select: user
       )
 
     query

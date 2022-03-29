@@ -71,7 +71,6 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
     end
 
-    @tag :skip
     test "Represents a user in the search results table when one exists", %{conn: conn} do
       mock_andi_repo()
       allow(Andi.Repo.all(any()), return: [%User{email: "someone@example.com", organizations: ["123"]}])
