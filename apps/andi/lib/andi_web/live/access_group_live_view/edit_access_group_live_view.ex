@@ -55,8 +55,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def mount(_params, %{"is_curator" => is_curator, "access_group" => access_group, "user_id" => user_id} = _session, socket) do
     default_changeset = AccessGroup.changeset(access_group, %{}) |> Map.put(:errors, [])
-    access_group_with_datasets = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
+
+    access_group_with_datasets =
+      Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
       |> Andi.Repo.preload(:datasets)
+
     starting_dataset_ids = Enum.map(access_group_with_datasets.datasets, fn dataset -> dataset.id end)
 
     {:ok,
@@ -119,7 +122,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     search_results = query_on_search_change(search_value, socket)
 
     {:noreply,
-     assign(socket, manage_datasets_modal_visibility: "visible", search_results: search_results, selected_datasets: socket.assigns.selected_datasets)}
+     assign(socket,
+       manage_datasets_modal_visibility: "visible",
+       search_results: search_results,
+       selected_datasets: socket.assigns.selected_datasets
+     )}
   end
 
   def handle_event("select-search", %{"id" => id}, socket) do

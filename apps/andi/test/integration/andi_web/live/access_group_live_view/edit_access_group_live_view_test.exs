@@ -355,10 +355,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
     Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
     dataset_id = dataset.id
+
     eventually(fn ->
       access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
       assert [%Dataset{id: dataset_id}] = access_group.datasets
     end)
+
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
     remove_action = element(view, ".modal-action-text", "Remove")
@@ -373,10 +375,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
     Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
     dataset_id = dataset.id
+
     eventually(fn ->
       access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
       assert [%Dataset{id: dataset_id}] = access_group.datasets
     end)
+
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
     remove_action = element(view, ".modal-action-text", "Remove")
@@ -400,10 +404,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
     Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
     dataset_id = dataset.id
+
     eventually(fn ->
       access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
       assert [%Dataset{id: dataset_id}] = access_group.datasets
     end)
+
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
     remove_action = element(view, ".modal-action-text", "Remove")
     html = render_click(remove_action)
