@@ -4,7 +4,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
-  # import FlokiHelpers, only: [get_text: 2]
+  import FlokiHelpers, only: [get_text: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.AccessGroups
@@ -33,11 +33,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
 
   describe "users search modal" do
     test "is closed upon hitting save", %{conn: conn} do
-      # refactor: `mock_andi_repo`?
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+      mock_andi_repo()
 
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -54,10 +50,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     end
 
     test "contains a user search field", %{conn: conn} do
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+      mock_andi_repo()
 
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -68,9 +61,14 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   end
 
   describe "User searching in the modal" do
-    # todo:
-    @tag :skip
-    test "Shows \"No Matching Users\" when there are now users to show", %{conn: conn} do
+    test "Shows \"No Matching Users\" when there are no users to show", %{conn: conn} do
+      mock_andi_repo()
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      get_manage_users_button(view) |> render_click()
+
+      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
     end
 
     # todo:
@@ -148,6 +146,13 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   #     assert get_text(html, ".search-table__cell") =~ "Pretty"
   #   end
   # end
+
+  defp mock_andi_repo() do
+    allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+    allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
+    allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+    allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+  end
 
   defp create_access_group() do
     uuid = UUID.uuid4()
