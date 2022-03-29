@@ -76,6 +76,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end
   end
 
+  # refactor: I feel like every test under this comment could be placed into
+  # a new integration test file dedicated to the dataset search modal. Can
+  # do the same for users tests. Otherwise this test file will balloon fast.
   describe "manage datasets button" do
     test "exists", %{curator_conn: conn} do
       access_group = create_access_group()

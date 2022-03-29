@@ -67,6 +67,23 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     end
   end
 
+  describe "User searching in the modal" do
+    # todo:
+    @tag :skip
+    test "Shows \"No Matching Users\" when there are now users to show", %{conn: conn} do
+    end
+
+    # todo:
+    @tag :skip
+    test "Represents a user in the search results table when one exists", %{conn: conn} do
+    end
+
+    # todo:
+    @tag :skip
+    test "Represents multiple users in the search results table when many exist", %{conn: conn} do
+    end
+  end
+
   # describe "Basic dataset search load" do
   #   test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
   #     allow(Andi.InputSchemas.Datasets.get_all(), return: [])
