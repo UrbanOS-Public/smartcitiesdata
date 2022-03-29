@@ -31,6 +31,8 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
     :ok
   end
 
+  #TODO: use modal-specific selector in front of more generic class selectors
+
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])

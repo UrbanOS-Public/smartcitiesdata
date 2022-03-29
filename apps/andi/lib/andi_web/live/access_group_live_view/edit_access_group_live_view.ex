@@ -42,7 +42,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
+      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
 
       <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility) %>
 
@@ -75,7 +75,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        changeset: default_changeset,
        manage_datasets_modal_visibility: "hidden",
        manage_users_modal_visibility: "hidden",
-       search_results: [],
+       dataset_search_results: [],
        search_text: "",
        selected_datasets: starting_dataset_ids
      )}
@@ -89,7 +89,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply,
      assign(socket,
        manage_datasets_modal_visibility: "hidden",
-       search_results: socket.assigns.search_results,
+       dataset_search_results: socket.assigns.dataset_search_results,
        selected_datasets: socket.assigns.selected_datasets
      )}
   end
@@ -143,7 +143,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply,
      assign(socket,
        manage_datasets_modal_visibility: "visible",
-       search_results: search_results,
+       dataset_search_results: search_results,
        selected_datasets: socket.assigns.selected_datasets
      )}
   end
@@ -177,7 +177,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply, assign(socket, selected_datasets: selected_datasets)}
   end
 
-  defp query_on_dataset_search_change(search_value, %{assigns: %{search_text: search_value, search_results: search_results}}) do
+  defp query_on_dataset_search_change(search_value, %{assigns: %{search_text: search_value, dataset_search_results: search_results}}) do
     search_results
   end
 

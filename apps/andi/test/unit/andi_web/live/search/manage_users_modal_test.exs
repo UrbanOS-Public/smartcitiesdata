@@ -71,9 +71,18 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
     end
 
-    # todo:
     @tag :skip
     test "Represents a user in the search results table when one exists", %{conn: conn} do
+      mock_andi_repo()
+      allow(Andi.Repo.all(any()), return: [%User{email: "someone@example.com", organizations: ["123"]}])
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      get_manage_users_button(view) |> render_click()
+
+      html = render_submit(view, "user-search", %{"search-value" => "someone"})
+
+      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
+      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
     end
 
     # todo:
@@ -83,21 +92,6 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   end
 
   # describe "Basic dataset search load" do
-  #   test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
-  #     allow(Andi.InputSchemas.Datasets.get_all(), return: [])
-  #     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-  #     allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
-
-  #     access_group = create_access_group()
-  #     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-
-  #     manage_datasets_button = find_manage_datasets_button(view)
-  #     render_click(manage_datasets_button)
-
-  #     assert get_text(html, ".search-table__cell") =~ "No Matching Datasets"
-  #   end
 
   #   test "represents a dataset when one exists", %{conn: conn} do
   #     allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
