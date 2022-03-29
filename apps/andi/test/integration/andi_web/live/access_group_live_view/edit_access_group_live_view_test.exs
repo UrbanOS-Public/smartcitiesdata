@@ -64,25 +64,25 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end
   end
 
-  describe "add dataset button" do
+  describe "manage datasets button" do
     test "exists", %{curator_conn: conn} do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
+      manage_datasets_button = find_manage_datasets_button(view)
 
-      assert has_element?(manage_dataset_button)
+      assert has_element?(manage_datasets_button)
     end
 
     test "opens modal on click", %{curator_conn: conn} do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
+      manage_datasets_button = find_manage_datasets_button(view)
 
-      render_click(manage_dataset_button)
+      render_click(manage_datasets_button)
 
-      add_dataset_modal = element(view, ".add-dataset-modal")
+      add_dataset_modal = element(view, ".manage-datasets-modal")
 
       assert has_element?(add_dataset_modal)
     end
@@ -91,15 +91,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
+      manage_datasets_button = find_manage_datasets_button(view)
 
-      render_click(manage_dataset_button)
+      render_click(manage_datasets_button)
 
       save_button = element(view, ".save-search", "Save")
 
       render_click(save_button)
 
-      refute Enum.empty?(find_elements(html, ".add-dataset-modal--hidden"))
+      refute Enum.empty?(find_elements(html, ".manage-datasets-modal--hidden"))
     end
   end
 
@@ -110,8 +110,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
@@ -128,8 +128,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
       select_dataset = element(view, ".modal-action-text", "Select")
@@ -148,8 +148,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
@@ -168,8 +168,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
@@ -186,8 +186,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
@@ -212,8 +212,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
 
@@ -228,8 +228,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.dataTitle})
 
@@ -244,8 +244,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_submit(view, :search, %{"search-value" => "fun"})
 
@@ -260,8 +260,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
 
@@ -275,15 +275,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       # add a new dataset to the access group
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       # save the datasets to the access group
       save_button = element(view, ".save-search", "Save")
       render_click(save_button)
 
       # verify that the search modal is closed
-      refute Enum.empty?(find_elements(html, ".add-dataset-modal--hidden"))
+      refute Enum.empty?(find_elements(html, ".manage-datasets-modal--hidden"))
     end
 
     test "saves the results of the search to the dataset table", %{curator_conn: conn} do
@@ -293,8 +293,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       # add a new dataset to the access group
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       # search for the dataset by name and select it
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
@@ -321,8 +321,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       # add a new dataset to the access group
-      manage_dataset_button = find_manage_dataset_button(view)
-      render_click(manage_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       # search for the dataset by name and select it
       html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
@@ -410,8 +410,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
     refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
 
-    manage_dataset_button = find_manage_dataset_button(view)
-    render_click(manage_dataset_button)
+    manage_datasets_button = find_manage_datasets_button(view)
+    render_click(manage_datasets_button)
 
     # search for the dataset by org and select it
     html = render_submit(view, :search, %{"search-value" => dataset.business.orgTitle})
@@ -444,7 +444,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     access_group
   end
 
-  defp find_manage_dataset_button(view) do
-    element(view, ".btn", "Manage Dataset")
+  defp find_manage_datasets_button(view) do
+    element(view, ".btn", "Manage Datasets")
   end
 end

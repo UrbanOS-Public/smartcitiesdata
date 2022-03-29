@@ -1,9 +1,9 @@
-defmodule AndiWeb.Search.AddDatasetModal do
+defmodule AndiWeb.Search.ManageDatasetsModal do
   use Phoenix.LiveComponent
 
   def render(assigns) do
     ~L"""
-    <div class="add-dataset-modal add-dataset-modal--<%= @visibility %>">
+    <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
       <div class="modal-form-container dataset-search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>

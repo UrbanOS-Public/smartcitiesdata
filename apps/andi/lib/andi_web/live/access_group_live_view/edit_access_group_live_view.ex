@@ -35,11 +35,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>
 
         <div class="access-group-form__datasets">
-          <button class="btn btn--add-dataset-search" phx-click="add-dataset" type="button">Manage Datasets</button>
+          <button class="btn btn--manage-datasets-search" phx-click="manage-datasets" type="button">Manage Datasets</button>
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.AddDatasetModal, visibility: @add_dataset_modal_visibility, search_results: @search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
+      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @search_results, search_text: @search_text, selected_datasets: @selected_datasets) %>
 
       <div class="edit-button-group" id="access-groups-edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -65,7 +65,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        user_id: user_id,
        access_group: access_group_with_datasets,
        changeset: default_changeset,
-       add_dataset_modal_visibility: "hidden",
+       manage_datasets_modal_visibility: "hidden",
        search_results: [],
        search_text: "",
        selected_datasets: starting_dataset_ids
@@ -79,7 +79,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   def handle_event("save-search", _, socket) do
     {:noreply,
      assign(socket,
-       add_dataset_modal_visibility: "hidden",
+       manage_datasets_modal_visibility: "hidden",
        search_results: socket.assigns.search_results,
        selected_datasets: socket.assigns.selected_datasets
      )}
@@ -111,15 +111,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event("add-dataset", _, socket) do
-    {:noreply, assign(socket, add_dataset_modal_visibility: "visible")}
+  def handle_event("manage-datasets", _, socket) do
+    {:noreply, assign(socket, manage_datasets_modal_visibility: "visible")}
   end
 
   def handle_event("search", %{"search-value" => search_value}, socket) do
     search_results = query_on_search_change(search_value, socket)
 
     {:noreply,
-     assign(socket, add_dataset_modal_visibility: "visible", search_results: search_results, selected_datasets: socket.assigns.selected_datasets)}
+     assign(socket, manage_datasets_modal_visibility: "visible", search_results: search_results, selected_datasets: socket.assigns.selected_datasets)}
   end
 
   def handle_event("select-search", %{"id" => id}, socket) do
