@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
+  alias Andi.InputSchemas.InputConverter
 
   access_levels(render: [:private])
 
@@ -21,26 +22,76 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         <h2 class="component-title-text">Define Data Ingestion</h2>
       </div>
 
+      <div class="extract-steps-form-component">
+        <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion}) %>
+      </div>
+
       <div class="edit-page__btn-group">
+        <div class="btn-group__standard">
+          <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+        </div>
+
+        <hr>
+
         <button id="ingestion-delete-button" class="btn btn--delete" phx-click="prompt-ingestion-delete" type="button">
           <span class="delete-icon material-icons">delete_outline</span>
           DELETE
         </button>
+
       </div>
 
+      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
+
+      <div id="edit-page-snackbar" phx-hook="showSnackbar">
+        <div style="display: none;"><%= @click_id %></div>
+          <%= if @save_success do %>
+            <div id="snackbar" class="success-message"><%= @success_message %></div>
+          <% end %>
+
+          <%= if @page_error do %>
+            <div id="snackbar" class="error-message">A page error occurred</div>
+          <% end %>
+      </div>
     </div>
     """
   end
 
   def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session, socket) do
+    default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
+
     {:ok,
      assign(socket,
+       changeset: default_changeset,
+       click_id: nil,
+       delete_ingestion_modal_visibility: "hidden",
+       unsaved_changes_modal_visibility: "hidden",
        is_curator: is_curator,
-       user_id: user_id,
+       unsaved_changes: false,
+       page_error: false,
        ingestion: ingestion,
-       delete_ingestion_modal_visibility: "hidden"
+       save_success: false,
+       success_message: "",
+       user_id: user_id
      )}
+  end
+
+  def handle_info(:form_update, socket) do
+    {:noreply, assign(socket, unsaved_changes: true)}
+  end
+
+  def handle_info({:update_save_message, status}, socket) do
+    message = save_message(status == "valid" && socket.assigns.changeset.valid?)
+
+    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message)}
+  end
+
+  # This handle_info takes care of all exceptions in a generic way.
+  # Expected errors should be handled in specific handlers.
+  # Flags should be reset here.
+  def handle_info({:EXIT, _pid, {_error, _stacktrace}}, socket) do
+    {:noreply, assign(socket, page_error: true, save_success: false)}
   end
 
   def handle_event("prompt-ingestion-delete", _, socket) do
@@ -65,4 +116,38 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_event("delete-canceled", _, socket) do
     {:noreply, assign(socket, delete_ingestion_modal_visibility: "hidden")}
   end
+
+  def handle_event("save", _, socket) do
+    ingestion_id = socket.assigns.ingestion.id
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
+
+    andi_ingestion = Ingestions.get(ingestion_id)
+    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
+
+    {:noreply,
+     assign(socket,
+       changeset: ingestion_changeset,
+       save_success: true,
+       click_id: UUID.uuid4(),
+       success_message: save_message(ingestion_changeset.valid?)
+     )}
+  end
+
+  def handle_event("cancel-edit", _, socket) do
+    case socket.assigns.unsaved_changes do
+      true -> {:noreply, assign(socket, unsaved_changes_link: header_ingestions_path(), unsaved_changes_modal_visibility: "visible")}
+      false -> {:noreply, redirect(socket, to: header_ingestions_path())}
+    end
+  end
+
+  def handle_event("unsaved-changes-canceled", _, socket) do
+    {:noreply, assign(socket, unsaved_changes_modal_visibility: "hidden")}
+  end
+
+  def handle_event("force-cancel-edit", _, socket) do
+    {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
+  end
+
+  defp save_message(true = _valid?), do: "Saved successfully."
+  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
 end

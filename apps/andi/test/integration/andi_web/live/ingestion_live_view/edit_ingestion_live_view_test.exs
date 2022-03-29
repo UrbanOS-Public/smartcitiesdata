@@ -1,4 +1,4 @@
-defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
+defmodule AndiWeb.EditIngestionLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
@@ -7,7 +7,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
   @instance_name Andi.instance_name()
 
   import SmartCity.Event, only: [ingestion_update: 0, ingestion_delete: 0, dataset_update: 0]
-  import Placebo
+  use Placebo
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
@@ -15,7 +15,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
     only: [
       find_elements: 2,
       get_texts: 2,
-      get_attributes: 3
+      get_attributes: 3,
+      get_text: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -24,6 +25,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
   alias Andi.InputSchemas.Ingestions
   alias Andi.Schemas.AuditEvents
   alias Andi.Services.IngestionStore
+  alias Andi.InputSchemas.InputConverter
 
   @instance_name Andi.instance_name()
 
@@ -43,6 +45,44 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
       end)
 
       %{ingestion: ingestion}
+    end
+
+    test "clicking cancel takes you back to the ingestions page when there are no unsaved changes", %{
+      curator_conn: conn,
+      ingestion: ingestion
+    } do
+      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+
+      cancel_button = element(view, ".btn--cancel", "Cancel")
+      render_click(cancel_button)
+
+      assert_redirect(view, "/ingestions")
+    end
+
+    test "clicking cancel warns of unsaved changes", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+
+      editor = find_live_child(view, "extract_step_form_editor")
+
+      render_change(editor, "update_new_step_type", %{"value" => "http"})
+      render_click(editor, "add-extract-step")
+
+      render_click(view, "save")
+
+      updated_andi_ingestion = Andi.InputSchemas.Ingestions.get(ingestion.id)
+      extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
+      es_form = element(editor, "#step-#{extract_step_id} form")
+
+      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+
+      render_change(view, "cancel-edit", %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
+
+      render_change(view, "force-cancel-edit", %{})
+
+      assert_redirect(view, "/ingestions")
     end
 
     test "are able to be deleted", %{curator_conn: conn, ingestion: ingestion} do
@@ -76,9 +116,51 @@ defmodule AndiWeb.AccessGroupLiveView.EditIngestionLiveViewTest do
       assert_redirected(view, @url_path)
     end
 
+    test "success message is displayed when form data is saved", %{curator_conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+
+      {:ok, ingestion} =
+        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
+        |> Ingestions.save()
+
+      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+
+      assert get_text(html, "#snackbar") == ""
+
+      render_change(view, :save, %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
+      assert get_text(html, "#snackbar") == "Saved successfully. You may need to fix errors before publishing."
+    end
+
+    test "saving form as draft does not send brook event", %{curator_conn: conn} do
+      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+
+      {:ok, ingestion} =
+        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
+        |> Ingestions.save()
+
+      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+
+      render_change(view, :save, %{})
+
+      refute_called Brook.Event.send(any(), any(), any(), any())
+    end
+
     defp delete_ingestion_in_ui(view) do
       view |> element("#ingestion-delete-button") |> render_click
       view |> element(".delete-button") |> render_click
+    end
+
+    defp get_extract_step_id(ingestion, index) do
+      ingestion
+      |> Andi.InputSchemas.StructTools.to_map()
+      |> Map.get(:extractSteps)
+      |> Enum.at(index)
+      |> Map.get(:id)
     end
   end
 end

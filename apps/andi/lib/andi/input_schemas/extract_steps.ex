@@ -34,6 +34,15 @@ defmodule Andi.InputSchemas.ExtractSteps do
     Repo.all(query)
   end
 
+  def all_for_ingestion(ingestion_id) do
+    query =
+      from(extract_step in ExtractStep,
+        where: extract_step.ingestion_id == ^ingestion_id
+      )
+
+    Repo.all(query)
+  end
+
   def update(changes) do
     from_step =
       case get(changes.id) do

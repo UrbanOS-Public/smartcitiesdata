@@ -5,14 +5,13 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
   @moduletag shared_data_connection: true
 
-  import Placebo
+  use Placebo
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
     only: [
-      find_elements: 2,
-      get_texts: 2
+      find_elements: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG

@@ -61,6 +61,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Dataset.changeset_for_draft(%Dataset{}, changes)
   end
 
+  def smrt_ingestion_to_draft_changeset(smrt_ingestion) do
+    changes = prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+    Ingestion.changeset_for_draft(%Ingestion{}, changes)
+  end
+
   def prepare_smrt_dataset_for_casting(dataset) do
     dataset
     |> StructTools.to_map()
