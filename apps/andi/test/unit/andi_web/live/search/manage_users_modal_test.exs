@@ -84,61 +84,31 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
     end
 
-    # todo:
     @tag :skip
     test "Represents multiple users in the search results table when many exist", %{conn: conn} do
+          mock_andi_repo()
+          allow(Andi.Repo.all(any()),
+            return: [
+              %User{email: "someone@example.com", organizations: ["123"]},
+              %User{email: "someone_else@example.com", organizations: ["ABC"]},
+              %User{email: "completely_different@example.com", organizations: ["Zed"]}
+            ]
+          )
+          access_group = create_access_group()
+          assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+          get_manage_users_button(view) |> render_click()
+
+          html = render_submit(view, "user-search", %{"search-value" => "example"})
+
+          assert get_text(html, ".search-table__cell") =~ "someone@example.com"
+          assert get_text(html, ".search-table__cell") =~ "123"
+          assert get_text(html, ".search-table__cell") =~ "someone_else@example.com"
+          assert get_text(html, ".search-table__cell") =~ "ABC"
+          assert get_text(html, ".search-table__cell") =~ "completely_different@example.com"
+          assert get_text(html, ".search-table__cell") =~ "Zed"
     end
   end
-
-  # describe "Basic dataset search load" do
-
-  #   test "represents a dataset when one exists", %{conn: conn} do
-  #     allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
-  #     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-  #     allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
-  #     access_group = create_access_group()
-  #     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-
-  #     manage_datasets_button = find_manage_datasets_button(view)
-  #     render_click(manage_datasets_button)
-
-  #     html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
-
-  #     assert get_text(html, ".search-table__cell") =~ "Noodles"
-  #     assert get_text(html, ".search-table__cell") =~ "Happy"
-  #     assert get_text(html, ".search-table__cell") =~ "Soup"
-  #   end
-
-  #   test "represents multiple datasets", %{conn: conn} do
-  #     allow(Andi.Repo.all(any()),
-  #       return: [
-  #         %Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}},
-  #         %Dataset{business: %{dataTitle: "Flowers", orgTitle: "Gardener", keywords: ["Pretty"]}}
-  #       ]
-  #     )
-
-  #     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-  #     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-  #     allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
-  #     access_group = create_access_group()
-  #     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-
-  #     manage_datasets_button = find_manage_datasets_button(view)
-  #     render_click(manage_datasets_button)
-
-  #     html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
-
-  #     assert get_text(html, ".search-table__cell") =~ "Noodles"
-  #     assert get_text(html, ".search-table__cell") =~ "Happy"
-  #     assert get_text(html, ".search-table__cell") =~ "Soup"
-  #     assert get_text(html, ".search-table__cell") =~ "Flowers"
-  #     assert get_text(html, ".search-table__cell") =~ "Gardener"
-  #     assert get_text(html, ".search-table__cell") =~ "Pretty"
-  #   end
-  # end
 
   defp mock_andi_repo() do
     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})

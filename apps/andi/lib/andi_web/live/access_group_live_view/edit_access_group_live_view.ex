@@ -102,8 +102,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     {:noreply,
      assign(socket,
        manage_users_modal_visibility: "hidden"
-       #  search_results: socket.assigns.search_results,
-       #  selected_datasets: socket.assigns.selected_datasets
      )}
   end
 
