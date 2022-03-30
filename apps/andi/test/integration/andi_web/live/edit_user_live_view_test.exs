@@ -34,7 +34,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
       {:ok, user} =
         User.create_or_update(user_one_subject_id, %{
           subject_id: user_one_subject_id,
-          email: "blahblahblah@blah.com"
+          email: "blahblahblah@blah.com",
+          name: "Someone"
         })
 
       smrt_org = TDG.create_organization([])
@@ -61,7 +62,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
       {:ok, user} =
         User.create_or_update(user_one_subject_id, %{
           subject_id: user_one_subject_id,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Someone"
         })
 
       org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
@@ -129,7 +131,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
       org2_id = org2.id
 
-      # Associate to user 
+      # Associate to user
       render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
       render_change(view, "associate", %{"organiation" => %{"org_id" => org2_id}})
 
@@ -157,7 +159,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
       {:ok, user} =
         User.create_or_update(user_one_subject_id, %{
           subject_id: user_one_subject_id,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Someone"
         })
 
       org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})

@@ -77,7 +77,7 @@ defmodule DiscoveryApi.Mixfile do
       {:raptor_service, in_umbrella: true},
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
-      {:smart_city, "~> 5.1.0"},
+      {:smart_city, "~> 5.1.1"},
       {:smart_city_test, "~> 2.1.3", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},

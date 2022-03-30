@@ -16,7 +16,8 @@ defmodule DiscoveryApiWeb.UserControllerTest do
   end
 
   describe "POST /logged-in with Auth0 auth provider" do
-    test "returns OK for valid bearer token", %{authorized_conn: conn} do
+    test "returns OK for valid bearer token", %{authorized_conn: conn, bypass: bypass} do
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z", "name" => "xyz"})) end)
       conn
       |> post("/api/v1/logged-in")
       |> response(200)
@@ -28,19 +29,20 @@ defmodule DiscoveryApiWeb.UserControllerTest do
         assert authorization_header != nil
 
         assert "Bearer #{token}" == elem(authorization_header, 1)
-        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "a@b.c"}))
+        Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "a@b.c", "name" => "abc"}))
       end)
 
       conn
       |> post("/api/v1/logged-in")
     end
 
-    test "creates/updates user with the fetched user info", %{authorized_conn: conn, authorized_subject: subject} do
+    test "creates/updates user with the fetched user info", %{authorized_conn: conn, authorized_subject: subject, bypass: bypass} do
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z", "name" => "xyz"})) end)
       conn
       |> post("/api/v1/logged-in")
       |> response(200)
 
-      assert_called(Users.create_or_update(subject, %{email: "x@y.z"}))
+      assert_called(Users.create_or_update(subject, %{email: "x@y.z", name: "xyz"}))
     end
 
     @moduletag capture_log: true
@@ -63,7 +65,8 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       |> response(500)
     end
 
-    test "sends user:login brook event on success", %{authorized_conn: conn} do
+    test "sends user:login brook event on success", %{authorized_conn: conn, bypass: bypass} do
+      Bypass.stub(bypass, "GET", "/userinfo", fn conn -> Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "something@example.com", "name" => "Someone"})) end)
       conn
       |> post("/api/v1/logged-in")
       |> response(200)

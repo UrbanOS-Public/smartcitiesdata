@@ -183,7 +183,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
 
   describe "certain fields in the data dictionary editor are unavaliable for non curator users" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "Bob"})
       [public_user: public_user]
     end
 

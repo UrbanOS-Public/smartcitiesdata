@@ -84,7 +84,7 @@ defmodule Andi.MixProject do
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
       {:simply_validate, ">= 0.2.0"},
-      {:smart_city, "~> 5.1.0"},
+      {:smart_city, "~> 5.1.1"},
       {:smart_city_test, "~> 2.1.3", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},

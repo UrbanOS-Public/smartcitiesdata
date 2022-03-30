@@ -22,7 +22,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
   describe "schema sample upload" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "bob"})
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
       [blank_dataset: blank_dataset, public_user: public_user]
     end
@@ -216,6 +216,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
       assert download_log.dataset_id == andi_dataset.id
       assert associated_user.email == "bob@example.com"
+      assert associated_user.name == "bob"
       assert download_log.upload_success
     end
 
@@ -248,6 +249,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
       assert download_log.dataset_id == andi_dataset.id
       assert associated_user.email == "bob@example.com"
+      assert associated_user.name == "bob"
       refute download_log.upload_success
     end
   end

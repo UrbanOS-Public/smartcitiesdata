@@ -29,7 +29,8 @@ defmodule AndiWeb.UserLiveViewTest do
       {:ok, user} =
         User.create_or_update(user_one_subject_id, %{
           subject_id: user_one_subject_id,
-          email: "blahblahblah@blah.com"
+          email: "blahblahblah@blah.com",
+          name: "Blah Blah"
         })
 
       [user: user]
@@ -54,13 +55,15 @@ defmodule AndiWeb.UserLiveViewTest do
       {:ok, user1} =
         User.create_or_update(user_one_subject_id, %{
           subject_id: user_one_subject_id,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Blah"
         })
 
       {:ok, user2} =
         User.create_or_update(user_two_subject_id, %{
           subject_id: user_two_subject_id,
-          email: "foo@foo.com"
+          email: "foo@foo.com",
+          name: "Foo"
         })
 
       [user1: user1, user2: user2]

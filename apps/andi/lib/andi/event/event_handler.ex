@@ -89,7 +89,8 @@ defmodule Andi.Event.EventHandler do
     user_organization_associate()
     |> add_event_count(author, nil)
 
-    create_user_if_not_exists(subject_id, email)
+    # TODO: how do we get name from this event
+    create_user_if_not_exists(subject_id, email, email)
 
     case User.associate_with_organization(subject_id, org_id) do
       {:error, error} ->
@@ -203,17 +204,17 @@ defmodule Andi.Event.EventHandler do
     DatasetStore.delete(dataset.id)
   end
 
-  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name}, author: author}) do
     user_login()
     |> add_event_count(author, nil)
 
-    create_user_if_not_exists(subject_id, email)
+    create_user_if_not_exists(subject_id, email, name)
   end
 
-  defp create_user_if_not_exists(subject_id, email) do
+  defp create_user_if_not_exists(subject_id, email, name) do
     case User.get_by_subject_id(subject_id) do
       nil ->
-        User.create_or_update(subject_id, %{subject_id: subject_id, email: email})
+        User.create_or_update(subject_id, %{subject_id: subject_id, email: email, name: name})
         :ok
 
       _user ->

@@ -39,7 +39,7 @@ defmodule AndiWeb.MetadataFormTest do
   @url_path "/datasets/"
 
   setup %{curator_subject: curator_subject} do
-    {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
+    {:ok, curator_user} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com", name: "bob"})
 
     [curator_user: curator_user]
   end
@@ -618,7 +618,7 @@ defmodule AndiWeb.MetadataFormTest do
 
     test "dataset owner lists all the users in the system by email", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
-      {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com"})
+      {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com", name: "Hello World"})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
