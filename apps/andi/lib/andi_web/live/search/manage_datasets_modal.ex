@@ -74,7 +74,7 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
     <hr class="search-modal-divider">
 
     <div class="btn-group__standard">
-          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--large btn--action save-dataset-search" type="button" phx-click="save-dataset-search">Save</button>
+          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--large btn--action save-search" type="button" phx-click="save-dataset-search">Save</button>
         </div>
       </div>
     </div>
