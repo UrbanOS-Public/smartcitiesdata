@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
+defmodule AndiWeb.DataDictionary.AddFieldEditor do
   @moduledoc """
     LiveComponent for adding a field to a data dictionary
   """
@@ -12,7 +12,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
 
   def render(assigns) do
     id = Atom.to_string(assigns.id)
-
     modifier =
       if assigns.visible do
         "visible"
@@ -61,7 +60,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
   end
 
   def mount(socket) do
-    changeset = blank_changeset()
+    changeset = blank_changeset(socket)
     {:ok, assign(socket, changeset: changeset, visible: false)}
   end
 
@@ -74,10 +73,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
 
   def handle_event("cancel", _, socket) do
     send(self(), {:add_data_dictionary_field_cancelled})
-    {:noreply, assign(socket, changeset: blank_changeset(), visible: false)}
+    {:noreply, assign(socket, changeset: blank_changeset(socket), visible: false)}
   end
 
-  def handle_event("add_field", _, socket) do
+  def handle_event("add_field", _, %{assigns: %{dataset_id: dataset_id }} = socket) do
     field_as_atomic_map =
       socket.assigns.changeset.changes
       |> Map.put(:dataset_id, socket.assigns.dataset_id)
@@ -93,7 +92,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
       case DataDictionaryFields.add_field_to_parent(field_as_atomic_map, parent_bread_crumb) do
         {:ok, field} ->
           send(self(), {:add_data_dictionary_field_succeeded, field.id})
-          blank_changeset()
+          blank_changeset(socket)
 
         {:error, changeset} ->
           Map.put(changeset, :action, :update)
@@ -102,9 +101,39 @@ defmodule AndiWeb.EditLiveView.DataDictionaryAddFieldEditor do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  defp blank_changeset() do
+  def handle_event("add_field", _, %{assigns: %{ingestion_id: ingestion_id }} = socket) do
+    field_as_atomic_map =
+      socket.assigns.changeset.changes
+      |> Map.put(:ingestion_id, ingestion_id)
+
+    parent_bread_crumb =
+      Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
+        {i, n}
+      end)
+      |> Map.new()
+      |> Map.get(field_as_atomic_map.parent_id)
+
+    new_changeset =
+      case DataDictionaryFields.add_field_to_parent_for_ingestion(field_as_atomic_map, parent_bread_crumb) do
+        {:ok, field} ->
+          send(self(), {:add_data_dictionary_field_succeeded, field.id})
+          blank_changeset(socket)
+
+        {:error, changeset} ->
+          Map.put(changeset, :action, :update)
+      end
+
+    {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  defp blank_changeset(%{view: AndiWeb.EditLiveView.DataDictionaryForm} = socket) do
     DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   end
+
+  defp blank_changeset(%{view: AndiWeb.EditIngestionLiveView.DataDictionaryForm} = socket) do
+    DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, %{})
+  end
+
 
   defp get_item_types(), do: map_to_dropdown_options(Options.items())
 

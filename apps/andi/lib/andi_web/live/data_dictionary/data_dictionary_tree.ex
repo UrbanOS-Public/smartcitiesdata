@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryTree do
+defmodule AndiWeb.DataDictionary.Tree do
   @moduledoc """
     LiveComponent for a nested data dictionary tree view
   """
@@ -6,7 +6,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
   import Phoenix.HTML
   import Phoenix.HTML.Form
 
-  alias AndiWeb.EditLiveView.DataDictionaryTree
+  alias AndiWeb.DataDictionary.Tree
 
   def mount(socket) do
     {:ok, assign(socket, expansion_map: %{})}
@@ -37,7 +37,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryTree do
 
           <%= if is_set?(field, :subSchema) do %>
             <div class="data-dictionary-tree__sub-dictionary data-dictionary-tree__sub-dictionary--<%= icon_modifier %>">
-              <%= live_component(@socket, DataDictionaryTree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render, add_field_event_name: @add_field_event_name) %>
+              <%= live_component(@socket, Tree, id: :"#{@id}_#{input_value(field, :name)}", root_id: @root_id, selected_field_id: @selected_field_id, form: field, field: :subSchema, expansion_map: @expansion_map, new_field_initial_render: @new_field_initial_render, add_field_event_name: @add_field_event_name) %>
             </div>
           <% end %>
         <% end %>

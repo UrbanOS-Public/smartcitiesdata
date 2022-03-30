@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryTreeTest do
+defmodule AndiWeb.DataDictionary.TreeTest do
   use ExUnit.Case
   use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase

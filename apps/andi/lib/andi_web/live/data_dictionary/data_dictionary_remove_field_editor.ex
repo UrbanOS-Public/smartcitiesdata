@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryRemoveFieldEditor do
+defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
   @moduledoc """
   LiveComponent for removing a field to a data dictionary
   """

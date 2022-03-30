@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.OverwriteSchemaModal do
+defmodule AndiWeb.DataDictionary.OverwriteSchemaModal do
   @moduledoc """
   LiveComponent for prompting the user if they would like to overwrite the existing schema
   """

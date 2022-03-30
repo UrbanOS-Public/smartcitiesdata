@@ -54,12 +54,12 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :bread_crumb,
     :format,
     :sequence,
-    :use_default
+    :use_default,
+    :ingestion_id
   ]
   @required_fields [
     :name,
     :type,
-    :dataset_id,
     :bread_crumb
   ]
 
@@ -87,6 +87,19 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_new_field/2)
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
+    |> foreign_key_constraint(:parent_id)
+    |> add_default_format()
+    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_required(@required_fields, message: "is required")
+  end
+
+  def ingestion_changeset_for_new_field(dictionary, changes) do
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_new_field/2)
+    |> foreign_key_constraint(:ingestion_id)
     |> foreign_key_constraint(:parent_id)
     |> add_default_format()
     |> validate_format(:name, ~r/^[[:print:]]+$/)

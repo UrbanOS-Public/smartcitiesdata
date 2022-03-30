@@ -1,6 +1,6 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryForm do
+defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   @moduledoc """
-  LiveComponent for editing dataset schema
+  LiveComponent for editing ingestion schema
   """
   use Phoenix.LiveView
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
@@ -9,16 +9,16 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.DataDictionary.Tree
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.InputConverter
+  alias Andi.InputSchemas.Ingestion
   alias Ecto.Changeset
 
-  def mount(_, %{"dataset" => dataset, "is_curator" => is_curator, "order" => order}, socket) do
-    new_changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
-    send(socket.parent_pid, {:update_data_dictionary_status, new_changeset.valid?})
+  def mount(_, %{"ingestion" => ingestion, "is_curator" => is_curator, "order" => order}, socket) do
+    new_changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(ingestion)
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
@@ -30,13 +30,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        add_data_dictionary_field_visible: false,
        remove_data_dictionary_field_visible: false,
        changeset: new_changeset,
-       sourceFormat: dataset.technical.sourceFormat,
+       sourceFormat: ingestion.sourceFormat,
        visibility: "collapsed",
        validation_status: "collapsed",
        new_field_initial_render: false,
-       dataset: dataset,
-       dataset_id: dataset.id,
-       technical_id: dataset.technical.id,
+       ingestion: ingestion,
+       ingestion_id: ingestion.id,
        overwrite_schema_visibility: "hidden",
        pending_changeset: nil,
        loading_schema: false,
@@ -67,7 +66,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">
-          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Data Dictionary</h2>
+          <h2 class="component-title-text component-title-text--<%= @visibility %> ">Ingestion Schema</h2>
           <div class="component-title-action">
             <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
             <div class="component-title-icon--<%= @visibility %>"></div>
@@ -81,32 +80,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
           <div class="component-edit-section--<%= @visibility %>">
 
-            <%= if not @is_curator do %>
-              <div class="section-help data-dictionary-help">
-                Please review your data dictionary schema for accuracy and completeness
-              </div>
-            <% end %>
             <div class="data-dictionary-form-edit-section form-grid">
-
-              <div class="upload-section">
-                <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
-                  <div class="data-dictionary-form__file-upload">
-                    <div class="file-input-button--<%= loader_visibility %>">
-                      <div class="file-input-button">
-                        <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
-                        <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
-                      </div>
-                    </div>
-
-                    <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
-                    <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
-                  </div>
-                <% end %>
-
-                <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
-              </div>
-
 
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
@@ -125,27 +99,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
               </div>
 
               <div class="data-dictionary-form__edit-section">
-                <%= if @is_curator do %>
                   <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
-                <% else %>
-                  <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
-                <% end %>
               </div>
-            </div>
-
-            <div class="edit-button-group form-grid">
-              <a href="#metadata-form" id="back-button" class="btn btn--back btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="metadata_form">Back</a>
-              <a href="#extract-step-form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="extract_step_form">Next</a>
             </div>
           </div>
         </form>
       </div>
 
-      <%= live_component(@socket, AndiWeb.DataDictionary.AddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@dataset), visible: @add_data_dictionary_field_visible, dataset_id: @dataset.id,  selected_field_id: @selected_field_id ) %>
+      <%= live_component(@socket, AndiWeb.DataDictionary.AddFieldEditor, id: :data_dictionary_add_field_editor, eligible_parents: get_eligible_data_dictionary_parents(@ingestion), visible: @add_data_dictionary_field_visible, ingestion_id: @ingestion.id,  selected_field_id: @selected_field_id ) %>
 
       <%= live_component(@socket, AndiWeb.DataDictionary.RemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
 
-      <%= live_component(@socket, AndiWeb.DataDictionary.OverwriteSchemaModal, id: :overwrite_schema_modal, visibility: @overwrite_schema_visibility) %>
     </div>
     """
   end
@@ -153,7 +117,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("validate", %{"data_dictionary_form_schema" => form_schema}, socket) do
     form_schema
     |> DataDictionaryFormSchema.changeset_from_form_data()
-    |> send_data_dictionary_status(socket)
     |> complete_validation(socket)
   end
 
@@ -205,7 +168,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("overwrite-schema", _, socket) do
     form_changes = InputConverter.form_changes_from_changeset(socket.assigns.pending_changeset)
-    {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+    {:ok, _} = Ingestions.update_from_form(socket.assigns.ingestion_id, form_changes)
 
     {:noreply,
      assign(socket,
@@ -222,8 +185,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
-    {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset) |> send_data_dictionary_status(socket)
+    {:ok, andi_ingestion} = Ingestions.update_from_form(socket.assigns.ingestion.id, changes)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(andi_ingestion)
 
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
@@ -235,8 +198,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info(
-        %{topic: "source-format", payload: %{new_format: new_format, dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
+        %{topic: "source-format", payload: %{new_format: new_format, ingestion_id: ingestion_id}},
+        %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
     {:noreply, assign(socket, sourceFormat: new_format)}
   end
@@ -248,17 +211,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_info(
         %{
           topic: "populate_data_dictionary",
-          payload: %{"dataset_sample" => %{"file" => file, "fileType" => file_type}, "dataset_id" => dataset_id}
+          payload: %{"ingestion_sample" => %{"file" => file, "fileType" => file_type}, "ingestion_id" => ingestion_id}
         },
-        %{assigns: %{dataset_id: dataset_id}} = socket
+        %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
     file_type_for_upload = get_file_type_for_upload(file_type)
     generate_new_schema(socket, file, file_type)
   end
 
   def handle_info(
-        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", dataset_id: dataset_id}},
-        %{assigns: %{dataset_id: dataset_id}} = socket
+        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", ingestion_id: ingestion_id}},
+        %{assigns: %{ingestion_id: ingestino_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
@@ -268,8 +231,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
-    dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
+    ingestion = Ingestions.get(socket.assigns.ingestion.id)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(ingestion)
 
     {:noreply,
      assign(socket,
@@ -295,8 +258,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           Changeset.fetch_field!(new_selected, :id)
       end
 
-    dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
+    ingestion = Ingestions.get(socket.assigns.ingestion.id)
+    changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(ingestion)
 
     {:noreply,
      assign(socket,
@@ -362,8 +325,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         new_changeset =
           decoded_json
           |> List.wrap()
-          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.dataset_id)
-          |> send_data_dictionary_status(socket)
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id) #TODO this will be work
 
         assign_new_schema(socket, new_changeset)
 
@@ -378,8 +340,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         new_changeset =
           file
           |> parse_csv()
-          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
-          |> send_data_dictionary_status(socket)
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id) #TODO this will be work
 
         assign_new_schema(socket, new_changeset)
 
@@ -406,7 +367,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     case existing_schema_empty do
       true ->
         form_changes = InputConverter.form_changes_from_changeset(new_changeset)
-        {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
+        {:ok, _} = Ingestions.update_from_form(socket.assigns.ingestion_id, form_changes)
 
         {:noreply, assign(socket, loading_schema: false, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
 
@@ -501,8 +462,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     ]
   end
 
-  defp get_eligible_data_dictionary_parents(dataset) do
-    DataDictionaryFields.get_parent_ids(dataset)
+  defp get_eligible_data_dictionary_parents(ingestion) do
+    DataDictionaryFields.get_parent_ids_from_ingestion(ingestion)
   end
 
   defp validate_empty_csv(file) do

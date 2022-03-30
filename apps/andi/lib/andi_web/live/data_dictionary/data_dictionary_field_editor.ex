@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
+defmodule AndiWeb.DataDictionary.FieldEditor do
   @moduledoc """
     LiveComponent for a nested data dictionary tree view
   """

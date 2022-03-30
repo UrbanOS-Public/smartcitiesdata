@@ -353,7 +353,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_click(save_button)
 
       eventually(fn ->
-        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets) |> IO.inspect(label: "here")
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
         assert [%Dataset{id: ^dataset_id}] = access_group.datasets
       end)
     end
