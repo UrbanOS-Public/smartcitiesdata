@@ -37,3 +37,5 @@ host =
 config :andi,
   dead_letter_topic: "streaming-dead-letters",
   kafka_endpoints: [{host, 9092}]
+
+config :tzdata, :data_dir, "./tzdata"
