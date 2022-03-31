@@ -24,10 +24,9 @@ defmodule AndiWeb.AuthController do
     |> redirect(to: "/")
   end
 
-  # TODO add name
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email})
-    {:ok, smrt_user} = SmartCity.User.new(%{subject_id: auth.uid, email: auth.info.email})
+    {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email, name: auth.info.name})
+    {:ok, smrt_user} = SmartCity.User.new(%{subject_id: auth.uid, email: auth.info.email, name: auth.info.name})
 
     if Andi.private_access?() do
       Brook.Event.send(@instance_name, user_login(), __MODULE__, smrt_user)
