@@ -72,7 +72,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
     end
 
-    test "Can search by email", %{conn: conn} do
+    test "Represents single user in the search results table when one exists", %{conn: conn} do
       mock_andi_repo()
       org = %Organization{orgTitle: "123"}
       user = %User{id: Ecto.UUID.generate(),name: "Joe", email: "someone@example.com", organizations: [org]}
@@ -84,22 +84,6 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       html = render_submit(view, "user-search", %{"search-value" => "someone"})
 
       assert get_text(html, ".search-table__cell") =~ "Joe"
-      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
-      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
-    end
-
-    test "Can search by name", %{conn: conn} do
-      mock_andi_repo()
-      org = %Organization{orgTitle: "123"}
-      user = %User{id: Ecto.UUID.generate(),name: "Sara", email: "someone@example.com", organizations: [org]}
-      allow(Andi.Repo.all(any()), return: [user])
-      access_group = create_access_group()
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-      get_manage_users_button(view) |> render_click()
-
-      html = render_submit(view, "user-search", %{"search-value" => "Sara"})
-
-      assert get_text(html, ".search-table__cell") =~ "Sara"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
     end
