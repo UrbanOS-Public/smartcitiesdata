@@ -227,7 +227,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     query =
       from(user in User,
         where: ilike(user.email, type(^like_search_string, :string)),
-        # or_where: ilike(user.name, type(^like_search_string, :string)),
+        or_where: ilike(user.name, type(^like_search_string, :string)),
         select: user
       )
 

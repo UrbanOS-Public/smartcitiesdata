@@ -6,15 +6,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-
   import FlokiHelpers,
     only: [
-      find_elements: 2
+      find_elements: 2,
+      get_text: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
-
   alias Andi.InputSchemas.AccessGroups
+  alias Andi.Schemas.User
 
   @url_path "/access-groups"
 
@@ -22,7 +22,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-    element(view, ".btn", "Manage Users") |> render_click
+    find_manage_users_button(view) |> render_click
 
     assert element(view, ".manage-users-modal--visible") |> has_element?
   end
@@ -38,6 +38,28 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     render_click(save_button)
 
     refute Enum.empty?(find_elements(html, ".manage-users-modal--hidden"))
+  end
+
+  test "searches on email", %{curator_conn: conn} do
+    {:ok, user} = User.create_or_update("auth0|123456", %{email: "test@example.com", name: "Tester"})
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => user.email})
+
+    assert get_text(html, ".search-table") =~ user.email
+  end
+
+  test "searches on name", %{curator_conn: conn} do
+    {:ok, user} = User.create_or_update("auth0|123456", %{email: "test@example.com", name: "Samuel"})
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => user.name})
+
+    assert get_text(html, ".search-table") =~ user.name
   end
 
   defp create_access_group() do

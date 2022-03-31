@@ -30,18 +30,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
   @url_path "/access-groups"
 
-  # refactor: setup block for `create_access_group` with overrides params + live() result handed to test
-  describe "manage users" do
-    test "button opens the user search modal", %{curator_conn: conn} do
-      access_group = create_access_group()
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-
-      element(view, ".btn", "Manage Users") |> render_click
-
-      assert element(view, ".manage-users-modal--visible") |> has_element?
-    end
-  end
-
   describe "curator users access" do
     test "the access group name field is alterable", %{curator_conn: conn} do
       uuid = UUID.uuid4()
