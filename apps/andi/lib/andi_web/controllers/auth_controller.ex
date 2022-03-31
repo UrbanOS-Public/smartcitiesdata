@@ -24,6 +24,7 @@ defmodule AndiWeb.AuthController do
     |> redirect(to: "/")
   end
 
+  # TODO add name
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
     {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email})
     {:ok, smrt_user} = SmartCity.User.new(%{subject_id: auth.uid, email: auth.info.email})

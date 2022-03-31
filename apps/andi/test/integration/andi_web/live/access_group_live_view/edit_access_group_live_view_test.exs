@@ -110,7 +110,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       render_click(manage_datasets_button)
 
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
 
       render_click(save_button)
 
@@ -294,7 +294,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(manage_datasets_button)
 
       # save the datasets to the access group
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       render_click(save_button)
 
       # verify that the search modal is closed
@@ -318,7 +318,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
 
       # save the search
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
@@ -346,7 +346,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
 
       # save the search
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
@@ -441,7 +441,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     assert get_text(html, ".search-table") =~ dataset.business.orgTitle
 
     # save the search
-    save_button = element(view, ".save-search", "Save")
+    save_button = element(view, ".manage-datasets-modal .save-search", "Save")
     html = render_click(save_button)
 
     # verfy that the selected dataset appear in the datasets table

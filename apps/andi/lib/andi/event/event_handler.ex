@@ -89,9 +89,6 @@ defmodule Andi.Event.EventHandler do
     user_organization_associate()
     |> add_event_count(author, nil)
 
-    # TODO: how do we get name from this event
-    create_user_if_not_exists(subject_id, email, email)
-
     case User.associate_with_organization(subject_id, org_id) do
       {:error, error} ->
         Logger.error("Unable to associate user with organization #{org_id}: #{inspect(error)}. This event has been discarded.")
