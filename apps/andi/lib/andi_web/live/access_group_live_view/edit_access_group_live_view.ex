@@ -232,6 +232,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
     query
     |> Andi.Repo.all()
+    |> Andi.Repo.preload(:organizations)
   end
 
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do

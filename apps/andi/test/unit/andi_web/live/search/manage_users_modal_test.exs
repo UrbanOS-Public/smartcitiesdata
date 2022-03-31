@@ -10,6 +10,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
   alias Andi.InputSchemas.AccessGroups
   alias Andi.InputSchemas.AccessGroup
   alias Andi.Schemas.User
+  alias Andi.InputSchemas.Organization
 
   @endpoint AndiWeb.Endpoint
   @url_path "/access-groups"
@@ -71,42 +72,66 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
     end
 
-    test "Represents a user in the search results table when one exists", %{conn: conn} do
+    test "Can search by email", %{conn: conn} do
       mock_andi_repo()
-      allow(Andi.Repo.all(any()), return: [%User{email: "someone@example.com", organizations: ["123"]}])
+      org = %Organization{orgTitle: "123"}
+      user = %User{id: Ecto.UUID.generate(),name: "Joe", email: "someone@example.com", organizations: [org]}
+      allow(Andi.Repo.all(any()), return: [user])
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
       get_manage_users_button(view) |> render_click()
 
       html = render_submit(view, "user-search", %{"search-value" => "someone"})
 
+      assert get_text(html, ".search-table__cell") =~ "Joe"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
     end
 
-    @tag :skip
+    test "Can search by name", %{conn: conn} do
+      mock_andi_repo()
+      org = %Organization{orgTitle: "123"}
+      user = %User{id: Ecto.UUID.generate(),name: "Sara", email: "someone@example.com", organizations: [org]}
+      allow(Andi.Repo.all(any()), return: [user])
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      get_manage_users_button(view) |> render_click()
+
+      html = render_submit(view, "user-search", %{"search-value" => "Sara"})
+
+      assert get_text(html, ".search-table__cell") =~ "Sara"
+      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
+      assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
+    end
+
     test "Represents multiple users in the search results table when many exist", %{conn: conn} do
-          mock_andi_repo()
-          allow(Andi.Repo.all(any()),
-            return: [
-              %User{email: "someone@example.com", organizations: ["123"]},
-              %User{email: "someone_else@example.com", organizations: ["ABC"]},
-              %User{email: "completely_different@example.com", organizations: ["Zed"]}
-            ]
-          )
-          access_group = create_access_group()
-          assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      mock_andi_repo()
+      org_123 = %Organization{orgTitle: "123", id: Ecto.UUID.generate()}
+      org_abc = %Organization{orgTitle: "ABC", id: Ecto.UUID.generate()}
+      org_zed = %Organization{orgTitle: "Zed", id: Ecto.UUID.generate()}
+      allow(Andi.Repo.all(any()),
+        return: [
+          %User{id: Ecto.UUID.generate(), name: "Tanya", email: "someone@example.com", organizations: [org_123]},
+          %User{id: Ecto.UUID.generate(), name: "Jill", email: "someone_else@example.com", organizations: [org_abc]},
+          %User{id: Ecto.UUID.generate(), name: "Alice", email: "completely_different@example.com", organizations: [org_zed]}
+        ]
+      )
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-          get_manage_users_button(view) |> render_click()
+      get_manage_users_button(view) |> render_click()
 
-          html = render_submit(view, "user-search", %{"search-value" => "example"})
+      html = render_submit(view, "user-search", %{"search-value" => "example"})
 
-          assert get_text(html, ".search-table__cell") =~ "someone@example.com"
-          assert get_text(html, ".search-table__cell") =~ "123"
-          assert get_text(html, ".search-table__cell") =~ "someone_else@example.com"
-          assert get_text(html, ".search-table__cell") =~ "ABC"
-          assert get_text(html, ".search-table__cell") =~ "completely_different@example.com"
-          assert get_text(html, ".search-table__cell") =~ "Zed"
+      assert get_text(html, ".search-table__cell") =~ "Tanya"
+      assert get_text(html, ".search-table__cell") =~ "someone@example.com"
+      assert get_text(html, ".search-table__cell") =~ "123"
+      assert get_text(html, ".search-table__cell") =~ "Jill"
+      assert get_text(html, ".search-table__cell") =~ "someone_else@example.com"
+      assert get_text(html, ".search-table__cell") =~ "ABC"
+      assert get_text(html, ".search-table__cell") =~ "Alice"
+      assert get_text(html, ".search-table__cell") =~ "completely_different@example.com"
+      assert get_text(html, ".search-table__cell") =~ "Zed"
     end
   end
 
@@ -114,7 +139,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-    allow(Andi.Repo.preload(any(), any()), return: %{datasets: []})
+    allow(Andi.Repo.preload(any(), :datasets), return: %{datasets: []})
   end
 
   defp create_access_group() do

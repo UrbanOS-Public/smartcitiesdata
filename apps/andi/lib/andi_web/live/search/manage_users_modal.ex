@@ -4,7 +4,7 @@ defmodule AndiWeb.Search.ManageUsersModal do
   def render(assigns) do
     ~L"""
     <div class="manage-users-modal manage-users-modal--<%= @visibility %>">
-      <div class="modal-form-container users-search-modal">
+      <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">User Search</h1>
         </div>
@@ -38,6 +38,7 @@ defmodule AndiWeb.Search.ManageUsersModal do
           <div class="search-modal-results-table">
             <table class="search-table">
               <thead>
+                <th class="search-table__th search-table__cell wide-column">Name</th>
                 <th class="search-table__th search-table__cell wide-column">Email</th>
                 <th class="search-table__th search-table__cell wide-column">Organizations</th>
                 <th class="search-table__th search-table__cell thin-column">Action</th>
@@ -48,8 +49,9 @@ defmodule AndiWeb.Search.ManageUsersModal do
               <% else %>
                 <%= for user <- @search_results do %>
                 <tr class="search-table__tr">
+                    <td class="search-table__cell search-table__cell--break search-table__user-name-cell wide-column"><%= user.name %></td>
                     <td class="search-table__cell search-table__cell--break search-table__user-email-cell wide-column"><%= user.email %></td>
-                    <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(user.organizations, ", ") %></td>
+                    <td class="search-table__cell search-table__cell--break wide-column"><%= pretty_print_orgs(user.organizations) %></td>
                     <td></td>
                   </tr>
                 <% end %>
@@ -57,7 +59,8 @@ defmodule AndiWeb.Search.ManageUsersModal do
             </table>
           </div>
         </div>
-      </div>
+
+        <hr class="search-modal-divider">
 
         <div class="btn-group__standard">
           <button class="btn btn--large btn--action save-search" type="button" phx-click="save-user-search">Save</button>
@@ -65,5 +68,11 @@ defmodule AndiWeb.Search.ManageUsersModal do
       </div>
     </div>
     """
+  end
+
+  defp pretty_print_orgs(organizations) do
+    organizations
+    |> Enum.map(fn org -> org.orgTitle end)
+    |> Enum.join(", ")
   end
 end
