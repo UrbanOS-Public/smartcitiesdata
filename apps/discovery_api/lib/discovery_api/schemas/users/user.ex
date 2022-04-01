@@ -22,8 +22,8 @@ defmodule DiscoveryApi.Schemas.Users.User do
   @doc false
   def changeset(user, changes) do
     user
-    |> cast(changes, [:subject_id, :email])
-    |> validate_required([:subject_id, :email])
+    |> cast(changes, [:subject_id, :email, :name])
+    |> validate_required([:subject_id, :email, :name])
     |> unique_constraint(:subject_id)
   end
 
