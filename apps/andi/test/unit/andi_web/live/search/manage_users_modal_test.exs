@@ -75,7 +75,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     test "Represents single user in the search results table when one exists", %{conn: conn} do
       mock_andi_repo()
       org = %Organization{orgTitle: "123"}
-      user = %User{id: Ecto.UUID.generate(),name: "Joe", email: "someone@example.com", organizations: [org]}
+      user = %User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}
       allow(Andi.Repo.all(any()), return: [user])
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -93,6 +93,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       org_123 = %Organization{orgTitle: "123", id: Ecto.UUID.generate()}
       org_abc = %Organization{orgTitle: "ABC", id: Ecto.UUID.generate()}
       org_zed = %Organization{orgTitle: "Zed", id: Ecto.UUID.generate()}
+
       allow(Andi.Repo.all(any()),
         return: [
           %User{id: Ecto.UUID.generate(), name: "Tanya", email: "someone@example.com", organizations: [org_123]},
@@ -100,6 +101,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
           %User{id: Ecto.UUID.generate(), name: "Alice", email: "completely_different@example.com", organizations: [org_zed]}
         ]
       )
+
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 

@@ -152,6 +152,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("user-search", %{"search-value" => search_value}, socket) do
     search_results = query_on_user_search_change(search_value, socket)
+
     {:noreply,
      assign(socket,
        manage_users_modal_visibility: "visible",
@@ -223,12 +224,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   defp refresh_user_search_results(search_value) do
     find_all_matching_users(search_value)
-      |> Enum.map(fn user -> user.subject_id end)
-      |> find_all_users_with_all_organizations()
+    |> Enum.map(fn user -> user.subject_id end)
+    |> find_all_users_with_all_organizations()
   end
 
   defp find_all_matching_users(search_value) do
     like_search_string = "%#{search_value}%"
+
     from(user in User,
       left_join: organizations in assoc(user, :organizations),
       preload: [organizations: organizations],
@@ -236,7 +238,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       or_where: ilike(user.name, type(^like_search_string, :string)),
       or_where: ilike(organizations.orgTitle, type(^like_search_string, :string)),
       select: user
-    ) |> Andi.Repo.all()
+    )
+    |> Andi.Repo.all()
   end
 
   defp find_all_users_with_all_organizations(subject_ids) do
@@ -245,7 +248,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       preload: [organizations: organizations],
       where: user.subject_id in ^subject_ids,
       select: user
-    ) |> Andi.Repo.all()
+    )
+    |> Andi.Repo.all()
   end
 
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do

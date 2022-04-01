@@ -6,15 +6,18 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+
   import FlokiHelpers,
     only: [
       find_elements: 2,
       get_text: 2
     ]
+
   import SmartCity.Event,
     only: [
       user_organization_associate: 0
     ]
+
   import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.TestDataGenerator, as: TDG
@@ -73,10 +76,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     {:ok, user} = User.create_or_update("auth0|000000", %{email: "organized@example.com", name: "Organizer"})
     {:ok, associate} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org.id, email: user.email})
     Brook.Event.send(Andi.instance_name(), user_organization_associate(), :testing, associate)
+
     eventually(fn ->
       user = User.get_by_subject_id(user.subject_id) |> Andi.Repo.preload(:organizations)
       assert org in user.organizations
     end)
+
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -94,11 +99,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     {:ok, associate2} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org2.id, email: user.email})
     Brook.Event.send(Andi.instance_name(), user_organization_associate(), :testing, associate1)
     Brook.Event.send(Andi.instance_name(), user_organization_associate(), :testing, associate2)
+
     eventually(fn ->
       user = User.get_by_subject_id(user.subject_id) |> Andi.Repo.preload(:organizations)
       assert org1 in user.organizations
       assert org2 in user.organizations
     end)
+
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
