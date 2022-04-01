@@ -226,14 +226,17 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
     query =
       from(user in User,
+        left_join: organizations in assoc(user, :organizations),
+        preload: [organizations: organizations],
         where: ilike(user.email, type(^like_search_string, :string)),
         or_where: ilike(user.name, type(^like_search_string, :string)),
+        or_where: ilike(organizations.orgTitle, type(^like_search_string, :string)),
         select: user
       )
 
     query
-    |> Andi.Repo.all()
-    |> Andi.Repo.preload(:organizations)
+      |> Andi.Repo.all()
+      |> Andi.Repo.preload(:organizations)
   end
 
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do
