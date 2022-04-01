@@ -11,7 +11,7 @@ defmodule DiscoveryApi.Data.VisualizationMigratorTest do
 
   describe "VisualizationMigrator" do
     test "migrates visualizations that need it" do
-      {:ok, owner} = Users.create_or_update("some|person", %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update("some|person", %{email: "bob@example.com", name: "Bob"})
       {table, id} = Helper.create_persisted_dataset("123OLD", "old_dataset", "old_org")
 
       {:ok, saved} =

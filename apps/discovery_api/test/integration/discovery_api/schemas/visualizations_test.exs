@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   describe "get/1" do
     test "given an existing visualization, it returns an :ok tuple with it" do
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       {:ok, %{id: saved_id, public_id: saved_public_id}} =
         Visualizations.create_visualization(%{query: "select * from turtles", owner: owner, title: "My first visualization"})
@@ -32,8 +32,8 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   describe "get_visualizations_by_owner_id/1" do
     test "gets visualizations for the specified owner" do
-      {:ok, owner_1} = Users.create_or_update("mork|mindy", %{email: "dont@matter.com"})
-      {:ok, owner_2} = Users.create_or_update("laverne|shirley", %{email: "dont@matter.com"})
+      {:ok, owner_1} = Users.create_or_update("mork|mindy", %{email: "dont@matter.com", name: "Dont"})
+      {:ok, owner_2} = Users.create_or_update("laverne|shirley", %{email: "dont@matter.com", name: "Dont"})
 
       {:ok, visualization_1} =
         Visualizations.create_visualization(%{query: "select * from a", owner: owner_1, title: "My first visualization"})
@@ -59,7 +59,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given all required attributes, it creates a visualization" do
       query = "select * from turtles"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -71,7 +71,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       {table, id} = Helper.create_persisted_dataset("123A", "public_dataset_a", "public_org")
       query = "select * from #{table}"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -84,7 +84,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       {table, id} = Helper.create_persisted_dataset("123AB", "public_dataset_b", "public_org")
       query = "select * from #{table} union all select * from #{table}"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -97,7 +97,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       {table, _id} = Helper.create_persisted_dataset("123AC", "public_dataset_c", "public_org")
       query = "select * from INVALID #{table}"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
@@ -110,7 +110,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       {table, _id} = Helper.create_persisted_dataset("123AD", "private_dataset_d", "private_org", true)
       query = "select * from #{table}"
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
       {:ok, owner_with_orgs} = Users.get_user_with_organizations(owner.id)
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner_with_orgs, title: title})
@@ -122,14 +122,14 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
     test "given a missing query, it fails to create a visualization" do
       title = "My first visualization"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:error, _} = Visualizations.create_visualization(%{owner: owner, title: title})
     end
 
     test "given a missing title, it fails to create a visualization" do
       query = "select * from turtles"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, owner: owner})
     end
@@ -155,7 +155,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = "blah"
       title = "blah blah"
       chart = Faker.String.base64(20_001)
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -163,7 +163,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a query larger than twenty thousand bytes, it fails to create a visualization" do
       query = Faker.String.base64(20_001)
       title = "blah blah"
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:error, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner})
     end
@@ -172,7 +172,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       query = Faker.String.base64(19_999)
       title = "blah blah"
       chart = Faker.String.base64(19_999)
-      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, title: title, owner: owner, chart: chart})
     end
@@ -180,7 +180,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a non-existent owner, it creates the visualization and the owner" do
       query = "select * from turtles"
       title = "My first visualization"
-      owner = %User{subject_id: "you|them", email: "bob@example.com"}
+      owner = %User{subject_id: "you|them", email: "bob@example.com", name: "Bob"}
 
       assert {:ok, _} = Visualizations.create_visualization(%{query: query, title: title, owner: owner})
       assert {:ok, _} = Users.get_user("you|them", :subject_id)
@@ -189,7 +189,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
   describe "update/2" do
     setup %{authorized_subject: subject} do
-      {:ok, owner} = Users.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, owner} = Users.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
 
       visualization = %{title: "query title", query: "select * FROM table", owner: owner}
       {:ok, created_visualization} = Visualizations.create_visualization(visualization)
@@ -219,7 +219,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "does not update when the owner has changed", %{created_visualization: created_visualization} do
-      new_user = Users.create_or_update("differentUser", %{email: "cam@example.com"})
+      new_user = Users.create_or_update("differentUser", %{email: "cam@example.com", name: "Bob"})
 
       assert {:error, "User does not have permission to update this visualization."} ==
                Visualizations.update_visualization_by_id(
