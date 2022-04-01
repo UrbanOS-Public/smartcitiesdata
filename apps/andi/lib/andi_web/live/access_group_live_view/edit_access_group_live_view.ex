@@ -222,21 +222,30 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   defp refresh_user_search_results(search_value) do
+    find_all_matching_users(search_value)
+      |> Enum.map(fn user -> user.subject_id end)
+      |> find_all_users_with_all_organizations()
+  end
+
+  defp find_all_matching_users(search_value) do
     like_search_string = "%#{search_value}%"
+    from(user in User,
+      left_join: organizations in assoc(user, :organizations),
+      preload: [organizations: organizations],
+      where: ilike(user.email, type(^like_search_string, :string)),
+      or_where: ilike(user.name, type(^like_search_string, :string)),
+      or_where: ilike(organizations.orgTitle, type(^like_search_string, :string)),
+      select: user
+    ) |> Andi.Repo.all()
+  end
 
-    query =
-      from(user in User,
-        left_join: organizations in assoc(user, :organizations),
-        preload: [organizations: organizations],
-        where: ilike(user.email, type(^like_search_string, :string)),
-        or_where: ilike(user.name, type(^like_search_string, :string)),
-        or_where: ilike(organizations.orgTitle, type(^like_search_string, :string)),
-        select: user
-      )
-
-    query
-      |> Andi.Repo.all()
-      |> Andi.Repo.preload(:organizations)
+  defp find_all_users_with_all_organizations(subject_ids) do
+    from(user in User,
+      left_join: organizations in assoc(user, :organizations),
+      preload: [organizations: organizations],
+      where: user.subject_id in ^subject_ids,
+      select: user
+    ) |> Andi.Repo.all()
   end
 
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do

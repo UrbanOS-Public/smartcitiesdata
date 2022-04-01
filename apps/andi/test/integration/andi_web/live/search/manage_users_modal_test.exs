@@ -86,6 +86,41 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     assert get_text(html, ".search-table") =~ org.orgTitle
   end
 
+  test "shows all of a user's organizations", %{curator_conn: conn} do
+    {:ok, org1} = TDG.create_organization(%{}) |> Organizations.update()
+    {:ok, org2} = TDG.create_organization(%{}) |> Organizations.update()
+    {:ok, user} = User.create_or_update("auth0|000000", %{email: "organized@example.com", name: "Organizer"})
+    {:ok, associate1} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org1.id, email: user.email})
+    {:ok, associate2} = UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: org2.id, email: user.email})
+    Brook.Event.send(Andi.instance_name(), user_organization_associate(), :testing, associate1)
+    Brook.Event.send(Andi.instance_name(), user_organization_associate(), :testing, associate2)
+    eventually(fn ->
+      user = User.get_by_subject_id(user.subject_id) |> Andi.Repo.preload(:organizations)
+      assert org1 in user.organizations
+      assert org2 in user.organizations
+    end)
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => org1.orgTitle})
+
+    assert get_text(html, ".search-table") =~ org1.orgTitle
+    assert get_text(html, ".search-table") =~ org2.orgTitle
+  end
+
+  test "shows helpful message if no results returned", %{curator_conn: conn} do
+    {:ok, _user} = User.create_or_update("auth0|000000", %{email: "real_person@example.com", name: "Real Person"})
+
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => "Fake"})
+
+    assert get_text(html, ".search-table") =~ "No Matching Users"
+  end
+
   defp create_access_group() do
     uuid = UUID.uuid4()
     access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
