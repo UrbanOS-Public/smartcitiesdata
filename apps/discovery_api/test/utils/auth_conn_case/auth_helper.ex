@@ -48,7 +48,7 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
     end)
 
     Bypass.stub(bypass, "GET", "/userinfo", fn conn ->
-      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z"}))
+      Plug.Conn.resp(conn, :ok, Jason.encode!(%{"email" => "x@y.z", name: "xyz"}))
     end)
 
     current_config = Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler) || []
