@@ -4,77 +4,77 @@ defmodule AndiWeb.Search.ManageDatasetsModal do
   def render(assigns) do
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
-      <div class="modal-form-container dataset-search-modal">
+      <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
         </div>
 
-        <hr class="datasets-modal-divider">
+        <hr class="search-modal-divider">
 
-        <p class="datasets-modal-helper-text">Search by dataset title, keywords, or organization.</p>
+        <p class="search-modal-helper-text">Search by dataset title, keywords, or organization.</p>
 
-        <div class="datasets-modal__search">
-            <p class="datasets-modal-section-header-text">Search</p>
-            <form phx-change="search" phx-submit="search">
-              <div class="datasets-modal__search-input-container">
-                <label for="datasets-modal__search-input">
-                  <i class="material-icons datasets-modal__search-icon">search</i>
-                </label>
-                <input
-                  name="search-value"
-                  phx-debounce="250"
-                  id="datasets-modal__search-input"
-                  class="datasets-modal__search-input"
-                  type="text"
-                  value="<%= @search_text %>"
-                  placeholder="Search datasets"
-                >
-              </div>
-            </form>
-          </div>
+        <div class="search-modal__search_bar">
+          <p class="search-modal-section-header-text">Search</p>
+          <form phx-change="dataset-search" phx-submit="dataset-search">
+            <div class="search-modal__search_bar-input-container">
+              <label for="search-modal__search_bar-input">
+                <i class="material-icons search-modal__search_bar-icon">search</i>
+              </label>
+              <input
+                name="search-value"
+                phx-debounce="250"
+                id="search-modal__search_bar-input"
+                class="search-modal__search_bar-input"
+                type="text"
+                value="<%= @search_text %>"
+                placeholder="Search datasets"
+              >
+            </div>
+          </form>
+        </div>
         <div id="<%= @id %>">
 
-      <div class="dataset-modal-search-results">
-        <p class="datasets-modal-section-header-text">Results</p>
-        <div class="dataset-modal-search-table">
-          <table class="search-table">
-            <thead>
-              <th class="search-table__th search-table__cell wide-column">Dataset</th>
-              <th class="search-table__th search-table__cell wide-column">Organization</th>
-              <th class="search-table__th search-table__cell wide-column">Keywords</th>
-              <th class="search-table__th search-table__cell thin-column">Action</th>
-            </thead>
+        <div class="dataset-modal-search-results">
+          <p class="search-modal-section-header-text">Results</p>
+          <div class="search-modal-results-table">
+            <table class="search-table">
+              <thead>
+                <th class="search-table__th search-table__cell wide-column">Dataset</th>
+                <th class="search-table__th search-table__cell wide-column">Organization</th>
+                <th class="search-table__th search-table__cell wide-column">Keywords</th>
+                <th class="search-table__th search-table__cell thin-column">Action</th>
+              </thead>
 
-            <%= if @search_results == [] do %>
-              <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
-            <% else %>
-              <%= for dataset <- @search_results do %>
-              <tr class="search-table__tr">
-                  <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
-                  <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
-                  <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                  <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
-                </tr>
+              <%= if @search_results == [] do %>
+                <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
+              <% else %>
+                <%= for dataset <- @search_results do %>
+                <tr class="search-table__tr">
+                    <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
+                    <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
+                    <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></td>
+                  </tr>
+                <% end %>
               <% end %>
-            <% end %>
-          </table>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
     <div class="dataset-search-selected-datasets">
-        <p class="datasets-modal-section-header-text">Selected Datasets</p>
-        <div class="selected-datasets-from-search">
+        <p class="search-modal-section-header-text">Selected Datasets</p>
+        <div class="selected-results-from-search">
           <%= for dataset <- selected_datasets(@search_results, @selected_datasets) do %>
-            <div class="selected-dataset-from-search"><span class="selected-dataset-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-dataset" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
+            <div class="selected-result-from-search"><span class="selected-result-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
           <% end %>
         </div>
     </div>
 
-    <hr class="datasets-modal-divider">
+    <hr class="search-modal-divider">
 
     <div class="btn-group__standard">
-          <button id="save-search-button" name="save-search-button" class="btn btn--large btn--action save-search" type="button" phx-click="save-search">Save</button>
+          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--large btn--action save-search" type="button" phx-click="save-dataset-search">Save</button>
         </div>
       </div>
     </div>

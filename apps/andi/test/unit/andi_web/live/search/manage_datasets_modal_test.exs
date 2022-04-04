@@ -31,6 +31,8 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
     :ok
   end
 
+  # TODO: use modal-specific selector in front of more generic class selectors
+
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])
@@ -60,7 +62,7 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => "Noodles"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"
@@ -85,7 +87,7 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => "Noodles"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"

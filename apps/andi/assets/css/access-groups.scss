@@ -81,11 +81,23 @@
     }
 }
 
+.btn--manage-users-search {
+  @extend .btn--manage-datasets-search;
+}
+
 .manage-datasets-modal--visible {
     @include modal-wrapper();
 }
 
 .manage-datasets-modal--hidden {
+    display: none;
+}
+
+.manage-users-modal--visible {
+  @include modal-wrapper();
+}
+
+.manage-users-modal--hidden {
     display: none;
 }
 

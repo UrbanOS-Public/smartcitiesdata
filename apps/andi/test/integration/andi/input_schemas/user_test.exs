@@ -18,8 +18,8 @@ defmodule Andi.Schemas.UserTest do
       user_two_id = Ecto.UUID.generate()
       user_two_subject_id = Ecto.UUID.generate()
 
-      User.create_or_update(user_one_subject_id, %{id: user_one_id, email: "test@test.com"})
-      User.create_or_update(user_two_subject_id, %{id: user_two_id, email: "foo@foo.com"})
+      User.create_or_update(user_one_subject_id, %{id: user_one_id, email: "test@test.com", name: "Test"})
+      User.create_or_update(user_two_subject_id, %{id: user_two_id, email: "foo@foo.com", name: "Bar"})
 
       assert [%{subject_id: user_one_subject_id}, %{subject_id: user_two_subject_id}] = User.get_all()
     end
@@ -29,7 +29,7 @@ defmodule Andi.Schemas.UserTest do
     test "returns the user with datasets preloaded" do
       user_one_subject_id = Ecto.UUID.generate()
 
-      {:ok, %{id: id}} = User.create_or_update(user_one_subject_id, %{email: "bar@bar.com"})
+      {:ok, %{id: id}} = User.create_or_update(user_one_subject_id, %{email: "bar@bar.com", name: "Baz"})
 
       assert %{subject_id: user_one_subject_id} = User.get_by_subject_id(user_one_subject_id)
 
@@ -46,7 +46,7 @@ defmodule Andi.Schemas.UserTest do
       # Create a test user
       subject_id = Ecto.UUID.generate()
 
-      {:ok, user} = User.create_or_update(subject_id, %{email: "foo@bar.com"})
+      {:ok, user} = User.create_or_update(subject_id, %{email: "foo@bar.com", name: "Foo Bar"})
 
       # Create test orgs
       org = Organizations.create()

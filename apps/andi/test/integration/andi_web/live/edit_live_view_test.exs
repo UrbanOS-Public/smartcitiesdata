@@ -22,8 +22,8 @@ defmodule AndiWeb.EditLiveViewTest do
   @url_path "/datasets/"
 
   setup %{curator_subject: curator_subject, public_subject: public_subject} do
-    {:ok, curator} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com"})
-    {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+    {:ok, curator} = Andi.Schemas.User.create_or_update(curator_subject, %{email: "bob@example.com", name: "Bob"})
+    {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "Bob"})
     [curator: curator, public_user: public_user]
   end
 

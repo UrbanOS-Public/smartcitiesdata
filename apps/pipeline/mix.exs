@@ -4,7 +4,7 @@ defmodule Pipeline.MixProject do
   def project do
     [
       app: :pipeline,
-      version: "0.1.2",
+      version: "0.1.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -26,7 +26,7 @@ defmodule Pipeline.MixProject do
 
   defp deps do
     [
-      {:smart_city, "~> 5.1.0"},
+      {:smart_city, "~> 5.1.1"},
       {:elsa, "~> 0.12", override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",

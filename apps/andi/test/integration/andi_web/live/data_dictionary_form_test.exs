@@ -816,7 +816,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
 
   describe "non curators have a limited view of the data dictionary form" do
     setup %{public_subject: public_subject} do
-      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+      {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "bob"})
       [public_user: public_user]
     end
 

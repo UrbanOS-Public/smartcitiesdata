@@ -64,6 +64,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end
   end
 
+  # refactor: I feel like every test under this comment could be placed into
+  # a new integration test file dedicated to the dataset search modal. Can
+  # do the same for users tests. Otherwise this test file will balloon fast.
   describe "manage datasets button" do
     test "exists", %{curator_conn: conn} do
       access_group = create_access_group()
@@ -95,7 +98,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       render_click(manage_datasets_button)
 
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
 
       render_click(save_button)
 
@@ -113,7 +116,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
       select_dataset = element(view, ".modal-action-text", "Select")
 
@@ -131,15 +134,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
 
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
 
-      html = render_submit(view, :search, %{"search-value" => "some new value"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "some new value"})
 
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
     end
 
     test "a dataset can be removed", %{curator_conn: conn} do
@@ -151,7 +154,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
@@ -171,13 +174,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
       select_dataset = element(view, ".modal-action-text", "Select")
 
       html = render_click(select_dataset)
 
-      assert get_text(html, ".selected-datasets-from-search") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-results-from-search") =~ dataset_a.business.dataTitle
     end
 
     test "a dataset can be unselected by clicking close", %{curator_conn: conn} do
@@ -189,22 +192,22 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ "Remove"
-      assert get_text(html, ".selected-dataset-text") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".selected-result-text") =~ dataset_a.business.dataTitle
 
-      deselect_dataset = element(view, ".remove-selected-dataset")
+      deselect_dataset = element(view, ".remove-selected-result")
       html = render_click(deselect_dataset)
 
       refute get_text(html, ".search-table") =~ "Remove"
-      refute get_text(html, ".selected-dataset-from-search") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".selected-result-from-search") =~ dataset_a.business.dataTitle
     end
   end
 
-  describe "search" do
+  describe "dataset search" do
     test "filters on orgTitle", %{curator_conn: conn} do
       {:ok, dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
@@ -215,7 +218,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
       assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
       refute get_text(html, ".search-table") =~ dataset_b.business.orgTitle
@@ -231,7 +234,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.dataTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.dataTitle})
 
       assert get_text(html, ".search-table") =~ dataset_a.business.dataTitle
       refute get_text(html, ".search-table") =~ dataset_b.business.dataTitle
@@ -247,7 +250,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_submit(view, :search, %{"search-value" => "fun"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "fun"})
 
       assert get_text(html, ".search-table") =~ "fun"
       refute get_text(html, ".search-table") =~ "sad"
@@ -263,7 +266,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       manage_datasets_button = find_manage_datasets_button(view)
       render_click(manage_datasets_button)
 
-      html = render_change(view, :search, %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
+      html = render_change(view, "dataset-search", %{"search-value" => "__NOT_RESULTS_SHOULD RETURN__"})
 
       assert get_text(html, ".search-table") =~ "No Matching Datasets"
     end
@@ -279,7 +282,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(manage_datasets_button)
 
       # save the datasets to the access group
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       render_click(save_button)
 
       # verify that the search modal is closed
@@ -297,13 +300,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(manage_datasets_button)
 
       # search for the dataset by name and select it
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
 
       # save the search
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
@@ -325,13 +328,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(manage_datasets_button)
 
       # search for the dataset by name and select it
-      html = render_submit(view, :search, %{"search-value" => dataset_a.business.orgTitle})
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
       select_dataset = element(view, ".modal-action-text", "Select")
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ dataset_a.business.orgTitle
 
       # save the search
-      save_button = element(view, ".save-search", "Save")
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
@@ -420,13 +423,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     render_click(manage_datasets_button)
 
     # search for the dataset by org and select it
-    html = render_submit(view, :search, %{"search-value" => dataset.business.orgTitle})
+    html = render_submit(view, "dataset-search", %{"search-value" => dataset.business.orgTitle})
     select_dataset = element(view, ".modal-action-text", "Select")
     html = render_click(select_dataset)
     assert get_text(html, ".search-table") =~ dataset.business.orgTitle
 
     # save the search
-    save_button = element(view, ".save-search", "Save")
+    save_button = element(view, ".manage-datasets-modal .save-search", "Save")
     html = render_click(save_button)
 
     # verfy that the selected dataset appear in the datasets table

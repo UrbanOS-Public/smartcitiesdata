@@ -125,14 +125,6 @@ defmodule Andi.InputSchemas.Ingestions do
     update(from_ingestion, updated)
   end
 
-  # Todo: Internal/#540 handle dlq messages when dataset info is what's provided
-  # def update_latest_dlq_message(%{"dataset_id" => dataset_id} = message) do
-  #   case get(dataset_id) do
-  #     nil -> Logger.info("Message does not pertain to any andi dataset: #{inspect(message)}")
-  #     dataset -> update(dataset, %{dlq_message: message})
-  #   end
-  # end
-
   def delete(ingestion_id) do
     Repo.delete(%Ingestion{id: ingestion_id})
   rescue

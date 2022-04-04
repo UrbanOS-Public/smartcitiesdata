@@ -9,7 +9,7 @@ defmodule DiscoveryApi.UserOrganizationAssociationTest do
 
   test "when a user:organization:associate event is received then the association is persisted" do
     organization = Helper.create_persisted_organization()
-    {:ok, user} = Users.create_or_update("unique|id", %{email: "thing@thing.thing"})
+    {:ok, user} = Users.create_or_update("unique|id", %{email: "thing@thing.thing", name: "Person person"})
 
     {:ok, association_event} =
       SmartCity.UserOrganizationAssociate.new(%{subject_id: user.subject_id, org_id: organization.id, email: "thing@thing.thing"})

@@ -12,9 +12,10 @@ defmodule DiscoveryApiWeb.UserController do
   def logged_in(conn, _params) do
     with {:ok, user_info} <- AuthService.get_user_info(Guardian.Plug.current_token(conn)),
          {:ok, email} <- Map.fetch(user_info, "email"),
+         {:ok, name} <- Map.fetch(user_info, "name"),
          subject_id <- Guardian.Plug.current_claims(conn)["sub"],
-         {:ok, _user} <- Users.create_or_update(subject_id, %{email: email}) do
-      {:ok, smrt_user} = SmartCity.User.new(%{subject_id: subject_id, email: email})
+         {:ok, _user} <- Users.create_or_update(subject_id, %{email: email, name: name}) do
+      {:ok, smrt_user} = SmartCity.User.new(%{subject_id: subject_id, email: email, name: name})
       Brook.Event.send(@instance_name, user_login(), __MODULE__, smrt_user)
       conn |> send_resp(:ok, "")
     else

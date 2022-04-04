@@ -121,6 +121,7 @@ defmodule AndiWeb.EditControllerTest do
       assert download_log.dataset_id == andi_dataset.id
       assert download_log.dataset_link == dataset_link
       assert associated_user.email == "bob@example.com"
+      assert associated_user.name == "Bob Example"
       assert download_log.download_success
     end
 
@@ -136,6 +137,7 @@ defmodule AndiWeb.EditControllerTest do
       assert download_log.dataset_id == andi_dataset.id
       assert download_log.dataset_link == nil
       assert associated_user.email == "bob@example.com"
+      assert associated_user.name == "Bob Example"
       refute download_log.download_success
     end
   end

@@ -1,63 +1,63 @@
-.dataset-search-modal {
+.search-modal {
     width: 80%;
     max-height: 90%;
     overflow-y: auto;
 }
 
-.dataset-modal-search-table {
+.search-modal-results-table {
     max-height: 250px;
     overflow-y: auto;
     margin: 0.5rem 0rem;
 }
 
-.datasets-modal-helper-text {
+.search-modal-helper-text {
     margin: 1.25rem 0;
 }
 
-.datasets-modal-divider {
+.search-modal-divider {
     border: 1px solid #C9C6C7;
     margin: 1.25rem 0;
 }
 
-.datasets-modal__search {
+.search-modal__search_bar {
     width: 50%;
     margin-right: 1rem;
 }
 
-.datasets-modal-section-header-text {
+.search-modal-section-header-text {
     font-weight: normal;
     font-size: 1.1rem;
     color: #7F7676;
     margin: 1.25rem 0 0 0;
 }
 
-.datasets-modal__search-input-container {
+.search-modal__search_bar-input-container {
   display: flex;
   width: 100%;
   margin: 0.5rem 0rem;
   border: 1px solid $search-unfocused;
 }
 
-.datasets-modal__search-input-container:focus-within {
+.search-modal__search_bar-input-container:focus-within {
   border: 1px solid $search-focused;
 }
 
-.datasets-modal__search-icon {
+.search-modal__search_bar-icon {
   padding: 0.1rem;
   color: $search-unfocused;
   text-align: center;
 }
 
-.datasets-modal__search-input {
+.search-modal__search_bar-input {
   width: 100%;
   padding: 0.1rem;
   outline: none;
   border: none;
 }
 
-.datasets-modal__search-input::placeholder,
-.datasets-modal__search-input::-webkit-input-placeholder,
-.datasets-modal__search-input::-ms-input-placeholder {
+.search-modal__search_bar-input::placeholder,
+.search-modal__search_bar-input::-webkit-input-placeholder,
+.search-modal__search_bar-input::-ms-input-placeholder {
   color: $search-unfocused;
 }
 
@@ -129,7 +129,7 @@
     float: right;
 }
 
-.selected-datasets-from-search {
+.selected-results-from-search {
     display: flex;
     flex-direction: columns;
     align-items: flex-start;
@@ -145,7 +145,7 @@
     white-space: nowrap;
 }
 
-.selected-dataset-from-search {
+.selected-result-from-search {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -165,11 +165,11 @@
   width: 10%
 }
 
-.selected-dataset-text {
+.selected-result-text {
   padding: 0 10px 0 0;
 }
 
-.remove-selected-dataset {
+.remove-selected-result {
   font-size: 20px;
   &:hover {
     cursor: pointer;

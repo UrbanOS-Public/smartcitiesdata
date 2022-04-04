@@ -23,7 +23,7 @@ defmodule AndiWeb.SubmitLiveViewTest do
   @url_path "/submissions/"
 
   setup %{public_subject: public_subject} do
-    {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com"})
+    {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "bob"})
     blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{}, business: %{}}
     [blank_dataset: blank_dataset, public_user: public_user]
   end

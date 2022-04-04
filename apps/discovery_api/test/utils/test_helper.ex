@@ -99,7 +99,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def create_persisted_user(subject_id) do
-    {:ok, user} = Users.create_or_update(subject_id, %{email: Faker.Internet.email()})
+    {:ok, user} = Users.create_or_update(subject_id, %{email: Faker.Internet.email(), name: Faker.Person.name()})
     user
   end
 
