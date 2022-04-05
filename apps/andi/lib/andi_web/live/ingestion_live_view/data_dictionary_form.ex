@@ -247,7 +247,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
     new_selected_field =
       socket.assigns.changeset
-      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index, socket.assigns.technical_id)
+      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index, socket.assigns.ingestion_id)
 
     new_selected_field_id =
       case new_selected_field do
@@ -376,8 +376,8 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
     end
   end
 
-  defp get_new_selected_field(changeset, parent_id, deleted_field_index, technical_id) do
-    if parent_id == technical_id do
+  defp get_new_selected_field(changeset, parent_id, deleted_field_index, ingestion_id) do
+    if parent_id == ingestion_id do
       changeset
       |> Changeset.fetch_change!(:schema)
       |> get_next_sibling(deleted_field_index)
