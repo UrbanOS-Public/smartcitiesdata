@@ -37,7 +37,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      assert get_text(html, ".access-groups-dataset-table__cell") =~ "No Associated Datasets"
+      assert get_text(html, ".access-groups-sub-table__cell") =~ "No Associated Datasets"
     end
 
     test "shows an associated dataset", %{conn: conn} do
@@ -48,7 +48,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset.business.dataTitle
+      assert get_text(html, ".access-groups-sub-table__cell") =~ dataset.business.dataTitle
     end
 
     test "shows multiple associated datasets", %{conn: conn} do
@@ -61,8 +61,8 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_1.business.dataTitle
-      assert get_text(html, ".access-groups-dataset-table__cell") =~ dataset_2.business.dataTitle
+      assert get_text(html, ".access-groups-sub-table__cell") =~ dataset_1.business.dataTitle
+      assert get_text(html, ".access-groups-sub-table__cell") =~ dataset_2.business.dataTitle
     end
 
     test "shows a remove button for each dataset", %{conn: conn} do
@@ -74,7 +74,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       allow(Andi.InputSchemas.Datasets.get(dataset_2.id), return: dataset_2)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-      text = get_text(html, ".access-groups-dataset-table__cell")
+      text = get_text(html, ".access-groups-sub-table__cell")
       results = Regex.scan(~r/Remove/, text)
 
       assert length(results) == 2

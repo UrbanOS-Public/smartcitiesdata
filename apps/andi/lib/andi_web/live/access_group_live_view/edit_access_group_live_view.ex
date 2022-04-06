@@ -38,6 +38,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <div>
           <button class="btn btn--manage-datasets-search" phx-click="manage-datasets" type="button">Manage Datasets</button>
         </div>
+
+        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.UserTable, selected_users: @selected_users) %>
+
         <div>
           <button class="btn btn--manage-users-search" phx-click="manage-users" type="button">Manage Users</button>
         </div>

@@ -9,24 +9,24 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
     ~L"""
     <div class="access-group-datasets-results">
       <h2 class="component-title-text">Datasets Assigned to This Access Group</h2>
-      <div class="access-groups-dataset-table-container">
-        <table class="access-groups-dataset-table">
+      <div class="access-groups-sub-table-container">
+        <table class="access-groups-sub-table">
           <thead>
-            <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Dataset</th>
-            <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Organization</th>
-            <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Keywords</th>
-            <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Action</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Dataset</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Organization</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Keywords</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Action</th>
           </thead>
 
           <%= if @selected_datasets == [] do %>
-            <tr><td class="access-groups-dataset-table__cell" colspan="100%">No Associated Datasets</td></tr>
+            <tr><td class="access-groups-sub-table__cell" colspan="100%">No Associated Datasets</td></tr>
           <% else %>
             <%= for dataset <- datasets_to_display(@selected_datasets) do %>
-            <tr class="access-groups-dataset-table__tr">
-                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break access-groups-dataset-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
-                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
-                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break modal-action-text thin-column" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
+            <tr class="access-groups-sub-table__tr">
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break access-groups-sub-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break modal-action-text thin-column" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
               </tr>
             <% end %>
           <% end %>
