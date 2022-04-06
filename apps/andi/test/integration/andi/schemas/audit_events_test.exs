@@ -77,7 +77,7 @@ defmodule Andi.Schemas.AuditEventsTest do
 
     test "given new audit event for a non-api user, creates an audit event with the user email address" do
       user_subject_id = Ecto.UUID.generate()
-      {:ok, %{id: id}} = User.create_or_update(user_subject_id, %{email: "penny@woof.com"})
+      {:ok, %{id: id}} = User.create_or_update(user_subject_id, %{email: "penny@woof.com", name: "Penny"})
 
       dataset = TDG.create_dataset(%{})
       event = AuditEvents.log_audit_event(id, dataset_update(), dataset)

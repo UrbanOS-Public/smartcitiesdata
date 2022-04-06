@@ -1,4 +1,4 @@
-defmodule AndiWeb.Search.AddDatasetModalTest do
+defmodule AndiWeb.Search.ManageDatasetsModalTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
@@ -31,6 +31,8 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
     :ok
   end
 
+  # TODO: use modal-specific selector in front of more generic class selectors
+
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])
@@ -42,9 +44,8 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
-
-      render_click(add_dataset_button)
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
       assert get_text(html, ".search-table__cell") =~ "No Matching Datasets"
     end
@@ -58,11 +59,10 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
-      render_click(add_dataset_button)
-
-      html = render_submit(view, :search, %{"search-value" => "Noodles"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"
@@ -84,11 +84,10 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-      add_dataset_button = element(view, ".btn", "+ Add Dataset")
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
 
-      render_click(add_dataset_button)
-
-      html = render_submit(view, :search, %{"search-value" => "Noodles"})
+      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"
@@ -104,5 +103,9 @@ defmodule AndiWeb.Search.AddDatasetModalTest do
     access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
     AccessGroups.update(access_group)
     access_group
+  end
+
+  defp find_manage_datasets_button(view) do
+    element(view, ".btn", "Manage Datasets")
   end
 end

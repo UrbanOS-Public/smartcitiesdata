@@ -80,7 +80,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "#{user_login()}" do
     test "persists user if subject id does not match one in ecto" do
       new_user_subject_id = UUID.uuid4()
-      {:ok, user} = %{subject_id: new_user_subject_id, email: "cam@cam.com"} |> SmartCity.User.new()
+      {:ok, user} = %{subject_id: new_user_subject_id, email: "cam@cam.com", name: "camster"} |> SmartCity.User.new()
       assert {:error, "User with subject_id #{new_user_subject_id} does not exist."} == Users.get_user(user.subject_id, :subject_id)
 
       Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
@@ -94,7 +94,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
     test "does not persist user if subject_id already exists" do
       old_user_subject_id = UUID.uuid4()
-      {:ok, user} = Users.create(%{subject_id: old_user_subject_id, email: "blah@blah.com"})
+      {:ok, user} = Users.create(%{subject_id: old_user_subject_id, email: "blah@blah.com", name: "blah"})
       assert {:ok, %{subject_id: _}} = Users.get_user(old_user_subject_id, :subject_id)
 
       new_user_same_subject_id = Map.put(user, :email, "cam@cam.com")
@@ -108,7 +108,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe("#{user_organization_disassociate()}") do
     test "removes associated user and organization in ecto" do
       organization = Helper.create_persisted_organization()
-      {:ok, user} = Users.create(%{subject_id: "cam", email: "cam@cam.com"})
+      {:ok, user} = Users.create(%{subject_id: "cam", email: "cam@cam.com", name: "cam"})
       Users.associate_with_organization(user.subject_id, organization.id)
 
       {:ok, user_with_orgs} = Users.get_user_with_organizations(user.id)

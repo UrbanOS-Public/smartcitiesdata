@@ -52,19 +52,6 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       %{association_event: association_event}
     end
 
-    test "should create the user if it did not already exist", %{association_event: association_event} do
-      allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
-      allow(Users.create(any()), return: :ok)
-      expect(TableInfoCache.invalidate(), return: {:ok, true})
-
-      association_event = Map.put(association_event, :subject_id, "non-existant-id")
-      allow(Users.get_user(association_event.subject_id, :subject_id), return: {:error, nil})
-
-      EventHandler.handle_event(Brook.Event.new(type: user_organization_associate(), data: association_event, author: :author))
-
-      assert_called(Users.create(%{subject_id: association_event.subject_id, email: association_event.email}), once())
-    end
-
     test "should save user/organization association to ecto and clear relevant caches", %{association_event: association_event} do
       allow(Users.associate_with_organization(any(), any()), return: {:ok, %User{}})
       expect(TableInfoCache.invalidate(), return: {:ok, true})

@@ -31,7 +31,8 @@ defmodule Andi.Event.EventHandlerTest do
       {:ok, user} =
         User.create_or_update(old_user_subject_id, %{
           subject_id: old_user_subject_id,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Mr. Blah"
         })
 
       assert User.get_by_subject_id(old_user_subject_id) != nil
@@ -54,13 +55,15 @@ defmodule Andi.Event.EventHandlerTest do
       {:ok, user1} =
         User.create_or_update(subject1, %{
           subject_id: subject1,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Blah"
         })
 
       {:ok, user2} =
         User.create_or_update(subject2, %{
           subject_id: subject2,
-          email: "blah2@blah.com"
+          email: "blah2@blah.com",
+          name: "Blah"
         })
 
       assert User.get_by_subject_id(subject1) != nil
@@ -83,28 +86,13 @@ defmodule Andi.Event.EventHandlerTest do
         assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
       end)
     end
-
-    @tag capture_log: true
-    test "user is created first if it does not exist", %{org_id: org_id} do
-      unknown_subject_id = "123"
-      association = %UserOrganizationAssociate{org_id: org_id, subject_id: unknown_subject_id, email: "blah@blah.com"}
-
-      Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
-
-      eventually(fn ->
-        user_from_ecto = User.get_by_subject_id(unknown_subject_id)
-        assert user_from_ecto != nil
-        assert user_from_ecto.email == "blah@blah.com"
-        assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
-      end)
-    end
   end
 
   describe "#{user_login()}" do
     test "persists user if subject id does not match one in ecto" do
       new_user_subject_id = UUID.uuid4()
 
-      {:ok, user} = %{subject_id: new_user_subject_id, email: "cam@cam.com"} |> SmartCity.User.new()
+      {:ok, user} = %{subject_id: new_user_subject_id, email: "cam@cam.com", name: "CamCam"} |> SmartCity.User.new()
 
       assert nil == User.get_by_subject_id(user.subject_id)
 
@@ -116,6 +104,7 @@ defmodule Andi.Event.EventHandlerTest do
           assert user_from_ecto != nil
           assert user_from_ecto.subject_id == user.subject_id
           assert user_from_ecto.email == user.email
+          assert user_from_ecto.name == user.name
         end,
         1_000,
         30
@@ -128,7 +117,8 @@ defmodule Andi.Event.EventHandlerTest do
       {:ok, user} =
         User.create_or_update(old_user_subject_id, %{
           subject_id: old_user_subject_id,
-          email: "blah@blah.com"
+          email: "blah@blah.com",
+          name: "Blah"
         })
 
       assert User.get_by_subject_id(old_user_subject_id) != nil

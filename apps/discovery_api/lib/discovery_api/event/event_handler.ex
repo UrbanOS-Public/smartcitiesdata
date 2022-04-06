@@ -43,8 +43,6 @@ defmodule DiscoveryApi.Event.EventHandler do
     user_organization_associate()
     |> add_event_count(author, nil)
 
-    create_user_if_not_exists(association.subject_id, association.email)
-
     case Users.associate_with_organization(association.subject_id, association.org_id) do
       {:error, _} = error -> Logger.error("Unable to handle event: #{inspect(event)},\nerror: #{inspect(error)}")
       result -> result
@@ -157,20 +155,20 @@ defmodule DiscoveryApi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email}, author: author}) do
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name}, author: author}) do
     user_login()
     |> add_event_count(author, nil)
 
-    create_user_if_not_exists(subject_id, email)
+    create_user_if_not_exists(subject_id, email, name)
   end
 
-  defp create_user_if_not_exists(subject_id, email) do
+  defp create_user_if_not_exists(subject_id, email, name) do
     case Users.get_user(subject_id, :subject_id) do
       {:ok, _user} ->
         :ok
 
       _ ->
-        Users.create(%{subject_id: subject_id, email: email})
+        Users.create(%{subject_id: subject_id, email: email, name: name})
         :ok
     end
   end

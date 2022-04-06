@@ -30,7 +30,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "only datasets owned by the user are shown", %{public_conn: conn, public_subject: subject} do
       {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "bob"})
       Datasets.create(user)
 
       {:ok, _view, html} = live(conn, @url_path)
@@ -41,7 +41,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "edit button links to the submission edit page", %{public_conn: conn, public_subject: subject} do
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       dataset = Datasets.create(user)
 
       {:ok, view, _html} = live(conn, @url_path)
@@ -57,7 +57,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "all datasets are shown", %{curator_conn: conn, public_subject: subject} do
       {:ok, _dataset_a} = TDG.create_dataset(business: %{orgTitle: "org_a"}) |> Datasets.update()
       {:ok, _dataset_b} = TDG.create_dataset(business: %{orgTitle: "org_b"}) |> Datasets.update()
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       Datasets.create(user)
 
       {:ok, _view, html} = live(conn, @url_path)
@@ -68,7 +68,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "edit button links to the admin edit page", %{curator_conn: conn, public_subject: subject} do
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       dataset = Datasets.create(user)
 
       {:ok, view, _html} = live(conn, @url_path)
@@ -210,7 +210,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
       allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
 
-      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -232,7 +232,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       curator_conn: conn,
       curator_subject: subject
     } do
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -253,7 +253,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       curator_subject: subject
     } do
       expected_date = Date.utc_today()
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -291,7 +291,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{public_conn: conn, public_subject: subject} do
       allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
 
-      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -313,7 +313,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       public_conn: conn,
       public_subject: subject
     } do
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
@@ -334,7 +334,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       public_subject: subject
     } do
       expected_date = Date.utc_today()
-      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com"})
+      {:ok, user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
       assert {:ok, view, _html} = live(conn, @url_path)
 
       {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")

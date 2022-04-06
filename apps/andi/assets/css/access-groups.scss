@@ -69,7 +69,7 @@
   margin-right: 0;
 }
 
-.btn--add-dataset-search {
+.btn--manage-datasets-search {
     min-width: 100px;
     height: 2.3rem;
     background-color: #27cb00;
@@ -81,11 +81,23 @@
     }
 }
 
-.add-dataset-modal--visible {
+.btn--manage-users-search {
+  @extend .btn--manage-datasets-search;
+}
+
+.manage-datasets-modal--visible {
     @include modal-wrapper();
 }
 
-.add-dataset-modal--hidden {
+.manage-datasets-modal--hidden {
+    display: none;
+}
+
+.manage-users-modal--visible {
+  @include modal-wrapper();
+}
+
+.manage-users-modal--hidden {
     display: none;
 }
 

@@ -15,6 +15,7 @@ defmodule Andi.Schemas.User do
 
   schema "users" do
     field(:subject_id, :string)
+    field(:name, :string)
     field(:email, :string)
     has_many(:datasets, Dataset, on_replace: :delete, foreign_key: :owner_id)
     many_to_many(:organizations, Organization, join_through: Andi.Schemas.UserOrganization, on_replace: :delete)
@@ -25,8 +26,8 @@ defmodule Andi.Schemas.User do
 
   def changeset(user, changes) do
     user
-    |> cast(changes, [:subject_id, :email])
-    |> validate_required([:subject_id, :email])
+    |> cast(changes, [:subject_id, :email, :name])
+    |> validate_required([:subject_id, :email, :name])
     |> unique_constraint(:subject_id)
   end
 

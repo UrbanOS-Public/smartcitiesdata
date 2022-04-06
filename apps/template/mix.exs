@@ -5,7 +5,7 @@ defmodule Template.MixProject do
     [
       app: :template,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "0.1.2",
+      version: "0.1.4",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -37,8 +37,8 @@ defmodule Template.MixProject do
       {:plug_heartbeat, "~> 0.2.0"},
       {:properties, in_umbrella: true},
       {:redix, "~> 0.10"},
-      {:smart_city, "~> 5.1.0"},
-      {:smart_city_test, "~> 2.1.3", only: [:test, :integration]},
+      {:smart_city, "~> 5.1.1"},
+      {:smart_city_test, "~> 2.1.4", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:distillery, "~> 2.1"}

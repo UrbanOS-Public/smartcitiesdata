@@ -4,7 +4,6 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
   """
 
   use Phoenix.LiveComponent
-  alias Phoenix.HTML.Link
 
   def render(assigns) do
     ~L"""
@@ -16,16 +15,18 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
             <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Dataset</th>
             <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Organization</th>
             <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Keywords</th>
+            <th class="access-groups-dataset-table__th access-groups-dataset-table__cell wide-column">Action</th>
           </thead>
 
-          <%= if @selected_datasets == [] and @associated_datasets == [] do %>
+          <%= if @selected_datasets == [] do %>
             <tr><td class="access-groups-dataset-table__cell" colspan="100%">No Associated Datasets</td></tr>
           <% else %>
-            <%= for dataset <- datasets_to_display(@associated_datasets, @selected_datasets) do %>
+            <%= for dataset <- datasets_to_display(@selected_datasets) do %>
             <tr class="access-groups-dataset-table__tr">
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break access-groups-dataset-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                 <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
+                <td class="access-groups-dataset-table__cell access-groups-dataset-table__cell--break modal-action-text thin-column" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
               </tr>
             <% end %>
           <% end %>
@@ -35,9 +36,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
     """
   end
 
-  defp datasets_to_display(associated_datasets, selected_dataset_ids) do
-    associated_dataset_ids = Enum.map(associated_datasets, fn associated_dataset -> associated_dataset.id end)
-    datasets_to_display = Enum.uniq(associated_dataset_ids ++ selected_dataset_ids)
-    Enum.map(datasets_to_display, fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
+  defp datasets_to_display(selected_datasets) do
+    Enum.map(selected_datasets, fn dataset_id -> Andi.InputSchemas.Datasets.get(dataset_id) end)
   end
 end

@@ -6,6 +6,8 @@ ENV REPLACE_OS_VARS=true
 RUN apk update && \
     apk add --no-cache bash openssl && \
     rm -rf /var/cache/**/*
-WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/flair/ .
+RUN chgrp -R 0 ${HOME} && \
+    chmod -R g+rwX ${HOME}
+USER default
 CMD ["bin/flair", "foreground"]

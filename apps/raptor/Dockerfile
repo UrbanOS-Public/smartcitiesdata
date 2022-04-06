@@ -1,14 +1,16 @@
 FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name raptor
 
-FROM alpine:3.9
+FROM bitwalker/alpine-elixir:1.13.3
 ENV REPLACE_OS_VARS=true
 RUN apk update && \
     apk add --no-cache bash openssl && \
     rm -rf /var/cache/**/*
-WORKDIR /app
 COPY --from=builder /app/_build/prod/rel/raptor/ .
-ENV PORT 80
+RUN chgrp -R 0 ${HOME} && \
+    chmod -R g+rwX ${HOME}
+USER default
+ENV PORT=4000
 EXPOSE ${PORT}
 
 CMD ["bin/raptor", "foreground"]

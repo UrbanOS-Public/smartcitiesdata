@@ -18,5 +18,6 @@ config :redix,
 
 config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
 
+config :tzdata, :data_dir, "./tzdata"
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
