@@ -92,7 +92,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   end
 
   test "successfully can add a user to the list of selected users", %{curator_conn: conn} do
-
     {:ok, user} = User.create_or_update("auth0|123458", %{email: "test@example.com", name: "TestingTurtle"})
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -124,7 +123,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   end
 
   test "selected users are persisted when a new search is made", %{curator_conn: conn} do
-
     {:ok, user} = User.create_or_update("auth0|123458", %{email: "test@example.com", name: "TestingLeopard"})
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -139,7 +137,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     html = render_submit(view, "user-search", %{"search-value" => "second search value"})
 
     assert get_text(html, ".selected-results-from-search") =~ user.name
-
   end
 
   test "shows all of a user's organizations", %{curator_conn: conn} do
