@@ -17,7 +17,7 @@ defmodule AndiWeb.AccessGroupLiveView.Table do
         </thead>
 
         <%= if @access_groups == [] do %>
-          <tr><td class="access-groups-table__cell" colspan="100%">No Access Groups</td></tr>
+          <tr><td class="access-groups-table__cell" colspan="100%">No Access Groups Found!</td></tr>
         <% else %>
           <%= for access_group <- @access_groups do %>
           <tr class="access-groups-table__tr">
