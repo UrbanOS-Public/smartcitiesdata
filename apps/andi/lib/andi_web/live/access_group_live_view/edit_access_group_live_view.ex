@@ -38,6 +38,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <div>
           <button class="btn btn--manage-datasets-search" phx-click="manage-datasets" type="button">Manage Datasets</button>
         </div>
+
+        <%= live_component(@socket, AndiWeb.AccessGroupLiveView.UserTable, selected_users: @selected_users) %>
+
         <div>
           <button class="btn btn--manage-users-search" phx-click="manage-users" type="button">Manage Users</button>
         </div>
@@ -45,7 +48,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @dataset_search_text, selected_datasets: @selected_datasets) %>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text) %>
+      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text, selected_users: @selected_users) %>
 
       <div class="edit-button-group" id="access-groups-edit-button-group">
         <div class="edit-button-group__cancel-btn">
@@ -62,17 +65,18 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   def mount(_params, %{"is_curator" => is_curator, "access_group" => access_group, "user_id" => user_id} = _session, socket) do
     default_changeset = AccessGroup.changeset(access_group, %{}) |> Map.put(:errors, [])
 
-    access_group_with_datasets =
+    access_group_with_datasets_and_users =
       Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
-      |> Andi.Repo.preload(:datasets)
+      |> Andi.Repo.preload([:datasets, :users])
 
-    starting_dataset_ids = Enum.map(access_group_with_datasets.datasets, fn dataset -> dataset.id end)
+    starting_dataset_ids = Enum.map(access_group_with_datasets_and_users.datasets, fn dataset -> dataset.id end)
+    starting_user_ids = Enum.map(access_group_with_datasets_and_users.users, fn user -> user.id end)
 
     {:ok,
      assign(socket,
        is_curator: is_curator,
        user_id: user_id,
-       access_group: access_group_with_datasets,
+       access_group: access_group_with_datasets_and_users,
        changeset: default_changeset,
        manage_datasets_modal_visibility: "hidden",
        manage_users_modal_visibility: "hidden",
@@ -81,7 +85,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        dataset_search_text: "",
        user_search_text: "",
        selected_datasets: starting_dataset_ids,
-       selected_users: []
+       selected_users: starting_user_ids
      )}
   end
 
@@ -167,6 +171,26 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def handle_event("remove-selected-dataset", %{"id" => id}, socket) do
     update_dataset_selection(id, socket)
+  end
+
+  def handle_event("select-user-search", %{"id" => id}, socket) do
+    update_user_selection(id, socket)
+  end
+
+  def handle_event("remove-user", %{"id" => id}, socket) do
+    update_user_selection(id, socket)
+  end
+
+  defp update_user_selection(id, socket) do
+    case id in socket.assigns.selected_users do
+      true ->
+        selected_users = List.delete(socket.assigns.selected_users, id)
+        {:noreply, assign(socket, add_user_modal_visibility: "visible", selected_users: selected_users)}
+
+      _ ->
+        selected_users = [id | socket.assigns.selected_users]
+        {:noreply, assign(socket, add_user_modal_visibility: "visible", selected_users: selected_users)}
+    end
   end
 
   defp update_dataset_selection(id, socket) do

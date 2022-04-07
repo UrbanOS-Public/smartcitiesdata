@@ -125,7 +125,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-    allow(Andi.Repo.preload(any(), :datasets), return: %{datasets: []})
+    allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: []})
   end
 
   defp create_access_group() do

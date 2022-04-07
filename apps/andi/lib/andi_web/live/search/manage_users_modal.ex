@@ -52,11 +52,21 @@ defmodule AndiWeb.Search.ManageUsersModal do
                     <td class="search-table__cell search-table__cell--break search-table__user-name-cell wide-column"><%= user.name %></td>
                     <td class="search-table__cell search-table__cell--break search-table__user-email-cell wide-column"><%= user.email %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= pretty_print_orgs(user.organizations) %></td>
+                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-user-search" phx-value-id=<%= user.id %>><%=selected_value(user.id, @selected_users)%></td>
                     <td></td>
                   </tr>
                 <% end %>
               <% end %>
             </table>
+          </div>
+        </div>
+
+        <div class="user-search-selected-users">
+          <p class="search-modal-section-header-text">Selected Users</p>
+          <div class="selected-results-from-search">
+            <%= for user <- selected_users(@search_results, @selected_users) do %>
+              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-user" phx-value-id=<%= user.id %>>close</i></div>
+            <% end %>
           </div>
         </div>
 
@@ -74,5 +84,21 @@ defmodule AndiWeb.Search.ManageUsersModal do
     organizations
     |> Enum.map(fn org -> org.orgTitle end)
     |> Enum.join(", ")
+  end
+
+  def selected_users(users, selected_users) do
+    Enum.map(selected_users, fn selected_user ->
+      case Enum.find(users, fn user -> user.id == selected_user end) do
+        nil -> Andi.Schemas.User.get_by_id(selected_user)
+        result -> result
+      end
+    end)
+  end
+
+  def selected_value(user_id, selected_users) do
+    case user_id in selected_users do
+      true -> "Remove"
+      false -> "Select"
+    end
   end
 end
