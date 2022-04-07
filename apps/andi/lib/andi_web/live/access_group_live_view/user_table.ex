@@ -37,6 +37,6 @@ defmodule AndiWeb.AccessGroupLiveView.UserTable do
   end
 
   defp users_to_display(selected_users) do
-    Enum.map(selected_users, fn user_id -> Andi.Schemas.User.get_by_id(user_id) end)
+    Enum.map(selected_users, fn user_id -> Andi.Schemas.User.get_by_subject_id(user_id) end)
   end
 end

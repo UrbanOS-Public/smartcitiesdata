@@ -6,6 +6,8 @@ defmodule Andi.Schemas.UserTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.Schemas.User
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.AccessGroups
+  alias Andi.InputSchemas.AccessGroup
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @moduletag shared_data_connection: true
@@ -38,6 +40,46 @@ defmodule Andi.Schemas.UserTest do
       Datasets.update(dataset)
 
       assert %{id: id, subject_id: user_one_subject_id, datasets: [%{id: dataset_id}]} = User.get_by_subject_id(user_one_subject_id)
+    end
+  end
+
+  describe "associate_with_access_group/2" do
+    setup do
+      subject_id = Ecto.UUID.generate()
+      {:ok, user} = User.create_or_update(subject_id, %{email: "foo@bar.com", name: "Foo Bar"})
+
+      access_group = AccessGroups.create()
+      access_group_2 = AccessGroups.create()
+
+      %{user: user, subject_id: subject_id, access_group: access_group, access_group_2: access_group_2}
+    end
+
+    test "associates a user with an access group", %{user: user, subject_id: subject_id, access_group: access_group} do
+      assert %{subject_id: subject_id} = User.get_by_subject_id(subject_id)
+
+      {:ok, user} = User.associate_with_access_group(subject_id, access_group.id)
+
+      eventually(fn ->
+        updated_access_group = Repo.get(AccessGroup, access_group.id) |> Repo.preload(:users)
+        assert user.id in Enum.map(updated_access_group.users, fn user -> user.id end)
+      end)
+    end
+
+    test "a user can be associated with many access_groups", %{
+      user: user,
+      subject_id: subject_id,
+      access_group: access_group,
+      access_group_2: access_group_2
+    } do
+      {:ok, _} = User.associate_with_access_group(subject_id, access_group.id)
+      {:ok, _} = User.associate_with_access_group(subject_id, access_group_2.id)
+
+      eventually(fn ->
+        updated_access_group = Repo.get(AccessGroup, access_group.id) |> Repo.preload(:users)
+        updated_access_group_2 = Repo.get(AccessGroup, access_group_2.id) |> Repo.preload(:users)
+        assert user.id in Enum.map(updated_access_group.users, fn user -> user.id end)
+        assert user.id in Enum.map(updated_access_group_2.users, fn user -> user.id end)
+      end)
     end
   end
 

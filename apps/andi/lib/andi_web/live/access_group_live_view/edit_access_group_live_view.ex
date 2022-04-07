@@ -70,7 +70,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       |> Andi.Repo.preload([:datasets, :users])
 
     starting_dataset_ids = Enum.map(access_group_with_datasets_and_users.datasets, fn dataset -> dataset.id end)
-    starting_user_ids = Enum.map(access_group_with_datasets_and_users.users, fn user -> user.id end)
+    starting_user_ids = Enum.map(access_group_with_datasets_and_users.users, fn user -> user.subject_id end)
 
     {:ok,
      assign(socket,
@@ -110,18 +110,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("access-group-form_save", _, socket) do
-    access_group_id = socket.assigns.access_group.id
-    user_id = socket.assigns.user_id
-
-    original_ids = Enum.map(socket.assigns.access_group.datasets, fn dataset -> dataset.id end)
-    datasets_to_dissociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
-    datasets_to_associate = Enum.filter(socket.assigns.selected_datasets, fn selected -> selected not in original_ids end)
-
-    send_dataset_associate_event(datasets_to_associate, access_group_id, user_id)
-    send_dataset_dissociate_event(datasets_to_dissociate, access_group_id, user_id)
-
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
+        update_dataset_associations(socket)
+        update_user_associations(socket)
         {:noreply, redirect(socket, to: header_access_groups_path())}
 
       error ->
@@ -276,6 +268,30 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     |> Andi.Repo.all()
   end
 
+  def update_dataset_associations(socket) do
+    access_group_id = socket.assigns.access_group.id
+    user_id = socket.assigns.user_id
+
+    original_ids = Enum.map(socket.assigns.access_group.datasets, fn dataset -> dataset.id end)
+    datasets_to_dissociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
+    datasets_to_associate = Enum.filter(socket.assigns.selected_datasets, fn selected -> selected not in original_ids end)
+
+    send_dataset_associate_event(datasets_to_associate, access_group_id, user_id)
+    send_dataset_dissociate_event(datasets_to_dissociate, access_group_id, user_id)
+  end
+
+  def update_user_associations(socket) do
+    access_group_id = socket.assigns.access_group.id
+    user_id = socket.assigns.user_id
+
+    original_user_ids = Enum.map(socket.assigns.access_group.users, fn user -> user.subject_id end)
+    users_to_dissociate = Enum.filter(original_user_ids, fn original -> original not in socket.assigns.selected_users end)
+    users_to_associate = Enum.filter(socket.assigns.selected_users, fn selected -> selected not in original_user_ids end)
+
+    send_user_associate_events(users_to_associate, access_group_id, user_id)
+    send_user_dissociate_events(users_to_dissociate, access_group_id, user_id)
+  end
+
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do
     Enum.map(datasets, fn dataset ->
       properties = %{dataset_id: dataset, access_group_id: access_group_id}
@@ -291,6 +307,24 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
       Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_disassociate(), relation)
       Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation)
+    end)
+  end
+
+  defp send_user_associate_events(users, access_group_id, user_id) do
+    Enum.map(users, fn user ->
+      properties = %{subject_id: user, access_group_id: access_group_id}
+      {:ok, relation} = SmartCity.UserAccessGroupRelation.new(properties)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, user_access_group_associate(), relation)
+      Brook.Event.send(:andi, user_access_group_associate(), :andi, relation)
+    end)
+  end
+
+  defp send_user_dissociate_events(users, access_group_id, user_id) do
+    Enum.map(users, fn user ->
+      properties = %{subject_id: user, access_group_id: access_group_id}
+      {:ok, relation} = SmartCity.UserAccessGroupRelation.new(properties)
+      Andi.Schemas.AuditEvents.log_audit_event(user_id, user_access_group_disassociate(), relation)
+      Brook.Event.send(:andi, user_access_group_disassociate(), :andi, relation)
     end)
   end
 end
