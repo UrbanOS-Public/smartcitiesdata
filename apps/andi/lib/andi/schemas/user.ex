@@ -57,6 +57,21 @@ defmodule Andi.Schemas.User do
     end
   end
 
+  def disassociate_with_access_group(subject_id, access_group_id) do
+    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:access_groups),
+         access_group <- AccessGroups.get(access_group_id) do
+      updated_access_groups = List.delete(user.access_groups, access_group)
+
+      user
+      |> Repo.preload(:access_groups)
+      |> change()
+      |> put_assoc(:access_groups, updated_access_groups)
+      |> Repo.update()
+    else
+      error -> error
+    end
+  end
+
   def associate_with_organization(subject_id, organization_id) do
     with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:organizations),
          org <- Organizations.get(organization_id) do

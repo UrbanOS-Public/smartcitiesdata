@@ -25,6 +25,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.DatasetAccessGroupRelation
+  alias SmartCity.UserAccessGroupRelation
 
   @instance_name Andi.instance_name()
 
@@ -397,98 +398,224 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     end
   end
 
-  test "removes a dataset when remove action is clicked", %{curator_conn: conn} do
-    access_group = create_access_group()
-    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "remove_org"}) |> Datasets.update()
-    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
-    dataset_id = dataset.id
+  describe "removing a dataset" do
+    test "removes a dataset when remove action is clicked", %{curator_conn: conn} do
+      access_group = create_access_group()
+      {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "remove_org"}) |> Datasets.update()
+      {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+      dataset_id = dataset.id
 
-    eventually(fn ->
-      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
-      assert [%Dataset{id: dataset_id}] = access_group.datasets
-    end)
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+        assert [%Dataset{id: dataset_id}] = access_group.datasets
+      end)
 
-    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-    remove_action = element(view, ".modal-action-text", "Remove")
-    html = render_click(remove_action)
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
 
-    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+      refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+    end
+
+    test "dissociates dataset after removing from current datasets", %{curator_conn: conn} do
+      access_group = create_access_group()
+      {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "dissociate_org"}) |> Datasets.update()
+      {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+      dataset_id = dataset.id
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+        assert [%Dataset{id: dataset_id}] = access_group.datasets
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
+
+      refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+        assert [] = access_group.datasets
+      end)
+    end
+
+    test "keeps the dataset if user removes and re-selects", %{curator_conn: conn} do
+      access_group = create_access_group()
+      {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "mistake_org"}) |> Datasets.update()
+      {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
+      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
+      dataset_id = dataset.id
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+        assert [%Dataset{id: dataset_id}] = access_group.datasets
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
+
+      refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+
+      manage_datasets_button = find_manage_datasets_button(view)
+      render_click(manage_datasets_button)
+
+      # search for the dataset by org and select it
+      html = render_submit(view, "dataset-search", %{"search-value" => dataset.business.orgTitle})
+      select_dataset = element(view, ".modal-action-text", "Select")
+      html = render_click(select_dataset)
+      assert get_text(html, ".search-table") =~ dataset.business.orgTitle
+
+      # save the search
+      save_button = element(view, ".manage-datasets-modal .save-search", "Save")
+      html = render_click(save_button)
+
+      # verfy that the selected dataset appear in the datasets table
+      assert get_text(html, ".access-groups-sub-table") =~ dataset.business.orgTitle
+      assert get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
+        assert [%Dataset{id: ^dataset_id}] = access_group.datasets
+      end)
+    end
   end
 
-  test "dissociates dataset after removing from current datasets", %{curator_conn: conn} do
-    access_group = create_access_group()
-    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "dissociate_org"}) |> Datasets.update()
-    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
-    dataset_id = dataset.id
+  describe "removing a user" do
+    test "removes a user when remove action is clicked", %{curator_conn: conn} do
+      access_group = create_access_group()
+      user_one_subject_id = UUID.uuid4()
 
-    eventually(fn ->
-      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
-      assert [%Dataset{id: dataset_id}] = access_group.datasets
-    end)
+      {:ok, user} =
+        Andi.Schemas.User.create_or_update(user_one_subject_id, %{
+          subject_id: user_one_subject_id,
+          email: "blahblahblah@blah.com",
+          name: "Someone"
+        })
 
-    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
 
-    remove_action = element(view, ".modal-action-text", "Remove")
-    html = render_click(remove_action)
+      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
+      user_id = user.id
 
-    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [%Andi.Schemas.User{id: user_id}] = access_group.users
+      end)
 
-    # save the changes to the access group
-    save_button = element(view, ".save-edit", "Save")
-    html = render_click(save_button)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-    eventually(fn ->
-      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
-      assert [] = access_group.datasets
-    end)
-  end
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
 
-  test "keeps the dataset if user removes and re-selects", %{curator_conn: conn} do
-    access_group = create_access_group()
-    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "mistake_org"}) |> Datasets.update()
-    {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-    Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
-    dataset_id = dataset.id
+      refute get_text(html, ".access-groups-sub-table") =~ user.name
+    end
 
-    eventually(fn ->
-      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
-      assert [%Dataset{id: dataset_id}] = access_group.datasets
-    end)
+    test "dissociates user after removing from current users", %{curator_conn: conn} do
+      access_group = create_access_group()
+      user_one_subject_id = UUID.uuid4()
 
-    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
-    remove_action = element(view, ".modal-action-text", "Remove")
-    html = render_click(remove_action)
+      {:ok, user} =
+        Andi.Schemas.User.create_or_update(user_one_subject_id, %{
+          subject_id: user_one_subject_id,
+          email: "blahblahblah@blah.com",
+          name: "Someone"
+        })
 
-    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+      {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
 
-    manage_datasets_button = find_manage_datasets_button(view)
-    render_click(manage_datasets_button)
+      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
+      user_id = user.id
 
-    # search for the dataset by org and select it
-    html = render_submit(view, "dataset-search", %{"search-value" => dataset.business.orgTitle})
-    select_dataset = element(view, ".modal-action-text", "Select")
-    html = render_click(select_dataset)
-    assert get_text(html, ".search-table") =~ dataset.business.orgTitle
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [%Andi.Schemas.User{id: user_id}] = access_group.users
+      end)
 
-    # save the search
-    save_button = element(view, ".manage-datasets-modal .save-search", "Save")
-    html = render_click(save_button)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
-    # verfy that the selected dataset appear in the datasets table
-    assert get_text(html, ".access-groups-sub-table") =~ dataset.business.orgTitle
-    assert get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
 
-    # save the changes to the access group
-    save_button = element(view, ".save-edit", "Save")
-    html = render_click(save_button)
+      refute get_text(html, ".access-groups-sub-table") =~ user.name
 
-    eventually(fn ->
-      access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
-      assert [%Dataset{id: ^dataset_id}] = access_group.datasets
-    end)
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [] = access_group.users
+      end)
+    end
+
+    test "can remove and re-select user", %{curator_conn: conn} do
+      access_group = create_access_group()
+      user_one_subject_id = UUID.uuid4()
+
+      {:ok, user} =
+        Andi.Schemas.User.create_or_update(user_one_subject_id, %{
+          subject_id: user_one_subject_id,
+          email: "blahblahblah@blah.com",
+          name: "Someone"
+        })
+
+      {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
+
+      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
+      user_id = user.id
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [%Andi.Schemas.User{id: user_id}] = access_group.users
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      remove_action = element(view, ".modal-action-text", "Remove")
+      html = render_click(remove_action)
+
+      refute get_text(html, ".access-groups-sub-table") =~ user.name
+
+      manage_users_button = find_manage_users_button(view)
+      render_click(manage_users_button)
+
+      # search for the user by name and select it
+      html = render_submit(view, "user-search", %{"search-value" => user.name})
+      select_user = element(view, ".modal-action-text", "Select")
+      html = render_click(select_user)
+      assert get_text(html, ".search-table") =~ user.name
+
+      # save the search
+      save_button = element(view, ".manage-users-modal .save-search", "Save")
+      html = render_click(save_button)
+
+      # verfy that the selected user appears in the user table
+      assert get_text(html, ".access-groups-sub-table") =~ user.name
+      assert get_text(html, ".access-groups-sub-table") =~ user.email
+
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [%Andi.Schemas.User{id: ^user_id}] = access_group.users
+      end)
+    end
   end
 
   defp create_access_group() do

@@ -90,6 +90,36 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       assert get_text(html, ".access-groups-sub-table__cell") =~ user_2.name
     end
 
+    test "shows a remove button for each user", %{conn: conn} do
+      access_group = setup_access_group()
+
+      user_1 = %Andi.Schemas.User{
+        id: UUID.uuid4(),
+        subject_id: "auth0|someStringOfNumbers",
+        name: "Penny",
+        email: "penny@dogs.com",
+        organizations: []
+      }
+
+      user_2 = %Andi.Schemas.User{
+        id: UUID.uuid4(),
+        subject_id: "auth0|someStringOfNumbersAlso",
+        name: "Hazel",
+        email: "hazel@dogs.com",
+        organizations: []
+      }
+
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2]})
+      allow(Andi.Schemas.User.get_by_subject_id(user_1.subject_id), return: user_1)
+      allow(Andi.Schemas.User.get_by_subject_id(user_2.subject_id), return: user_2)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      text = get_text(html, ".access-groups-sub-table__cell")
+      results = Regex.scan(~r/Remove/, text)
+
+      assert length(results) == 2
+    end
+
     defp setup_access_group() do
       access_group = TDG.create_access_group(%{})
       allow(AccessGroups.update(any()), return: %AccessGroup{id: access_group.id, name: access_group.name})
