@@ -52,7 +52,7 @@ defmodule AndiWeb.Search.ManageUsersModal do
                     <td class="search-table__cell search-table__cell--break search-table__user-name-cell wide-column"><%= user.name %></td>
                     <td class="search-table__cell search-table__cell--break search-table__user-email-cell wide-column"><%= user.email %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= pretty_print_orgs(user.organizations) %></td>
-                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-user-search" phx-value-id=<%= user.id %>><%=selected_value(user.id, @selected_users)%></td>
+                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-user-search" phx-value-id=<%= user.subject_id %>><%=selected_value(user.subject_id, @selected_users)%></td>
                     <td></td>
                   </tr>
                 <% end %>
@@ -65,7 +65,7 @@ defmodule AndiWeb.Search.ManageUsersModal do
           <p class="search-modal-section-header-text">Selected Users</p>
           <div class="selected-results-from-search">
             <%= for user <- selected_users(@search_results, @selected_users) do %>
-              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-user" phx-value-id=<%= user.id %>>close</i></div>
+              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-user" phx-value-id=<%= user.subject_id %>>close</i></div>
             <% end %>
           </div>
         </div>
@@ -88,8 +88,8 @@ defmodule AndiWeb.Search.ManageUsersModal do
 
   def selected_users(users, selected_users) do
     Enum.map(selected_users, fn selected_user ->
-      case Enum.find(users, fn user -> user.id == selected_user end) do
-        nil -> Andi.Schemas.User.get_by_id(selected_user)
+      case Enum.find(users, fn user -> user.subject_id == selected_user end) do
+        nil -> Andi.Schemas.User.get_by_subject_id(selected_user)
         result -> result
       end
     end)

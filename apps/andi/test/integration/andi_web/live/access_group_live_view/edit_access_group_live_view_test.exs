@@ -310,8 +310,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
-      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.orgTitle
-      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".access-groups-sub-table") =~ dataset_a.business.orgTitle
+      assert get_text(html, ".access-groups-sub-table") =~ dataset_a.business.dataTitle
     end
   end
 
@@ -338,8 +338,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       html = render_click(save_button)
 
       # verfy that the selected datasets appear in the datasets table
-      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.orgTitle
-      assert get_text(html, ".access-groups-dataset-table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".access-groups-sub-table") =~ dataset_a.business.orgTitle
+      assert get_text(html, ".access-groups-sub-table") =~ dataset_a.business.dataTitle
 
       # save the changes to the access group
       save_button = element(view, ".save-edit", "Save")
@@ -348,6 +348,51 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
         assert [%Dataset{id: ^dataset_id}] = access_group.datasets
+      end)
+    end
+  end
+
+  describe "emits a user_access_group_associate event" do
+    test "when the access group is saved, the association is updated", %{curator_conn: conn} do
+      user_one_subject_id = UUID.uuid4()
+
+      {:ok, user} =
+        Andi.Schemas.User.create_or_update(user_one_subject_id, %{
+          subject_id: user_one_subject_id,
+          email: "blahblahblah@blah.com",
+          name: "Someone"
+        })
+
+      user_id = user.id
+
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      # add a new user to the access group
+      manage_users_button = find_manage_users_button(view)
+      render_click(manage_users_button)
+
+      # search for the user by name and select it
+      html = render_submit(view, "user-search", %{"search-value" => user.name})
+      select_user = element(view, ".modal-action-text", "Select")
+      html = render_click(select_user)
+      assert get_text(html, ".search-table") =~ user.name
+
+      # save the search
+      save_button = element(view, ".manage-users-modal .save-search", "Save")
+      html = render_click(save_button)
+
+      # verfy that the selected user appear in the users table
+      assert get_text(html, ".access-groups-sub-table") =~ user.name
+      assert get_text(html, ".access-groups-sub-table") =~ user.email
+
+      # save the changes to the access group
+      save_button = element(view, ".save-edit", "Save")
+      html = render_click(save_button)
+
+      eventually(fn ->
+        access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
+        assert [%Andi.Schemas.User{id: ^user_id}] = access_group.users
       end)
     end
   end
@@ -369,7 +414,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     remove_action = element(view, ".modal-action-text", "Remove")
     html = render_click(remove_action)
 
-    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
   end
 
   test "dissociates dataset after removing from current datasets", %{curator_conn: conn} do
@@ -389,7 +434,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     remove_action = element(view, ".modal-action-text", "Remove")
     html = render_click(remove_action)
 
-    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
 
     # save the changes to the access group
     save_button = element(view, ".save-edit", "Save")
@@ -417,7 +462,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     remove_action = element(view, ".modal-action-text", "Remove")
     html = render_click(remove_action)
 
-    refute get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+    refute get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
 
     manage_datasets_button = find_manage_datasets_button(view)
     render_click(manage_datasets_button)
@@ -433,8 +478,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     html = render_click(save_button)
 
     # verfy that the selected dataset appear in the datasets table
-    assert get_text(html, ".access-groups-dataset-table") =~ dataset.business.orgTitle
-    assert get_text(html, ".access-groups-dataset-table") =~ dataset.business.dataTitle
+    assert get_text(html, ".access-groups-sub-table") =~ dataset.business.orgTitle
+    assert get_text(html, ".access-groups-sub-table") =~ dataset.business.dataTitle
 
     # save the changes to the access group
     save_button = element(view, ".save-edit", "Save")
@@ -455,5 +500,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
   defp find_manage_datasets_button(view) do
     element(view, ".btn", "Manage Datasets")
+  end
+
+  defp find_manage_users_button(view) do
+    element(view, ".btn", "Manage Users")
   end
 end
