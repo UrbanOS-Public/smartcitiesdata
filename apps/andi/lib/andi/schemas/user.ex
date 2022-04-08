@@ -43,14 +43,12 @@ defmodule Andi.Schemas.User do
   end
 
   def associate_with_access_group(subject_id, access_group_id) do
-    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:access_groups) |> IO.inspect(label: "user associate"),
+    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:access_groups),
          access_group <- AccessGroups.get(access_group_id) do
       user
       |> Repo.preload(:access_groups)
-      |> IO.inspect(label: "before change")
       |> change()
       |> put_assoc(:access_groups, [access_group | user.access_groups])
-      |> IO.inspect(label: "after change")
       |> Repo.update()
     else
       error -> error
