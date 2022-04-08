@@ -9,6 +9,7 @@ defmodule Andi.Schemas.User do
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.AccessGroup
+  alias Andi.InputSchemas.AccessGroups
   import Ecto.Query, only: [from: 1]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -31,6 +32,7 @@ defmodule Andi.Schemas.User do
     |> unique_constraint(:subject_id)
   end
 
+  @spec create_or_update(any, :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}) :: any
   def create_or_update(subject_id, changes \\ %{}) do
     case get_by_subject_id(subject_id) do
       nil -> %__MODULE__{subject_id: subject_id}
@@ -38,6 +40,19 @@ defmodule Andi.Schemas.User do
     end
     |> changeset(changes)
     |> Repo.insert_or_update()
+  end
+
+  def associate_with_access_group(subject_id, access_group_id) do
+    with user <- Repo.get_by(__MODULE__, subject_id: subject_id) |> Repo.preload(:access_groups),
+         access_group <- AccessGroups.get(access_group_id) do
+      user
+      |> Repo.preload(:access_groups)
+      |> change()
+      |> put_assoc(:access_groups, [access_group | user.access_groups])
+      |> Repo.update()
+    else
+      error -> error
+    end
   end
 
   def associate_with_organization(subject_id, organization_id) do

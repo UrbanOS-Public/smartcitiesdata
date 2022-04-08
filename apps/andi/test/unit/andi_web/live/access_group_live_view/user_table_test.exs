@@ -53,7 +53,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       }
 
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user]})
-      allow(Andi.Schemas.User.get_by_id(user.id), return: user)
+      allow(Andi.Schemas.User.get_by_subject_id(user.subject_id), return: user)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -81,8 +81,8 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       }
 
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2]})
-      allow(Andi.Schemas.User.get_by_id(user_1.id), return: user_1)
-      allow(Andi.Schemas.User.get_by_id(user_2.id), return: user_2)
+      allow(Andi.Schemas.User.get_by_subject_id(user_1.subject_id), return: user_1)
+      allow(Andi.Schemas.User.get_by_subject_id(user_2.subject_id), return: user_2)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
