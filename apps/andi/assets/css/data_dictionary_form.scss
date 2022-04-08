@@ -117,11 +117,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 
     .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
-      background-image: url('/images/expanded.svg');
+      background-image: url('/static/images/expanded.svg');
     }
 
     .data-dictionary-tree__field--expanded .data-dictionary-tree-field__action {
-      background-image: url('/images/collapsed.svg');
+      background-image: url('/static/images/collapsed.svg');
     }
 
     .data-dictionary-tree__field--selected .data-dictionary-tree-field__action {
@@ -129,11 +129,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 
     .data-dictionary-tree__field--checked .data-dictionary-tree-field__action {
-      background-image: url('/images/checked.svg');
+      background-image: url('/static/images/checked.svg');
     }
 
     .data-dictionary-tree__field--unchecked .data-dictionary-tree-field__action {
-      background-image: url('/images/unchecked.svg');
+      background-image: url('/static/images/unchecked.svg');
     }
 
     .data-dictionary-tree__sub-dictionary--collapsed {
@@ -190,14 +190,14 @@ $tick-height: 1rem + $field-padding - 0.44;
       display: inline-block;
       width: 1.5rem;
       height: 24px;
-      background-image: url('/images/add_field.svg');
+      background-image: url('/static/images/add_field.svg');
       cursor: pointer;
   }
 
   .data-dictionary-form__remove-field-button {
       width: 1.5rem;
       height: 24px;
-      background-image: url('/images/delete_field.svg');
+      background-image: url('/static/images/delete_field.svg');
       cursor: pointer;
   }
 
