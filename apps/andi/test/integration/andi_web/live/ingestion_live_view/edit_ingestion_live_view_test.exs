@@ -27,8 +27,6 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
   alias Andi.Services.IngestionStore
   alias Andi.InputSchemas.InputConverter
 
-  @instance_name Andi.instance_name()
-
   @url_path "/ingestions"
 
   describe "ingestions" do
