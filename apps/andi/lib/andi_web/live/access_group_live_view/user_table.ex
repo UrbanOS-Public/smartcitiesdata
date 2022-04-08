@@ -15,6 +15,8 @@ defmodule AndiWeb.AccessGroupLiveView.UserTable do
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Name</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Email</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Organizations</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell thin-column">Actions</th>
+
           </thead>
 
           <%= if @selected_users == [] do %>
