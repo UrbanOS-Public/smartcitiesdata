@@ -616,6 +616,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         assert [%Andi.Schemas.User{id: ^user_id}] = access_group.users
       end)
     end
+
   end
 
   defp create_access_group() do
