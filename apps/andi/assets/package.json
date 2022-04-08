@@ -23,7 +23,7 @@
     "material-design-icons": "^3.0.1",
     "mini-css-extract-plugin": "^0.4.0",
     "minimist": ">=1.2.6",
-    "node-sass": "^6.0.0",
+    "node-sass": "^7.0.0",
     "normalize.css": "^8.0.1",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
     "postcss": "^8.2.10",
