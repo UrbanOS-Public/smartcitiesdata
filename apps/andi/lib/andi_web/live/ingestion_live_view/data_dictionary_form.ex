@@ -6,7 +6,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
   import Phoenix.HTML.Form
 
-  alias AndiWeb.ErrorHelpers
   alias AndiWeb.DataDictionary.Tree
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets.DataDictionary
@@ -14,7 +13,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.InputConverter
-  alias Andi.InputSchemas.Ingestion
   alias Ecto.Changeset
 
   def mount(_, %{"ingestion" => ingestion, "is_curator" => is_curator, "order" => order}, socket) do
@@ -50,12 +48,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
       case assigns.visibility do
         "collapsed" -> "EDIT"
         "expanded" -> "MINIMIZE"
-      end
-
-    loader_visibility =
-      case assigns.loading_schema do
-        true -> "loading"
-        false -> "hidden"
       end
 
     ~L"""
