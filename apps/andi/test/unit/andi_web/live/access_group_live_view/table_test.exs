@@ -27,11 +27,11 @@ defmodule AndiWeb.AccessGroupLiveView.TableTest do
   end
 
   describe "Basic access groups page load" do
-    test "shows \"No Access Groups\" when there are no rows to show", %{conn: conn} do
+    test "shows \"No Access Groups Found!\" when there are no rows to show", %{conn: conn} do
       allow(Andi.InputSchemas.AccessGroups.get_all(), return: [])
       assert {:ok, view, html} = live(conn, @url_path)
 
-      assert get_text(html, ".access-groups-table__cell") =~ "No Access Groups"
+      assert get_text(html, ".access-groups-table__cell") =~ "No Access Groups Found!"
     end
 
     test "represents an Access Group when one exists", %{conn: conn} do
