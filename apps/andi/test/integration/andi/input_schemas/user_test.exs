@@ -83,6 +83,39 @@ defmodule Andi.Schemas.UserTest do
     end
   end
 
+  describe "disassociate_with_access_group/2" do
+    setup do
+      subject_id = UUID.uuid4()
+
+      {:ok, user} =
+        Andi.Schemas.User.create_or_update(subject_id, %{
+          subject_id: subject_id,
+          email: "blahblahblah@blah.com",
+          name: "Someone"
+        })
+
+      access_group = TDG.create_access_group(%{})
+      access_group_id = access_group.id
+      {:ok, _andi_access_group} = AccessGroups.update(access_group)
+
+      {:ok, user} = User.associate_with_access_group(subject_id, access_group_id)
+
+      eventually(fn ->
+        assert [%{id: ^access_group_id}] = Map.get(user, :access_groups)
+      end)
+
+      %{subject_id: subject_id, access_group_id: access_group_id}
+    end
+
+    test "disassociates a user from an access group", %{subject_id: subject_id, access_group_id: access_group_id} do
+      {:ok, user} = User.disassociate_with_access_group(subject_id, access_group_id)
+
+      eventually(fn ->
+        assert [] == Map.get(user, :access_groups)
+      end)
+    end
+  end
+
   describe "associate_with_organization/2" do
     setup do
       # Create a test user

@@ -105,7 +105,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
   end
 
   test "sucessfully can remove a user from the list of selected users", %{curator_conn: conn} do
-    {:ok, user} = User.create_or_update("auth0|123458", %{email: "test@example.com", name: "TestingLadybug"})
+    {:ok, user} = User.create_or_update("auth0|12345812", %{email: "test@example.com", name: "TestingLadybug"})
     access_group = create_access_group()
     assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -116,7 +116,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
     assert get_text(html, ".selected-results-from-search") =~ user.name
 
-    remove_action = element(view, ".modal-action-text", "Remove")
+    remove_action = element(view, ".access-groups-sub-table__cell--break.modal-action-text", "Remove")
     html = render_click(remove_action)
 
     refute get_text(html, ".selected-results-from-search") =~ user.name

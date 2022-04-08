@@ -65,7 +65,7 @@ defmodule AndiWeb.Search.ManageUsersModal do
           <p class="search-modal-section-header-text">Selected Users</p>
           <div class="selected-results-from-search">
             <%= for user <- selected_users(@search_results, @selected_users) do %>
-              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-user" phx-value-id=<%= user.subject_id %>>close</i></div>
+              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-user" phx-value-id=<%= user.subject_id %>>close</i></div>
             <% end %>
           </div>
         </div>
