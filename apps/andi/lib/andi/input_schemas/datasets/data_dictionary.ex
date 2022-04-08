@@ -1,3 +1,5 @@
+# refactor: this is used by more than datasets now.
+# change to Andi.InputSchemas.DataDictionary
 defmodule Andi.InputSchemas.Datasets.DataDictionary do
   @moduledoc false
   use Ecto.Schema

@@ -12,6 +12,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
 
   def render(assigns) do
     id = Atom.to_string(assigns.id)
+
     modifier =
       if assigns.visible do
         "visible"
@@ -76,7 +77,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
     {:noreply, assign(socket, changeset: blank_changeset(socket), visible: false)}
   end
 
-  def handle_event("add_field", _, %{assigns: %{dataset_id: dataset_id }} = socket) do
+  def handle_event("add_field", _, %{assigns: %{dataset_id: _dataset_id}} = socket) do
     field_as_atomic_map =
       socket.assigns.changeset.changes
       |> Map.put(:dataset_id, socket.assigns.dataset_id)
@@ -101,10 +102,10 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  def handle_event("add_field", _, %{assigns: %{ingestion_id: ingestion_id }} = socket) do
+  def handle_event("add_field", _, %{assigns: %{ingestion_id: ingestion_id}} = socket) do
     field_as_atomic_map =
       socket.assigns.changeset.changes
-      |> Map.put(:ingestion_id, ingestion_id)
+      |> assign_ingestion_if_top_level(ingestion_id)
 
     parent_bread_crumb =
       Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
@@ -126,18 +127,27 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
     {:noreply, assign(socket, changeset: new_changeset)}
   end
 
-  defp blank_changeset(%{view: AndiWeb.EditLiveView.DataDictionaryForm} = socket) do
+  defp blank_changeset(%{view: AndiWeb.EditLiveView.DataDictionaryForm} = _socket) do
     DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   end
 
-  defp blank_changeset(%{view: AndiWeb.EditIngestionLiveView.DataDictionaryForm} = socket) do
+  defp blank_changeset(%{view: AndiWeb.EditIngestionLiveView.DataDictionaryForm} = _socket) do
     DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, %{})
   end
-
 
   defp get_item_types(), do: map_to_dropdown_options(Options.items())
 
   defp map_to_dropdown_options(options) do
     Enum.map(options, fn {actual_value, description} -> [key: description, value: actual_value] end)
+  end
+
+  defp assign_ingestion_if_top_level(changes, ingestion_id) do
+    case changes.parent_id do
+      ^ingestion_id ->
+        changes |> Map.put(:ingestion_id, ingestion_id)
+
+      _id ->
+        changes
+    end
   end
 end

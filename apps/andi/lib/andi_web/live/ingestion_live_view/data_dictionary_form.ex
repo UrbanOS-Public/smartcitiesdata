@@ -325,7 +325,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
         new_changeset =
           decoded_json
           |> List.wrap()
-          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id) #TODO this will be work
+          |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id)
 
         assign_new_schema(socket, new_changeset)
 
@@ -340,7 +340,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
         new_changeset =
           file
           |> parse_csv()
-          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id) #TODO this will be work
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
 
         assign_new_schema(socket, new_changeset)
 

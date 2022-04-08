@@ -1,7 +1,7 @@
 defmodule Andi.InputSchemas.DataDictionaryFields do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Ingestion
+  alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.Repo
 
@@ -69,20 +69,27 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
   end
 
   def get_parent_ids_from_ingestion(ingestion) do
-    ingestion_id = ingestion.id
     top_level_parent = [{@top_level_bread_crumb, ingestion.id}]
+    updated_ingestion = Ingestions.get(ingestion.id)
+    get_parent_ids_from_ingestion(updated_ingestion.schema, top_level_parent)
+  end
 
-    data_dictionary_query =
-      from(saved_ingestion in Ingestion,
-        join: data_dictionary in DataDictionary,
-        on: data_dictionary.ingestion_id == saved_ingestion.id,
-        where: data_dictionary.type in ["map", "list"] and saved_ingestion.id == ^ingestion_id,
-        select: {data_dictionary.bread_crumb, data_dictionary.id}
-      )
+  defp get_parent_ids_from_ingestion(schema, ids) do
+    parents = schema |> Enum.filter(fn schema -> schema.type in ["map", "list"] end)
 
-    data_dictionary_results = Repo.all(data_dictionary_query)
+    case parents do
+      [] ->
+        ids
 
-    top_level_parent ++ data_dictionary_results
+      parents ->
+        parents
+        |> Enum.reduce(
+          ids,
+          fn parent, ids ->
+            get_parent_ids_from_ingestion(parent.subSchema, [{parent.bread_crumb, parent.id} | ids])
+          end
+        )
+    end
   end
 
   defp adjust_parent_details(field, parent_bread_crumb) do
@@ -104,7 +111,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
       @top_level_bread_crumb ->
         {id, field} = Map.pop(field, :parent_id)
 
-         Map.put(field, :bread_crumb, field.name)
+        Map.put(field, :bread_crumb, field.name)
 
       _ ->
         field
