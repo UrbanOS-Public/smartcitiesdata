@@ -49,7 +49,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       curator_conn: conn,
       ingestion: ingestion
     } do
-      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       cancel_button = element(view, ".btn--cancel", "Cancel")
       render_click(cancel_button)
@@ -58,7 +58,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "clicking cancel warns of unsaved changes", %{curator_conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       editor = find_live_child(view, "extract_step_form_editor")
 
@@ -121,7 +121,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
         |> Ingestions.save()
 
-      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       assert get_text(html, "#snackbar") == ""
 
@@ -141,7 +141,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
         |> Ingestions.save()
 
-      assert {:ok, view, html} = live(conn, "/ingestions/" <> ingestion.id)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       render_change(view, :save, %{})
 
