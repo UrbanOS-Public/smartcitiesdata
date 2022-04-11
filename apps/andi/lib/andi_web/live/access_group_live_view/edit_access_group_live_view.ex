@@ -169,7 +169,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     update_user_selection(id, socket)
   end
 
-  def handle_event("remove-user", %{"id" => id}, socket) do
+  def handle_event("remove-selected-user", %{"id" => id}, socket) do
     update_user_selection(id, socket)
   end
 

@@ -18,7 +18,8 @@ defmodule Andi.Event.EventHandler do
       ingestion_delete: 0,
       dataset_access_group_associate: 0,
       dataset_access_group_disassociate: 0,
-      user_access_group_associate: 0
+      user_access_group_associate: 0,
+      user_access_group_disassociate: 0
     ]
 
   alias SmartCity.{Dataset, Organization, Ingestion}
@@ -150,7 +151,7 @@ defmodule Andi.Event.EventHandler do
 
     case Andi.Schemas.User.associate_with_access_group(subject_id, access_group_id) do
       {:error, error} ->
-        Logger.error("Unable to associate dataset with access group #{access_group_id}: #{inspect(error)}. This event has been discarded.")
+        Logger.error("Unable to associate user with access group #{access_group_id}: #{inspect(error)}. This event has been discarded.")
 
       _ ->
         :ok
@@ -172,6 +173,25 @@ defmodule Andi.Event.EventHandler do
         Logger.error(
           "Unable to disassociate dataset from access group #{access_group_id}: #{inspect(error)}. This event has been discarded."
         )
+
+      _ ->
+        :ok
+    end
+
+    :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: user_access_group_disassociate(),
+        data: %UserAccessGroupRelation{subject_id: subject_id, access_group_id: access_group_id},
+        author: author
+      }) do
+    user_access_group_disassociate()
+    |> add_event_count(author, nil)
+
+    case Andi.Schemas.User.disassociate_with_access_group(subject_id, access_group_id) do
+      {:error, error} ->
+        Logger.error("Unable to disassociate user from access group #{access_group_id}: #{inspect(error)}. This event has been discarded.")
 
       _ ->
         :ok
