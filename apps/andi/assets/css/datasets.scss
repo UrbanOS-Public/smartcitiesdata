@@ -128,7 +128,7 @@ $icon-width: 30px;
     color: green;
 
     .status__icon {
-        background-image: url('/images/check.svg');
+        background-image: url('/static/images/check.svg');
         height: $icon-width;
         width: $icon-width;
     }
@@ -141,7 +141,7 @@ $error-icon-margin: ($icon-width - 16px) / 2;
     color: red;
 
     .status__icon {
-        background-image: url('/images/X.svg');
+        background-image: url('/static/images/X.svg');
         height: $error-icon-width;
         width: $error-icon-width;
         margin-left: $error-icon-margin;

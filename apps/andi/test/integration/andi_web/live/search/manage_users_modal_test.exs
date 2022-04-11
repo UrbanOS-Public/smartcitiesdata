@@ -1,4 +1,4 @@
-defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
+defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase

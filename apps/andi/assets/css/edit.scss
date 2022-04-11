@@ -115,7 +115,7 @@ $component-header-height: 7.5rem;
 }
 
 .component-number-status--valid {
-    background-image: url('/images/green-check.svg');
+    background-image: url('/static/images/green-check.svg');
     height: 24px;
     width: 24px;
     position: absolute;
@@ -124,7 +124,7 @@ $component-header-height: 7.5rem;
 }
 
 .component-number-status--invalid {
-    background-image: url('/images/red-x.svg');
+    background-image: url('/static/images/red-x.svg');
     height: 24px;
     width: 24px;
     position: absolute;
@@ -166,14 +166,14 @@ $component-header-height: 7.5rem;
 }
 
 .component-title-icon--collapsed {
-    background-image: url('/images/edit.svg');
+    background-image: url('/static/images/edit.svg');
     height: 16px;
     width: 16px;
     margin-left: 0.75rem;
 }
 
 .component-title-icon--expanded {
-    background-image: url('/images/arrow.svg');
+    background-image: url('/static/images/arrow.svg');
     height: 20px;
     width: 20px;
     margin-left: 1rem;
@@ -190,7 +190,7 @@ $component-header-height: 7.5rem;
 }
 
 .home-icon {
-    background-image: url('/images/home.svg');
+    background-image: url('/static/images/home.svg');
     height: 20px;
     width: 20px;
     margin-right: 1rem;
@@ -336,7 +336,7 @@ $component-header-height: 7.5rem;
 }
 
 .link-out {
-    background-image: url('/images/launch.svg');
+    background-image: url('/static/images/launch.svg');
     height: 24px;
     width: 24px;
     background-repeat: no-repeat;
