@@ -99,12 +99,6 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(schema, changes)
   end
 
-  def draft_validation_changeset(changes), do: draft_validation_changeset(%__MODULE__{}, changes)
-
-  def draft_validation_changeset(schema, changes) do
-    changeset_for_draft(schema, changes)
-  end
-
   defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset) do
     format_values = Options.source_format() |> Map.new() |> Map.values()
 

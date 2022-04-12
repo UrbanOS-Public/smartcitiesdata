@@ -104,18 +104,7 @@ defmodule Andi.InputSchemas.Ingestions do
 
   def save_form_changeset(ingestion_id, form_changeset) do
     form_changes = InputConverter.form_changes_from_changeset(form_changeset)
-    update_from_form_for_draft(ingestion_id, form_changes)
-  end
-
-  def update_from_form_for_draft(ingestion_id, form_changes) do
-    existing_ingestion = get(ingestion_id)
-    changeset = InputConverter.andi_ingestion_to_draft_ui_changeset(existing_ingestion)
-    ingestion_changes =
-      changeset
-      |> Changeset.apply_changes()
-      |> StructTools.to_map()
-      |> Map.merge(form_changes)
-    update(existing_ingestion, ingestion_changes)
+    update_from_form(ingestion_id, form_changes)
   end
 
   def update_from_form(ingestion_id, form_changes) do
@@ -124,6 +113,8 @@ defmodule Andi.InputSchemas.Ingestions do
 
     ingestion_changes =
       changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
       |> Map.merge(form_changes)
 
     update(existing_ingestion, ingestion_changes)
