@@ -14,7 +14,14 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
 
   import FlokiHelpers,
     only: [
-      get_texts: 2
+      get_attributes: 3,
+      get_value: 2,
+      get_select: 2,
+      get_all_select_options: 2,
+      get_select_first_option: 2,
+      get_text: 2,
+      get_texts: 2,
+      find_elements: 2
     ]
 
   @moduletag shared_data_connection: true
@@ -118,6 +125,76 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
 
       assert ["string", "map", "integer", "list", "float", "map", "string"] ==
                get_texts(html, ".data-dictionary-tree-field__type")
+    end
+
+    test "generates hidden inputs for fields that are not selected", %{conn: conn} do
+      schema = [
+        %{
+          name: "one",
+          type: "list",
+          itemType: "map",
+          description: "description",
+          subSchema: [
+            %{
+              name: "one-one",
+              type: "string"
+            }
+          ]
+        },
+        %{
+          name: "two",
+          type: "map",
+          description: "this is a map",
+          subSchema: [
+            %{
+              name: "two-one",
+              type: "integer"
+            }
+          ]
+        }
+      ]
+
+      ingestion = create_ingestion_with_schema(schema)
+
+      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+
+      assert Enum.empty?(
+               find_elements(
+                 html,
+                 "input[type='hidden']#data_dictionary_form_schema_schema_0_description"
+               )
+             )
+
+      assert Enum.count(
+               find_elements(
+                 html,
+                 "input[type='hidden']#data_dictionary_form_schema_schema_1_description"
+               )
+             ) > 0
+    end
+
+    test "displays help for ingestions with empty schema fields", %{conn: conn} do
+      ingestion = create_ingestion_with_schema([])
+
+      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+
+      assert get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
+    end
+
+    test "does not display help for ingestions with empty subschema fields", %{conn: conn} do
+      schema = [
+        %{
+          name: "one",
+          type: "map",
+          subSchema: []
+        }
+      ]
+
+      ingestion = create_ingestion_with_schema(schema)
+
+      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+
+      refute get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
     end
   end
 
