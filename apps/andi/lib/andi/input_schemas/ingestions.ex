@@ -94,7 +94,7 @@ defmodule Andi.InputSchemas.Ingestions do
 
     from_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema])
-    |> Ingestion.changeset_for_draft(changes_as_map) |> IO.inspect(label: "Right before save")
+    |> Ingestion.changeset_for_draft(changes_as_map)
     |> save()
   end
 
