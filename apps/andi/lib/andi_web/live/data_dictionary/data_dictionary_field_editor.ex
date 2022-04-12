@@ -22,6 +22,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
         <%= hidden_input(@form, :id, id: id <> "_id") %>
         <%= hidden_input(@form, :bread_crumb) %>
         <%= hidden_input(@form, :dataset_id) %>
+        <%= hidden_input(@form, :ingestion_id) %>
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>
