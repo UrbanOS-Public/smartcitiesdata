@@ -11,6 +11,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
   alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Helpers.FormTools
 
   import FlokiHelpers,
@@ -444,13 +445,23 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
       delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+
       render_click(delete_button)
       html = render(data_dictionary_view)
       selected_field_name = "one"
 
-      refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
+      refute selected_field_name in get_texts(
+               html,
+               ".data-dictionary-tree__field .data-dictionary-tree-field__name"
+             )
+
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      assert "two" ==
+               get_text(
+                 html,
+                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
     end
 
     test "removing a field selects the next sibling", %{conn: conn, ingestion: ingestion} do
@@ -459,13 +470,22 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
 
-      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      assert "one" ==
+               get_text(
+                 html,
+                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
 
       delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+
       render_click(delete_button)
       html = render(data_dictionary_view)
 
-      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+      assert "two" ==
+               get_text(
+                 html,
+                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
     end
 
     test "removes parent field along with its children", %{conn: conn, ingestion: ingestion} do
@@ -481,9 +501,15 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
       html = render(data_dictionary_view)
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      assert "two" ==
+               get_text(
+                 html,
+                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
 
       delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+
       render_click(delete_button)
       html = render(data_dictionary_view)
 
@@ -494,6 +520,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       html = render(data_dictionary_view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
 
@@ -510,14 +537,21 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
       html = render(data_dictionary_view)
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      assert "one" ==
+               get_text(
+                 html,
+                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
 
       delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+
       render_click(delete_button)
 
       html = render(data_dictionary_view)
 
       assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+
       assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
       assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
     end
@@ -547,19 +581,26 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
       html = render(data_dictionary_view)
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
 
       [selected_field_id] =
-        get_attributes(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text", "phx-value-field-id")
+        get_attributes(
+          html,
+          ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text",
+          "phx-value-field-id"
+        )
 
       assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
 
       delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+
       render_click(delete_button)
 
       html = render(data_dictionary_view)
 
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
       refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
     end
   end
@@ -570,6 +611,291 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
     assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
 
     assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
+  end
+
+  @tag :skip
+  describe "default timestamp/date" do
+    setup do
+      timestamp_schema = [%{name: "timestamp_field", type: "timestamp"}]
+      date_schema = [%{name: "date_field", type: "date"}]
+      andi_ingestion_with_timestamp = create_ingestion_with_schema(timestamp_schema)
+      andi_ingestion_with_date = create_ingestion_with_schema(date_schema)
+
+      [
+        andi_ingestion_with_date: andi_ingestion_with_date,
+        andi_ingestion_with_timestamp: andi_ingestion_with_timestamp
+      ]
+    end
+
+    # todo: broken
+    # field form data doesn't persist
+    test "replaces provider with nil when use default checkbox is unselected", %{conn: conn} do
+      schema = [
+        %{
+          name: "date_field",
+          type: "date",
+          default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}
+        }
+      ]
+
+      andi_ingestion = create_ingestion_with_schema(schema)
+
+      schema_field_id = andi_ingestion.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+
+      assert get_value(html, "#data_dictionary_field_editor__offset_input") == "-1"
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "ingestion_id" => andi_ingestion.id,
+            "format" => "{YYYY}",
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id,
+            "use_default" => "false",
+            "offset" => "-1"
+          }
+        }
+      }
+
+      html =
+        data_dictionary_view
+        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save")
+
+      eventually(
+        fn ->
+          updated_andi_ingestion = Ingestions.get(andi_ingestion.id)
+
+          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
+
+          updated_schema_field = smrt_ingestion_from_andi_ingestion.schema |> hd()
+
+          refute Map.has_key?(updated_schema_field, :default)
+
+          assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+
+          assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+        end,
+        20,
+        200
+      )
+    end
+
+    test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
+      schema = [%{name: "date_field", type: "date"}]
+      andi_ingestion = create_ingestion_with_schema(schema)
+
+      schema_field_id = andi_ingestion.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+
+      assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "ingestion_id" => andi_ingestion.id,
+            "format" => "{YYYY}",
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id,
+            "use_default" => "true"
+          }
+        }
+      }
+
+      html =
+        data_dictionary_view
+        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save")
+
+      eventually(
+        fn ->
+          updated_andi_ingestion = Ingestions.get(andi_ingestion.id)
+
+          smrt_ingestion_from_andi_ingestion(InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion))
+
+          updated_schema_field = smrt_ingestion_from_andi_ingestion.schema |> hd()
+
+          assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+
+          assert %{provider: "date"} = Map.get(updated_schema_field, :default)
+        end,
+        20,
+        100
+      )
+    end
+
+    test "generates provision for timestamps", %{
+      conn: conn,
+      andi_ingestion_with_timestamp: andi_ingestion_with_timestamp
+    } do
+      schema_field_id = andi_ingestion_with_timestamp.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_timestamp.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+      offset_in_seconds = -1 * 60 * 60 * 24
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "ingestion_id" => andi_ingestion_with_timestamp.id,
+            "format" => format,
+            "name" => "timestamp_field",
+            "type" => "timestamp",
+            "bread_crumb" => "timestamp_field",
+            "id" => schema_field_id,
+            "use_default" => "true",
+            "default_offset" => offset_in_seconds
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save")
+
+      eventually(
+        fn ->
+          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_timestamp.id)
+
+          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
+
+          assert %{
+                   default: %{
+                     provider: "timestamp",
+                     version: "2",
+                     opts: %{
+                       format: format,
+                       offset_in_seconds: offset_in_seconds
+                     }
+                   }
+                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
+
+    test "generates provision for dates", %{
+      conn: conn,
+      andi_ingestion_with_date: andi_ingestion_with_date
+    } do
+      schema_field_id = andi_ingestion_with_date.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_date.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+      offset_in_days = -1
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "ingestion_id" => andi_ingestion_with_date.id,
+            "default_offset" => offset_in_days,
+            "use_default" => "true",
+            "format" => format,
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save")
+
+      eventually(
+        fn ->
+          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_date.id)
+
+          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
+
+          assert %{
+                   default: %{
+                     provider: "date",
+                     version: "1",
+                     opts: %{
+                       format: format,
+                       offset_in_days: offset_in_days
+                     }
+                   }
+                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
+
+    test "defaults offset to 0", %{conn: conn, andi_ingestion_with_date: andi_ingestion_with_date} do
+      schema_field_id = andi_ingestion_with_date.schema |> hd() |> Map.get(:id)
+
+      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_date.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      format = "{YYYY}-{0M}-{0D}"
+
+      form_schema = %{
+        "schema" => %{
+          "0" => %{
+            "ingestion_id" => andi_ingestion_with_date.id,
+            "default_offset" => nil,
+            "use_default" => "true",
+            "format" => format,
+            "name" => "date_field",
+            "type" => "date",
+            "bread_crumb" => "date_field",
+            "id" => schema_field_id
+          }
+        }
+      }
+
+      data_dictionary_view
+      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+
+      render_change(view, "save")
+
+      eventually(
+        fn ->
+          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_date.id)
+
+          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
+
+          assert %{
+                   default: %{
+                     provider: "date",
+                     version: "1",
+                     opts: %{
+                       format: format,
+                       offset_in_days: 0
+                     }
+                   }
+                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
+        end,
+        10,
+        200
+      )
+    end
   end
 
   defp create_ingestion_with_schema(schema) do
