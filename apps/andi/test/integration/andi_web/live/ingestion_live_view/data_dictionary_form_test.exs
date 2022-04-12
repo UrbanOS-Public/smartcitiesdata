@@ -3,14 +3,15 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
 
-  alias SmartCity.TestDataGenerator, as: TDG
-
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   import Phoenix.LiveViewTest
 
+  alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.InputSchemas.DataDictionaryFields
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
+  alias AndiWeb.Helpers.FormTools
 
   import FlokiHelpers,
     only: [
@@ -198,6 +199,371 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
     end
   end
 
+  describe "add dictionary field modal" do
+    setup do
+      ingestion =
+        create_ingestion_with_schema([
+          %{
+            name: "one",
+            type: "list",
+            itemType: "string",
+            description: "description",
+            subSchema: [
+              %{
+                name: "one-one",
+                type: "string"
+              }
+            ]
+          },
+          %{
+            name: "two",
+            type: "map",
+            description: "this is a map",
+            subSchema: [
+              %{
+                name: "two-one",
+                type: "integer"
+              }
+            ]
+          }
+        ])
+
+      [ingestion: ingestion]
+    end
+
+    test "adds field as a sub schema", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      assert [
+               {"Top Level", _},
+               {"one", field_one_id},
+               {"two", _}
+             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      assert {_, ["Top Level"]} =
+               get_select_first_option(
+                 html,
+                 ".data-dictionary-add-field-editor__parent-id select"
+               )
+
+      form_data = %{
+        "field" => %{
+          "name" => "Natty",
+          "type" => "string",
+          "parent_id" => field_one_id
+        }
+      }
+
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+      render_change(form, form_data)
+      render(data_dictionary_view)
+      render_click(add_button)
+      html = render(data_dictionary_view)
+
+      assert "Natty" ==
+               get_text(
+                 html,
+                 "#data_dictionary_tree_one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+
+    test "adds field as part of top level schema", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      assert [
+               {"Top Level", ingestion_id},
+               {"one", _},
+               {"two", _}
+             ] = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      assert {_, ["Top Level"]} =
+               get_select_first_option(
+                 html,
+                 ".data-dictionary-add-field-editor__parent-id select"
+               )
+
+      form_data = %{
+        "field" => %{
+          "name" => "Steeeeeeez",
+          "type" => "string",
+          "parent_id" => ingestion_id
+        }
+      }
+
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+      render_change(form, form_data)
+      render(data_dictionary_view)
+      render_click(add_button)
+
+      html = render(data_dictionary_view)
+
+      assert "Steeeeeeez" ==
+               get_text(
+                 html,
+                 "#data_dictionary_tree .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+
+    test "dictionary fields with changed types are eligible for adding a field to", %{
+      conn: conn,
+      ingestion: ingestion
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      updated_ingestion_schema =
+        ingestion
+        |> put_in([:schema, Access.at(0), :subSchema, Access.at(0), :type], "map")
+        |> FormTools.form_data_from_andi_ingestion()
+        |> get_in([:schema])
+
+      form_data = %{"schema" => updated_ingestion_schema}
+
+      render_change(data_dictionary_view, "validate", %{
+        "data_dictionary_form_schema" => form_data
+      })
+
+      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+
+      expected_options = [
+        "Top Level",
+        "one > one-one",
+        "one",
+        "two"
+      ]
+
+      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+      Enum.each(select_options, fn {option_name, _} ->
+        assert option_name in expected_options
+      end)
+
+      {_, new_eligible_parent_id} = List.keyfind(select_options, "one > one-one", 0)
+
+      add_field_form_data = %{
+        "field" => %{
+          "name" => "Jared",
+          "type" => "integer",
+          "parent_id" => new_eligible_parent_id
+        }
+      }
+
+      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+
+      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+
+      render_change(form, add_field_form_data)
+      render(data_dictionary_view)
+      render_click(add_button)
+
+      html = render(data_dictionary_view)
+
+      assert "Jared" ==
+               get_text(
+                 html,
+                 "#data_dictionary_tree_one_one-one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+               )
+    end
+
+    test "cancels back to modal not being visible", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+
+      render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+
+      cancel_button = element(data_dictionary_view, "#data_dictionary_add_field_editor input.btn")
+      render_click(cancel_button)
+
+      html = render(data_dictionary_view)
+
+      assert nil == get_value(html, ".data-dictionary-add-field-editor__name input")
+
+      assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+    end
+  end
+
+  describe "remove dictionary field modal" do
+    setup do
+      schema = [
+        %{
+          name: "one",
+          type: "string",
+          description: "description"
+        },
+        %{
+          name: "two",
+          type: "map",
+          description: "this is a map",
+          subSchema: [
+            %{
+              name: "two-one",
+              type: "integer"
+            }
+          ]
+        }
+      ]
+
+      [ingestion: create_ingestion_with_schema(schema)]
+    end
+
+    test "removes non parent field from subschema", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      html = render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+      html = render(data_dictionary_view)
+      selected_field_name = "one"
+
+      refute selected_field_name in get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name")
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "removing a field selects the next sibling", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+      html = render(data_dictionary_view)
+
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+    end
+
+    test "removes parent field along with its children", %{conn: conn, ingestion: ingestion} do
+      ingestion
+      |> update_in([:schema], &List.delete_at(&1, 0))
+      |> Ingestions.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
+      html = render(data_dictionary_view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "two" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+      html = render(data_dictionary_view)
+
+      assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
+               get_text(html, ".data-dicitionary-remove-field-editor__message")
+
+      render_click(delete_button)
+      html = render(data_dictionary_view)
+
+      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "no field is selected when the schema is empty", %{conn: conn, ingestion: ingestion} do
+      ingestion
+      |> update_in([:schema], &List.delete_at(&1, 1))
+      |> Ingestions.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
+      html = render(data_dictionary_view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert "one" == get_text(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name")
+
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+
+      html = render(data_dictionary_view)
+
+      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "cannot remove field when none is selected", %{conn: conn, ingestion: ingestion} do
+      ingestion
+      |> update_in([:schema], fn _ -> [] end)
+      |> Ingestions.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
+
+      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
+      html = render(data_dictionary_view)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+    end
+
+    test "shows error message when ecto delete fails", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+
+      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
+      html = render(data_dictionary_view)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
+
+      [selected_field_id] =
+        get_attributes(html, ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text", "phx-value-field-id")
+
+      assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
+
+      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      render_click(delete_button)
+
+      html = render(data_dictionary_view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
+    end
+  end
+
   defp create_ingestion_with_schema(schema) do
     dataset = TDG.create_dataset(%{})
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema})
@@ -209,6 +575,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       assert Ingestions.get(ingestion.id) != nil
     end)
 
-    ingestion
+    Ingestions.get(ingestion.id)
   end
 end

@@ -71,7 +71,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
   def get_parent_ids_from_ingestion(ingestion) do
     top_level_parent = [{@top_level_bread_crumb, ingestion.id}]
     updated_ingestion = Ingestions.get(ingestion.id)
-    get_parent_ids_from_ingestion(updated_ingestion.schema, top_level_parent)
+    get_parent_ids_from_ingestion(updated_ingestion.schema, top_level_parent) |> Enum.reverse()
   end
 
   defp get_parent_ids_from_ingestion(schema, ids) do

@@ -213,7 +213,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
 
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", ingestion_id: ingestion_id}},
-        %{assigns: %{ingestion_id: ingestino_id}} = socket
+        %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
   end
@@ -369,7 +369,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   end
 
   defp get_new_selected_field(changeset, parent_id, deleted_field_index, ingestion_id) do
-    if parent_id == ingestion_id do
+    if field_is_top_level(ingestion_id) do
       changeset
       |> Changeset.fetch_change!(:schema)
       |> get_next_sibling(deleted_field_index)
@@ -379,6 +379,10 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
       |> Changeset.get_change(:subSchema, [])
       |> get_next_sibling(deleted_field_index)
     end
+  end
+
+  defp field_is_top_level(ingestion_id) do
+    ingestion_id != nil
   end
 
   defp get_next_sibling(parent_schema, _) when length(parent_schema) <= 1, do: :no_dictionary
