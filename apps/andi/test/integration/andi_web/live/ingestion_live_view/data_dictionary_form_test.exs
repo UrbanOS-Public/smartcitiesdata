@@ -613,7 +613,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
     assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
   end
 
-  @tag :skip
   describe "default timestamp/date" do
     setup do
       timestamp_schema = [%{name: "timestamp_field", type: "timestamp"}]
@@ -627,8 +626,6 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
       ]
     end
 
-    # todo: broken
-    # field form data doesn't persist
     test "replaces provider with nil when use default checkbox is unselected", %{conn: conn} do
       schema = [
         %{
@@ -726,7 +723,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
         fn ->
           updated_andi_ingestion = Ingestions.get(andi_ingestion.id)
 
-          smrt_ingestion_from_andi_ingestion(InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion))
+          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
 
           updated_schema_field = smrt_ingestion_from_andi_ingestion.schema |> hd()
 
