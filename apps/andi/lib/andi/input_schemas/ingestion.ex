@@ -81,25 +81,12 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_extract_steps()
   end
 
-  def submission_changeset(ingestion, changes) do
-    changes_with_id = StructTools.ensure_id(ingestion, changes)
-    source_format = Map.get(changes, :sourceFormat, nil)
-
-    ingestion
-    |> cast(changes_with_id, @submission_cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-    |> foreign_key_constraint(:targetDataset)
-    |> validate_required(@submission_required_fields, message: "is required")
-    |> validate_source_format()
-    |> validate_submission_schema()
-  end
-
   def changeset_for_draft(ingestion, changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
 
     ingestion
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
+    |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
@@ -110,6 +97,12 @@ defmodule Andi.InputSchemas.Ingestion do
 
   def full_validation_changeset(schema, changes) do
     changeset(schema, changes)
+  end
+
+  def draft_validation_changeset(changes), do: draft_validation_changeset(%__MODULE__{}, changes)
+
+  def draft_validation_changeset(schema, changes) do
+    changeset_for_draft(schema, changes)
   end
 
   defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset) do

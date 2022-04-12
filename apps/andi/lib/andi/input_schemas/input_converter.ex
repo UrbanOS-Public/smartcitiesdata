@@ -135,6 +135,12 @@ defmodule Andi.InputSchemas.InputConverter do
     Ingestion.full_validation_changeset(%Ingestion{}, ingestion_as_map)
   end
 
+  def andi_ingestion_to_draft_ui_changeset(%Ingestion{} = ingestion) do
+    ingestion_as_map = StructTools.to_map(ingestion)
+
+    Ingestion.draft_validation_changeset(%Ingestion{}, ingestion_as_map)
+  end
+
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do
     dataset_as_map = StructTools.to_map(dataset)
 

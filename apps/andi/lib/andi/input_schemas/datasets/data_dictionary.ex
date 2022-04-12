@@ -57,6 +57,27 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :use_default,
     :ingestion_id
   ]
+
+  @cast_fields_for_ingestion [
+    :id,
+    :name,
+    :type,
+    :selector,
+    :itemType,
+    :biased,
+    :default_offset,
+    :demographic,
+    :description,
+    :masked,
+    :pii,
+    :rationale,
+    :parent_id,
+    :bread_crumb,
+    :format,
+    :sequence,
+    :use_default,
+    :ingestion_id
+  ]
   @required_fields [
     :name,
     :type,
@@ -65,7 +86,6 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
 
   def changeset(dictionary, changes, source_format) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
-
     dictionary
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2, source_format))
@@ -115,6 +135,15 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
+  end
+
+  def changeset_for_draft_ingestion(dictionary, changes) do
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, @cast_fields_for_ingestion, empty_values: [])
+    |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_draft_ingestion/2)
+    |> foreign_key_constraint(:ingestion_id)
   end
 
   def preload(struct), do: StructTools.preload(struct, [:subSchema])
