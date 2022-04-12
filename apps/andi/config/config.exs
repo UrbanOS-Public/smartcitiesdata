@@ -14,7 +14,7 @@ config :andi, AndiWeb.Endpoint,
   secret_key_base: "z7Iv1RcFiPow+/j3QKYyezhVCleXMuNBmrDO130ddUzysadB1stTt+q0JfIrm/q7",
   render_errors: [view: AndiWeb.ErrorView, accepts: ~w(html json)],
   pubsub_server: Andi.PubSub,
-  check_origin: ["http://localhost:4000", "https://*.smartcolumbusos.com"],
+  check_origin: ["http://localhost:4000", "https://*.urbanos-demo.com"],
   http: [stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]]
 
 # Configures Elixir's Logger
