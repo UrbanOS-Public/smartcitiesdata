@@ -564,6 +564,14 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
     end
   end
 
+  test "required schema field displays proper error message", %{conn: conn} do
+    ingestion = create_ingestion_with_schema([])
+
+    assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+
+    assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
+  end
+
   defp create_ingestion_with_schema(schema) do
     dataset = TDG.create_dataset(%{})
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema})

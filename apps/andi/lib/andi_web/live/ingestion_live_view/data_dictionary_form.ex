@@ -6,6 +6,7 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
   use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
   import Phoenix.HTML.Form
 
+  alias AndiWeb.ErrorHelpers
   alias AndiWeb.DataDictionary.Tree
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets.DataDictionary
@@ -71,6 +72,8 @@ defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
           <% f = Map.put(f, :errors, @changeset.errors) %>
 
           <div class="component-edit-section--<%= @visibility %>">
+
+            <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
 
             <div class="data-dictionary-form-edit-section form-grid">
 
