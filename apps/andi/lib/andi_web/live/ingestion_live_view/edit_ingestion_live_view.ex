@@ -3,10 +3,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   use AndiWeb.HeaderLiveView
   require Logger
 
-  @instance_name Andi.instance_name()
-
-  import SmartCity.Event, only: [ingestion_delete: 0]
-
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
