@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.UnsavedChangesModal do
+defmodule AndiWeb.UnsavedChangesModal do
   @moduledoc """
   LiveComponent for showing the unsaved changes modal
   """

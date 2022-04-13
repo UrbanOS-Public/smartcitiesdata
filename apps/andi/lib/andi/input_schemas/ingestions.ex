@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.Ingestions do
   alias Andi.Repo
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
+  alias Ecto.Changeset
 
   use Properties, otp_app: :andi
 
@@ -112,6 +113,8 @@ defmodule Andi.InputSchemas.Ingestions do
 
     ingestion_changes =
       changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
       |> Map.merge(form_changes)
 
     update(existing_ingestion, ingestion_changes)

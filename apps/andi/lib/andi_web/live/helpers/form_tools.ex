@@ -115,6 +115,12 @@ defmodule AndiWeb.Helpers.FormTools do
     |> Map.update(:technical, %{}, &convert_form_technical/1)
   end
 
+  def form_data_from_andi_ingestion(ingestion) do
+    ingestion
+    |> StructTools.to_map()
+    |> replace(:schema, &convert_form_schema/1)
+  end
+
   def documentation_root_value(), do: documentation_root()
 
   defp convert_form_business(business) do

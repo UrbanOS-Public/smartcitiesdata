@@ -294,7 +294,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.put(:ingestion_id, ingestion_id)
     |> Map.put(:bread_crumb, bread_crumb)
     |> FormTools.replace(:subSchema, fn sub_schema ->
-      Enum.map(sub_schema, &add_ingestion_id(&1, ingestion_id, bread_crumb <> " > "))
+      Enum.map(sub_schema, &add_ingestion_id(&1, nil, bread_crumb <> " > "))
     end)
   end
 

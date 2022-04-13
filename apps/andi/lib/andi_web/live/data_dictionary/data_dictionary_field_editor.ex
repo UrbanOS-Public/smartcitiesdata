@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
+defmodule AndiWeb.DataDictionary.FieldEditor do
   @moduledoc """
     LiveComponent for a nested data dictionary tree view
   """
@@ -22,6 +22,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditor do
         <%= hidden_input(@form, :id, id: id <> "_id") %>
         <%= hidden_input(@form, :bread_crumb) %>
         <%= hidden_input(@form, :dataset_id) %>
+        <%= hidden_input(@form, :ingestion_id) %>
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>

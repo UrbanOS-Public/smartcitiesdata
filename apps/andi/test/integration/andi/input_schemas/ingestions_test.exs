@@ -78,8 +78,12 @@ defmodule Andi.InputSchemas.IngestionsTest do
       ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
       {:ok,
-       %{id: ingestion_id, targetDataset: target_dataset, extractSteps: [%{id: extract_steps_id} | _], schema: [%{id: schema_id} | _]} =
-         _andi_ingestion} = Ingestions.update(ingestion)
+       %{
+         id: ingestion_id,
+         targetDataset: target_dataset,
+         extractSteps: [%{id: extract_steps_id} | _],
+         schema: [%{id: schema_id} | _]
+       } = _andi_ingestion} = Ingestions.update(ingestion)
 
       assert %{
                id: ^ingestion_id,
@@ -156,6 +160,42 @@ defmodule Andi.InputSchemas.IngestionsTest do
       {:ok, ingestion} = Ingestions.update(smrt_ingestion)
       step = ingestion.extractSteps |> Enum.at(0)
       assert step.context.body == ""
+    end
+
+    test "given an ingestion with subschema, only places ingestion id on root schema elements" do
+      dataset = TDG.create_dataset(%{})
+      assert {:ok, _} = Datasets.update(dataset)
+
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          targetDataset: dataset.id,
+          schema: [
+            %{
+              name: "one",
+              type: "string"
+            },
+            %{
+              name: "two",
+              type: "list",
+              itemType: "map",
+              subSchema: [
+                %{
+                  name: "two-one",
+                  type: "float"
+                }
+              ]
+            }
+          ]
+        })
+
+      {:ok, ingestion} = Ingestions.update(smrt_ingestion)
+      top_level_one = ingestion.schema |> Enum.at(0)
+      top_level_two = ingestion.schema |> Enum.at(1)
+      two_one = top_level_two.subSchema |> Enum.at(0)
+
+      assert top_level_one.ingestion_id == ingestion.id
+      assert top_level_two.ingestion_id == ingestion.id
+      assert two_one.ingestion_id == nil
     end
   end
 

@@ -19,7 +19,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   alias Andi.InputSchemas.StructTools
   alias AndiWeb.Helpers.ExtractStepHelpers
 
-  def mount(_params, %{"ingestion" => ingestion}, socket) do
+  def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     extract_steps = Map.get(ingestion, :extractSteps)
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -36,7 +36,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
        visibility: "collapsed",
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
-       new_step_type: ""
+       new_step_type: "",
+       order: order
      )}
   end
 
@@ -51,7 +52,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     <div id="extract-step-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= @validation_status %>">1</h3>
+          <h3 class="component-number component-number--<%= @validation_status %>"><%= @order %></h3>
           <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">

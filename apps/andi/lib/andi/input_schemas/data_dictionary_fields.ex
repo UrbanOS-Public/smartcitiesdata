@@ -1,6 +1,7 @@
 defmodule Andi.InputSchemas.DataDictionaryFields do
   @moduledoc false
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.Repo
 
@@ -17,6 +18,19 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     case Repo.insert_or_update(changeset) do
       {:error, _} ->
         {:error, DataDictionary.changeset_for_new_field(%DataDictionary{}, new_field)}
+
+      good ->
+        good
+    end
+  end
+
+  def add_field_to_parent_for_ingestion(new_field, parent_bread_crumb) do
+    new_field_updated = adjust_parent_details_for_ingestion(new_field, parent_bread_crumb)
+    changeset = DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, new_field_updated)
+
+    case Repo.insert_or_update(changeset) do
+      {:error, _} ->
+        {:error, DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, new_field)}
 
       good ->
         good
@@ -54,6 +68,30 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     top_level_parent ++ data_dictionary_results
   end
 
+  def get_parent_ids_from_ingestion(ingestion) do
+    top_level_parent = [{@top_level_bread_crumb, ingestion.id}]
+    updated_ingestion = Ingestions.get(ingestion.id)
+    get_parent_ids_from_ingestion(updated_ingestion.schema, top_level_parent) |> Enum.reverse()
+  end
+
+  defp get_parent_ids_from_ingestion(schema, ids) do
+    parents = schema |> Enum.filter(fn schema -> schema.type in ["map", "list"] end)
+
+    case parents do
+      [] ->
+        ids
+
+      parents ->
+        parents
+        |> Enum.reduce(
+          ids,
+          fn parent, ids ->
+            get_parent_ids_from_ingestion(parent.subSchema, [{parent.bread_crumb, parent.id} | ids])
+          end
+        )
+    end
+  end
+
   defp adjust_parent_details(field, parent_bread_crumb) do
     case parent_bread_crumb do
       @top_level_bread_crumb ->
@@ -61,6 +99,19 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
         Map.put(field, :technical_id, id)
         |> Map.put(:bread_crumb, field.name)
+
+      _ ->
+        field
+        |> Map.put(:bread_crumb, parent_bread_crumb <> " > " <> field.name)
+    end
+  end
+
+  defp adjust_parent_details_for_ingestion(field, parent_bread_crumb) do
+    case parent_bread_crumb do
+      @top_level_bread_crumb ->
+        {id, field} = Map.pop(field, :parent_id)
+
+        Map.put(field, :bread_crumb, field.name)
 
       _ ->
         field

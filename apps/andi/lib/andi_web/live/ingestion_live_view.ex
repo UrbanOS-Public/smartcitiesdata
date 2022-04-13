@@ -35,7 +35,7 @@ defmodule AndiWeb.IngestionLiveView do
      )}
   end
 
-  def handle_params(params, _uri, socket) do
+  def handle_params(_params, _uri, socket) do
     ingestions = refresh_ingestions()
     view_models = ingestions |> convert_to_view_models()
 

@@ -22,8 +22,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         <h2 class="component-title-text">Define Data Ingestion</h2>
       </div>
 
-      <div class="extract-steps-form-component">
-        <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion}) %>
+      <div>
+        <div class="extract-steps-form-component">
+          <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
+        </div>
+
+        <div class="data-dictionary-form-component">
+          <%= live_render(@socket, AndiWeb.EditIngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+        </div>
       </div>
 
       <div class="edit-page__btn-group">
@@ -41,7 +47,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       </div>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
+      <%= live_component(@socket, AndiWeb.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
       <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
 
       <div id="edit-page-snackbar" phx-hook="showSnackbar">

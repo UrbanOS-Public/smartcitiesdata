@@ -8,6 +8,7 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias SmartCity.SchemaGenerator
+  alias Andi.InputSchemas.Ingestion
 
   schema "data_dictionary" do
     has_many(:schema, DataDictionary, on_replace: :delete)
@@ -34,6 +35,12 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     technical_changes = dataset.technical
 
     changeset(technical_changes)
+  end
+
+  def changeset_from_andi_ingestion(ingestion) do
+    ingestion = StructTools.to_map(ingestion)
+
+    changeset(ingestion)
   end
 
   def changeset_from_form_data(form_data) do
