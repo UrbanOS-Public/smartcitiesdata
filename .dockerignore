@@ -2,3 +2,4 @@ deps/
 _build/
 Dockerfile
 .dockerignore
+assets/node_modules

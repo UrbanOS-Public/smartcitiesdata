@@ -1,11 +1,17 @@
+/*!*******************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./css/app.scss ***!
+  \*******************************************************************************************************/
 @import url(https://fonts.googleapis.com/css?family=Roboto&display=swap);
+/*!*********************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/material-design-icons/iconfont/material-icons.css ***!
+  \*********************************************************************************************************************************************************/
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
   font-weight: 400;
-  src: url(../fonts/MaterialIcons-Regular.eot);
+  src: url(../js/e7153b6da0dd56b7c005.eot);
   /* For IE6-8 */
-  src: local("Material Icons"), local("MaterialIcons-Regular"), url(../fonts/MaterialIcons-Regular.woff2) format("woff2"), url(../fonts/MaterialIcons-Regular.woff) format("woff"), url(../fonts/MaterialIcons-Regular.ttf) format("truetype"); }
+  src: local("Material Icons"), local("MaterialIcons-Regular"), url(../js/a9f65e2d366ffa4ba3df.woff2) format("woff2"), url(../js/dec20474f0b6bc9b3b95.woff) format("woff"), url(../js/119ca6588515c3650fed.ttf) format("truetype"); }
 
 .material-icons {
   font-family: 'Material Icons';
@@ -29,6 +35,9 @@
   /* Support for IE. */
   font-feature-settings: 'liga'; }
 
+/*!***********************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./node_modules/normalize.css/normalize.css ***!
+  \***********************************************************************************************************************************/
 /*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
 /* Document
    ========================================================================== */
@@ -334,6 +343,9 @@ template {
 [hidden] {
   display: none; }
 
+/*!***********************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./css/app.scss (1) ***!
+  \***********************************************************************************************************/
 body {
   background: #f6f9ff; }
 

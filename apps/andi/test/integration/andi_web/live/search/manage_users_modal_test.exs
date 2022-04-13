@@ -1,4 +1,4 @@
-defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
+defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
@@ -91,6 +91,54 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     assert get_text(html, ".search-table") =~ org.orgTitle
   end
 
+  test "successfully can add a user to the list of selected users", %{curator_conn: conn} do
+    {:ok, user} = User.create_or_update("auth0|123458", %{email: "test@example.com", name: "TestingTurtle"})
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => user.name})
+
+    html = find_add_user_button(view) |> render_click
+
+    assert get_text(html, ".selected-results-from-search") =~ user.name
+  end
+
+  test "sucessfully can remove a user from the list of selected users", %{curator_conn: conn} do
+    {:ok, user} = User.create_or_update("auth0|12345812", %{email: "test@example.com", name: "TestingLadybug"})
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => user.name})
+
+    html = find_add_user_button(view) |> render_click
+
+    assert get_text(html, ".selected-results-from-search") =~ user.name
+
+    remove_action = element(view, ".access-groups-sub-table__cell--break.modal-action-text", "Remove")
+    html = render_click(remove_action)
+
+    refute get_text(html, ".selected-results-from-search") =~ user.name
+  end
+
+  test "selected users are persisted when a new search is made", %{curator_conn: conn} do
+    {:ok, user} = User.create_or_update("auth0|123458", %{email: "test@example.com", name: "TestingLeopard"})
+    access_group = create_access_group()
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+    find_manage_users_button(view) |> render_click
+    html = render_submit(view, "user-search", %{"search-value" => user.name})
+
+    html = find_add_user_button(view) |> render_click
+
+    assert get_text(html, ".selected-results-from-search") =~ user.name
+
+    html = render_submit(view, "user-search", %{"search-value" => "second search value"})
+
+    assert get_text(html, ".selected-results-from-search") =~ user.name
+  end
+
   test "shows all of a user's organizations", %{curator_conn: conn} do
     {:ok, org1} = TDG.create_organization(%{}) |> Organizations.update()
     {:ok, org2} = TDG.create_organization(%{}) |> Organizations.update()
@@ -137,5 +185,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
   defp find_manage_users_button(view) do
     element(view, ".btn", "Manage Users")
+  end
+
+  defp find_add_user_button(view) do
+    element(view, ".modal-action-text", "Select")
   end
 end

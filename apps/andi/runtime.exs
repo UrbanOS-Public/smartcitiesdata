@@ -59,7 +59,8 @@ config :andi, :brook,
 config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: live_view_salt
-  ]
+  ],
+  check_origin: [System.get_env("ALLOWED_ORIGIN")]
 
 config :andi,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
