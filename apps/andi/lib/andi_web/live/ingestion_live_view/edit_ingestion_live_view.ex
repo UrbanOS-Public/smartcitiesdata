@@ -10,7 +10,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   access_levels(render: [:private])
 
-  # refactor: EditIngestionLiveView.DataDictionaryForm to IngestionLiveView.DataDictionaryForm
   def render(assigns) do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
@@ -25,7 +24,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         </div>
 
         <div class="data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.EditIngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+          <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
         </div>
 
         <div class="finalize-form-component ">
