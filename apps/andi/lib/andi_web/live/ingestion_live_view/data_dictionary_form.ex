@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditIngestionLiveView.DataDictionaryForm do
+defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   @moduledoc """
   LiveComponent for editing ingestion schema
   """
