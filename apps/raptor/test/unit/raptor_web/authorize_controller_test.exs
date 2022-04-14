@@ -57,7 +57,9 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       assert actual == expected
     end
 
-    test "returns false when the dataset org does not match the user org or any access groups", %{conn: conn} do
+    test "returns false when the dataset org does not match the user org or any access groups", %{
+      conn: conn
+    } do
       api_key = "enterprise"
       system_name = "system__name"
       dataset_org_id = "dataset_org"
