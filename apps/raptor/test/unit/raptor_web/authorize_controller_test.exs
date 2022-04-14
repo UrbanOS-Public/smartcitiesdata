@@ -4,6 +4,8 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   alias Raptor.Services.Auth0Management
   alias Raptor.Services.DatasetStore
   alias Raptor.Services.UserOrgAssocStore
+  alias Raptor.Services.DatasetAccessGroupRelationStore
+  alias Raptor.Services.UserAccessGroupRelationStore
 
   @authorized_call [
     %{
@@ -75,6 +77,84 @@ defmodule RaptorWeb.AuthorizeControllerTest do
 
       expect(UserOrgAssocStore.get(user_id, dataset_org_id),
         return: %{}
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?apiKey=#{api_key}&systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+
+    test "returns true when the dataset org does not match the user org but there is a matching access group", %{conn: conn} do
+      api_key = "enterprise"
+      system_name = "system__name"
+      dataset_org_id = "dataset_org"
+      dataset_id = "wags"
+      user = @authorized_call |> List.first()
+      user_id = user["user_id"]
+      expected = %{"is_authorized" => true}
+      expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: dataset_id,
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
+      )
+
+      expect(UserOrgAssocStore.get(user_id, dataset_org_id),
+        return: %{}
+      )
+
+      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
+        return: ["poodles", "german shepards", "sheepdog"]
+      )
+
+      expect(DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id),
+        return: ["poodles", "golden retrievers", "labradoodles"]
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?apiKey=#{api_key}&systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+
+    test "returns false when the dataset org does not match the user org and there is not a matching access group", %{conn: conn} do
+      api_key = "enterprise"
+      system_name = "system__name"
+      dataset_org_id = "dataset_org"
+      dataset_id = "wags"
+      user = @authorized_call |> List.first()
+      user_id = user["user_id"]
+      expected = %{"is_authorized" => false}
+      expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: dataset_id,
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
+      )
+
+      expect(UserOrgAssocStore.get(user_id, dataset_org_id),
+        return: %{}
+      )
+
+      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
+        return: ["german shepards", "sheepdog"]
+      )
+
+      expect(DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id),
+        return: ["poodles", "golden retrievers", "labradoodles"]
       )
 
       actual =

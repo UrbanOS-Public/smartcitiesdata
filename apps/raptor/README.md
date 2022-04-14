@@ -52,6 +52,41 @@ To send a user_organization_disassociate event:
   disassociation = %SmartCity.UserOrganizationDisassociate{org_id: "org1", subject_id: "user1"}
   Brook.Event.send(Raptor.instance_name(), user_organization_disassociate(), :testing, disassociation)
 ```
+To send a user_access_group_associate event:
+
+```
+  alias SmartCity.UserAccessGroupRelation
+  import SmartCity.Event
+  association = %SmartCity.UserAccessGroupRelation{access_group_id: "group1", subject_id: "user1"}
+  Brook.Event.send(Raptor.instance_name(), user_access_group_associate(), :testing, association)
+```
+
+To send a user_access_group_disassociate event:
+
+```
+  alias SmartCity.UserAccessGroupRelation
+  import SmartCity.Event
+  disassociation = %SmartCity.UserAccessGroupRelation{access_group_id: "group1", subject_id: "user1"}
+  Brook.Event.send(Raptor.instance_name(), user_access_group_disassociate(), :testing, disassociation)
+```
+
+To send a dataset_access_group_associate event:
+
+```
+  alias SmartCity.DatasetAccessGroupRelation
+  import SmartCity.Event
+  association = %SmartCity.DatasetAccessGroupRelation{access_group_id: "group1", dataset_id: "dataset1"}
+  Brook.Event.send(Raptor.instance_name(), dataset_access_group_associate(), :testing, association)
+```
+
+To send a dataset_access_group_disassociate event:
+
+```
+  alias SmartCity.DatasetAccessGroupRelation
+  import SmartCity.Event
+  disassociation = %SmartCity.DatasetAccessGroupRelation{access_group_id: "group1", dataset_id: "dataset1"}
+  Brook.Event.send(Raptor.instance_name(), dataset_access_group_disassociate(), :testing, disassociation)
+```
 
 Note: You should not send a disassociate event before sending an associate event.
 
