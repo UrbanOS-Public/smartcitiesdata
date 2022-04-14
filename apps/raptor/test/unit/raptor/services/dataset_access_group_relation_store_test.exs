@@ -33,7 +33,10 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
 
       expectedRelations = [
         %DatasetAccessGroupRelation{dataset_id: "dataset_id", access_group_id: "access_group_id"},
-        %DatasetAccessGroupRelation{dataset_id: "dataset_id1", access_group_id: "access_group_id1"}
+        %DatasetAccessGroupRelation{
+          dataset_id: "dataset_id1",
+          access_group_id: "access_group_id1"
+        }
       ]
 
       actualRelations = DatasetAccessGroupRelationStore.get_all()

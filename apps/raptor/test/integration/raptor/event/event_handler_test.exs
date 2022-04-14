@@ -157,7 +157,9 @@ defmodule Raptor.Event.EventHandlerTest do
       }
 
       eventually(fn ->
-        raptor_dataset_access_group_relation = DatasetAccessGroupRelationStore.get("captains log", "ds9")
+        raptor_dataset_access_group_relation =
+          DatasetAccessGroupRelationStore.get("captains log", "ds9")
+
         assert expected_raptor_assoc == raptor_dataset_access_group_relation
       end)
     end
@@ -183,7 +185,9 @@ defmodule Raptor.Event.EventHandlerTest do
       }
 
       eventually(fn ->
-        raptor_dataset_access_group_relation = DatasetAccessGroupRelationStore.get("captains log", "ds9")
+        raptor_dataset_access_group_relation =
+          DatasetAccessGroupRelationStore.get("captains log", "ds9")
+
         assert expected_raptor_assoc == raptor_dataset_access_group_relation
       end)
 
@@ -195,12 +199,13 @@ defmodule Raptor.Event.EventHandlerTest do
       )
 
       eventually(fn ->
-        raptor_dataset_access_group_relation = DatasetAccessGroupRelationStore.get("captains log", "ds9")
-        assert %{}== raptor_dataset_access_group_relation
+        raptor_dataset_access_group_relation =
+          DatasetAccessGroupRelationStore.get("captains log", "ds9")
+
+        assert %{} == raptor_dataset_access_group_relation
       end)
     end
   end
-
 
   describe "user_organization:disassociate" do
     setup do

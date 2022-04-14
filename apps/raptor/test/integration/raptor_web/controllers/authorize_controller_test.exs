@@ -74,7 +74,6 @@ defmodule Raptor.AuthorizeControllerTest do
       assert body == "{\"is_authorized\":true}"
     end
 
-
     test "returns is_authorized=false when the user's permissions to access the requested dataset are revoked" do
       is_private_dataset = true
       dataset = create_and_send_dataset_event(is_private_dataset)
@@ -224,10 +223,15 @@ defmodule Raptor.AuthorizeControllerTest do
 
     Brook.Event.send(Raptor.instance_name(), user_access_group_associate(), :testing, association)
 
-    expected_raptor_assoc = %UserAccessGroupRelation{user_id: subject_id, access_group_id: access_group_id}
+    expected_raptor_assoc = %UserAccessGroupRelation{
+      user_id: subject_id,
+      access_group_id: access_group_id
+    }
 
     eventually(fn ->
-      raptor_user_access_group_assoc = UserAccessGroupRelationStore.get(subject_id, access_group_id)
+      raptor_user_access_group_assoc =
+        UserAccessGroupRelationStore.get(subject_id, access_group_id)
+
       assert expected_raptor_assoc == raptor_user_access_group_assoc
     end)
   end
@@ -238,10 +242,17 @@ defmodule Raptor.AuthorizeControllerTest do
       subject_id: subject_id
     }
 
-    Brook.Event.send(Raptor.instance_name(), user_access_group_disassociate(), :testing, association)
+    Brook.Event.send(
+      Raptor.instance_name(),
+      user_access_group_disassociate(),
+      :testing,
+      association
+    )
 
     eventually(fn ->
-      raptor_user_access_group_assoc = UserAccessGroupRelationStore.get(subject_id, access_group_id)
+      raptor_user_access_group_assoc =
+        UserAccessGroupRelationStore.get(subject_id, access_group_id)
+
       assert %{} == raptor_user_access_group_assoc
     end)
   end
@@ -252,12 +263,22 @@ defmodule Raptor.AuthorizeControllerTest do
       dataset_id: dataset_id
     }
 
-    Brook.Event.send(Raptor.instance_name(), dataset_access_group_associate(), :testing, association)
+    Brook.Event.send(
+      Raptor.instance_name(),
+      dataset_access_group_associate(),
+      :testing,
+      association
+    )
 
-    expected_raptor_assoc = %DatasetAccessGroupRelation{dataset_id: dataset_id, access_group_id: access_group_id}
+    expected_raptor_assoc = %DatasetAccessGroupRelation{
+      dataset_id: dataset_id,
+      access_group_id: access_group_id
+    }
 
     eventually(fn ->
-      raptor_dataset_access_group_assoc = DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+      raptor_dataset_access_group_assoc =
+        DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+
       assert expected_raptor_assoc == raptor_dataset_access_group_assoc
     end)
   end
@@ -268,10 +289,17 @@ defmodule Raptor.AuthorizeControllerTest do
       dataset_id: dataset_id
     }
 
-    Brook.Event.send(Raptor.instance_name(), dataset_access_group_disassociate(), :testing, association)
+    Brook.Event.send(
+      Raptor.instance_name(),
+      dataset_access_group_disassociate(),
+      :testing,
+      association
+    )
 
     eventually(fn ->
-      raptor_dataset_access_group_assoc = DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+      raptor_dataset_access_group_assoc =
+        DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+
       assert %{} == raptor_dataset_access_group_assoc
     end)
   end

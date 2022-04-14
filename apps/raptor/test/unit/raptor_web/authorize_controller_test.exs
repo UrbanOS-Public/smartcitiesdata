@@ -57,7 +57,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       assert actual == expected
     end
 
-    test "returns false when the dataset org does not match the user org", %{conn: conn} do
+    test "returns false when the dataset org does not match the user org or any access groups", %{conn: conn} do
       api_key = "enterprise"
       system_name = "system__name"
       dataset_org_id = "dataset_org"
@@ -79,6 +79,14 @@ defmodule RaptorWeb.AuthorizeControllerTest do
         return: %{}
       )
 
+      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
+        return: []
+      )
+
+      expect(DatasetAccessGroupRelationStore.get_all_by_dataset("wags"),
+        return: []
+      )
+
       actual =
         conn
         |> get("/api/authorize?apiKey=#{api_key}&systemName=#{system_name}")
@@ -87,7 +95,8 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       assert actual == expected
     end
 
-    test "returns true when the dataset org does not match the user org but there is a matching access group", %{conn: conn} do
+    test "returns true when the dataset org does not match the user org but there is a matching access group",
+         %{conn: conn} do
       api_key = "enterprise"
       system_name = "system__name"
       dataset_org_id = "dataset_org"
@@ -126,7 +135,8 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       assert actual == expected
     end
 
-    test "returns false when the dataset org does not match the user org and there is not a matching access group", %{conn: conn} do
+    test "returns false when the dataset org does not match the user org and there is not a matching access group",
+         %{conn: conn} do
       api_key = "enterprise"
       system_name = "system__name"
       dataset_org_id = "dataset_org"

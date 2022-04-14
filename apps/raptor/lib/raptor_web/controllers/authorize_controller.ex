@@ -18,7 +18,10 @@ defmodule RaptorWeb.AuthorizeController do
   def is_user_in_access_group?(user_id, dataset_id) do
     user_access_groups = UserAccessGroupRelationStore.get_all_by_user(user_id)
     dataset_access_groups = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
-    Enum.any?(user_access_groups, fn user_access_group -> Enum.member?(dataset_access_groups, user_access_group) end)
+
+    Enum.any?(user_access_groups, fn user_access_group ->
+      Enum.member?(dataset_access_groups, user_access_group)
+    end)
   end
 
   def is_valid_dataset?(dataset) do
@@ -27,7 +30,9 @@ defmodule RaptorWeb.AuthorizeController do
 
   def check_user_association(user, dataset) do
     org_id_of_dataset = dataset.org_id
-    is_user_in_org?(user["user_id"], org_id_of_dataset) or is_user_in_access_group?(user["user_id"], dataset.dataset_id)
+
+    is_user_in_org?(user["user_id"], org_id_of_dataset) or
+      is_user_in_access_group?(user["user_id"], dataset.dataset_id)
   end
 
   def validate_user_list(user_list, dataset) do
