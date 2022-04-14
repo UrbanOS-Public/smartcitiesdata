@@ -13,6 +13,10 @@ defmodule Raptor.AuthorizeControllerTest do
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Schemas.UserOrgAssoc
   alias Raptor.Services.Auth0Management
+  alias Raptor.Services.UserAccessGroupRelationStore
+  alias Raptor.Schemas.UserAccessGroupRelation
+  alias Raptor.Services.DatasetAccessGroupRelationStore
+  alias Raptor.Schemas.DatasetAccessGroupRelation
 
   @instance_name Raptor.instance_name()
 
@@ -55,6 +59,21 @@ defmodule Raptor.AuthorizeControllerTest do
       assert body == "{\"is_authorized\":true}"
     end
 
+    test "returns is_authorized=true when the user has permissions to access the requested dataset via an access group" do
+      is_private_dataset = true
+      dataset = create_and_send_dataset_event(is_private_dataset)
+      system_name = dataset.technical.systemName
+      send_dataset_access_group_associate_event("access_group_id", dataset.id)
+      send_user_access_group_associate_event("access_group_id", "123")
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/authorize?apiKey=fakeApiKey&systemName=#{system_name}",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"is_authorized\":true}"
+    end
+
     test "returns is_authorized=false when the user's permissions to access the requested dataset are revoked" do
       is_private_dataset = true
       dataset = create_and_send_dataset_event(is_private_dataset)
@@ -68,6 +87,30 @@ defmodule Raptor.AuthorizeControllerTest do
 
       assert body == "{\"is_authorized\":true}"
       send_user_org_disassociate_event(dataset.technical.orgId, "123")
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/authorize?apiKey=fakeApiKey&systemName=#{system_name}",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"is_authorized\":false}"
+    end
+
+    test "returns is_authorized=false when the user's permissions to access the requested dataset are revoked via access groups" do
+      is_private_dataset = true
+      dataset = create_and_send_dataset_event(is_private_dataset)
+      system_name = dataset.technical.systemName
+      send_user_access_group_associate_event("access_group_id", "123")
+      send_dataset_access_group_associate_event("access_group_id", dataset.id)
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/authorize?apiKey=fakeApiKey&systemName=#{system_name}",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"is_authorized\":true}"
+      send_user_access_group_disassociate_event("access_group_id", "123")
+      send_dataset_access_group_disassociate_event("access_group_id", dataset.id)
 
       {:ok, %Tesla.Env{body: body}} =
         get("/api/authorize?apiKey=fakeApiKey&systemName=#{system_name}",
@@ -169,6 +212,95 @@ defmodule Raptor.AuthorizeControllerTest do
     eventually(fn ->
       raptor_user_org_assoc = UserOrgAssocStore.get(subject_id, org_id)
       assert expected_raptor_assoc == raptor_user_org_assoc
+    end)
+  end
+
+  def send_user_access_group_associate_event(access_group_id, subject_id) do
+    association = %SmartCity.UserAccessGroupRelation{
+      access_group_id: access_group_id,
+      subject_id: subject_id
+    }
+
+    Brook.Event.send(Raptor.instance_name(), user_access_group_associate(), :testing, association)
+
+    expected_raptor_assoc = %UserAccessGroupRelation{
+      user_id: subject_id,
+      access_group_id: access_group_id
+    }
+
+    eventually(fn ->
+      raptor_user_access_group_assoc =
+        UserAccessGroupRelationStore.get(subject_id, access_group_id)
+
+      assert expected_raptor_assoc == raptor_user_access_group_assoc
+    end)
+  end
+
+  def send_user_access_group_disassociate_event(access_group_id, subject_id) do
+    association = %SmartCity.UserAccessGroupRelation{
+      access_group_id: access_group_id,
+      subject_id: subject_id
+    }
+
+    Brook.Event.send(
+      Raptor.instance_name(),
+      user_access_group_disassociate(),
+      :testing,
+      association
+    )
+
+    eventually(fn ->
+      raptor_user_access_group_assoc =
+        UserAccessGroupRelationStore.get(subject_id, access_group_id)
+
+      assert %{} == raptor_user_access_group_assoc
+    end)
+  end
+
+  def send_dataset_access_group_associate_event(access_group_id, dataset_id) do
+    association = %SmartCity.DatasetAccessGroupRelation{
+      access_group_id: access_group_id,
+      dataset_id: dataset_id
+    }
+
+    Brook.Event.send(
+      Raptor.instance_name(),
+      dataset_access_group_associate(),
+      :testing,
+      association
+    )
+
+    expected_raptor_assoc = %DatasetAccessGroupRelation{
+      dataset_id: dataset_id,
+      access_group_id: access_group_id
+    }
+
+    eventually(fn ->
+      raptor_dataset_access_group_assoc =
+        DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+
+      assert expected_raptor_assoc == raptor_dataset_access_group_assoc
+    end)
+  end
+
+  def send_dataset_access_group_disassociate_event(access_group_id, dataset_id) do
+    association = %SmartCity.DatasetAccessGroupRelation{
+      access_group_id: access_group_id,
+      dataset_id: dataset_id
+    }
+
+    Brook.Event.send(
+      Raptor.instance_name(),
+      dataset_access_group_disassociate(),
+      :testing,
+      association
+    )
+
+    eventually(fn ->
+      raptor_dataset_access_group_assoc =
+        DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
+
+      assert %{} == raptor_dataset_access_group_assoc
     end)
   end
 end
