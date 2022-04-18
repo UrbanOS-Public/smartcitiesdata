@@ -52,7 +52,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         organizations: [%Andi.InputSchemas.Organization{orgTitle: "Constellations R Us"}]
       }
 
-      allow(Andi.Repo.preload(any(),[:datasets, :users]), return: %{datasets: [], users: [user], id: access_group.id})
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [user], id: access_group.id})
       allow(Andi.Schemas.User.get_by_subject_id(user.subject_id), return: user)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")

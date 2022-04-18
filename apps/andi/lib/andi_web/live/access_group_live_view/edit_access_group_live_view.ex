@@ -129,8 +129,10 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     access_group_id = socket.assigns.access_group.id
     user_id = socket.assigns.user_id
 
-    access_group = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group_id)
-    |> Andi.Repo.preload([:datasets, :users])
+    access_group =
+      Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group_id)
+      |> Andi.Repo.preload([:datasets, :users])
+
     datasets = Enum.map(access_group.datasets, fn dataset -> dataset.id end)
     users = Enum.map(access_group.users, fn user -> user.subject_id end)
 
@@ -141,7 +143,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
     {:noreply, redirect(socket, to: header_access_groups_path())}
   end
-
 
   def handle_event("access-group-form_save", _, socket) do
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
@@ -372,5 +373,4 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   defp update_access_group_logs(_user_id, _changes), do: :ok
-
 end

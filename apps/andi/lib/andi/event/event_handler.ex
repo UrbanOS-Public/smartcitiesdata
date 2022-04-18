@@ -122,7 +122,6 @@ defmodule Andi.Event.EventHandler do
     :discard
   end
 
-
   def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data, author: author}) do
     dataset_harvest_start()
     |> add_event_count(author, data.id)

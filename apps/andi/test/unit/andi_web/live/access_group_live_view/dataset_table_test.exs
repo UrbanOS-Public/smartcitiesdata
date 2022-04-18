@@ -55,7 +55,9 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       access_group = setup_access_group()
       dataset_1 = TDG.create_dataset(%{})
       dataset_2 = TDG.create_dataset(%{})
+
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [%{id: dataset_1.id}, %{id: dataset_2.id}], users: [], id: access_group.id})
+
       allow(Andi.InputSchemas.Datasets.get(dataset_1.id), return: dataset_1)
       allow(Andi.InputSchemas.Datasets.get(dataset_2.id), return: dataset_2)
 
@@ -69,7 +71,9 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       access_group = setup_access_group()
       dataset_1 = TDG.create_dataset(%{})
       dataset_2 = TDG.create_dataset(%{})
+
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [%{id: dataset_1.id}, %{id: dataset_2.id}], users: [], id: access_group.id})
+
       allow(Andi.InputSchemas.Datasets.get(dataset_1.id), return: dataset_1)
       allow(Andi.InputSchemas.Datasets.get(dataset_2.id), return: dataset_2)
 

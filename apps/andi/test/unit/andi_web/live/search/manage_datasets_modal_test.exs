@@ -40,7 +40,6 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
 
-
       access_group = create_access_group()
       allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")

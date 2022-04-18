@@ -77,7 +77,6 @@ defmodule Andi.InputSchemas.AccessGroupsTest do
       eventually(fn ->
         assert nil == AccessGroups.get(id)
       end)
-
     end
   end
 end
