@@ -48,7 +48,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       </div>
 
       <%= live_component(@socket, AndiWeb.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
-      <%= live_component(@socket, AndiWeb.IngestionLiveView.DeleteIngestionModal, visibility: @delete_ingestion_modal_visibility) %>
+      <%= live_component(@socket, AndiWeb.ConfirmDeleteModal, type: "Ingestion", visibility: @delete_ingestion_modal_visibility, id: @ingestion.id) %>
 
       <div id="edit-page-snackbar" phx-hook="showSnackbar">
         <div style="display: none;"><%= @click_id %></div>

@@ -15,8 +15,8 @@ defmodule Andi.InputSchemas.AccessGroup do
   schema "access_groups" do
     field(:name, :string)
     field(:description, :string)
-    many_to_many(:users, User, join_through: Andi.Schemas.UserAccessGroup)
-    many_to_many(:datasets, Dataset, join_through: Andi.Schemas.DatasetAccessGroup)
+    many_to_many(:users, User, join_through: Andi.Schemas.UserAccessGroup, on_replace: :delete)
+    many_to_many(:datasets, Dataset, join_through: Andi.Schemas.DatasetAccessGroup, on_replace: :delete)
 
     timestamps()
   end

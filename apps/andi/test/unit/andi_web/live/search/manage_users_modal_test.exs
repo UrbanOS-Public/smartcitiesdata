@@ -37,6 +37,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       mock_andi_repo()
 
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       get_manage_users_button(view) |> render_click()
@@ -54,6 +55,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       mock_andi_repo()
 
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
       get_manage_users_button(view) |> render_click()
 
@@ -66,6 +68,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       mock_andi_repo()
 
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
       get_manage_users_button(view) |> render_click()
 
@@ -78,6 +81,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       user = %User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}
       allow(Andi.Repo.all(any()), return: [user])
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
       get_manage_users_button(view) |> render_click()
 
@@ -103,6 +107,7 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
       )
 
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       get_manage_users_button(view) |> render_click()
@@ -125,7 +130,6 @@ defmodule AndiWeb.Search.ManageUsersModalTest do
     allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
     allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-    allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: []})
   end
 
   defp create_access_group() do

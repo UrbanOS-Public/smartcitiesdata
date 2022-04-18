@@ -80,7 +80,7 @@ defmodule AndiWeb.EditLiveView do
 
       <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>
 
-      <%= live_component(@socket, AndiWeb.EditLiveView.DeleteDatasetModal, visibility: @delete_dataset_modal_visibility, id: @dataset_id) %>
+      <%= live_component(@socket, AndiWeb.ConfirmDeleteModal, type: "Dataset", visibility: @delete_dataset_modal_visibility, id: @dataset_id) %>
 
       <div id="edit-page-snackbar" phx-hook="showSnackbar">
         <div style="display: none;"><%= @click_id %></div>
@@ -168,11 +168,11 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, assign(socket, delete_dataset_modal_visibility: "visible")}
   end
 
-  def handle_event("cancel-delete", _, socket) do
+  def handle_event("delete-canceled", _, socket) do
     {:noreply, assign(socket, delete_dataset_modal_visibility: "hidden")}
   end
 
-  def handle_event("confirm-delete", %{"id" => id}, socket) do
+  def handle_event("delete-confirmed", %{"id" => id}, socket) do
     case DatasetStore.get(id) do
       {:ok, nil} ->
         Datasets.delete(id)

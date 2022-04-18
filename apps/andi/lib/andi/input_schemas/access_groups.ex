@@ -27,6 +27,13 @@ defmodule Andi.InputSchemas.AccessGroups do
     new_changeset
   end
 
+  def delete(access_group_id) do
+    Repo.delete(%AccessGroup{id: access_group_id})
+    rescue
+      _e in Ecto.StaleEntryError ->
+        {:error, "attempted to remove an access group (id: #{access_group_id}) that does not exist."}
+  end
+
   def update(%SmartCity.AccessGroup{} = smrt_access_group) do
     andi_access_group =
       case get(smrt_access_group.id) do

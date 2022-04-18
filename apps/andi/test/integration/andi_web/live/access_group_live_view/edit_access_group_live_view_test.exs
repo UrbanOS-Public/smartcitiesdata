@@ -63,6 +63,75 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       assert [access_group_name] = get_attributes(html, "#form_data_name", "value")
     end
+
+    test "access groups are able to be deleted", %{curator_conn: conn} do
+      access_group = create_access_group()
+      access_group_id = access_group.id
+      assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group.id}")
+      delete_access_group_in_ui(view)
+
+      eventually(fn ->
+        assert AccessGroups.get(access_group.id) == nil
+        assert [%Andi.Schemas.AuditEvent{event: %{"access_group_id" => ^access_group_id}} | _] = Andi.Schemas.AuditEvents.get_all_of_type("access_group:delete")
+      end)
+    end
+
+    test "access groups are able to be deleted when there is an associated dataset", %{curator_conn: conn} do
+      access_group = create_access_group()
+      dataset = add_dataset_to_access_group(access_group)
+      dataset_id = dataset.id
+      properties = %{dataset_id: dataset_id, access_group_id: access_group.id}
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
+      allow(Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation), return: :ok)
+      eventually(fn ->
+        original_access_group = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
+        |> Andi.Repo.preload([:datasets])
+        assert [%{id: ^dataset_id}] = original_access_group.datasets
+      end)
+      access_group_id = access_group.id
+      assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group.id}")
+      delete_access_group_in_ui(view)
+
+      eventually(fn ->
+        assert AccessGroups.get(access_group.id) == nil
+        assert [%Andi.Schemas.AuditEvent{event: %{"access_group_id" => ^access_group_id}} | _] = Andi.Schemas.AuditEvents.get_all_of_type("access_group:delete")
+        assert_called(Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation))
+      end)
+    end
+
+    test "access groups are able to be deleted when there is an associated user", %{curator_conn: conn} do
+      access_group = create_access_group()
+       access_group_id = access_group.id
+      user = add_user_to_access_group(access_group)
+      user_id = user.subject_id
+      properties = %{subject_id: user_id, access_group_id: access_group_id}
+      {:ok, relation} = SmartCity.UserAccessGroupRelation.new(properties)
+      allow(Brook.Event.send(:andi, user_access_group_disassociate(), :andi, relation), return: :ok)
+      eventually(fn ->
+        original_access_group = Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group.id)
+        |> Andi.Repo.preload([:users])
+        assert [%{subject_id: ^user_id}] = original_access_group.users
+      end)
+
+      assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group.id}")
+      delete_access_group_in_ui(view)
+
+      eventually(fn ->
+        assert AccessGroups.get(access_group.id) == nil
+        assert [%Andi.Schemas.AuditEvent{event: %{"access_group_id" => ^access_group_id}} | _] = Andi.Schemas.AuditEvents.get_all_of_type("access_group:delete")
+        assert_called(Brook.Event.send(:andi, user_access_group_disassociate(), :andi, relation))
+      end)
+    end
+
+    test "access groups are not deleted when the delete is cancelled", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group.id}")
+      cancel_delete_access_group_in_ui(view)
+      access_group_description = access_group.description
+      access_group_id = access_group.id
+      access_group_name = access_group.name
+      assert %{description: ^access_group_description, id: ^access_group_id, name: ^access_group_name} = AccessGroups.get(access_group.id)
+    end
   end
 
   # refactor: I feel like every test under this comment could be placed into
@@ -403,8 +472,8 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "remove_org"}) |> Datasets.update()
       {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
       dataset_id = dataset.id
+      Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group.id, dataset_id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
@@ -423,8 +492,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "dissociate_org"}) |> Datasets.update()
       {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
       dataset_id = dataset.id
+
+      Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group.id, dataset_id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
@@ -452,8 +522,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       access_group = create_access_group()
       {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "mistake_org"}) |> Datasets.update()
       {:ok, relation} = DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: access_group.id})
-      Brook.Event.send(@instance_name, dataset_access_group_associate(), :testing, relation)
       dataset_id = dataset.id
+
+      Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group.id, dataset_id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
@@ -508,8 +579,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
 
-      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
       user_id = user.id
+
+      Andi.Schemas.User.associate_with_access_group(user.subject_id, access_group.id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
@@ -537,8 +609,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
 
-      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
       user_id = user.id
+
+      Andi.Schemas.User.associate_with_access_group(user.subject_id, access_group.id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
@@ -575,8 +648,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       {:ok, relation} = UserAccessGroupRelation.new(%{subject_id: user_one_subject_id, access_group_id: access_group.id})
 
-      Brook.Event.send(@instance_name, user_access_group_associate(), :testing, relation)
       user_id = user.id
+
+      Andi.Schemas.User.associate_with_access_group(user.subject_id, access_group.id)
 
       eventually(fn ->
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
@@ -625,11 +699,39 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
     access_group
   end
 
+  defp add_user_to_access_group(access_group) do
+    uuid = UUID.uuid4()
+    {:ok, user} =
+      Andi.Schemas.User.create_or_update(uuid, %{
+        subject_id: uuid,
+        email: "blahblahblah@blah.com",
+        name: "Someone"
+      })
+    Andi.Schemas.User.associate_with_access_group(user.subject_id, access_group.id)
+    user
+  end
+
+  defp add_dataset_to_access_group(access_group) do
+    {:ok, dataset} = TDG.create_dataset(business: %{orgTitle: "mistake_org"}) |> Datasets.update()
+    Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group.id, dataset.id)
+    dataset
+  end
+
   defp find_manage_datasets_button(view) do
     element(view, ".btn", "Manage Datasets")
   end
 
   defp find_manage_users_button(view) do
     element(view, ".btn", "Manage Users")
+  end
+
+  defp delete_access_group_in_ui(view) do
+    view |> element("#access-group-delete-button") |> render_click
+    view |> element(".delete-button") |> render_click
+  end
+
+  defp cancel_delete_access_group_in_ui(view) do
+    view |> element("#access-group-delete-button") |> render_click
+    view |> element(".cancel-delete-button", "Cancel") |> render_click
   end
 end
