@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditIngestionLiveView.DataDictionaryFormTest do
+defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase

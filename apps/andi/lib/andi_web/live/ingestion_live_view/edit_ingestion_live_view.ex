@@ -3,10 +3,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   use AndiWeb.HeaderLiveView
   require Logger
 
-  @instance_name Andi.instance_name()
-
-  import SmartCity.Event, only: [ingestion_delete: 0]
-
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
@@ -28,7 +24,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         </div>
 
         <div class="data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.EditIngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+          <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+        </div>
+
+        <div class="finalize-form-component ">
+          <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
         </div>
       </div>
 

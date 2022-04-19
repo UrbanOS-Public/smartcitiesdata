@@ -131,7 +131,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
     DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   end
 
-  defp blank_changeset(%{view: AndiWeb.EditIngestionLiveView.DataDictionaryForm} = _socket) do
+  defp blank_changeset(%{view: AndiWeb.IngestionLiveView.DataDictionaryForm} = _socket) do
     DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, %{})
   end
 
