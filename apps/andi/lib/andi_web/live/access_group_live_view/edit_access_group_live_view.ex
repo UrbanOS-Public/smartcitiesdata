@@ -50,14 +50,21 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text, selected_users: @selected_users) %>
 
-      <div class="edit-button-group" id="access-groups-edit-button-group">
-        <div class="edit-button-group__cancel-btn">
-          <button type="button" class="btn btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
+      <div class="edit-page__btn-group" id="access-groups-edit-button-group">
+      <div class="btn-group__standard">
+            <button type="button" class="btn btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
+            <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--action btn--large save-edit">Save</button>
         </div>
-        <div class="edit-button-group__save-btn">
-          <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--action btn--large save-edit">Save</button>
-        </div>
+
+        <hr>
+
+        <button id="access-group-delete-button" class="btn btn--delete" phx-click="prompt-access-group-delete" type="button">
+          <span class="delete-icon material-icons">delete_outline</span>
+          DELETE
+        </button>
       </div>
+
+      <%= live_component(@socket, AndiWeb.ConfirmDeleteModal, type: "Access Group", visibility: @delete_access_group_modal_visibility, id: @access_group.id) %>
     </div>
     """
   end
@@ -78,6 +85,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        user_id: user_id,
        access_group: access_group_with_datasets_and_users,
        changeset: default_changeset,
+       delete_access_group_modal_visibility: "hidden",
        manage_datasets_modal_visibility: "hidden",
        manage_users_modal_visibility: "hidden",
        dataset_search_results: [],
@@ -109,11 +117,39 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
      )}
   end
 
+  def handle_event("prompt-access-group-delete", _, socket) do
+    {:noreply, assign(socket, delete_access_group_modal_visibility: "visible")}
+  end
+
+  def handle_event("delete-canceled", _, socket) do
+    {:noreply, assign(socket, delete_access_group_modal_visibility: "hidden")}
+  end
+
+  def handle_event("delete-confirmed", _, socket) do
+    access_group_id = socket.assigns.access_group.id
+    user_id = socket.assigns.user_id
+
+    access_group =
+      Andi.Repo.get(Andi.InputSchemas.AccessGroup, access_group_id)
+      |> Andi.Repo.preload([:datasets, :users])
+
+    datasets = Enum.map(access_group.datasets, fn dataset -> dataset.id end)
+    users = Enum.map(access_group.users, fn user -> user.subject_id end)
+
+    send_dataset_disassociate_events(datasets, access_group_id, user_id)
+    send_user_disassociate_events(users, access_group_id, user_id)
+    AccessGroups.delete(access_group_id)
+    Andi.Schemas.AuditEvents.log_audit_event(user_id, "access_group:delete", %{access_group_id: access_group_id})
+
+    {:noreply, redirect(socket, to: header_access_groups_path())}
+  end
+
   def handle_event("access-group-form_save", _, socket) do
     case socket.assigns.changeset |> Ecto.Changeset.apply_changes() |> AccessGroups.update() do
       {:ok, _} ->
         update_dataset_associations(socket)
         update_user_associations(socket)
+        update_access_group_logs(socket.assigns.user_id, socket.assigns.changeset.changes)
         {:noreply, redirect(socket, to: header_access_groups_path())}
 
       error ->
@@ -273,11 +309,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     user_id = socket.assigns.user_id
 
     original_ids = Enum.map(socket.assigns.access_group.datasets, fn dataset -> dataset.id end)
-    datasets_to_dissociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
+    datasets_to_disassociate = Enum.filter(original_ids, fn original -> original not in socket.assigns.selected_datasets end)
     datasets_to_associate = Enum.filter(socket.assigns.selected_datasets, fn selected -> selected not in original_ids end)
 
     send_dataset_associate_event(datasets_to_associate, access_group_id, user_id)
-    send_dataset_dissociate_event(datasets_to_dissociate, access_group_id, user_id)
+    send_dataset_disassociate_events(datasets_to_disassociate, access_group_id, user_id)
   end
 
   def update_user_associations(socket) do
@@ -285,11 +321,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     user_id = socket.assigns.user_id
 
     original_user_ids = Enum.map(socket.assigns.access_group.users, fn user -> user.subject_id end)
-    users_to_dissociate = Enum.filter(original_user_ids, fn original -> original not in socket.assigns.selected_users end)
+    users_to_disassociate = Enum.filter(original_user_ids, fn original -> original not in socket.assigns.selected_users end)
     users_to_associate = Enum.filter(socket.assigns.selected_users, fn selected -> selected not in original_user_ids end)
 
     send_user_associate_events(users_to_associate, access_group_id, user_id)
-    send_user_dissociate_events(users_to_dissociate, access_group_id, user_id)
+    send_user_disassociate_events(users_to_disassociate, access_group_id, user_id)
   end
 
   defp send_dataset_associate_event(datasets, access_group_id, user_id) do
@@ -297,15 +333,17 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       properties = %{dataset_id: dataset, access_group_id: access_group_id}
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
       Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_associate(), relation)
+      Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset)
       Brook.Event.send(:andi, dataset_access_group_associate(), :andi, relation)
     end)
   end
 
-  defp send_dataset_dissociate_event(datasets, access_group_id, user_id) do
+  defp send_dataset_disassociate_events(datasets, access_group_id, user_id) do
     Enum.map(datasets, fn dataset ->
       properties = %{dataset_id: dataset, access_group_id: access_group_id}
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(properties)
       Andi.Schemas.AuditEvents.log_audit_event(user_id, dataset_access_group_disassociate(), relation)
+      Andi.InputSchemas.Datasets.Dataset.disassociate_with_access_group(access_group_id, dataset)
       Brook.Event.send(:andi, dataset_access_group_disassociate(), :andi, relation)
     end)
   end
@@ -315,16 +353,24 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       properties = %{subject_id: user, access_group_id: access_group_id}
       {:ok, relation} = SmartCity.UserAccessGroupRelation.new(properties)
       Andi.Schemas.AuditEvents.log_audit_event(user_id, user_access_group_associate(), relation)
+      Andi.Schemas.User.associate_with_access_group(user, access_group_id)
       Brook.Event.send(:andi, user_access_group_associate(), :andi, relation)
     end)
   end
 
-  defp send_user_dissociate_events(users, access_group_id, user_id) do
+  defp send_user_disassociate_events(users, access_group_id, user_id) do
     Enum.map(users, fn user ->
       properties = %{subject_id: user, access_group_id: access_group_id}
       {:ok, relation} = SmartCity.UserAccessGroupRelation.new(properties)
       Andi.Schemas.AuditEvents.log_audit_event(user_id, user_access_group_disassociate(), relation)
+      Andi.Schemas.User.disassociate_with_access_group(user, access_group_id)
       Brook.Event.send(:andi, user_access_group_disassociate(), :andi, relation)
     end)
   end
+
+  defp update_access_group_logs(user_id, %{id: _, name: _} = changes) do
+    Andi.Schemas.AuditEvents.log_audit_event(user_id, "access_group:update", changes)
+  end
+
+  defp update_access_group_logs(_user_id, _changes), do: :ok
 end

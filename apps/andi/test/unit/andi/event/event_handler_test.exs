@@ -20,58 +20,6 @@ defmodule Andi.Event.EventHandlerTest do
 
   @instance_name Andi.instance_name()
 
-  test "should successfully handle a dataset_access_group_associate() event" do
-    dataset_id = UUID.uuid4()
-    access_group_id = UUID.uuid4()
-    {:ok, assoc} = DatasetAccessGroupRelation.new(%{dataset_id: dataset_id, access_group_id: access_group_id})
-    allow(Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset_id), return: :ok)
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-    event = Brook.Event.new(type: dataset_access_group_associate(), data: assoc, author: :author)
-    EventHandler.handle_event(event)
-
-    assert_called(Andi.InputSchemas.Datasets.Dataset.associate_with_access_group(access_group_id, dataset_id))
-  end
-
-  test "should successfully handle a dataset_access_group_disassociate() event" do
-    dataset_id = UUID.uuid4()
-    access_group_id = UUID.uuid4()
-    {:ok, assoc} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset_id, access_group_id: access_group_id})
-    allow(Andi.InputSchemas.Datasets.Dataset.disassociate_with_access_group(access_group_id, dataset_id), return: :ok)
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-    Brook.Event.new(type: dataset_access_group_disassociate(), data: assoc, author: :author)
-    |> EventHandler.handle_event()
-
-    assert_called(Andi.InputSchemas.Datasets.Dataset.disassociate_with_access_group(access_group_id, dataset_id))
-  end
-
-  test "should successfully handle a user_access_group_associate() event" do
-    user_id = UUID.uuid4()
-    access_group_id = UUID.uuid4()
-    {:ok, assoc} = SmartCity.UserAccessGroupRelation.new(%{subject_id: user_id, access_group_id: access_group_id})
-    allow(Andi.Schemas.User.associate_with_access_group(user_id, access_group_id), return: :ok)
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-    event = Brook.Event.new(type: user_access_group_associate(), data: assoc, author: :author)
-    EventHandler.handle_event(event)
-
-    assert_called(Andi.Schemas.User.associate_with_access_group(user_id, access_group_id))
-  end
-
-  test "should successfully handle a user_access_group_disassociate() event" do
-    user_id = UUID.uuid4()
-    access_group_id = UUID.uuid4()
-    {:ok, assoc} = SmartCity.UserAccessGroupRelation.new(%{subject_id: user_id, access_group_id: access_group_id})
-    allow(Andi.Schemas.User.disassociate_with_access_group(user_id, access_group_id), return: :ok)
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-    Brook.Event.new(type: user_access_group_disassociate(), data: assoc, author: :author)
-    |> EventHandler.handle_event()
-
-    assert_called(Andi.Schemas.User.disassociate_with_access_group(user_id, access_group_id))
-  end
-
   test "should delete the view state and the postgres entry when ingestion delete event is called" do
     ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
     allow(IngestionStore.delete(any()), return: :ok)

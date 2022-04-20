@@ -62,4 +62,21 @@ defmodule Andi.InputSchemas.AccessGroupsTest do
       end)
     end
   end
+
+  describe "delete/1" do
+    test "an access group can be successfully deleted" do
+      new_access_group = AccessGroups.create()
+      id = new_access_group.id
+
+      eventually(fn ->
+        assert %{id: ^id} = AccessGroups.get(id)
+      end)
+
+      AccessGroups.delete(id)
+
+      eventually(fn ->
+        assert nil == AccessGroups.get(id)
+      end)
+    end
+  end
 end

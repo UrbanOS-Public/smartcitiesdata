@@ -569,7 +569,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_change(view, "confirm-delete", %{"id" => dataset.id})
+      render_change(view, "delete-confirmed", %{"id" => dataset.id})
 
       eventually(fn ->
         assert nil == Datasets.get(dataset.id)

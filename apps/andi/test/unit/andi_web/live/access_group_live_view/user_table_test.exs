@@ -33,7 +33,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
   describe "Basic associated users table load" do
     test "shows \"No Associated Users\" when there are no rows to show", %{conn: conn} do
       access_group = setup_access_group()
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: []})
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -52,7 +52,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         organizations: [%Andi.InputSchemas.Organization{orgTitle: "Constellations R Us"}]
       }
 
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user]})
+      allow(Andi.Repo.preload(any(), [:datasets, :users]), return: %{datasets: [], users: [user], id: access_group.id})
       allow(Andi.Schemas.User.get_by_subject_id(user.subject_id), return: user)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -80,7 +80,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         organizations: []
       }
 
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2]})
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2], id: access_group.id})
       allow(Andi.Schemas.User.get_by_subject_id(user_1.subject_id), return: user_1)
       allow(Andi.Schemas.User.get_by_subject_id(user_2.subject_id), return: user_2)
 
@@ -109,7 +109,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         organizations: []
       }
 
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2]})
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [user_1, user_2], id: access_group.id})
       allow(Andi.Schemas.User.get_by_subject_id(user_1.subject_id), return: user_1)
       allow(Andi.Schemas.User.get_by_subject_id(user_2.subject_id), return: user_2)
 

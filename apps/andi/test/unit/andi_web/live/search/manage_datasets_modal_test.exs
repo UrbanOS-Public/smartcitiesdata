@@ -39,9 +39,9 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: []})
 
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       manage_datasets_button = find_manage_datasets_button(view)
@@ -55,8 +55,9 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: []})
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
+
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       manage_datasets_button = find_manage_datasets_button(view)
@@ -80,8 +81,8 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
       allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
       allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: []})
       access_group = create_access_group()
+      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
       manage_datasets_button = find_manage_datasets_button(view)
