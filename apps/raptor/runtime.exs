@@ -81,7 +81,11 @@ config :raptor, :brook,
         "dataset:update" => 100,
         "organization:update" => 100,
         "user:organization:associate" => 100,
-        "user:organization:disassociate" => 100
+        "user:organization:disassociate" => 100,
+        "user:access_group:associate" => 100,
+        "user:access_group:disassociate" => 100,
+        "dataset:access_group:associate" => 100,
+        "dataset:access_group:disassociate" => 100
       }
     ]
   ]
