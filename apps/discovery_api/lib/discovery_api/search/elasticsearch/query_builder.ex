@@ -98,6 +98,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
 
   defp build_filter(search_opts) do
     authorized_organization_ids = Keyword.get(search_opts, :authorized_organization_ids, [])
+    authorized_access_group_ids = Keyword.get(search_opts, :authorized_access_groups, [])
 
     [
       %{
@@ -119,6 +120,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
                   %{
                     "terms" => %{
                       "organizationDetails.id" => authorized_organization_ids
+                      # todo: OR access group
                     }
                   }
                 ]

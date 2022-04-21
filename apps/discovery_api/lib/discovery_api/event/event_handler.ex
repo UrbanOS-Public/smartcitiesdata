@@ -124,6 +124,10 @@ defmodule DiscoveryApi.Event.EventHandler do
     end
   end
 
+  # todo: add Elasticsearch.Document.update() for the following
+  # user_access_group_associate / dis
+  # dataset_access_group_associate / dis
+
   def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
     dataset_query()
     |> add_event_count(author, dataset_id)

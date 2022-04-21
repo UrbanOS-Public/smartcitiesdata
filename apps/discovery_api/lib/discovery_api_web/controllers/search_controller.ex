@@ -1,11 +1,14 @@
 require Logger
 
 defmodule DiscoveryApiWeb.SearchController do
+  use Properties, otp_app: :discovery_api
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.SearchView
   alias DiscoveryApi.Search.Elasticsearch.Search
 
   plug(:accepts, SearchView.accepted_formats())
+
+  getter(:raptor_list_url, generic: true)
 
   def advanced_search(conn, params) do
     sort = Map.get(params, "sort", "name_asc")
@@ -49,6 +52,12 @@ defmodule DiscoveryApiWeb.SearchController do
         _ -> Enum.map(current_user.organizations, fn organization -> organization.id end)
       end
 
+    authorized_access_groups =
+      case current_user do
+        nil -> nil
+        _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
+      end
+
     case validate_facets(facets) do
       {:ok, filter_facets} ->
         opts =
@@ -58,6 +67,7 @@ defmodule DiscoveryApiWeb.SearchController do
             keywords: Map.get(filter_facets, :keywords),
             org_title: Map.get(filter_facets, :organization, []) |> List.first(),
             authorized_organization_ids: authorized_organization_ids,
+            authorized_access_groups: authorized_access_groups,
             sort: sort,
             offset: offset,
             limit: limit

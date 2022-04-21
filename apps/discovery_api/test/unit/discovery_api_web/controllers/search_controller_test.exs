@@ -1,11 +1,13 @@
 defmodule DiscoveryApiWeb.SearchControllerTest do
   use DiscoveryApiWeb.ConnCase
   use Placebo
+
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Search.Elasticsearch.Search
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Schemas.Organizations.Organization
+  alias RaptorService
 
   setup do
     mock_dataset_summaries = [
@@ -102,6 +104,35 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
 
       response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
 
+      assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
+    end
+
+    test "api/v2/search passes logged in access group ids to elasticsearch", %{
+      conn: conn,
+      mock_dataset_summaries: mock_dataset_summaries
+    } do
+      authorized_access_group_ids = ["321b", "432a"]
+
+      expect(
+        Search.search(
+          query: "Bob",
+          api_accessible: false,
+          authorized_organization_ids: [],
+          authorized_access_groups: authorized_access_group_ids,
+          sort: "name_asc",
+          offset: 0,
+          limit: 10
+        ),
+        return: {:ok, mock_dataset_summaries, %{}, 0}
+      )
+
+      subject_id = "12345abc"
+      user = %User{subject_id: subject_id, organizations: []}
+      params = %{query: "Bob"}
+      allow(Guardian.Plug.current_resource(any()), return: user, meck_options: [:passthrough])
+      allow(RaptorService.list_access_groups_by_user(any(), subject_id), return: authorized_access_group_ids)
+
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
       assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
     end
   end
