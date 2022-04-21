@@ -9,12 +9,13 @@ defmodule DiscoveryApi.Data.Mapper do
   alias DiscoveryApi.Data.OrganizationDetails
   use Properties, otp_app: :discovery_api
 
-  getter(:raptor_url, generic: true)
+  getter(:raptor_list_url, generic: true)
 
   @doc """
   Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
   """
   def to_data_model(%Dataset{id: id, technical: tech, business: biz}, %Organization{} = organization) do
+    access_groups = retrieveAccessGroups(id)
     %Model{
       id: id,
       name: tech.dataName,
@@ -55,12 +56,12 @@ defmodule DiscoveryApi.Data.Mapper do
         logoUrl: organization.logo_url,
         homepage: organization.homepage
       },
-      accessGroups: retrieveAccessGroups(id)
+      accessGroups: access_groups
     }
   end
 
   defp retrieveAccessGroups(dataset_id) do
-    RaptorService.list_access_groups_by_dataset(raptor_url(), dataset_id)
+    RaptorService.list_access_groups_by_dataset(raptor_list_url(), dataset_id)
   end
 
   defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]
