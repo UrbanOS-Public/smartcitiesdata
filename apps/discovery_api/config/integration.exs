@@ -20,6 +20,7 @@ config :discovery_api,
 
 config :discovery_api,
   raptor_url: "http://localhost:4002/api/authorize"
+  raptor_list_url: "http://localhost:4002/api/listAccessGroups"
 
 config :redix,
   args: redix_args

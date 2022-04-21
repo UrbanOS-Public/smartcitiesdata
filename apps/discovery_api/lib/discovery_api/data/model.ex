@@ -51,7 +51,8 @@ defmodule DiscoveryApi.Data.Model do
     :spatial,
     :systemName,
     :temporal,
-    :title
+    :title,
+    :accessGroups
   ]
 
   def new(data) do

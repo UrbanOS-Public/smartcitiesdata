@@ -7,6 +7,9 @@ defmodule DiscoveryApi.Data.Mapper do
   alias DiscoveryApi.Schemas.Organizations.Organization
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.OrganizationDetails
+  use Properties, otp_app: :discovery_api
+
+  getter(:raptor_url, generic: true)
 
   @doc """
   Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
@@ -51,8 +54,13 @@ defmodule DiscoveryApi.Data.Mapper do
         description: organization.description,
         logoUrl: organization.logo_url,
         homepage: organization.homepage
-      }
+      },
+      accessGroups: retrieveAccessGroups(id)
     }
+  end
+
+  defp retrieveAccessGroups(dataset_id) do
+    RaptorService.list_access_groups_by_dataset(raptor_url(), dataset_id)
   end
 
   defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]
