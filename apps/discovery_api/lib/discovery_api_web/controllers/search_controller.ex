@@ -55,7 +55,6 @@ defmodule DiscoveryApiWeb.SearchController do
     authorized_access_groups =
       case current_user do
         nil -> nil
-        # todo: does current user have a subject_id from the auth plugs
         _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
       end
 

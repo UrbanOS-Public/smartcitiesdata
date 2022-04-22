@@ -112,51 +112,13 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
               }
             },
             %{
-              "bool" => %{
-                "must" => [
-                  %{
-                    "term" => %{
-                      "private" => true
-                    }
-                  },
-                  %{
-                    "bool" => %{
-                      "should" => [
-                        %{
-                          "terms" => %{
-                            # single
-                            "organizationDetails.id" => authorized_organization_ids
-                          }
-                        },
-                        # %{
-                        #   "script" => %{
-                        #     "script" => %{
-                        #       "source" => "if(params['access_groups'].containsAny(doc['accessGroups'].values)){return true;}",
-                        #       "params" => %{
-                        #         "access_groups" => authorized_access_group_ids
-                        #       }
-                        #     }
-                        #   }
-                        # }
-                        %{
-                          "terms" => %{
-                            "accessGroups" => authorized_access_group_ids
-                          }
-                        }
-                        # %{
-                        #   "terms_set" => %{
-                        #     "accessGroups" => %{
-                        #       "terms" => authorized_access_group_ids,
-                        #       "minimum_should_match_script" => %{
-                        #         "source" => "1"
-                        #       }
-                        #     }
-                        #   }
-                        # }
-                      ]
-                    }
-                  }
-                ]
+              "terms" => %{
+                "organizationDetails.id" => authorized_organization_ids
+              }
+            },
+            %{
+              "terms" => %{
+                "accessGroups.keyword" => authorized_access_group_ids
               }
             }
           ]
