@@ -45,7 +45,6 @@ defmodule DiscoveryApi.Search.Elasticsearch.Search do
         {:ok, documents, facets, total}
 
       error ->
-        error |> IO.inspect(label: "error from search")
         error
     end
   end

@@ -58,8 +58,6 @@ defmodule DiscoveryApiWeb.SearchController do
         _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
       end
 
-    current_user |> IO.inspect(label: "current_user")
-
     case validate_facets(facets) do
       {:ok, filter_facets} ->
         opts =
