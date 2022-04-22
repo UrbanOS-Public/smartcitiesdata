@@ -118,9 +118,24 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
                     }
                   },
                   %{
-                    "terms" => %{
-                      "organizationDetails.id" => authorized_organization_ids
-                      # todo: OR access group
+                    "bool" => %{
+                      "should" => [
+                        %{
+                          "terms" => %{
+                            # single
+                            "organizationDetails.id" => authorized_organization_ids
+                          }
+                        },
+                        %{
+                          "terms_set" => %{
+                            # list todo:
+                            "access_groups" => %{
+                              "terms" => authorized_access_group_ids
+                              # todo: do we need minimum_should_match => 1 here?
+                            }
+                          }
+                        }
+                      ]
                     }
                   }
                 ]

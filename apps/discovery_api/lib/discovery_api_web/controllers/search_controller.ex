@@ -52,11 +52,14 @@ defmodule DiscoveryApiWeb.SearchController do
         _ -> Enum.map(current_user.organizations, fn organization -> organization.id end)
       end
 
-    authorized_access_groups =
-      case current_user do
-        nil -> nil
-        _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
-      end
+    authorized_access_groups = current_user |> IO.inspect(label: "current_user")
+
+    case current_user do
+      nil -> nil
+      # todo: does current user have a subject_id from the auth plugs
+
+      _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
+    end
 
     case validate_facets(facets) do
       {:ok, filter_facets} ->
