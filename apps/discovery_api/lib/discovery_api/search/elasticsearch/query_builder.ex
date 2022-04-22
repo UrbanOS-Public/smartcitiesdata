@@ -8,6 +8,8 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
   @elasticsearch_max_buckets 4_000_000
 
   def build(search_opts \\ []) do
+    IO.inspect(search_opts, label: "search options")
+
     query_json = %{
       "aggs" => %{
         "keywords" => %{"terms" => %{"field" => "facets.keywords", "size" => @elasticsearch_max_buckets}},
@@ -25,7 +27,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
     }
 
     Logger.debug("#{__MODULE__}: ElasticSearch Query: #{inspect(query_json)}")
-    query_json
+    query_json |> IO.inspect(label: "query_json")
   end
 
   defp build_must(search_opts) do
@@ -98,7 +100,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
 
   defp build_filter(search_opts) do
     authorized_organization_ids = Keyword.get(search_opts, :authorized_organization_ids, [])
-    authorized_access_group_ids = Keyword.get(search_opts, :authorized_access_groups, [])
+    authorized_access_group_ids = Keyword.get(search_opts, :authorized_access_groups, []) |> IO.inspect(label: "access groups")
 
     [
       %{
@@ -126,15 +128,31 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
                             "organizationDetails.id" => authorized_organization_ids
                           }
                         },
+                        # %{
+                        #   "script" => %{
+                        #     "script" => %{
+                        #       "source" => "if(params['access_groups'].containsAny(doc['accessGroups'].values)){return true;}",
+                        #       "params" => %{
+                        #         "access_groups" => authorized_access_group_ids
+                        #       }
+                        #     }
+                        #   }
+                        # }
                         %{
-                          "terms_set" => %{
-                            # list todo:
-                            "access_groups" => %{
-                              "terms" => authorized_access_group_ids
-                              # todo: do we need minimum_should_match => 1 here?
-                            }
+                          "terms" => %{
+                            "accessGroups" => authorized_access_group_ids
                           }
                         }
+                        # %{
+                        #   "terms_set" => %{
+                        #     "accessGroups" => %{
+                        #       "terms" => authorized_access_group_ids,
+                        #       "minimum_should_match_script" => %{
+                        #         "source" => "1"
+                        #       }
+                        #     }
+                        #   }
+                        # }
                       ]
                     }
                   }
