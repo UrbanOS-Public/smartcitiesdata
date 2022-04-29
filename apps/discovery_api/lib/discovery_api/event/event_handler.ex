@@ -127,7 +127,9 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.warn(fn -> "Handling dataset-access-group association: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`" end)
+    Logger.warn(fn ->
+      "Handling dataset-access-group association: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
+    end)
 
     dataset_access_group_associate()
     |> add_event_count(author, relation.dataset_id)
@@ -135,7 +137,13 @@ defmodule DiscoveryApi.Event.EventHandler do
     with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
          model <- Mapper.add_access_group(dataset, relation.access_group_id) do
       Elasticsearch.Document.update(model)
-      Logger.warn(fn -> "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`" end)
+
+      Logger.warn(fn ->
+        "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{
+          relation.access_group_id
+        }`"
+      end)
+
       merge(:models, model.id, model)
       clear_caches()
 
@@ -148,7 +156,9 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_disassociate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.debug(fn -> "Handling dataset-access-group disassociation: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`" end)
+    Logger.debug(fn ->
+      "Handling dataset-access-group disassociation: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
+    end)
 
     dataset_access_group_disassociate()
     |> add_event_count(author, relation.dataset_id)
@@ -156,7 +166,13 @@ defmodule DiscoveryApi.Event.EventHandler do
     with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
          model <- Mapper.remove_access_group(dataset, relation.access_group_id) do
       Elasticsearch.Document.update(model)
-      Logger.debug(fn -> "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`" end)
+
+      Logger.debug(fn ->
+        "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
+          relation.access_group_id
+        }`"
+      end)
+
       merge(:models, model.id, model)
       clear_caches()
 

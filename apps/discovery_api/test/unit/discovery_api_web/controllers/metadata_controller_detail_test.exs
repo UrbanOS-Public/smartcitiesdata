@@ -131,6 +131,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     } do
       allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
       allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+
       conn
       |> get("/api/v1/dataset/#{@dataset_id}")
       |> json_response(200)

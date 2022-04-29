@@ -108,6 +108,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
         return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "seriously"}}
       )
+
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)

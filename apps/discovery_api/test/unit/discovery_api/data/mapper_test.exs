@@ -39,20 +39,19 @@ defmodule DiscoveryApi.Data.MapperTest do
 
   describe "add_access_group/2" do
     test "an access group can be successfully added to an empty list of access groups" do
-      model =  Mapper.add_access_group(Helper.sample_model(), "some_id")
+      model = Mapper.add_access_group(Helper.sample_model(), "some_id")
       assert model.accessGroups == ["some_id"]
     end
 
     test "an access group can be successfully added to an existing list of access groups" do
-      model =  Mapper.add_access_group(Helper.sample_model(%{accessGroups: ["previous_id"]}), "some_id")
+      model = Mapper.add_access_group(Helper.sample_model(%{accessGroups: ["previous_id"]}), "some_id")
       assert model.accessGroups == ["previous_id", "some_id"]
     end
   end
 
   describe "remove_access_group/2" do
-
     test "an access group can be successfully removed from an existing list of access groups" do
-      model =  Mapper.remove_access_group(Helper.sample_model(%{accessGroups: ["id", "id_to_remove"]}), "id_to_remove")
+      model = Mapper.remove_access_group(Helper.sample_model(%{accessGroups: ["id", "id_to_remove"]}), "id_to_remove")
       assert model.accessGroups == ["id"]
     end
   end

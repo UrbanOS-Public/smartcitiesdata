@@ -16,6 +16,7 @@ defmodule DiscoveryApi.Data.Mapper do
   """
   def to_data_model(%Dataset{id: id, technical: tech, business: biz}, %Organization{} = organization) do
     access_groups = retrieveAccessGroups(id)
+
     %Model{
       id: id,
       name: tech.dataName,

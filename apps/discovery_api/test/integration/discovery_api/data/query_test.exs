@@ -242,6 +242,7 @@ defmodule DiscoveryApi.Data.QueryTest do
       authorized_conn: authorized_conn
     } do
       allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+
       request_body = """
         WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
         SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id

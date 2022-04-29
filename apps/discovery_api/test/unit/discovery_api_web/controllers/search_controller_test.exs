@@ -96,8 +96,17 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       allow(RaptorService.list_access_groups_by_user(any(), any()), return: [])
       allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+
       expect(
-        Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], authorized_access_groups: [], sort: "name_asc", offset: 0, limit: 10),
+        Search.search(
+          query: "Bob",
+          api_accessible: false,
+          authorized_organization_ids: ["1", "2"],
+          authorized_access_groups: [],
+          sort: "name_asc",
+          offset: 0,
+          limit: 10
+        ),
         return: {:ok, mock_dataset_summaries, %{}, 0}
       )
 

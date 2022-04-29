@@ -392,7 +392,9 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     } do
       dataset_id = "private_dataset"
 
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}})
+      allow(Users.get_user_with_organizations(subject, :subject_id),
+        return: {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}}
+      )
 
       model =
         Helper.sample_model(%{

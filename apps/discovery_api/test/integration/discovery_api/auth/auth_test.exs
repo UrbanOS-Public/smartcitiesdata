@@ -140,7 +140,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       subject = setup_map.revocable_subject
       model_id = model.id
 
-      allow(RaptorService.is_authorized_by_user_id(any(),any(), any()), return: true)
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
 
       user = Helper.create_persisted_user(subject)
       Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
@@ -155,7 +155,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
              |> response(200)
 
-      allow(RaptorService.is_authorized_by_user_id(any(),any(), any()), return: true)
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
 
       assert %{"message" => "Unauthorized"} ==
                get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
@@ -182,8 +182,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
       other_user = Helper.create_persisted_user(other_subject)
       Helper.associate_user_with_organization(other_user.subject_id, model.organizationDetails.id)
 
-      allow(RaptorService.is_authorized_by_user_id(any(),user.subject_id, any()), return: false)
-      allow(RaptorService.is_authorized_by_user_id(any(),other_user.subject_id, any()), return: true)
+      allow(RaptorService.is_authorized_by_user_id(any(), user.subject_id, any()), return: false)
+      allow(RaptorService.is_authorized_by_user_id(any(), other_user.subject_id, any()), return: true)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
              |> response(200)
