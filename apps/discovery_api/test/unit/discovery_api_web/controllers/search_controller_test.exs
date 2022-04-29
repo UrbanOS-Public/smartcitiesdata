@@ -93,13 +93,17 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       conn: conn,
       mock_dataset_summaries: mock_dataset_summaries
     } do
+      allow(RaptorService.list_access_groups_by_user(any(), any()), return: [])
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       expect(
-        Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], sort: "name_asc", offset: 0, limit: 10),
+        Search.search(query: "Bob", api_accessible: false, authorized_organization_ids: ["1", "2"], authorized_access_groups: [], sort: "name_asc", offset: 0, limit: 10),
         return: {:ok, mock_dataset_summaries, %{}, 0}
       )
 
       params = %{query: "Bob"}
-      user = %User{organizations: [%Organization{id: "1"}, %Organization{id: "2"}]}
+      user = %User{subject_id: "id", organizations: [%Organization{id: "1"}, %Organization{id: "2"}]}
+
       allow(Guardian.Plug.current_resource(any()), return: user, meck_options: [:passthrough])
 
       response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)

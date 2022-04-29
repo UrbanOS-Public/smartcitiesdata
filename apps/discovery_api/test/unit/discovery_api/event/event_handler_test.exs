@@ -9,7 +9,9 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       user_organization_associate: 0,
       user_organization_disassociate: 0,
       dataset_delete: 0,
-      dataset_query: 0
+      dataset_query: 0,
+      dataset_access_group_associate: 0,
+      dataset_access_group_disassociate: 0
     ]
 
   import ExUnit.CaptureLog
@@ -25,6 +27,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
+  alias DiscoveryApi.Test.Helper
 
   @instance_name DiscoveryApi.instance_name()
 
@@ -105,7 +108,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       allow(DiscoveryApi.Schemas.Organizations.get_organization(any()),
         return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "seriously"}}
       )
-
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
@@ -120,6 +123,58 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
     test "tells the data json plug to delete its current data json cache" do
       assert_called(DataJsonService.delete_data_json())
+    end
+
+    test "invalidates the table info cache" do
+      assert_called(TableInfoCache.invalidate())
+    end
+  end
+
+  describe "handle_event/1 #{dataset_access_group_associate()}" do
+    setup do
+      model = Helper.sample_model()
+      allow(Brook.get(any(), any(), any()), return: {:ok, model})
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
+      allow(TableInfoCache.invalidate(), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+      dataset = TDG.create_dataset(%{})
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "new_group"})
+
+      Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_access_group_associate(), data: relation, author: :author))
+      %{model: model}
+    end
+
+    test "adds the access group to the model and updates elastic search", %{model: model} do
+      model = %Model{model | accessGroups: model.accessGroups ++ ["new_group"]}
+      assert_called(DiscoveryApi.Search.Elasticsearch.Document.update(model))
+    end
+
+    test "invalidates the table info cache" do
+      assert_called(TableInfoCache.invalidate())
+    end
+  end
+
+  describe "handle_event/1 #{dataset_access_group_disassociate()}" do
+    setup do
+      model_without_group = Helper.sample_model()
+      model = %Model{model_without_group | accessGroups: model_without_group.accessGroups ++ ["group_to_delete"]}
+      allow(Brook.get(any(), any(), any()), return: {:ok, model})
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
+      allow(TableInfoCache.invalidate(), return: :ok)
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+
+      dataset = TDG.create_dataset(%{})
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "group_to_delete"})
+
+      Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_access_group_disassociate(), data: relation, author: :author))
+      %{model: model_without_group}
+    end
+
+    test "removes the access group from the model and updates elastic search", %{model: model} do
+      assert_called(DiscoveryApi.Search.Elasticsearch.Document.update(model))
     end
 
     test "invalidates the table info cache" do

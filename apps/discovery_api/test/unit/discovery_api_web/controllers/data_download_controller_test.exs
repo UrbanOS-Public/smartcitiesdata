@@ -22,6 +22,10 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
+    allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: ["org_id"])
+    allow(RaptorService.list_access_groups_by_user(any(), any()), return: ["org_id"])
+    allow(RaptorService.is_authorized(any(), any(), any()), return: true)
 
     model =
       Helper.sample_model(%{
@@ -388,7 +392,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     } do
       dataset_id = "private_dataset"
 
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id, organizations: [%{id: "org_id"}]}})
+      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}})
 
       model =
         Helper.sample_model(%{
@@ -399,6 +403,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           lastUpdatedDate: nil,
           queries: 7,
           downloads: 9,
+          accessGroups: [],
           organizationDetails: %{
             orgName: @org_name,
             id: "org_id"

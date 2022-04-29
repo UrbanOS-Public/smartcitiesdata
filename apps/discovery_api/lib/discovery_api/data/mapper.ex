@@ -60,6 +60,14 @@ defmodule DiscoveryApi.Data.Mapper do
     }
   end
 
+  def add_access_group(dataset_model, access_group) do
+    %Model{dataset_model | accessGroups: dataset_model.accessGroups ++ [access_group]}
+  end
+
+  def remove_access_group(dataset_model, access_group) do
+    %Model{dataset_model | accessGroups: List.delete(dataset_model.accessGroups, access_group)}
+  end
+
   defp retrieveAccessGroups(dataset_id) do
     RaptorService.list_access_groups_by_dataset(raptor_list_url(), dataset_id)
   end

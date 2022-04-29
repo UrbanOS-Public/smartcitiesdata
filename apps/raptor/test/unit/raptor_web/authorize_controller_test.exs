@@ -31,6 +31,118 @@ defmodule RaptorWeb.AuthorizeControllerTest do
 
   @unauthorized_call []
 
+  describe "private dataset authorization without api key" do
+    test "returns true when the user has access to the given dataset via an organization", %{conn: conn} do
+      system_name = "system__name"
+      org_id = "dog_stats"
+      user = @authorized_call |> List.first()
+      user_id = user["user_id"]
+      expected = %{"is_authorized" => true}
+
+      expect(DatasetStore.get(system_name),
+        return: %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true}
+      )
+
+      expect(UserOrgAssocStore.get(user_id, org_id),
+        return: %{user_id: user_id, org_id: org_id, email: "penny@starfleet.com"}
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?auth0_user=#{user_id}&systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+
+    test "returns true when the user has access to the given dataset via an access group", %{conn: conn} do
+      system_name = "system__name"
+      dataset_org_id = "dataset_org"
+      dataset_id = "wags"
+      user = @authorized_call |> List.first()
+      user_id = user["user_id"]
+      expected = %{"is_authorized" => true}
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: dataset_id,
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
+      )
+
+      expect(UserOrgAssocStore.get(user_id, dataset_org_id),
+        return: %{}
+      )
+
+      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
+        return: ["poodles", "german shepards", "sheepdog"]
+      )
+
+      expect(DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id),
+        return: ["poodles", "golden retrievers", "labradoodles"]
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?auth0_user=#{user_id}&systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+
+    test "returns an error when the systemName is not passed", %{conn: conn} do
+      expected = %{"message" => "systemName is a required parameter."}
+
+      actual =
+        conn
+        |> get("/api/authorize?auth0_user=someUser")
+        |> json_response(400)
+
+      assert actual == expected
+    end
+
+    test "returns false when the dataset org does not match the user org or any access groups", %{
+      conn: conn
+    } do
+      api_key = "enterprise"
+      system_name = "system__name"
+      dataset_org_id = "dataset_org"
+      user = @authorized_call |> List.first()
+      user_id = user["user_id"]
+      expected = %{"is_authorized" => false}
+
+      expect(DatasetStore.get(system_name),
+        return: %{
+          dataset_id: "wags",
+          system_name: system_name,
+          org_id: dataset_org_id,
+          is_private: true
+        }
+      )
+
+      expect(UserOrgAssocStore.get(user_id, dataset_org_id),
+        return: %{}
+      )
+
+      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
+        return: []
+      )
+
+      expect(DatasetAccessGroupRelationStore.get_all_by_dataset("wags"),
+        return: []
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?auth0_user=#{user_id}&systemName=#{system_name}")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+  end
+
   describe "private dataset authorization" do
     test "returns true when there is one valid user that has the given api key", %{conn: conn} do
       api_key = "enterprise"

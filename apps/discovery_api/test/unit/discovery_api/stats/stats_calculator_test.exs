@@ -13,8 +13,8 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
   describe "produce_completeness_stats/1 positive cases" do
     setup do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       dataset = mock_non_remote_dataset()
-
       allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
       allow(Prestige.new_session(any()), return: :connection)
@@ -76,8 +76,8 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
   describe "produce_completeness_stats/1 negative cases" do
     test "Does not calculate statistics for remote datasets" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       dataset = mock_remote_dataset()
-
       allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
@@ -93,8 +93,8 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     end
 
     test "Does not calculate statistics for datasets that have not been updated since last calculation date" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       dataset = mock_non_remote_dataset()
-
       allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
       allow(Persistence.persist(any(), any()), return: :does_not_matter)
 
@@ -119,6 +119,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
     end
 
     test "Does not calculate statistics when presto returns no data" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
       dataset = mock_non_remote_dataset()
       allow(Model.get_all(), return: [dataset], meck_options: [:passthrough])
 

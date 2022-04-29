@@ -57,6 +57,22 @@ defmodule RaptorWeb.AuthorizeController do
     end
   end
 
+  def authorize(conn, %{"auth0_user" => auth0_user, "systemName" => systemName}) do
+    dataset_associated_with_system_name = DatasetStore.get(systemName)
+
+    if(is_valid_dataset?(dataset_associated_with_system_name)) do
+      if dataset_associated_with_system_name.is_private do
+        render(conn, %{
+          is_authorized: is_user_in_org?(auth0_user, dataset_associated_with_system_name.org_id) or is_user_in_access_group?(auth0_user, dataset_associated_with_system_name.dataset_id)
+        })
+      else
+        render(conn, %{is_authorized: true})
+      end
+    else
+      render(conn, %{is_authorized: false})
+    end
+  end
+
   def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
     dataset_associated_with_system_name = DatasetStore.get(systemName)
 
@@ -80,6 +96,10 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"apiKey" => _}) do
+    render_error(conn, 400, "systemName is a required parameter.")
+  end
+
+  def authorize(conn, %{"auth0_user" => _}) do
     render_error(conn, 400, "systemName is a required parameter.")
   end
 
