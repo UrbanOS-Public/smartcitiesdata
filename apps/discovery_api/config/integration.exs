@@ -18,7 +18,6 @@ config :discovery_api,
   hosted_region: aws_region,
   hsts_enabled: false
 
-# refactor: consider combining these
 config :discovery_api,
   raptor_url: "http://localhost:4002/api/authorize",
   raptor_list_url: "http://localhost:4002/api/listAccessGroups"
