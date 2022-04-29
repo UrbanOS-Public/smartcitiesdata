@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
   use ExUnit.Case
   use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
+  use Placebo
 
   import ExUnit.CaptureLog
   import SmartCity.TestHelper, only: [eventually: 3]
@@ -64,6 +65,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
     end
 
     test "is able to access a restricted dataset with a valid token", setup_map do
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+
       body =
         get(setup_map.authorized_conn, "/api/v1/dataset/#{setup_map.private_model_that_belongs_to_org_1.id}")
         |> json_response(200)
@@ -137,6 +140,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
       subject = setup_map.revocable_subject
       model_id = model.id
 
+      allow(RaptorService.is_authorized_by_user_id(any(),any(), any()), return: true)
+
       user = Helper.create_persisted_user(subject)
       Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
 
@@ -149,6 +154,8 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-out")
              |> response(200)
+
+      allow(RaptorService.is_authorized_by_user_id(any(),any(), any()), return: true)
 
       assert %{"message" => "Unauthorized"} ==
                get(setup_map.revocable_conn, "/api/v1/dataset/#{model.id}/")
@@ -174,6 +181,9 @@ defmodule DiscoveryApi.Auth.AuthTest do
 
       other_user = Helper.create_persisted_user(other_subject)
       Helper.associate_user_with_organization(other_user.subject_id, model.organizationDetails.id)
+
+      allow(RaptorService.is_authorized_by_user_id(any(),user.subject_id, any()), return: false)
+      allow(RaptorService.is_authorized_by_user_id(any(),other_user.subject_id, any()), return: true)
 
       assert post(setup_map.revocable_conn, "/api/v1/logged-in")
              |> response(200)
@@ -240,6 +250,7 @@ defmodule DiscoveryApi.Auth.AuthTest do
          } = setup_map do
       user = Helper.create_persisted_user(setup_map.authorized_subject)
       Helper.associate_user_with_organization(user.subject_id, model.organizationDetails.id)
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
 
       capture_log(fn ->
         DiscoveryApi.prestige_opts()
