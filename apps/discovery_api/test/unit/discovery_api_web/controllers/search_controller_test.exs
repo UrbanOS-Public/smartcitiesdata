@@ -120,6 +120,37 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
     end
 
+    test "api/v2/search passes logged in user access groups to elasticsearch", %{
+      conn: conn,
+      mock_dataset_summaries: mock_dataset_summaries
+    } do
+      allow(RaptorService.list_access_groups_by_user(any(), any()), return: ["access_group_1", "access_group_2"])
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: ["access_group_1", "access_group_2"])
+
+      expect(
+        Search.search(
+          query: "Bob",
+          api_accessible: false,
+          authorized_organization_ids: [],
+          authorized_access_groups: ["access_group_1", "access_group_2"],
+          sort: "name_asc",
+          offset: 0,
+          limit: 10
+        ),
+        return: {:ok, mock_dataset_summaries, %{}, 0}
+      )
+
+      params = %{query: "Bob"}
+      user = %User{subject_id: "id", organizations: []}
+
+      allow(Guardian.Plug.current_resource(any()), return: user, meck_options: [:passthrough])
+
+      response_map = conn |> get("/api/v2/dataset/search", params) |> json_response(200)
+
+      assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
+    end
+
     test "api/v2/search passes logged in access group ids to elasticsearch", %{
       conn: conn,
       mock_dataset_summaries: mock_dataset_summaries
