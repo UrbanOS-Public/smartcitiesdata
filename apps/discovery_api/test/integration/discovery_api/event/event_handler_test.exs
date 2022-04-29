@@ -6,7 +6,16 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   use Placebo
 
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0, user_organization_disassociate: 0, user_login: 0, dataset_access_group_associate: 0, dataset_access_group_disassociate: 0]
+
+  import SmartCity.Event,
+    only: [
+      dataset_update: 0,
+      user_organization_disassociate: 0,
+      user_login: 0,
+      dataset_access_group_associate: 0,
+      dataset_access_group_disassociate: 0
+    ]
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
@@ -51,6 +60,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
+
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "access_group_id"})
       Brook.Event.send(@instance_name, dataset_access_group_associate(), __MODULE__, relation)
 
@@ -73,6 +83,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
       end)
+
       {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "access_group_id"})
       Brook.Event.send(@instance_name, dataset_access_group_disassociate(), __MODULE__, relation)
 
