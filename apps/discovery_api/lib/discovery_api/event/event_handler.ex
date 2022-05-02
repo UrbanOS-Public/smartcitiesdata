@@ -127,7 +127,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.warn(fn ->
+    Logger.debug(fn ->
       "Handling dataset-access-group association: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
     end)
 
@@ -138,7 +138,7 @@ defmodule DiscoveryApi.Event.EventHandler do
          model <- Mapper.add_access_group(dataset, relation.access_group_id) do
       Elasticsearch.Document.update(model)
 
-      Logger.warn(fn ->
+      Logger.debug(fn ->
         "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{
           relation.access_group_id
         }`"

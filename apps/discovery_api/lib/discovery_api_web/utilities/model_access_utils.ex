@@ -8,7 +8,6 @@ defmodule DiscoveryApiWeb.Utilities.ModelAccessUtils do
   use Properties, otp_app: :discovery_api
 
   getter(:raptor_url, generic: true)
-  getter(:raptor_list_url, generic: true)
 
   def has_access?(%Model{private: false} = _dataset, _username), do: true
   def has_access?(%Model{private: true} = _dataset, nil), do: false
