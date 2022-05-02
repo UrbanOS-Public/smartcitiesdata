@@ -73,4 +73,22 @@ defmodule RaptorServiceTest do
       assert RaptorService.list_access_groups_by_dataset("raptor_url", "dataset_id") == []
     end
   end
+
+  describe "list_access_groups_by_api_key/2" do
+    test "returns a list of authorized access groups in Raptor" do
+      allow(HTTPoison.get(any()),
+        return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"]}"}}
+      )
+
+      assert RaptorService.list_access_groups_by_api_key("raptor_url", "apiKey") == ["group1", "group2"]
+    end
+
+    test "returns an empty list if there are no access groups authorized for the given dataset" do
+      allow(HTTPoison.get(any()),
+        return: {:ok, %{body: "{\"access_groups\":[]}"}}
+      )
+
+      assert RaptorService.list_access_groups_by_api_key("raptor_url", "apiKey") == []
+    end
+  end
 end

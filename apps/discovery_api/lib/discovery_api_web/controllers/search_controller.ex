@@ -8,7 +8,7 @@ defmodule DiscoveryApiWeb.SearchController do
 
   plug(:accepts, SearchView.accepted_formats())
 
-  getter(:raptor_list_url, generic: true)
+  getter(:raptor_url, generic: true)
 
   def advanced_search(conn, params) do
     sort = Map.get(params, "sort", "name_asc")
@@ -55,7 +55,7 @@ defmodule DiscoveryApiWeb.SearchController do
     authorized_access_groups =
       case current_user do
         nil -> nil
-        _ -> RaptorService.list_access_groups_by_user(raptor_list_url(), current_user.subject_id)
+        _ -> RaptorService.list_access_groups_by_user(raptor_url(), current_user.subject_id)
       end
 
     case validate_facets(facets) do

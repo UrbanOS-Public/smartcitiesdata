@@ -18,7 +18,6 @@ defmodule RaptorWeb.AuthorizeController do
   def is_user_in_access_group?(user_id, dataset_id) do
     user_access_groups = UserAccessGroupRelationStore.get_all_by_user(user_id)
     dataset_access_groups = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
-
     Enum.any?(user_access_groups, fn user_access_group ->
       Enum.member?(dataset_access_groups, user_access_group)
     end)

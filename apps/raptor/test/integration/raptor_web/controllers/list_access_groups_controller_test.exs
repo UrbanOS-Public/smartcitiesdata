@@ -25,6 +25,33 @@ defmodule Raptor.ListAccessGroupsControllerTest do
 
   describe "listAccessGroups" do
 
+    test "returns an empty list of access groups when there are no valid access groups for the given apiKey" do
+      allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
+        return: {:ok, [%{"email_verified" => true, "user_id" => "1701"}]}
+      )
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/listAccessGroups?api_key=fakeApiKey",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"access_groups\":[]}"
+    end
+
+    test "returns a list of access groups when there are access group authorized for the given apiKey" do
+      allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
+        return: {:ok, [%{"email_verified" => true, "user_id" => "1702"}]}
+      )
+      relation = send_user_access_group_associate_event("access_group_id", "1702")
+
+      {:ok, %Tesla.Env{body: body}} =
+        get("/api/listAccessGroups?api_key=fakeApiKey",
+          headers: [{"content-type", "application/json"}]
+        )
+
+      assert body == "{\"access_groups\":[\"access_group_id\"]}"
+    end
+
     test "returns an empty list of access groups when there are no valid access groups for the given user" do
 
       {:ok, %Tesla.Env{body: body}} =
