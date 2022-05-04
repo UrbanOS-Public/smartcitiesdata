@@ -24,7 +24,6 @@ defmodule Raptor.ListAccessGroupsControllerTest do
   getter(:kafka_broker, generic: true)
 
   describe "listAccessGroups" do
-
     test "returns an empty list of access groups when there are no valid access groups for the given apiKey" do
       allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
         return: {:ok, [%{"email_verified" => true, "user_id" => "1701"}]}
@@ -42,6 +41,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
       allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
         return: {:ok, [%{"email_verified" => true, "user_id" => "1702"}]}
       )
+
       relation = send_user_access_group_associate_event("access_group_id", "1702")
 
       {:ok, %Tesla.Env{body: body}} =
@@ -53,7 +53,6 @@ defmodule Raptor.ListAccessGroupsControllerTest do
     end
 
     test "returns an empty list of access groups when there are no valid access groups for the given user" do
-
       {:ok, %Tesla.Env{body: body}} =
         get("/api/listAccessGroups?user_id=124",
           headers: [{"content-type", "application/json"}]
@@ -74,7 +73,6 @@ defmodule Raptor.ListAccessGroupsControllerTest do
     end
 
     test "returns an empty list of access groups when there are no valid access groups for the given dataset" do
-
       {:ok, %Tesla.Env{body: body}} =
         get("/api/listAccessGroups?dataset_id=124",
           headers: [{"content-type", "application/json"}]

@@ -18,6 +18,7 @@ defmodule RaptorWeb.AuthorizeController do
   def is_user_in_access_group?(user_id, dataset_id) do
     user_access_groups = UserAccessGroupRelationStore.get_all_by_user(user_id)
     dataset_access_groups = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
+
     Enum.any?(user_access_groups, fn user_access_group ->
       Enum.member?(dataset_access_groups, user_access_group)
     end)
@@ -62,7 +63,9 @@ defmodule RaptorWeb.AuthorizeController do
     if(is_valid_dataset?(dataset_associated_with_system_name)) do
       if dataset_associated_with_system_name.is_private do
         render(conn, %{
-          is_authorized: is_user_in_org?(auth0_user, dataset_associated_with_system_name.org_id) or is_user_in_access_group?(auth0_user, dataset_associated_with_system_name.dataset_id)
+          is_authorized:
+            is_user_in_org?(auth0_user, dataset_associated_with_system_name.org_id) or
+              is_user_in_access_group?(auth0_user, dataset_associated_with_system_name.dataset_id)
         })
       else
         render(conn, %{is_authorized: true})

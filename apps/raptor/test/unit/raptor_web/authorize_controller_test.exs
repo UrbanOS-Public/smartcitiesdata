@@ -32,7 +32,9 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   @unauthorized_call []
 
   describe "private dataset authorization without api key" do
-    test "returns true when the user has access to the given dataset via an organization", %{conn: conn} do
+    test "returns true when the user has access to the given dataset via an organization", %{
+      conn: conn
+    } do
       system_name = "system__name"
       org_id = "dog_stats"
       user = @authorized_call |> List.first()
@@ -55,7 +57,9 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       assert actual == expected
     end
 
-    test "returns true when the user has access to the given dataset via an access group", %{conn: conn} do
+    test "returns true when the user has access to the given dataset via an access group", %{
+      conn: conn
+    } do
       system_name = "system__name"
       dataset_org_id = "dataset_org"
       dataset_id = "wags"

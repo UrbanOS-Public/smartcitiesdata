@@ -24,7 +24,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
     end
   end
 
-    @doc """
+  @doc """
   Get all organizations from Redis for a specific user
   """
   @spec get_all_by_user(String.t()) :: list(map())
