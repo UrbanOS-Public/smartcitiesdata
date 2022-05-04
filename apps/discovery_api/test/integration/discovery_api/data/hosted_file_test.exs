@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.HostedFileTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   use Properties, otp_app: :discovery_api
 
@@ -20,6 +21,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   getter(:hosted_bucket, generic: true)
 
   setup do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
     Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
     Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
 

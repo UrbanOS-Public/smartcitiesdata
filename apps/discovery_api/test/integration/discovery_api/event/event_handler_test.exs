@@ -25,6 +25,10 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   @instance_name DiscoveryApi.instance_name()
 
+  setup_all do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+  end
+
   describe "#{dataset_update()}" do
     test "updates the dataset in the search index" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})

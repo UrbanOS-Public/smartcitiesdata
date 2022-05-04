@@ -17,6 +17,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
   setup_all do
     Redix.command!(:redix, ["FLUSHALL"])
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
     prestige_session =
       DiscoveryApi.prestige_opts()

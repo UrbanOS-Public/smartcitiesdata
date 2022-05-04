@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.ElasticSearchCase
   use DiscoveryApi.DataCase
   use Properties, otp_app: :discovery_api
@@ -932,6 +933,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
   defp create_dataset(overrides) do
     create_organization(@organization_id_1)
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
     dataset =
       overrides

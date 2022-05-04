@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.PrestoIngrationTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -16,6 +17,8 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
   @moduletag capture_log: true
   test "returns empty list when dataset has no data saved" do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
     organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
@@ -39,6 +42,7 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
 
   @moduletag capture_log: true
   test "returns results for datasets stored in presto" do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
     organization = Helper.create_persisted_organization()
 
     dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
