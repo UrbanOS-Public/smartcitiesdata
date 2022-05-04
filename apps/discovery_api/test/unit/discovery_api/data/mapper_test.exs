@@ -14,7 +14,7 @@ defmodule DiscoveryApi.Data.MapperTest do
 
       organization = DiscoveryApi.Test.Helper.create_schema_organization(%{})
 
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
       %Model{} = result = Mapper.to_data_model(dataset, organization)
 

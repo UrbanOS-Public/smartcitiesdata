@@ -18,7 +18,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   describe "handle_dataset/1" do
     setup do
       clear_saved_models()
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(ResponseCache.invalidate(), return: :ok)
       allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
@@ -95,7 +95,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   describe "data write complete events" do
     setup do
       clear_saved_models()
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       dataset = TDG.create_dataset(%{id: "123"})
       data_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, %DiscoveryApi.Schemas.Organizations.Organization{})
 

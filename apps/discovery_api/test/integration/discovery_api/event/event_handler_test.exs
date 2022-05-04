@@ -27,6 +27,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   describe "#{dataset_update()}" do
     test "updates the dataset in the search index" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       organization = Helper.create_persisted_organization()
 
       dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
@@ -49,7 +50,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   describe "#{dataset_access_group_associate()}" do
     test "updates the dataset with the new access group in the search index" do
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       organization = Helper.create_persisted_organization()
 
       dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
@@ -72,7 +73,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   describe "#{dataset_access_group_disassociate()}" do
     test "removes the access group from the model in the search index" do
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: ["access_group_id"])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: ["access_group_id"]})
       organization = Helper.create_persisted_organization()
 
       dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
@@ -110,6 +111,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     end
 
     test "persisting a model should use information from the organization:update event" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       expected_organization = Helper.create_persisted_organization()
       expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
 

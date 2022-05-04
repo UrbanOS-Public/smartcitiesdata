@@ -23,8 +23,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
     allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
-    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: ["org_id"])
-    allow(RaptorService.list_access_groups_by_user(any(), any()), return: ["org_id"])
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: ["org_id"]})
+    allow(RaptorService.list_groups_by_user(any(), any()), return: %{access_groups: ["org_id"], organizations: []})
     allow(RaptorService.is_authorized(any(), any(), any()), return: true)
 
     model =

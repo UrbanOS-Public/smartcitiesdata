@@ -4,6 +4,7 @@ defmodule RaptorWeb.ListAccessGroupsController do
   alias Raptor.Services.DatasetAccessGroupRelationStore
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Services.Auth0Management
+  alias Raptor.Services.UserOrgAssocStore
   require Logger
 
   plug(:accepts, ["json"])
@@ -16,21 +17,23 @@ defmodule RaptorWeb.ListAccessGroupsController do
 
   def list(conn, %{"user_id" => user_id}) do
     access_groups = UserAccessGroupRelationStore.get_all_by_user(user_id)
-    render(conn, %{access_groups: access_groups})
+    organizations = UserOrgAssocStore.get_all_by_user(user_id)
+    render(conn, %{access_groups: access_groups, organizations: organizations})
   end
 
   def list(conn, %{"api_key" => api_key}) do
     {:ok, users} = Auth0Management.get_users_by_api_key(api_key)
     case length(users) do
       0 ->
-        Logger.warn("No users exist in Auth0 with API key #{api_key}")
-        render(conn, %{access_groups: []})
+        Logger.warn("No users exist in Auth0 with the provided API Key.")
+        render(conn, %{access_groups: [], organizations: []})
       1 ->
         access_groups = List.first(users) |> Map.get("user_id") |> UserAccessGroupRelationStore.get_all_by_user()
-        render(conn, %{access_groups: access_groups})
+        organizations = List.first(users) |> Map.get("user_id") |> UserOrgAssocStore.get_all_by_user()
+        render(conn, %{access_groups: access_groups, organizations: organizations})
       _ ->
-        Logger.warn("Multiple users exist in Auth0 with API Key #{api_key}. This is not permissible.")
-        render(conn, %{access_groups: []})
+        Logger.warn("Multiple users exist in Auth0 with the provided API Key. This is not permissible.")
+        render(conn, %{access_groups: [], organizations: []})
     end
 
   end

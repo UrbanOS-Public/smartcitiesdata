@@ -35,7 +35,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
           headers: [{"content-type", "application/json"}]
         )
 
-      assert body == "{\"access_groups\":[]}"
+      assert body == "{\"access_groups\":[],\"organizations\":[]}"
     end
 
     test "returns a list of access groups when there are access group authorized for the given apiKey" do
@@ -49,7 +49,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
           headers: [{"content-type", "application/json"}]
         )
 
-      assert body == "{\"access_groups\":[\"access_group_id\"]}"
+      assert body == "{\"access_groups\":[\"access_group_id\"],\"organizations\":[]}"
     end
 
     test "returns an empty list of access groups when there are no valid access groups for the given user" do
@@ -59,18 +59,18 @@ defmodule Raptor.ListAccessGroupsControllerTest do
           headers: [{"content-type", "application/json"}]
         )
 
-      assert body == "{\"access_groups\":[]}"
+      assert body == "{\"access_groups\":[],\"organizations\":[]}"
     end
 
     test "returns a list of access groups when there are access group authorized for the given user" do
-      relation = send_user_access_group_associate_event("access_group_id", "123")
+      relation = send_user_access_group_associate_event("access_group_id", "143")
 
       {:ok, %Tesla.Env{body: body}} =
-        get("/api/listAccessGroups?user_id=123",
+        get("/api/listAccessGroups?user_id=143",
           headers: [{"content-type", "application/json"}]
         )
 
-      assert body == "{\"access_groups\":[\"access_group_id\"]}"
+      assert body == "{\"access_groups\":[\"access_group_id\"],\"organizations\":[]}"
     end
 
     test "returns an empty list of access groups when there are no valid access groups for the given dataset" do

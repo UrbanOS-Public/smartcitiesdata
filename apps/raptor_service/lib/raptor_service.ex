@@ -2,15 +2,18 @@ defmodule RaptorService do
   use Properties, otp_app: :raptor_service
   require Logger
 
-  def list_access_groups_by_user(raptor_url, user_id) do
+  def list_groups_by_user(raptor_url, user_id) do
     case HTTPoison.get(list_url_with_user_params(raptor_url, user_id)) do
       {:ok, %{body: body}} ->
-        {:ok, access_groups} = Jason.decode(body)
-        access_groups["access_groups"]
+        {:ok, groups} = Jason.decode(body)
+        %{
+          access_groups: groups["access_groups"],
+          organizations: groups["organizations"]
+        }
 
       error ->
         Logger.error("Raptor failed to retrieve access groups with error: #{inspect(error)}")
-        false
+        raise "Access groups cannot be retrieved for user #{user_id}"
     end
 
   end
@@ -19,23 +22,26 @@ defmodule RaptorService do
     case HTTPoison.get(list_url_with_dataset_params(raptor_url, dataset_id)) do
       {:ok, %{body: body}} ->
         {:ok, access_groups} = Jason.decode(body)
-        access_groups["access_groups"]
+        %{ access_groups: access_groups["access_groups"] }
 
       error ->
         Logger.error("Raptor failed to retrieve access groups with error: #{inspect(error)}")
-        false
+        raise "Access groups cannot be retrieved for dataset #{dataset_id}"
     end
   end
 
-  def list_access_groups_by_api_key(raptor_url, api_key) do
+  def list_groups_by_api_key(raptor_url, api_key) do
     case HTTPoison.get(list_url_with_api_key_params(raptor_url, api_key)) do
       {:ok, %{body: body}} ->
-        {:ok, access_groups} = Jason.decode(body)
-        access_groups["access_groups"]
+        {:ok, groups} = Jason.decode(body)
+        %{
+          access_groups: groups["access_groups"],
+          organizations: groups["organizations"]
+        }
 
       error ->
         Logger.error("Raptor failed to retrieve access groups with error: #{inspect(error)}")
-        false
+        raise "Access groups cannot be retrieved for the provided api key"
     end
   end
 

@@ -111,7 +111,7 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
-         model <- Mapper.to_data_model(dataset, organization) do
+         {:ok, model} <- Mapper.to_data_model(dataset, organization) do
       Elasticsearch.Document.update(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)

@@ -15,50 +15,55 @@ defmodule DiscoveryApi.Data.Mapper do
   Map a `SmartCity.Dataset` to a `DiscoveryApi.Data.Model`
   """
   def to_data_model(%Dataset{id: id, technical: tech, business: biz}, %Organization{} = organization) do
-    access_groups = retrieveAccessGroups(id)
+    case retrieveAccessGroups(id) do
+      {:ok, access_groups} ->
+        {:ok,
+         %Model{
+           id: id,
+           name: tech.dataName,
+           title: biz.dataTitle,
+           keywords: biz.keywords,
+           modifiedDate: biz.modifiedDate,
+           fileTypes: get_file_type(tech.sourceFormat),
+           description: biz.description,
+           schema: tech.schema,
+           systemName: tech.systemName,
+           sourceUrl: tech.sourceUrl,
+           sourceType: tech.sourceType,
+           sourceFormat: tech.sourceFormat,
+           private: tech.private,
+           accessLevel: ternary(tech.private, "non-public", "public"),
+           contactName: biz.contactName,
+           contactEmail: biz.contactEmail,
+           license: ternary(blank?(biz.license) and not tech.private, "http://opendefinition.org/licenses/cc-by/", biz.license),
+           rights: biz.rights,
+           homepage: biz.homepage,
+           spatial: biz.spatial,
+           temporal: biz.temporal,
+           publishFrequency: biz.publishFrequency,
+           conformsToUri: "https://project-open-data.cio.gov/v1.1/schema/",
+           describedByUrl: biz.describedByUrl,
+           describedByMimeType: biz.describedByMimeType,
+           parentDataset: biz.parentDataset,
+           issuedDate: biz.issuedDate,
+           language: biz.language,
+           referenceUrls: biz.referenceUrls,
+           categories: biz.categories,
+           organization: organization.title,
+           organizationDetails: %OrganizationDetails{
+             id: organization.id,
+             orgName: organization.name,
+             orgTitle: organization.title,
+             description: organization.description,
+             logoUrl: organization.logo_url,
+             homepage: organization.homepage
+           },
+           accessGroups: access_groups
+         }}
 
-    %Model{
-      id: id,
-      name: tech.dataName,
-      title: biz.dataTitle,
-      keywords: biz.keywords,
-      modifiedDate: biz.modifiedDate,
-      fileTypes: get_file_type(tech.sourceFormat),
-      description: biz.description,
-      schema: tech.schema,
-      systemName: tech.systemName,
-      sourceUrl: tech.sourceUrl,
-      sourceType: tech.sourceType,
-      sourceFormat: tech.sourceFormat,
-      private: tech.private,
-      accessLevel: ternary(tech.private, "non-public", "public"),
-      contactName: biz.contactName,
-      contactEmail: biz.contactEmail,
-      license: ternary(blank?(biz.license) and not tech.private, "http://opendefinition.org/licenses/cc-by/", biz.license),
-      rights: biz.rights,
-      homepage: biz.homepage,
-      spatial: biz.spatial,
-      temporal: biz.temporal,
-      publishFrequency: biz.publishFrequency,
-      conformsToUri: "https://project-open-data.cio.gov/v1.1/schema/",
-      describedByUrl: biz.describedByUrl,
-      describedByMimeType: biz.describedByMimeType,
-      parentDataset: biz.parentDataset,
-      issuedDate: biz.issuedDate,
-      language: biz.language,
-      referenceUrls: biz.referenceUrls,
-      categories: biz.categories,
-      organization: organization.title,
-      organizationDetails: %OrganizationDetails{
-        id: organization.id,
-        orgName: organization.name,
-        orgTitle: organization.title,
-        description: organization.description,
-        logoUrl: organization.logo_url,
-        homepage: organization.homepage
-      },
-      accessGroups: access_groups
-    }
+      error ->
+        error
+    end
   end
 
   def add_access_group(dataset_model, access_group) do
@@ -70,7 +75,10 @@ defmodule DiscoveryApi.Data.Mapper do
   end
 
   defp retrieveAccessGroups(dataset_id) do
-    RaptorService.list_access_groups_by_dataset(raptor_url(), dataset_id)
+    groups = RaptorService.list_access_groups_by_dataset(raptor_url(), dataset_id)
+    {:ok, groups.access_groups}
+  catch
+    error -> {:error, error}
   end
 
   defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]

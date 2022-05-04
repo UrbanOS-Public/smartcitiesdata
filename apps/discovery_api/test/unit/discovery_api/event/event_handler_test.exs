@@ -109,7 +109,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
         return: {:ok, %DiscoveryApi.Schemas.Organizations.Organization{name: "seriously"}}
       )
 
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
@@ -135,7 +135,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     setup do
       model = Helper.sample_model()
       allow(Brook.get(any(), any(), any()), return: {:ok, model})
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
@@ -162,7 +162,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       model_without_group = Helper.sample_model()
       model = %Model{model_without_group | accessGroups: model_without_group.accessGroups ++ ["group_to_delete"]}
       allow(Brook.get(any(), any(), any()), return: {:ok, model})
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: [])
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
       allow(TableInfoCache.invalidate(), return: :ok)
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)

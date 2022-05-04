@@ -41,18 +41,18 @@ defmodule RaptorServiceTest do
   describe "list_access_groups_by_user/2" do
     test "returns a list of authorized access groups in Raptor" do
       allow(HTTPoison.get(any()),
-        return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"]}"}}
+        return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"], \"organizations\": []}"}}
       )
 
-      assert RaptorService.list_access_groups_by_user("raptor_url", "user_id") == ["group1", "group2"]
+      assert RaptorService.list_groups_by_user("raptor_url", "user_id") == %{access_groups: ["group1", "group2"], organizations: []}
     end
 
     test "returns an empty list if there are no access groups authorized for the given user" do
       allow(HTTPoison.get(any()),
-        return: {:ok, %{body: "{\"access_groups\":[]}"}}
+        return: {:ok, %{body: "{\"access_groups\":[], \"organizations\": []}"}}
       )
 
-      assert RaptorService.list_access_groups_by_user("raptor_url", "user_id") == []
+      assert RaptorService.list_groups_by_user("raptor_url", "user_id") == %{access_groups: [], organizations: []}
     end
   end
 
@@ -62,7 +62,7 @@ defmodule RaptorServiceTest do
         return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"]}"}}
       )
 
-      assert RaptorService.list_access_groups_by_dataset("raptor_url", "dataset_id") == ["group1", "group2"]
+      assert RaptorService.list_access_groups_by_dataset("raptor_url", "dataset_id") == %{access_groups: ["group1", "group2"]}
     end
 
     test "returns an empty list if there are no access groups authorized for the given dataset" do
@@ -70,25 +70,25 @@ defmodule RaptorServiceTest do
         return: {:ok, %{body: "{\"access_groups\":[]}"}}
       )
 
-      assert RaptorService.list_access_groups_by_dataset("raptor_url", "dataset_id") == []
+      assert RaptorService.list_access_groups_by_dataset("raptor_url", "dataset_id") == %{access_groups: []}
     end
   end
 
   describe "list_access_groups_by_api_key/2" do
     test "returns a list of authorized access groups in Raptor" do
       allow(HTTPoison.get(any()),
-        return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"]}"}}
+        return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"], \"organizations\": []}"}}
       )
 
-      assert RaptorService.list_access_groups_by_api_key("raptor_url", "apiKey") == ["group1", "group2"]
+      assert RaptorService.list_groups_by_api_key("raptor_url", "apiKey") == %{access_groups: ["group1", "group2"], organizations: []}
     end
 
     test "returns an empty list if there are no access groups authorized for the given dataset" do
       allow(HTTPoison.get(any()),
-        return: {:ok, %{body: "{\"access_groups\":[]}"}}
+        return: {:ok, %{body: "{\"access_groups\":[], \"organizations\":[]}"}}
       )
 
-      assert RaptorService.list_access_groups_by_api_key("raptor_url", "apiKey") == []
+      assert RaptorService.list_groups_by_api_key("raptor_url", "apiKey") == %{access_groups: [], organizations: []}
     end
   end
 end
