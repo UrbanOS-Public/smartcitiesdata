@@ -451,14 +451,14 @@ defmodule ValkyrieTest do
           technical: %{
             schema: [
               %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "string"},
+              %{name: "luckyNumbers", type: "list", itemType: "string"}
             ]
           }
         )
 
       payload = %{
         "name" => "Pete",
-        "luckyNumbers" => [[-83.01347, 42.38928],[-83.01347, 42.38928],[-83.01347, 42.38928]]
+        "luckyNumbers" => [[-83.01347, 42.38928], [-83.01347, 42.38928], [-83.01347, 42.38928]]
       }
 
       result = Valkyrie.standardize_data(dataset, payload)
