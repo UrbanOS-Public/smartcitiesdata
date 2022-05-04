@@ -110,7 +110,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       )
 
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
-      allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: DiscoveryApi.Test.Helper.sample_model())
+      allow(DiscoveryApi.Data.Mapper.to_data_model(any(), any()), return: {:ok, DiscoveryApi.Test.Helper.sample_model()})
       allow(RecommendationEngine.save(any()), return: :seriously_whatever)
       allow(DataJsonService.delete_data_json(), return: :ok)
       allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})

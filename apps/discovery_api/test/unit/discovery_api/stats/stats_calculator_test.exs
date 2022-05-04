@@ -142,28 +142,34 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
   end
 
   defp mock_non_remote_dataset() do
-    TDG.create_dataset(%{
-      id: @dataset_id,
-      technical: %{
-        sourceType: "ingest",
-        sourceFormat: "gtfs",
-        schema: [
-          %{name: "name", required: false, type: "string"},
-          %{name: "age", required: false, type: "int"}
-        ]
-      }
-    })
-    |> Mapper.to_data_model(@organization)
+    {:ok, data_model} =
+      TDG.create_dataset(%{
+        id: @dataset_id,
+        technical: %{
+          sourceType: "ingest",
+          sourceFormat: "gtfs",
+          schema: [
+            %{name: "name", required: false, type: "string"},
+            %{name: "age", required: false, type: "int"}
+          ]
+        }
+      })
+      |> Mapper.to_data_model(@organization)
+
+    data_model
   end
 
   defp mock_remote_dataset() do
-    TDG.create_dataset(
-      id: @dataset_id,
-      technical: %{
-        sourceType: "remote",
-        sourceFormat: "gtfs"
-      }
-    )
-    |> Mapper.to_data_model(@organization)
+    {:ok, data_model} =
+      TDG.create_dataset(
+        id: @dataset_id,
+        technical: %{
+          sourceType: "remote",
+          sourceFormat: "gtfs"
+        }
+      )
+      |> Mapper.to_data_model(@organization)
+
+    data_model
   end
 end

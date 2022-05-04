@@ -97,7 +97,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       clear_saved_models()
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       dataset = TDG.create_dataset(%{id: "123"})
-      data_model = DiscoveryApi.Data.Mapper.to_data_model(dataset, %DiscoveryApi.Schemas.Organizations.Organization{})
+      {:ok, data_model} = DiscoveryApi.Data.Mapper.to_data_model(dataset, %DiscoveryApi.Schemas.Organizations.Organization{})
 
       Brook.Test.with_event(@instance_name, fn ->
         Brook.ViewState.merge(:models, data_model.id, data_model)

@@ -16,7 +16,7 @@ defmodule DiscoveryApi.Data.MapperTest do
 
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
-      %Model{} = result = Mapper.to_data_model(dataset, organization)
+      {:ok, %Model{}} = {:ok, result} = Mapper.to_data_model(dataset, organization)
 
       assert get_in(result, field) == value
 
