@@ -443,6 +443,28 @@ defmodule ValkyrieTest do
 
       assert {:error, %{"geometry" => :invalid_type}} == Valkyrie.standardize_data(dataset, payload)
     end
+
+    test "returns error if cannot parse list of lists" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "luckyNumbers", type: "list", itemType: "string"}
+            ]
+          }
+        )
+
+      payload = %{
+        "name" => "Pete",
+        "luckyNumbers" => [[-83.01347, 42.38928], [-83.01347, 42.38928], [-83.01347, 42.38928]]
+      }
+
+      result = Valkyrie.standardize_data(dataset, payload)
+
+      assert {:error, %{"luckyNumbers" => %{unhandled_standardization_exception: %ArgumentError{}}}} = result
+    end
   end
 
   describe "json is converted" do
