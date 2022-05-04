@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.RecommendationEngineTest do
   use ExUnit.Case
+  use Placebo
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Test.Helper
@@ -11,6 +12,8 @@ defmodule DiscoveryApi.RecommendationEngineTest do
   @instance_name DiscoveryApi.instance_name()
 
   test "dataset recommendations" do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
     dataset_to_get_recommendations_for =
       TDG.create_dataset(%{
         technical: %{
