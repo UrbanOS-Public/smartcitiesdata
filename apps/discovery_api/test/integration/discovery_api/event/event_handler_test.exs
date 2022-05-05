@@ -27,6 +27,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   setup_all do
     allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+    :ok
   end
 
   describe "#{dataset_update()}" do
