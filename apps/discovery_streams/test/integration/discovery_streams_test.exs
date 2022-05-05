@@ -14,7 +14,6 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   @unauthorized_private_system_name "private__data"
 
   setup do
-    allow(RaptorService.is_authorized(any(), any(), @unauthorized_private_system_name), return: false)
     allow(RaptorService.is_authorized(any(), any(), any()), return: true)
 
     :ok
@@ -69,6 +68,8 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "doesnt broadcast private datasets if unauthorized" do
+    allow(RaptorService.is_authorized(any(), any(), any()), return: false)
+
     private_dataset =
       TDG.create_dataset(
         id: Faker.UUID.v4(),
