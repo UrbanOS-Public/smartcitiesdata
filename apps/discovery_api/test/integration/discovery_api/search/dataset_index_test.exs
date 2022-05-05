@@ -823,6 +823,12 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   end
 
   describe "end to end search tests" do
+    setup do
+      allow(RaptorService.list_groups_by_api_key(any(), any()), return: %{access_groups: [], organizations: [@organization_id_1]})
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      :ok
+    end
+
     test "should handle a complex set of search params" do
       create_dataset(%{id: "1", business: %{dataTitle: "Zoo", keywords: ["Fruit"]}, technical: %{sourceType: "ingest"}})
       create_dataset(%{id: "2", business: %{dataTitle: "Alphabet"}})
@@ -933,7 +939,6 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
   defp create_dataset(overrides) do
     create_organization(@organization_id_1)
-    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
     dataset =
       overrides
