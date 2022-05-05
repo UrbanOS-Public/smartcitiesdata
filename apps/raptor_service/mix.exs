@@ -4,7 +4,7 @@ defmodule RaptorService.MixProject do
   def project do
     [
       app: :raptor_service,
-      version: "0.1.1",
+      version: "0.1.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -30,7 +30,7 @@ defmodule RaptorService.MixProject do
       {:httpoison, "~> 1.5"},
       {:jason, "~> 1.2", override: true},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:properties, in_umbrella: true},
+      {:properties, in_umbrella: true}
     ]
   end
 end
