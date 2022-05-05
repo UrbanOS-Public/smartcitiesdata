@@ -1,5 +1,6 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
 
@@ -11,9 +12,10 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   @organization_name "organization_alpha"
 
   setup_all do
-    Helper.create_persisted_organization(%{orgName: @organization_name})
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
-    {table_name, dataset_id} = Helper.create_persisted_dataset("test_data", "test_data", @organization_name)
+    Helper.create_persisted_organization(%{orgName: @organization_name})
+    {table_name, dataset_id} = Helper.create_persisted_dataset("test_dataset_id", "test_dataset_name", @organization_name)
 
     %{dataset_table: table_name, dataset_id: dataset_id}
   end
