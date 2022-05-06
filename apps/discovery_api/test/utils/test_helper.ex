@@ -15,6 +15,7 @@ defmodule DiscoveryApi.Test.Helper do
   def sample_model(values \\ %{}) do
     %Model{
       id: Faker.UUID.v4(),
+      accessGroups: [],
       title: Faker.Lorem.word(),
       keywords: [Faker.Lorem.word(), Faker.Lorem.word()],
       organization: Faker.Lorem.word(),

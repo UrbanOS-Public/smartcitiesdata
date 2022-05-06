@@ -65,6 +65,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
       allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
 
       conn

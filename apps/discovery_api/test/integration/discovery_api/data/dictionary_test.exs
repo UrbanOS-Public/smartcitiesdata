@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.DictionaryTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -25,6 +26,7 @@ defmodule DiscoveryApi.Data.DictionaryTest do
     end
 
     test "returns schema for provided dataset id" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       schema = [%{name: "column_name", description: "column description", type: "string"}]
       organization = Helper.create_persisted_organization()
 

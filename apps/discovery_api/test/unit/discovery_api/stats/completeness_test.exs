@@ -6,6 +6,8 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   alias DiscoveryApi.Stats.Completeness
 
   setup do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
     {:ok,
      model: DataHelper.create_model(),
      simple_model: DataHelper.create_simple_model(),

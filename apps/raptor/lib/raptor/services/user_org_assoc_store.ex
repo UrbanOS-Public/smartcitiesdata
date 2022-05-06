@@ -25,6 +25,23 @@ defmodule Raptor.Services.UserOrgAssocStore do
   end
 
   @doc """
+  Get all organizations from Redis for a specific user
+  """
+  @spec get_all_by_user(String.t()) :: list(map())
+  def get_all_by_user(user_id) do
+    case Redix.command!(@redix, ["KEYS", @namespace <> user_id <> ":*"]) do
+      [] ->
+        []
+
+      keys ->
+        keys
+        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
+        |> Enum.map(&from_json/1)
+        |> Enum.map(fn relation -> relation.org_id end)
+    end
+  end
+
+  @doc """
   Get a given user-org association
   """
   @spec get(String.t(), String.t()) :: map()

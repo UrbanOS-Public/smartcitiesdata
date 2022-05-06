@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   import SmartCity.TestHelper
   alias SmartCity.TestDataGenerator, as: TDG
@@ -21,6 +22,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
   @moduletag capture_log: true
   describe "produce_completeness_stats/0" do
     test "Adds stats entries for dataset to redis" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       organization = Helper.create_persisted_organization()
 
       dataset1 =

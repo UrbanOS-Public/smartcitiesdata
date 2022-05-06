@@ -13,11 +13,13 @@ defmodule DiscoveryApi.Event.EventHandler do
       data_write_complete: 0,
       dataset_delete: 0,
       dataset_query: 0,
-      user_login: 0
+      user_login: 0,
+      dataset_access_group_associate: 0,
+      dataset_access_group_disassociate: 0
     ]
 
   require Logger
-  alias SmartCity.{Organization, UserOrganizationAssociate, UserOrganizationDisassociate, Dataset}
+  alias SmartCity.{Organization, UserOrganizationAssociate, UserOrganizationDisassociate, Dataset, DatasetAccessGroupRelation}
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
@@ -109,7 +111,7 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
-         model <- Mapper.to_data_model(dataset, organization) do
+         {:ok, model} <- Mapper.to_data_model(dataset, organization) do
       Elasticsearch.Document.update(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
@@ -120,6 +122,64 @@ defmodule DiscoveryApi.Event.EventHandler do
     else
       {:error, reason} ->
         Logger.error("Unable to process message `#{inspect(dataset)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
+        :discard
+    end
+  end
+
+  def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
+    Logger.debug(fn ->
+      "Handling dataset-access-group association: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
+    end)
+
+    dataset_access_group_associate()
+    |> add_event_count(author, relation.dataset_id)
+
+    with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
+         model <- Mapper.add_access_group(dataset, relation.access_group_id) do
+      Elasticsearch.Document.update(model)
+
+      Logger.debug(fn ->
+        "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{
+          relation.access_group_id
+        }`"
+      end)
+
+      merge(:models, model.id, model)
+      clear_caches()
+
+      :discard
+    else
+      {:error, reason} ->
+        Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
+        :discard
+    end
+  end
+
+  def handle_event(%Brook.Event{type: dataset_access_group_disassociate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
+    Logger.debug(fn ->
+      "Handling dataset-access-group disassociation: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
+    end)
+
+    dataset_access_group_disassociate()
+    |> add_event_count(author, relation.dataset_id)
+
+    with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
+         model <- Mapper.remove_access_group(dataset, relation.access_group_id) do
+      Elasticsearch.Document.update(model)
+
+      Logger.debug(fn ->
+        "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
+          relation.access_group_id
+        }`"
+      end)
+
+      merge(:models, model.id, model)
+      clear_caches()
+
+      :discard
+    else
+      {:error, reason} ->
+        Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
         :discard
     end
   end

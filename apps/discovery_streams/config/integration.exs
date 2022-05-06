@@ -4,7 +4,7 @@ host = "127.0.0.1"
 endpoints = [{String.to_atom(host), 9092}]
 
 config :discovery_streams,
-  raptor_url: "http://localhost:4002/api/authorize"
+  raptor_url: "http://localhost:4002/api"
 
 config :discovery_streams,
   divo: [

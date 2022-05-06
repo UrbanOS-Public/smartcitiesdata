@@ -13,24 +13,9 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   @instance_name DiscoveryStreams.instance_name()
   @unauthorized_private_system_name "private__data"
 
-  setup_all do
-    bypass = Bypass.open()
+  setup do
+    allow(RaptorService.is_authorized(any(), any(), any()), return: true)
 
-    Bypass.stub(bypass, "GET", "/api/authorize", fn conn ->
-      system_name =
-        conn
-        |> Plug.Conn.fetch_query_params()
-        |> Map.get(:query_params)
-        |> Map.get("systemName")
-
-      if system_name == @unauthorized_private_system_name do
-        Plug.Conn.resp(conn, 200, "{\"is_authorized\":false}")
-      else
-        Plug.Conn.resp(conn, 200, "{\"is_authorized\":true}")
-      end
-    end)
-
-    Application.put_env(:discovery_streams, :raptor_url, "http://localhost:#{bypass.port}/api/authorize")
     :ok
   end
 
@@ -83,6 +68,8 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "doesnt broadcast private datasets if unauthorized" do
+    allow(RaptorService.is_authorized(any(), any(), any()), return: false)
+
     private_dataset =
       TDG.create_dataset(
         id: Faker.UUID.v4(),

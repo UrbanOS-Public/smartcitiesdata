@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.VisualizationMigratorTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -11,6 +12,7 @@ defmodule DiscoveryApi.Data.VisualizationMigratorTest do
 
   describe "VisualizationMigrator" do
     test "migrates visualizations that need it" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {:ok, owner} = Users.create_or_update("some|person", %{email: "bob@example.com", name: "Bob"})
       {table, id} = Helper.create_persisted_dataset("123OLD", "old_dataset", "old_org")
 

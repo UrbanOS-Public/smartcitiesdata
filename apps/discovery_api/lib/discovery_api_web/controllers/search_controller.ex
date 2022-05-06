@@ -1,19 +1,23 @@
 require Logger
 
 defmodule DiscoveryApiWeb.SearchController do
+  use Properties, otp_app: :discovery_api
   use DiscoveryApiWeb, :controller
   alias DiscoveryApiWeb.SearchView
   alias DiscoveryApi.Search.Elasticsearch.Search
 
   plug(:accepts, SearchView.accepted_formats())
 
+  getter(:raptor_url, generic: true)
+
   def advanced_search(conn, params) do
     sort = Map.get(params, "sort", "name_asc")
     current_user = conn.assigns.current_user
+    api_key = Plug.Conn.get_req_header(conn, "api_key")
 
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
-         {:ok, search_opts} <- build_search_opts(params, current_user, sort, offset, limit),
+         {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit),
          {:ok, models, facets, total} <- Search.search(search_opts) do
       render(
         conn,
@@ -38,16 +42,23 @@ defmodule DiscoveryApiWeb.SearchController do
       reraise e, __STACKTRACE__
   end
 
-  defp build_search_opts(params, current_user, sort, offset, limit) do
+  defp get_groups(_current_user = nil, _api_key = nil), do: %{access_groups: [], organizations: []}
+
+  defp get_groups(_current_user = nil, api_key) do
+    RaptorService.list_groups_by_api_key(raptor_url(), api_key)
+  end
+
+  defp get_groups(current_user, _api_key) do
+    RaptorService.list_groups_by_user(raptor_url(), current_user.subject_id)
+  end
+
+  defp build_search_opts(params, current_user, api_key, sort, offset, limit) do
     query = Map.get(params, "query", "")
     facets = Map.get(params, "facets", %{})
     api_accessible = parse_api_accessible(params)
-
-    authorized_organization_ids =
-      case current_user do
-        nil -> nil
-        _ -> Enum.map(current_user.organizations, fn organization -> organization.id end)
-      end
+    groups = get_groups(current_user, api_key)
+    authorized_organization_ids = groups.organizations
+    authorized_access_groups = groups.access_groups
 
     case validate_facets(facets) do
       {:ok, filter_facets} ->
@@ -58,6 +69,7 @@ defmodule DiscoveryApiWeb.SearchController do
             keywords: Map.get(filter_facets, :keywords),
             org_title: Map.get(filter_facets, :organization, []) |> List.first(),
             authorized_organization_ids: authorized_organization_ids,
+            authorized_access_groups: authorized_access_groups,
             sort: sort,
             offset: offset,
             limit: limit

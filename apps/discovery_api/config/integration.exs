@@ -19,7 +19,7 @@ config :discovery_api,
   hsts_enabled: false
 
 config :discovery_api,
-  raptor_url: "http://localhost:4002/api/authorize"
+  raptor_url: "http://localhost:4002/api"
 
 config :redix,
   args: redix_args

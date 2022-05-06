@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Schemas.VisualizationsTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
 
@@ -68,6 +69,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "public_dataset_a", "public_org")
       query = "select * from #{table}"
       title = "My first visualization"
@@ -81,6 +83,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123AB", "public_dataset_b", "public_org")
       query = "select * from #{table} union all select * from #{table}"
       title = "My first visualization"
@@ -94,7 +97,9 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "given an invalid query, it is created with an empty list of datasets and is flagged invalid" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, _id} = Helper.create_persisted_dataset("123AC", "public_dataset_c", "public_org")
+
       query = "select * from INVALID #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
@@ -107,6 +112,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     end
 
     test "given a query containing a dataset the user is not authorized to query, it is created with an empty list of datasets and is flagged invalid" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, _id} = Helper.create_persisted_dataset("123AD", "private_dataset_d", "private_org", true)
       query = "select * from #{table}"
       title = "My first visualization"
@@ -249,6 +255,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       owner: _owner,
       authorized_conn: authorized_conn
     } do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})

@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   use ExUnit.Case
   use DiscoveryApi.DataCase
   use DiscoveryApiWeb.Test.AuthConnCase.IntegrationCase
+  use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
@@ -16,6 +17,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
   setup_all do
     Redix.command!(:redix, ["FLUSHALL"])
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
     prestige_session =
       DiscoveryApi.prestige_opts()
@@ -240,6 +242,8 @@ defmodule DiscoveryApi.Data.QueryTest do
       private_table: private_table,
       authorized_conn: authorized_conn
     } do
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+
       request_body = """
         WITH public_one AS (select id from #{public_table}), private_one AS (select id from #{private_table})
         SELECT * FROM public_one JOIN private_one ON public_one.id = private_one.id

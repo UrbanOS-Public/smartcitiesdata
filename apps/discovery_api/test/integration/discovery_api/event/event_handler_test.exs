@@ -3,9 +3,19 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   use DiscoveryApi.DataCase
   use DiscoveryApi.ElasticSearchCase
+  use Placebo
 
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [dataset_update: 0, user_organization_disassociate: 0, user_login: 0]
+
+  import SmartCity.Event,
+    only: [
+      dataset_update: 0,
+      user_organization_disassociate: 0,
+      user_login: 0,
+      dataset_access_group_associate: 0,
+      dataset_access_group_disassociate: 0
+    ]
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
@@ -15,8 +25,14 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
   @instance_name DiscoveryApi.instance_name()
 
+  setup_all do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+    :ok
+  end
+
   describe "#{dataset_update()}" do
     test "updates the dataset in the search index" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       organization = Helper.create_persisted_organization()
 
       dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
@@ -33,6 +49,52 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.Document.get(dataset_id)
+      end)
+    end
+  end
+
+  describe "#{dataset_access_group_associate()}" do
+    test "updates the dataset with the new access group in the search index" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      organization = Helper.create_persisted_organization()
+
+      dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+      dataset_id = dataset.id
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
+      end)
+
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "access_group_id"})
+      Brook.Event.send(@instance_name, dataset_access_group_associate(), __MODULE__, relation)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id, accessGroups: ["access_group_id"]}} = Elasticsearch.Document.get(dataset_id)
+      end)
+    end
+  end
+
+  describe "#{dataset_access_group_disassociate()}" do
+    test "removes the access group from the model in the search index" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: ["access_group_id"]})
+      organization = Helper.create_persisted_organization()
+
+      dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+      dataset_id = dataset.id
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id}} = Elasticsearch.Document.get(dataset_id)
+      end)
+
+      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: dataset.id, access_group_id: "access_group_id"})
+      Brook.Event.send(@instance_name, dataset_access_group_disassociate(), __MODULE__, relation)
+
+      eventually(fn ->
+        assert {:ok, %Model{id: ^dataset_id, accessGroups: []}} = Elasticsearch.Document.get(dataset_id)
       end)
     end
   end
@@ -54,6 +116,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     end
 
     test "persisting a model should use information from the organization:update event" do
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       expected_organization = Helper.create_persisted_organization()
       expected_registry_dataset = TDG.create_dataset(%{technical: %{orgId: expected_organization.id}})
 

@@ -138,7 +138,9 @@ config :discovery_api, :brook,
         "user:organization:associate" => 100,
         "user:organization:disassociate" => 100,
         "dataset:delete" => 100,
-        "user:login" => 100
+        "user:login" => 100,
+        "dataset:access_group:associate" => 100,
+        "dataset:access_group:disassociate" => 100
       }
     ]
   ]

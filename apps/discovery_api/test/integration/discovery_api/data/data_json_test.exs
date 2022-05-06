@@ -1,5 +1,6 @@
 defmodule DiscoveryApi.Data.DataJsonTest do
   use ExUnit.Case
+  use Placebo
   use DiscoveryApi.DataCase
 
   import SmartCity.Event, only: [dataset_update: 0]
@@ -13,6 +14,8 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   @instance_name DiscoveryApi.instance_name()
 
   setup_all do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
     Redix.command!(:redix, ["FLUSHALL"])
 
     on_exit(fn ->
@@ -42,6 +45,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   end
 
   test "Properly formatted metadata is returned after consuming registry messages" do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
     actual = get_map_from_url("http://localhost:4000/api/v1/data_json")
     schema = get_schema_from_path("./test/integration/schemas/catalog.json")
 
@@ -56,6 +60,7 @@ defmodule DiscoveryApi.Data.DataJsonTest do
   end
 
   test "Returns an additional dataset when we add one via an update", %{organization_id: organization_id} do
+    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
     additional_dataset = TDG.create_dataset(%{technical: %{orgId: organization_id}})
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, additional_dataset)
 

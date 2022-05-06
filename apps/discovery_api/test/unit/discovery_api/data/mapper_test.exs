@@ -2,6 +2,7 @@ defmodule DiscoveryApi.Data.MapperTest do
   use ExUnit.Case
   use Placebo
   alias DiscoveryApi.Data.{Mapper, Model}
+  alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
 
@@ -13,7 +14,9 @@ defmodule DiscoveryApi.Data.MapperTest do
 
       organization = DiscoveryApi.Test.Helper.create_schema_organization(%{})
 
-      %Model{} = result = Mapper.to_data_model(dataset, organization)
+      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+
+      {:ok, %Model{}} = {:ok, result} = Mapper.to_data_model(dataset, organization)
 
       assert get_in(result, field) == value
 
@@ -31,6 +34,25 @@ defmodule DiscoveryApi.Data.MapperTest do
         [%{technical: %{sourceFormat: "application/gtfs+protobuf"}}, [:fileTypes], ["JSON"]],
         [%{technical: %{sourceFormat: "text/csv"}}, [:fileTypes], ["CSV"]]
       ])
+    end
+  end
+
+  describe "add_access_group/2" do
+    test "an access group can be successfully added to an empty list of access groups" do
+      model = Mapper.add_access_group(Helper.sample_model(), "some_id")
+      assert model.accessGroups == ["some_id"]
+    end
+
+    test "an access group can be successfully added to an existing list of access groups" do
+      model = Mapper.add_access_group(Helper.sample_model(%{accessGroups: ["previous_id"]}), "some_id")
+      assert model.accessGroups == ["previous_id", "some_id"]
+    end
+  end
+
+  describe "remove_access_group/2" do
+    test "an access group can be successfully removed from an existing list of access groups" do
+      model = Mapper.remove_access_group(Helper.sample_model(%{accessGroups: ["id", "id_to_remove"]}), "id_to_remove")
+      assert model.accessGroups == ["id"]
     end
   end
 end

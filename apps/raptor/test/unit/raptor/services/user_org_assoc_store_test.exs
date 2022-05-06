@@ -93,6 +93,37 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
     end
   end
 
+  describe "get_all_by_user/1" do
+    test "an empty array is returned when there are no entries in redis matching the userId" do
+      user_id = "picard"
+      key = "#{user_id}:*"
+      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]), return: [])
+
+      response = UserOrgAssocStore.get_all_by_user(user_id)
+
+      assert [] == response
+    end
+
+    test "a Raptor user org assoc is returned when there is one entry in redis matching the user id " do
+      user_id = "picard"
+      key = "#{user_id}:*"
+
+      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
+        return: ["raptor:user_org_assoc:picard:enterprise"]
+      )
+
+      allow(Redix.command!(@redix, ["MGET", "raptor:user_org_assoc:picard:enterprise"]),
+        return: [
+          "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
+        ]
+      )
+
+      actual_response = UserOrgAssocStore.get_all_by_user(user_id)
+
+      assert actual_response == ["enterprise"]
+    end
+  end
+
   describe "persist/1" do
     test "Redis is successfully called with a user org assoc entry" do
       user_id = "picard"
