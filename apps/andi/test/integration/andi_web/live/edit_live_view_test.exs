@@ -10,13 +10,16 @@ defmodule AndiWeb.EditLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.Event
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
-
   import FlokiHelpers, only: [get_attributes: 3, get_text: 2, find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
+  alias Andi.Schemas.AuditEvent
+  alias Andi.Schemas.AuditEvents
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -566,6 +569,7 @@ defmodule AndiWeb.EditLiveViewTest do
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
+      Brook.Event.send(:andi, dataset_update(), :test, smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -573,6 +577,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       eventually(fn ->
         assert nil == Datasets.get(dataset.id)
+        assert [%AuditEvent{event: dataset}] = AuditEvents.get_all_of_type(dataset_delete())
       end)
     end
   end
