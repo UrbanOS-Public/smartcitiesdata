@@ -168,6 +168,7 @@ defmodule AndiWeb.EditLiveViewTest do
       eventually(
         fn ->
           assert %{submission_status: :published} = Datasets.get(dataset.id)
+          assert [%AuditEvent{event: smrt_dataset}] = AuditEvents.get_all_of_type(dataset_update())
         end,
         10,
         1_000
