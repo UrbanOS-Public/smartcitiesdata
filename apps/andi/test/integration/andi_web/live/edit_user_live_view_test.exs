@@ -7,11 +7,14 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   use Placebo
   import Phoenix.LiveViewTest
-  import SmartCity.Event, only: [
-    organization_update: 0,
-    user_organization_associate: 0,
-    user_organization_disassociate: 0
-  ]
+
+  import SmartCity.Event,
+    only: [
+      organization_update: 0,
+      user_organization_associate: 0,
+      user_organization_disassociate: 0
+    ]
+
   import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
@@ -124,7 +127,9 @@ defmodule AndiWeb.EditUserLiveViewTest do
         user = User.get_by_subject_id(user.subject_id)
 
         assert [%{id: org_id}] = user.organizations
-        assert [ %AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org_id}} | _ ] = AuditEvents.get_all_of_type(user_organization_associate())
+
+        assert [%AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org_id}} | _] =
+                 AuditEvents.get_all_of_type(user_organization_associate())
       end)
     end
 
@@ -158,7 +163,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
         assert [%{id: org_id}] = user.organizations
 
-        assert [ %AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org2_id}} | _ ] = AuditEvents.get_all_of_type(user_organization_disassociate())
+        assert [%AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org2_id}} | _] =
+                 AuditEvents.get_all_of_type(user_organization_disassociate())
       end)
     end
   end

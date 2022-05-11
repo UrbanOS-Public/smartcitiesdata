@@ -50,8 +50,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         group = AccessGroups.get(uuid)
         assert group != nil
         assert group.name == new_access_group_name
+
         assert [%Andi.Schemas.AuditEvent{event: %{"id" => ^uuid, "name" => ^new_access_group_name}} | _] =
-          Andi.Schemas.AuditEvents.get_all_of_type("access_group:update")
+                 Andi.Schemas.AuditEvents.get_all_of_type("access_group:update")
       end)
     end
 
@@ -436,8 +437,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
         assert [%Dataset{id: ^dataset_id}] = access_group.datasets
         access_group_id = access_group.id
+
         assert [%Andi.Schemas.AuditEvent{event: %{"dataset_id" => ^dataset_id, "access_group_id" => ^access_group_id}} | _] =
-          Andi.Schemas.AuditEvents.get_all_of_type(dataset_access_group_associate())
+                 Andi.Schemas.AuditEvents.get_all_of_type(dataset_access_group_associate())
       end)
     end
   end
@@ -484,8 +486,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
         assert [%Andi.Schemas.User{id: ^user_id}] = access_group.users
         access_group_id = access_group.id
+
         assert [%Andi.Schemas.AuditEvent{event: %{"subject_id" => ^user_one_subject_id, "access_group_id" => ^access_group_id}} | _] =
-          Andi.Schemas.AuditEvents.get_all_of_type(user_access_group_associate())
+                 Andi.Schemas.AuditEvents.get_all_of_type(user_access_group_associate())
       end)
     end
   end
@@ -539,8 +542,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:datasets)
         assert [] = access_group.datasets
         access_group_id = access_group.id
+
         assert [%Andi.Schemas.AuditEvent{event: %{"dataset_id" => ^dataset_id, "access_group_id" => ^access_group_id}} | _] =
-          Andi.Schemas.AuditEvents.get_all_of_type(dataset_access_group_disassociate())
+                 Andi.Schemas.AuditEvents.get_all_of_type(dataset_access_group_disassociate())
       end)
     end
 
@@ -659,8 +663,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
         access_group = AccessGroups.get(access_group.id) |> Andi.Repo.preload(:users)
         assert [] = access_group.users
         access_group_id = access_group.id
+
         assert [%Andi.Schemas.AuditEvent{event: %{"subject_id" => ^user_one_subject_id, "access_group_id" => ^access_group_id}} | _] =
-          Andi.Schemas.AuditEvents.get_all_of_type(user_access_group_disassociate())
+                 Andi.Schemas.AuditEvents.get_all_of_type(user_access_group_disassociate())
       end)
     end
 
