@@ -212,7 +212,7 @@ $component-header-height: 7.5rem;
 
 
 .unsaved-changes-modal--visible {
-    @include modal-wrapper()
+    @include modal-wrapper();
 }
 
 .unsaved-changes-modal--hidden {
@@ -221,7 +221,7 @@ $component-header-height: 7.5rem;
 
 .publish-success-modal--visible {
     text-align: center;
-    @include modal-wrapper()
+    @include modal-wrapper();
 
     p {
         color: green;
