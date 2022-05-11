@@ -153,9 +153,12 @@ defmodule AndiWeb.EditUserLiveViewTest do
       send(view.pid, {:disassociate_org, org2_id})
 
       eventually(fn ->
-        user = User.get_by_subject_id(user.subject_id)
+        user_subject_id = user.subject_id
+        user = User.get_by_subject_id(user_subject_id)
 
         assert [%{id: org_id}] = user.organizations
+
+        assert [ %AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org2_id}} | _ ] = AuditEvents.get_all_of_type(user_organization_disassociate())
       end)
     end
   end
