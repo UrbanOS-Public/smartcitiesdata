@@ -430,18 +430,14 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(view, :publish)
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      publish_success_modal_should_be_visible(view)
 
       eventually(
         fn ->
           {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
           assert dataset_sent != nil
           assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-        end,
-        2000,
-        50
+        end
       )
     end
 
@@ -461,11 +457,10 @@ defmodule AndiWeb.EditLiveViewTest do
 
       render_change(view, :publish)
 
+      publish_success_modal_should_be_visible(view)
+
       eventually(
         fn ->
-          html = render(view)
-          refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
           {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
           assert dataset_sent != nil
           assert dataset_sent.technical.extractSteps != []
@@ -529,8 +524,8 @@ defmodule AndiWeb.EditLiveViewTest do
           assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
           assert dataset_http_extract_step["assigns"] != nil
         end,
-        1000,
-        50
+        10000,
+        5
       )
     end
 
@@ -567,10 +562,11 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "delete dataset" do
     test "dataset is deleted after confirmation", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      Brook.Event.send(:andi, dataset_update(), :test, smrt_dataset)
+      dataset = TDG.create_dataset(%{})
+      Brook.Event.send(:andi, dataset_update(), :test, dataset)
+      eventually fn ->
+        assert nil != Datasets.get(dataset.id)
+      end
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -663,6 +659,13 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, "#reject-button"))
       assert Enum.empty?(find_elements(html, "#approve-button"))
     end
+  end
+
+  defp publish_success_modal_should_be_visible(view) do
+    eventually(fn ->
+        html = render(view)
+        assert not Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      end, 5000, 10)
   end
 
   defp get_extract_step_id(dataset, index) do
