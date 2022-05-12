@@ -432,13 +432,11 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(view, :publish)
       publish_success_modal_should_be_visible(view)
 
-      eventually(
-        fn ->
-          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-          assert dataset_sent != nil
-          assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-        end
-      )
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
     end
 
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
@@ -564,9 +562,10 @@ defmodule AndiWeb.EditLiveViewTest do
     test "dataset is deleted after confirmation", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       Brook.Event.send(:andi, dataset_update(), :test, dataset)
-      eventually fn ->
+
+      eventually(fn ->
         assert nil != Datasets.get(dataset.id)
-      end
+      end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -662,10 +661,14 @@ defmodule AndiWeb.EditLiveViewTest do
   end
 
   defp publish_success_modal_should_be_visible(view) do
-    eventually(fn ->
+    eventually(
+      fn ->
         html = render(view)
         assert not Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-      end, 5000, 10)
+      end,
+      5000,
+      10
+    )
   end
 
   defp get_extract_step_id(dataset, index) do
