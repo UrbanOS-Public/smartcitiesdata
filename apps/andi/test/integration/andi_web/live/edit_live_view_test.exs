@@ -10,13 +10,16 @@ defmodule AndiWeb.EditLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.Event
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
-
   import FlokiHelpers, only: [get_attributes: 3, get_text: 2, find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
+  alias Andi.Schemas.AuditEvent
+  alias Andi.Schemas.AuditEvents
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets/"
@@ -165,6 +168,7 @@ defmodule AndiWeb.EditLiveViewTest do
       eventually(
         fn ->
           assert %{submission_status: :published} = Datasets.get(dataset.id)
+          assert [%AuditEvent{event: smrt_dataset}] = AuditEvents.get_all_of_type(dataset_update())
         end,
         10,
         1_000
@@ -426,19 +430,13 @@ defmodule AndiWeb.EditLiveViewTest do
       render_change(es_form, %{"form_data" => extract_form_data})
 
       render_change(view, :publish)
-      html = render(view)
+      publish_success_modal_should_be_visible(view)
 
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
-      eventually(
-        fn ->
-          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-          assert dataset_sent != nil
-          assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-        end,
-        2000,
-        50
-      )
+      eventually(fn ->
+        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
+        assert dataset_sent != nil
+        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
+      end)
     end
 
     test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
@@ -457,11 +455,10 @@ defmodule AndiWeb.EditLiveViewTest do
 
       render_change(view, :publish)
 
+      publish_success_modal_should_be_visible(view)
+
       eventually(
         fn ->
-          html = render(view)
-          refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
           {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
           assert dataset_sent != nil
           assert dataset_sent.technical.extractSteps != []
@@ -525,8 +522,8 @@ defmodule AndiWeb.EditLiveViewTest do
           assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
           assert dataset_http_extract_step["assigns"] != nil
         end,
-        1000,
-        50
+        10000,
+        5
       )
     end
 
@@ -563,9 +560,12 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "delete dataset" do
     test "dataset is deleted after confirmation", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
+      dataset = TDG.create_dataset(%{})
+      Brook.Event.send(:andi, dataset_update(), :test, dataset)
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
+      eventually(fn ->
+        assert nil != Datasets.get(dataset.id)
+      end)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
@@ -573,6 +573,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       eventually(fn ->
         assert nil == Datasets.get(dataset.id)
+        assert [%AuditEvent{event: dataset}] = AuditEvents.get_all_of_type(dataset_delete())
       end)
     end
   end
@@ -657,6 +658,17 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, "#reject-button"))
       assert Enum.empty?(find_elements(html, "#approve-button"))
     end
+  end
+
+  defp publish_success_modal_should_be_visible(view) do
+    eventually(
+      fn ->
+        html = render(view)
+        assert not Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
+      end,
+      5000,
+      10
+    )
   end
 
   defp get_extract_step_id(dataset, index) do

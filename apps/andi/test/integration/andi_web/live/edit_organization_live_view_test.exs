@@ -226,7 +226,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       eventually(
         fn ->
           assert {:ok, nil} != OrgStore.get(smrt_org.id)
-          assert Andi.Schemas.AuditEvents.get_all_by_event_id(smrt_org.id) != []
+          assert [%Andi.Schemas.AuditEvent{event: smrt_org} | _] = Andi.Schemas.AuditEvents.get_all_of_type(organization_update())
         end,
         1000,
         30

@@ -7,7 +7,14 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   use Placebo
   import Phoenix.LiveViewTest
-  import SmartCity.Event, only: [organization_update: 0]
+
+  import SmartCity.Event,
+    only: [
+      organization_update: 0,
+      user_organization_associate: 0,
+      user_organization_disassociate: 0
+    ]
+
   import SmartCity.TestHelper, only: [eventually: 1]
 
   import FlokiHelpers,
@@ -19,6 +26,8 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organizations
+  alias Andi.Schemas.AuditEvent
+  alias Andi.Schemas.AuditEvents
   alias Andi.Services.Auth0Management
 
   alias Andi.Schemas.User
@@ -114,9 +123,13 @@ defmodule AndiWeb.EditUserLiveViewTest do
       render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})
 
       eventually(fn ->
+        user_subject_id = user.subject_id
         user = User.get_by_subject_id(user.subject_id)
 
         assert [%{id: org_id}] = user.organizations
+
+        assert [%AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org_id}} | _] =
+                 AuditEvents.get_all_of_type(user_organization_associate())
       end)
     end
 
@@ -145,9 +158,13 @@ defmodule AndiWeb.EditUserLiveViewTest do
       send(view.pid, {:disassociate_org, org2_id})
 
       eventually(fn ->
-        user = User.get_by_subject_id(user.subject_id)
+        user_subject_id = user.subject_id
+        user = User.get_by_subject_id(user_subject_id)
 
         assert [%{id: org_id}] = user.organizations
+
+        assert [%AuditEvent{event: %{"subject_id" => ^user_subject_id, "org_id" => ^org2_id}} | _] =
+                 AuditEvents.get_all_of_type(user_organization_disassociate())
       end)
     end
   end
