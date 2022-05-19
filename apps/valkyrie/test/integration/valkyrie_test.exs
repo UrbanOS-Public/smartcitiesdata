@@ -19,9 +19,10 @@ defmodule ValkyrieTest do
   getter(:output_topic_prefix, generic: true)
 
   setup_all do
+    dataset_id = Faker.UUID.v4()
     dataset =
       TDG.create_dataset(%{
-        id: "pirates",
+        id: dataset_id,
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -90,7 +91,7 @@ defmodule ValkyrieTest do
   test "valkyrie only starts the processes for ingest once on event handle", %{messages: messages} do
     dataset =
       TDG.create_dataset(%{
-        id: "pirates2",
+        id: Faker.UUID.v4(),
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -101,7 +102,7 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: "pirates2"})
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
 
     messages = Enum.map(messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
 
@@ -131,7 +132,7 @@ defmodule ValkyrieTest do
   test "valkyrie updates the view state of running ingestions on dataset update" do
     dataset =
       TDG.create_dataset(%{
-        id: "pirates3",
+        id: Faker.UUID.v4(),
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -196,7 +197,7 @@ defmodule ValkyrieTest do
   test "valkyrie does not start a stopped processor on dataset update" do
     dataset =
       TDG.create_dataset(%{
-        id: "pirates4",
+        id: Faker.UUID.v4(),
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -249,7 +250,7 @@ defmodule ValkyrieTest do
     end
   end
 
-  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
+  test "valkyrie sends invalid data messages to the dlq", %{invalid_message: invalid_message, dataset: dataset} do
     encoded_og_message = invalid_message |> Jason.encode!()
 
     metrics_port = Application.get_env(:telemetry_event, :metrics_port)
@@ -275,10 +276,10 @@ defmodule ValkyrieTest do
       assert true ==
                String.contains?(
                  response.body,
-                 "dead_letters_handled_count{dataset_id=\"pirates\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"}"
+                 "dead_letters_handled_count{dataset_id=\"#{dataset.id}\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"}"
                )
 
-      assert [%{app: "Valkyrie", original_message: ^encoded_og_message} | _] = messages
+      assert Enum.any?(messages, fn %{original_message: message} -> message == encoded_og_message end)
     end
   end
 

@@ -85,7 +85,7 @@ defmodule Valkyrie.EndOfDataTest do
 
     case Process.whereis(name) do
       nil -> true
-      pid -> Process.alive?(pid)
+      pid -> Process.alive?(pid) == false
     end
   end
 end
