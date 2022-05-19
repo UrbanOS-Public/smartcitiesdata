@@ -28,7 +28,6 @@ defmodule Transformers.MixProject do
     [
       {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
