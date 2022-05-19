@@ -113,6 +113,8 @@ defmodule Reaper.FullTest do
       expected =
         TestUtils.create_data(%{
           dataset_id: @pre_existing_target_dataset,
+          extraction_start_time: nil,
+          ingestion_id: nil,
           payload: %{
             "latitude" => 39.9613,
             "vehicle_id" => 41_015,
@@ -654,6 +656,8 @@ defmodule Reaper.FullTest do
       expected =
         TestUtils.create_data(%{
           dataset_id: @pre_existing_target_dataset,
+          extraction_start_time: nil,
+          ingestion_id: nil,
           payload: %{
             "first_name" => "John"
           }

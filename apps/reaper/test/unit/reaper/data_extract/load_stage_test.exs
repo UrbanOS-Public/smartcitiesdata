@@ -7,7 +7,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
   alias Reaper.{Cache, Persistence}
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @message_size 218
+  @message_size 267
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
   @cache __MODULE__
 
