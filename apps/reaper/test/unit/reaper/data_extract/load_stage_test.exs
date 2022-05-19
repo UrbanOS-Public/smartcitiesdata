@@ -52,8 +52,19 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
 
     test "2 batches are sent to kafka", %{new_state: new_state} do
-      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?a..?j, "ds1", new_state.ingestion, new_state.start_time), any())
-      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?k..?t, "ds1", new_state.ingestion, new_state.start_time), any())
+      assert_called Elsa.produce(
+                      any(),
+                      "test-ds1",
+                      create_data_messages(?a..?j, "ds1", new_state.ingestion, new_state.start_time),
+                      any()
+                    )
+
+      assert_called Elsa.produce(
+                      any(),
+                      "test-ds1",
+                      create_data_messages(?k..?t, "ds1", new_state.ingestion, new_state.start_time),
+                      any()
+                    )
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do

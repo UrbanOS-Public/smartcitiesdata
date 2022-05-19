@@ -78,6 +78,7 @@ defmodule Reaper.FullTest do
   describe "pre-existing ingestion" do
     setup %{bypass: bypass} do
       allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
@@ -625,6 +626,7 @@ defmodule Reaper.FullTest do
   describe "xml ingestion" do
     setup %{bypass: bypass} do
       allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
