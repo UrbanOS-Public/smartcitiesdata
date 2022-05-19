@@ -33,7 +33,7 @@ defmodule Forklift.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.12"},
       {:ex_doc, "~> 0.21"},
       {:hackney, "~> 1.17"},

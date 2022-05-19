@@ -44,7 +44,7 @@ defmodule Flair.MixProject do
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.11", only: :dev},
       {:ex_doc, "~> 0.21"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1", only: [:dev, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},

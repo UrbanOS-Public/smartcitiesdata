@@ -33,7 +33,7 @@ defmodule DeadLetter.MixProject do
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
       {:elsa, "~> 0.12"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
       {:assertions, "~> 0.14", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},

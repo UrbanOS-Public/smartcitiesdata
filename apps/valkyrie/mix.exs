@@ -39,7 +39,7 @@ defmodule Valkyrie.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
       {:excoveralls, "~> 0.11.1", only: :test},

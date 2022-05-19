@@ -34,7 +34,7 @@ defmodule E2E.MixProject do
       {:estuary, in_umbrella: true, only: [:integration]},
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:ranch, "~> 1.7.1", override: true},
       {:smart_city, "~> 5.1.1"},
       {:jason, "~> 1.2", override: true}

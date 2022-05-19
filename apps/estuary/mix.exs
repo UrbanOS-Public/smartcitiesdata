@@ -32,7 +32,7 @@ defmodule Estuary.MixProject do
       {:credo, "~> 1.0", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:elsa, "~> 0.12"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},

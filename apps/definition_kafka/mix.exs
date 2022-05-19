@@ -35,7 +35,7 @@ defmodule DefinitionKafka.MixProject do
       {:telemetry, "~> 0.4.1"},
       {:json_serde, "~> 1.0"},
       {:credo, "~> 1.0", only: [:dev]},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.6", only: [:integration]},
       {:mox, "~> 1.0", only: [:test]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},

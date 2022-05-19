@@ -37,7 +37,7 @@ defmodule Auth.MixProject do
       {:postgrex, "~> 0.15.1"},
       {:ranch, "~> 1.7.1", override: true},
       {:bypass, "~> 2.0", only: [:test, :integration]},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
       {:testing, in_umbrella: true, only: [:test, :integration]}
