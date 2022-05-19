@@ -7,7 +7,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
   alias Reaper.{Cache, Persistence}
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @message_size 267
+  @message_size 293
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
   @cache __MODULE__
 
@@ -44,19 +44,20 @@ defmodule Reaper.DataExtract.LoadStageTest do
         start_time: DateTime.utc_now()
       }
 
+      [message | _] = create_data_messages(?a..?a, "ds1", state.ingestion, state.start_time)
       incoming_events = ?a..?z |> create_messages() |> Enum.with_index()
 
       {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
       [new_state: new_state]
     end
 
-    test "2 batches are sent to kafka" do
-      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?a..?j, "ds1"), any())
-      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?k..?t, "ds1"), any())
+    test "2 batches are sent to kafka", %{new_state: new_state} do
+      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?a..?j, "ds1", new_state.ingestion, new_state.start_time), any())
+      assert_called Elsa.produce(any(), "test-ds1", create_data_messages(?k..?t, "ds1", new_state.ingestion, new_state.start_time), any())
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do
-      assert new_state.batch == create_data_messages(?z..?u, "ds1")
+      assert new_state.batch == create_data_messages(?z..?u, "ds1", new_state.ingestion, new_state.start_time)
       assert new_state.bytes == 6 * @message_size
     end
 
@@ -117,7 +118,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
     incoming_events = ?a..?c |> create_messages() |> Enum.with_index()
 
     {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
-    assert new_state.batch == create_data_messages(?c..?a, "ds1")
+    assert new_state.batch == create_data_messages(?c..?a, "ds1", new_state.ingestion, new_state.start_time)
   end
 
   defp create_messages(range, opts \\ []) do
@@ -132,12 +133,14 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end)
   end
 
-  defp create_data_messages(range, dataset_id) do
+  defp create_data_messages(range, dataset_id, ingestion, start_time) do
     range
     |> create_messages()
     |> Enum.map(fn payload ->
       %{
         dataset_id: dataset_id,
+        ingestion_id: ingestion.id,
+        extraction_start_time: start_time,
         payload: payload,
         operational: %{timing: add_timing()},
         _metadata: %{}

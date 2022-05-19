@@ -97,6 +97,8 @@ defmodule Reaper.DataExtract.LoadStage do
   defp convert_to_data_message(payload, state) do
     data = %{
       dataset_id: state.ingestion.targetDataset,
+      ingestion_id: state.ingestion.id,
+      extraction_start_time: state.start_time,
       operational: %{timing: add_timing(state)},
       payload: payload,
       _metadata: %{}
