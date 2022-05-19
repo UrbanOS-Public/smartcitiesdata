@@ -37,6 +37,8 @@ jobs:
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
       - name: Run integration tests
+        env:
+          DIVO_DOWN: DISABLED
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
       - name: Publish development image
