@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ae0a826f-e9fc-41ff-9aeb-27dfc77a6a01",
+		"_postman_id": "fc1827e8-4127-4754-99e3-ee1563da1e8c",
 		"name": "ANDI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -9,7 +9,29 @@
 			"name": "Local Development",
 			"item": [
 				{
-					"name": "Create Organization",
+					"name": "Organizations - Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/organizations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"organizations"
+							]
+						},
+						"description": "Retrieves information for all organizations that are stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Organization - Create",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -48,7 +70,80 @@
 					"response": []
 				},
 				{
-					"name": "Create Dataset",
+					"name": "Datasets - Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/datasets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"datasets"
+							]
+						},
+						"description": "Retrieves information for all datasets that are stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Dataset - Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/dataset/406a35bb-7e4b-4077-85d2-64eb4f9a9bd6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"dataset",
+								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6"
+							]
+						},
+						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Dataset - Delete",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/dataset/delete?id=2196cbaa-d387-489a-b439-0158dd37d1e8",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"dataset",
+								"delete"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "2196cbaa-d387-489a-b439-0158dd37d1e8"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dataset - Create",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -60,7 +155,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"loyce_waelchi@orn.com\",\n            \"contactName\": \"Christine Noodles\",\n            \"dataTitle\": \"Test\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.\",\n            \"homepage\": \"schoen.name\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [\n                \"client-server\",\n                \"bifurcated\",\n                \"web-enabled\",\n                \"bandwidth-monitored\",\n                \"dynamic\"\n            ],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"Happy_Turtles\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"Can one desire too much of a good thing?.\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"0 0 * * *\",\n            \"credentials\": false,\n            \"dataName\": \"Tawny_Green_SAXLW\",\n            \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                }\n            }\n        ],\n            \"orgId\": \"910660db-c12a-4f39-8d70-bee535910086\",\n            \"orgName\": \"Marrone_Lily\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"my_int\",\n                    \"type\": \"integer\"\n                },\n                {\n                    \"name\": \"my_string\",\n                    \"type\": \"string\"\n                },\n                {\n                    \"format\": \"{ISO:Extended:Z}\",\n                    \"name\": \"my_date\",\n                    \"type\": \"date\"\n                },\n                {\n                    \"name\": \"my_float\",\n                    \"type\": \"float\"\n                },\n                {\n                    \"name\": \"my_boolean\",\n                    \"type\": \"boolean\"\n                }\n            ],\n            \"sourceFormat\": \"application/gtfs+protobuf\",\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"zemlak.biz\",\n            \"systemName\": \"Marrone_Lily__Tawny_Green_SAXLW\",\n            \"topLevelSelector\": null\n        },\n        \"version\": \"0.6\"\n    }"
+							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"loyce_waelchi@orn.com\",\n            \"contactName\": \"Christine Noodles\",\n            \"dataTitle\": \"Test\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.\",\n            \"homepage\": \"schoen.name\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [\n                \"client-server\",\n                \"bifurcated\",\n                \"web-enabled\",\n                \"bandwidth-monitored\",\n                \"dynamic\"\n            ],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"Happy_Turtles\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"Can one desire too much of a good thing?.\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"0 0 * * *\",\n            \"credentials\": false,\n            \"dataName\": \"Tawny_Green_SAXLW\",\n            \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                },\n                \"assigns\": {},\n              \t\"sequence\": 1\n            }\n        ],\n            \"orgId\": \"910660db-c12a-4f39-8d70-bee535910086\",\n            \"orgName\": \"Marrone_Lily\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"my_int\",\n                    \"type\": \"integer\"\n                },\n                {\n                    \"name\": \"my_string\",\n                    \"type\": \"string\"\n                },\n                {\n                    \"format\": \"{ISO:Extended:Z}\",\n                    \"name\": \"my_date\",\n                    \"type\": \"date\"\n                },\n                {\n                    \"name\": \"my_float\",\n                    \"type\": \"float\"\n                },\n                {\n                    \"name\": \"my_boolean\",\n                    \"type\": \"boolean\"\n                }\n            ],\n            \"sourceFormat\": \"application/gtfs+protobuf\",\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"zemlak.biz\",\n            \"systemName\": \"Marrone_Lily__Tawny_Green_SAXLW\",\n            \"topLevelSelector\": null\n        },\n        \"version\": \"0.6\"\n    }"
 						},
 						"url": {
 							"raw": "http://localhost:4000/api/v1/dataset",
@@ -87,12 +182,12 @@
 					"response": []
 				},
 				{
-					"name": "Get Organizations",
+					"name": "Ingestions - Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:4000/api/v1/organizations",
+							"raw": "http://localhost:4000/api/v1/ingestions",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -101,52 +196,7 @@
 							"path": [
 								"api",
 								"v1",
-								"organizations"
-							]
-						},
-						"description": "Retrieves information for all organizations that are stored in ANDI."
-					},
-					"response": []
-				},
-				{
-					"name": "Get Datasets",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/datasets",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"datasets"
-							]
-						},
-						"description": "Retrieves information for all datasets that are stored in ANDI."
-					},
-					"response": []
-				},
-				{
-					"name": "Get Dataset",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/dataset/406a35bb-7e4b-4077-85d2-64eb4f9a9bd6",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"dataset",
-								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6"
+								"ingestions"
 							]
 						},
 						"description": "Retrieves information for a given dataset that is stored in ANDI."
@@ -154,7 +204,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Ingestion",
+					"name": "Ingestion - Get",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -177,59 +227,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Ingestions",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/ingestions",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"ingestions"
-							]
-						},
-						"description": "Retrieves information for a given dataset that is stored in ANDI."
-					},
-					"response": []
-				},
-				{
-					"name": "Create Ingestion",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "    {\n        \"id\": \"2196cbaa-d387-489a-b439-0158dd37d1e8\",\n        \"name\": \"new_ingestion\",\n        \"allow_duplicates\": true,\n        \"cadence\": \"0 0 * * *\",\n        \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                }\n            }\n        ],\n        \"schema\": [\n            {\n                \"name\": \"my_int\",\n                \"type\": \"integer\"\n            },\n            {\n                \"name\": \"my_string\",\n                \"type\": \"string\"\n            },\n            {\n                \"format\": \"{ISO:Extended:Z}\",\n                \"name\": \"my_date\",\n                \"type\": \"date\"\n            },\n            {\n                \"name\": \"my_float\",\n                \"type\": \"float\"\n            },\n            {\n                \"name\": \"my_boolean\",\n                \"type\": \"boolean\"\n            }\n        ],\n        \"sourceFormat\": \"application/gtfs+protobuf\",\n        \"targetDataset\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"topLevelSelector\": null,\n        \"transformations\": []\n    }",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:4000/api/v1/ingestion",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"ingestion"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Ingestion",
+					"name": "Ingestion - Delete",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -251,6 +249,36 @@
 									"key": "id",
 									"value": "2196cbaa-d387-489a-b439-0158dd37d1e8"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingestion - Create",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "    {\n        \"id\": \"2196cbaa-d387-489a-b439-0158dd37d1e8\",\n        \"name\": \"new_ingestion\",\n        \"allow_duplicates\": true,\n        \"cadence\": \"0 0 * * *\",\n        \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                },\n                \"assigns\": {},\n              \t\"sequence\": 1\n            }\n        ],\n        \"schema\": [\n            {\n                \"name\": \"my_int\",\n                \"type\": \"integer\"\n            },\n            {\n                \"name\": \"my_string\",\n                \"type\": \"string\"\n            },\n            {\n                \"format\": \"{ISO:Extended:Z}\",\n                \"name\": \"my_date\",\n                \"type\": \"date\"\n            },\n            {\n                \"name\": \"my_float\",\n                \"type\": \"float\"\n            },\n            {\n                \"name\": \"my_boolean\",\n                \"type\": \"boolean\"\n            }\n        ],\n        \"sourceFormat\": \"application/gtfs+protobuf\",\n        \"targetDataset\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"topLevelSelector\": null,\n        \"transformations\": []\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestion"
 							]
 						}
 					},
