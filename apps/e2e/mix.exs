@@ -4,7 +4,7 @@ defmodule E2E.MixProject do
   def project do
     [
       app: :e2e,
-      version: "0.1.3",
+      version: "0.1.4",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -36,7 +36,7 @@ defmodule E2E.MixProject do
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.1", only: [:dev, :test, :integration]},
       {:ranch, "~> 1.7.1", override: true},
-      {:smart_city, "~> 5.1.1"},
+      {:smart_city, "~> 5.2.1"},
       {:jason, "~> 1.2", override: true}
     ]
   end
