@@ -43,7 +43,7 @@ defmodule Estuary.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:pipeline, in_umbrella: true},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_cowboy, "~> 2.1"},
+      {:plug_cowboy, "~> 2.5"},
       {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},

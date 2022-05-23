@@ -77,7 +77,7 @@ defmodule Andi.MixProject do
       {:phoenix_live_view, "~>0.14"},
       {:phoenix_pubsub, "~> 2.0"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_cowboy, "~> 2.1"},
+      {:plug_cowboy, "~> 2.5"},
       {:postgrex, "~> 0.15.1"},
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},

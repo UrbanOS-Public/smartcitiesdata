@@ -14,7 +14,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:bread_crumb, :string)
     field(:default_offset, :integer)
     field(:demographic, :string)
-    field(:description, :string, description: "")
+    field(:description, :string)
     field(:format, :string)
     field(:itemType, :string)
     field(:masked, :string)
