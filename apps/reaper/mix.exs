@@ -67,7 +67,7 @@ defmodule Reaper.MixProject do
       {:observer_cli, "~> 1.5"},
       {:properties, in_umbrella: true},
       {:plug_cowboy, "~> 2.5"},
-      {:protobuf, "~> 0.6"},
+      {:protobuf, "~> 0.6.3"},
       {:quantum, "~> 2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
