@@ -35,7 +35,7 @@ defmodule DiscoveryStreams.Mixfile do
   defp deps do
     [
       {:annotated_retry, in_umbrella: true},
-      {:brook, "~> 0.4.0"},
+      {:brook, "== 0.4.9"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test, :integration]},
