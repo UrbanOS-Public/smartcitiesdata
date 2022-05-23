@@ -192,7 +192,7 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "passes connect timeout to tcp library", %{bypass: bypass} do
-    allow(Mint.HTTP.connect(:connection, any(), any(), any()), return: :ok, meck_options: [passthrough: true])
+    allow(Mint.HTTP.connect(:connection, any(), any(), any()), return: :ok)
 
     path = "/some.url"
     url = "http://localhost:#{bypass.port}#{path}"
@@ -233,7 +233,7 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   test "evaluate paramaters in headers", %{bypass: bypass} do
-    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok, meck_options: [passthrough: true])
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok)
 
     path = "/some.url"
     url = "http://localhost:#{bypass.port}#{path}"
@@ -285,7 +285,7 @@ defmodule Reaper.Http.DownloaderTest do
       Plug.Conn.resp(conn, 200, "data")
     end)
 
-    allow(Mint.HTTP.connect(:connection, any(), any(), any()), return: :ok, meck_options: [passthrough: true])
+    allow(Mint.HTTP.connect(:connection, any(), any(), any()), return: :ok)
 
     {:ok, _} = Downloader.download(url, %{}, to: "test.output")
 
