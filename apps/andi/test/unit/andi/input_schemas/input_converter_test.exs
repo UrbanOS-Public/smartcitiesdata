@@ -517,4 +517,39 @@ defmodule Andi.InputSchemas.InputConverterTest do
       assert %{id: ^valid_id} = Ecto.Changeset.apply_changes(changeset)
     end
   end
+
+  describe "keywords_to_list" do
+    test "turns nil into empty array" do
+      assert [] = InputConverter.keywords_to_list(nil)
+    end
+
+    test "turns empty string into empty array" do
+      assert [] = InputConverter.keywords_to_list("")
+    end
+
+    test "returns list unchanged" do
+      keywords = ["one", "blue", "sky"]
+      assert keywords = InputConverter.keywords_to_list(keywords)
+    end
+
+    test "comma space separated string turns into array of strings" do
+      keywords = "one, blue, sky"
+      assert ["one", "blue", "sky"] = InputConverter.keywords_to_list(keywords)
+    end
+
+    test "comma separated string with no spaces turns into array of strings" do
+      keywords = "one,blue,sky"
+      assert ["one", "blue", "sky"] = InputConverter.keywords_to_list(keywords)
+    end
+
+    test "internal spaces are preserved within a keyword" do
+      keywords = "example, one blue sky"
+      assert = ["example", "one blue sky"] = InputConverter.keywords_to_list(keywords)
+    end
+
+    test "leading and trailing spaces are trimmed from a keyword" do
+      keywords = "  one,  blue  , sky  "
+      assert ["one", "blue", "sky"] = InputConverter.keywords_to_list(keywords)
+    end
+  end
 end

@@ -34,6 +34,7 @@ defmodule Reaper.FullTest do
   @pre_existing_target_dataset "1701-1701"
   @partial_load_dataset_id "11111-1113"
   @partial_load_ingestion_id "11111-1112"
+  @extraction_start_time "2022-05-19T19:31:16.994987Z"
 
   @json_file_name "vehicle_locations.json"
   @nested_data_file_name "nested_data.json"
@@ -76,6 +77,8 @@ defmodule Reaper.FullTest do
 
   describe "pre-existing ingestion" do
     setup %{bypass: bypass} do
+      allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
@@ -113,6 +116,8 @@ defmodule Reaper.FullTest do
       expected =
         TestUtils.create_data(%{
           dataset_id: @pre_existing_target_dataset,
+          extraction_start_time: @extraction_start_time,
+          ingestion_id: @pre_existing_ingestion_id,
           payload: %{
             "latitude" => 39.9613,
             "vehicle_id" => 41_015,
@@ -620,6 +625,8 @@ defmodule Reaper.FullTest do
 
   describe "xml ingestion" do
     setup %{bypass: bypass} do
+      allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
@@ -654,6 +661,8 @@ defmodule Reaper.FullTest do
       expected =
         TestUtils.create_data(%{
           dataset_id: @pre_existing_target_dataset,
+          extraction_start_time: @extraction_start_time,
+          ingestion_id: @pre_existing_ingestion_id,
           payload: %{
             "first_name" => "John"
           }

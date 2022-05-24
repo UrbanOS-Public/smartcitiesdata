@@ -482,7 +482,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   def keywords_to_list(keywords) when is_binary(keywords) do
     keywords
-    |> String.split(", ")
+    |> String.split(",")
     |> Enum.map(&String.trim/1)
   end
 
