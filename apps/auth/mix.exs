@@ -4,7 +4,8 @@ defmodule Auth.MixProject do
   def project do
     [
       app: :auth,
-      version: "0.1.1/../_build",
+      version: "0.1.1",
+      build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
