@@ -36,9 +36,6 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
-      - name: Run integration tests
-        run: |
-          bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}

@@ -5,7 +5,7 @@ defmodule Template.MixProject do
     [
       app: :template,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "0.1.5",
+      version: "0.1.6",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -29,7 +29,7 @@ defmodule Template.MixProject do
   defp deps do
     [
       {:brook, "~> 0.4"},
-      {:divo, "~> 1.1", only: [:dev, :test, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 2.0"},

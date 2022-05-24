@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.2.3",
+      version: "2.2.4",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -45,7 +45,7 @@ defmodule Andi.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:crontab, "~> 1.1"},
       {:distillery, "~> 2.1"},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},

@@ -4,7 +4,7 @@ defmodule Pipeline.MixProject do
   def project do
     [
       app: :pipeline,
-      version: "0.1.5",
+      version: "0.1.6",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -45,7 +45,7 @@ defmodule Pipeline.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 2.2.1", only: [:test, :integration]},
-      {:divo, "~> 1.1", only: [:dev, :integration]},
+      {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:telemetry_event, in_umbrella: true}
     ]
