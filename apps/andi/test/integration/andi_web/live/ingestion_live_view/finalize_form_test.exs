@@ -100,7 +100,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
       finalize_view = find_live_child(view, "finalize_form_editor")
 
       form_data = FormTools.form_data_from_andi_ingestion(ingestion)
-      form_data |> IO.inspect(label: "form_data")
       html = render_change(finalize_view, :validate, %{"form_data" => form_data})
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))

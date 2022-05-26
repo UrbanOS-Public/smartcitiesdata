@@ -9,16 +9,19 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   embedded_schema do
     field(:name, :string)
     field(:sourceFormat, :string)
+    field(:targetDataset, :string)
   end
 
   @cast_fields [
     :name,
-    :sourceFormat
+    :sourceFormat,
+    :targetDataset
   ]
 
   @required_fields [
     :name,
-    :sourceFormat
+    :sourceFormat,
+    :targetDataset
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)

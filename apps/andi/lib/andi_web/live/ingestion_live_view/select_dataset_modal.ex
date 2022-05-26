@@ -66,7 +66,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     <div class="dataset-search-selected-datasets">
         <p class="search-modal-section-header-text">Selected Datasets</p>
         <div class="selected-results-from-search">
-          <%= if(selected_dataset(@search_results, @selected_dataset) == "") do %>
+          <%= if(selected_dataset(@search_results, @selected_dataset) == nil) do %>
             <div></div>
           <% else %>
             <div class="selected-result-from-search"><span class="selected-result-text"><%= get_dataset_name(@selected_dataset) %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= @selected_dataset %>>close</i></div>
@@ -85,8 +85,8 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   end
 
   def selected_dataset(datasets, selected_dataset) do
-    if(selected_dataset == "") do
-      ""
+    if(selected_dataset == nil) do
+      nil
     else
       case Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end) do
         nil -> Andi.InputSchemas.Datasets.get(selected_dataset)

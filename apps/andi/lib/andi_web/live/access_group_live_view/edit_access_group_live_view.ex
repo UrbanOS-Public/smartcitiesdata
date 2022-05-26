@@ -172,7 +172,6 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("dataset-search", %{"search-value" => search_value}, socket) do
-    IO.inspect(socket.assigns, label: "HERE3")
     search_results = query_on_dataset_search_change(search_value, socket)
 
     {:noreply,
