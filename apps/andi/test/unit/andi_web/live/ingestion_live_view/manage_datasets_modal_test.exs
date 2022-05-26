@@ -1,4 +1,4 @@
-defmodule AndiWeb.Search.ManageDatasetsModalTest do
+defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
@@ -7,12 +7,12 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
   import FlokiHelpers, only: [get_text: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.AccessGroups
-  alias Andi.InputSchemas.AccessGroup
+  alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets.Dataset
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/access-groups"
+  @url_path "/ingestions"
   @user UserHelpers.create_user()
 
   defp allowAuthUser do
@@ -35,33 +35,31 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
 
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
+      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
+      allow(Ingestions.update(any()), return: ingestion)
+      allow(Ingestions.get(any()), return: ingestion)
+      allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
 
-      access_group = create_access_group()
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      manage_datasets_button = find_manage_datasets_button(view)
-      render_click(manage_datasets_button)
+      select_dataset_button = find_select_dataset_button(view)
+      render_click(select_dataset_button)
 
       assert get_text(html, ".search-table__cell") =~ "No Matching Datasets"
     end
 
     test "represents a dataset when one exists", %{conn: conn} do
+      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
       allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      access_group = create_access_group()
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
+      allow(Ingestions.update(any()), return: ingestion)
+      allow(Ingestions.get(any()), return: ingestion)
+      allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
 
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      manage_datasets_button = find_manage_datasets_button(view)
-      render_click(manage_datasets_button)
+      select_dataset_button = find_select_dataset_button(view)
+      render_click(select_dataset_button)
 
       html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
@@ -71,6 +69,7 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
     end
 
     test "represents multiple datasets", %{conn: conn} do
+      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
       allow(Andi.Repo.all(any()),
         return: [
           %Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}},
@@ -78,15 +77,14 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
         ]
       )
 
-      allow(AccessGroups.update(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(AccessGroups.get(any()), return: %AccessGroup{id: UUID.uuid4(), name: "group"})
-      allow(Andi.Repo.get(Andi.InputSchemas.AccessGroup, any()), return: [])
-      access_group = create_access_group()
-      allow(Andi.Repo.preload(any(), any()), return: %{datasets: [], users: [], id: access_group.id})
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+      allow(Ingestions.update(any()), return: ingestion)
+      allow(Ingestions.get(any()), return: ingestion)
+      allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
 
-      manage_datasets_button = find_manage_datasets_button(view)
-      render_click(manage_datasets_button)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      select_dataset_button = find_select_dataset_button(view)
+      render_click(select_dataset_button)
 
       html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
 
@@ -99,14 +97,7 @@ defmodule AndiWeb.Search.ManageDatasetsModalTest do
     end
   end
 
-  defp create_access_group() do
-    uuid = UUID.uuid4()
-    access_group = TDG.create_access_group(%{name: "Smrt Access Group", id: uuid})
-    AccessGroups.update(access_group)
-    access_group
-  end
-
-  defp find_manage_datasets_button(view) do
-    element(view, ".btn", "Manage Datasets")
+  defp find_select_dataset_button(view) do
+    element(view, ".btn", "Select Dataset")
   end
 end

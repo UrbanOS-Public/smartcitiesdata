@@ -1,4 +1,4 @@
-defmodule AndiWeb.Search.ManageDatasetsModal do
+defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModal do
   use Phoenix.LiveComponent
 
   def render(assigns) do
