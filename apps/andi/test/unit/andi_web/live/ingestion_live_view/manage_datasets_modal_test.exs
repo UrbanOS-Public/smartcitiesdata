@@ -35,7 +35,15 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
 
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
-      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
+      ingestion = %Andi.InputSchemas.Ingestion{
+        id: "id",
+        targetDataset: "dataset_id",
+        cadence: "once",
+        sourceFormat: "csv",
+        extractSteps: [],
+        schema: []
+      }
+
       allow(Andi.InputSchemas.Datasets.get_all(), return: [])
       allow(Ingestions.update(any()), return: ingestion)
       allow(Ingestions.get(any()), return: ingestion)
@@ -50,7 +58,15 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
     end
 
     test "represents a dataset when one exists", %{conn: conn} do
-      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
+      ingestion = %Andi.InputSchemas.Ingestion{
+        id: "id",
+        targetDataset: "dataset_id",
+        cadence: "once",
+        sourceFormat: "csv",
+        extractSteps: [],
+        schema: []
+      }
+
       allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
       allow(Ingestions.update(any()), return: ingestion)
       allow(Ingestions.get(any()), return: ingestion)
@@ -69,7 +85,15 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
     end
 
     test "represents multiple datasets", %{conn: conn} do
-      ingestion = %Andi.InputSchemas.Ingestion{id: "id", targetDataset: "dataset_id", cadence: "once", sourceFormat: "csv", extractSteps: [], schema: []}
+      ingestion = %Andi.InputSchemas.Ingestion{
+        id: "id",
+        targetDataset: "dataset_id",
+        cadence: "once",
+        sourceFormat: "csv",
+        extractSteps: [],
+        schema: []
+      }
+
       allow(Andi.Repo.all(any()),
         return: [
           %Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}},

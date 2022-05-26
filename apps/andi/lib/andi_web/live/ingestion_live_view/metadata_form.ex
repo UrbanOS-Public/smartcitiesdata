@@ -14,7 +14,14 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
     AndiWeb.Endpoint.subscribe("form-save")
 
-    {:ok, assign(socket, changeset: changeset, select_dataset_modal_visibility: "hidden", search_results: [], search_text: "", selected_dataset: ingestion.targetDataset)}
+    {:ok,
+     assign(socket,
+       changeset: changeset,
+       select_dataset_modal_visibility: "hidden",
+       search_results: [],
+       search_text: "",
+       selected_dataset: ingestion.targetDataset
+     )}
   end
 
   def render(assigns) do
@@ -91,7 +98,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data |> IO.inspect(label: "DATASAAA")
+    form_data
+    |> IO.inspect(label: "DATASAAA")
     |> IngestionMetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
@@ -107,6 +115,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   def handle_event("datasets-search", %{"search-value" => search_value}, socket) do
     search_results = query_on_dataset_search_change(search_value, socket)
+
     {:noreply,
      assign(socket,
        manage_datasets_modal_visibility: "visible",

@@ -1,7 +1,6 @@
 defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   use Phoenix.LiveComponent
 
-
   def render(assigns) do
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
@@ -93,7 +92,6 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
         result -> result
       end
     end
-
   end
 
   def selected_value(dataset_id, selected_dataset) do
