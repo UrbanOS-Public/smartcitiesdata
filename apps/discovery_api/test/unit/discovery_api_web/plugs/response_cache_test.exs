@@ -27,7 +27,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
 
       assert {:ok, 0} == Cachex.count(DiscoveryApiWeb.Plugs.ResponseCache)
 
-      [function] = actual.before_send
+      [function] = actual.private.before_send
 
       conn
       |> put_resp_header("content-type", "application/json")
