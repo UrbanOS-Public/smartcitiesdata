@@ -46,7 +46,7 @@ defmodule Reaper.MixProject do
       {:cachex, "~> 3.4"},
       {:castore, "~> 0.1"},
       {:cowlib, "~> 2.8", override: true},
-      {:ranch, "~> 1.8"},
+      {:ranch, "~> 1.7.1", override: true},
       {:dead_letter, in_umbrella: true},
       {:providers, in_umbrella: true},
       {:distillery, "~> 2.1"},

@@ -82,7 +82,7 @@ defmodule Andi.MixProject do
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
-      {:ranch, "~> 1.8"},
+      {:ranch, "~> 1.7.1", override: true},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 5.2.1"},
       {:smart_city_test, "~> 2.2.1", only: [:test, :integration]},
