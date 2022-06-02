@@ -4,7 +4,7 @@ defmodule Auth.MixProject do
   def project do
     [
       app: :auth,
-      version: "0.1.1",
+      version: "0.1.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -25,14 +25,14 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
-      {:cowlib, "~> 2.8", override: true},
+      {:cowlib, "== 2.9.1", override: true},
       {:jason, "~> 1.2"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
       {:httpoison, "~> 1.5"},
       {:memoize, "~> 1.2"},
-      {:ecto, "~> 3.3"},
-      {:ecto_sql, "~> 3.0"},
+      {:ecto, "== 3.5.4"},
+      {:ecto_sql, "== 3.3.3"},
       {:plug, "~> 1.10"},
       {:postgrex, "~> 0.15.1"},
       {:ranch, "~> 1.7.1", override: true},

@@ -232,7 +232,7 @@ defmodule Andi.InputSchemas.Datasets do
       {:ok, get(dataset_id)}
   end
 
-  def is_unique?(_id, data_name, org_name) when is_nil(data_name) or is_nil(org_name), do: true
+  def is_unique?(id, data_name, org_name) when is_nil(data_name) or is_nil(org_name) or is_nil(id), do: true
 
   def is_unique?(id, data_name, org_name) do
     from(technical in Andi.InputSchemas.Datasets.Technical,

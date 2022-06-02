@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.7.15",
+      version: "1.7.16",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -33,8 +33,8 @@ defmodule Valkyrie.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.4"},
-      {:cachex, "~> 3.1"},
+      {:brook, "== 0.4.9"},
+      {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},

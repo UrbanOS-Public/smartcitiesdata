@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.12",
+      version: "0.11.13",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -43,7 +43,7 @@ defmodule Estuary.MixProject do
       {:phoenix_pubsub, "~> 2.0"},
       {:pipeline, in_umbrella: true},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_cowboy, "~> 2.1"},
+      {:plug_cowboy, "~> 2.5"},
       {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 1.0"},
       {:properties, in_umbrella: true},

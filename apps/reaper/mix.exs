@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "2.0.5",
+      version: "2.0.6",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -42,10 +42,10 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:atomic_map, "~> 0.9"},
-      {:brook, "~> 0.4.0"},
-      {:cachex, "~> 3.2"},
+      {:brook, "== 0.4.9"},
+      {:cachex, "~> 3.4"},
       {:castore, "~> 0.1"},
-      {:cowlib, "~> 2.8", override: true},
+      {:cowlib, "== 2.9.1", override: true},
       {:ranch, "~> 1.7.1", override: true},
       {:dead_letter, in_umbrella: true},
       {:providers, in_umbrella: true},
@@ -66,8 +66,8 @@ defmodule Reaper.MixProject do
       {:nimble_csv, "~> 0.6.0"},
       {:observer_cli, "~> 1.5"},
       {:properties, in_umbrella: true},
-      {:plug_cowboy, "~> 2.1"},
-      {:protobuf, "~> 0.6"},
+      {:plug_cowboy, "~> 2.5"},
+      {:protobuf, "~> 0.6.3"},
       {:quantum, "~> 2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.13"},
