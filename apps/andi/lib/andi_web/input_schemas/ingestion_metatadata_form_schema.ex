@@ -30,12 +30,22 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     current
     |> cast(changes, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
+    |> target_dataset_exists()
   end
 
   def changeset_from_andi_ingestion(ingestion) do
     ingestion = StructTools.to_map(ingestion)
 
     changeset(ingestion)
+  end
+
+  def target_dataset_exists(changeset) do
+    validate_change changeset, :targetDataset, fn :targetDataset, targetDataset  ->
+      case Andi.InputSchemas.Datasets.get(targetDataset) do
+        nil -> [targetDataset: "targetDataset with id: #{targetDataset} does not exist. It may have been deleted."]
+        _ -> []
+      end
+    end
   end
 
   def changeset_from_form_data(form_data) do

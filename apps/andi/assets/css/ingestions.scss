@@ -1,3 +1,29 @@
+#ingestions-edit-page {
+  grid-row-gap: 1rem;
+}
+
+.ingestion-metadata-form {
+  margin-bottom: 1rem;
+}
+
+.selected-results-from-search.selected-dataset {
+  width: 25rem;
+}
+
+.btn--select-dataset-search {
+  min-width: 100px;
+  height: 2.3rem;
+  background-color: white;
+  border: 1px solid #27cb00;
+  color: #27cb00;
+  padding: 0 50px;
+
+  &:hover {
+    background-color: #2de000;
+    color: white;
+  }
+}
+
 .ingestions-view {
   flex: 1;
   background: $color-content-background;

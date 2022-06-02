@@ -1,4 +1,4 @@
-defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
+defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Datasets
 
   @endpoint AndiWeb.Endpoint
   @url_path "/ingestions"
@@ -30,8 +31,6 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
     auth_conn_case.disable_revocation_list.()
     :ok
   end
-
-  # TODO: use modal-specific selector in front of more generic class selectors
 
   describe "Basic dataset search load" do
     test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
@@ -66,10 +65,12 @@ defmodule AndiWeb.IngestionLiveView.ManageDatasetsModalTest do
         extractSteps: [],
         schema: []
       }
+      dataset = TDG.create_dataset(%{})
 
       allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
       allow(Ingestions.update(any()), return: ingestion)
       allow(Ingestions.get(any()), return: ingestion)
+      allow(Datasets.get(any()), return: dataset)
       allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")

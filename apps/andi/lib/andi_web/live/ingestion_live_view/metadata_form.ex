@@ -27,28 +27,22 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   def render(assigns) do
     ~L"""
     <%= f = form_for @changeset, "#", [ as: :form_data, phx_change: :validate, id: :ingestion_metadata_form] %>
-      <div class="ingestion-metadata-form__name">
+      <div class="ingestion-metadata-form ingestion-metadata-form__name">
         <%= label(f, :name, "Name", class: "label label--required") %>
-        <%= text_input(f, :name, class: "ingestion-name input", phx_debounce: "1000") %>
+        <%= text_input(f, :name, class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000") %>
         <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false) %>
       </div>
-      <div class="ingestion-metadata-form__format">
+      <div class="ingestion-metadata-form ingestion-metadata-form__format">
         <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
-        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceFormat)), [class: "select"]) %>
+        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceFormat)), [class: "select ingestion-form-fields"]) %>
         <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
       </div>
-      <div class="ingestion-metadata-form__target-dataset">
+      <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
         <%= label(f, :targetDataset, "Dataset Name", class: "label label--required") %>
         <%= hidden_input(f, :targetDataset, value: @selected_dataset) %>
-        <div class="selected-results-from-search">
-          <%= if @selected_dataset == nil do %>
-            <div></div>
-          <% else %>
-            <div class="selected-result-from-search"><span class="selected-result-text"><%= get_dataset_name(@selected_dataset) %></span></div>
-          <% end %>
-        </div>
+        <%= text_input(f, :targetDatasetName, class: "input ingestion-form-fields", value: get_dataset_name(@selected_dataset), disabled: true) %>
+        <button class="btn btn--select-dataset-search" phx-click="select-dataset" type="button">Select Dataset</button>
         <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
-        <button class="btn btn--manage-datasets-search" phx-click="select-dataset" type="button">Select Dataset</button>
       </div>
 
     </form>
@@ -72,10 +66,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply, assign(socket, select_dataset_modal_visibility: "visible")}
   end
 
-  def handle_event("save_target_dataset", _, socket) do
-    {:noreply, assign(socket, select_dataset_modal_visibility: "visible")}
-  end
-
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
     if(socket.assigns.selected_dataset == id) do
       {:noreply, assign(socket, selected_dataset: nil)}
@@ -84,12 +74,12 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     end
   end
 
+  def get_dataset_name(id) when id in ["", nil], do: ""
+
   def get_dataset_name(id) do
-    if(id == nil) do
-      ""
-    else
-      dataset = Andi.InputSchemas.Datasets.get(id)
-      dataset.business.dataTitle
+    case Andi.InputSchemas.Datasets.get(id) do
+      nil -> "Dataset does not exist"
+      dataset -> dataset.business.dataTitle
     end
   end
 
@@ -99,17 +89,21 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
-    |> IO.inspect(label: "DATASAAA")
     |> IngestionMetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 
-  def handle_event("save-dataset-search", _, socket) do
+  def handle_event("save-dataset-search",  %{"id" => id}, socket) do
+    form_data = socket.assigns.changeset.changes
+    changeset = Map.put(form_data, :targetDataset, id)
+    |> IngestionMetadataFormSchema.changeset_from_form_data()
+
     {:noreply,
      assign(socket,
        select_dataset_modal_visibility: "hidden",
        search_results: socket.assigns.search_results,
-       selected_dataset: socket.assigns.selected_dataset
+       selected_dataset: id,
+       changeset: changeset
      )}
   end
 

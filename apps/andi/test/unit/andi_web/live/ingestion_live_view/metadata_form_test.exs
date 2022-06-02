@@ -9,6 +9,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
   alias Andi.InputSchemas.Ingestions
   alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.IngestionLiveView.MetadataForm
+  alias Andi.InputSchemas.Datasets
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -24,6 +25,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
       ingestion = TDG.create_ingestion(%{name: "Original"})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(ingestion, %{name: "Updated"}), return: {:ok, ingestion}
+      allow Datasets.get(any()), return: "Dataset Name"
 
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
 
@@ -56,6 +58,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/xml"})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(ingestion, any()), return: {:ok, ingestion}
+      allow Datasets.get(any()), return: "Dataset Name"
 
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
 

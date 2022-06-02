@@ -54,6 +54,7 @@ defmodule AndiWeb.Views.DisplayNames do
     sourceUrl: "Base URL",
     spatial: "Spatial Boundaries",
     sub_key: "Name",
+    targetDataset: "Target Dataset",
     temporal: "Temporal Boundaries",
     time: "Time",
     topLevelSelector: "Top Level Selector",
