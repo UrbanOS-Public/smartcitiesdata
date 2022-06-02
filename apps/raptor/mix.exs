@@ -28,7 +28,7 @@ defmodule Raptor.MixProject do
 
   defp deps do
     [
-      {:brook, "~> 0.4"},
+      {:brook, "== 0.4.9"},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},

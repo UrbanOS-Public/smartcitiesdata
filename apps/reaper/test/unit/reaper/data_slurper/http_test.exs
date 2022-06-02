@@ -91,7 +91,7 @@ defmodule Reaper.DataSlurper.HttpTest do
     test "makes call with headers", %{bypass: bypass} do
       file_url = "/some/other/csv-file2.csv"
 
-      allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok, meck_options: [passthrough: true])
+      allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok)
 
       setup_get(bypass, file_url, ~s|one,two,three\n4,5,6\n|)
 
