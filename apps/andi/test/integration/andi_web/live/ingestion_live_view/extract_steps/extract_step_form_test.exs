@@ -93,7 +93,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
     es_form = element(editor, "#step-#{extract_step_id} form")
 
-    render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+    render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => "test"}})
 
     render_click(view, "save")
 
