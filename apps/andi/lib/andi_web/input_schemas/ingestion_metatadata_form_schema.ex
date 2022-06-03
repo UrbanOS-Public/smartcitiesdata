@@ -42,7 +42,7 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   def target_dataset_exists(changeset) do
     validate_change changeset, :targetDataset, fn :targetDataset, targetDataset  ->
       case Andi.InputSchemas.Datasets.get(targetDataset) do
-        nil -> [targetDataset: "targetDataset with id: #{targetDataset} does not exist. It may have been deleted."]
+        nil -> [targetDataset: "Dataset with id: #{targetDataset} does not exist. It may have been deleted."]
         _ -> []
       end
     end

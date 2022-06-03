@@ -105,4 +105,8 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     dataset = Andi.InputSchemas.Datasets.get(id)
     dataset.business.dataTitle
   end
+
+  # on select
+  #send(pid, "saved)
+
 end

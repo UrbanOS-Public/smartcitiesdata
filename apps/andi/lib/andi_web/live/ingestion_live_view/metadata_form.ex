@@ -90,13 +90,24 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> IngestionMetadataFormSchema.changeset_from_form_data()
-    |> complete_validation(socket)
+    |> complete_validation(socket) |> IO.inspect(label: "finished validate event")
   end
 
   def handle_event("save-dataset-search",  %{"id" => id}, socket) do
     form_data = socket.assigns.changeset.changes
-    changeset = Map.put(form_data, :targetDataset, id)
+    updated_form_data = Map.put(form_data, :targetDataset, id)
+    |>  Map.new(fn {key, value} -> {Atom.to_string(key), value} end)
+    #|> IngestionMetadataFormSchema.changeset_from_form_data()
+
+    changeset = socket.assigns.changeset.changes
+    |> Map.put(:targetDataset, id)
     |> IngestionMetadataFormSchema.changeset_from_form_data()
+
+    handle_event("validate", %{"form_data" => updated_form_data}, socket)
+
+
+    socket.assigns.changeset |> IO.inspect(label: "old changeset")
+    changeset |> IO.inspect(label: "new changeset")
 
     {:noreply,
      assign(socket,
