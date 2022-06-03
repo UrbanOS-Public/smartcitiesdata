@@ -99,6 +99,8 @@ defmodule Flair.DurationsTest do
     {:ok, data} =
       Data.new(%{
         dataset_id: dataset_id,
+        ingestion_id: "some_ingestion",
+        extraction_start_time: DateTime.utc_now() |> DateTime.to_iso8601(),
         payload: "dont_care",
         _metadata: "dont_care",
         operational: %{

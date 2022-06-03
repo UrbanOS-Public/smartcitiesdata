@@ -98,7 +98,7 @@ defmodule Reaper.DataExtract.LoadStage do
     data = %{
       dataset_id: state.ingestion.targetDataset,
       ingestion_id: state.ingestion.id,
-      extraction_start_time: state.start_time,
+      extraction_start_time: format_date(state.start_time),
       operational: %{timing: add_timing(state)},
       payload: payload,
       _metadata: %{}
