@@ -33,7 +33,7 @@ defmodule Alchemist.MixProject do
 
   defp deps do
     [
-      {:brook, "== 0.4.9"},
+      {:brook, "~> 0.4.9"},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},

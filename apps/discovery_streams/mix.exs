@@ -35,11 +35,11 @@ defmodule DiscoveryStreams.Mixfile do
   defp deps do
     [
       {:annotated_retry, in_umbrella: true},
-      {:brook, "== 0.4.9"},
+      {:brook, "~> 0.4.9"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test, :integration]},
-      {:cowlib, "== 2.9.1", override: true},
+      {:cowlib, "~> 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:definition_kafka, in_umbrella: true},
       {:divo_kafka, "~> 0.1.6", only: [:integration]},
