@@ -27,7 +27,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
                 class="search-modal__search_bar-input"
                 type="text"
                 value="<%= @search_text %>"
-                placeholder="Search datasets"
+                placeholder="Search dataset"
               >
             </div>
           </form>
@@ -63,7 +63,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
       </div>
 
     <div class="dataset-search-selected-datasets">
-        <p class="search-modal-section-header-text">Selected Datasets</p>
+        <p class="search-modal-section-header-text">Selected Dataset</p>
         <div class="selected-results-from-search">
           <%= if(selected_dataset(@search_results, @selected_dataset) == nil) do %>
             <div></div>
@@ -107,6 +107,5 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   end
 
   # on select
-  #send(pid, "saved)
-
+  # send(pid, "saved)
 end
