@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView do
   alias Andi.Services.DatasetStore
 
   import SmartCity.Event, only: [dataset_update: 0, dataset_delete: 0]
+  # refactor: what is Phoenix.HTML? Doesn't look like it's used?
   import Phoenix.HTML
   require Logger
 
@@ -278,6 +279,7 @@ defmodule AndiWeb.EditLiveView do
     {:noreply, socket}
   end
 
+  # flag:
   defp publish(socket) do
     socket = reset_save_success(socket)
     dataset_id = socket.assigns.dataset.id
@@ -288,11 +290,12 @@ defmodule AndiWeb.EditLiveView do
     andi_dataset = Datasets.get(dataset_id)
 
     dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
-    dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
 
     if dataset_changeset.valid? do
+      dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
+      # refactor: shouldn't we only send this audit event if the event.send returns ok
       Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_update(), smrt_dataset)
 
       case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
