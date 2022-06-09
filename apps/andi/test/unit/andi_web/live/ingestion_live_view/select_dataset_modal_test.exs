@@ -1,6 +1,7 @@
 defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
+  import Phoenix.ConnTest
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
@@ -11,6 +12,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets
+  alias AndiWeb.IngestionLiveView.MetadataForm
 
   @endpoint AndiWeb.Endpoint
   @url_path "/ingestions"
@@ -47,8 +49,9 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       allow(Ingestions.update(any()), return: ingestion)
       allow(Ingestions.get(any()), return: ingestion)
       allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
+      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
 
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
 
       select_dataset_button = find_select_dataset_button(view)
       render_click(select_dataset_button)
@@ -65,6 +68,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
         extractSteps: [],
         schema: []
       }
+
       dataset = TDG.create_dataset(%{})
 
       allow(Andi.Repo.all(any()), return: [%Dataset{business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}])
@@ -72,13 +76,14 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       allow(Ingestions.get(any()), return: ingestion)
       allow(Datasets.get(any()), return: dataset)
       allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
+      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
 
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
 
       select_dataset_button = find_select_dataset_button(view)
       render_click(select_dataset_button)
 
-      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
+      html = render_submit(view, "datasets-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"
@@ -105,13 +110,14 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       allow(Ingestions.update(any()), return: ingestion)
       allow(Ingestions.get(any()), return: ingestion)
       allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
+      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
 
-      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
 
       select_dataset_button = find_select_dataset_button(view)
       render_click(select_dataset_button)
 
-      html = render_submit(view, "dataset-search", %{"search-value" => "Noodles"})
+      html = render_submit(view, "datasets-search", %{"search-value" => "Noodles"})
 
       assert get_text(html, ".search-table__cell") =~ "Noodles"
       assert get_text(html, ".search-table__cell") =~ "Happy"

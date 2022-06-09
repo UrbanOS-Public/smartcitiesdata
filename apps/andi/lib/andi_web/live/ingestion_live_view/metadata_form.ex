@@ -46,7 +46,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
       </div>
 
     </form>
-    <%= live_component(@socket, AndiWeb.IngestionLiveView.SelectDatasetModal, visibility: @select_dataset_modal_visibility, search_results: @search_results, search_text: @search_text, selected_dataset: @selected_dataset, id: :ingestion_metadata_form) %>
+    <%= live_component(@socket, AndiWeb.IngestionLiveView.SelectDatasetModal, visibility: @select_dataset_modal_visibility, search_results: @search_results, search_text: @search_text, selected_dataset: @selected_dataset, id: :ingestion_metadata_search) %>
 
     """
   end
@@ -90,24 +90,24 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> IngestionMetadataFormSchema.changeset_from_form_data()
-    |> complete_validation(socket) |> IO.inspect(label: "finished validate event")
+    |> complete_validation(socket)
   end
 
-  def handle_event("save-dataset-search",  %{"id" => id}, socket) do
+  def handle_event("save-dataset-search", %{"id" => id}, socket) do
     form_data = socket.assigns.changeset.changes
-    updated_form_data = Map.put(form_data, :targetDataset, id)
-    |>  Map.new(fn {key, value} -> {Atom.to_string(key), value} end)
-    #|> IngestionMetadataFormSchema.changeset_from_form_data()
 
-    changeset = socket.assigns.changeset.changes
-    |> Map.put(:targetDataset, id)
-    |> IngestionMetadataFormSchema.changeset_from_form_data()
+    updated_form_data =
+      Map.put(form_data, :targetDataset, id)
+      |> Map.new(fn {key, value} -> {Atom.to_string(key), value} end)
+
+    # |> IngestionMetadataFormSchema.changeset_from_form_data()
+
+    changeset =
+      socket.assigns.changeset.changes
+      |> Map.put(:targetDataset, id)
+      |> IngestionMetadataFormSchema.changeset_from_form_data()
 
     handle_event("validate", %{"form_data" => updated_form_data}, socket)
-
-
-    socket.assigns.changeset |> IO.inspect(label: "old changeset")
-    changeset |> IO.inspect(label: "new changeset")
 
     {:noreply,
      assign(socket,

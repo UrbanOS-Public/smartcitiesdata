@@ -39,15 +39,16 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     changeset(ingestion)
   end
 
-  def target_dataset_exists(changeset) do
-    validate_change changeset, :targetDataset, fn :targetDataset, targetDataset  ->
+  defp target_dataset_exists(changeset) do
+    validate_change(changeset, :targetDataset, fn :targetDataset, targetDataset ->
       case Andi.InputSchemas.Datasets.get(targetDataset) do
         nil -> [targetDataset: "Dataset with id: #{targetDataset} does not exist. It may have been deleted."]
         _ -> []
       end
-    end
+    end)
   end
 
+  @spec changeset_from_form_data(any) :: Ecto.Changeset.t()
   def changeset_from_form_data(form_data) do
     form_data
     |> AtomicMap.convert(safe: false, underscore: false)
