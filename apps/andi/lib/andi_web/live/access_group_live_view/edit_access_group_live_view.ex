@@ -46,9 +46,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         </div>
       </form>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @dataset_search_text, selected_datasets: @selected_datasets) %>
+      <%= live_component(@socket, AndiWeb.AccessGroupLiveView.ManageDatasetsModal, visibility: @manage_datasets_modal_visibility, search_results: @dataset_search_results, search_text: @dataset_search_text, selected_datasets: @selected_datasets) %>
 
-      <%= live_component(@socket, AndiWeb.Search.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text, selected_users: @selected_users) %>
+      <%= live_component(@socket, AndiWeb.AccessGroupLiveView.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text, selected_users: @selected_users) %>
 
       <div class="edit-page__btn-group" id="access-groups-edit-button-group">
       <div class="btn-group__standard">

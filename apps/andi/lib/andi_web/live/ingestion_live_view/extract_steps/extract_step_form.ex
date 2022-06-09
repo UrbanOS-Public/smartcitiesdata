@@ -64,7 +64,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         </div>
       </div>
 
-      <div class="form-section">
+      <div id="extract-step-form-section" class="form-section">
         <div class="component-edit-section--<%= @visibility %>">
 
           <div class="add-step">

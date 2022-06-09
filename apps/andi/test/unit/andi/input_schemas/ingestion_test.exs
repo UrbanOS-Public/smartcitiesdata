@@ -21,6 +21,24 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     sourceFormat: "sourceFormat"
   }
 
+  test "changeset_for_draft updates changeset with new name" do
+    original_ingestion = %Andi.InputSchemas.Ingestion{
+      id: "f5484914-c640-47a7-b509-ce16e8d70b85",
+      name: "New Ingestion - 2022-04-25",
+      extractSteps: [],
+      schema: [],
+      transformations: []
+    }
+
+    changes = %{
+      name: "Updated Name"
+    }
+
+    changeset = Ingestion.changeset_for_draft(original_ingestion, changes)
+
+    assert %{name: "Updated Name"} == changeset.changes
+  end
+
   describe "changeset" do
     data_test "requires value for #{inspect(field)}" do
       allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}

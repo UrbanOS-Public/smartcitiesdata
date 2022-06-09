@@ -38,7 +38,8 @@ defmodule Andi.InputSchemas.Ingestion do
     :sourceFormat,
     :topLevelSelector,
     :targetDataset,
-    :name
+    :name,
+    :sourceFormat
   ]
 
   @required_fields [
@@ -46,14 +47,6 @@ defmodule Andi.InputSchemas.Ingestion do
     :sourceFormat,
     :targetDataset,
     :name
-  ]
-
-  @submission_cast_fields [
-    :sourceFormat
-  ]
-
-  @submission_required_fields [
-    :sourceFormat
   ]
 
   def changeset(%SmartCity.Ingestion{} = changes) do

@@ -1,4 +1,4 @@
-defmodule AndiWeb.Search.ManageDatasetsModalTest do
+defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModalTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
