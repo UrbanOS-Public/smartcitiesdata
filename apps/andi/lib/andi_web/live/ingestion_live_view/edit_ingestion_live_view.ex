@@ -134,9 +134,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("publish", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
-    Process.sleep(1_000)
-
     andi_ingestion = Ingestions.get(ingestion_id)
 
     ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
@@ -144,26 +141,44 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     if ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
       {:ok, smrt_ingestion} = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
-
-      case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
-        :ok ->
-          {:noreply,
-           assign(socket,
-             changeset: ingestion_changeset,
-             save_success: true,
-             click_id: UUID.uuid4(),
-             success_message: "Publish Successfull"
-           )}
-
-        error ->
-          Logger.warn("Unable to publish new SmartCity.Ingestion: #{inspect(error)}")
-      end
-    else
-      # remove these logs
-      Logger.warn("Changeset invalid, so not gonna publish.")
-      ingestion_changeset.errors |> IO.inspect(label: "errors preventing publish")
-      {:noreply, assign(socket, changeset: ingestion_changeset)}
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion)
     end
+
+    #######
+
+    # ingestion_id = socket.assigns.ingestion.id
+    # AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
+    # Process.sleep(1_000)
+
+    # andi_ingestion = Ingestions.get(ingestion_id)
+
+    # ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
+
+    # if ingestion_changeset.valid? do
+    #   ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
+    #   {:ok, smrt_ingestion} = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+
+    # case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
+    #     :ok ->
+    #       {:noreply,
+    #        assign(socket,
+    #          changeset: ingestion_changeset,
+    #          save_success: true,
+    #          click_id: UUID.uuid4(),
+    #          success_message: "Publish Successfull"
+    #        )}
+
+    #     error ->
+    #       Logger.warn("Unable to publish new SmartCity.Ingestion: #{inspect(error)}")
+    #   end
+    # else
+    #   # remove these logs
+    #   Logger.warn("Changeset invalid, so not gonna publish.")
+    #   ingestion_changeset.errors |> IO.inspect(label: "errors preventing publish")
+    #   {:noreply, assign(socket, changeset: ingestion_changeset)}
+    # end
+
+    {:noreply, socket}
   end
 
   def handle_event("save", _, socket) do
