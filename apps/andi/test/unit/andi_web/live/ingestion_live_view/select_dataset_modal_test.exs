@@ -126,6 +126,53 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       assert get_text(html, ".search-table__cell") =~ "Gardener"
       assert get_text(html, ".search-table__cell") =~ "Pretty"
     end
+
+    test "only allows one dataset to be selected", %{conn: conn} do
+      ingestion = %Andi.InputSchemas.Ingestion{
+        id: "id",
+        targetDataset: "dataset_id",
+        cadence: "once",
+        sourceFormat: "csv",
+        extractSteps: [],
+        schema: []
+      }
+
+      allow(Andi.Repo.all(any()),
+        return: [
+          %Dataset{id: "1", business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}},
+          %Dataset{id: "2", business: %{dataTitle: "Flowers", orgTitle: "Gardener", keywords: ["Pretty"]}}
+        ]
+      )
+
+      allow(Ingestions.update(any()), return: ingestion)
+      allow(Ingestions.get(any()), return: ingestion)
+      allow(Andi.Repo.get(Andi.InputSchemas.Ingestion, any()), return: [])
+
+      allow(Andi.InputSchemas.Datasets.get(any()),
+        return: %Dataset{id: "1", business: %{dataTitle: "Noodles", orgTitle: "Happy", keywords: ["Soup"]}}
+      )
+
+      assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
+
+      select_dataset_button = find_select_dataset_button(view)
+      render_click(select_dataset_button)
+
+      html = render_submit(view, "datasets-search", %{"search-value" => "Noodles"})
+
+      # Select the first dataset
+      select_search_result = element(view, "[phx-value-id=1]")
+      html = render_click(select_search_result)
+
+      assert get_text(html, "[phx-value-id=2]") =~ "Select"
+      assert get_text(html, "[phx-value-id=1]") =~ "Remove"
+
+      # Select the second dataset
+      select_search_result = element(view, "[phx-value-id=2]")
+      html = render_click(select_search_result)
+
+      assert get_text(html, "[phx-value-id=1]") =~ "Select"
+      assert get_text(html, "[phx-value-id=2]") =~ "Remove"
+    end
   end
 
   defp find_select_dataset_button(view) do

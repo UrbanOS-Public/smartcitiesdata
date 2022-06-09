@@ -90,6 +90,7 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
 
   defp interpret_error_message(message, :schema_sample, _), do: message
+  defp interpret_error_message("is required", :targetDataset, _), do: default_error_message(:targetDataset)
   defp interpret_error_message(message, :targetDataset, _), do: message
   defp interpret_error_message(message, :datasetLink, _), do: message
   defp interpret_error_message("is required", field, _), do: default_error_message(field)

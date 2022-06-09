@@ -117,18 +117,24 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
       render_change(view, "validate", %{"form_data" => form_data})
 
-      error = element(view, "#targetDataset-error-msg", "Please enter a valid source format.") |> render()
+      error = element(view, "#targetDataset-error-msg", "Please enter a valid target dataset.") |> render()
       refute error == nil
     end
 
-    # todo:
-    @tag :skip
-    test "only allows one dataset to be selected" do
-      # search for a + b
-      # select a
-      # confirm a selected, b not selected
-      # select b
-      # confirm b selected, a no longer selected
+    test "shows an error if there is a target dataset that does not exist in the database" do
+      ingestion = TDG.create_ingestion(%{})
+      form_data = %{"targetDataset" => "id_of_deleted_dataset"}
+      allow Datasets.get(any()), return: nil
+
+      assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
+
+      render_change(view, "validate", %{"form_data" => form_data})
+
+      error =
+        element(view, "#targetDataset-error-msg", "Dataset with id: id_of_deleted_dataset does not exist. It may have been deleted.")
+        |> render()
+
+      refute error == nil
     end
   end
 

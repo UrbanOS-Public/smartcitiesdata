@@ -74,15 +74,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     end
   end
 
-  def get_dataset_name(id) when id in ["", nil], do: ""
-
-  def get_dataset_name(id) do
-    case Andi.InputSchemas.Datasets.get(id) do
-      nil -> "Dataset does not exist"
-      dataset -> dataset.business.dataTitle
-    end
-  end
-
   def handle_event("remove-selected-dataset", %{"id" => _id}, socket) do
     {:noreply, assign(socket, selected_dataset: nil)}
   end
@@ -99,8 +90,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     updated_form_data =
       Map.put(form_data, :targetDataset, id)
       |> Map.new(fn {key, value} -> {Atom.to_string(key), value} end)
-
-    # |> IngestionMetadataFormSchema.changeset_from_form_data()
 
     changeset =
       socket.assigns.changeset.changes
@@ -162,5 +151,14 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     FormUpdate.send_value(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, changeset: new_changeset)}
+  end
+
+  defp get_dataset_name(id) when id in ["", nil], do: ""
+
+  defp get_dataset_name(id) do
+    case Andi.InputSchemas.Datasets.get(id) do
+      nil -> "Dataset does not exist"
+      dataset -> dataset.business.dataTitle
+    end
   end
 end
