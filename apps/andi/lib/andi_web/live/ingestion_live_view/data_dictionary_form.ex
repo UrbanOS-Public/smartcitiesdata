@@ -51,6 +51,12 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         "expanded" -> "MINIMIZE"
       end
 
+    loader_visibility =
+      case assigns.loading_schema do
+        true -> "loading"
+        false -> "hidden"
+      end
+
     ~L"""
     <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
@@ -76,6 +82,25 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
 
             <div class="data-dictionary-form-edit-section form-grid">
+
+              <div class="upload-section">
+                <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
+                  <div class="data-dictionary-form__file-upload">
+                    <div class="file-input-button--<%= loader_visibility %>">
+                      <div class="file-input-button">
+                        <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                        <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                      </div>
+                    </div>
+
+                    <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
+                    <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
+                  </div>
+                <% end %>
+
+                <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
+              </div>
 
               <div class="data-dictionary-form__tree-section">
                 <div class="data-dictionary-form__tree-header data-dictionary-form-tree-header">
@@ -105,6 +130,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
       <%= live_component(@socket, AndiWeb.DataDictionary.RemoveFieldEditor, id: :data_dictionary_remove_field_editor, selected_field: @current_data_dictionary_item, visible: @remove_data_dictionary_field_visible) %>
 
+      <%= live_component(@socket, AndiWeb.DataDictionary.OverwriteSchemaModal, id: :overwrite_schema_modal, visibility: @overwrite_schema_visibility) %>
     </div>
     """
   end
@@ -495,10 +521,5 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       true -> {:noreply, assign(socket, changeset: new_changeset)}
       _ -> {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
     end
-  end
-
-  defp send_data_dictionary_status(changeset, socket) do
-    send(socket.parent_pid, {:update_data_dictionary_status, changeset.valid?})
-    changeset
   end
 end
