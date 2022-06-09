@@ -148,6 +148,14 @@ defmodule AndiWeb.EditController do
     end
   end
 
+  def transformation(conn, %{}) do
+    %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
+
+    live_render(conn, AndiWeb.TransformationLiveView,
+      session: %{"is_curator" => is_curator, "user_id" => user_id}
+    )
+  end
+
   def edit_access_group(conn, %{"id" => id}) do
     %{"is_curator" => is_curator, "user_id" => user_id} = AndiWeb.Auth.TokenHandler.Plug.current_resource(conn)
 
