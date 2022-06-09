@@ -1,4 +1,4 @@
-defmodule AndiWeb.Search.ManageUsersModal do
+defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
   use Phoenix.LiveComponent
 
   def render(assigns) do

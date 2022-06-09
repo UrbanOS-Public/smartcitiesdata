@@ -19,6 +19,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       </div>
 
       <div>
+        <%= live_render(@socket, AndiWeb.IngestionLiveView.MetadataForm, id: :ingestion_metadata_form_editor, session: %{"ingestion" => @ingestion}) %>
+      </div>
+
+      <div>
         <div class="extract-steps-form-component">
           <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
         </div>
@@ -90,7 +94,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_info({:update_save_message, status}, socket) do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
 
-    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message)}
+    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message, unsaved_changes: false)}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
