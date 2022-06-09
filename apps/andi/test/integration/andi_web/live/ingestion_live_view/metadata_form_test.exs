@@ -12,7 +12,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
   import FlokiHelpers,
     only: [
       get_text: 2,
-      get_value: 2
+      get_value: 2,
+      get_select: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -27,7 +28,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
 
-  describe "ingestions edit" do
+  describe "ingestions metadata form edit" do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
@@ -49,7 +50,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       html: html,
       ingestion: ingestion
     } do
-      assert get_value(html, "#form_data_name") == ingestion.name
+      assert get_value(html, "#ingestion_metadata_form_name") == ingestion.name
     end
 
     test "name field can be altered and saved", %{
@@ -68,70 +69,50 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       render_change(view, "save")
 
       html = render(view)
-      assert get_value(html, "#form_data_name") == new_name
+      assert get_value(html, "#ingestion_metadata_form_name") == new_name
     end
 
-    @tag :skip
-    test "name field reports invalid if left blank", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
-    } do
-    end
-
-    @tag :skip
     test "dataset name field defaults to it's existing association", %{
       view: view,
       html: html,
-      ingestion: ingestion
+      ingestion: ingestion,
+      dataset: dataset
     } do
+      assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == dataset.business.dataTitle
     end
 
-    @tag :skip
-    test "dataset name field reports invalid if left blank", %{
+    test "source format field defaults to its existing value", %{
       view: view,
       html: html,
       ingestion: ingestion
     } do
+      current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
+      assert ingestion.sourceFormat in current_select_value
     end
 
-    @tag :skip
-    test "dataset name field can be altered and saved", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
-    } do
-    end
-
-    @tag :skip
-    test "add dataset button opens the add a dataset modal", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
-    } do
-    end
-
-    @tag :skip
-    test "source format field defaults to an empty value", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
-    } do
-    end
-
-    @tag :skip
-    test "source format field reports as invalid if left empty", %{
-      curator_conn: conn,
-      ingestion: ingestion
-    } do
-    end
-
-    @tag :skip
     test "source format field can be altered and saved", %{
       view: view,
       html: html,
       ingestion: ingestion
     } do
+      new_source_format = "text/xml"
+
+      form_data = %{
+        "sourceFormat" => new_source_format
+      }
+
+      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      render_change(view, "save")
+
+      html = render(view)
+      current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
+
+      assert new_source_format in current_select_value
     end
+  end
+
+  defp find_select_dataset_btn(view) do
+    element(view, ".btn", "Select Dataset")
   end
 end
