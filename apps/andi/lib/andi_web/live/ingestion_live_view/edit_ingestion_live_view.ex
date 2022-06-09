@@ -57,7 +57,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       <div id="edit-page-snackbar" phx-hook="showSnackbar">
         <div style="display: none;"><%= @click_id %></div>
-        <!-- refactor: part of msg refactor, if there's a msg, show it -->
           <%= if @save_success do %>
             <div id="snackbar" class="success-message"><%= @success_message %></div>
           <% end %>
@@ -83,11 +82,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        unsaved_changes: false,
        page_error: false,
        ingestion: ingestion,
-       # refactor: this is reused by save and publish, should be edit_success
-       # can we just make success_message a {type, msg} instead of "msg"?, and
-       #   than erase save_success?
-       # additionally, write a utility function for the snackbar so that click_id
-       # is abstracted
        save_success: false,
        success_message: "",
        user_id: user_id
@@ -134,7 +128,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, delete_ingestion_modal_visibility: "hidden")}
   end
 
-  # flag:
   def handle_event("publish", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
@@ -146,19 +139,15 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     if ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
-      # todo: implement Ingestions.update_submission_status()
       {:ok, smrt_ingestion} = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
-      # todo: log audit event
 
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
-          # todo: log audit event
           {:noreply,
            assign(socket,
              changeset: ingestion_changeset,
              save_success: true,
              click_id: UUID.uuid4(),
-             # refactor: use a publish message function, rework snackbar
              success_message: "Publish Successfull"
            )}
 
@@ -166,7 +155,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           Logger.warn("Unable to publish new SmartCity.Ingestion: #{inspect(error)}")
       end
     else
-      # todo: remove this log
+      # remove these logs
       Logger.warn("Changeset invalid, so not gonna publish.")
       ingestion_changeset.errors |> IO.inspect(label: "errors preventing publish")
       {:noreply, assign(socket, changeset: ingestion_changeset)}
