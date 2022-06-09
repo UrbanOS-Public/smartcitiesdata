@@ -157,6 +157,22 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert_called Brook.Event.send(any(), ingestion_update(), any(), %{id: ingestion.id})
     end
 
+    test "ingestion form edits are included in publish event", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      new_name = "new_name"
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      form_data = %{"name" => new_name}
+      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+      html = render_change(metadata_view, "validate", %{"form_data" => form_data})
+
+      render_click(view, "publish")
+
+      assert_called Brook.Event.send(any(), ingestion_update(), any(), %{name: new_name})
+    end
+
     test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
