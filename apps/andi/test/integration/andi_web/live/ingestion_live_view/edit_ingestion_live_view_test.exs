@@ -167,6 +167,19 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert published_ingestion.submission_status == :published
     end
 
+    test "publishing a valid ingestion creates an audit log with corresponding email", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      render_click(view, "publish")
+
+      eventually(fn ->
+        events = AuditEvents.get_all_of_type(ingestion_update())
+
+        assert [audit_event] = Enum.filter(events, fn ele -> Map.get(ele.event, "id") == ingestion.id end)
+        assert "bob@example.com" == audit_event.user_id
+      end)
+    end
+
     test "ingestion form edits are included in publish event", %{curator_conn: conn, ingestion: ingestion} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 

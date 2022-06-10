@@ -148,6 +148,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
           Ingestions.update_submission_status(ingestion_id, :published)
+          Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, ingestion_update(), smrt_ingestion)
 
         error ->
           Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
