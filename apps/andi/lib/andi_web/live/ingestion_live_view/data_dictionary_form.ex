@@ -79,8 +79,6 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
           <div class="component-edit-section--<%= @visibility %>">
 
-            <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
-
             <div class="data-dictionary-form-edit-section form-grid">
 
               <div class="upload-section">

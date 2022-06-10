@@ -606,7 +606,6 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     end
   end
 
-  @tag :skip
   test "required schema field displays proper error message", %{conn: conn} do
     ingestion = create_ingestion_with_schema([])
 
@@ -1096,8 +1095,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       select_source_format("application/json", view)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
-      json_sample =
-        "header {\n  gtfs_realtime_version: \"2.0\"\n  incrementality: FULL_DATASET\n  timestamp: 1582913296\n}\nentity {\n  id: \"2551\"\n  vehicle {\n    trip {\n      trip_id: \"2290874_MRG_1\"\n      start_date: \"20200228\"\n      route_id: \"661\"\n    }\n"
+      json_sample = "header"
 
       html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
 
