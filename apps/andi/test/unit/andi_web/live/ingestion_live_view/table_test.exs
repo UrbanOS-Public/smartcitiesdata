@@ -48,5 +48,19 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
       assert get_text(html, ".ingestions-table__cell") =~ "Hazel"
     end
+
+    test "reflects a draft ingestion status", %{conn: conn} do
+      draft_ingestion = %{submission_status: "draft", name: "one", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}
+      allow(Andi.Repo.all(any()), return: [draft_ingestion])
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      # todo: add assertions for check mark
+      assert get_text(html, ".ingestions-table__cell") =~ "Draft"
+    end
+
+    # test "reflects a published ingestion status" do
+    #   published_ingestion = %{name: "two", id: "456", dataset: %{business: %{dataTitle: "Theo"}}}
+    #   allow(Andi.Repo.all(any()), return: [published_ingestion])
+    # end
   end
 end
