@@ -74,6 +74,34 @@
   width: 10%;
 }
 
+$icon-width: 30px;
+
+.ingestion__status {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+
+    .status {
+        display: flex;
+        align-items: center;
+    }
+
+    .status__icon {
+        height: $icon-width;
+        width: $icon-width;
+    }
+}
+
+.ingestion__status--success {
+    color: green;
+
+    .status__icon {
+        background-image: url('/static/images/check.svg');
+        height: $icon-width;
+        width: $icon-width;
+    }
+}
+
 .edit-ingestion-title {
   display: inline-flex;
   height: 3.5rem;
