@@ -69,12 +69,17 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
     test "ingestion publication status is shown", %{curator_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(business: %{dataTitle: "dataset"}) |> Datasets.update()
-
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, name: "ingestion"}) |> Ingestions.update()
+      {:ok, ingestion} = TDG.create_ingestion(%{targetDataset: dataset.id, name: "ingestion"}) |> Ingestions.update()
 
       {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "Draft"
+
+      Ingestions.update_submission_status(ingestion.id, :published)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".ingestions-table__cell") =~ "Published"
     end
   end
 end
