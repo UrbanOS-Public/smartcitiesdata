@@ -75,7 +75,7 @@ defmodule AndiWeb.IngestionLiveView do
       "id" => ingestion.id,
       "ingestion_name" => ingestion.name,
       "dataset_name" => dataset_name(ingestion),
-      "status" => ingestion.submission_status |> String.capitalize()
+      "status" => ingestion.submission_status |> Atom.to_string() |> String.capitalize()
     }
   end
 
