@@ -42,7 +42,10 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
     end
 
     test "shows ingestions when there are rows to show and the dataset title not nil", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}])
+      allow(Andi.Repo.all(any()),
+        return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}]
+      )
+
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
