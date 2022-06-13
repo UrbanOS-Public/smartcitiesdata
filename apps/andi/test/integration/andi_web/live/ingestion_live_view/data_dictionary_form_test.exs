@@ -1086,13 +1086,12 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       assert generated_schema == expected_schema
     end
 
-    @tag :skip
     test "handles invalid json", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      {:ok, _} = Ingestions.update(ingestion)
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("application/json", view)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       json_sample = "header"
@@ -1102,13 +1101,12 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
     end
 
-    @tag :skip
     test "should throw error when empty json file is passed", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      {:ok, _} = Ingestions.update(ingestion)
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("application/json", view)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
       json_sample = "[]"
