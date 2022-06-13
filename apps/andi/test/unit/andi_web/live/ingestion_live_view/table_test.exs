@@ -35,14 +35,14 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
     end
 
     test "shows ingestions when there are rows to show and the dataset title is nil", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [%{name: "penny", id: "123"}])
+      allow(Andi.Repo.all(any()), return: [%{submissionStatus: :draft, name: "penny", id: "123"}])
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
     end
 
     test "shows ingestions when there are rows to show and the dataset title not nil", %{conn: conn} do
-      allow(Andi.Repo.all(any()), return: [%{name: "penny", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}])
+      allow(Andi.Repo.all(any()), return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}])
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
@@ -50,7 +50,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
     end
 
     test "reflects a draft ingestion status", %{conn: conn} do
-      draft_ingestion = %{submission_status: "draft", name: "one", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}
+      draft_ingestion = %{submissionStatus: :draft, name: "one", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}
       allow(Andi.Repo.all(any()), return: [draft_ingestion])
       assert {:ok, view, html} = live(conn, @url_path)
 
@@ -58,7 +58,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
     end
 
     test "reflects a published ingestion status", %{conn: conn} do
-      published_ingestion = %{submission_status: "published", name: "two", id: "456", dataset: %{business: %{dataTitle: "Theo"}}}
+      published_ingestion = %{submissionStatus: :published, name: "two", id: "456", dataset: %{business: %{dataTitle: "Theo"}}}
 
       allow(Andi.Repo.all(any()), return: [published_ingestion])
       assert {:ok, view, html} = live(conn, @url_path)

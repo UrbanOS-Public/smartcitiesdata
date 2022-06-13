@@ -164,7 +164,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       render_click(view, "publish")
 
       published_ingestion = Ingestions.get(ingestion.id)
-      assert published_ingestion.submission_status == :published
+      assert published_ingestion.submissionStatus == :published
     end
 
     test "publishing a valid ingestion creates an audit log with corresponding email", %{curator_conn: conn, ingestion: ingestion} do

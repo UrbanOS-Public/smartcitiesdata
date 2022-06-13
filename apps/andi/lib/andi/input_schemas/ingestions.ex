@@ -153,6 +153,6 @@ defmodule Andi.InputSchemas.Ingestions do
   def update_submission_status(ingestion_id, status) do
     from_ingestion = get(ingestion_id)
 
-    update(from_ingestion, %{submission_status: status})
+    update(from_ingestion, %{submissionStatus: status})
   end
 end

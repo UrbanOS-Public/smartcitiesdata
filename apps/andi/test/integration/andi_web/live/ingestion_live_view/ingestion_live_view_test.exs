@@ -61,7 +61,7 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
       {:ok, view, _html} = live(conn, @url_path)
 
-      edit_ingestion_button = element(view, ".btn", "Edit")
+      edit_ingestion_button = element(view, "a[href=\"/ingestions/#{ingestion.id}\"]", "Edit")
 
       render_click(edit_ingestion_button)
       assert_redirected(view, "/ingestions/#{ingestion.id}")
