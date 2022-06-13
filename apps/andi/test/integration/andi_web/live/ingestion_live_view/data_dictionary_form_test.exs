@@ -6,6 +6,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   import Phoenix.LiveViewTest
+  import Checkov
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.DataDictionaryFields
@@ -895,6 +896,248 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     end
   end
 
+  describe "schema sample upload" do
+    test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      html = render(data_dictionary_view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "is hidden when sourceFormat is not CSV nor JSON", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/geo+json", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      html = render(data_dictionary_view)
+
+      assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "does not allow file uploads greater than 200MB", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 200_000_001})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "should throw error when empty csv file is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = ""
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    data_test "accepts common csv file type #{type}", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 10, "fileType" => type, "file" => csv_sample})
+
+      assert Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+
+      where([
+        [:type],
+        ["text/csv"],
+        ["application/vnd.ms-excel"]
+      ])
+    end
+
+    test "should throw error when empty csv file with `\n` is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "\n"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "provides modal when existing schema will be overwritten", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "CAM\nrules"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      refute Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+    end
+
+    test "does not provide modal with no existing schema", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = Ingestions.create(dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      select_source_format("text/csv", view)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "CAM\nrules"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      assert Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+
+      updated_ingestion = Ingestions.get(ingestion.id)
+      refute Enum.empty?(updated_ingestion.schema)
+    end
+
+    test "parses CSVs with various types", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = Ingestions.create(dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      select_source_format("text/csv", view)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample = "string,int,float,bool,date,timestamp\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      updated_ingestion = Ingestions.get(ingestion.id)
+
+      generated_schema =
+        updated_ingestion.schema
+        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+      expected_schema = [
+        %{name: "string", type: "string"},
+        %{name: "int", type: "integer"},
+        %{name: "float", type: "float"},
+        %{name: "bool", type: "boolean"},
+        %{name: "date", type: "date"},
+        %{name: "timestamp", type: "timestamp"}
+      ]
+
+      assert generated_schema == expected_schema
+    end
+
+    test "parses CSV with valid column names", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = Ingestions.create(dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      select_source_format("text/csv", view)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      csv_sample =
+        "string\r,i&^%$nt,fl\toat,bool---,date as multi word column,timestamp as multi word column\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+
+      updated_ingestion = Ingestions.get(ingestion.id)
+
+      generated_schema =
+        updated_ingestion.schema
+        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
+
+      expected_schema = [
+        %{name: "string", type: "string"},
+        %{name: "int", type: "integer"},
+        %{name: "float", type: "float"},
+        %{name: "bool", type: "boolean"},
+        %{name: "date as multi word column", type: "date"},
+        %{name: "timestamp as multi word column", type: "timestamp"}
+      ]
+
+      assert generated_schema == expected_schema
+    end
+
+    test "handles invalid json", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      json_sample = "header"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "should throw error when empty json file is passed", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      json_sample = "[]"
+
+      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+    end
+
+    test "generates eligible parents list", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      {:ok, _} = Datasets.update(dataset)
+      ingestion = Ingestions.create(dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      select_source_format("application/json", view)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+
+      json_sample = [%{list_field: [%{child_list_field: []}]}] |> Jason.encode!()
+
+      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+
+      updated_ingestion = Ingestions.get(ingestion.id)
+
+      generated_bread_crumbs =
+        updated_ingestion
+        |> DataDictionaryFields.get_parent_ids_from_ingestion()
+        |> Enum.map(fn {bread_crumb, _} -> bread_crumb end)
+
+      assert ["Top Level", "list_field", "list_field > child_list_field"] == generated_bread_crumbs
+    end
+  end
+
   defp create_ingestion_with_schema(schema) do
     dataset = TDG.create_dataset(%{})
     ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema})
@@ -907,5 +1150,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     end)
 
     Ingestions.get(ingestion.id)
+  end
+
+  defp select_source_format(source_format, view) do
+    new_source_format = source_format
+
+    form_data = %{
+      "sourceFormat" => new_source_format
+    }
+
+    metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+    render_change(metadata_view, "validate", %{"form_data" => form_data})
+    render_change(view, "save")
   end
 end
