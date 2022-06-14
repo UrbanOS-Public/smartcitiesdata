@@ -34,6 +34,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
     |> validate_parameters()
   end
 
+  def changeset_for_draft(changes), do: changeset_for_draft(%__MODULE__{}, changes)
+
   def changeset_for_draft(transformation, changes) do
     changes_with_id = StructTools.ensure_id(transformation, changes)
 

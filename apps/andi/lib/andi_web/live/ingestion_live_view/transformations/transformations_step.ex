@@ -5,6 +5,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   use Phoenix.LiveView
   require Logger
 
+  alias Andi.InputSchemas.Ingestions.Transformations
+
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -14,7 +16,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
        order: order,
-       transformations: []
+       transformations: ingestion.transformations
      )}
   end
 
@@ -46,7 +48,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
           <div id="transformation-forms">
             <%= for transformation <- @transformations do %>
-              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: transformation, session: %{}) %>
+              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: transformation.changes.id, session: %{"transformation" => transformation}) %>
             <% end %>
             </div>
 
@@ -63,7 +65,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_event("add-transformation", _, socket) do
-    {:noreply, assign(socket, transformations: [UUID.uuid4() | socket.assigns.transformations])}
+    {:noreply, assign(socket, transformations: [Transformations.create() | socket.assigns.transformations]) |> IO.inspect(label: "what we have on socket")}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
