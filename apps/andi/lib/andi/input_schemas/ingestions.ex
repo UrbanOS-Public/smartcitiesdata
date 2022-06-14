@@ -149,4 +149,10 @@ defmodule Andi.InputSchemas.Ingestions do
 
     update(from_ingestion, %{ingestedTime: iso_ingested_time})
   end
+
+  def update_submission_status(ingestion_id, status) do
+    from_ingestion = get(ingestion_id)
+
+    update(from_ingestion, %{submissionStatus: status})
+  end
 end

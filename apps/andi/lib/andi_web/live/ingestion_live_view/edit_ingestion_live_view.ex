@@ -8,6 +8,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
 
+  import SmartCity.Event, only: [ingestion_update: 0]
+
+  @instance_name Andi.instance_name()
+
   access_levels(render: [:private])
 
   def render(assigns) do
@@ -42,7 +46,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       <div class="edit-page__btn-group">
         <div class="btn-group__standard">
           <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft Ingestion</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="publish">Publish Ingestion</button>
         </div>
 
         <hr>
@@ -128,6 +133,32 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("delete-canceled", _, socket) do
     {:noreply, assign(socket, delete_ingestion_modal_visibility: "hidden")}
+  end
+
+  def handle_event("publish", _, socket) do
+    ingestion_id = socket.assigns.ingestion.id
+
+    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
+    Process.sleep(1_000)
+
+    andi_ingestion = Ingestions.get(ingestion_id)
+    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
+
+    if ingestion_changeset.valid? do
+      ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
+      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+
+      case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
+        :ok ->
+          Ingestions.update_submission_status(ingestion_id, :published)
+          Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, ingestion_update(), smrt_ingestion)
+
+        error ->
+          Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
+      end
+    end
+
+    {:noreply, assign(socket, changeset: ingestion_changeset)}
   end
 
   def handle_event("save", _, socket) do

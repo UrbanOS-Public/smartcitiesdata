@@ -24,6 +24,7 @@ defmodule Andi.InputSchemas.Ingestion do
     field(:cadence, :string)
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
+    field(:submissionStatus, Ecto.Enum, values: [:published, :draft], default: :draft)
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :targetDataset)
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:extractSteps, ExtractStep, on_replace: :delete)
@@ -39,7 +40,8 @@ defmodule Andi.InputSchemas.Ingestion do
     :topLevelSelector,
     :targetDataset,
     :name,
-    :sourceFormat
+    :sourceFormat,
+    :submissionStatus
   ]
 
   @required_fields [

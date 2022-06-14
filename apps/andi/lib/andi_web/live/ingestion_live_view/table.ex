@@ -11,6 +11,7 @@ defmodule AndiWeb.IngestionLiveView.Table do
     <div id="<%= @id %>">
       <table class="ingestions-table">
         <thead>
+          <th class="ingestions-table__th ingestions-table__cell ingestions-table__status-cell">Status</th>
           <th class="ingestions-table__th ingestions-table__cell">Ingestion Name</th>
           <th class="ingestions-table__th ingestions-table__cell">Dataset</th>
           <th class="ingestions-table__th ingestions-table__cell">Action</th>
@@ -20,9 +21,16 @@ defmodule AndiWeb.IngestionLiveView.Table do
           <tr><td class="ingestions-table__cell" colspan="100%">No Ingestions Found!</td></tr>
         <% else %>
           <%= for ingestion <- @ingestions do %>
+          <% status_success_class = if ingestion["status"] == "Published", do: "ingestion__status--success", else: ""%>
 
             <tr class="ingestions-table__tr">
-              <td class="ingestions-table__cell ingestions-table__cell--break ingestions-table__data-title-cell"><%= ingestion["ingestion_name"] %></td>
+              <td class="ingestions-table__cell ingestions-table__cell--break ingestion__status <%= status_success_class %>">
+                <div class="status">
+                  <div class="status__icon"></div>
+                  <div class="status__message"><%= ingestion["status"] %></div>
+                </div>
+              </td>
+              <td class="ingestions-table__cell ingestions-table__cell--break"><%= ingestion["ingestion_name"] %></td>
               <td class="ingestions-table__cell ingestions-table__cell--break"><%= ingestion["dataset_name"] %></td>
               <td class="ingestions-table__cell ingestions-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/ingestions/#{ingestion["id"]}", class: "btn") %></td>
             </tr>

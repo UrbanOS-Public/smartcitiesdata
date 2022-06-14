@@ -148,6 +148,69 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       refute_called Brook.Event.send(any(), any(), any(), any())
     end
 
+    test "publishing a valid ingestion send an ingestion_update event", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      render_click(view, "publish")
+
+      assert_called Brook.Event.send(any(), ingestion_update(), any(), %{id: ingestion.id})
+    end
+
+    test "publishing a valid ingestion sets it's status to \"published\"", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      render_click(view, "publish")
+
+      published_ingestion = Ingestions.get(ingestion.id)
+      assert published_ingestion.submissionStatus == :published
+    end
+
+    test "publishing a valid ingestion creates an audit log with corresponding email", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      render_click(view, "publish")
+
+      eventually(fn ->
+        events = AuditEvents.get_all_of_type(ingestion_update())
+
+        assert [audit_event] = Enum.filter(events, fn ele -> Map.get(ele.event, "id") == ingestion.id end)
+        assert "bob@example.com" == audit_event.user_id
+      end)
+    end
+
+    test "ingestion form edits are included in publish event", %{curator_conn: conn, ingestion: ingestion} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      new_name = "new_name"
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      form_data = %{"name" => new_name}
+      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+      html = render_change(metadata_view, "validate", %{"form_data" => form_data})
+
+      render_click(view, "publish")
+
+      assert_called Brook.Event.send(any(), ingestion_update(), any(), %{name: new_name})
+    end
+
+    test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+
+      {:ok, ingestion} =
+        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
+        |> Ingestions.save()
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      render_click(view, "publish")
+
+      refute_called Brook.Event.send(any(), any(), any(), any())
+    end
+
     defp delete_ingestion_in_ui(view) do
       view |> element("#ingestion-delete-button") |> render_click
       view |> element(".delete-button") |> render_click

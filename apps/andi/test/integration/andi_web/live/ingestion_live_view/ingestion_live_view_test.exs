@@ -11,7 +11,8 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
   import FlokiHelpers,
     only: [
-      find_elements: 2
+      find_elements: 2,
+      get_text: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
@@ -60,10 +61,25 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
       {:ok, view, _html} = live(conn, @url_path)
 
-      edit_ingestion_button = element(view, ".btn", "Edit")
+      edit_ingestion_button = element(view, "a[href=\"/ingestions/#{ingestion.id}\"]", "Edit")
 
       render_click(edit_ingestion_button)
       assert_redirected(view, "/ingestions/#{ingestion.id}")
+    end
+
+    test "ingestion publication status is shown", %{curator_conn: conn} do
+      {:ok, dataset} = TDG.create_dataset(business: %{dataTitle: "dataset"}) |> Datasets.update()
+      {:ok, ingestion} = TDG.create_ingestion(%{targetDataset: dataset.id, name: "ingestion"}) |> Ingestions.update()
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".ingestions-table__cell") =~ "Draft"
+
+      Ingestions.update_submission_status(ingestion.id, :published)
+
+      {:ok, _view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".ingestions-table__cell") =~ "Published"
     end
   end
 end
