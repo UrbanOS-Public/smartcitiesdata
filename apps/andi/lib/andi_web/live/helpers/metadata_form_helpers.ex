@@ -28,6 +28,7 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   end
 
   def get_source_format_options(_), do: Options.source_format()
+  def get_source_format_options(), do: Options.source_format()
 
   def get_language(nil), do: "english"
   def get_language(lang), do: lang

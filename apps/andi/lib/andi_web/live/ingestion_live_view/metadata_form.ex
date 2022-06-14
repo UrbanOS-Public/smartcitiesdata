@@ -13,6 +13,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   def mount(_, %{"ingestion" => ingestion}, socket) do
     changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -20,7 +21,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
        select_dataset_modal_visibility: "hidden",
        search_results: [],
        search_text: "",
-       selected_dataset: ingestion.targetDataset
+       selected_dataset: ingestion.targetDataset,
+       ingestion_id: ingestion.id
      )}
   end
 
@@ -34,7 +36,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
       </div>
       <div class="ingestion-metadata-form ingestion-metadata-form__format">
         <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
-        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceFormat)), [class: "select ingestion-form-fields"]) %>
+        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields"]) %>
         <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
       </div>
       <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
@@ -76,6 +78,17 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   def handle_event("remove-selected-dataset", %{"id" => _id}, socket) do
     {:noreply, assign(socket, selected_dataset: nil)}
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{
+      new_format: form_data["sourceFormat"],
+      ingestion_id: socket.assigns.ingestion_id
+    })
+
+    form_data
+    |> IngestionMetadataFormSchema.changeset_from_form_data()
+    |> complete_validation(socket)
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do

@@ -18,27 +18,30 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     ~L"""
     <%= header_render(@socket, @is_curator) %>
     <div class="edit-page" id="ingestions-edit-page">
-      <div class="edit-ingestion-title">
-        <h2 class="component-title-text">Define Data Ingestion</h2>
-      </div>
-
-      <div>
-        <%= live_render(@socket, AndiWeb.IngestionLiveView.MetadataForm, id: :ingestion_metadata_form_editor, session: %{"ingestion" => @ingestion}) %>
-      </div>
-
-      <div>
-        <div class="extract-steps-form-component">
-          <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
+      <%= f = form_for @changeset, "" %>
+        <%= hidden_input(f, :sourceFormat) %>
+        <div class="edit-ingestion-title">
+          <h2 class="component-title-text">Define Data Ingestion</h2>
         </div>
 
-        <div class="data-dictionary-form-component">
-          <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+        <div>
+          <%= live_render(@socket, AndiWeb.IngestionLiveView.MetadataForm, id: :ingestion_metadata_form_editor, session: %{"ingestion" => @ingestion}) %>
         </div>
 
-        <div class="finalize-form-component ">
-          <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
+        <div>
+          <div class="extract-steps-form-component">
+            <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
+          </div>
+
+          <div class="data-dictionary-form-component">
+            <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+          </div>
+
+          <div class="finalize-form-component ">
+            <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
+          </div>
         </div>
-      </div>
+      </form>
 
       <div class="edit-page__btn-group">
         <div class="btn-group__standard">
