@@ -1,6 +1,6 @@
-defmodule AndiWeb.IngestionLiveView.TransformationsForm do
+defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   @moduledoc """
-  LiveComponent for editing dataset extract steps
+  LiveComponent for organizing individual transformation configurations
   """
   use Phoenix.LiveView
   require Logger
@@ -13,7 +13,8 @@ defmodule AndiWeb.IngestionLiveView.TransformationsForm do
        visibility: "collapsed",
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
-       order: order
+       order: order,
+       transformations: []
      )}
   end
 
@@ -41,7 +42,15 @@ defmodule AndiWeb.IngestionLiveView.TransformationsForm do
       </div>
 
       <div id="transformations-form-section" class="form-section">
-        <div class="component-edit-section--<%= @visibility %>">
+        <div class="component-edit-section--<%= @visibility %> transformations--<%= @visibility %>">
+
+          <div id="transformation-forms">
+            <%= for transformation <- @transformations do %>
+              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: transformation, session: %{}) %>
+            <% end %>
+            </div>
+
+          <button id="add-transformation" class="btn btn--save btn--large" type="button" phx-click="add-transformation">+ Add New Transformation</button>
 
         </div>
       </div>
@@ -51,6 +60,10 @@ defmodule AndiWeb.IngestionLiveView.TransformationsForm do
 
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_event("add-transformation", _, socket) do
+    {:noreply, assign(socket, transformations: [UUID.uuid4() | socket.assigns.transformations])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do

@@ -38,7 +38,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           </div>
 
           <div class="transformations-form-component">
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.TransformationsForm, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
+            <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
           </div>
 
           <div class="finalize-form-component ">
@@ -51,7 +51,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         <div class="btn-group__standard">
           <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
           <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft Ingestion</button>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="publish">Publish Ingestion</button>
+          <button id="publish-button" name="publish-button" class="btn btn--save btn--large" type="button" phx-click="publish">Publish Ingestion</button>
         </div>
 
         <hr>
