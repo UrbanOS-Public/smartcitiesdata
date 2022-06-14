@@ -37,6 +37,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
             <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>
 
+          <div class="transformations-form-component">
+            <%= live_render(@socket, AndiWeb.IngestionLiveView.TransformationsForm, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
+          </div>
+
           <div class="finalize-form-component ">
             <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
           </div>
