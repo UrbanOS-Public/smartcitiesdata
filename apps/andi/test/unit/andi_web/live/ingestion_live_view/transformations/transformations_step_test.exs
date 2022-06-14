@@ -26,7 +26,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
 
   describe "Transformations form" do
     test "can be expanded and collapsed", %{ingestion: ingestion} do
-      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsForm, session: %{"ingestion" => ingestion, "order" => "3"})
+      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
 
       click_form_header(view)
 
@@ -40,7 +40,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     end
 
     test "add transformation creates a new transformation", %{ingestion: ingestion} do
-      assert {:ok, view, _html} = live_isolated(build_conn(), TransformationsForm, session: %{"ingestion" => ingestion, "order" => "3"})
+      assert {:ok, view, _html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
 
       refute element(view, ".transformation") |> has_element?
 
