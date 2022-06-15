@@ -10,7 +10,7 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   alias AndiWeb.Views.Options
 
   @cast_fields [:id, :type, :name, :parameters, :ingestion_id, :sequence]
-  @required_fields [:type, :parameters]
+  @required_fields [:type, :name, :parameters]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "transformation" do
@@ -90,11 +90,20 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
 
   def preload(struct), do: StructTools.preload(struct, [])
 
-  defp wrap_parameters(form_data) do
+  defp wrap_parameters(%{type: type} = form_data) do
     parameters =
       form_data
       |> Map.delete(:type)
+      |> Map.delete(:name)
 
-    %{type: form_data.type, parameters: parameters}
+    %{name: form_data.name, type: type, parameters: parameters}
+  end
+
+  defp wrap_parameters(form_data) do
+    parameters =
+      form_data
+      |> Map.delete(:name)
+
+    %{name: form_data.name, parameters: parameters}
   end
 end

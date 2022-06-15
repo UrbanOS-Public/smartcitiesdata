@@ -17,7 +17,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
        order: order,
-       transformations: ingestion.transformations
+       transformation_changesets: ingestion.transformations
      )}
   end
 
@@ -48,8 +48,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         <div class="component-edit-section--<%= @visibility %> transformations--<%= @visibility %>">
 
           <div id="transformation-forms">
-            <%= for transformation <- @transformations do %>
-              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: transformation.changes.id, session: %{"transformation" => transformation}) %>
+            <%= for changeset <- @transformation_changesets do %>
+              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: changeset.changes.id, session: %{"transformation_changeset" => changeset}) %>
             <% end %>
             </div>
 
@@ -66,9 +66,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_event("add-transformation", _, socket) do
-    {:noreply,
-     assign(socket, transformations: [Transformations.create() | socket.assigns.transformations])
-     |> IO.inspect(label: "what we have on socket")}
+    {:noreply, assign(socket, transformation_changesets: socket.assigns.transformation_changesets ++ [Transformations.create()])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
