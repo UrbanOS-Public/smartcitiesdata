@@ -6,6 +6,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
   alias Andi.InputSchemas.Ingestions.Transformation
   alias Andi.InputSchemas.StructTools
 
+  import Ecto.Query, only: [from: 2]
+
   require Logger
 
   def get(id), do: Repo.get(Transformation, id)
@@ -13,7 +15,6 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
   def get_all(), do: Repo.all(Transformation)
 
   def create() do
-
     changeset =
       Transformation.changeset_for_draft(%{
         id: UUID.uuid4()
@@ -49,5 +50,14 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
 
   def save(%Changeset{} = changeset) do
     Repo.insert_or_update(changeset)
+  end
+
+  def all_for_ingestion(ingestion_id) do
+    query =
+      from(extract_step in Transformation,
+        where: extract_step.ingestion_id == ^ingestion_id
+      )
+
+    Repo.all(query)
   end
 end
