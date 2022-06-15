@@ -47,7 +47,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
   describe "create/0" do
     test "a new  transformation is created with an id" do
       new_transformation = Transformations.create()
-      id = new_transformation.id
+      id = new_transformation.changes.id
 
       eventually(fn ->
         assert %{id: ^id} = Transformations.get(id)
@@ -58,7 +58,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
   describe "delete/1" do
     test "a transformation can be successfully deleted" do
       new_transformation = Transformations.create()
-      id = new_transformation.id
+      id = new_transformation.changes.id
 
       eventually(fn ->
         assert %{id: ^id} = Transformations.get(id)

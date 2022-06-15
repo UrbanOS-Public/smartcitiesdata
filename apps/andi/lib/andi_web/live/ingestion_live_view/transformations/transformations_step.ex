@@ -6,6 +6,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   require Logger
 
   alias Andi.InputSchemas.Ingestions.Transformations
+  alias Andi.InputSchemas.Ingestions.Transformation
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -65,7 +66,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_event("add-transformation", _, socket) do
-    {:noreply, assign(socket, transformations: [Transformations.create() | socket.assigns.transformations]) |> IO.inspect(label: "what we have on socket")}
+    {:noreply,
+     assign(socket, transformations: [Transformations.create() | socket.assigns.transformations])
+     |> IO.inspect(label: "what we have on socket")}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
