@@ -20,8 +20,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
         id: UUID.uuid4()
       })
 
-    {:ok, _} = save(changeset)
-    changeset
+    {:ok, andi_transformation} = save(changeset)
+    andi_transformation
   end
 
   def delete(transformation_id) do

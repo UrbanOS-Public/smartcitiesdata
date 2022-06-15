@@ -9,12 +9,13 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   alias Andi.InputSchemas.Ingestion
   alias AndiWeb.Views.Options
 
-  @cast_fields [:id, :type, :parameters, :ingestion_id, :sequence]
+  @cast_fields [:id, :type, :name, :parameters, :ingestion_id, :sequence]
   @required_fields [:type, :parameters]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "transformation" do
     field(:type, :string)
+    field(:name, :string)
     field(:parameters, :map)
     field(:sequence, :integer, read_after_writes: true)
     belongs_to(:ingestion, Ingestion, type: Ecto.UUID, foreign_key: :ingestion_id)
@@ -60,6 +61,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       false -> changeset
     end
   end
+
+  defp validate_type(changeset), do: changeset
 
   defp validate_parameters(%{changes: %{type: type, parameters: parameters}} = changeset) do
     transformation = %{
