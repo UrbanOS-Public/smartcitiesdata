@@ -17,7 +17,7 @@ defmodule AndiWeb.AccessGroupLiveView do
         </div>
         <p>Access Groups determine who is allowed to see datasets. If a dataset is restricted to one or more Access Groups, only the users in
         those groups may view the dataset.</p>
-
+        <hr class="access-groups-line">
         <%= live_component(@socket, Table, id: :access_groups_table, access_groups: @view_models, is_curator: @is_curator) %>
       </div>
     </div>
