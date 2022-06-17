@@ -9,6 +9,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
+  import SmartCity.Event, only: [ingestion_update: 0]
 
   import FlokiHelpers,
     only: [
@@ -20,45 +21,36 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.ExtractSteps
   alias Andi.InputSchemas.InputConverter
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/ingestions/"
+  @instance_name Andi.instance_name()
 
   describe "updating headers" do
     setup do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "auth",
-                context: %{
-                  url: "test.com",
-                  headers: %{"barl" => "biz", "yar" => "har"},
-                  path: ["some", "dest"],
-                  destination: "dest",
-                  cacheTtl: 1_000,
-                  body: "[]"
-                }
-              }
-            ]
-          }
-        })
+      context = %{
+        url: "test.com",
+        headers: %{"barl" => "biz", "yar" => "har"},
+        path: ["some", "dest"],
+        destination: "dest",
+        cacheTtl: 1_000,
+        body: "[]"
+      }
+      ingestion = create_ingestion_with_extract_step(context)
+      extract_step_id = get_extract_step_id(ingestion, 0)
 
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      extract_step_id = get_extract_step_id(andi_dataset, 0)
-
-      [dataset: andi_dataset, extract_step_id: extract_step_id]
+      [ingestion: ingestion, extract_step_id: extract_step_id]
     end
 
     test "new key/value inputs are added when add button is pressed for headers", %{
       conn: conn,
-      dataset: dataset,
+      ingestion: ingestion,
       extract_step_id: extract_step_id
     } do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(".url-form__source-headers-key-input") |> length() == 2
@@ -73,10 +65,10 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
     test "key/value inputs are deleted when delete button is pressed for headers", %{
       conn: conn,
-      dataset: dataset,
+      ingestion: ingestion,
       extract_step_id: extract_step_id
     } do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(".url-form__source-headers-key-input") |> length() == 2
@@ -99,11 +91,11 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       refute btn_id =~ value_input
     end
 
-    test "does not have key/value inputs when dataset extract step has no headers", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{"type" => "auth", "context" => %{"headers" => %{}}}]}})
-      {:ok, _} = Datasets.update(dataset)
+    test "does not have key/value inputs when extract step has no headers", %{conn: conn} do
+      context = %{"headers" => %{}}
+      ingestion = create_ingestion_with_extract_step(context)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
       assert html |> find_elements(".url-form__source-headers-key-input") |> Enum.empty?()
       assert html |> find_elements(".url-form__source-headers-value-input") |> Enum.empty?()
@@ -111,27 +103,12 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   test "required url field displays proper error message", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "auth",
-              context: %{
-                url: "123.com"
-              }
-            }
-          ]
-        }
-      })
+    context = %{"url" => "123.com"}
+    ingestion = create_ingestion_with_extract_step(context)
 
-    {:ok, dataset} =
-      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-      |> Datasets.save()
+    extract_step_id = get_extract_step_id(ingestion, 0)
 
-    extract_step_id = get_extract_step_id(dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -143,30 +120,19 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "auth",
-              context: %{
-                url: "123.com",
-                body: "",
-                headers: %{"api-key" => "to-my-heart"},
-                cacheTtl: 1_000,
-                destination: "dest",
-                path: ["blah", "blah"]
-              }
-            }
-          ]
-        }
-      })
+    context = %{
+      url: "123.com",
+      body: "",
+      headers: %{"api-key" => "to-my-heart"},
+      cacheTtl: 1_000,
+      destination: "dest",
+      path: ["blah", "blah"]
+    }
+    ingestion = create_ingestion_with_extract_step(context)
 
-    {:ok, dataset} = Datasets.update(smrt_dataset)
+    extract_step_id = get_extract_step_id(ingestion, 0)
 
-    extract_step_id = get_extract_step_id(dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -184,26 +150,15 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   test "body passes validation with valid json", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "auth",
-              context: %{
-                url: "123.com",
-                body: "",
-                headers: %{"api-key" => "to-my-heart"}
-              }
-            }
-          ]
-        }
-      })
+    context = %{
+      url: "123.com",
+      body: "",
+      headers: %{"api-key" => "to-my-heart"}
+    }
+    ingestion = create_ingestion_with_extract_step(context)
+    extract_step_id = get_extract_step_id(ingestion, 0)
 
-    {:ok, dataset} = Datasets.update(smrt_dataset)
-    extract_step_id = get_extract_step_id(dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -215,24 +170,13 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   test "converts dot notation path for changeset", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "auth",
-              context: %{
-                path: ["a", "b", "c"]
-              }
-            }
-          ]
-        }
-      })
+    context = %{
+      path: ["a", "b", "c"]
+    }
+    ingestion = create_ingestion_with_extract_step(context)
+    extract_step_id = get_extract_step_id(ingestion, 0)
 
-    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
-    extract_step_id = get_extract_step_id(andi_dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -249,24 +193,13 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   end
 
   test "converts cacheTtl to minutes", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "auth",
-              context: %{
-                cacheTtl: 900_000
-              }
-            }
-          ]
-        }
-      })
+    context = %{
+      cacheTtl: 900_000
+    }
+    ingestion = create_ingestion_with_extract_step(context)
+    extract_step_id = get_extract_step_id(ingestion, 0)
 
-    {:ok, andi_dataset} = Datasets.update(smrt_dataset)
-    extract_step_id = get_extract_step_id(andi_dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
@@ -282,10 +215,29 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     end)
   end
 
-  defp get_extract_step_id(dataset, index) do
-    dataset
+  defp create_ingestion_with_extract_step(context) do
+    dataset = TDG.create_dataset(%{})
+    {:ok, saved_dataset} = Datasets.update(dataset)
+    ingestion = Ingestions.create(saved_dataset.id)
+    ingestion_for_changeset = TDG.create_ingestion(%{
+      targetDataset: dataset.id,
+      submissionStatus: :draft,
+      extractSteps: [
+        %{
+          type: "auth",
+          context: context
+        }
+      ]
+    })
+    changeset = InputConverter.smrt_ingestion_to_draft_changeset(ingestion_for_changeset)
+    {:ok, saved_ingestion} = Ingestions.update(ingestion, changeset)
+    saved_ingestion
+  end
+
+  defp get_extract_step_id(ingestion, index) do
+    ingestion
     |> Andi.InputSchemas.StructTools.to_map()
-    |> get_in([:technical, :extractSteps])
+    |> Map.get(:extractSteps)
     |> Enum.at(index)
     |> Map.get(:id)
   end

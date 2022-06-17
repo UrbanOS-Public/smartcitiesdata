@@ -66,7 +66,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
           <%= hidden_input(f, :sourceType) %>
-          <%= hidden_input(f, :sourceFormat) %>
           <%= hidden_input(f, :datasetId) %>
 
           <div class="component-edit-section--<%= @visibility %>">
@@ -87,12 +86,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
                 <%= textarea(f, :description, class: "input textarea") %>
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__format">
-                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
-                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__top-level-selector">
