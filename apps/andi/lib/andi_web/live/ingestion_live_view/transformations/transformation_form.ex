@@ -35,9 +35,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     """
   end
 
-  def handle_info(%{topic: "form-save"}, socket) do
-    {:noreply, socket}
-  end
+  # def handle_info(%{topic: "form-save"}, socket) do
+  #   {:noreply, socket}
+  # end
+
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     new_changeset = Transformation.changeset_from_form_data(form_data)

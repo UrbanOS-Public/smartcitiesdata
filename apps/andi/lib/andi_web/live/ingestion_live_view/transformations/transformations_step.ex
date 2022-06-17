@@ -7,6 +7,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias Andi.InputSchemas.InputConverter
+
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -59,6 +61,29 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       </div>
     </div>
     """
+  end
+
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{
+          assigns: %{
+            transformation_changeset: transformation_changesets
+          }
+        } = socket
+      ) do
+        Enum.each(transformation_changesets, fn {id, changeset} ->
+          changes = InputConverter.form_changes_from_changeset(changeset) |> IO.inspect(label: "changes")
+
+          id
+          |> Transformations.get()
+          |> Map.put(:context, changes) |> IO.inspect(label: "Map of transformation")
+          |> Transformations.update()
+        end)
+
+    {:noreply,
+     assign(socket,
+       validation_status: "valid"
+     )}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
