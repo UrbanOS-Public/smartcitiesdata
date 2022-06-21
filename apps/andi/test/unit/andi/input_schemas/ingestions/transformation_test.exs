@@ -6,6 +6,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
   test "sucessfully validates a valid transformation" do
     changes = %{
       type: "concatenation",
+      name: "name",
       parameters: %{
         "sourceFields" => ["other", "name"],
         "separator" => ".",
@@ -22,6 +23,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
   test "fails for an invalid transformation" do
     changes = %{
       type: "concatenation",
+      name: "name",
       parameters: %{
         "sourceFields" => ["other", "name"],
         "targetField" => "name"

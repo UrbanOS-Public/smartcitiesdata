@@ -7,11 +7,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
-  alias Andi.InputSchemas.InputConverter
-
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
+
+    transformation_changesets =
+      Enum.map(ingestion.transformations, fn transformation ->
+        Transformation.convert_andi_transformation_to_changeset(transformation)
+      end)
 
     {:ok,
      assign(socket,
@@ -19,7 +22,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
        order: order,
-       transformation_changesets: ingestion.transformations
+       transformation_changesets: transformation_changesets,
+       transformations: ingestion.transformations
      )}
   end
 
@@ -51,7 +55,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
           <div id="transformation-forms">
             <%= for changeset <- @transformation_changesets do %>
-              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: changeset.changes.id, session: %{"transformation_changeset" => changeset}) %>
+              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: "transform-#{changeset.changes.id}", session: %{"transformation_changeset" => changeset}) %>
             <% end %>
             </div>
 
@@ -61,29 +65,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       </div>
     </div>
     """
-  end
-
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{
-          assigns: %{
-            transformation_changeset: transformation_changesets
-          }
-        } = socket
-      ) do
-        Enum.each(transformation_changesets, fn {id, changeset} ->
-          changes = InputConverter.form_changes_from_changeset(changeset) |> IO.inspect(label: "changes")
-
-          id
-          |> Transformations.get()
-          |> Map.put(:context, changes) |> IO.inspect(label: "Map of transformation")
-          |> Transformations.update()
-        end)
-
-    {:noreply,
-     assign(socket,
-       validation_status: "valid"
-     )}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do

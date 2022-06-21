@@ -95,15 +95,24 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       form_data
       |> Map.delete(:type)
       |> Map.delete(:name)
+      |> Map.delete(:id)
 
-    %{name: form_data.name, type: type, parameters: parameters}
+    %{id: form_data.id, name: form_data.name, type: type, parameters: parameters}
   end
 
   defp wrap_parameters(form_data) do
     parameters =
       form_data
       |> Map.delete(:name)
+      |> Map.delete(:id)
 
-    %{name: form_data.name, parameters: parameters}
+    %{id: form_data.id, name: form_data.name, parameters: parameters}
+  end
+
+  def convert_andi_transformation_to_changeset(transformation) do
+    transformation
+    |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset_for_draft()
   end
 end
