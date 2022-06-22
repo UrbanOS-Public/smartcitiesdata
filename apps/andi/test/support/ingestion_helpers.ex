@@ -9,6 +9,10 @@ defmodule IngestionHelpers do
     create_ingestion(%{extractSteps: [%{type: "auth", context: context}]})
   end
 
+  def create_with_http_extract_step(context) do
+    create_ingestion(%{extractSteps: [%{type: "http", context: context}]})
+  end
+
   def create_ingestion(overrides) do
     {:ok, dataset} = TDG.create_dataset(%{}) |> Datasets.update()
 
