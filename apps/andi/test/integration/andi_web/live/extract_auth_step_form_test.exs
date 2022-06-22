@@ -20,6 +20,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias IngestionHelpers
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.ExtractSteps
@@ -39,8 +40,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
         cacheTtl: 1_000,
         body: "[]"
       }
-      ingestion = create_ingestion_with_extract_step(context)
-      extract_step_id = get_extract_step_id(ingestion, 0)
+
+      ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       [ingestion: ingestion, extract_step_id: extract_step_id]
     end
@@ -93,7 +95,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
     test "does not have key/value inputs when extract step has no headers", %{conn: conn} do
       context = %{"headers" => %{}}
-      ingestion = create_ingestion_with_extract_step(context)
+      ingestion = IngestionHelpers.create_with_auth_extract_step(context)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
@@ -104,9 +106,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
   test "required url field displays proper error message", %{conn: conn} do
     context = %{"url" => "123.com"}
-    ingestion = create_ingestion_with_extract_step(context)
+    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
 
-    extract_step_id = get_extract_step_id(ingestion, 0)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
@@ -128,9 +130,10 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       destination: "dest",
       path: ["blah", "blah"]
     }
-    ingestion = create_ingestion_with_extract_step(context)
 
-    extract_step_id = get_extract_step_id(ingestion, 0)
+    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
@@ -155,8 +158,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       body: "",
       headers: %{"api-key" => "to-my-heart"}
     }
-    ingestion = create_ingestion_with_extract_step(context)
-    extract_step_id = get_extract_step_id(ingestion, 0)
+
+    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
@@ -173,8 +177,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     context = %{
       path: ["a", "b", "c"]
     }
-    ingestion = create_ingestion_with_extract_step(context)
-    extract_step_id = get_extract_step_id(ingestion, 0)
+
+    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
@@ -196,8 +201,9 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     context = %{
       cacheTtl: 900_000
     }
-    ingestion = create_ingestion_with_extract_step(context)
-    extract_step_id = get_extract_step_id(ingestion, 0)
+
+    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
@@ -213,32 +219,5 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     eventually(fn ->
       assert ExtractSteps.get(extract_step_id) |> get_in([:context, "cacheTtl"]) == 1_200_000
     end)
-  end
-
-  defp create_ingestion_with_extract_step(context) do
-    dataset = TDG.create_dataset(%{})
-    {:ok, saved_dataset} = Datasets.update(dataset)
-    ingestion = Ingestions.create(saved_dataset.id)
-    ingestion_for_changeset = TDG.create_ingestion(%{
-      targetDataset: dataset.id,
-      submissionStatus: :draft,
-      extractSteps: [
-        %{
-          type: "auth",
-          context: context
-        }
-      ]
-    })
-    changeset = InputConverter.smrt_ingestion_to_draft_changeset(ingestion_for_changeset)
-    {:ok, saved_ingestion} = Ingestions.update(ingestion, changeset)
-    saved_ingestion
-  end
-
-  defp get_extract_step_id(ingestion, index) do
-    ingestion
-    |> Andi.InputSchemas.StructTools.to_map()
-    |> Map.get(:extractSteps)
-    |> Enum.at(index)
-    |> Map.get(:id)
   end
 end
