@@ -141,6 +141,15 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end
   end
 
+  @tag :skip
+  test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+    {:ok, dataset} = Datasets.update(smrt_dataset)
+
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
+  end
+
   defp find_select_dataset_btn(view) do
     element(view, ".btn", "Select Dataset")
   end
