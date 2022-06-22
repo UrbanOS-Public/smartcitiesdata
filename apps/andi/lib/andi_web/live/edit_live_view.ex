@@ -93,7 +93,11 @@ defmodule AndiWeb.EditLiveView do
     """
   end
 
-  def mount(_params, %{"dataset" => dataset, "is_curator" => is_curator, "user_id" => user_id}, socket) do
+  def mount(
+        _params,
+        %{"dataset" => dataset, "is_curator" => is_curator, "user_id" => user_id},
+        socket
+      ) do
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(dataset)
     Process.flag(:trap_exit, true)
 
@@ -151,8 +155,15 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: header_datasets_path())}
+      true ->
+        {:noreply,
+         assign(socket,
+           unsaved_changes_link: header_datasets_path(),
+           unsaved_changes_modal_visibility: "visible"
+         )}
+
+      false ->
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -171,7 +182,12 @@ defmodule AndiWeb.EditLiveView do
         {:noreply, redirect(socket, to: header_datasets_path())}
 
       {:ok, smrt_dataset} ->
-        Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_delete(), smrt_dataset)
+        Andi.Schemas.AuditEvents.log_audit_event(
+          socket.assigns.user_id,
+          dataset_delete(),
+          smrt_dataset
+        )
+
         Brook.Event.send(@instance_name, dataset_delete(), :andi, smrt_dataset)
         {:noreply, redirect(socket, to: header_datasets_path())}
     end
@@ -183,6 +199,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("approve-for-publish", _, socket) do
     {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :approved)
+
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
     socket
@@ -192,12 +209,17 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("reject-dataset", _, socket) do
     {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected)
+
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
     case socket.assigns.unsaved_changes do
       true ->
         {:noreply,
-         assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible", changeset: new_changeset)}
+         assign(socket,
+           unsaved_changes_link: header_datasets_path(),
+           unsaved_changes_modal_visibility: "visible",
+           changeset: new_changeset
+         )}
 
       false ->
         {:noreply, redirect(socket, to: header_datasets_path())}
@@ -245,8 +267,15 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_info(:cancel_edit, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: header_datasets_path(), unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: header_datasets_path())}
+      true ->
+        {:noreply,
+         assign(socket,
+           unsaved_changes_link: header_datasets_path(),
+           unsaved_changes_modal_visibility: "visible"
+         )}
+
+      false ->
+        {:noreply, redirect(socket, to: header_datasets_path())}
     end
   end
 
@@ -271,6 +300,7 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp publish(socket) do
+    "" |> IO.inspect(label: "attempting publish")
     socket = reset_save_success(socket)
     dataset_id = socket.assigns.dataset.id
 
@@ -279,13 +309,18 @@ defmodule AndiWeb.EditLiveView do
 
     andi_dataset = Datasets.get(dataset_id)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset) |> IO.inspect(label: "changeset")
 
     if dataset_changeset.valid? do
       dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, dataset_update(), smrt_dataset)
+      # |> IO.inspect(label: "smrt_dataset convert?")
+      Andi.Schemas.AuditEvents.log_audit_event(
+        socket.assigns.user_id,
+        dataset_update(),
+        smrt_dataset
+      )
 
       case Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset) do
         :ok ->
@@ -299,6 +334,7 @@ defmodule AndiWeb.EditLiveView do
            )}
 
         error ->
+          error |> IO.inspect(label: "error")
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
       end
     else
@@ -306,10 +342,13 @@ defmodule AndiWeb.EditLiveView do
     end
   end
 
-  defp reset_save_success(socket), do: assign(socket, save_success: false, has_validation_errors: false)
+  defp reset_save_success(socket),
+    do: assign(socket, save_success: false, has_validation_errors: false)
 
   defp save_message(true = _valid?), do: "Saved successfully."
-  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
+
+  defp save_message(false = _valid?),
+    do: "Saved successfully. You may need to fix errors before publishing."
 
   defp render_publish_button(:submitted), do: ""
 

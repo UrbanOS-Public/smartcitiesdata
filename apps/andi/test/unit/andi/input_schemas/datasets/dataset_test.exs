@@ -460,24 +460,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
     end
-
-    test "extract steps are not valid when http or s3 step is not last" do
-      extract_steps = [
-        %{type: "s3", context: %{url: "something"}},
-        %{type: "http", context: %{action: "GET", url: "example.com"}},
-        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}}
-      ]
-
-      changes =
-        @valid_changes
-        |> put_in([:technical, :extractSteps], extract_steps)
-
-      changeset = Dataset.changeset(changes)
-
-      expected_error = %{technical: %{extractSteps: [extractSteps: {"cannot be empty and must end with a http or s3 step", []}]}}
-      assert expected_error == accumulate_errors(changeset)
-      refute changeset.valid?
-    end
   end
 
   describe "title conversion" do

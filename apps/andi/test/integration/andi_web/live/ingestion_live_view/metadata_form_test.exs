@@ -126,8 +126,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
 
       eventually(fn ->
         andi_dataset = Datasets.get(dataset.id)
-        IO.inspect(andi_dataset.id, label: "andi_dataset.id")
-        IO.inspect(dataset.id, label: "dataset.id")
         assert andi_dataset.id == dataset.id
       end)
 

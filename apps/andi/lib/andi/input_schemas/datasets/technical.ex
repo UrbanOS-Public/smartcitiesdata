@@ -59,7 +59,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :orgName,
     :private,
     :protocol,
-    :sourceFormat,
     :sourceType,
     :sourceUrl,
     :systemName,
@@ -70,53 +69,42 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :dataName,
     :orgName,
     :private,
-    :sourceFormat,
     :sourceType
   ]
 
   @submission_cast_fields [
-    :dataName,
-    :sourceFormat
+    :dataName
   ]
 
   @submission_required_fields [
-    :dataName,
-    :sourceFormat
+    :dataName
   ]
 
   def changeset(technical, changes) do
     changes_with_id = StructTools.ensure_id(technical, changes)
-    source_format = Map.get(changes, :sourceFormat, nil)
 
     technical
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
-    |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_source_format()
     |> CadenceValidator.validate()
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
-    |> validate_extract_steps()
   end
 
   def submission_changeset(technical, changes) do
     changes_with_id = StructTools.ensure_id(technical, changes)
-    source_format = Map.get(changes, :sourceFormat, nil)
 
     technical
     |> cast(changes_with_id, @submission_cast_fields, empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@submission_required_fields, message: "is required")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_source_format()
     |> validate_submission_schema()
   end
 
@@ -128,24 +116,10 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft/2)
     |> cast_assoc(:sourceHeaders, with: &Header.changeset_for_draft/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset_for_draft/2)
-    |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> foreign_key_constraint(:dataset_id)
   end
 
-  def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders, :extractSteps])
-
-  defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
-       when source_type in ["ingest", "stream"] do
-    format_values = Options.source_format() |> Map.new() |> Map.values()
-
-    if source_format in format_values do
-      changeset
-    else
-      add_error(changeset, :sourceFormat, "invalid format for ingestion")
-    end
-  end
-
-  defp validate_source_format(changeset), do: changeset
+  def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")
@@ -166,7 +140,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
+      _ -> changeset
     end
   end
 
@@ -176,28 +150,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
-    end
-  end
-
-  defp validate_schema_internals(%{changes: changes} = changeset) do
-    schema =
-      Ecto.Changeset.get_field(changeset, :schema, [])
-      |> StructTools.to_map()
-
-    DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
-    |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
-  end
-
-  defp validate_extract_steps(%{changes: %{sourceType: "remote"}} = changeset), do: changeset
-  defp validate_extract_steps(%{changes: %{cadence: "continuous"}} = changeset), do: changeset
-
-  defp validate_extract_steps(changeset) do
-    extract_steps = get_field(changeset, :extractSteps)
-
-    case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
-      true -> add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")
-      false -> changeset
+      _ -> changeset
     end
   end
 
@@ -224,7 +177,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     end
   end
 
-  defp clear_field_errors(changset, field) do
-    Map.update(changset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
+  defp clear_field_errors(changeset, field) do
+    Map.update(changeset, :errors, [], fn errors -> Keyword.delete(errors, field) end)
   end
 end
