@@ -171,7 +171,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket)
+      when file_size > 200_000_000 do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -223,7 +224,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("add_data_dictionary_field", _, socket) do
     changes = Ecto.Changeset.apply_changes(socket.assigns.changeset) |> StructTools.to_map()
     {:ok, andi_dataset} = Datasets.update_from_form(socket.assigns.dataset.id, changes)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset) |> send_data_dictionary_status(socket)
+
+    changeset =
+      DataDictionaryFormSchema.changeset_from_andi_dataset(andi_dataset)
+      |> send_data_dictionary_status(socket)
 
     {:noreply, assign(socket, changeset: changeset, add_data_dictionary_field_visible: true)}
   end
@@ -231,7 +235,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("remove_data_dictionary_field", _, socket) do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
-    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+    {:noreply,
+     assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
   def handle_info(
@@ -248,7 +253,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_info(
         %{
           topic: "populate_data_dictionary",
-          payload: %{"dataset_sample" => %{"file" => file, "fileType" => file_type}, "dataset_id" => dataset_id}
+          payload: %{
+            "dataset_sample" => %{"file" => file, "fileType" => file_type},
+            "dataset_id" => dataset_id
+          }
         },
         %{assigns: %{dataset_id: dataset_id}} = socket
       ) do
@@ -257,7 +265,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info(
-        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", dataset_id: dataset_id}},
+        %{
+          topic: "toggle-visibility",
+          payload: %{expand: "data_dictionary_form", dataset_id: dataset_id}
+        },
         %{assigns: %{dataset_id: dataset_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
@@ -269,7 +280,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
     dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
+
+    changeset =
+      DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+      |> send_data_dictionary_status(socket)
 
     {:noreply,
      assign(socket,
@@ -281,10 +295,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
      |> update_validation_status()}
   end
 
-  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+  def handle_info(
+        {:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index},
+        socket
+      ) do
     new_selected_field =
       socket.assigns.changeset
-      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index, socket.assigns.technical_id)
+      |> get_new_selected_field(
+        deleted_field_parent_id,
+        deleted_field_index,
+        socket.assigns.technical_id
+      )
 
     new_selected_field_id =
       case new_selected_field do
@@ -296,7 +317,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       end
 
     dataset = Datasets.get(socket.assigns.dataset.id)
-    changeset = DataDictionaryFormSchema.changeset_from_andi_dataset(dataset) |> send_data_dictionary_status(socket)
+
+    changeset =
+      DataDictionaryFormSchema.changeset_from_andi_dataset(dataset)
+      |> send_data_dictionary_status(socket)
 
     {:noreply,
      assign(socket,
@@ -317,9 +341,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
-    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
+    current_data_dictionary_item =
+      DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
 
-    {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
+    {:noreply,
+     assign(socket,
+       current_data_dictionary_item: current_data_dictionary_item,
+       selected_field_id: :no_dictionary
+     )}
   end
 
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
@@ -392,7 +421,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     send_error_interpreting_file(socket.assigns.changeset, socket)
   end
 
-  defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
+  defp get_file_type_for_upload(file_type)
+       when file_type in ["text/csv", "application/vnd.ms-excel"],
+       do: "text/csv"
 
   defp get_file_type_for_upload(file_type), do: file_type
 
@@ -408,10 +439,17 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         form_changes = InputConverter.form_changes_from_changeset(new_changeset)
         {:ok, _} = Datasets.update_from_form(socket.assigns.dataset_id, form_changes)
 
-        {:noreply, assign(socket, loading_schema: false, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+        {:noreply,
+         assign(socket, loading_schema: false, changeset: new_changeset)
+         |> assign(get_default_dictionary_field(new_changeset))}
 
       false ->
-        {:noreply, assign(socket, loading_schema: false, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+        {:noreply,
+         assign(socket,
+           loading_schema: false,
+           pending_changeset: new_changeset,
+           overwrite_schema_visibility: "visible"
+         )}
     end
   end
 
@@ -448,13 +486,18 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
           :no_dictionary
 
         _ ->
-          new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          new_form_template =
+            find_field_in_changeset(new_changeset, current_form.source.changes.id)
+            |> form_for(nil)
+
           %{current_form | source: new_form_template.source, params: new_form_template.params}
       end
 
     send(socket.parent_pid, :form_update)
 
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field) |> update_validation_status()}
+    {:noreply,
+     assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)
+     |> update_validation_status()}
   end
 
   defp find_field_in_changeset(changeset, field_id) do
@@ -477,10 +520,13 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     end)
   end
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+  defp handle_field_not_found(nil),
+    do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+
   defp handle_field_not_found(found_field), do: found_field
 
-  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
+  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset)
+       when schema != [] do
     first_data_dictionary_item =
       form_for(changeset, "#")
       |> inputs_for(:schema)

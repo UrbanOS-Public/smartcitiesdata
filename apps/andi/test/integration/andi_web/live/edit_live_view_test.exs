@@ -123,16 +123,36 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_live_child(view, "metadata_form_editor")
-      form_data = %{"dataTitle" => "new title"}
 
-      render_change(metadata_view, :validate, %{"form_data" => form_data})
+      data_dict_view = find_live_child(view, "data_dictionary_form_editor")
+      changed_schema_name = "testing"
+
+      new_schema = %{
+        "0" => %{
+          "biased" => "",
+          "bread_crumb" => "test",
+          "dataset_id" => dataset.id,
+          "demographic" => "",
+          "description" => "",
+          "id" => UUID.uuid4(),
+          "ingestion_id" => "",
+          "masked" => "",
+          "name" => changed_schema_name,
+          "pii" => "",
+          "rationale" => "",
+          "type" => "string"
+        }
+      }
+
+      form_data = %{"data_dictionary_form_schema" => %{"schema" => new_schema}}
+      render_change(data_dict_view, :validate, form_data)
       render_change(view, :publish)
 
       eventually(
         fn ->
           dataset = Datasets.get(dataset.id)
           {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+          assert hd(saved_dataset.technical.schema).name == changed_schema_name
 
           assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
           assert Andi.Schemas.AuditEvents.get_all_by_event_id(dataset.id) != []
@@ -441,7 +461,6 @@ defmodule AndiWeb.EditLiveViewTest do
 
     data_test "marks dataset status as #{status} when corresponding button is clicked", %{conn: conn, andi_dataset: andi_dataset} do
       {:ok, andi_dataset} = Datasets.update_submission_status(andi_dataset.id, :submitted)
-      andi_dataset |> IO.inspect(label: "andi_dataset")
       assert {:ok, view, _} = live(conn, @url_path <> andi_dataset.id)
 
       view
@@ -454,8 +473,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
       where([
         [:button_selector, :status],
-        ["#approve-button", :published]
-        # ["#reject-button", :rejected]
+        ["#approve-button", :published],
+        ["#reject-button", :rejected]
       ])
     end
 

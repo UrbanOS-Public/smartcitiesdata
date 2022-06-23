@@ -153,12 +153,6 @@ defmodule Andi.InputSchemas.InputConverter do
     Andi.InputSchemas.Ingestions.full_validation_changeset_for_publish(%Ingestion{}, ingestion_as_map)
   end
 
-  def andi_ingestion_to_full_submission_changeset_for_publish(%Ingestion{} = ingestion) do
-    ingestion_as_map = StructTools.to_map(ingestion)
-
-    Andi.InputSchemas.Ingestions.full_validation_submission_changeset_for_publish(%Ingestion{}, ingestion_as_map)
-  end
-
   def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
     dataset
     |> StructTools.to_map()

@@ -300,7 +300,6 @@ defmodule AndiWeb.EditLiveView do
   end
 
   defp publish(socket) do
-    "" |> IO.inspect(label: "attempting publish")
     socket = reset_save_success(socket)
     dataset_id = socket.assigns.dataset.id
 
@@ -309,13 +308,13 @@ defmodule AndiWeb.EditLiveView do
 
     andi_dataset = Datasets.get(dataset_id)
 
-    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset) |> IO.inspect(label: "changeset")
+    dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset_for_publish(andi_dataset)
 
     if dataset_changeset.valid? do
       dataset_for_publish = dataset_changeset |> Ecto.Changeset.apply_changes()
       Datasets.update_submission_status(dataset_id, :published)
       {:ok, smrt_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset_for_publish)
-      # |> IO.inspect(label: "smrt_dataset convert?")
+
       Andi.Schemas.AuditEvents.log_audit_event(
         socket.assigns.user_id,
         dataset_update(),
@@ -334,7 +333,6 @@ defmodule AndiWeb.EditLiveView do
            )}
 
         error ->
-          error |> IO.inspect(label: "error")
           Logger.warn("Unable to create new SmartCity.Dataset: #{inspect(error)}")
       end
     else

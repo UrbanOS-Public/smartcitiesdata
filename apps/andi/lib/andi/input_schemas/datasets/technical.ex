@@ -11,7 +11,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   alias Andi.InputSchemas.Datasets.QueryParam
   alias Andi.InputSchemas.Datasets.ExtractStep
   alias AndiWeb.Helpers.ExtractStepHelpers
-  alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Views.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
@@ -51,7 +50,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :authBodyEncodeMethod,
     :authHeaders,
     :authUrl,
-    :cadence,
     :credentials,
     :dataName,
     :id,
@@ -65,7 +63,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     :topLevelSelector
   ]
   @required_fields [
-    :cadence,
     :dataName,
     :orgName,
     :private,
@@ -85,13 +82,13 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
     technical
     |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2), invalid_message: "is required")
     |> cast_assoc(:sourceHeaders, with: &Header.changeset/2)
     |> cast_assoc(:sourceQueryParams, with: &QueryParam.changeset/2)
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> CadenceValidator.validate()
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
@@ -102,6 +99,7 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
     technical
     |> cast(changes_with_id, @submission_cast_fields, empty_values: [])
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2), invalid_message: "is required")
     |> foreign_key_constraint(:dataset_id)
     |> validate_required(@submission_required_fields, message: "is required")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
@@ -121,17 +119,19 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
 
-  defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
-    validate_required(changeset, [:topLevelSelector], message: "is required")
-  end
+  # todo: do we need a top level selector on ingestions if sourceFormat is "xml" or "text/xml"?
+  # defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
+  #   validate_required(changeset, [:topLevelSelector], message: "is required")
+  # end
 
-  defp validate_top_level_selector(%{changes: %{sourceFormat: source_format, topLevelSelector: top_level_selector}} = changeset)
-       when source_format in ["json", "application/json"] do
-    case Jaxon.Path.parse(top_level_selector) do
-      {:error, error_msg} -> add_error(changeset, :topLevelSelector, error_msg.message)
-      _ -> changeset
-    end
-  end
+  # todo: move to ingestions?
+  # defp validate_top_level_selector(%{changes: %{sourceFormat: source_format, topLevelSelector: top_level_selector}} = changeset)
+  #      when source_format in ["json", "application/json"] do
+  #   case Jaxon.Path.parse(top_level_selector) do
+  #     {:error, error_msg} -> add_error(changeset, :topLevelSelector, error_msg.message)
+  #     _ -> validate_schema_internals(changeset)
+  #   end
+  # end
 
   defp validate_top_level_selector(changeset), do: changeset
 
@@ -148,11 +148,28 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   defp validate_submission_schema(%{changes: %{schema: _}} = changeset) do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
-      [] -> add_error(changeset, :schema, "cannot be empty")
-      nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> changeset
+      [] ->
+        add_error(changeset, :schema, "cannot be empty")
+
+      nil ->
+        add_error(changeset, :schema, "is required", validation: :required)
+
+      _ ->
+        changeset
+        # _ -> validate_schema_internals(changeset)
     end
   end
+
+  # todo: part of making xml / text/xml dataset schema validation on ingestions
+  #   ticket. Unused now in datasets.
+  # defp validate_schema_internals(%{changes: changes} = changeset) do
+  #   schema =
+  #     Ecto.Changeset.get_field(changeset, :schema, [])
+  #     |> StructTools.to_map()
+
+  #   DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
+  #   |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
+  # end
 
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]

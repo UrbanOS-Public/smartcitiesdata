@@ -139,10 +139,6 @@ defmodule Andi.InputSchemas.Ingestions do
     Ingestion.changeset(schema, changes)
   end
 
-  def full_validation_submission_changeset_for_publish(schema, changes) do
-    Ingestion.submission_changeset(schema, changes)
-  end
-
   def update_ingested_time(ingestion_id, ingested_time) do
     from_ingestion = get(ingestion_id) || %Ingestion{id: ingestion_id}
     iso_ingested_time = DateTime.to_iso8601(ingested_time)

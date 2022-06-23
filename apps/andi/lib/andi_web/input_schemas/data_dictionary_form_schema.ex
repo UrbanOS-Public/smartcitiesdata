@@ -19,13 +19,12 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(dictionary, changes) do
-    source_format = Map.get(changes, :sourceFormat, nil)
     changes_with_id = StructTools.ensure_id(dictionary, changes)
     source_type = Map.get(changes, :sourceType, "ingest")
 
     dictionary
     |> cast(changes_with_id, [], empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2), invalid_message: "is required")
     |> validate_required(:schema, message: "is required")
     |> validate_schema(source_type)
   end
@@ -135,20 +134,22 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
+      _ -> changeset
+      # _ -> validate_schema_internals(changeset)
     end
   end
 
   defp validate_schema(changeset, _), do: changeset
 
-  defp validate_schema_internals(%{changes: changes} = changeset) do
-    schema =
-      Ecto.Changeset.get_field(changeset, :schema, [])
-      |> StructTools.to_map()
+  # todo: part of making xml / text/xml dataset schema validation on ingestions
+  # defp validate_schema_internals(%{changes: changes} = changeset) do
+  #   schema =
+  #     Ecto.Changeset.get_field(changeset, :schema, [])
+  #     |> StructTools.to_map()
 
-    DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
-    |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
-  end
+  #   DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
+  #   |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
+  # end
 
   defp populate_default(schema_field_changes) do
     use_default = Map.get(schema_field_changes, :use_default) |> to_boolean()

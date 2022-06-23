@@ -65,7 +65,7 @@ defmodule Andi.InputSchemas.Ingestion do
     ingestion
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> validate_required(@required_fields, message: "is required")
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2), invalid_message: "is required")
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> foreign_key_constraint(:targetDataset)
