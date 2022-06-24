@@ -41,7 +41,6 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :orgId) %>
         <%= hidden_input(technical, :orgName) %>
         <%= hidden_input(technical, :protocol) %>
-        <%= hidden_input(technical, :sourceFormat) %>
         <%= hidden_input(technical, :sourceType) %>
         <%= hidden_input(technical, :systemName) %>
 

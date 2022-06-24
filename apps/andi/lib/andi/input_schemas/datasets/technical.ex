@@ -3,15 +3,11 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.Datasets.Header
   alias Andi.InputSchemas.Datasets.QueryParam
-  alias Andi.InputSchemas.Datasets.ExtractStep
-  alias AndiWeb.Helpers.ExtractStepHelpers
-  alias AndiWeb.Views.Options
 
   @no_dashes_regex ~r/^[^\-]+$/
 
@@ -22,14 +18,12 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     field(:authBodyEncodeMethod, :string)
     field(:authHeaders, :map)
     field(:authUrl, :string)
-    field(:cadence, :string)
     field(:credentials, :boolean)
     field(:dataName, :string)
     field(:orgId, :string)
     field(:orgName, :string)
     field(:private, :boolean)
     field(:protocol, {:array, :string})
-    field(:sourceFormat, :string)
     field(:sourceType, :string)
     field(:sourceUrl, :string)
     field(:systemName, :string)
@@ -37,7 +31,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:sourceHeaders, Header, on_replace: :delete)
     has_many(:sourceQueryParams, QueryParam, on_replace: :delete)
-    has_many(:extractSteps, ExtractStep, on_replace: :delete)
 
     belongs_to(:dataset, Dataset, type: :string, foreign_key: :dataset_id)
   end

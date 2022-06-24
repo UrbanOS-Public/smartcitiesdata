@@ -30,7 +30,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
        add_data_dictionary_field_visible: false,
        remove_data_dictionary_field_visible: false,
        changeset: new_changeset,
-       sourceFormat: dataset.technical.sourceFormat,
        visibility: "collapsed",
        validation_status: "collapsed",
        new_field_initial_render: false,
@@ -89,20 +88,18 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             <div class="data-dictionary-form-edit-section form-grid">
 
               <div class="upload-section">
-                <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
-                  <div class="data-dictionary-form__file-upload">
-                    <div class="file-input-button--<%= loader_visibility %>">
-                      <div class="file-input-button">
-                        <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
-                        <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
-                      </div>
+                <div class="data-dictionary-form__file-upload">
+                  <div class="file-input-button--<%= loader_visibility %>">
+                    <div class="file-input-button">
+                      <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                      <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                     </div>
-
-                    <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
-                    <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                   </div>
-                <% end %>
+
+                  <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
+                  <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
+                </div>
 
                 <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
               </div>
@@ -126,9 +123,9 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <div class="data-dictionary-form__edit-section">
                 <%= if @is_curator do %>
-                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
                 <% else %>
-                  <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                  <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
                 <% end %>
               </div>
             </div>
@@ -235,8 +232,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   def handle_event("remove_data_dictionary_field", _, socket) do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
-    {:noreply,
-     assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
   def handle_info(
@@ -341,8 +337,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
-    current_data_dictionary_item =
-      DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
+    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
 
     {:noreply,
      assign(socket,
