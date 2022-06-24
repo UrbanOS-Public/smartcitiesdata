@@ -41,7 +41,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
         body: "[]"
       }
 
-      ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+      {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       [ingestion: ingestion, extract_step_id: extract_step_id]
@@ -95,7 +95,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
     test "does not have key/value inputs when extract step has no headers", %{conn: conn} do
       context = %{"headers" => %{}}
-      ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+      {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
@@ -106,7 +106,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
   test "required url field displays proper error message", %{conn: conn} do
     context = %{"url" => "123.com"}
-    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
 
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -131,7 +131,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       path: ["blah", "blah"]
     }
 
-    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
 
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -159,7 +159,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       headers: %{"api-key" => "to-my-heart"}
     }
 
-    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -178,7 +178,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       path: ["a", "b", "c"]
     }
 
-    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -202,7 +202,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       cacheTtl: 900_000
     }
 
-    ingestion = IngestionHelpers.create_with_auth_extract_step(context)
+    {:ok, ingestion} = IngestionHelpers.create_with_auth_extract_step(context) |> IngestionHelpers.save_ingestion()
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
