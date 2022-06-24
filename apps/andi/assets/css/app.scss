@@ -64,6 +64,17 @@ body {
   font-size: 1.5rem;
   min-width: 10rem;
   border: 2px solid black;
+  background-color: white;
+  color: black;
+
+  &:hover {
+    background-color: lighten(#6C787F1A, 10%);
+  }
+
+  &:active {
+    background-color: lighten(#6C787F33, 20%);
+  }
+
 }
 
 .btn--cancel {
@@ -72,8 +83,8 @@ body {
     border: 1px solid black;
 
     &:hover {
-        color: white;
-        background-color: black;
+        color: black;
+        background-color: lighten(#6C787F1A, 1%);
     }
 }
 
@@ -89,7 +100,10 @@ body {
   color: white;
   background-color: $color-text-link;
   border: 2px solid $color-text-link;
-
+  &:hover {
+    background-color: #1279D8;
+    border: 2px solid #1279D8;
+  }
   &:disabled {
       background-color: #7f7676;
       border: 2px solid #7f7676;
@@ -185,7 +199,7 @@ body {
 }
 
 .btn--save:hover {
-  background: $color-text-link;
+  background: lighten($color-text-link, 10%);
   color: white;
   border: 2px solid $color-text-link;
 }
@@ -194,16 +208,8 @@ body {
   color: $color-text-link;
   border: 2px solid $color-text-link;
 }
-.btn--next:hover {
-  background: white;
-  color: $color-text-link;
-  border: 2px solid $color-text-link;
-}
-.btn--publish:hover {
-  background: white;
-  color: $color-text-link;
-  border: 2px solid $color-text-link;
-}
+
+
 
 .label {
   color: #7f7676;

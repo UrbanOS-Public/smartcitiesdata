@@ -3,6 +3,19 @@
     padding-bottom: 1rem;
 }
 
+.btn--add-organization {
+  min-width: 100px;
+  border-radius: 5px;
+  height: 2.3rem;
+  background-color: #1170C8;
+  border: 2px solid #1170C8;
+
+  &:hover {
+      background-color: #1279D8;
+      border: 2px solid #1279D8;
+  }
+}
+
 .organization-form-edit-section {
     margin: -2rem 1rem 2rem 1rem;
 
