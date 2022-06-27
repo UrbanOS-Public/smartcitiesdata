@@ -117,6 +117,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
           targetDataset: dataset_one.id,
           transformations: [
             %{
+              name: "name",
               type: "concatenation",
               parameters: %{
                 "sourceFields" => ["other", "name"],
@@ -125,6 +126,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
               }
             },
             %{
+              name: "name",
               type: "regex_extract",
               parameters: %{
                 "sourceField" => "name",
@@ -140,6 +142,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
           targetDataset: dataset_two.id,
           transformations: [
             %{
+              name: "name",
               type: "regex_extract",
               parameters: %{
                 "sourceField" => "name",
@@ -158,6 +161,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
 
       assert [
                %{
+                name: "name",
                  type: "concatenation",
                  parameters: %{
                    "sourceFields" => ["other", "name"],
@@ -167,6 +171,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
                  ingestion_id: ^ingestion_one_id
                },
                %{
+                name: "name",
                  type: "regex_extract",
                  parameters: %{
                    "sourceField" => "name",
