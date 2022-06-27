@@ -54,7 +54,7 @@ defmodule Alchemist.MixProject do
       {:properties, in_umbrella: true},
       {:retry, "~> 0.13"},
       {:smart_city, "~> 5.2.3", override: true},
-      {:smart_city_test, "~> 2.2.2", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.3", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:transformers, in_umbrella: true},

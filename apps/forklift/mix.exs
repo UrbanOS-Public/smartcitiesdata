@@ -50,7 +50,7 @@ defmodule Forklift.MixProject do
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14"},
       {:smart_city, "~> 5.2.3"},
-      {:smart_city_test, "~> 2.2.2"},
+      {:smart_city_test, "~> 2.2.3"},
       {:streaming_metrics, "~> 2.2"},
       {:timex, "~> 3.6"},
       {:distillery, "~> 2.1"},
