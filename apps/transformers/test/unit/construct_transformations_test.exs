@@ -10,7 +10,12 @@ defmodule Transformers.ConstructTest do
       regex: "^\\((\\d{3})\\)"
     }
 
-    regex_transformation = Transformation.new(%{type: "regex_extract", parameters: regex_params})
+    regex_transformation =
+      Transformation.new(%{
+        type: "regex_extract",
+        name: "Transformation",
+        parameters: regex_params
+      })
 
     sc_transformations = [regex_transformation]
 
@@ -27,9 +32,26 @@ defmodule Transformers.ConstructTest do
       regex: "^\\((\\d{3})\\)"
     }
 
-    regex_transformation1 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
-    regex_transformation2 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
-    regex_transformation3 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
+    regex_transformation1 =
+      Transformation.new(%{
+        type: "regex_extract",
+        name: "Transformation",
+        parameters: regex_params
+      })
+
+    regex_transformation2 =
+      Transformation.new(%{
+        type: "regex_extract",
+        name: "Transformation",
+        parameters: regex_params
+      })
+
+    regex_transformation3 =
+      Transformation.new(%{
+        type: "regex_extract",
+        name: "Transformation",
+        parameters: regex_params
+      })
 
     sc_transformations = [regex_transformation1, regex_transformation2, regex_transformation3]
 

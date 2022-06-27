@@ -5,8 +5,16 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   use Phoenix.LiveView
   require Logger
 
+  alias Andi.InputSchemas.Ingestions.Transformations
+  alias Andi.InputSchemas.Ingestions.Transformation
+
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
+
+    transformation_changesets =
+      Enum.map(ingestion.transformations, fn transformation ->
+        Transformation.convert_andi_transformation_to_changeset(transformation)
+      end)
 
     {:ok,
      assign(socket,
@@ -14,7 +22,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
        validation_status: "collapsed",
        ingestion_id: ingestion.id,
        order: order,
-       transformations: []
+       transformation_changesets: transformation_changesets,
+       transformations: ingestion.transformations
      )}
   end
 
@@ -45,8 +54,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         <div class="component-edit-section--<%= @visibility %> transformations--<%= @visibility %>">
 
           <div id="transformation-forms">
-            <%= for transformation <- @transformations do %>
-              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: transformation, session: %{}) %>
+            <%= for changeset <- @transformation_changesets do %>
+              <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: "transform-#{changeset.changes.id}", session: %{"transformation_changeset" => changeset}) %>
             <% end %>
             </div>
 
@@ -63,7 +72,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_event("add-transformation", _, socket) do
-    {:noreply, assign(socket, transformations: [UUID.uuid4() | socket.assigns.transformations])}
+    {:noreply, assign(socket, transformation_changesets: socket.assigns.transformation_changesets ++ [Transformations.create()])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
