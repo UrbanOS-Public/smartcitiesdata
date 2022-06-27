@@ -80,6 +80,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   defp transformation_name(form) do
     name_field_value = input_value(form, :name)
+
     if(blank?(name_field_value)) do
       "Transformation"
     else
