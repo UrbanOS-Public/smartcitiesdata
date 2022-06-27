@@ -55,11 +55,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     end
 
     test "add transformation displays transformation header by default", %{ingestion: ingestion} do
-      assert {:ok, view, _html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
+      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
 
       refute element(view, ".transformation-header") |> has_element?
 
-      click_add_transformation(view)
+      html = click_add_transformation(view)
 
       assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
     end
