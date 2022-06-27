@@ -65,7 +65,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:raptor_service, in_umbrella: true},
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
-      {:smart_city, "~> 5.2.2"},
+      {:smart_city, "~> 5.2.3"},
       {:smart_city_test, "~> 2.2.2", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:telemetry_event, in_umbrella: true},
