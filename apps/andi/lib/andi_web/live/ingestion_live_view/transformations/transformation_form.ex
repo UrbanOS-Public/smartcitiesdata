@@ -30,7 +30,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, id: :transformation_form] %>
       <div class="transformation-header">
-        <p> <%= transformation_name(f) %> </p>
+        <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
+        <div class="transformation-edit-buttons">
+          <span class="material-icons">arrow_upward</span>
+          <span class="material-icons">arrow_downward</span>
+        </div>
       </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
       <div class="transformation-form">
