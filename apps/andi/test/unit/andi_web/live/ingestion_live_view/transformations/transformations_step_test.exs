@@ -53,6 +53,42 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
 
       assert Enum.count(find_elements(html, ".transformation-header")) == 2
     end
+
+    test "add transformation displays transformation header by default", %{ingestion: ingestion} do
+      assert {:ok, view, _html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
+
+      refute element(view, ".transformation-header") |> has_element?
+
+      click_add_transformation(view)
+
+      assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
+    end
+
+    test "transformation header displays transformation name" do
+      transformation_name = "This is the name that should appear"
+      ingestion = TDG.create_ingestion(
+        %{
+          name: "Original",
+          transformations: [
+            %{
+              type: "concatenation",
+              name: transformation_name,
+              parameters: %{
+                "sourceFields" => ["other", "name"],
+                "separator" => ".",
+                "targetField" => "name"
+              }
+            }
+          ]
+        })
+
+      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
+
+
+      assert element(view, ".transformation-header") |> has_element?
+      assert FlokiHelpers.get_text(html, ".transformation-header") == transformation_name
+
+    end
   end
 
   defp click_form_header(view) do
