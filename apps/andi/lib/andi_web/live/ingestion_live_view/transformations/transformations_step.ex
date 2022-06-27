@@ -16,6 +16,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         Transformation.convert_andi_transformation_to_changeset(transformation)
       end)
 
+
     {:ok,
      assign(socket,
        visibility: "collapsed",
