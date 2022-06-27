@@ -52,7 +52,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
       html = click_add_transformation(view)
 
       assert Enum.count(find_elements(html, ".transformation-header")) == 2
-
     end
   end
 
