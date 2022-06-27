@@ -161,7 +161,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
 
       assert [
                %{
-                name: "name1",
+                 name: "name1",
                  type: "concatenation",
                  parameters: %{
                    "sourceFields" => ["other", "name"],
@@ -171,7 +171,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
                  ingestion_id: ^ingestion_one_id
                },
                %{
-                name: "name2",
+                 name: "name2",
                  type: "regex_extract",
                  parameters: %{
                    "sourceField" => "name",
