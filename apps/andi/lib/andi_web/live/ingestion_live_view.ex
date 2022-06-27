@@ -19,6 +19,7 @@ defmodule AndiWeb.IngestionLiveView do
           <h1 class="ingestions-index__title">All Data Ingestions</h1>
           <button type="button" class="btn btn--add-ingestion btn--action" phx-click="add-ingestion">ADD DATA INGESTION</button>
         </div>
+        <hr class="ingestion-line">
 
         <%= live_component(@socket, Table, id: :ingestions_table, ingestions: @view_models, is_curator: @is_curator) %>
 
