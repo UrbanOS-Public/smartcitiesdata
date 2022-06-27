@@ -76,7 +76,8 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
 
     form_data = %{
       name: "Transformation Name",
-      id: id
+      id: id,
+      type: ""
     }
 
     changeset = Transformation.changeset_from_form_data(form_data)
@@ -98,7 +99,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       targetField: "name"
     }
 
-    changeset = Transformation.changeset_from_form_data(form_data) |> IO.inspect(label: "wat")
+    changeset = Transformation.changeset_from_form_data(form_data)
 
     assert %Ecto.Changeset{
              changes: %{

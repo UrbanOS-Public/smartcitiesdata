@@ -41,7 +41,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <div class="transformation-form__type">
           <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
           <%= select(f, :type, get_transformation_types(), [class: "select"]) %>
-          <%= ErrorHelpers.error_tag(f, :type, bind_to_input: false) %>
+          <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
         </div>
     </div>
     </form>
