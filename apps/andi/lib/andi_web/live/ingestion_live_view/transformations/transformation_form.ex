@@ -10,6 +10,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Andi.InputSchemas.Ingestions.Transformation
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.Helpers.MetadataFormHelpers
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -29,11 +31,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, id: :transformation_form] %>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
-      <div class="transformation-form transformation-form__name">
-        <%= label(f, :name, "Name", class: "label label--required") %>
-        <%= text_input(f, :name, class: "transformation-name input transformation-form-fields", phx_debounce: "1000") %>
-        <%= ErrorHelpers.error_tag(f.source, :name, bind_to_input: false) %>
-      </div>
+      <div class="transformation-form">
+        <div class="transformation-form__name">
+          <%= label(f, :name, "Name", class: "label label--required") %>
+          <%= text_input(f, :name, class: "transformation-name input transformation-form-fields", phx_debounce: "1000") %>
+          <%= ErrorHelpers.error_tag(f.source, :name, bind_to_input: false) %>
+        </div>
+
+        <div class="transformation-form__type">
+          <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
+          <%= select(f, :type, get_transformation_types(), [class: "select"]) %>
+          <%= ErrorHelpers.error_tag(f, :type, bind_to_input: false) %>
+        </div>
+    </div>
     </form>
     """
   end
@@ -64,5 +74,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     new_changeset = Transformation.changeset_from_form_data(form_data)
 
     {:noreply, assign(socket, transformation_changeset: new_changeset)}
+  end
+
+  defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
+
+  defp map_to_dropdown_options(options) do
+    Enum.map(options, fn {actual_value, description} ->
+      [key: description, value: actual_value]
+    end)
   end
 end
