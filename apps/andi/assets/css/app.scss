@@ -199,8 +199,7 @@ body {
 }
 
 .btn--save:hover {
-  background: lighten($color-text-link, 10%);
-  color: white;
+  background: rgba($color-text-link, 10%);
   border: 2px solid $color-text-link;
 }
 .btn--submit:hover {
