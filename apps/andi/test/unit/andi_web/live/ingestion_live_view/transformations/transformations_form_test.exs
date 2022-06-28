@@ -23,6 +23,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "#name-error-msg") |> has_element?
     end
 
+    test "Header defaults to Transformation when transformation name is cleared from form" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      form_update = %{
+        "name" => ""
+      }
+
+      element(view, "#transformation_form") |> render_change(form_update)
+
+      assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
+    end
+
     test "Shows errors for missing type field" do
       transformation_changeset = Transformation.changeset_for_draft(%{})
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)
