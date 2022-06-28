@@ -11,8 +11,8 @@ defmodule AndiWeb.EditControllerTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   @url_path "/datasets"
-  @ingestions_url_path "ingestions"
-  @access_groups_url_path "access-groups"
+  @ingestions_url_path "/ingestions"
+  @access_groups_url_path "/access-groups"
 
   describe "EditController" do
     test "gives 404 if dataset is not found", %{conn: conn} do
@@ -44,7 +44,7 @@ defmodule AndiWeb.EditControllerTest do
 
     test "returns a 200 if an ingestion is found", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
-      {:ok, dataset} = Datasets.update(smrt_dataset)
+      {:ok, _dataset} = Datasets.update(smrt_dataset)
 
       smrt_ingestion = TDG.create_ingestion(%{targetDataset: smrt_dataset.id})
       {:ok, ingestion} = Ingestions.update(smrt_ingestion)

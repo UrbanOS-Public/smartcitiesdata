@@ -259,28 +259,6 @@ defmodule Andi.InputSchemas.DatasetsTest do
                 }
               }} = Datasets.update(updated_dataset)
     end
-
-    test "given a blank extract step body, retains it" do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "auth",
-                context: %{
-                  url: "123.com",
-                  body: "",
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              }
-            ]
-          }
-        })
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      step = dataset.technical.extractSteps |> Enum.at(0)
-      assert step.context.body == ""
-    end
   end
 
   describe "full_validation_changeset/1" do
