@@ -7,6 +7,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias AndiWeb.Helpers.TransformationHelpers
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -71,6 +72,17 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     {:noreply, socket}
   end
 
+  def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index_string}, socket) do
+    move_index = String.to_integer(move_index_string)
+    transformation_index = Enum.find_index(socket.assigns.transformations, fn transformation -> transformation.id == transformation_id end)
+    target_index = transformation_index + move_index
+
+    case target_index >= 0 && target_index < Enum.count(socket.assigns.transformations) do
+      true -> move_transformation(socket, transformation_index, target_index)
+      false -> {:noreply, socket}
+    end
+  end
+
   def handle_event("add-transformation", _, socket) do
     {:noreply, assign(socket, transformation_changesets: socket.assigns.transformation_changesets ++ [Transformations.create()])}
   end
@@ -85,5 +97,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       end
 
     {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
+  defp move_transformation(socket, transformation_index, target_index) do
+    updated_transformations =
+      socket.assigns.transformations
+      |> TransformationHelpers.move_element(transformation_index, target_index)
+      |> Enum.with_index()
+      |> Enum.map(fn {transformation, index} ->
+        {:ok, updated_transformation} =Transformations.update(transformation, %{sequence: index})
+        updated_transformation
+      end)
+
+    {:noreply, assign(socket, transformations: updated_transformations)}
   end
 end

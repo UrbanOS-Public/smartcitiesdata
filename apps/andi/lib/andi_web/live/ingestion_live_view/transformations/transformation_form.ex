@@ -13,6 +13,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
+  
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -32,7 +33,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       <div class="transformation-header">
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-edit-buttons">
-          <span class="material-icons">arrow_upward</span>
+          <span class="material-icons" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
           <span class="material-icons">arrow_downward</span>
         </div>
       </div>
