@@ -500,8 +500,6 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_select(html, ".metadata-form__level-of-access") == {"false", "Public"}
     end
 
-    # todo: topLevelSelector needs to be re-evaluated / potentially removed
-    @tag :skip
     data_test "required #{field} field displays proper error message", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
 
@@ -530,7 +528,6 @@ defmodule AndiWeb.MetadataFormTest do
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
-        [:topLevelSelector, %{"topLevelSelector" => ""}, "Please enter a valid top level selector."],
         [:private, %{"private" => ""}, "Please enter a valid level of access."]
       ])
     end
