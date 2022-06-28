@@ -13,8 +13,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   import FlokiHelpers, only: [find_elements: 2, get_text: 2]
 
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.ExtractSteps
 
@@ -74,6 +72,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
+  # flag: stuck on this with nicole for the moment
   test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
     extract_steps = []
     andi_ingestion = create_ingestion_with_dataset(extract_steps)
@@ -81,8 +80,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     {:ok, view, _} = live(conn, @url_path <> andi_ingestion.id)
 
     editor = find_live_child(view, "extract_step_form_editor")
-
-    render_change(editor, "update_new_step_type", %{"value" => "http"})
 
     render_change(editor, "update_new_step_type", %{"value" => "http"})
     render_click(editor, "add-extract-step")

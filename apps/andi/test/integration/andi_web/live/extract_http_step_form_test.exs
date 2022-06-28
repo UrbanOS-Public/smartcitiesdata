@@ -27,13 +27,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
   describe "updating query params" do
     setup do
-      ingestion =
+      {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
           url: "test.com",
           queryParams: %{"bar" => "biz", "blah" => "dah"},
           headers: %{"barl" => "biz", "yar" => "har"}
         })
+        |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
       [ingestion: ingestion, extract_step_id: extract_step_id]
@@ -115,7 +116,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "does not have key/value inputs when ingestion has no source #{field}", %{conn: conn} do
-      ingestion = IngestionHelpers.create_ingestion(%{})
+      {:ok, ingestion} = IngestionHelpers.create_ingestion(%{}) |> IngestionHelpers.save_ingestion()
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
       assert html |> find_elements(key_class) |> Enum.empty?()
@@ -170,13 +171,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   describe "url testing" do
     @tag capture_log: true
     test "uses provided query params and headers", %{conn: conn} do
-      ingestion =
+      {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
           url: "123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -193,7 +195,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "queryParams are updated when query params are added to url", %{conn: conn} do
-      ingestion = IngestionHelpers.create_with_http_extract_step(%{})
+      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -222,7 +224,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "url is updated when query params are added", %{conn: conn} do
-      ingestion = IngestionHelpers.create_with_http_extract_step(%{})
+      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -264,13 +266,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     test "status and time are displayed when source url is tested", %{conn: conn} do
-      ingestion =
+      {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
           url: "123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -295,13 +298,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     test "status is displayed with an appropriate class when it is between 200 and 399", %{
       conn: conn
     } do
-      ingestion =
+      {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
           url: "123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -324,13 +328,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     test "status is displayed with an appropriate class when it is not between 200 and 399", %{
       conn: conn
     } do
-      ingestion =
+      {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
           url: "123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -353,13 +358,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   test "required url field displays proper error message", %{conn: conn} do
-    ingestion =
+    {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "GET",
         url: "123.com",
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -375,7 +381,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
-    ingestion =
+    {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "POST",
         url: "123.com",
@@ -383,6 +389,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -413,7 +420,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   test "body passes validation with valid json", %{conn: conn} do
-    ingestion =
+    {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "POST",
         url: "123.com",
@@ -421,6 +428,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
     extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
