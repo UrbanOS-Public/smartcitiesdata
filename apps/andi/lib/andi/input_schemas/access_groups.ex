@@ -23,8 +23,8 @@ defmodule Andi.InputSchemas.AccessGroups do
         name: access_group_name
       })
 
-    {:ok, new_changeset} = save(changeset)
-    new_changeset
+    {:ok, andi_access_group} = save(changeset)
+    andi_access_group
   end
 
   def delete(access_group_id) do

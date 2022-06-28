@@ -58,6 +58,7 @@ defmodule AndiWeb.Views.DisplayNames do
     temporal: "Temporal Boundaries",
     time: "Time",
     topLevelSelector: "Top Level Selector",
+    transformationType: "Transformation Type",
     type: "Type",
     url: "URL",
     week: "Week",
