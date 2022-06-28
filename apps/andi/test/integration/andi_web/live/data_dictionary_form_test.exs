@@ -204,6 +204,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
   end
 
   describe "schema sample upload" do
+    # todo: technical.sourceFormat no longer valid
     test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{technical: %{sourceFormat: "application/json"}})
 
@@ -821,6 +822,7 @@ defmodule AndiWeb.DataDictionaryFormTest do
     end
 
     test "users aren't able to access the upload feature for data dictionary in the ssui", %{public_conn: conn, public_user: public_user} do
+      # todo: technical.sourceFormat no longer valid
       blank_dataset = %Dataset{id: UUID.uuid4(), technical: %{sourceFormat: "application/json"}, business: %{}}
 
       {:ok, andi_dataset} = Datasets.update(blank_dataset)

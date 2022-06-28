@@ -12,6 +12,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
+  alias IngestionHelpers
 
   import FlokiHelpers,
     only: [
@@ -24,6 +25,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     ]
 
   @url_path "/submissions/"
+  @ingestions_url_path "/ingestions/"
 
   test "type-info input is not displayed when type is neither list, date, nor timestamp", %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{schema: [%{name: "one", type: "string"}]}})
@@ -110,14 +112,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
   end
 
+  # todo: curator connection should work here?
   test "xml selector is enabled when source type is xml", %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/xml"}})
+    {:ok, ingestion} = IngestionHelpers.create_ingestion(%{sourceFormat: "text/xml"}) |> IngestionHelpers.save_ingestion()
 
-    {:ok, dataset} =
-      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-      |> Datasets.save()
-
-    {:ok, _view, html} = live(conn, @url_path <> dataset.id)
+    {:ok, _view, html} = live(conn, @ingestions_url_path <> ingestion.id)
 
     assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
   end
@@ -181,7 +180,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     end
   end
 
-  describe "certain fields in the data dictionary editor are unavaliable for non curator users" do
+  describe "certain fields in the data dictionary editor are unavailable for non curator users" do
     setup %{public_subject: public_subject} do
       {:ok, public_user} = Andi.Schemas.User.create_or_update(public_subject, %{email: "bob@example.com", name: "Bob"})
       [public_user: public_user]
