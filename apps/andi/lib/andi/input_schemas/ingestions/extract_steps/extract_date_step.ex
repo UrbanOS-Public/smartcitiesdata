@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Datasets.ExtractDateStep do
+defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset

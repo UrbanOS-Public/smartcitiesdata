@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Datasets.ExtractStep do
+defmodule Andi.InputSchemas.Ingestions.ExtractStep do
   @moduledoc """
   Generic schema for all types of extract steps. The `context` field is validated differently based on the type of step
 

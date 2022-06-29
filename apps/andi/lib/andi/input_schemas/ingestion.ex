@@ -10,7 +10,7 @@ defmodule Andi.InputSchemas.Ingestion do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.DataDictionary
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Helpers.ExtractStepHelpers
   alias AndiWeb.Views.Options

@@ -1,6 +1,6 @@
 defmodule Andi.InputSchemas.ExtractSteps do
   @moduledoc false
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Andi.Repo
   alias Andi.InputSchemas.StructTools
 

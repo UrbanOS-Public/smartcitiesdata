@@ -10,7 +10,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.ExtractSteps.ExtractStepHeader
-  alias Andi.InputSchemas.Datasets.ExtractSecretStep
+  alias Andi.InputSchemas.Ingestions.ExtractSecretStep
   alias Phoenix.HTML.FormData
 
   def mount(socket) do

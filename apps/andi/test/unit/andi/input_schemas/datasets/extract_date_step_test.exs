@@ -1,8 +1,8 @@
-defmodule Andi.InputSchemas.Datasets.ExtractDateStepTest do
+defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
   use ExUnit.Case
   import Checkov
 
-  alias Andi.InputSchemas.Datasets.ExtractDateStep
+  alias Andi.InputSchemas.Ingestions.ExtractDateStep
 
   describe "changeset validation" do
     test "fails for invalid format" do
