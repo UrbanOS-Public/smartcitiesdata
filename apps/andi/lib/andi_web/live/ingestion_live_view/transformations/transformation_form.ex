@@ -13,7 +13,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
-  
+
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -34,10 +34,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-edit-buttons">
           <span class="material-icons" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
-          <span class="material-icons">arrow_downward</span>
+          <span class="material-icons"phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
         </div>
       </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
+    <%= hidden_input(f, :sequence, value: @transformation_changeset.changes.sequence) %>
       <div class="transformation-form">
         <div class="transformation-form__name">
           <%= label(f, :name, "Name", class: "label label--required") %>
@@ -53,6 +54,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     </div>
     </form>
     """
+  end
+
+  def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index}, socket) do
+    AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{"id" => transformation_id, "move-index" => move_index})
+    {:noreply, socket}
   end
 
   def handle_info(
