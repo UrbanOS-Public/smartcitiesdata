@@ -112,15 +112,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
     refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
   end
 
-  # todo: curator connection should work here?
-  test "xml selector is enabled when source type is xml", %{conn: conn} do
-    {:ok, ingestion} = IngestionHelpers.create_ingestion(%{sourceFormat: "text/xml"}) |> IngestionHelpers.save_ingestion()
-
-    {:ok, _view, html} = live(conn, @ingestions_url_path <> ingestion.id)
-
-    assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__selector", "disabled"))
-  end
-
   describe "validation" do
     data_test "missing #{field} shows error", %{conn: conn} do
       schema =
@@ -138,8 +129,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryFieldEditorTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-field-editor__#{class} > .error-msg"))
 
       where(
-        field: [:name, :type, :item_type, :selector],
-        class: ["name", "type", "type-info", "selector"]
+        field: [:name, :type, :item_type],
+        class: ["name", "type", "type-info"]
       )
     end
 
