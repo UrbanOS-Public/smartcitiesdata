@@ -38,7 +38,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         </div>
       </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
-    <%= hidden_input(f, :sequence, value: @transformation_changeset.changes.sequence) %>
       <div class="transformation-form">
         <div class="transformation-form__name">
           <%= label(f, :name, "Name", class: "label label--required") %>
