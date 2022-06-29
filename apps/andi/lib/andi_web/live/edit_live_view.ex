@@ -44,11 +44,11 @@ defmodule AndiWeb.EditLiveView do
         <%= hidden_input(technical, :sourceType) %>
         <%= hidden_input(technical, :systemName) %>
 
-        <div class="metadata-form-component">
+        <div>
           <%= live_render(@socket, AndiWeb.EditLiveView.MetadataForm, id: :metadata_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator}) %>
         </div>
 
-        <div class="data-dictionary-form-component">
+        <div class="datasets-data-dictionary">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator, "order" => "2"}) %>
         </div>
       </form>
