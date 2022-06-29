@@ -72,7 +72,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
   end
 
-  # flag: stuck on this with nicole for the moment
   test "when an http extract step is added, its changeset adds a body field", %{conn: conn} do
     extract_steps = []
     andi_ingestion = create_ingestion_with_dataset(extract_steps)

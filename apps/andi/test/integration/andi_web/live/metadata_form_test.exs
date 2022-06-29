@@ -577,7 +577,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#issuedDate-error-msg") == ""
     end
 
-    # todo: topLevelSelector needs to be re-evaluated / potentially removed
+    # todo: ticket #757 will move this test to an /ingestions page test
     @tag :skip
     test "displays error when topLevelSelector jpath is invalid", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
@@ -589,8 +589,7 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      # form_data = %{"sourceFormat" => "application/json", "topLevelSelector" => "$.data[x]"}
-      form_data = %{"topLevelSelector" => "$.data[x]"}
+      form_data = %{"sourceFormat" => "application/json", "topLevelSelector" => "$.data[x]"}
       html = render_change(metadata_view, :validate, %{"form_data" => form_data})
 
       assert get_text(html, "#topLevelSelector-error-msg") == "Error: Expected an integer at `x]`"

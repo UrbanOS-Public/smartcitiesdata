@@ -134,22 +134,20 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> changeset
-      # _ -> validate_schema_internals(changeset)
+      _ -> validate_schema_internals(changeset)
     end
   end
 
   defp validate_schema(changeset, _), do: changeset
 
-  # todo: part of making xml / text/xml dataset schema validation on ingestions
-  # defp validate_schema_internals(%{changes: changes} = changeset) do
-  #   schema =
-  #     Ecto.Changeset.get_field(changeset, :schema, [])
-  #     |> StructTools.to_map()
+  defp validate_schema_internals(%{changes: changes} = changeset) do
+    schema =
+      Ecto.Changeset.get_field(changeset, :schema, [])
+      |> StructTools.to_map()
 
-  #   DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
-  #   |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
-  # end
+    DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
+    |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
+  end
 
   defp populate_default(schema_field_changes) do
     use_default = Map.get(schema_field_changes, :use_default) |> to_boolean()

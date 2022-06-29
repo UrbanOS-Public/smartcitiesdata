@@ -112,20 +112,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
 
-  # todo: do we need a top level selector on ingestions if sourceFormat is "xml" or "text/xml"?
-  # defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
-  #   validate_required(changeset, [:topLevelSelector], message: "is required")
-  # end
-
-  # todo: move to ingestions?
-  # defp validate_top_level_selector(%{changes: %{sourceFormat: source_format, topLevelSelector: top_level_selector}} = changeset)
-  #      when source_format in ["json", "application/json"] do
-  #   case Jaxon.Path.parse(top_level_selector) do
-  #     {:error, error_msg} -> add_error(changeset, :topLevelSelector, error_msg.message)
-  #     _ -> validate_schema_internals(changeset)
-  #   end
-  # end
-
   defp validate_top_level_selector(changeset), do: changeset
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
@@ -149,20 +135,8 @@ defmodule Andi.InputSchemas.Datasets.Technical do
 
       _ ->
         changeset
-        # _ -> validate_schema_internals(changeset)
     end
   end
-
-  # todo: part of making xml / text/xml dataset schema validation on ingestions
-  #   ticket. Unused now in datasets.
-  # defp validate_schema_internals(%{changes: changes} = changeset) do
-  #   schema =
-  #     Ecto.Changeset.get_field(changeset, :schema, [])
-  #     |> StructTools.to_map()
-
-  #   DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
-  #   |> Enum.reduce(changeset, fn error, changeset_acc -> add_error(changeset_acc, :schema, error) end)
-  # end
 
   defp validate_key_value_parameters(changeset) do
     [:sourceQueryParams, :sourceHeaders]

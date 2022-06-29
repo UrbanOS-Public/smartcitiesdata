@@ -130,14 +130,6 @@ defmodule Andi.InputSchemas.Ingestion do
     end
   end
 
-  defp validate_submission_schema(%{changes: %{schema: _}} = changeset) do
-    case Ecto.Changeset.get_field(changeset, :schema, nil) do
-      [] -> add_error(changeset, :schema, "cannot be empty")
-      nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
-    end
-  end
-
   defp validate_schema_internals(%{changes: changes} = changeset) do
     schema =
       Ecto.Changeset.get_field(changeset, :schema, [])

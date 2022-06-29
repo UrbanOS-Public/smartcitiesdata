@@ -3,7 +3,6 @@ defmodule Andi.InputSchemas.DatasetSchemaValidator do
   Used to validate dataset schemas
   """
 
-  # todo: make a ticket to do this schema validation on ingestions if source_format is xml or text/xml
   def validate(schema, source_format) when source_format in ["xml", "text/xml"] do
     validate_schema_has_selectors(schema)
   end

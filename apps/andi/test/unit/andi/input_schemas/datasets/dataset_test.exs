@@ -141,24 +141,6 @@ defmodule Andi.InputSchemas.Datasets.DatasetTest do
       )
     end
 
-    # TODO: remove as part of topLevelSelector card? 2 cards? Move to ingestion, delete from datasets?
-    # @tag :skip
-    # data_test "topLevelSelector is required when sourceFormat is #{source_format}" do
-    #   changes = @valid_changes |> put_in([:technical, :sourceFormat], source_format)
-
-    #   changeset = Dataset.changeset(changes)
-
-    #   refute changeset.valid?
-
-    #   assert accumulate_errors(changeset) == %{
-    #            technical: %{
-    #              topLevelSelector: [{:topLevelSelector, {"is required", [validation: :required]}}]
-    #            }
-    #          }
-
-    #   where(source_format: ["xml", "text/xml"])
-    # end
-
     data_test "is invalid when #{inspect(field_path)} has an unacceptable value" do
       changes = @valid_changes |> put_in(field_path, value)
       changeset = Dataset.changeset(changes)
