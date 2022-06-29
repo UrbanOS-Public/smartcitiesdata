@@ -6,10 +6,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
   use Ecto.Schema
   import Ecto.Changeset
   alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Ingestion
 
-  @cast_fields [:id, :context, :type, :technical_id, :sequence, :ingestion_id]
+  @cast_fields [:id, :context, :type, :sequence, :ingestion_id]
   @required_fields [:type, :context]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
@@ -17,7 +16,6 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
     field(:type, :string)
     field(:context, :map)
     field(:sequence, :integer, read_after_writes: true)
-    belongs_to(:technical, Technical, type: Ecto.UUID, foreign_key: :technical_id)
     belongs_to(:ingestion, Ingestion, type: Ecto.UUID, foreign_key: :ingestion_id)
   end
 
@@ -95,11 +93,11 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
   defp validate_context(changeset), do: changeset
 
-  defp step_module("http"), do: Andi.InputSchemas.Datasets.ExtractHttpStep
-  defp step_module("date"), do: Andi.InputSchemas.Datasets.ExtractDateStep
-  defp step_module("secret"), do: Andi.InputSchemas.Datasets.ExtractSecretStep
-  defp step_module("auth"), do: Andi.InputSchemas.Datasets.ExtractAuthStep
-  defp step_module("s3"), do: Andi.InputSchemas.Datasets.ExtractS3Step
+  defp step_module("http"), do: Andi.InputSchemas.Ingestions.ExtractHttpStep
+  defp step_module("date"), do: Andi.InputSchemas.Ingestions.ExtractDateStep
+  defp step_module("secret"), do: Andi.InputSchemas.Ingestions.ExtractSecretStep
+  defp step_module("auth"), do: Andi.InputSchemas.Ingestions.ExtractAuthStep
+  defp step_module("s3"), do: Andi.InputSchemas.Ingestions.ExtractS3Step
   defp step_module("sftp"), do: nil
   defp step_module(_invalid_type), do: :invalid_type
 
