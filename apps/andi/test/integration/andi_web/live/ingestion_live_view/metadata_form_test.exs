@@ -113,6 +113,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert new_source_format in current_select_value
     end
 
+  # todo: ticket #757 will fullfil this test
     @tag :skip
     test "can not edit source format for published ingestion", %{
       view: view,
@@ -139,6 +140,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end
   end
 
+  # todo: ticket #757 will fullfil this test
   @tag :skip
   test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
     smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
