@@ -29,10 +29,7 @@ defmodule DiscoveryApi.Data.MapperTest do
         [%{technical: %{private: false}}, [:accessLevel], "public"],
         [%{technical: %{private: true}}, [:accessLevel], "non-public"],
         [%{business: %{conformsToUri: nil}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"],
-        [%{business: %{conformsToUri: "overridden"}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"],
-        [%{technical: %{sourceFormat: "application/json"}}, [:fileTypes], ["JSON"]],
-        [%{technical: %{sourceFormat: "application/gtfs+protobuf"}}, [:fileTypes], ["JSON"]],
-        [%{technical: %{sourceFormat: "text/csv"}}, [:fileTypes], ["CSV"]]
+        [%{business: %{conformsToUri: "overridden"}}, [:conformsToUri], "https://project-open-data.cio.gov/v1.1/schema/"]
       ])
     end
   end
