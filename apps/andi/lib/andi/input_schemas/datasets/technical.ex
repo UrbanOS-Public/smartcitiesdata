@@ -82,7 +82,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
     |> validate_required(@required_fields, message: "is required")
     |> validate_format(:orgName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
-    |> validate_top_level_selector()
     |> validate_schema()
     |> validate_key_value_parameters()
   end
@@ -111,8 +110,6 @@ defmodule Andi.InputSchemas.Datasets.Technical do
   end
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :sourceQueryParams, :sourceHeaders])
-
-  defp validate_top_level_selector(changeset), do: changeset
 
   defp validate_schema(%{changes: %{sourceType: source_type}} = changeset)
        when source_type in ["ingest", "stream"] do
