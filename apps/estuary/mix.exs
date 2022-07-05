@@ -4,7 +4,7 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.14",
+      version: "0.11.15",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -29,6 +29,7 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
+      {:cowlib, "== 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},

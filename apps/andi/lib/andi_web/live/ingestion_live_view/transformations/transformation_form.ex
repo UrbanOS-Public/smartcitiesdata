@@ -3,6 +3,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   LiveComponent for editing an individual transformation
   """
   use Phoenix.LiveView
+  use Phoenix.LiveComponent
   require Logger
   import Phoenix.HTML.Form
 
@@ -25,11 +26,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   def render(assigns) do
     ~L"""
 
-    <div class="transformation-header">
-      <p>Transformation</p>
-    </div>
+
 
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, id: :transformation_form] %>
+      <div class="transformation-header">
+        <p> <%= transformation_name(f) %> </p>
+      </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
       <div class="transformation-form">
         <div class="transformation-form__name">
@@ -75,6 +77,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
     {:noreply, assign(socket, transformation_changeset: new_changeset)}
   end
+
+  defp transformation_name(form) do
+    name_field_value = input_value(form, :name)
+
+    if(blank?(name_field_value)) do
+      "Transformation"
+    else
+      name_field_value
+    end
+  end
+
+  defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
 
   defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
 

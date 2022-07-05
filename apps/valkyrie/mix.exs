@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.7.17",
+      version: "1.7.18",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -36,6 +36,7 @@ defmodule Valkyrie.MixProject do
       {:brook, "== 0.4.9"},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test]},
+      {:cowlib, "== 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
