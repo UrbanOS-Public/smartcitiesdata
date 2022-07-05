@@ -14,7 +14,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
 
-
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
 
@@ -26,8 +25,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def render(assigns) do
     ~L"""
-
-
 
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, id: :transformation_form] %>
       <div class="transformation-header">
@@ -56,7 +53,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index}, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{"id" => transformation_id, "move-index" => move_index})
+    AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{
+      "id" => transformation_id,
+      "move-index" => move_index
+    })
+
     {:noreply, socket}
   end
 
@@ -92,7 +93,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     name_field_value = input_value(form, :name)
 
     if(blank?(name_field_value)) do
-      "Transformation"
+      "New Transformation"
     else
       name_field_value
     end

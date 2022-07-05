@@ -13,7 +13,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("move-transformation")
 
-
     transformation_changesets =
       Enum.map(ingestion.transformations, fn transformation ->
         Transformation.convert_andi_transformation_to_changeset(transformation)
@@ -74,9 +73,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     {:noreply, socket}
   end
 
-
-  def handle_info(%{topic: "move-transformation", event: "move-transformation", payload: %{"id" => transformation_id, "move-index" => move_index_string}}, socket) do
-    IO.inspect(transformation_id, label: "here")
+  def handle_info(
+        %{
+          topic: "move-transformation",
+          event: "move-transformation",
+          payload: %{"id" => transformation_id, "move-index" => move_index_string}
+        },
+        socket
+      ) do
     move_index = String.to_integer(move_index_string)
     transformation_index = Enum.find_index(socket.assigns.transformations, fn transformation -> transformation.id == transformation_id end)
     target_index = transformation_index + move_index
@@ -88,7 +92,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_event("add-transformation", _, socket) do
-    {:noreply, assign(socket, transformation_changesets: socket.assigns.transformation_changesets ++ [Transformations.create()])}
+    new_transformation = Transformations.create()
+
+    {:noreply,
+     assign(socket,
+       transformation_changesets: socket.assigns.transformation_changesets ++ [new_transformation],
+       transformations: socket.assigns.transformations ++ [Transformations.get(new_transformation.changes.id)]
+     )}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -109,7 +119,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       |> TransformationHelpers.move_element(transformation_index, target_index)
       |> Enum.with_index()
       |> Enum.map(fn {transformation, index} ->
-        {:ok, updated_transformation} =Transformations.update(transformation, %{sequence: index})
+        {:ok, updated_transformation} = Transformations.update(transformation, %{sequence: index})
         updated_transformation
       end)
 

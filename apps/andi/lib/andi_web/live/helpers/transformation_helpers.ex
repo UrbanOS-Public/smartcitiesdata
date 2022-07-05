@@ -9,5 +9,4 @@ defmodule AndiWeb.Helpers.TransformationHelpers do
 
     List.insert_at(remaining_list, new_index, extract_step_to_move)
   end
-
 end
