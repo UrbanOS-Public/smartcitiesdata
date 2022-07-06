@@ -49,16 +49,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       <div class="edit-page__btn-group">
         <div class="btn-group__standard">
-          <button type="button" class="btn btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft Ingestion</button>
-          <button id="publish-button" name="publish-button" class="btn btn--save btn--large" type="button" phx-click="publish">Publish Ingestion</button>
+          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Discard Changes</button>
+          <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save btn--large" type="button" phx-click="save">Save Draft Ingestion</button>
+          <button id="publish-button" name="publish-button" class="btn btn--primary btn--save btn--large" type="button" phx-click="publish">Publish Ingestion</button>
         </div>
 
         <hr>
 
-        <button id="ingestion-delete-button" class="btn btn--delete" phx-click="prompt-ingestion-delete" type="button">
-          <span class="delete-icon material-icons">delete_outline</span>
-          DELETE
+        <button id="ingestion-delete-button" class="btn btn--danger btn--delete" phx-click="prompt-ingestion-delete" type="button">
+          <span class="delete-icon material-icons">delete</span>
+          Delete
         </button>
 
       </div>

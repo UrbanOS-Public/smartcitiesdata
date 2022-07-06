@@ -43,7 +43,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
         <%= label(f, :targetDataset, "Dataset Name", class: "label label--required") %>
         <%= hidden_input(f, :targetDataset, value: @selected_dataset) %>
         <%= text_input(f, :targetDatasetName, class: "input ingestion-form-fields", value: get_dataset_name(@selected_dataset), disabled: true) %>
-        <button class="btn btn--select-dataset-search" phx-click="select-dataset" type="button">Select Dataset</button>
+        <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" type="button">Select Dataset</button>
         <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
       </div>
 
