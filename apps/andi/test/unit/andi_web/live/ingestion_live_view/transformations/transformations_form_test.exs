@@ -33,7 +33,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       element(view, "#transformation_form") |> render_change(form_update)
 
-      assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
+      assert FlokiHelpers.get_text(html, ".transformation-header") =~ "New Transformation"
     end
 
     test "Shows errors for missing type field" do
