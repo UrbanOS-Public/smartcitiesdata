@@ -20,44 +20,32 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       find_elements: 2
     ]
 
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.InputConverter
+  alias IngestionHelpers
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/ingestions/"
 
   describe "updating query params" do
     setup do
-      dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "test.com",
-                  queryParams: %{"bar" => "biz", "blah" => "dah"},
-                  headers: %{"barl" => "biz", "yar" => "har"}
-                }
-              }
-            ]
-          }
+      {:ok, ingestion} =
+        IngestionHelpers.create_with_http_extract_step(%{
+          action: "GET",
+          url: "test.com",
+          queryParams: %{"bar" => "biz", "blah" => "dah"},
+          headers: %{"barl" => "biz", "yar" => "har"}
         })
+        |> IngestionHelpers.save_ingestion()
 
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      extract_step_id = get_extract_step_id(andi_dataset, 0)
-
-      [dataset: andi_dataset, extract_step_id: extract_step_id]
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
+      [ingestion: ingestion, extract_step_id: extract_step_id]
     end
 
     data_test "new key/value inputs are added when add button is pressed for #{field}", %{
       conn: conn,
-      dataset: dataset,
+      ingestion: ingestion,
       extract_step_id: extract_step_id
     } do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
@@ -72,17 +60,23 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       where(
         field: [:queryParams, :headers],
         btn_class: [".url-form__source-query-params-add-btn", ".url-form__source-headers-add-btn"],
-        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
-        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+        key_class: [
+          ".url-form__source-query-params-key-input",
+          ".url-form__source-headers-key-input"
+        ],
+        value_class: [
+          ".url-form__source-query-params-value-input",
+          ".url-form__source-headers-value-input"
+        ]
       )
     end
 
     data_test "key/value inputs are deleted when delete button is pressed for #{field}", %{
       conn: conn,
-      dataset: dataset,
+      ingestion: ingestion,
       extract_step_id: extract_step_id
     } do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
 
       assert html |> find_elements(key_class) |> length() == 2
@@ -106,30 +100,47 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       where(
         field: [:queryParams, :headers],
-        btn_class: [".url-form__source-query-params-delete-btn", ".url-form__source-headers-delete-btn"],
-        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
-        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+        btn_class: [
+          ".url-form__source-query-params-delete-btn",
+          ".url-form__source-headers-delete-btn"
+        ],
+        key_class: [
+          ".url-form__source-query-params-key-input",
+          ".url-form__source-headers-key-input"
+        ],
+        value_class: [
+          ".url-form__source-query-params-value-input",
+          ".url-form__source-headers-value-input"
+        ]
       )
     end
 
-    data_test "does not have key/value inputs when dataset has no source #{field}", %{conn: conn} do
-      dataset = TDG.create_dataset(%{technical: %{field => %{}}})
-      {:ok, _andi_dataset} = Datasets.update(dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    data_test "does not have key/value inputs when ingestion has no source #{field}", %{conn: conn} do
+      {:ok, ingestion} = IngestionHelpers.create_ingestion(%{}) |> IngestionHelpers.save_ingestion()
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
       assert html |> find_elements(key_class) |> Enum.empty?()
       assert html |> find_elements(value_class) |> Enum.empty?()
 
       where(
         field: [:queryParams, :headers],
-        key_class: [".url-form__source-query-params-key-input", ".url-form__source-headers-key-input"],
-        value_class: [".url-form__source-query-params-value-input", ".url-form__source-headers-value-input"]
+        key_class: [
+          ".url-form__source-query-params-key-input",
+          ".url-form__source-headers-key-input"
+        ],
+        value_class: [
+          ".url-form__source-query-params-value-input",
+          ".url-form__source-headers-value-input"
+        ]
       )
     end
 
-    test "url is updated when query params are removed", %{conn: conn, dataset: dataset, extract_step_id: extract_step_id} do
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    test "url is updated when query params are removed", %{
+      conn: conn,
+      ingestion: ingestion,
+      extract_step_id: extract_step_id
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
 
       btn_class = ".url-form__source-query-params-delete-btn"
@@ -144,7 +155,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
 
       url_with_no_query_params =
-        dataset.technical.extractSteps
+        ingestion.extractSteps
         |> hd()
         |> get_in([:context, :url])
         |> Andi.URI.clear_query_params()
@@ -160,29 +171,20 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   describe "url testing" do
     @tag capture_log: true
     test "uses provided query params and headers", %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              }
-            ]
-          }
+      {:ok, ingestion} =
+        IngestionHelpers.create_with_http_extract_step(%{
+          action: "GET",
+          url: "123.com",
+          queryParams: %{"x" => "y"},
+          headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
       render_click(test_url_button)
@@ -193,12 +195,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "queryParams are updated when query params are added to url", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
+      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
@@ -224,12 +224,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "url is updated when query params are added", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{}}]}})
+      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
@@ -247,10 +245,17 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         [:initialSourceUrl, :queryParams, :updatedUrl],
         [
           "http://example.com",
-          %{"0" => %{"key" => "dog", "value" => "car"}, "1" => %{"key" => "new", "value" => "thing"}},
+          %{
+            "0" => %{"key" => "dog", "value" => "car"},
+            "1" => %{"key" => "new", "value" => "thing"}
+          },
           "http://example.com?dog=car&new=thing"
         ],
-        ["http://example.com?dog=cat&fish=water", %{"0" => %{"key" => "dog", "value" => "cat"}}, "http://example.com?dog=cat"],
+        [
+          "http://example.com?dog=cat&fish=water",
+          %{"0" => %{"key" => "dog", "value" => "cat"}},
+          "http://example.com?dog=cat"
+        ],
         ["http://example.com?dog=cat&fish=water", %{}, "http://example.com"],
         [
           "http://example.com?dog=cat",
@@ -261,29 +266,20 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     test "status and time are displayed when source url is tested", %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              }
-            ]
-          }
+      {:ok, ingestion} =
+        IngestionHelpers.create_with_http_extract_step(%{
+          action: "GET",
+          url: "123.com",
+          queryParams: %{"x" => "y"},
+          headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
 
@@ -299,30 +295,23 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
     end
 
-    test "status is displayed with an appropriate class when it is between 200 and 399", %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              }
-            ]
-          }
+    test "status is displayed with an appropriate class when it is between 200 and 399", %{
+      conn: conn
+    } do
+      {:ok, ingestion} =
+        IngestionHelpers.create_with_http_extract_step(%{
+          action: "GET",
+          url: "123.com",
+          queryParams: %{"x" => "y"},
+          headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
 
@@ -336,30 +325,23 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
     end
 
-    test "status is displayed with an appropriate class when it is not between 200 and 399", %{conn: conn} do
-      smrt_dataset =
-        TDG.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "123.com",
-                  queryParams: %{"x" => "y"},
-                  headers: %{"api-key" => "to-my-heart"}
-                }
-              }
-            ]
-          }
+    test "status is displayed with an appropriate class when it is not between 200 and 399", %{
+      conn: conn
+    } do
+      {:ok, ingestion} =
+        IngestionHelpers.create_with_http_extract_step(%{
+          action: "GET",
+          url: "123.com",
+          queryParams: %{"x" => "y"},
+          headers: %{"api-key" => "to-my-heart"}
         })
+        |> IngestionHelpers.save_ingestion()
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 400})
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
 
@@ -376,30 +358,18 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   test "required url field displays proper error message", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "http",
-              context: %{
-                action: "GET",
-                url: "123.com",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
-              }
-            }
-          ]
-        }
+    {:ok, ingestion} =
+      IngestionHelpers.create_with_http_extract_step(%{
+        action: "GET",
+        url: "123.com",
+        queryParams: %{"x" => "y"},
+        headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
-    {:ok, dataset} =
-      InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-      |> Datasets.save()
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-    extract_step_id = get_extract_step_id(dataset, 0)
-
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_step_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
@@ -411,28 +381,19 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "http",
-              context: %{
-                action: "POST",
-                url: "123.com",
-                body: "",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
-              }
-            }
-          ]
-        }
+    {:ok, ingestion} =
+      IngestionHelpers.create_with_http_extract_step(%{
+        action: "POST",
+        url: "123.com",
+        body: "",
+        queryParams: %{"x" => "y"},
+        headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
-    {:ok, dataset} = Datasets.update(smrt_dataset)
-    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_step_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
@@ -444,35 +405,34 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     where([
       [:field, :value, :error],
-      ["queryParams", %{"0" => %{"key" => "", "value" => "where's my key"}}, "Please enter valid key(s)."],
-      ["headers", %{"0" => %{"key" => "", "value" => "where is it?!"}}, "Please enter valid key(s)."],
+      [
+        "queryParams",
+        %{"0" => %{"key" => "", "value" => "where's my key"}},
+        "Please enter valid key(s)."
+      ],
+      [
+        "headers",
+        %{"0" => %{"key" => "", "value" => "where is it?!"}},
+        "Please enter valid key(s)."
+      ],
       ["body", "this is invalid json", "Please enter valid JSON"]
     ])
   end
 
   test "body passes validation with valid json", %{conn: conn} do
-    smrt_dataset =
-      TDG.create_dataset(%{
-        technical: %{
-          extractSteps: [
-            %{
-              type: "http",
-              context: %{
-                action: "POST",
-                url: "123.com",
-                body: "",
-                queryParams: %{"x" => "y"},
-                headers: %{"api-key" => "to-my-heart"}
-              }
-            }
-          ]
-        }
+    {:ok, ingestion} =
+      IngestionHelpers.create_with_http_extract_step(%{
+        action: "POST",
+        url: "123.com",
+        body: "",
+        queryParams: %{"x" => "y"},
+        headers: %{"api-key" => "to-my-heart"}
       })
+      |> IngestionHelpers.save_ingestion()
 
-    {:ok, dataset} = Datasets.update(smrt_dataset)
-    extract_step_id = get_extract_step_id(dataset, 0)
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
     extract_step_form_view = find_live_child(view, "extract_step_form_editor")
     es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
 
@@ -481,13 +441,5 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     html = render_change(es_form, %{"form_data" => form_data})
 
     assert get_text(html, "#body-error-msg") == ""
-  end
-
-  defp get_extract_step_id(dataset, index) do
-    dataset
-    |> Andi.InputSchemas.StructTools.to_map()
-    |> get_in([:technical, :extractSteps])
-    |> Enum.at(index)
-    |> Map.get(:id)
   end
 end

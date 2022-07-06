@@ -19,13 +19,12 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(dictionary, changes) do
-    source_format = Map.get(changes, :sourceFormat, nil)
     changes_with_id = StructTools.ensure_id(dictionary, changes)
     source_type = Map.get(changes, :sourceType, "ingest")
 
     dictionary
     |> cast(changes_with_id, [], empty_values: [])
-    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2), invalid_message: "is required")
     |> validate_required(:schema, message: "is required")
     |> validate_schema(source_type)
   end

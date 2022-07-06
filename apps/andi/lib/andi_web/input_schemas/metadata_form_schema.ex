@@ -71,7 +71,6 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :private,
     :publishFrequency,
     :riskRating,
-    :sourceFormat,
     :sourceType,
     :systemName,
     :spatial,
@@ -96,7 +95,6 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     :private,
     :publishFrequency,
     :riskRating,
-    :sourceFormat,
     :sourceType
   ]
 
@@ -106,7 +104,6 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     metadata
     |> cast(changes, @cast_fields)
     |> validate_required(@required_fields, message: "is required")
-    |> validate_source_format()
     |> validate_top_level_selector()
     |> validate_format(:dataName, @no_dashes_regex, message: "cannot contain dashes")
     |> validate_length(:dataName, max: dataset_name_max_length())
@@ -142,19 +139,6 @@ defmodule AndiWeb.InputSchemas.MetadataFormSchema do
     |> Map.update(:keywords, nil, &InputConverter.keywords_to_list/1)
     |> changeset()
   end
-
-  defp validate_source_format(%{changes: %{sourceType: source_type, sourceFormat: source_format}} = changeset)
-       when source_type in ["ingest", "stream"] do
-    format_values = Options.source_format() |> Map.new() |> Map.values()
-
-    if source_format in format_values do
-      changeset
-    else
-      add_error(changeset, :sourceFormat, "invalid format for ingestion")
-    end
-  end
-
-  defp validate_source_format(changeset), do: changeset
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset) when source_format in ["xml", "text/xml"] do
     validate_required(changeset, [:topLevelSelector], message: "is required")

@@ -1,8 +1,8 @@
-defmodule Andi.InputSchemas.Datasets.ExtractStepTest do
+defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
   use ExUnit.Case
   # import Checkov
 
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
 
   test "fails for empty context" do
     changes = %{

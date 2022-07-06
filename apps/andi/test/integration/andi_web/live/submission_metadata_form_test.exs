@@ -245,8 +245,7 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
           technical: %{
             private: true,
             orgId: org.id,
-            sourceType: "ingest",
-            sourceFormat: "text/csv"
+            sourceType: "ingest"
           }
         })
 
@@ -254,8 +253,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
 
       assert get_value(html, ".metadata-form__title input") == dataset.business.dataTitle
       assert get_text(html, ".metadata-form__description textarea") == dataset.business.description
-      {selected_format, _} = get_select(html, ".metadata-form__format select")
-      assert selected_format == dataset.technical.sourceFormat
       assert get_value(html, ".metadata-form__spatial input") == dataset.business.spatial
       assert get_value(html, ".metadata-form__temporal input") == dataset.business.temporal
       assert {"english", "English"} == get_select(html, ".metadata-form__language")
@@ -294,23 +291,6 @@ defmodule AndiWeb.SubmissionMetadataFormTest do
           "Please describe your dataset. What information does it contain? Where, when, and how was the data collected? Which organization produced the dataset, if applicable?"
         ]
       ])
-    end
-
-    test "required sourceFormat displays proper error message", %{public_conn: conn, public_user: public_user} do
-      smrt_dataset = TDG.create_dataset(%{})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      {:ok, dataset} = Datasets.update(dataset, %{owner_id: public_user.id})
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_live_child(view, "metadata_form_editor")
-
-      form_data = %{"sourceFormat" => ""}
-
-      html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-
-      assert get_text(html, "#sourceFormat-error-msg") ==
-               "Please enter a valid source format. Your file should either be in CSV or JSON format. If your dataset file exists in another format, please convert it to the correct format before proceeding."
     end
 
     test "non-submission required field updateFrequency does not trigger a validation error", %{public_conn: conn, public_user: public_user} do

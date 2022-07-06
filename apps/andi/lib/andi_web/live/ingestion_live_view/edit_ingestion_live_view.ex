@@ -29,19 +29,19 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         </div>
 
         <div>
-          <div class="extract-steps-form-component">
+          <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
           </div>
 
-          <div class="data-dictionary-form-component">
+          <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>
 
-          <div class="transformations-form-component">
+          <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
           </div>
 
-          <div class="finalize-form-component ">
+          <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
           </div>
         </div>

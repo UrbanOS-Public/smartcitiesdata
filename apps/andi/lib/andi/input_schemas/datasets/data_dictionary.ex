@@ -84,6 +84,21 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :bread_crumb
   ]
 
+  def changeset(dictionary, changes) do
+    changes_with_id = StructTools.ensure_id(dictionary, changes)
+
+    dictionary
+    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2))
+    |> foreign_key_constraint(:dataset_id)
+    |> foreign_key_constraint(:technical_id)
+    |> foreign_key_constraint(:parent_id)
+    |> validate_required(@required_fields, message: "is required")
+    |> validate_item_type()
+    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_format()
+  end
+
   def changeset(dictionary, changes, source_format) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 
