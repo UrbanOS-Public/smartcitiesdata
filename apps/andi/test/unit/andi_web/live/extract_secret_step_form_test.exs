@@ -2,12 +2,13 @@ defmodule AndiWeb.ExtractSecretFormTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
+  alias IngestionHelpers
 
   import Phoenix.LiveViewTest
   import FlokiHelpers, only: [get_text: 2, get_attributes: 3]
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/datasets/"
+  @url_path "/ingestions/"
   @user UserHelpers.create_user()
 
   setup do
@@ -26,25 +27,16 @@ defmodule AndiWeb.ExtractSecretFormTest do
     setup %{conn: conn} do
       allow(Andi.Repo.all(any()), return: [])
 
-      secret_extract_step = %{
-        type: "secret",
-        context: %{
-          destination: "bob_field",
-          sub_key: "secret-key"
-        }
+      default_context = %{
+        destination: "bob_field",
+        sub_key: "secret-key"
       }
 
-      dataset = DatasetHelpers.create_dataset(%{technical: %{extractSteps: [secret_extract_step]}})
+      %{ingestion: ingestion} = IngestionHelpers.create_with_secret_extract_step(default_context) |> IngestionHelpers.mock_repo_get()
 
-      extract_step_id =
-        dataset
-        |> get_in([:technical, :extractSteps])
-        |> hd()
-        |> Map.get(:id)
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-      allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_steps_form_view = find_live_child(view, "extract_step_form_editor")
 
       [extract_steps_form_view: extract_steps_form_view, extract_step_id: extract_step_id]

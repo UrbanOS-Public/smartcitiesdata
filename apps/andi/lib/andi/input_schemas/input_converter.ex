@@ -153,12 +153,6 @@ defmodule Andi.InputSchemas.InputConverter do
     Andi.InputSchemas.Ingestions.full_validation_changeset_for_publish(%Ingestion{}, ingestion_as_map)
   end
 
-  def andi_ingestion_to_full_submission_changeset_for_publish(%Ingestion{} = ingestion) do
-    ingestion_as_map = StructTools.to_map(ingestion)
-
-    Andi.InputSchemas.Ingestions.full_validation_submission_changeset_for_publish(%Ingestion{}, ingestion_as_map)
-  end
-
   def andi_dataset_to_smrt_dataset(%Dataset{} = dataset) do
     dataset
     |> StructTools.to_map()
@@ -236,7 +230,6 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
       |> convert_source_url()
       |> Map.update(:sourceQueryParams, [], &to_key_value_list/1)
-      |> Map.update(:extractSteps, [], &convert_smrt_extract_steps/1)
       |> FormTools.replace(:schema, fn schema ->
         schema
         |> Enum.map(&add_dataset_id(&1, smrt_dataset.id))
@@ -321,7 +314,6 @@ defmodule Andi.InputSchemas.InputConverter do
       |> Map.update(:sourceUrl, nil, &Andi.URI.clear_query_params/1)
       |> Map.update(:sourceQueryParams, nil, &convert_key_value_to_map/1)
       |> Map.update(:sourceHeaders, nil, &convert_key_value_to_map/1)
-      |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
       |> Map.update(:schema, nil, fn schema ->
         schema
         |> Enum.map(&drop_fields_from_dictionary_item/1)

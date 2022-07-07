@@ -11,12 +11,14 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
 
   import FlokiHelpers,
     only: [
+      get_attributes: 3,
       get_text: 2,
       get_value: 2,
       get_select: 2
     ]
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.InputConverter
@@ -42,7 +44,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       end)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
-      [ingestion: ingestion, view: view, html: html, dataset: dataset]
+      [ingestion: ingestion, view: view, html: html, dataset: dataset, conn: conn]
     end
 
     test "name field defaults to it's existing name", %{
@@ -110,6 +112,42 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
 
       assert new_source_format in current_select_value
     end
+
+    # todo: ticket #757 will fullfil this test
+    @tag :skip
+    test "can not edit source format for published ingestion", %{
+      view: view,
+      html: html,
+      ingestion: ingestion,
+      conn: conn
+    } do
+      {:ok, dataset} =
+        TDG.create_dataset(%{name: "sample_dataset", submissionStatus: :published})
+        |> Datasets.update()
+
+      eventually(fn ->
+        andi_dataset = Datasets.get(dataset.id)
+        assert andi_dataset.id == dataset.id
+      end)
+
+      {:ok, ingestion} =
+        TDG.create_ingestion(%{targetDataset: dataset.id, submissionStatus: :published})
+        |> Ingestions.update()
+
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+
+      refute Enum.empty?(get_attributes(html, ".ingestion-metadata-form__format select", "disabled"))
+    end
+  end
+
+  # todo: ticket #757 will fullfil this test
+  @tag :skip
+  test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
+    {:ok, dataset} = Datasets.update(smrt_dataset)
+
+    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+    refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
   end
 
   defp find_select_dataset_btn(view) do

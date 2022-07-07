@@ -7,7 +7,6 @@ defmodule Andi.InputSchemas.Datasets do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
-  alias Andi.InputSchemas.Datasets.ExtractStep
 
   use Properties, otp_app: :andi
 
@@ -275,10 +274,7 @@ defmodule Andi.InputSchemas.Datasets do
   defp extract_owner_id(_, _), do: nil
 
   def full_validation_changeset_for_publish(schema, changes) do
-    extract_steps_changes = get_in(changes, [:technical, :extractSteps])
-    extract_steps_valid = extract_steps_valid?(extract_steps_changes)
-
-    changes = update_changes_for_invalid_form(changes, extract_steps_valid)
+    changes = update_changes_for_invalid_form(changes)
 
     schema
     |> Dataset.changeset(changes)
@@ -291,9 +287,7 @@ defmodule Andi.InputSchemas.Datasets do
     |> Dataset.validate_unique_system_name()
   end
 
-  defp update_changes_for_invalid_form(changes, false), do: changes
-
-  defp update_changes_for_invalid_form(changes, true) do
+  defp update_changes_for_invalid_form(changes) do
     url_placeholder =
       changes.business[:homepage]
       |> source_url_placeholder_from_homepage()
@@ -306,15 +300,4 @@ defmodule Andi.InputSchemas.Datasets do
 
   defp source_url_placeholder_from_homepage(hompage) when is_nil(hompage) or hompage == "", do: "N/A"
   defp source_url_placeholder_from_homepage(hompage), do: hompage
-
-  defp extract_steps_valid?(extract_steps_changes) do
-    Enum.reduce_while(extract_steps_changes, true, fn step_changes, _acc ->
-      step_changeset = ExtractStep.changeset(step_changes)
-
-      case step_changeset.valid? do
-        true -> {:cont, true}
-        false -> {:halt, false}
-      end
-    end)
-  end
 end

@@ -10,7 +10,7 @@ defmodule Andi.InputSchemas.Ingestion do
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.DataDictionary
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Helpers.ExtractStepHelpers
   alias AndiWeb.Views.Options
@@ -123,14 +123,6 @@ defmodule Andi.InputSchemas.Ingestion do
   defp validate_top_level_selector(changeset), do: changeset
 
   defp validate_schema(changeset) do
-    case Ecto.Changeset.get_field(changeset, :schema, nil) do
-      [] -> add_error(changeset, :schema, "cannot be empty")
-      nil -> add_error(changeset, :schema, "is required", validation: :required)
-      _ -> validate_schema_internals(changeset)
-    end
-  end
-
-  defp validate_submission_schema(%{changes: %{schema: _}} = changeset) do
     case Ecto.Changeset.get_field(changeset, :schema, nil) do
       [] -> add_error(changeset, :schema, "cannot be empty")
       nil -> add_error(changeset, :schema, "is required", validation: :required)

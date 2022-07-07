@@ -18,6 +18,7 @@ defmodule AndiWeb.UserLiveView do
         <div class="users-index__header">
           <h1 class="users-index__title">All Users</h1>
         </div>
+        <hr class="users-line">
 
         <div class="users-index__search">
           <form phx-change="search" phx-submit="search">

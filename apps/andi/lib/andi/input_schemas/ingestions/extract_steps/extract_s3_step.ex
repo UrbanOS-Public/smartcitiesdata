@@ -1,26 +1,22 @@
-defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
+defmodule Andi.InputSchemas.Ingestions.ExtractS3Step do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias Andi.InputSchemas.StructTools
 
   @primary_key false
   embedded_schema do
-    field(:body, :string)
     field(:url, :string)
     field(:destination, :string)
-    field(:encode_method, :string)
-    field(:cacheTtl, :integer, default: 900_000)
-    field(:path, {:array, :string})
     embeds_many(:headers, ExtractHeader, on_replace: :delete)
   end
 
   use Accessible
 
-  @cast_fields [:destination, :encode_method, :path, :cacheTtl, :url, :body]
-  @required_fields [:destination, :url, :path, :cacheTtl]
+  @cast_fields [:url]
+  @required_fields [:url]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
@@ -30,11 +26,8 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
     extract_step
     |> cast(changes_with_id, @cast_fields, empty_values: [])
     |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
-    |> validate_body_format()
     |> validate_required(@required_fields, message: "is required")
-    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
     |> validate_key_value_set(:headers)
-    |> validate_path()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -74,28 +67,6 @@ defmodule Andi.InputSchemas.Datasets.ExtractAuthStep do
       false -> changeset
     end
   end
-
-  defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
-
-  defp validate_body_format(%{changes: %{body: body}} = changeset) do
-    case Jason.decode(body) do
-      {:ok, _} -> changeset
-      {:error, _} -> add_error(changeset, :body, "could not parse json", validation: :format)
-    end
-  end
-
-  defp validate_body_format(changeset), do: changeset
-
-  defp validate_path(%{changes: %{path: []}} = changeset), do: add_error(changeset, :path, "is required")
-
-  defp validate_path(%{changes: %{path: path}} = changeset) do
-    case Enum.any?(path, fn path_field -> path_field in ["", nil] end) do
-      true -> add_error(changeset, :path, "path fields cannot be empty")
-      false -> changeset
-    end
-  end
-
-  defp validate_path(changeset), do: changeset
 
   defp key_value_has_invalid_key?(nil), do: false
 

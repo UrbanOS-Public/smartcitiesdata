@@ -1,10 +1,10 @@
-defmodule Andi.InputSchemas.Datasets.ExtractHttpStepTest do
+defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
   use ExUnit.Case
   import Checkov
 
   alias AndiWeb.Helpers.FormTools
-  alias Andi.InputSchemas.Datasets.ExtractHttpStep
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractHttpStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
 
   describe "body validation" do
     setup do

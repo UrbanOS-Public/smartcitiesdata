@@ -4,7 +4,7 @@ defmodule E2E.MixProject do
   def project do
     [
       app: :e2e,
-      version: "0.1.6",
+      version: "0.1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -27,6 +27,7 @@ defmodule E2E.MixProject do
     [
       {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
+      {:cowlib, "== 2.9.1", override: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},
@@ -36,7 +37,7 @@ defmodule E2E.MixProject do
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:ranch, "~> 1.7.1", override: true},
-      {:smart_city, "~> 5.2.2"},
+      {:smart_city, "~> 5.2.4"},
       {:jason, "~> 1.2", override: true}
     ]
   end

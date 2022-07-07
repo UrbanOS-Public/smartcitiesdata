@@ -13,8 +13,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   import FlokiHelpers, only: [find_elements: 2, get_text: 2]
 
-  alias SmartCity.TestDataGenerator, as: TDG
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.ExtractSteps
 
@@ -83,8 +81,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     editor = find_live_child(view, "extract_step_form_editor")
 
     render_change(editor, "update_new_step_type", %{"value" => "http"})
-
-    render_change(editor, "update_new_step_type", %{"value" => "http"})
     render_click(editor, "add-extract-step")
 
     render_click(view, "save")
@@ -93,14 +89,12 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
     es_form = element(editor, "#step-#{extract_step_id} form")
 
-    render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => "test"}})
-
-    render_click(view, "save")
-
     eventually(fn ->
+      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => "test"}})
+      render_click(view, "save")
       extract_step = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first()
       assert extract_step != nil
-      assert Map.has_key?(extract_step.context, "body")
+      assert Map.get(extract_step.context, "body") == "test"
     end)
   end
 

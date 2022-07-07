@@ -20,6 +20,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     allow Ingestions.get(ingestion.id), return: ingestion
     allow Ingestions.update(ingestion, %{name: "Updated"}), return: {:ok, ingestion}
     allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
+    allow Andi.Repo.insert_or_update(any()), return: {:ok, %{}}
 
     %{ingestion: ingestion}
   end
@@ -42,15 +43,50 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     test "add transformation creates a new transformation", %{ingestion: ingestion} do
       assert {:ok, view, _html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
 
-      refute element(view, ".transformation") |> has_element?
+      refute element(view, ".transformation-header") |> has_element?
 
       click_add_transformation(view)
 
-      assert element(view, ".transformation") |> has_element?
+      assert element(view, ".transformation-header") |> has_element?
 
       html = click_add_transformation(view)
 
-      assert Enum.count(find_elements(html, ".transformation")) == 2
+      assert Enum.count(find_elements(html, ".transformation-header")) == 2
+    end
+
+    test "add transformation displays transformation header by default", %{ingestion: ingestion} do
+      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
+
+      refute element(view, ".transformation-header") |> has_element?
+
+      html = click_add_transformation(view)
+
+      assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
+    end
+
+    test "transformation header displays transformation name" do
+      transformation_name = "This is the name that should appear"
+
+      ingestion =
+        TDG.create_ingestion(%{
+          name: "Original",
+          transformations: [
+            %{
+              type: "concatenation",
+              name: transformation_name,
+              parameters: %{
+                "sourceFields" => ["other", "name"],
+                "separator" => ".",
+                "targetField" => "name"
+              }
+            }
+          ]
+        })
+
+      assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
+
+      assert element(view, ".transformation-header") |> has_element?
+      assert FlokiHelpers.get_text(html, ".transformation-header") == transformation_name
     end
   end
 

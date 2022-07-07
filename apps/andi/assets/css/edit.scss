@@ -79,6 +79,12 @@ $component-header-height: 7.5rem;
   margin-bottom: 4rem;
 }
 
+.datasets-data-dictionary { 
+    .form-section {
+        margin-top: -8.75rem;
+    }
+}
+
 .section-number {
     display: inline-flex;
     align-items: center;

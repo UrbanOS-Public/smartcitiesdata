@@ -23,7 +23,6 @@ defmodule E2ETest do
       ],
       sourceType: "ingest",
       sourceUrl: "http://example.com",
-      sourceFormat: "text/csv",
       cadence: "once"
     }
   }
@@ -60,23 +59,6 @@ defmodule E2ETest do
 
     dataset =
       @overrides
-      |> put_in(
-        [:technical, :extractSteps],
-        [
-          %{
-            type: "http",
-            context: %{
-              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
-              action: "GET",
-              queryParams: %{},
-              headers: %{},
-              protocol: nil,
-              body: %{}
-            },
-            assigns: %{}
-          }
-        ]
-      )
       |> TDG.create_dataset()
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)

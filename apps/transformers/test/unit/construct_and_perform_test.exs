@@ -9,7 +9,8 @@ defmodule Transformers.ConstructAndPerformTest do
       "regex" => "^(\\w+)"
     }
 
-    transformation1 = Transformation.new(%{type: "regex_extract", parameters: parameters})
+    transformation1 =
+      Transformation.new(%{type: "regex_extract", name: "Transformation", parameters: parameters})
 
     parameters = %{
       "sourceField" => "full_name",
@@ -17,7 +18,9 @@ defmodule Transformers.ConstructAndPerformTest do
       "regex" => "(\\w+)$"
     }
 
-    transformation2 = Transformation.new(%{type: "regex_extract", parameters: parameters})
+    transformation2 =
+      Transformation.new(%{type: "regex_extract", name: "Transformation", parameters: parameters})
+
     transformations = [transformation1, transformation2]
 
     operations = Transformers.construct(transformations)
@@ -40,7 +43,12 @@ defmodule Transformers.ConstructAndPerformTest do
       "targetField" => "number"
     }
 
-    transformation1 = Transformation.new(%{type: "regex_extract", parameters: regex_params})
+    transformation1 =
+      Transformation.new(%{
+        type: "regex_extract",
+        name: "Transformation",
+        parameters: regex_params
+      })
 
     conversion_params = %{
       "field" => "number",
@@ -48,7 +56,12 @@ defmodule Transformers.ConstructAndPerformTest do
       "targetType" => "integer"
     }
 
-    transformation2 = Transformation.new(%{type: "conversion", parameters: conversion_params})
+    transformation2 =
+      Transformation.new(%{
+        type: "conversion",
+        name: "Transformation",
+        parameters: conversion_params
+      })
 
     transformations = [transformation1, transformation2]
     operations = Transformers.construct(transformations)

@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Datasets.ExtractHeader do
+defmodule Andi.InputSchemas.Ingestions.ExtractHeader do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset

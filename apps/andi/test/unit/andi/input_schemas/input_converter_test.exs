@@ -20,8 +20,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     test "SmartCity.Dataset => Changeset => SmartCity.Dataset" do
       dataset =
         TestDataGenerator.create_dataset(%{
-          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"},
-          technical: %{extractSteps: []}
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: "2020-01-05T00:00:00Z"}
         })
 
       {:ok, new_dataset} =
@@ -47,35 +46,6 @@ defmodule Andi.InputSchemas.InputConverterTest do
                 format: "{YYYY}",
                 default: %{provider: "timestamp", version: "2", opts: %{format: "{YYYY}", offset_in_seconds: -1000}}
               }
-            ],
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  headers: %{"key" => "value"},
-                  queryParams: %{"key" => "val"},
-                  action: "POST",
-                  body: %{
-                    "url" => "http://www.something.com/",
-                    "action" => "Add",
-                    "params" => %{
-                      "intA" => 3,
-                      "intB" => 6
-                    }
-                  },
-                  protocol: ["http1"],
-                  url: "example.com"
-                },
-                assigns: %{}
-              },
-              %{
-                type: "s3",
-                context: %{
-                  headers: %{"key2" => "val2"},
-                  url: "blah.com"
-                },
-                assigns: %{}
-              }
             ]
           }
         })
@@ -92,8 +62,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     test "conversion preserves empty string modified date" do
       dataset =
         TestDataGenerator.create_dataset(%{
-          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: ""},
-          technical: %{extractSteps: []}
+          business: %{issuedDate: "2020-01-03T00:00:00Z", modifiedDate: ""}
         })
 
       {:ok, new_dataset} =
@@ -143,69 +112,6 @@ defmodule Andi.InputSchemas.InputConverterTest do
                    "key" => "value",
                    "key1" => "value1"
                  }
-               }
-             } = smrt_dataset
-    end
-
-    test "removes query params from extract step url on andi_dataset_to_smrt_dataset" do
-      dataset =
-        TestDataGenerator.create_dataset(%{
-          technical: %{
-            extractSteps: [
-              %{
-                type: "http",
-                context: %{
-                  action: "GET",
-                  url: "example.com?whats=up"
-                }
-              }
-            ]
-          }
-        })
-        |> InputConverter.smrt_dataset_to_full_changeset()
-        |> Ecto.Changeset.apply_changes()
-
-      {:ok, smrt_dataset} =
-        dataset
-        |> InputConverter.form_data_to_full_changeset(%{
-          "technical" => %{
-            "extractSteps" => [
-              %{
-                "type" => "http",
-                "context" => %{
-                  "url" => "http://example.com?key=value&key1=value1",
-                  "queryParams" => [
-                    %{
-                      "key" => "key",
-                      "value" => "value"
-                    },
-                    %{
-                      "key" => "key1",
-                      "value" => "value1"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        })
-        |> Changeset.apply_changes()
-        |> InputConverter.andi_dataset_to_smrt_dataset()
-
-      assert %SmartCity.Dataset{
-               technical: %{
-                 extractSteps: [
-                   %{
-                     type: "http",
-                     context: %{
-                       url: "http://example.com",
-                       queryParams: %{
-                         "key" => "value",
-                         "key1" => "value1"
-                       }
-                     }
-                   }
-                 ]
                }
              } = smrt_dataset
     end
@@ -362,14 +268,12 @@ defmodule Andi.InputSchemas.InputConverterTest do
       "publishFrequency" => "publishFrequency"
     },
     "technical" => %{
-      "cadence" => "never",
       "dataName" => "dataName",
       "orgName" => "orgName",
       "private" => false,
       "schema" => %{
         "0" => %{"id" => Ecto.UUID.generate(), "name" => "name", "type" => "type", "dataset_id" => "id", "bread_crumb" => "name"}
       },
-      "sourceFormat" => "sourceFormat",
       "sourceHeaders" => %{
         "0" => %{"id" => Ecto.UUID.generate(), "key" => "foo", "value" => "bar"},
         "1" => %{"id" => Ecto.UUID.generate(), "key" => "fizzle", "value" => "bizzle"}

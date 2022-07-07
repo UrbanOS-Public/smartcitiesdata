@@ -1,4 +1,4 @@
-defmodule Andi.InputSchemas.Datasets.ExtractQueryParam do
+defmodule Andi.InputSchemas.Ingestions.ExtractQueryParam do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset

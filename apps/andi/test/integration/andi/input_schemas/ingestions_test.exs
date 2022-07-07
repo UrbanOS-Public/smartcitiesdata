@@ -12,7 +12,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
 
   describe "get_all/0" do
     test "given existing ingestions, it returns them with extract steps and schema preloaded" do

@@ -4,7 +4,7 @@ defmodule Transformers.MixProject do
   def project do
     [
       app: :transformers,
-      version: "0.3.5",
+      version: "0.3.7",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -27,12 +27,13 @@ defmodule Transformers.MixProject do
   defp deps do
     [
       {:checkov, "~> 1.0", only: [:test]},
+      {:cowlib, "== 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city, "~> 5.2.2"},
-      {:smart_city_test, "~> 2.2.2", only: [:test, :integration]},
+      {:smart_city, "~> 5.2.4"},
+      {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
       {:timex, "~> 3.6"}
     ]
   end

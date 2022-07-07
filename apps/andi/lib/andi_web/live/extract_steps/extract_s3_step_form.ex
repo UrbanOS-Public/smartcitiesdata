@@ -7,8 +7,8 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
   import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractS3Step
-  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Ingestions.ExtractS3Step
+  alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames

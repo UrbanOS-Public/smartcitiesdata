@@ -6,7 +6,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.ExtractSteps.ExtractDateStepForm

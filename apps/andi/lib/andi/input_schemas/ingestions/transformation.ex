@@ -9,12 +9,13 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   alias Andi.InputSchemas.Ingestion
   alias AndiWeb.Views.Options
 
-  @cast_fields [:id, :type, :parameters, :ingestion_id, :sequence]
-  @required_fields [:type, :parameters]
+  @cast_fields [:id, :type, :name, :parameters, :ingestion_id, :sequence]
+  @required_fields [:type, :name, :parameters]
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "transformation" do
     field(:type, :string)
+    field(:name, :string)
     field(:parameters, :map)
     field(:sequence, :integer, read_after_writes: true)
     belongs_to(:ingestion, Ingestion, type: Ecto.UUID, foreign_key: :ingestion_id)
@@ -33,6 +34,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
     |> validate_type()
     |> validate_parameters()
   end
+
+  def changeset_for_draft(changes), do: changeset_for_draft(%__MODULE__{}, changes)
 
   def changeset_for_draft(transformation, changes) do
     changes_with_id = StructTools.ensure_id(transformation, changes)
@@ -58,6 +61,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       false -> changeset
     end
   end
+
+  defp validate_type(changeset), do: changeset
 
   defp validate_parameters(%{changes: %{type: type, parameters: parameters}} = changeset) do
     transformation = %{
@@ -88,8 +93,17 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   defp wrap_parameters(form_data) do
     parameters =
       form_data
+      |> Map.delete(:name)
+      |> Map.delete(:id)
       |> Map.delete(:type)
 
-    %{type: form_data.type, parameters: parameters}
+    %{id: form_data.id, name: form_data.name, type: form_data.type, parameters: parameters}
+  end
+
+  def convert_andi_transformation_to_changeset(transformation) do
+    transformation
+    |> StructTools.to_map()
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset_for_draft()
   end
 end
