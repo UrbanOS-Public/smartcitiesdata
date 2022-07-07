@@ -69,6 +69,17 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     """
   end
 
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{assigns: %{transformations: transformations}} = socket
+      ) do
+
+    # Enum.each(transformations, fn transformation ->
+    #   Transformations.update(transformation)
+    # end)
+    # {:noreply, socket}
+  end
+
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
