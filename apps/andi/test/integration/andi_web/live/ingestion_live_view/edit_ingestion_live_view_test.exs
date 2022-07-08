@@ -51,7 +51,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     } do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      cancel_button = element(view, ".btn--cancel", "Cancel")
+      cancel_button = element(view, ".btn--cancel", "Discard Changes")
       render_click(cancel_button)
 
       assert_redirect(view, "/ingestions")
