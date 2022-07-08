@@ -7,8 +7,8 @@ defmodule DeadLetter do
   """
 
   @doc """
-  Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
+  Given a message with a dataset id, ingestion id, and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
   """
-  @spec process(String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
-  defdelegate process(dataset_id, message, app_name, options \\ []), to: DeadLetter.Server
+  @spec process(String.t(), String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
+  defdelegate process(dataset_id, ingestion_id, message, app_name, options \\ []), to: DeadLetter.Server
 end

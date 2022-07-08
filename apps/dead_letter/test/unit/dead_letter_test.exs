@@ -21,11 +21,12 @@ defmodule DeadLetterTest do
   }
 
   @dataset_id "ds1"
+  @ingestion_id "in1"
 
   describe "process/2" do
     @tag capture_log: true
     test "sends formatted message to the queue" do
-      DeadLetter.process(@dataset_id, @default_original_message, "forklift")
+      DeadLetter.process(@dataset_id, @ingestion_id, @default_original_message, "forklift")
 
       assert_async do
         expected = %{
@@ -49,7 +50,7 @@ defmodule DeadLetterTest do
     test "message is an unparseable binary" do
       message = <<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>
 
-      DeadLetter.process(@dataset_id, message, "forklift")
+      DeadLetter.process(@dataset_id, @ingestion_id, message, "forklift")
 
       assert_async do
         {:ok, actual} = Carrier.receive()
@@ -59,7 +60,7 @@ defmodule DeadLetterTest do
     end
 
     test "properly handles tuples being passed" do
-      DeadLetter.process(@dataset_id, "some message", "valkyrie", reason: {:error, "bad date!"})
+      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie", reason: {:error, "bad date!"})
 
       assert_async do
         {:ok, actual} = Carrier.receive()
