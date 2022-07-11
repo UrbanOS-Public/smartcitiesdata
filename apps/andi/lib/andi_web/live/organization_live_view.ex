@@ -18,7 +18,7 @@ defmodule AndiWeb.OrganizationLiveView do
       <div class="organizations-index">
         <div class="organizations-index__header">
           <h1 class="organizations-index__title">All Organizations</h1>
-          <button type="button" class="btn btn--primary btn--add-organization btn--action" phx-click="add-organization">+ Add Organization</button>
+          <button type="button" class="btn btn--primary  btn--action" phx-click="add-organization">+ Add Organization</button>
         </div>
         <hr class="organizations-line">
 
