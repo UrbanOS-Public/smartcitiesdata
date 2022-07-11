@@ -134,24 +134,11 @@ defmodule DiscoveryApi.Event.EventHandler do
     dataset_access_group_associate()
     |> add_event_count(author, relation.dataset_id)
 
-    with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
-         model <- Mapper.add_access_group(dataset, relation.access_group_id) do
-      Elasticsearch.Document.update(model)
-
-      Logger.debug(fn ->
-        "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{
-          relation.access_group_id
-        }`"
-      end)
-
-      merge(:models, model.id, model)
-      clear_caches()
-
-      :discard
-    else
-      {:error, reason} ->
-        Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
-        :discard
+    dataset_result = Brook.get(@instance_name, :models, relation.dataset_id)
+    case dataset_result do
+      {:ok, nil} -> :discard
+      {:ok, dataset} -> handle_dataset_associate(dataset, relation)
+      {:error, reason} -> handle_dataset_error(relation, author, reason)
     end
   end
 
@@ -208,6 +195,22 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+  end
+
+  defp handle_dataset_associate(dataset, relation) do
+    model = Mapper.add_access_group(dataset, relation.access_group_id)
+    Elasticsearch.Document.update(model)
+
+    Logger.debug(fn ->
+      "Successfully handled dataset-access-group association message: `Dataset: #{relation.dataset_id} Access Group: #{
+        relation.access_group_id
+      }`"
+    end)
+
+    merge(:models, model.id, model)
+    clear_caches()
+
+    :discard
   end
 
   defp handle_dataset_dissociate(dataset, relation) do
