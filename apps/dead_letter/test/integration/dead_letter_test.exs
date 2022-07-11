@@ -23,7 +23,7 @@ defmodule DeadLetterTest do
   end
 
   test "recovers if message is undeliverable" do
-    DeadLetter.process("invalid-dataset", "invalid-ingestion" "invalid-message", {"wrong"})
+    DeadLetter.process("invalid-dataset", "invalid-ingestion", "invalid-message", {"wrong"})
     DeadLetter.process("valid-dataset", "valid-ingestion", "valid-message", "normalizer")
 
     assert_async(timeout: 1_000, sleep_wait: 100) do
