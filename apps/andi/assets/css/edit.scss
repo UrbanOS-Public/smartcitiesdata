@@ -271,20 +271,11 @@ $component-header-height: 7.5rem;
 
 
 #delete-dataset-button {
-    background-color: white;
-    color: black;
-    border: 1px solid black;
-
     .delete-icon {
         height: 1.5rem;
         width: 1.5rem;
         vertical-align: sub;
-    }
 
-    &:hover {
-        background-color: $color-error;
-        color: white;
-        border: 1px solid $color-error;
     }
 }
 

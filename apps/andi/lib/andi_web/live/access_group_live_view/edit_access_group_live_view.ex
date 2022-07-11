@@ -36,13 +36,13 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>
 
         <div>
-          <button class="btn btn--manage-datasets-search" phx-click="manage-datasets" type="button">Manage Datasets</button>
+          <button class="btn btn--primary-outline btn--manage-datasets-search" phx-click="manage-datasets" type="button">Manage Datasets</button>
         </div>
 
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.UserTable, selected_users: @selected_users) %>
 
         <div>
-          <button class="btn btn--manage-users-search" phx-click="manage-users" type="button">Manage Users</button>
+          <button class="btn btn--primary-outline btn--manage-users-search" phx-click="manage-users" type="button">Manage Users</button>
         </div>
       </form>
 
@@ -52,15 +52,15 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       <div class="edit-page__btn-group" id="access-groups-edit-button-group">
       <div class="btn-group__standard">
-            <button type="button" class="btn btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
-            <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--action btn--large save-edit">Save</button>
+            <button type="button" class="btn btn--secondary btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
+            <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--primary btn--large save-edit">Save</button>
         </div>
 
         <hr>
 
-        <button id="access-group-delete-button" class="btn btn--delete" phx-click="prompt-access-group-delete" type="button">
-          <span class="delete-icon material-icons">delete_outline</span>
-          DELETE
+        <button id="access-group-delete-button" class="btn btn--danger btn--delete" phx-click="prompt-access-group-delete" type="button">
+          <span class="delete-icon material-icons">delete</span>
+          Delete
         </button>
       </div>
 

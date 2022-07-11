@@ -204,7 +204,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
             </div>
 
             <div class="edit-button-group form-grid">
-              <a href="#data_dictionary_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
+              <a href="#data_dictionary_form" id="next-button" class="btn--primary-outline btn btn--next btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
             </div>
           </div>
         </form>

@@ -17,7 +17,7 @@ defmodule AndiWeb.IngestionLiveView do
       <div class="ingestions-index">
         <div class="ingestions-index__header">
           <h1 class="ingestions-index__title">All Data Ingestions</h1>
-          <button type="button" class="btn btn--add-ingestion btn--action" phx-click="add-ingestion">ADD DATA INGESTION</button>
+          <button type="button" class="btn btn--primary btn--add-ingestion btn--action" phx-click="add-ingestion">+ Add Data Ingestion</button>
         </div>
         <hr class="ingestion-line">
 

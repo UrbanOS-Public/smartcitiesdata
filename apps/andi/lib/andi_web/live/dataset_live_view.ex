@@ -25,7 +25,7 @@ defmodule AndiWeb.DatasetLiveView do
       <div class="datasets-index">
         <div class="datasets-index__header">
           <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
-          <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
+          <button type="button" class="btn--primary" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
         </div>
         <hr class="datasets-line">
 
