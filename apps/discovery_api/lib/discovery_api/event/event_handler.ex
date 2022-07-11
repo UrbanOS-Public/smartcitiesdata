@@ -135,6 +135,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, relation.dataset_id)
 
     dataset_result = Brook.get(@instance_name, :models, relation.dataset_id)
+
     case dataset_result do
       {:ok, nil} -> :discard
       {:ok, dataset} -> handle_dataset_associate(dataset, relation)
@@ -211,9 +212,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     Elasticsearch.Document.update(model)
 
     Logger.debug(fn ->
-      "Successfully handled dataset-access-group #{type} message: `Dataset: #{relation.dataset_id} Access Group: #{
-        relation.access_group_id
-      }`"
+      "Successfully handled dataset-access-group #{type} message: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
     end)
 
     merge(:models, model.id, model)

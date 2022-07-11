@@ -160,7 +160,10 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 #{dataset_access_group_associate()} error" do
     test "is ignored if dataset model missing" do
       allow(Brook.get(any(), any(), any()), return: {:ok, nil})
-      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
+      {:ok, relation} =
+        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
       event = Brook.Event.new(type: dataset_access_group_associate(), data: relation, author: :author)
 
       result = EventHandler.handle_event(event)
@@ -198,7 +201,10 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 #{dataset_access_group_disassociate()} error" do
     test "is ignored if dataset model missing" do
       allow(Brook.get(any(), any(), any()), return: {:ok, nil})
-      {:ok, relation} = SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
+      {:ok, relation} =
+        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
       event = Brook.Event.new(type: dataset_access_group_disassociate(), data: relation, author: :author)
 
       result = EventHandler.handle_event(event)
