@@ -63,9 +63,7 @@ defmodule DeadLetterTest do
     end
 
     test "properly handles tuples being passed" do
-      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie",
-        reason: {:error, "bad date!"}
-      )
+      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie", reason: {:error, "bad date!"})
 
       assert_async do
         {:ok, actual} = Carrier.receive()
