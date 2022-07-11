@@ -166,7 +166,7 @@ defmodule DiscoveryApi.Event.EventHandler do
     dataset_result = Brook.get(@instance_name, :models, relation.dataset_id)
 
     case dataset_result do
-      {:ok, nil} -> :discard
+      {:ok, nil} -> handle_dataset_error(relation, author, "Dataset model is nil")
       {:ok, dataset} -> handle_dataset_dissociate(dataset, relation)
       {:error, reason} -> handle_dataset_error(relation, author, reason)
     end
