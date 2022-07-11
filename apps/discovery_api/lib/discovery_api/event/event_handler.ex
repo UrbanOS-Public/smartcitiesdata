@@ -167,30 +167,30 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     case dataset_result do
       {:ok, nil} -> :discard
-      {:ok, _} -> handle_non_nil_dataset(relation, author)
+      {:ok, dataset} -> handle_dataset_dissociate(dataset, relation)
+      {:error, reason} -> handle_dataset_error(relation, author, reason)
     end
   end
 
-  defp handle_non_nil_dataset(relation, author) do
-    with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
-         model <- Mapper.remove_access_group(dataset, relation.access_group_id) do
-      Elasticsearch.Document.update(model)
+  defp handle_dataset_dissociate(dataset, relation) do
+    model = Mapper.remove_access_group(dataset, relation.access_group_id)
+    Elasticsearch.Document.update(model)
 
-      Logger.debug(fn ->
-        "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
-          relation.access_group_id
-        }`"
-      end)
+    Logger.debug(fn ->
+      "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
+        relation.access_group_id
+      }`"
+    end)
 
-      merge(:models, model.id, model)
-      clear_caches()
+    merge(:models, model.id, model)
+    clear_caches()
 
-      :discard
-    else
-      {:error, reason} ->
-        Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
-        :discard
-    end
+    :discard
+  end
+
+  defp handle_dataset_error(relation, author, reason) do
+    Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
+    :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
