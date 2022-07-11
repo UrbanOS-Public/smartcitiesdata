@@ -172,27 +172,6 @@ defmodule DiscoveryApi.Event.EventHandler do
     end
   end
 
-  defp handle_dataset_dissociate(dataset, relation) do
-    model = Mapper.remove_access_group(dataset, relation.access_group_id)
-    Elasticsearch.Document.update(model)
-
-    Logger.debug(fn ->
-      "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
-        relation.access_group_id
-      }`"
-    end)
-
-    merge(:models, model.id, model)
-    clear_caches()
-
-    :discard
-  end
-
-  defp handle_dataset_error(relation, author, reason) do
-    Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
-    :discard
-  end
-
   def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
     dataset_query()
     |> add_event_count(author, dataset_id)
@@ -229,6 +208,27 @@ defmodule DiscoveryApi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+  end
+
+  defp handle_dataset_dissociate(dataset, relation) do
+    model = Mapper.remove_access_group(dataset, relation.access_group_id)
+    Elasticsearch.Document.update(model)
+
+    Logger.debug(fn ->
+      "Successfully handled dataset-access-group disassociation message: `Dataset: #{relation.dataset_id} Access Group: #{
+        relation.access_group_id
+      }`"
+    end)
+
+    merge(:models, model.id, model)
+    clear_caches()
+
+    :discard
+  end
+
+  defp handle_dataset_error(relation, author, reason) do
+    Logger.error("Unable to process message `#{inspect(relation)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
+    :discard
   end
 
   defp create_user_if_not_exists(subject_id, email, name) do
