@@ -163,6 +163,15 @@ defmodule DiscoveryApi.Event.EventHandler do
     dataset_access_group_disassociate()
     |> add_event_count(author, relation.dataset_id)
 
+    dataset_result = Brook.get(@instance_name, :models, relation.dataset_id)
+
+    case dataset_result do
+      {:ok, nil} -> :discard
+      {:ok, _} -> handle_non_nil_dataset(relation, author)
+    end
+  end
+
+  defp handle_non_nil_dataset(relation, author) do
     with {:ok, dataset} <- Brook.get(@instance_name, :models, relation.dataset_id),
          model <- Mapper.remove_access_group(dataset, relation.access_group_id) do
       Elasticsearch.Document.update(model)
