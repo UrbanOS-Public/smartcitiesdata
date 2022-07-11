@@ -40,7 +40,8 @@ defmodule DeadLetterTest do
         refute actual == :empty
 
         comparison =
-          &(&1.dataset_id == &2.dataset_id and &1.app == &2.app and &1.original_message == &2.original_message)
+          &(&1.dataset_id == &2.dataset_id and &1.app == &2.app and
+              &1.original_message == &2.original_message)
 
         assert_maps_equal(expected, actual, comparison)
       end
@@ -55,12 +56,16 @@ defmodule DeadLetterTest do
       assert_async do
         {:ok, actual} = Carrier.receive()
         refute actual == :empty
-        assert actual.original_message == "<<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>"
+
+        assert actual.original_message ==
+                 "<<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>"
       end
     end
 
     test "properly handles tuples being passed" do
-      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie", reason: {:error, "bad date!"})
+      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie",
+        reason: {:error, "bad date!"}
+      )
 
       assert_async do
         {:ok, actual} = Carrier.receive()
@@ -72,7 +77,13 @@ defmodule DeadLetterTest do
 
   describe "format_message/2" do
     test "returns formatted DLQ message with defaults and empty original message" do
-      actual = DeadLetter.Server.format_message(@default_original_message, @dataset_id, "forklift")
+      actual =
+        DeadLetter.Server.format_message(
+          @default_original_message,
+          @dataset_id,
+          @ingestion_id,
+          "forklift"
+        )
 
       assert match?(
                %{
@@ -90,7 +101,13 @@ defmodule DeadLetterTest do
     end
 
     test "returns formatted DLQ message with defaults and non-empty original message" do
-      actual = DeadLetter.Server.format_message(@default_original_message, @dataset_id, "forklift")
+      actual =
+        DeadLetter.Server.format_message(
+          @default_original_message,
+          @dataset_id,
+          @ingestion_id,
+          "forklift"
+        )
 
       assert Map.get(actual, :original_message) == %{payload: "{}", topic: "streaming-raw"}
     end
@@ -99,7 +116,11 @@ defmodule DeadLetterTest do
       expect(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
-        DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
           reason: "Failed to parse something"
         )
 
@@ -110,7 +131,11 @@ defmodule DeadLetterTest do
       allow(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
-        DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
           reason: RuntimeError.exception("Failed to parse something")
         )
 
@@ -119,7 +144,11 @@ defmodule DeadLetterTest do
 
     test "returns formatted DLQ message with an error" do
       actual =
-        DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
           error: "Failed to parse something"
         )
 
@@ -128,7 +157,11 @@ defmodule DeadLetterTest do
 
     test "returns formatted DLQ message with an error exception" do
       actual =
-        DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message,
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
           error: KeyError.exception("Bad Key!")
         )
 
@@ -139,14 +172,24 @@ defmodule DeadLetterTest do
       stacktrace = {:current_stacktrace, @default_stacktrace}
 
       actual =
-        DeadLetter.Server.format_message(@default_original_message, @dataset_id, "forklift", stacktrace: stacktrace)
+        DeadLetter.Server.format_message(
+          @default_original_message,
+          @dataset_id,
+          @ingestion_id,
+          "forklift",
+          stacktrace: stacktrace
+        )
 
       assert Map.get(actual, :stacktrace) == Exception.format_stacktrace(@default_stacktrace)
     end
 
     test "returns formatted DLQ message with a stacktrace from System.stacktrace" do
       actual =
-        DeadLetter.Server.format_message(@default_original_message, @dataset_id, "forklift",
+        DeadLetter.Server.format_message(
+          @default_original_message,
+          @dataset_id,
+          @ingestion_id,
+          "forklift",
           stacktrace: @default_stacktrace
         )
 
@@ -161,13 +204,26 @@ defmodule DeadLetterTest do
           e -> e
         end
 
-      actual = DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message, exit_code: an_exit)
+      actual =
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
+          exit_code: an_exit
+        )
 
       assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit_code)
     end
 
     test "sets the timestamp on DLQ message" do
-      actual = DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message)
+      actual =
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message
+        )
 
       assert %DateTime{} = Map.get(actual, :timestamp)
     end
@@ -175,7 +231,14 @@ defmodule DeadLetterTest do
     test "allows overriding the timestamp on DLQ message" do
       epoch = DateTime.from_unix!(0)
 
-      actual = DeadLetter.Server.format_message("forklift", @dataset_id, @default_original_message, timestamp: epoch)
+      actual =
+        DeadLetter.Server.format_message(
+          "forklift",
+          @dataset_id,
+          @ingestion_id,
+          @default_original_message,
+          timestamp: epoch
+        )
 
       assert epoch == Map.get(actual, :timestamp)
     end
