@@ -10,15 +10,14 @@ defmodule Forklift.Jobs.DataMigration do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  def run(dataset_ids) do
-    dataset_ids
-    |> Enum.map(&Forklift.Datasets.get!/1)
+  # def run(dataset_ids) do
+  #   dataset_ids
+  #   |> Enum.map(&Forklift.Datasets.get!/1)
+  #   |> Enum.map(&insert_data/1)
+  # end
+  def run() do
+    Forklift.Datasets.get_all!()
     |> Enum.map(&insert_data/1)
-  end
-
-  defp insert_data(nil) do
-    Logger.warn("Dataset not found in view-state, skipping migration")
-    :abort
   end
 
   defp insert_data(%{id: id, technical: %{systemName: system_name}} = dataset) do

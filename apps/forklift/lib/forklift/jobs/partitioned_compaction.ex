@@ -11,11 +11,10 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  def run(dataset_ids) do
+  def run() do
     Forklift.Quantum.Scheduler.deactivate_job(:data_migrator)
 
-    dataset_ids
-    |> Enum.map(&Forklift.Datasets.get!/1)
+    Forklift.Datasets.get_all!()
     |> Enum.map(&partitioned_compact/1)
   after
     Forklift.Quantum.Scheduler.activate_job(:data_migrator)

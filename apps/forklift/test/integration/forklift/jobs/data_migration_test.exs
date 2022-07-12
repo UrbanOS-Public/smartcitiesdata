@@ -18,6 +18,8 @@ defmodule Forklift.Jobs.DataMigrationTest do
   @instance_name Forklift.instance_name()
 
   setup do
+    Forklift.TestSupport.Datasets.delete_all()
+
     datasets =
       [1, 2]
       |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
@@ -39,10 +41,9 @@ defmodule Forklift.Jobs.DataMigrationTest do
     expected_records = 10
     Enum.each(datasets, fn dataset -> write_records(dataset, expected_records) end)
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    results = DataMigration.run(["invalid-id"] ++ dataset_ids)
+    results = DataMigration.run()
 
-    assert results == [:abort, :ok, :ok]
+    assert results == [:ok, :ok]
 
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_records end)
 
@@ -67,7 +68,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     expected_records = 10
     write_records(dataset, expected_records)
 
-    DataMigration.run([dataset.id])
+    DataMigration.run()
 
     assert count(dataset.technical.systemName) == expected_records + 1
 
@@ -96,8 +97,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
       meck_options: [:passthrough]
     )
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == DataMigration.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run()
   end
 
   test "should error if the json table's data is not deleted", %{datasets: datasets} do
@@ -112,8 +112,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
       meck_options: [:passthrough]
     )
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == DataMigration.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run()
   end
 
   test "should error if the main table is missing", %{datasets: datasets} do
@@ -125,8 +124,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     "drop table #{error_dataset.technical.systemName}"
     |> PrestigeHelper.execute_query()
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == DataMigration.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run()
   end
 
   test "should error if the json table is missing", %{datasets: datasets} do
@@ -138,12 +136,10 @@ defmodule Forklift.Jobs.DataMigrationTest do
     "drop table #{error_dataset.technical.systemName}__json"
     |> PrestigeHelper.execute_query()
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:error, :ok] == DataMigration.run(dataset_ids)
+    assert [:error, :ok] == DataMigration.run()
   end
 
   test "should abort no data was found to migrate", %{datasets: datasets} do
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    assert [:abort, :abort] == DataMigration.run(dataset_ids)
+    assert [:abort, :abort] == DataMigration.run()
   end
 end
