@@ -66,7 +66,7 @@ defmodule Alchemist.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
-        DeadLetter.process(ingestion.targetDataset, message_data.value, @app_name, reason: reason)
+        DeadLetter.process(ingestion.targetDataset, ingestion.id, message_data.value, @app_name, reason: reason)
         Message.failed(message, reason)
     end
   end

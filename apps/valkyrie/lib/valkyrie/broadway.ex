@@ -2,7 +2,11 @@ defmodule Valkyrie.Broadway do
   @moduledoc """
   Broadway implementation for Valkyrie
   """
-  @producer_module Application.get_env(:valkyrie, :broadway_producer_module, OffBroadway.Kafka.Producer)
+  @producer_module Application.get_env(
+                     :valkyrie,
+                     :broadway_producer_module,
+                     OffBroadway.Kafka.Producer
+                   )
   use Broadway
   use Properties, otp_app: :valkyrie
 
@@ -56,8 +60,13 @@ defmodule Valkyrie.Broadway do
     ]
   end
 
-  def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{dataset: dataset}) do
-    Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
+  def handle_message(_processor, %Message{data: %{value: end_of_data()}} = message, %{
+        dataset: dataset
+      }) do
+    Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{
+      "dataset_id" => dataset.id
+    })
+
     message
   end
 
@@ -72,7 +81,11 @@ defmodule Valkyrie.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:failed_schema_validation, reason} ->
-        DeadLetter.process(dataset.id, message_data.value, @app_name,
+        DeadLetter.process(
+          dataset.id,
+          "Unknown",
+          message_data.value,
+          @app_name,
           error: :failed_schema_validation,
           reason: reason
         )
@@ -80,7 +93,8 @@ defmodule Valkyrie.Broadway do
         Message.failed(message, reason)
 
       {:error, reason} ->
-        DeadLetter.process(dataset.id, message_data.value, @app_name, reason: reason)
+        DeadLetter.process(dataset.id, "Unknown", message_data.value, @app_name, reason: reason)
+
         Message.failed(message, reason)
     end
   end

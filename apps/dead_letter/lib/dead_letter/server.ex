@@ -37,14 +37,16 @@ defmodule DeadLetter.Server do
   end
 
   @doc """
-  Given a message with a dataset id and app name, send a message to the dead letter queue that contains that message, along with additional metadata.
+  Given a message with a dataset id, ingestion id, and app name, send a message
+  to the dead letter queue that contains that message, along with additional
+  metadata.
   """
-  @spec process(String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
-  def process(dataset_id, message, app_name, options \\ []) do
+  @spec process(String.t(), String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
+  def process(dataset_id, ingestion_id, message, app_name, options \\ []) do
     dead_letter =
       message
       |> sanitize_message()
-      |> format_message(dataset_id, app_name, options)
+      |> format_message(dataset_id, ingestion_id, app_name, options)
 
     Logger.info(fn -> "Enqueueing dead letter: #{inspect(dead_letter)}" end)
 
@@ -64,8 +66,8 @@ defmodule DeadLetter.Server do
   @doc """
     Takes a message and formats the fields so that they can properly be encoded as json. It also enriches the message with a stack trace and timestamp.
   """
-  @spec format_message(any(), String.t(), String.t(), keyword()) :: map()
-  def format_message(original_message, dataset_id, app_name, options \\ []) do
+  @spec format_message(any(), String.t(), String.t(), String.t(), keyword()) :: map()
+  def format_message(original_message, dataset_id, ingestion_id, app_name, options \\ []) do
     stacktrace =
       options
       |> Keyword.get(:stacktrace, Process.info(self(), :current_stacktrace))
@@ -86,6 +88,7 @@ defmodule DeadLetter.Server do
 
     %{
       dataset_id: dataset_id,
+      ingestion_id: ingestion_id,
       app: app_name,
       original_message: original_message,
       stacktrace: stacktrace,
