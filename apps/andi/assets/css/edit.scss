@@ -262,12 +262,16 @@ $component-header-height: 7.5rem;
 }
 
 .btn-group__standard {
-    margin-bottom: 2rem;
+    // margin-bottom: 2rem;
+    display: flex;
+    button {
+        margin-right: 20px;
+    }
 }
 
-.btn-group__review-submission {
-    margin-top: 2rem;
-}
+// .btn-group__review-submission {
+//     margin-top: 2rem;
+// }
 
 
 #delete-dataset-button {

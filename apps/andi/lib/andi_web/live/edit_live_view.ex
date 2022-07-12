@@ -53,16 +53,23 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </form>
 
+
       <div class="edit-page__btn-group">
-        <div class="btn-group__standard">
-          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
-          <%= render_publish_button(@submission_status) %>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
-        </div>
 
         <hr></hr>
-        <div class="btn-group__review-submission">
+
+        <div class="btn-group__standard">
+
+          <%= render_publish_button(@submission_status) %>
+          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
           <%= render_review_buttons(@submission_status) %>
+
+        </div>
+
+
+        <div class="btn-group__review-submission">
+
         </div>
 
       </div>

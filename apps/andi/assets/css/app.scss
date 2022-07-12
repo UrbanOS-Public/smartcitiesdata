@@ -112,11 +112,11 @@ body {
 }
 
 .btn--save {
-  float: right;
+  // float: right;
   color: $color-text-link;
   background-color: white;
   border: 2px solid $color-text-link;
-  margin-right: 1rem;
+  // // margin-right: 1rem;
   :hover {
     background: rgba($color-text-link, 10%);
     border: 2px solid $color-text-link;
@@ -192,10 +192,10 @@ body {
   }
 }
 
-.btn--publish {
-    float: right;
-    margin-right: 1rem;
-}
+// .btn--publish {
+//     float: right;
+//     margin-right: 1rem;
+// }
 
 .btn--submit:hover {
   background: white;
