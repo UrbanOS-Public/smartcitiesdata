@@ -57,7 +57,7 @@ defmodule AndiWeb.EditLiveView do
         <div class="btn-group__standard">
           <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
           <%= render_publish_button(@submission_status) %>
-          <button id="save-button" name="save-button" class="btn btn--save btn--large" type="button" phx-click="save">Save Draft</button>
+          <button id="save-button" name="save-button" class="btn btn--save btn--primary-outline btn--large" type="button" phx-click="save">Save Draft Dataset</button>
         </div>
 
         <hr></hr>
@@ -351,7 +351,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_publish_button(_) do
     ~E"""
-      <button id="publish-button" name="publish-button" class="btn--primary btn--large btn--publish" type="button" phx-click="publish">Publish</button>
+      <button id="publish-button" name="publish-button" class="btn--primary btn--large btn--publish" type="button" phx-click="publish">Publish Dataset</button>
     """
   end
 

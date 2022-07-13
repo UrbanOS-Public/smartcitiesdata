@@ -29,13 +29,13 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
               <div class="user-form__role">
                   <%= label(f, :role, class: "label") %>
                   <%= select(f, :role, @roles, [class: "select", readonly: true, prompt: "Please select a role"]) %>
-                  <button class="btn btn--add-organization" phx-click="add-role" phx-value-selected-role="<%= @selected_role %>">Add Role</button>
+                  <button class="btn btn--add-organization btn--primary-outline" phx-click="add-role" phx-value-selected-role="<%= @selected_role %>">Add Role</button>
               </div>
 
               <div class="user-form__organizations">
                 <%= label(:organization, :org_id, class: "label") %>
                 <%= select(:organiation, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
-                <button type="submit" class="btn btn--add-organization">Add Organization</button>
+                <button type="submit" class="btn btn--add-organization btn--primary-outline">Add Organization</button>
               </div>
           </form>
 

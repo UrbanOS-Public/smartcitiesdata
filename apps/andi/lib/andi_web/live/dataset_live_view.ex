@@ -238,8 +238,8 @@ defmodule AndiWeb.DatasetLiveView do
   defp title_text(true = _is_curator), do: "All Datasets"
   defp title_text(false = _is_curator), do: "My Datasets"
 
-  defp action_text(true = _is_curator), do: "ADD DATASET"
-  defp action_text(false = _is_curator), do: "SUBMIT NEW DATASET"
+  defp action_text(true = _is_curator), do: "+ Add Dataset"
+  defp action_text(false = _is_curator), do: "+ Submit New Dataset"
 
   defp default_for_filter(name) do
     Keyword.get(@default_filters, name)
