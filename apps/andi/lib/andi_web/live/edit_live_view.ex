@@ -358,13 +358,13 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_publish_button(_) do
     ~E"""
-      <button id="publish-button" name="publish-button" class="btn--primary btn--large btn--publish" type="button" phx-click="publish">Publish</button>
+      <button id="publish-button" name="publish-button" class="btn btn--primary btn--large btn--publish" type="button" phx-click="publish">Publish</button>
     """
   end
 
   defp render_review_buttons(:submitted) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--large btn--right btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>
@@ -381,7 +381,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(_) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--right btn--large btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>

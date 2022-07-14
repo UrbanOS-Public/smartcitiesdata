@@ -61,7 +61,7 @@ body {
 
 .btn--large {
   padding: 0.6rem 1.7rem;
-  font-size: 1.5rem;
+  font-size: 20px;
   min-width: 10rem;
   border: 2px solid black;
   background-color: white;
@@ -434,7 +434,11 @@ $primary-blue: #1170C8;
     }
     background-color: #FC7071;
     cursor: default;
+  }
 }
+
+.btn--right {
+  margin-left: auto;
 }
 
 
