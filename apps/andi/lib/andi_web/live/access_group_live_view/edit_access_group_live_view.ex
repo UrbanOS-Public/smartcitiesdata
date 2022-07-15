@@ -51,14 +51,14 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       <%= live_component(@socket, AndiWeb.AccessGroupLiveView.ManageUsersModal, visibility: @manage_users_modal_visibility, search_results: @user_search_results, search_text: @user_search_text, selected_users: @selected_users) %>
 
       <div class="edit-page__btn-group" id="access-groups-edit-button-group">
+      <hr>
       <div class="btn-group__standard">
-            <button type="button" class="btn btn--secondary btn--large cancel-edit" phx-click="cancel-edit">Cancel</button>
-            <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--primary btn--large save-edit">Save</button>
+          <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--primary btn--large save-edit">Save</button>
+            <button type="button" class="btn btn--secondary btn--large cancel-edit" phx-click="cancel-edit">Discard Changes</button>
         </div>
 
-        <hr>
 
-        <button id="access-group-delete-button" class="btn btn--danger btn--delete" phx-click="prompt-access-group-delete" type="button">
+        <button id="access-group-delete-button" class="btn btn--right btn--danger btn--delete" phx-click="prompt-access-group-delete" type="button">
           <span class="delete-icon material-icons">delete</span>
           Delete
         </button>
