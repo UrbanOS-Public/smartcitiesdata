@@ -37,15 +37,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
   end
 
   @tag :skip
-  test "clicking move up slides that transformation up one row", %{view: view, html: html} do
+  test "clicking move up slides that transformation up one row", %{view: view, html: html, ingestion: ingestion} do
     {:ok, starting_document} = Floki.parse_document(html)
     assert ["Black", "Blue", "Green"] == starting_document
       |> Floki.find(".transformation-name")
       |> Floki.attribute("value")
+    [_ | [second_transformation | _]] = Transformations.all_for_ingestion(ingestion.id)
 
-    {:ok, _, html} = element(view, ".move-up:nth-of-type(2)")
-      |> IO.inspect(label: "button")
+    find_live_child(view, "transformations_form_editor")
+      |> find_live_child("transform-#{second_transformation.id}")
+      |> element(".move-up-#{second_transformation.id}")
       |> render_click()
+
+    html = render(view)
 
     {:ok, changed_document} = Floki.parse_document(html)
     changed_order_names = Floki.find(changed_document, ".transformation-header-name")

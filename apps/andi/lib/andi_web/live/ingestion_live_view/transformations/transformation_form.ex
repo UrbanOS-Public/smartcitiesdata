@@ -3,14 +3,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   LiveComponent for editing an individual transformation
   """
   use Phoenix.LiveView
-  use Phoenix.LiveComponent
   require Logger
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
   alias Andi.InputSchemas.Ingestions.Transformation
-  alias Andi.InputSchemas.Ingestions.Transformations
-  alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
 
@@ -28,8 +25,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       <div class="transformation-header">
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-edit-buttons">
-          <span class="material-icons move-up" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
-          <span class="material-icons move-down" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
+          <span class="material-icons move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
+          <span class="material-icons move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
         </div>
       </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
@@ -51,7 +48,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index}, socket) do
-    IO.inspect("form move")
     AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{
       "id" => transformation_id,
       "move-index" => move_index

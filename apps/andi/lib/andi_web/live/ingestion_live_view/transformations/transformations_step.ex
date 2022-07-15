@@ -77,7 +77,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     # Enum.each(transformations, fn transformation ->
     #   Transformations.update(transformation)
     # end)
-    # {:noreply, socket}
+    {:noreply, socket}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
