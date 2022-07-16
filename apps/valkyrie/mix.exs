@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.7.17",
+      version: "1.7.20",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -36,6 +36,7 @@ defmodule Valkyrie.MixProject do
       {:brook, "== 0.4.9"},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test]},
+      {:cowlib, "== 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
@@ -53,8 +54,8 @@ defmodule Valkyrie.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.13"},
-      {:smart_city, "~> 5.2.3"},
-      {:smart_city_test, "~> 2.2.3", only: [:test, :integration]},
+      {:smart_city, "~> 5.2.4"},
+      {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:timex, "~> 3.6"},
       {:performance, in_umbrella: true, only: :integration}

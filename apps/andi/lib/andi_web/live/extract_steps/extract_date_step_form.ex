@@ -7,7 +7,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractDateStep
+  alias Andi.InputSchemas.Ingestions.ExtractDateStep
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames

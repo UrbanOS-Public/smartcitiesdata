@@ -6,7 +6,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   import Phoenix.HTML.Form
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
@@ -69,7 +69,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
           <div class="add-step">
             <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
-            <button class="btn" type="button" phx-click="add-extract-step">Add Step</button>
+            <button class="btn btn--primary-outline" type="button" phx-click="add-extract-step">Add Step</button>
           </div>
 
           <div class="extract-steps__error-message"><%= extract_steps_error_message(@extract_steps) %></div>

@@ -9,7 +9,8 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
   alias AndiWeb.Helpers.DataDictionaryHelpers
 
   def mount(socket) do
-    {:ok, assign(socket, expansion_map: %{})}
+    source_format = Map.get(socket.assigns, :source_format)
+    {:ok, assign(socket, expansion_map: %{}, source_format: source_format)}
   end
 
   def render(assigns) do

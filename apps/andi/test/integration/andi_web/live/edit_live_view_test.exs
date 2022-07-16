@@ -12,11 +12,10 @@ defmodule AndiWeb.EditLiveViewTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
-  import FlokiHelpers, only: [get_attributes: 3, get_text: 2, find_elements: 2]
+  import FlokiHelpers, only: [get_text: 2, find_elements: 2]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.InputConverter
   alias Andi.Schemas.AuditEvent
   alias Andi.Schemas.AuditEvents
@@ -87,16 +86,16 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-      form_data = %{"cadence" => "once"}
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      form_data = %{"dataTitle" => "new title"}
 
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
       render_change(view, :save)
 
       eventually(fn ->
         dataset = Datasets.get(dataset.id)
 
-        assert "once" == dataset.technical.cadence
+        assert "new title" == dataset.business.dataTitle
       end)
     end
 
@@ -105,21 +104,15 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
       metadata_view = find_live_child(view, "metadata_form_editor")
-
-      finalize_form_data = %{"cadence" => "once"}
       metadata_form_data = %{"description" => "cambapo"}
 
-      render_change(finalize_view, :validate, %{"form_data" => finalize_form_data})
       render_change(metadata_view, :validate, %{"form_data" => metadata_form_data})
 
       render_change(view, :publish)
 
       eventually(fn ->
         dataset = Datasets.get(dataset.id)
-
-        assert "once" == dataset.technical.cadence
         assert "cambapo" == dataset.business.description
       end)
     end
@@ -130,17 +123,36 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
 
-      form_data = %{"cadence" => "once"}
+      data_dict_view = find_live_child(view, "data_dictionary_form_editor")
+      changed_schema_name = "testing"
 
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      new_schema = %{
+        "0" => %{
+          "biased" => "",
+          "bread_crumb" => "test",
+          "dataset_id" => dataset.id,
+          "demographic" => "",
+          "description" => "",
+          "id" => UUID.uuid4(),
+          "ingestion_id" => "",
+          "masked" => "",
+          "name" => changed_schema_name,
+          "pii" => "",
+          "rationale" => "",
+          "type" => "string"
+        }
+      }
+
+      form_data = %{"data_dictionary_form_schema" => %{"schema" => new_schema}}
+      render_change(data_dict_view, :validate, form_data)
       render_change(view, :publish)
 
       eventually(
         fn ->
           dataset = Datasets.get(dataset.id)
           {:ok, saved_dataset} = InputConverter.andi_dataset_to_smrt_dataset(dataset)
+          assert hd(saved_dataset.technical.schema).name == changed_schema_name
 
           assert {:ok, ^saved_dataset} = DatasetStore.get(dataset.id)
           assert Andi.Schemas.AuditEvents.get_all_by_event_id(dataset.id) != []
@@ -158,11 +170,10 @@ defmodule AndiWeb.EditLiveViewTest do
       Datasets.update_submission_status(dataset.id, :approved)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
+      metadata_view = find_live_child(view, "metadata_form_editor")
+      form_data = %{"dataTitle" => "new data"}
 
-      form_data = %{"cadence" => "once"}
-
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
+      render_change(metadata_view, :validate, %{"form_data" => form_data})
       render_change(view, :publish)
 
       eventually(
@@ -176,7 +187,6 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "invalid dataset's submission status is not updated on publish", %{conn: conn} do
-      allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
       smrt_dataset = TDG.create_dataset(%{})
 
       {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -287,7 +297,6 @@ defmodule AndiWeb.EditLiveViewTest do
         "dataName" => "somethimn",
         "orgName" => "something",
         "private" => false,
-        "sourceFormat" => "something",
         "sourceType" => "remote",
         "benefitRating" => 1.0,
         "contactEmail" => "something@something.com",
@@ -308,8 +317,8 @@ defmodule AndiWeb.EditLiveViewTest do
         fn ->
           assert {:ok, nil} != DatasetStore.get(dataset.id)
         end,
-        30,
-        1_000
+        100,
+        50
       )
     end
 
@@ -379,11 +388,6 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-
-      form_data = %{"cadence" => "once"}
-
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
       render_change(view, :publish)
       html = render(view)
 
@@ -396,12 +400,7 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, dataset} = Datasets.update(smrt_dataset)
 
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      assert Enum.empty?(get_attributes(html, "#form_data_sourceFormat", "disabled"))
 
-      finalize_view = find_live_child(view, "finalize_form_editor")
-      form_data = %{"cadence" => "once"}
-
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
       render_change(view, :publish)
       html = render(view)
 
@@ -413,148 +412,6 @@ defmodule AndiWeb.EditLiveViewTest do
       url = @url_path <> dataset.id
 
       assert_redirect(view, url)
-    end
-
-    test "allows publish of invalid url form with valid extract step form", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceUrl: "", extractSteps: [%{type: "http", context: %{}}]}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
-
-      extract_form_data = %{"type" => "http", "action" => "GET", "url" => "cam.com"}
-
-      render_change(es_form, %{"form_data" => extract_form_data})
-
-      render_change(view, :publish)
-      publish_success_modal_should_be_visible(view)
-
-      eventually(fn ->
-        {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-        assert dataset_sent != nil
-        assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-      end)
-    end
-
-    test "replaces url form elements when both url form and extract form are valid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceUrl: "valid.com", extractSteps: [%{type: "http", context: %{}}]}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
-
-      extract_form_data = %{"action" => "POST", "url" => "cam.com", "body" => "[]"}
-
-      render_change(es_form, %{"form_data" => extract_form_data})
-
-      render_change(view, :publish)
-
-      publish_success_modal_should_be_visible(view)
-
-      eventually(
-        fn ->
-          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-          assert dataset_sent != nil
-          assert dataset_sent.technical.extractSteps != []
-          assert dataset_sent.technical.sourceUrl == smrt_dataset.business.homepage
-          assert dataset_sent.technical.extractSteps |> List.first() |> get_in(["context", "body"]) == []
-        end,
-        2000,
-        50
-      )
-    end
-
-    test "fails to publish if invalid extract steps are found", %{conn: conn} do
-      extract_steps = [
-        %{type: "http", context: %{action: "GET", url: ""}},
-        %{type: "http", context: %{action: "GET", url: "example2.com"}}
-      ]
-
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps, sourceUrl: ""}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      render_change(view, :publish)
-      html = render(view)
-      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
-      assert {:ok, nil} == DatasetStore.get(smrt_dataset.id)
-    end
-
-    test "published extract steps have assigns and variables", %{conn: conn} do
-      extract_steps = [
-        %{type: "http", context: %{action: "GET", url: "example2.com"}}
-      ]
-
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      extract_step_id = get_extract_step_id(dataset, 0)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      extract_step_view = find_live_child(view, "extract_step_form_editor")
-      es_form = element(extract_step_view, "#step-#{extract_step_id} form")
-
-      extract_form_data = %{"type" => "http", "action" => "GET", "url" => "example.com/{{variable_name}}"}
-
-      render_change(es_form, %{"form_data" => extract_form_data})
-
-      render_change(view, :save)
-      render_change(view, :publish)
-      html = render(view)
-
-      refute Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-
-      eventually(
-        fn ->
-          {:ok, dataset_sent} = DatasetStore.get(smrt_dataset.id)
-          assert dataset_sent != nil
-
-          dataset_http_extract_step = get_in(dataset_sent, [:technical, :extractSteps]) |> hd()
-          assert dataset_http_extract_step["context"]["url"] == "example.com/{{variable_name}}"
-          assert dataset_http_extract_step["assigns"] != nil
-        end,
-        10000,
-        5
-      )
-    end
-
-    data_test "does not publish when extract steps are invalid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{extractSteps: extract_steps}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      render_change(view, :publish)
-      html = render(view)
-
-      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-      refute Enum.empty?(find_elements(html, "#extract-step-form .component-header .section-number .component-number-status--invalid"))
-
-      where(extract_steps: [[], nil, [%{type: "date", context: %{destination: "blah", format: "{YYYY}"}}]])
-    end
-
-    test "does not publish when cadence is not set", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{cadence: nil}})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      render_change(view, :publish)
-      html = render(view)
-
-      assert Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-      refute Enum.empty?(find_elements(html, "#finalize_form .component-header .section-number .component-number-status--invalid"))
     end
   end
 
@@ -658,24 +515,5 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, "#reject-button"))
       assert Enum.empty?(find_elements(html, "#approve-button"))
     end
-  end
-
-  defp publish_success_modal_should_be_visible(view) do
-    eventually(
-      fn ->
-        html = render(view)
-        assert not Enum.empty?(find_elements(html, ".publish-success-modal--visible"))
-      end,
-      5000,
-      10
-    )
-  end
-
-  defp get_extract_step_id(dataset, index) do
-    dataset
-    |> Andi.InputSchemas.StructTools.to_map()
-    |> get_in([:technical, :extractSteps])
-    |> Enum.at(index)
-    |> Map.get(:id)
   end
 end

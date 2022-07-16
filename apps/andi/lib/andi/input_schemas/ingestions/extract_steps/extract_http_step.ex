@@ -1,10 +1,10 @@
-defmodule Andi.InputSchemas.Datasets.ExtractHttpStep do
+defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
   @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Andi.InputSchemas.Datasets.ExtractQueryParam
-  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Ingestions.ExtractQueryParam
+  alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias Andi.InputSchemas.StructTools
 
   @primary_key false

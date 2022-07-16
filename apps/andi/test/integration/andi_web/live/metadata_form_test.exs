@@ -464,8 +464,6 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, _view, html} = live(conn, @url_path <> dataset.id)
       assert get_value(html, ".metadata-form__title input") == dataset.business.dataTitle
       assert get_text(html, ".metadata-form__description textarea") == dataset.business.description
-      {selected_format, _} = get_select(html, ".metadata-form__format select")
-      assert selected_format == dataset.technical.sourceFormat
       assert {"true", "Private"} == get_select(html, ".metadata-form__level-of-access")
       assert get_value(html, ".metadata-form__maintainer-name input") == dataset.business.contactName
       assert dataset.business.modifiedDate |> Date.to_string() =~ get_value(html, ".metadata-form__last-updated input")
@@ -530,21 +528,8 @@ defmodule AndiWeb.MetadataFormTest do
         [:license, %{"license" => ""}, "Please enter a valid license."],
         [:benefitRating, %{"benefitRating" => nil}, "Please enter a valid benefit."],
         [:riskRating, %{"riskRating" => nil}, "Please enter a valid risk."],
-        [:topLevelSelector, %{"sourceFormat" => "text/xml", "topLevelSelector" => ""}, "Please enter a valid top level selector."],
-        [:private, %{"private" => ""}, "Please enter a valid level of access."],
-        [:sourceType, %{"sourceType" => ""}, "Please enter a valid source type."],
-        [:sourceFormat, %{"sourceFormat" => ""}, "Please enter a valid source format."]
+        [:private, %{"private" => ""}, "Please enter a valid level of access."]
       ])
-    end
-
-    test "source format before publish", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
-
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      assert Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
     end
 
     data_test "displays error when #{field} is unset", %{conn: conn} do
@@ -592,6 +577,8 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#issuedDate-error-msg") == ""
     end
 
+    # todo: ticket #757 will move this test to an /ingestions page test
+    @tag :skip
     test "displays error when topLevelSelector jpath is invalid", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
 
@@ -608,14 +595,6 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#topLevelSelector-error-msg") == "Error: Expected an integer at `x]`"
     end
 
-    test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
-    end
-
     test "dataset owner lists all the users in the system by email", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com", name: "Hello World"})
@@ -629,16 +608,6 @@ defmodule AndiWeb.MetadataFormTest do
   end
 
   describe "can not edit" do
-    test "source format for published dataset", %{conn: conn, curator_user: curator_user} do
-      {:ok, dataset} =
-        Datasets.create(curator_user)
-        |> Datasets.update(%{submission_status: :published})
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-
-      refute Enum.empty?(get_attributes(html, ".metadata-form__format select", "disabled"))
-    end
-
     test "organization title", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
@@ -664,8 +633,7 @@ defmodule AndiWeb.MetadataFormTest do
 
       where([
         [:name],
-        ["orgName"],
-        ["sourceType"]
+        ["orgName"]
       ])
     end
   end

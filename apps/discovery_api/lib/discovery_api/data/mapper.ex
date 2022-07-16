@@ -24,13 +24,11 @@ defmodule DiscoveryApi.Data.Mapper do
            title: biz.dataTitle,
            keywords: biz.keywords,
            modifiedDate: biz.modifiedDate,
-           fileTypes: get_file_type(tech.sourceFormat),
            description: biz.description,
            schema: tech.schema,
            systemName: tech.systemName,
            sourceUrl: tech.sourceUrl,
            sourceType: tech.sourceType,
-           sourceFormat: tech.sourceFormat,
            private: tech.private,
            accessLevel: ternary(tech.private, "non-public", "public"),
            contactName: biz.contactName,
@@ -80,9 +78,6 @@ defmodule DiscoveryApi.Data.Mapper do
   catch
     error -> {:error, error}
   end
-
-  defp get_file_type("application/gtfs+protobuf"), do: ["JSON"]
-  defp get_file_type(source_format), do: source_format |> MIME.extensions() |> hd() |> String.upcase() |> List.wrap()
 
   defp ternary(condition, success, _failure) when condition, do: success
   defp ternary(_condition, _success, failure), do: failure

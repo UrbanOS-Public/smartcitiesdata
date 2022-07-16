@@ -35,7 +35,7 @@ defmodule Reaper.DataExtract.ValidationStage do
       [message | acc]
     else
       {:error, reason} ->
-        DeadLetter.process(state.ingestion.targetDataset, message, "reaper", reason: reason)
+        DeadLetter.process(state.ingestion.targetDataset, state.ingestion.id, message, "reaper", reason: reason)
         acc
 
       _duplicate_or_index_failure ->

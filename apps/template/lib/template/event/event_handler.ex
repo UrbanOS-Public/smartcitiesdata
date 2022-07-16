@@ -20,6 +20,7 @@ defmodule Template.Event.EventHandler do
         author: author
       }) do
     IO.inspect(data, label: "I received this event")
+
     :discard
   end
 

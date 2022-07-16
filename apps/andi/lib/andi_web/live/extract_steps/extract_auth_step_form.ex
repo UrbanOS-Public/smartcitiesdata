@@ -7,8 +7,8 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
-  alias Andi.InputSchemas.Datasets.ExtractAuthStep
-  alias Andi.InputSchemas.Datasets.ExtractHeader
+  alias Andi.InputSchemas.Ingestions.ExtractAuthStep
+  alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames

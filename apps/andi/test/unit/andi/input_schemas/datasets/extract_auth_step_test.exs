@@ -1,9 +1,9 @@
-defmodule Andi.InputSchemas.Datasets.ExtractAuthStepTest do
+defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
   use ExUnit.Case
   import Checkov
 
-  alias Andi.InputSchemas.Datasets.ExtractAuthStep
-  alias Andi.InputSchemas.Datasets.ExtractStep
+  alias Andi.InputSchemas.Ingestions.ExtractAuthStep
+  alias Andi.InputSchemas.Ingestions.ExtractStep
 
   describe "body validation" do
     setup do

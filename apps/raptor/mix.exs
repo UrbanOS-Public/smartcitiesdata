@@ -5,7 +5,7 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "1.2.6",
+      version: "1.2.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -29,6 +29,7 @@ defmodule Raptor.MixProject do
   defp deps do
     [
       {:brook, "== 0.4.9"},
+      {:cowlib, "== 2.9.1", override: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
@@ -37,8 +38,8 @@ defmodule Raptor.MixProject do
       {:plug_heartbeat, "~> 0.2.0"},
       {:properties, in_umbrella: true},
       {:redix, "~> 0.10"},
-      {:smart_city, "~> 5.2.3"},
-      {:smart_city_test, "~> 2.2.3", only: [:test, :integration]},
+      {:smart_city, "~> 5.2.4"},
+      {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},

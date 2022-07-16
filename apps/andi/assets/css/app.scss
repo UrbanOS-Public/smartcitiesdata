@@ -64,16 +64,27 @@ body {
   font-size: 1.5rem;
   min-width: 10rem;
   border: 2px solid black;
+  background-color: white;
+  color: black;
+
+  &:hover {
+    background-color: lighten(#6C787F1A, 10%);
+  }
+
+  &:active {
+    background-color: lighten(#6C787F33, 20%);
+  }
+
 }
 
 .btn--cancel {
     color: black;
     background-color: white;
-    border: 1px solid black;
+    border: 0px;
 
     &:hover {
-        color: white;
-        background-color: black;
+        color: black;
+        background-color: rgba(#6C787F, 10%);
     }
 }
 
@@ -89,7 +100,10 @@ body {
   color: white;
   background-color: $color-text-link;
   border: 2px solid $color-text-link;
-
+  &:hover {
+    background-color: #1279D8;
+    border: 2px solid #1279D8;
+  }
   &:disabled {
       background-color: #7f7676;
       border: 2px solid #7f7676;
@@ -103,12 +117,11 @@ body {
   background-color: white;
   border: 2px solid $color-text-link;
   margin-right: 1rem;
-}
+  :hover {
+    background: rgba($color-text-link, 10%);
+    border: 2px solid $color-text-link;
+  }
 
-.btn--submit {
-  @extend .btn--save;
-  background-color: $color-text-link;
-  color: white;
 }
 
 .btn--submit {
@@ -184,26 +197,13 @@ body {
     margin-right: 1rem;
 }
 
-.btn--save:hover {
-  background: $color-text-link;
-  color: white;
-  border: 2px solid $color-text-link;
-}
 .btn--submit:hover {
   background: white;
   color: $color-text-link;
   border: 2px solid $color-text-link;
 }
-.btn--next:hover {
-  background: white;
-  color: $color-text-link;
-  border: 2px solid $color-text-link;
-}
-.btn--publish:hover {
-  background: white;
-  color: $color-text-link;
-  border: 2px solid $color-text-link;
-}
+
+
 
 .label {
   color: #7f7676;
@@ -343,6 +343,96 @@ body {
         cursor: pointer;
     }
 }
+
+//////// New Isabel Styles
+$primary-blue: #1170C8;
+.btn--primary {
+  color: white;
+  background-color: $primary-blue;
+  border: none;
+  &:active {
+    background-color: #0F64B3;
+  }
+  &:hover {
+    background-color: #1279D8;
+    border: none;
+  }
+  &:disabled {
+      background-color: #AAD3F8;
+      border: none;
+      cursor: default;
+  }
+}
+
+.btn--primary-outline { 
+  background-color: white;
+  color: $primary-blue;
+  border: 1px solid $primary-blue;
+
+  &:active {
+    background-color: rgba($primary-blue, 20%);
+    //will the boader stay the same 
+  }
+  &:hover {
+    background-color:rgba($primary-blue, 10%);
+    border: 1px solid $primary-blue;
+  }
+  &:disabled {
+      background-color: rgba($primary-blue, 50%);
+      border: 1px solid $primary-blue;
+      cursor: default;
+  }
+}
+
+.btn--secondary{
+  //not seeing colors
+  background-color: white;
+  color: black;
+  border: 0px;
+  &:active {
+    background-color: rgba(#6C787F, 20%);
+    //will the boader stay the same 
+  }
+  &:hover {
+      color: black;
+      background-color: rgba(#6C787F, 10%);
+  }
+  &:disabled {
+    background-color: rgba(#6C787F, 50%);
+    cursor: default;
+}
+}
+
+.btn--danger {
+  background-color: white;
+  color: #DF1618;
+  border: 1px solid #DF1618;
+  .material-icons {
+    color:#DF1618;
+  }
+  &:active {
+    .material-icons {
+    color: white;
+    }
+    background-color: #B21212;
+    //will the boader stay the same 
+  }
+  &:hover {
+    .material-icons {
+    color: white;
+    }
+      color: white;
+      background-color:#CD1517;
+  }
+  &:disabled {
+    .material-icons {
+    color: white;
+    }
+    background-color: #FC7071;
+    cursor: default;
+}
+}
+
 
 @import "./datasets.scss";
 @import "./access-groups.scss";

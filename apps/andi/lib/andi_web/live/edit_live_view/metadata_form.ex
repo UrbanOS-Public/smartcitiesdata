@@ -21,7 +21,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
 
     AndiWeb.Endpoint.subscribe("toggle-visibility")
     AndiWeb.Endpoint.subscribe("form-save")
-    AndiWeb.Endpoint.subscribe("source-format")
 
     {:ok,
      assign(socket,
@@ -66,7 +65,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
           <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
           <%= hidden_input(f, :sourceType) %>
-          <%= hidden_input(f, :sourceFormat) %>
           <%= hidden_input(f, :datasetId) %>
 
           <div class="component-edit-section--<%= @visibility %>">
@@ -87,12 +85,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
                 <%= textarea(f, :description, class: "input textarea") %>
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
-              </div>
-
-              <div class="metadata-form__format">
-                <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
-                <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__top-level-selector">
@@ -212,7 +204,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
             </div>
 
             <div class="edit-button-group form-grid">
-              <a href="#data_dictionary_form" id="next-button" class="btn btn--next btn--large btn--action" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
+              <a href="#data_dictionary_form" id="next-button" class="btn--primary-outline btn btn--next btn--large" phx-click="toggle-component-visibility" phx-value-component-expand="data_dictionary_form">Next</a>
             </div>
           </div>
         </form>
@@ -241,17 +233,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
     |> FormTools.adjust_org_name()
     |> MetadataFormSchema.changeset_from_form_data()
     |> Dataset.validate_unique_system_name()
-    |> complete_validation(socket)
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{
-      new_format: form_data["sourceFormat"],
-      dataset_id: socket.assigns.dataset_id
-    })
-
-    form_data
-    |> MetadataFormSchema.changeset_from_form_data()
     |> complete_validation(socket)
   end
 

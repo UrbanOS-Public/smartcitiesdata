@@ -25,7 +25,7 @@ defmodule AndiWeb.DatasetLiveView do
       <div class="datasets-index">
         <div class="datasets-index__header">
           <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
-          <button type="button" class="btn btn--add-dataset btn--action" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
+          <button type="button" class="btn--primary" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
         </div>
         <hr class="datasets-line">
 
@@ -238,8 +238,8 @@ defmodule AndiWeb.DatasetLiveView do
   defp title_text(true = _is_curator), do: "All Datasets"
   defp title_text(false = _is_curator), do: "My Datasets"
 
-  defp action_text(true = _is_curator), do: "ADD DATASET"
-  defp action_text(false = _is_curator), do: "SUBMIT NEW DATASET"
+  defp action_text(true = _is_curator), do: "+ Add Dataset"
+  defp action_text(false = _is_curator), do: "+ Submit New Dataset"
 
   defp default_for_filter(name) do
     Keyword.get(@default_filters, name)

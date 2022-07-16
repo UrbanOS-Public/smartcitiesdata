@@ -29,7 +29,7 @@ defmodule Estuary.MessageHandler do
   end
 
   defp error_dead_letter({:error, event, reason}) do
-    DeadLetter.process("Unknown", event, "estuary", reason: reason)
+    DeadLetter.process("Unknown", "Unknown", event, "estuary", reason: reason)
     :error
   end
 

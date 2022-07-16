@@ -3,6 +3,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   LiveComponent for editing an individual transformation
   """
   use Phoenix.LiveView
+  use Phoenix.LiveComponent
   require Logger
   import Phoenix.HTML.Form
 
