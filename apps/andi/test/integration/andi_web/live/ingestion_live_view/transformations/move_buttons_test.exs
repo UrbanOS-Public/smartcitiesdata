@@ -26,8 +26,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
       |> Map.merge(%{transformations: transformations})
       |> Ingestions.update()
 
-    {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-    %{view: view, html: html, ingestion: ingestion}
+    {:ok, view, html} = navigate_to_edit_page(conn, ingestion)
+    %{conn: conn, view: view, html: html, ingestion: ingestion}
   end
 
   test "has move up and down buttons for each transformation", %{html: html} do
@@ -52,6 +52,25 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     |> move_down(view)
 
     assert ["Black", "Green", "Blue"] == render(view) |> find_ordered_names()
+  end
+
+  test "cancelling after moving does not save changes", %{conn: conn, view: view, html: html, ingestion: ingestion} do
+    assert ["Black", "Blue", "Green"] == find_ordered_names(html)
+
+    get_second_transformation(ingestion.id)
+    |> move_down(view)
+
+    assert ["Black", "Green", "Blue"] == render(view) |> find_ordered_names()
+
+    cancel(view)
+
+    {:ok, refreshed_view, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+
+    assert ["Black", "Blue", "Green"] == render(refreshed_view) |> find_ordered_names()
+  end
+
+  defp navigate_to_edit_page(conn, ingestion) do
+    live(conn, @url_path <> ingestion.id)
   end
 
   defp create_transformation_with_name(name, ingestion) do
@@ -88,5 +107,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
       |> find_live_child("transform-#{transformation.id}")
       |> element(".move-down-#{transformation.id}")
       |> render_click()
+  end
+
+  defp cancel(view) do
+    element(view, ".btn--cancel")
+    |> render_click()
   end
 end
