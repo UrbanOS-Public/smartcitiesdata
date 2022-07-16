@@ -104,6 +104,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   def handle_event("add-transformation", _, socket) do
     new_transformation = Transformations.create()
 
+    send(socket.parent_pid, :form_update)
+
     {:noreply,
      assign(socket,
        transformation_changesets: socket.assigns.transformation_changesets ++ [new_transformation],
