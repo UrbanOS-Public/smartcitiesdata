@@ -63,10 +63,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     assert ["Black", "Green", "Blue"] == render(view) |> find_ordered_names()
 
     cancel(view)
+    confirm_cancel(view)
 
-    {:ok, refreshed_view, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+    {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
 
-    assert ["Black", "Blue", "Green"] == render(refreshed_view) |> find_ordered_names()
+    assert ["Black", "Blue", "Green"] == find_ordered_names(refreshed_html)
   end
 
   test "saving ingestion after moving preserves order", %{conn: conn, view: view, html: html, ingestion: ingestion} do
@@ -79,9 +80,23 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
     save(view)
 
-    {:ok, refreshed_view, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+    {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
 
-    assert ["Blue", "Black", "Green"] == render(refreshed_view) |> find_ordered_names()
+    assert ["Blue", "Black", "Green"] == find_ordered_names(refreshed_html)
+  end
+
+  test "cancelling with unsaved move changes prompts confirmation", %{conn: conn, view: view, html: html, ingestion: ingestion} do
+    assert ["Black", "Blue", "Green"] == find_ordered_names(html)
+
+    get_second_transformation(ingestion.id)
+    |> move_up(view)
+
+    assert ["Blue", "Black", "Green"] == render(view) |> find_ordered_names()
+
+    cancel(view)
+
+    assert element(view, ".unsaved-changes-modal--visible")
+    |> has_element?()
   end
 
   defp navigate_to_edit_page(conn, ingestion) do
@@ -126,6 +141,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
   defp cancel(view) do
     element(view, ".btn--cancel")
+    |> render_click()
+  end
+
+  defp confirm_cancel(view) do
+    element(view, ".continue-cancel-button")
     |> render_click()
   end
 

@@ -137,6 +137,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         Transformation.convert_andi_transformation_to_changeset(transformation)
       end)
 
+    send(socket.parent_pid, :form_update)
+
     {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
   end
 end
