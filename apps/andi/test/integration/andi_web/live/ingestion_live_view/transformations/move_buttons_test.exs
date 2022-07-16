@@ -69,6 +69,21 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     assert ["Black", "Blue", "Green"] == render(refreshed_view) |> find_ordered_names()
   end
 
+  test "saving ingestion after moving preserves order", %{conn: conn, view: view, html: html, ingestion: ingestion} do
+    assert ["Black", "Blue", "Green"] == find_ordered_names(html)
+
+    get_second_transformation(ingestion.id)
+    |> move_up(view)
+
+    assert ["Blue", "Black", "Green"] == render(view) |> find_ordered_names()
+
+    save(view)
+
+    {:ok, refreshed_view, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+
+    assert ["Blue", "Black", "Green"] == render(refreshed_view) |> find_ordered_names()
+  end
+
   defp navigate_to_edit_page(conn, ingestion) do
     live(conn, @url_path <> ingestion.id)
   end
@@ -111,6 +126,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
   defp cancel(view) do
     element(view, ".btn--cancel")
+    |> render_click()
+  end
+
+  defp save(view) do
+    element(view, ".btn--save", "Save Draft Ingestion")
     |> render_click()
   end
 end
