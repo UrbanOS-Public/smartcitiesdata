@@ -37,39 +37,21 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
   end
 
   test "clicking move up slides that transformation up one row", %{view: view, html: html, ingestion: ingestion} do
-    {:ok, starting_document} = Floki.parse_document(html)
-    assert ["Black", "Blue", "Green"] == starting_document
-      |> Floki.find(".transformation-name")
-      |> Floki.attribute("value")
-    [_ | [second_transformation | _]] = Transformations.all_for_ingestion(ingestion.id)
+    assert ["Black", "Blue", "Green"] == find_ordered_names(html)
 
-    find_live_child(view, "transformations_form_editor")
-      |> find_live_child("transform-#{second_transformation.id}")
-      |> element(".move-up-#{second_transformation.id}")
-      |> render_click()
+    get_second_transformation(ingestion.id)
+    |> move_up(view)
 
-    {:ok, changed_document} = render(view) |> Floki.parse_document()
-    changed_order_names = Floki.find(changed_document, ".transformation-name")
-      |> Floki.attribute("value")
-    assert ["Blue", "Black", "Green"] == changed_order_names
+    assert ["Blue", "Black", "Green"] == render(view) |> find_ordered_names()
   end
 
   test "clicking move down slides that transformation down one row", %{view: view, html: html, ingestion: ingestion} do
-    {:ok, starting_document} = Floki.parse_document(html)
-    assert ["Black", "Blue", "Green"] == starting_document
-      |> Floki.find(".transformation-name")
-      |> Floki.attribute("value")
-    [_ | [second_transformation | _]] = Transformations.all_for_ingestion(ingestion.id)
+    assert ["Black", "Blue", "Green"] == find_ordered_names(html)
 
-    find_live_child(view, "transformations_form_editor")
-      |> find_live_child("transform-#{second_transformation.id}")
-      |> element(".move-down-#{second_transformation.id}")
-      |> render_click()
+    get_second_transformation(ingestion.id)
+    |> move_down(view)
 
-    {:ok, changed_document} = render(view) |> Floki.parse_document()
-    changed_order_names = Floki.find(changed_document, ".transformation-name")
-      |> Floki.attribute("value")
-    assert ["Black", "Green", "Blue"] == changed_order_names
+    assert ["Black", "Green", "Blue"] == render(view) |> find_ordered_names()
   end
 
   defp create_transformation_with_name(name, ingestion) do
@@ -82,4 +64,29 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     transformation
   end
 
+  defp get_second_transformation(ingestion_id) do
+    [_ | [second_transformation | _]] = Transformations.all_for_ingestion(ingestion_id)
+    second_transformation
+  end
+
+  defp find_ordered_names(html) do
+    {:ok, document} = Floki.parse_document(html)
+    document
+      |> Floki.find(".transformation-name")
+      |> Floki.attribute("value")
+  end
+
+  defp move_up(transformation, view) do
+    find_live_child(view, "transformations_form_editor")
+      |> find_live_child("transform-#{transformation.id}")
+      |> element(".move-up-#{transformation.id}")
+      |> render_click()
+  end
+
+  defp move_down(transformation, view) do
+    find_live_child(view, "transformations_form_editor")
+      |> find_live_child("transform-#{transformation.id}")
+      |> element(".move-down-#{transformation.id}")
+      |> render_click()
+  end
 end
