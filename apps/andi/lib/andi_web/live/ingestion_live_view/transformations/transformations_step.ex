@@ -70,13 +70,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: _}},
         %{assigns: %{transformations: transformations}} = socket
       ) do
-
-    # Enum.each(transformations, fn transformation ->
-    #   Transformations.update(transformation)
-    # end)
+    Enum.each(transformations, fn transformation ->
+      Transformations.update(transformation)
+    end)
     {:noreply, socket}
   end
 
@@ -130,8 +129,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       |> TransformationHelpers.move_element(transformation_index, target_index)
       |> Enum.with_index()
       |> Enum.map(fn {transformation, index} ->
-        {:ok, updated_transformation} = Transformations.update(transformation, %{sequence: index})
-        updated_transformation
+        %{transformation | sequence: index}
       end)
 
     transformation_changesets =

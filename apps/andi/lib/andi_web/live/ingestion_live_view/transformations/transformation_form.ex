@@ -7,11 +7,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
+  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias Andi.InputSchemas.Ingestions.Transformations
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
+    AndiWeb.Endpoint.subscribe("form-save")
     {:ok,
      assign(socket,
        transformation_changeset: transformation_changeset
@@ -60,6 +63,28 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     new_changeset = Transformation.changeset_from_form_data(form_data)
 
     {:noreply, assign(socket, transformation_changeset: new_changeset)}
+  end
+
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{
+          assigns: %{
+            transformation_changeset: transformation_changeset
+          }
+        } = socket
+      ) do
+    changes =
+      InputConverter.form_changes_from_changeset(transformation_changeset)
+      |> Map.put(:ingestion_id, ingestion_id)
+
+    transformation_changeset.changes.id
+    |> Transformations.get()
+    |> Transformations.update(changes)
+
+    {:noreply,
+     assign(socket,
+       validation_status: "valid"
+     )}
   end
 
   defp transformation_name(form) do
