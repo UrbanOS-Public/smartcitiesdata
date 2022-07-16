@@ -29,8 +29,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       <div class="transformation-header">
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-edit-buttons">
-          <span class="material-icons move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
-          <span class="material-icons move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
+          <span class="material-icons move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
+          <span class="material-icons move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
         </div>
       </div>
     <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>

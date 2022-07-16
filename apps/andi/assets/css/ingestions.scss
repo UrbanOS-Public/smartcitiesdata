@@ -110,3 +110,9 @@ $icon-width: 30px;
 .btn--delete{
   margin-top: 2rem;
 }
+
+.move-button {
+  &:hover {
+      cursor: pointer;
+  }
+}
