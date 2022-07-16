@@ -76,6 +76,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     Enum.each(transformations, fn transformation ->
       Transformations.update(transformation)
     end)
+
     {:noreply, socket}
   end
 

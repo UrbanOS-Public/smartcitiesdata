@@ -1,5 +1,4 @@
 defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
-
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
@@ -22,9 +21,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     transform2 = create_transformation_with_name("Blue", ingestion)
     transform3 = create_transformation_with_name("Green", ingestion)
     transformations = [transform1, transform2, transform3]
+
     ingestion
-      |> Map.merge(%{transformations: transformations})
-      |> Ingestions.update()
+    |> Map.merge(%{transformations: transformations})
+    |> Ingestions.update()
 
     {:ok, view, html} = navigate_to_edit_page(conn, ingestion)
     %{conn: conn, view: view, html: html, ingestion: ingestion}
@@ -96,7 +96,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
     cancel(view)
 
     assert element(view, ".unsaved-changes-modal--visible")
-    |> has_element?()
+           |> has_element?()
   end
 
   defp navigate_to_edit_page(conn, ingestion) do
@@ -104,12 +104,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
   end
 
   defp create_transformation_with_name(name, ingestion) do
-    {:ok, transformation} = %Transformation{
-      name: name,
-      ingestion_id: ingestion.id,
-      id: UUID.uuid4()
-    }
+    {:ok, transformation} =
+      %Transformation{
+        name: name,
+        ingestion_id: ingestion.id,
+        id: UUID.uuid4()
+      }
       |> Transformations.update()
+
     transformation
   end
 
@@ -120,23 +122,24 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
   defp find_ordered_names(html) do
     {:ok, document} = Floki.parse_document(html)
+
     document
-      |> Floki.find(".transformation-name")
-      |> Floki.attribute("value")
+    |> Floki.find(".transformation-name")
+    |> Floki.attribute("value")
   end
 
   defp move_up(transformation, view) do
     find_live_child(view, "transformations_form_editor")
-      |> find_live_child("transform-#{transformation.id}")
-      |> element(".move-up-#{transformation.id}")
-      |> render_click()
+    |> find_live_child("transform-#{transformation.id}")
+    |> element(".move-up-#{transformation.id}")
+    |> render_click()
   end
 
   defp move_down(transformation, view) do
     find_live_child(view, "transformations_form_editor")
-      |> find_live_child("transform-#{transformation.id}")
-      |> element(".move-down-#{transformation.id}")
-      |> render_click()
+    |> find_live_child("transform-#{transformation.id}")
+    |> element(".move-down-#{transformation.id}")
+    |> render_click()
   end
 
   defp cancel(view) do

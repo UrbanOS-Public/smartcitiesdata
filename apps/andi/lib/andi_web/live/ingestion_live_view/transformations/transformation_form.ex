@@ -16,6 +16,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
+
     {:ok,
      assign(socket,
        transformation_changeset: transformation_changeset
