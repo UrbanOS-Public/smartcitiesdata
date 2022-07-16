@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.IngestionLiveView.Transformations.TransformationsStep
   alias Andi.InputSchemas.Datasets
 
@@ -26,6 +27,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     allow Transformations.update(any(), any()), return: %{}
     allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
     allow Andi.Repo.insert_or_update(any()), return: {:ok, %{}}
+    allow FormUpdate.send_value(any(), any()), return: {:ok}
 
     %{ingestion: ingestion}
   end

@@ -7,6 +7,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.Helpers.TransformationHelpers
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
@@ -105,7 +106,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   def handle_event("add-transformation", _, socket) do
     new_transformation = Transformations.create()
 
-    send(socket.parent_pid, :form_update)
+    FormUpdate.send_value(socket.parent_pid, :form_update)
 
     {:noreply,
      assign(socket,
@@ -140,7 +141,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         Transformation.convert_andi_transformation_to_changeset(transformation)
       end)
 
-    send(socket.parent_pid, :form_update)
+    FormUpdate.send_value(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
   end
