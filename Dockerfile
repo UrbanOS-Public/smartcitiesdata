@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir:1.10.4
+FROM bitwalker/alpine-elixir:1.13.4
 ARG app_name
 COPY . /app
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN apk update && \
       curl \
       inotify-tools \
       nodejs \
-      nodejs-npm && \
+      npm && \
       npm install npm -g --no-progress && \
     rm -rf /var/cache/**/*
 
