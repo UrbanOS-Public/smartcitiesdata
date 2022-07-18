@@ -15,7 +15,7 @@ defmodule AndiWeb.UnsavedChangesModal do
         <br>
         <div class="button-container">
           <button type="button" class="btn" phx-click="unsaved-changes-canceled">Cancel</a>
-          <button type="button" class="btn submit_button" phx-click="force-cancel-edit">Continue</a>
+          <button type="button" class="btn submit_button continue-cancel-button" phx-click="force-cancel-edit">Continue</a>
         </div>
       </div>
     </div>
