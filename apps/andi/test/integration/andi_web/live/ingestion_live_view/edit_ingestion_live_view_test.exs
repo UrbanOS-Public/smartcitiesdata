@@ -211,6 +211,27 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       refute_called Brook.Event.send(any(), any(), any(), any())
     end
 
+    test "adding a transformation and cancelling prompts a confirmation", %{curator_conn: conn} do
+      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+
+      {:ok, ingestion} =
+        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
+        |> Ingestions.save()
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      find_live_child(view, "transformations_form_editor")
+      |> element("#add-transformation")
+      |> render_click()
+
+      element(view, ".btn--cancel")
+      |> render_click()
+
+      assert element(view, ".unsaved-changes-modal--visible")
+             |> has_element?()
+    end
+
     defp delete_ingestion_in_ui(view) do
       view |> element("#ingestion-delete-button") |> render_click
       view |> element(".delete-button") |> render_click

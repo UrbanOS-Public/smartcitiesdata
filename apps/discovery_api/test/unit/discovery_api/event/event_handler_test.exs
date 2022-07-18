@@ -157,6 +157,21 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     end
   end
 
+  describe "handle_event/1 #{dataset_access_group_associate()} error" do
+    test "is ignored if dataset model missing" do
+      allow(Brook.get(any(), any(), any()), return: {:ok, nil})
+
+      {:ok, relation} =
+        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
+      event = Brook.Event.new(type: dataset_access_group_associate(), data: relation, author: :author)
+
+      result = EventHandler.handle_event(event)
+
+      assert :discard == result
+    end
+  end
+
   describe "handle_event/1 #{dataset_access_group_disassociate()}" do
     setup do
       model_without_group = Helper.sample_model()
@@ -180,6 +195,21 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
     test "invalidates the table info cache" do
       assert_called(TableInfoCache.invalidate())
+    end
+  end
+
+  describe "handle_event/1 #{dataset_access_group_disassociate()} error" do
+    test "is ignored if dataset model missing" do
+      allow(Brook.get(any(), any(), any()), return: {:ok, nil})
+
+      {:ok, relation} =
+        SmartCity.DatasetAccessGroupRelation.new(%{dataset_id: "id_for_missing_dataset", access_group_id: "some_access_group"})
+
+      event = Brook.Event.new(type: dataset_access_group_disassociate(), data: relation, author: :author)
+
+      result = EventHandler.handle_event(event)
+
+      assert :discard == result
     end
   end
 

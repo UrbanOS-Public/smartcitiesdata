@@ -4,7 +4,7 @@ defmodule Testing.MixProject do
   def project do
     [
       app: :testing,
-      version: "0.1.1",
+      version: "0.1.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -24,7 +24,6 @@ defmodule Testing.MixProject do
   defp deps do
     [
       {:cowlib, "== 2.9.1", override: true},
-      {:glock, "~> 0.1.0"},
       {:protocol_source, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
       {:protocol_decoder, in_umbrella: true},

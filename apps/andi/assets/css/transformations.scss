@@ -3,6 +3,16 @@
   padding: .6rem 1.6rem;
 }
 
+.transformation-header-name {
+  display: inline-block;
+}
+
+.transformation-edit-buttons {
+  float: right;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+
 #transformation-forms {
   margin-bottom: 2rem;
 }
