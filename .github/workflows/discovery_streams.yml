@@ -39,6 +39,10 @@ jobs:
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
+      - name: Build docker image
+        run: |
+          bash scripts/build.sh ${GITHUB_WORKFLOW} development true
+        if: github.event_name == 'pull_request'
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
@@ -46,4 +50,3 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
- 
