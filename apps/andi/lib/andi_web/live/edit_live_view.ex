@@ -55,20 +55,13 @@ defmodule AndiWeb.EditLiveView do
 
 
       <div class="edit-page__btn-group">
-
         <hr></hr>
-
         <div class="btn-group__standard">
-
           <%= render_publish_button(@submission_status) %>
           <button id="save-button" name="save-button" class="btn btn--save btn--primary-outline btn--large" type="button" phx-click="save">Save Draft Dataset</button>
+          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Discard Changes</button>
+          <%= render_review_buttons(@submission_status) %>
         </div>
-
-
-        <div class="btn-group__review-submission">
-
-        </div>
-
       </div>
 
       <%= live_component(@socket, AndiWeb.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
