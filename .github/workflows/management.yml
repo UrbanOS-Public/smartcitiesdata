@@ -4,17 +4,18 @@ on:
     branches:
       - master
     paths:
-    - 'apps/management/**'
-    - 'mix.lock'
+      - "apps/management/**"
+      - "mix.lock"
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/management/**'
-    - 'mix.lock'
+      - "apps/management/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Library
     runs-on: ubuntu-latest
     steps:

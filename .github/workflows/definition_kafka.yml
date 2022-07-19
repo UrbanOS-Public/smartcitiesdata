@@ -4,17 +4,18 @@ on:
     branches:
       - master
     paths:
-    - 'apps/definition_kafka/**'
-    - 'mix.lock'
+      - "apps/definition_kafka/**"
+      - "mix.lock"
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/definition_kafka/**'
-    - 'mix.lock'
+      - "apps/definition_kafka/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Application
     runs-on: ubuntu-latest
     steps:

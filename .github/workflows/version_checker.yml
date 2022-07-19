@@ -3,6 +3,7 @@ on: [pull_request]
 
 jobs:
   check-apps-for-update:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     steps:

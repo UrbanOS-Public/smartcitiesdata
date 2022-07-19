@@ -18,6 +18,7 @@ on:
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Application
     runs-on: ubuntu-latest
     steps:

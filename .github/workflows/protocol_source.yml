@@ -4,17 +4,18 @@ on:
     branches:
       - master
     paths:
-    - 'apps/protocol_source/**'
-    - 'mix.lock'
+      - "apps/protocol_source/**"
+      - "mix.lock"
   pull_request:
     branches:
       - master
     paths:
-    - 'apps/protocol_source/**'
-    - 'mix.lock'
+      - "apps/protocol_source/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Library
     runs-on: ubuntu-latest
     steps:
