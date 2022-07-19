@@ -45,6 +45,10 @@ jobs:
       - name: Run WDC tests
         run: |
           bash scripts/gh-action-wdc-test.sh
+      - name: Build docker image
+        run: |
+          bash scripts/build.sh ${GITHUB_WORKFLOW} development true
+        if: github.event_name == 'pull_request'
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
