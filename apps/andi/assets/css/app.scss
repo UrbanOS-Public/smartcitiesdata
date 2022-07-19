@@ -339,11 +339,12 @@ body {
 
 //////// New Isabel Styles
 $primary-blue: #1170C8;
+$button-padding: 10px 50px;
 .btn--primary {
   color: white;
   background-color: $primary-blue;
   border: none;
-  padding: 15px 50px;
+  padding: $button-padding;
   &:active {
     background-color: #0F64B3;
   }
@@ -362,7 +363,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: $primary-blue;
   border: 1px solid $primary-blue;
-  padding: 15px 50px;
+  padding: $button-padding;
 
   &:active {
     background-color: rgba($primary-blue, 20%);
@@ -384,7 +385,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: black;
   border: 0px;
-  padding: 15px 50px;
+  padding: $button-padding;
   &:active {
     background-color: rgba(#6C787F, 20%);
     //will the boader stay the same 
@@ -403,7 +404,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: #DF1618;
   border: 1px solid #DF1618;
-  padding: 15px 50px;
+  padding: $button-padding;
   .material-icons {
     color:#DF1618;
   }
