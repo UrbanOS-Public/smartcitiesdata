@@ -36,6 +36,10 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
+      - name: Build docker image
+        run: |
+          bash scripts/build.sh ${GITHUB_WORKFLOW} development true
+        if: github.event_name == 'pull_request'
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}

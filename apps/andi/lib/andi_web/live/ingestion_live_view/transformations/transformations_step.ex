@@ -7,9 +7,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias AndiWeb.IngestionLiveView.FormUpdate
+  alias AndiWeb.Helpers.TransformationHelpers
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("move-transformation")
 
     transformation_changesets =
       Enum.map(ingestion.transformations, fn transformation ->
@@ -67,12 +70,49 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     """
   end
 
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: _}},
+        %{assigns: %{transformations: transformations}} = socket
+      ) do
+    Enum.each(transformations, fn transformation ->
+      Transformations.update(transformation)
+    end)
+
+    {:noreply, socket}
+  end
+
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
   end
 
+  def handle_info(
+        %{
+          topic: "move-transformation",
+          event: "move-transformation",
+          payload: %{"id" => transformation_id, "move-index" => move_index_string}
+        },
+        socket
+      ) do
+    move_index = String.to_integer(move_index_string)
+    transformation_index = Enum.find_index(socket.assigns.transformations, fn transformation -> transformation.id == transformation_id end)
+    target_index = transformation_index + move_index
+
+    case target_index >= 0 && target_index < Enum.count(socket.assigns.transformations) do
+      true -> move_transformation(socket, transformation_index, target_index)
+      false -> {:noreply, socket}
+    end
+  end
+
   def handle_event("add-transformation", _, socket) do
-    {:noreply, assign(socket, transformation_changesets: socket.assigns.transformation_changesets ++ [Transformations.create()])}
+    new_transformation = Transformations.create()
+
+    FormUpdate.send_value(socket.parent_pid, :form_update)
+
+    {:noreply,
+     assign(socket,
+       transformation_changesets: socket.assigns.transformation_changesets ++ [new_transformation],
+       transformations: socket.assigns.transformations ++ [Transformations.get(new_transformation.changes.id)]
+     )}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -85,5 +125,24 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       end
 
     {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
+  defp move_transformation(socket, transformation_index, target_index) do
+    updated_transformations =
+      socket.assigns.transformations
+      |> TransformationHelpers.move_element(transformation_index, target_index)
+      |> Enum.with_index()
+      |> Enum.map(fn {transformation, index} ->
+        %{transformation | sequence: index}
+      end)
+
+    transformation_changesets =
+      Enum.map(updated_transformations, fn transformation ->
+        Transformation.convert_andi_transformation_to_changeset(transformation)
+      end)
+
+    FormUpdate.send_value(socket.parent_pid, :form_update)
+
+    {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
   end
 end

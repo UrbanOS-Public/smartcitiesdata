@@ -8,6 +8,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
   import FlokiHelpers, only: [find_elements: 2]
 
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.Ingestions.Transformations
+  alias Andi.InputSchemas.Ingestions.Transformation
+  alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.IngestionLiveView.Transformations.TransformationsStep
   alias Andi.InputSchemas.Datasets
 
@@ -19,8 +22,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
     ingestion = TDG.create_ingestion(%{name: "Original"})
     allow Ingestions.get(ingestion.id), return: ingestion
     allow Ingestions.update(ingestion, %{name: "Updated"}), return: {:ok, ingestion}
+    allow Transformations.create(), return: create_transformation_changeset()
+    allow Transformations.get(any()), return: %{}
+    allow Transformations.update(any(), any()), return: %{}
     allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
     allow Andi.Repo.insert_or_update(any()), return: {:ok, %{}}
+    allow FormUpdate.send_value(any(), any()), return: {:ok}
 
     %{ingestion: ingestion}
   end
@@ -45,8 +52,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
 
       refute element(view, ".transformation-header") |> has_element?
 
+      allow Transformations.create(), return: create_transformation_changeset()
       click_add_transformation(view)
 
+      allow Transformations.create(), return: create_transformation_changeset()
       assert element(view, ".transformation-header") |> has_element?
 
       html = click_add_transformation(view)
@@ -61,7 +70,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
 
       html = click_add_transformation(view)
 
-      assert FlokiHelpers.get_text(html, ".transformation-header") == "Transformation"
+      assert FlokiHelpers.get_text(html, ".transformation-header") =~ "New Transformation"
     end
 
     test "transformation header displays transformation name" do
@@ -86,7 +95,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
       assert {:ok, view, html} = live_isolated(build_conn(), TransformationsStep, session: %{"ingestion" => ingestion, "order" => "3"})
 
       assert element(view, ".transformation-header") |> has_element?
-      assert FlokiHelpers.get_text(html, ".transformation-header") == transformation_name
+      assert FlokiHelpers.get_text(html, ".transformation-header") =~ transformation_name
     end
   end
 
@@ -96,5 +105,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
 
   defp click_add_transformation(view) do
     element(view, "#add-transformation") |> render_click()
+  end
+
+  defp create_transformation_changeset() do
+    Ecto.Changeset.change(%Transformation{}, %{id: UUID.uuid4()})
   end
 end
