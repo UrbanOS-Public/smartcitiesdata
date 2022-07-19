@@ -262,7 +262,6 @@ $component-header-height: 7.5rem;
 }
 
 .btn-group__standard {
-    // margin-bottom: 2rem;
     display: flex;
     button {
         margin-right: 20px;
@@ -271,11 +270,6 @@ $component-header-height: 7.5rem;
         margin-right: 0px;
     }
 }
-
-// .btn-group__review-submission {
-//     margin-top: 2rem;
-// }
-
 
 #delete-dataset-button {
     .delete-icon {
