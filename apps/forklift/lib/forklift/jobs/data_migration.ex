@@ -36,16 +36,16 @@ defmodule Forklift.Jobs.DataMigration do
          {:ok, _} <- verify_count(json_table, 0, "json table is empty") do
       Logger.info("Successful data migration for dataset #{id}")
       update_migration_status(id, :ok)
-      :ok
+      {:ok, id}
     else
       {:error, error} ->
         Logger.error("Error migrating records for dataset #{id}: " <> inspect(error))
         update_migration_status(id, :error)
-        :error
+        {:error, id}
 
       {:abort, reason} ->
         Logger.info("Aborted migration of dataset #{id}: " <> reason)
-        :abort
+        {:abort, id}
     end
   after
     Forklift.DataReaderHelper.init(dataset)
