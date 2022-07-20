@@ -10,11 +10,6 @@ defmodule Forklift.Jobs.DataMigration do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  # def run(dataset_ids) do
-  #   dataset_ids
-  #   |> Enum.map(&Forklift.Datasets.get!/1)
-  #   |> Enum.map(&insert_data/1)
-  # end
   def run() do
     Forklift.Datasets.get_all!()
     |> Enum.map(&insert_data/1)

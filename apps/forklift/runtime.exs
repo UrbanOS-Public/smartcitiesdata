@@ -132,25 +132,15 @@ if System.get_env("S3_HOST_NAME") do
 end
 
 if System.get_env("COMPACTION_SCHEDULE") do
-  # special_compaction_datasets_string = System.get_env("SPECIAL_COMPACTION_DATASETS") || ""
-  # special_compaction_datasets = String.split(special_compaction_datasets_string, ",")
   config :forklift, Forklift.Quantum.Scheduler,
     jobs: [
-      # compactor: [
-      #   schedule: System.get_env("COMPACTION_SCHEDULE"),
-      # todo: delete Forklift.DataWriter entirely? at least compact_datasets/1?
-      #   task: {Forklift.DataWriter, :compact_datasets, [special_compaction_datasets]},
-      #   timezone: "America/New_York"
-      # ],
       data_migrator: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        # task: {Forklift.Jobs.DataMigration, :run, [special_compaction_datasets]},
         task: {Forklift.Jobs.DataMigration, :run},
         timezone: "America/New_York"
       ],
       partitioned_compactor: [
         schedule: "45 0 * * *",
-        # task: {Forklift.Jobs.PartitionedCompaction, :run, [special_compaction_datasets]},
         task: {Forklift.Jobs.PartitionedCompaction, :run},
         timezone: "America/New_York"
       ]
