@@ -61,7 +61,7 @@ body {
 
 .btn--large {
   padding: 0.6rem 1.7rem;
-  font-size: 1.5rem;
+  font-size: 20px;
   min-width: 10rem;
   border: 2px solid black;
   background-color: white;
@@ -112,11 +112,9 @@ body {
 }
 
 .btn--save {
-  float: right;
   color: $color-text-link;
   background-color: white;
   border: 2px solid $color-text-link;
-  margin-right: 1rem;
   :hover {
     background: rgba($color-text-link, 10%);
     border: 2px solid $color-text-link;
@@ -190,11 +188,6 @@ body {
   &:disabled, &:disabled:hover {
     background-color: $disabled-background;
   }
-}
-
-.btn--publish {
-    float: right;
-    margin-right: 1rem;
 }
 
 .btn--submit:hover {
@@ -346,10 +339,12 @@ body {
 
 //////// New Isabel Styles
 $primary-blue: #1170C8;
+$button-padding: 10px 50px;
 .btn--primary {
   color: white;
   background-color: $primary-blue;
   border: none;
+  padding: $button-padding;
   &:active {
     background-color: #0F64B3;
   }
@@ -368,6 +363,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: $primary-blue;
   border: 1px solid $primary-blue;
+  padding: $button-padding;
 
   &:active {
     background-color: rgba($primary-blue, 20%);
@@ -389,6 +385,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: black;
   border: 0px;
+  padding: $button-padding;
   &:active {
     background-color: rgba(#6C787F, 20%);
     //will the boader stay the same 
@@ -407,6 +404,7 @@ $primary-blue: #1170C8;
   background-color: white;
   color: #DF1618;
   border: 1px solid #DF1618;
+  padding: $button-padding;
   .material-icons {
     color:#DF1618;
   }
@@ -430,7 +428,11 @@ $primary-blue: #1170C8;
     }
     background-color: #FC7071;
     cursor: default;
+  }
 }
+
+.btn--right {
+  margin-left: auto;
 }
 
 

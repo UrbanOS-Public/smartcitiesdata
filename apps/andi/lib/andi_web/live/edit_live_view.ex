@@ -53,18 +53,15 @@ defmodule AndiWeb.EditLiveView do
         </div>
       </form>
 
+
       <div class="edit-page__btn-group">
+        <hr></hr>
         <div class="btn-group__standard">
-          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Cancel</button>
           <%= render_publish_button(@submission_status) %>
           <button id="save-button" name="save-button" class="btn btn--save btn--primary-outline btn--large" type="button" phx-click="save">Save Draft Dataset</button>
-        </div>
-
-        <hr></hr>
-        <div class="btn-group__review-submission">
+          <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Discard Changes</button>
           <%= render_review_buttons(@submission_status) %>
         </div>
-
       </div>
 
       <%= live_component(@socket, AndiWeb.UnsavedChangesModal, visibility: @unsaved_changes_modal_visibility) %>
@@ -357,7 +354,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(:submitted) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--large btn--right btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>
@@ -374,7 +371,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(_) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--right btn--large btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>

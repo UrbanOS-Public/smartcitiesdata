@@ -69,14 +69,9 @@ defmodule AndiWeb.EditOrganizationLiveView do
           </div>
         </div>
 
-        <div class="edit-button-group">
-          <div class="edit-button-group__cancel-btn">
-            <button type="button" class="btn btn--secondary btn--large" phx-click="cancel-edit">Cancel</button>
-          </div>
-
-          <div class="edit-button-group__save-btn">
-            <button id="save-button" name="save-button" class="btn btn--primary btn--action btn--large" type="button" phx-click="save">Save</button>
-          </div>
+        <div class="btn-group__standard" >
+          <button id="save-button" name="save-button" class="btn btn--primary btn--action btn--large" type="button" phx-click="save">Save Organization</button>
+          <button type="button" class="btn btn--secondary btn--large" phx-click="cancel-edit">Discard Changes</button>
         </div>
       </form>
 
