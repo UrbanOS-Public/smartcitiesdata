@@ -40,6 +40,33 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     [datasets: datasets, current_partition: current_partition]
   end
 
+  test "partitioned compaction results in error if invalid_ids are in the viewstate", %{
+    datasets: datasets,
+    current_partition: current_partition
+  } do
+    ok_dataset_one = Enum.at(datasets, 0)
+    ok_dataset_two = Enum.at(datasets, 1)
+    abort_dataset = %{id: "invalid_id", technical: %{systemName: "invalid_sys_name"}}
+    allow(Forklift.Datasets.get_all!(), return: [abort_dataset, ok_dataset_one, ok_dataset_two])
+
+    partitions = [current_partition]
+
+    expected_record_count = write_test_data(datasets, partitions, @batch_size)
+
+    results = PartitionedCompaction.run()
+    assert results |> Enum.member?({:error, abort_dataset.id})
+    assert results |> Enum.member?({:ok, ok_dataset_one.id})
+    assert results |> Enum.member?({:ok, ok_dataset_two.id})
+
+    assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
+
+    refute Enum.any?(datasets, fn dataset ->
+             table_exists?(PartitionedCompaction.compact_table_name(dataset.technical.systemName, current_partition))
+           end)
+
+    assert Enum.all?(datasets, fn dataset -> count_files(dataset.technical.systemName) == Enum.count(partitions) end)
+  end
+
   test "abort compaction without loss if the compacted table for the partition exists at the start", %{
     datasets: datasets,
     current_partition: current_partition
@@ -158,5 +185,12 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     end)
 
     Enum.count(partitions) * @batch_size
+  end
+
+  defp count_files(table) do
+    [[count]] =
+      "select count(distinct \"$path\") from #{table}" |> PrestigeHelper.execute_query() |> elem(1) |> Map.get(:rows)
+
+    count
   end
 end
