@@ -17,7 +17,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       form_update = %{
         "name" => "   "
       }
-
+# to do: use class name sector
       element(view, "#transformation_form") |> render_change(form_update)
 
       assert element(view, "#name-error-msg") |> has_element?
