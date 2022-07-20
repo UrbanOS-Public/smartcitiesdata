@@ -50,16 +50,16 @@ defmodule Forklift.Jobs.PartitionedCompaction do
          {:ok, _} <- PrestigeHelper.drop_table(compact_table) do
       Logger.info("Successfully compacted partition #{partition} in dataset #{id}")
       update_compaction_status(id, :ok)
-      :ok
+      {:ok, id}
     else
       {:error, error} ->
         Logger.error("Error compacting dataset #{id}: " <> inspect(error))
         update_compaction_status(id, :error)
-        :error
+        {:error, id}
 
       {:abort, reason} ->
         Logger.info("Aborted compaction of dataset #{id}: " <> reason)
-        :abort
+        {:abort, id}
     end
   end
 
