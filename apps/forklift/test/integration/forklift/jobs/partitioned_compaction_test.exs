@@ -159,11 +159,4 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
 
     Enum.count(partitions) * @batch_size
   end
-
-  defp count_files(table) do
-    [[count]] =
-      "select count(distinct \"$path\") from #{table}" |> PrestigeHelper.execute_query() |> elem(1) |> Map.get(:rows)
-
-    count
-  end
 end
