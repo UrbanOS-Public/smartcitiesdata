@@ -4,17 +4,19 @@ on:
     branches:
       - master
     paths:
-    - 'apps/definition_deadletter/**'
-    - 'mix.lock'
+      - "apps/definition_deadletter/**"
+      - "mix.lock"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
     paths:
-    - 'apps/definition_deadletter/**'
-    - 'mix.lock'
+      - "apps/definition_deadletter/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Library
     runs-on: ubuntu-latest
     steps:

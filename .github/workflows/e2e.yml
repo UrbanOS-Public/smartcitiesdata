@@ -4,11 +4,13 @@ on:
     branches:
       - master
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Application
     runs-on: ubuntu-latest
     steps:

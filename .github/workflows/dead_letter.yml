@@ -4,17 +4,19 @@ on:
     branches:
       - master
     paths:
-    - 'apps/dead_letter/**'
-    - 'mix.lock'
+      - "apps/dead_letter/**"
+      - "mix.lock"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
     paths:
-    - 'apps/dead_letter/**'
-    - 'mix.lock'
+      - "apps/dead_letter/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Application
     runs-on: ubuntu-latest
     steps:

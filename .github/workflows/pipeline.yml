@@ -4,17 +4,19 @@ on:
     branches:
       - master
     paths:
-    - 'apps/pipeline/**'
-    - 'mix.lock'
+      - "apps/pipeline/**"
+      - "mix.lock"
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - master
     paths:
-    - 'apps/pipeline/**'
-    - 'mix.lock'
+      - "apps/pipeline/**"
+      - "mix.lock"
 
 jobs:
   ci:
+    if: github.event.pull_request.draft == false
     name: Verify Application
     runs-on: ubuntu-latest
     steps:
@@ -33,4 +35,3 @@ jobs:
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
-
