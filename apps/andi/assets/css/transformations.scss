@@ -36,14 +36,16 @@
 }
 
 .transformation-item {
-  animation: pulse 5s infinite;
+  animation: open .3;
 }
 
-@keyframes pulse {
-  0% {
-    background-color: #001F3F;
-  }
-  100% {
-    background-color: #FF4136;
-  }
+  @keyframes open {
+    from {
+      max-height: 0;
+      opacity: 0%
+    }
+    to {
+      max-height: 277px;
+      opacity: 100%
+    }
 }
