@@ -244,7 +244,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+          assert {:ok, _id} = Forklift.Jobs.PartitionedCompaction.compact(ds)
         end,
         5_000
       )
@@ -326,7 +326,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+          assert {:ok, _id} = Forklift.Jobs.PartitionedCompaction.compact(ds)
         end,
         10_000
       )
