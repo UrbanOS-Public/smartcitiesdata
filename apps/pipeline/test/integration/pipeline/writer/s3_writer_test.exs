@@ -104,7 +104,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
 
-      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
 
       eventually(fn ->
         query = "select * from foo__bar__json"
@@ -125,7 +125,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
 
-      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
 
       eventually(fn ->
         query = "select * from goo__bar__json"
@@ -146,14 +146,14 @@ defmodule Pipeline.Writer.S3WriterTest do
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
 
-      ExAws.S3.upload(["Blarg"], "kdp-cloud-storage", "hive-s3/suprisingly__there/blarg.gz")
+      ExAws.S3.upload(["Blarg"], "trino-hive-storage", "hive-s3/suprisingly__there/blarg.gz")
       |> ExAws.request()
 
       assert {:error, _} =
                S3Writer.write([datum1, datum2],
                  table: dataset.technical.systemName,
                  schema: schema,
-                 bucket: "kdp-cloud-storage"
+                 bucket: "trino-hive-storage"
                )
     end
 
@@ -225,7 +225,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       }
 
       assert :ok =
-               S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+               S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
 
       eventually(fn ->
         query = "select * from foo__baz__json"
@@ -251,7 +251,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       Enum.each(1..15, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "kdp-cloud-storage")
+        S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
       end)
 
       Enum.each(1..5, fn n ->
@@ -368,7 +368,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       Enum.each(1..15, fn n ->
         payload = %{"abc" => "#{n}"}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        S3Writer.write([datum], table: "xyz", schema: schema, bucket: "kdp-cloud-storage")
+        S3Writer.write([datum], table: "xyz", schema: schema, bucket: "trino-hive-storage")
       end)
 
       assert {:error, _} = S3Writer.compact(table: "xyz")

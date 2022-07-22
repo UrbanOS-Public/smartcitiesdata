@@ -4,7 +4,7 @@ config :pipeline,
   elsa_brokers: [{:localhost, 9092}],
   output_topic: "output-topic",
   producer_name: :"integration-producer",
-  divo: [{DivoKafka, [outside_host: "localhost", kafka_image_version: "2.12-2.1.1"]}, Pipeline.DivoPresto],
+  divo: "docker-compose.yml",
   divo_wait: [dwell: 1_000, max_tries: 120]
 
 config :prestige, :session_opts,
@@ -15,8 +15,8 @@ config :prestige, :session_opts,
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "testing_access_key",
-  secret_access_key: "testing_secret_key",
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
   region: "local"
 
 config :ex_aws, :s3,

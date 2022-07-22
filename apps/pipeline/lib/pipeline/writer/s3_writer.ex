@@ -47,12 +47,11 @@ defmodule Pipeline.Writer.S3Writer do
   def write(content, options) do
     json_config = config("JSON", options)
     bucket = Keyword.fetch!(options, :bucket)
-
     case table_exists?(json_config) do
       true ->
         upload_content(content, json_config.schema, json_config.table, bucket)
 
-      {:error, %{name: "SYNTAX_ERROR", type: "USER_ERROR"}} ->
+      {:error, %{name: "TABLE_NOT_FOUND", type: "USER_ERROR"}} ->
         case init(options) do
           :ok -> write(content, options)
           error -> error

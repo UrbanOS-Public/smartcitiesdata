@@ -69,8 +69,8 @@ config :redix,
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "testing_access_key",
-  secret_access_key: "testing_secret_key",
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
   region: "local"
 
 config :ex_aws, :s3,

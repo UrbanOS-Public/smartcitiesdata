@@ -23,8 +23,8 @@ defmodule DiscoveryApi.Data.HostedFileTest do
   setup do
     allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
 
-    Application.put_env(:ex_aws, :access_key_id, "testing_access_key")
-    Application.put_env(:ex_aws, :secret_access_key, "testing_secret_key")
+    Application.put_env(:ex_aws, :access_key_id, "minioadmin")
+    Application.put_env(:ex_aws, :secret_access_key, "minioadmin")
 
     Redix.command!(:redix, ["FLUSHALL"])
 

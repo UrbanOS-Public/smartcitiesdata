@@ -79,7 +79,7 @@ defmodule Andi.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.5"},
       {:postgrex, "~> 0.15.1"},
-      {:prestige, "~> 1.0"},
+      {:prestige, path: "../../../prestige"},
       {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},

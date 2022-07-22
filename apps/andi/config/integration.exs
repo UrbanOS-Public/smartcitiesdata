@@ -153,8 +153,8 @@ config :andi, Guardian.DB, repo: Andi.Repo
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "testing_access_key",
-  secret_access_key: "testing_secret_key",
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
   region: "local"
 
 config :ex_aws, :s3,
@@ -165,5 +165,5 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
-System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
+System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")

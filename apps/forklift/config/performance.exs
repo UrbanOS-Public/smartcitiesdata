@@ -50,8 +50,8 @@ if presto_bucket == local_bucket do
     divo_wait: [dwell: 1000, max_tries: 120]
 
   config :ex_aws,
-    access_key_id: "testing_access_key",
-    secret_access_key: "testing_secret_key",
+    access_key_id: "minioadmin",
+    secret_access_key: "minioadmin",
     awscli_auth_adapter: ExAws.STS.AuthCache.AssumeRoleCredentialsAdapter
 
   config :ex_aws, :s3,
