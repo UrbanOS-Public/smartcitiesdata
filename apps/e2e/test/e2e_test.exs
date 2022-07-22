@@ -128,7 +128,8 @@ defmodule E2ETest do
 
   describe "creating an organization" do
     test "via RESTful POST" do
-      org = TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
+      org =
+        TDG.create_organization(%{orgName: "end_to", id: "451d5608-b4dc-406c-a7ce-8df24768a237"})
 
       resp =
         HTTPoison.post!("http://localhost:4000/api/v1/organization", Jason.encode!(org), [
@@ -407,11 +408,15 @@ defmodule E2ETest do
 
       {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.update(smrt_ingestion)
 
-      ingestion_changeset = Andi.InputSchemas.InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(andi_ingestion)
+      ingestion_changeset =
+        Andi.InputSchemas.InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(
+          andi_ingestion
+        )
 
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
 
-      converted_smrt_ingestion = Andi.InputSchemas.InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+      converted_smrt_ingestion =
+        Andi.InputSchemas.InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 
       converted_extract_steps = get_in(converted_smrt_ingestion, [:extractSteps])
 
