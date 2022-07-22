@@ -12,10 +12,10 @@ defmodule Forklift.Jobs.DataMigration do
 
   def run() do
     Forklift.Datasets.get_all!()
-    |> Enum.map(&insert_data/1)
+    |> Enum.map(&compact/1)
   end
 
-  defp insert_data(%{id: id, technical: %{systemName: system_name}} = dataset) do
+  def compact(%{id: id, technical: %{systemName: system_name}} = dataset) do
     Forklift.DataReaderHelper.terminate(dataset)
     Logger.info("Beginning data migration for dataset #{id} (#{system_name})")
     json_table = json_table_name(system_name)
