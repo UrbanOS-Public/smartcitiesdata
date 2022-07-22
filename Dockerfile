@@ -1,4 +1,4 @@
-FROM bitwalker/alpine-elixir:1.13.4
+FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.0
 ARG app_name
 COPY . /app
 WORKDIR /app
