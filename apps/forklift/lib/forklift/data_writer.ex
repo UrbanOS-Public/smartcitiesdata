@@ -9,7 +9,6 @@ defmodule Forklift.DataWriter do
   use Properties, otp_app: :forklift
 
   alias SmartCity.Data
-  alias Forklift.DataWriter.Compaction
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
@@ -92,41 +91,6 @@ defmodule Forklift.DataWriter do
         bootstrap_args(topic)
         |> topic_writer().init()
     end
-  end
-
-  @spec compact_datasets() :: :ok
-  @doc """
-  Compacts each table in Forklift's view state using `:table_writer` from
-  Forklift's application environment.
-
-  The compaction process includes terminating a dataset's topic reader,
-  compacting its PrestoDB table, and restarting the topic reader.
-
-  Compaction time is recorded by `:collector` from Forklift's application
-  environment.
-  """
-  def compact_datasets(excluded_datasets \\ []) do
-    Logger.info("Beginning dataset compaction")
-
-    Forklift.Datasets.get_all!()
-    |> Enum.reject(fn %{id: id} -> id in excluded_datasets end)
-    |> Enum.each(&compact_dataset/1)
-
-    Logger.info("Completed dataset compaction")
-  end
-
-  def compact_dataset(dataset) do
-    Compaction.init(dataset: dataset)
-
-    start = Time.utc_now()
-
-    compaction_result = Compaction.compact(dataset: dataset)
-
-    Compaction.terminate(dataset: dataset)
-
-    Compaction.write({start, Time.utc_now()}, dataset: dataset)
-
-    compaction_result
   end
 
   defp ingest_status(data) do

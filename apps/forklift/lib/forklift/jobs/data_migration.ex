@@ -10,18 +10,12 @@ defmodule Forklift.Jobs.DataMigration do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  def run(dataset_ids) do
-    dataset_ids
-    |> Enum.map(&Forklift.Datasets.get!/1)
-    |> Enum.map(&insert_data/1)
+  def run() do
+    Forklift.Datasets.get_all!()
+    |> Enum.map(&compact/1)
   end
 
-  defp insert_data(nil) do
-    Logger.warn("Dataset not found in view-state, skipping migration")
-    :abort
-  end
-
-  defp insert_data(%{id: id, technical: %{systemName: system_name}} = dataset) do
+  def compact(%{id: id, technical: %{systemName: system_name}} = dataset) do
     Forklift.DataReaderHelper.terminate(dataset)
     Logger.info("Beginning data migration for dataset #{id} (#{system_name})")
     json_table = json_table_name(system_name)
@@ -37,16 +31,16 @@ defmodule Forklift.Jobs.DataMigration do
          {:ok, _} <- verify_count(json_table, 0, "json table is empty") do
       Logger.info("Successful data migration for dataset #{id}")
       update_migration_status(id, :ok)
-      :ok
+      {:ok, id}
     else
       {:error, error} ->
         Logger.error("Error migrating records for dataset #{id}: " <> inspect(error))
         update_migration_status(id, :error)
-        :error
+        {:error, id}
 
       {:abort, reason} ->
         Logger.info("Aborted migration of dataset #{id}: " <> reason)
-        :abort
+        {:abort, id}
     end
   after
     Forklift.DataReaderHelper.init(dataset)

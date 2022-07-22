@@ -11,22 +11,21 @@ defmodule Forklift.Jobs.PartitionedCompaction do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  def run(dataset_ids) do
+  def run() do
     Forklift.Quantum.Scheduler.deactivate_job(:data_migrator)
 
-    dataset_ids
-    |> Enum.map(&Forklift.Datasets.get!/1)
-    |> Enum.map(&partitioned_compact/1)
+    Forklift.Datasets.get_all!()
+    |> Enum.map(&compact/1)
   after
     Forklift.Quantum.Scheduler.activate_job(:data_migrator)
   end
 
-  defp partitioned_compact(nil) do
+  def compact(nil) do
     Logger.warn("Dataset not found in view-state, skipping compaction")
     :abort
   end
 
-  defp partitioned_compact(%{id: id, technical: %{systemName: system_name}}) do
+  def compact(%{id: id, technical: %{systemName: system_name}}) do
     partition = current_partition()
     Logger.info("Beginning partitioned compaction for partition #{partition} in dataset #{id}")
     compact_table = compact_table_name(system_name, partition)
@@ -51,16 +50,16 @@ defmodule Forklift.Jobs.PartitionedCompaction do
          {:ok, _} <- PrestigeHelper.drop_table(compact_table) do
       Logger.info("Successfully compacted partition #{partition} in dataset #{id}")
       update_compaction_status(id, :ok)
-      :ok
+      {:ok, id}
     else
       {:error, error} ->
         Logger.error("Error compacting dataset #{id}: " <> inspect(error))
         update_compaction_status(id, :error)
-        :error
+        {:error, id}
 
       {:abort, reason} ->
         Logger.info("Aborted compaction of dataset #{id}: " <> reason)
-        :abort
+        {:abort, id}
     end
   end
 

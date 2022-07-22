@@ -244,7 +244,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
         end,
         5_000
       )
@@ -253,7 +253,14 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert [%{"one" => true, "three" => 10, "two" => "foobar"}] ==
+          assert [
+                   %{
+                     "one" => true,
+                     "three" => 10,
+                     "two" => "foobar",
+                     "os_partition" => get_current_yyyy_mm
+                   }
+                 ] ==
                    query(
                      "select * from #{table}",
                      true
@@ -326,7 +333,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert :ok = Forklift.DataWriter.compact_dataset(ds)
+          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
         end,
         10_000
       )
@@ -335,7 +342,12 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
-          assert %{"one" => true, "three" => 10, "two" => "foobar"} in query(
+          assert %{
+                   "one" => true,
+                   "three" => 10,
+                   "two" => "foobar",
+                   "os_partition" => get_current_yyyy_mm
+                 } in query(
                    "select * from #{table}",
                    true
                  )
@@ -446,6 +458,12 @@ defmodule E2ETest do
       {:ok, result} -> Prestige.Result.as_maps(result)
       {:error, error} -> {:error, error}
     end
+  end
+
+  defp get_current_yyyy_mm() do
+    month = DateTime.utc_now().month |> Integer.to_string() |> String.pad_leading(2, "0")
+    year = DateTime.utc_now().year |> Integer.to_string()
+    "#{year}_#{month}"
   end
 
   defp prestige_session(),
