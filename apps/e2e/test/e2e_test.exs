@@ -333,7 +333,7 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert {:ok, _id} = Forklift.Jobs.PartitionedCompaction.compact(ds)
+          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
         end,
         10_000
       )
