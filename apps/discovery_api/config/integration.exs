@@ -14,7 +14,7 @@ config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
-  hosted_bucket: "kdp-cloud-storage",
+  hosted_bucket: "trino-hive-storage",
   hosted_region: aws_region,
   hsts_enabled: false
 

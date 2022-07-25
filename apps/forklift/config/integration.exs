@@ -10,7 +10,7 @@ redix_args = [host: host]
 endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
-bucket_name = "kdp-cloud-storage"
+bucket_name = "trino-hive-storage"
 
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
@@ -21,7 +21,7 @@ config :forklift,
   retry_max_wait: 1_000 * 60 * 60,
   elsa_brokers: [{String.to_atom(host), 9092}],
   input_topic_prefix: "validated",
-  s3_writer_bucket: "kdp-cloud-storage",
+  s3_writer_bucket: bucket_name,
   output_topic: output_topic,
   producer_name: :"#{output_topic}-producer",
   topic_subscriber_config: [

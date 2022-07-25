@@ -1,6 +1,6 @@
 use Mix.Config
 
-local_bucket = "kdp-cloud-storage"
+local_bucket = "trino-hive-storage"
 local_presto = "http://localhost:8080"
 presto_bucket = System.get_env("S3_WRITER_BUCKET") || local_bucket
 presto_url = System.get_env("PRESTO_URL") || local_presto

@@ -70,7 +70,7 @@ defmodule DiscoveryApi.Mixfile do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},
       {:postgrex, "~> 0.15.1"},
-      {:prestige, "~> 1.0"},
+      {:prestige, "~> 2.0.0"},
       {:properties, in_umbrella: true},
       {:quantum, "~>2.4"},
       {:ranch, "~> 1.7.1", override: true},

@@ -18,7 +18,7 @@ System.put_env("HOST", host)
 config :logger,
   level: :info
 
-bucket_name = "kdp-cloud-storage"
+bucket_name = "trino-hive-storage"
 
 config :reaper,
   divo: [

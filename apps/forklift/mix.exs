@@ -45,7 +45,7 @@ defmodule Forklift.MixProject do
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:poison, "~> 3.1", override: true},
-      {:prestige, path: "../../../prestige"},
+      {:prestige, "~> 2.0.0"},
       {:properties, in_umbrella: true},
       {:quantum, "~>2.4"},
       {:redix, "~> 0.10"},

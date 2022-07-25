@@ -18,7 +18,7 @@ db_username = "postgres"
 db_password = "postgres"
 db_port = "5456"
 
-bucket_name = "kdp-cloud-storage"
+bucket_name = "trino-hive-storage"
 
 config :andi,
   divo: [
