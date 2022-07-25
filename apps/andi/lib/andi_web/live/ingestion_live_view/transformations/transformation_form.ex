@@ -26,8 +26,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   def render(assigns) do
     ~L"""
 
-    <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate] %>
-     <div class="transformation-item">
+    <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, class: "transformation-item"] %>
         <div class="transformation-header">
           <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
           <div class="transformation-edit-buttons">
@@ -49,7 +48,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
           </div>
         </div>
-      </div>
     </form>
     """
   end

@@ -36,7 +36,7 @@
 }
 
 .transformation-item {
-  animation: open .3;
+  animation: open 300ms;
 }
 
 @keyframes open {

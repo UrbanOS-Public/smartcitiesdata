@@ -17,8 +17,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       form_update = %{
         "name" => "   "
       }
-# to do: use class name sector
-      element(view, "#transformation_form") |> render_change(form_update)
+
+      element(view, ".transformation-item") |> render_change(form_update)
 
       assert element(view, "#name-error-msg") |> has_element?
     end
@@ -31,7 +31,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
         "name" => ""
       }
 
-      element(view, "#transformation_form") |> render_change(form_update)
+      element(view, ".transformation-item") |> render_change(form_update)
 
       assert FlokiHelpers.get_text(html, ".transformation-header") =~ "New Transformation"
     end
@@ -44,7 +44,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
         "type" => ""
       }
 
-      element(view, "#transformation_form") |> render_change(form_update)
+      element(view, ".transformation-item") |> render_change(form_update)
 
       assert element(view, "#type-error-msg") |> has_element?
     end
