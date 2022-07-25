@@ -147,8 +147,10 @@ if System.get_env("COMPACTION_SCHEDULE") do
     ]
 end
 
-config :forklift,
-  overwrite_mode: !!System.get_env("OVERWRITE_MODE")
+case System.get_env("OVERWRITE_MODE") do
+  "true" -> config :forklift, overwrite_mode: true
+  _ -> config :forklift, overwrite_mode: false
+end
 
 if System.get_env("RUN_IN_KUBERNETES") do
   config :libcluster,
