@@ -8,11 +8,20 @@ defmodule Helper do
   use Properties, otp_app: :forklift
 
   import SmartCity.TestHelper
+
+  import SmartCity.Event,
+    only: [
+      dataset_delete: 0
+    ]
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.S3Writer
+  alias Forklift.Datasets
   require ExUnit.Assertions
+
+  @instance_name Forklift.instance_name()
 
   getter(:s3_writer_bucket, generic: true)
 
@@ -100,5 +109,10 @@ defmodule Helper do
 
   def recreate_tables_with_partitions(datasets) do
     Enum.each(datasets, fn dataset -> create_partitioned_table(dataset.technical.systemName) end)
+  end
+
+  def delete_all_datasets() do
+    Datasets.get_all!()
+    |> Enum.each(fn dataset -> Brook.Event.send(@instance_name, dataset_delete(), :forklift, dataset) end)
   end
 end

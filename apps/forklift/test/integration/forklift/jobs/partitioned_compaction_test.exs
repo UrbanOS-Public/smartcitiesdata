@@ -3,7 +3,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Forklift.Jobs.PartitionedCompaction
-  import SmartCity.TestHelper
   import Helper
   use Placebo
 
@@ -17,6 +16,9 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     ]
 
   setup do
+    Placebo.Server.clear()
+    delete_all_datasets()
+
     datasets =
       [1, 2]
       |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
@@ -38,18 +40,24 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     [datasets: datasets, current_partition: current_partition]
   end
 
-  test "partitioned compaction runs without loss or error, ignoring invalid ids", %{
+  test "partitioned compaction results in error if invalid_ids are in the viewstate", %{
     datasets: datasets,
     current_partition: current_partition
   } do
+    ok_dataset_one = Enum.at(datasets, 0)
+    ok_dataset_two = Enum.at(datasets, 1)
+    abort_dataset = %{id: "invalid_id", technical: %{systemName: "invalid_sys_name"}}
+    allow(Forklift.Datasets.get_all!(), return: [abort_dataset, ok_dataset_one, ok_dataset_two])
+
     partitions = [current_partition]
 
     expected_record_count = write_test_data(datasets, partitions, @batch_size)
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    results = PartitionedCompaction.run(["invalid-id"] ++ dataset_ids)
+    results = PartitionedCompaction.run()
+    assert results |> Enum.member?({:error, abort_dataset.id})
+    assert results |> Enum.member?({:ok, ok_dataset_one.id})
+    assert results |> Enum.member?({:ok, ok_dataset_two.id})
 
-    assert results == [:abort, :ok, :ok]
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
 
     refute Enum.any?(datasets, fn dataset ->
@@ -66,7 +74,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     partitions = ["2018_01", current_partition]
     expected_record_count = write_test_data(datasets, partitions, @batch_size)
 
-    error_dataset = List.first(datasets)
+    error_dataset = Enum.at(datasets, 0)
+    ok_dataset = Enum.at(datasets, 1)
 
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
@@ -74,10 +83,10 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     "create table #{error_dataset_compact_table} as select 1 as number_col"
     |> PrestigeHelper.execute_query()
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    compaction_results = PartitionedCompaction.run(dataset_ids)
+    compaction_results = PartitionedCompaction.run()
 
-    assert compaction_results == [:error, :ok]
+    assert Enum.member?(compaction_results, {:error, error_dataset.id})
+    assert Enum.member?(compaction_results, {:ok, ok_dataset.id})
     assert table_exists?(error_dataset_compact_table)
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
   end
@@ -86,7 +95,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     partitions = ["2018_01", current_partition]
     write_test_data(datasets, partitions, @batch_size)
 
-    error_dataset = List.first(datasets)
+    error_dataset = Enum.at(datasets, 0)
+    ok_dataset = Enum.at(datasets, 1)
 
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
@@ -94,10 +104,10 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     "drop table #{error_dataset.technical.systemName}"
     |> PrestigeHelper.execute_query()
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    compaction_results = PartitionedCompaction.run(dataset_ids)
+    compaction_results = PartitionedCompaction.run()
 
-    assert compaction_results == [:error, :ok]
+    assert Enum.member?(compaction_results, {:error, error_dataset.id})
+    assert Enum.member?(compaction_results, {:ok, ok_dataset.id})
     refute table_exists?(error_dataset_compact_table)
   end
 
@@ -105,7 +115,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     datasets: datasets,
     current_partition: current_partition
   } do
-    error_dataset = List.first(datasets)
+    error_dataset = Enum.at(datasets, 0)
+    ok_dataset = Enum.at(datasets, 1)
 
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
@@ -118,10 +129,10 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     partitions = ["2018_01", current_partition]
     expected_record_count = write_test_data(datasets, partitions, 2)
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    compaction_results = PartitionedCompaction.run(dataset_ids)
+    compaction_results = PartitionedCompaction.run()
 
-    assert compaction_results == [:error, :ok]
+    assert Enum.member?(compaction_results, {:error, error_dataset.id})
+    assert Enum.member?(compaction_results, {:ok, ok_dataset.id})
     assert Enum.all?(datasets, fn dataset -> count(dataset.technical.systemName) == expected_record_count end)
   end
 
@@ -133,7 +144,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
 
     write_test_data(datasets, partitions, @batch_size)
 
-    error_dataset = List.first(datasets)
+    error_dataset = Enum.at(datasets, 0)
+    ok_dataset = Enum.at(datasets, 1)
 
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
@@ -146,10 +158,10 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       meck_options: [:passthrough]
     )
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    compaction_results = PartitionedCompaction.run(dataset_ids)
+    compaction_results = PartitionedCompaction.run()
 
-    assert compaction_results == [:error, :ok]
+    assert Enum.member?(compaction_results, {:error, error_dataset.id})
+    assert Enum.member?(compaction_results, {:ok, ok_dataset.id})
 
     assert PrestigeHelper.count!(error_dataset.technical.systemName) == @batch_size
     assert table_exists?(error_dataset_compact_table)
@@ -159,10 +171,9 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   test "abort compaction if no data for the current partition is found", %{datasets: datasets} do
     write_test_data(datasets, ["2018_01"], @batch_size)
 
-    dataset_ids = Enum.map(datasets, fn dataset -> dataset.id end)
-    compaction_results = PartitionedCompaction.run(dataset_ids)
+    compaction_results = PartitionedCompaction.run()
 
-    assert compaction_results == [:abort, :abort]
+    assert Enum.all?(datasets, fn dataset -> Enum.member?(compaction_results, {:abort, dataset.id}) end)
   end
 
   defp write_test_data(datasets, partitions, @batch_size) do
