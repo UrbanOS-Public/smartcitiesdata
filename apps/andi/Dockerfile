@@ -8,6 +8,7 @@ RUN cd apps/andi/assets/ && \
 RUN MIX_ENV=prod mix distillery.release --name andi
 
 FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.0
+WORKDIR /opt/app
 ENV REPLACE_OS_VARS=true
 ENV CA_CERTFILE_PATH /etc/ssl/certs/ca-certificates.crt
 RUN apk update && \
