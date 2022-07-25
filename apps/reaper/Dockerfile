@@ -6,10 +6,10 @@ ENV HOME /opt/app
 ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}
 RUN adduser -s /bin/sh -u 1001 -G root -h "${HOME}" -S -D default && \
-  chown -R 1001:0 "${HOME}" && \
-  apk upgrade \
-  && apk add --no-cache bash openssl \
-  && rm -rf /var/cache/**/*
+    chown -R 1001:0 "${HOME}" && \
+    apk upgrade && \
+    apk add --no-cache bash openssl && \
+    rm -rf /var/cache/**/*
 COPY --from=builder /app/_build/prod/rel/reaper/ .
 RUN chgrp -R 0 ${HOME} && \
     chmod -R g+rwX ${HOME}
