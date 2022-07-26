@@ -1,0 +1,53 @@
+---
+version: '3.4'
+services:
+  init:
+    image: alpine:3.16.0
+    volumes:
+      - ${PWD}/test/integration:/workdir
+      - minio:/minio
+    entrypoint: /workdir/setup.sh
+  minio:
+    image: minio/minio:RELEASE.2022-07-17T15-43-14Z.fips
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio:/data
+    ports:
+    - "9000:9000"
+    - "9001:9001"
+    depends_on:
+      - init
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+    - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:2.12-2.1.1
+    depends_on:
+    - zookeeper
+    ports:
+    - "9092:9092"
+    environment:
+    - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9094,OUTSIDE://${HOST_IP:-localhost}:9092"
+    - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
+    - "KAFKA_LISTENERS=INSIDE://:9094,OUTSIDE://:9092"
+    - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
+    - "KAFKA_CREATE_TOPICS=event-stream:1:1,streaming-transformed:1:1,dead-letters:1:1,streaming-persisted:1:1"
+    - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    healthcheck:
+      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
+      interval: 10s
+      timeout: 20s
+      retries: 3
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+  sftp:
+    image: atmoz/sftp:alpine
+    ports: 
+     - "2222:22"
+    command: "sftp_user:sftp_password:1001::upload"
+
+volumes:
+  minio:

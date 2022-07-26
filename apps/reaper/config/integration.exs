@@ -1,6 +1,5 @@
 use Mix.Config
-import_config "../test/integration/divo_sftp.ex"
-import_config "../test/integration/divo_minio.ex"
+
 System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
 System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
 
@@ -21,17 +20,7 @@ config :logger,
 bucket_name = "trino-hive-storage"
 
 config :reaper,
-  divo: [
-    {DivoKafka,
-     [
-       create_topics: "event-stream:1:1,dead-letters:1:1",
-       outside_host: host,
-       kafka_image_version: "2.12-2.1.1"
-     ]},
-    DivoRedis,
-    Reaper.DivoSftp,
-    {Reaper.DivoMinio, [bucket_name: bucket_name]}
-  ],
+  divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120],
   elsa_brokers: endpoints,
   output_topic_prefix: "raw",
