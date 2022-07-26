@@ -73,46 +73,44 @@ You can verify offsets on the source and destination topic with the following co
 
 ### Example Messages
 
-The following code will create a datafeed which will pull down a sample file on a cadence of 100 seconds. As a result, messages containing the data to be posted to the `raw` topic on the cadence.  The sourceUrl key needs to be a publicly available csv file
+The following code will create a datafeed which will pull down a sample file on a cadence of 30 seconds. As a result, messages containing the data to be posted to the `raw` topic on the cadence.  The sourceUrl key needs to be a publicly available json file.
 ```elixir
 message = %{
-      "id" => "uuid",
-      "technical" => %{
-        "dataName" => "dataset",
-        "orgName" => "org",
-        "orgId" => "uuid",
-        "systemName" => "org__dataset",
-        "sourceUrl" => "https://example.com",
-        "sourceFormat" => "csv",
-        "sourceType" => "stream",
-        "cadence" => 100000,
-        "headers" => %{},
-        "partitioner" => %{type: nil, query: nil},
-        "sourceQueryParams" => %{},
-        "transformations" => [],
-        "validations" => [],
-        "schema" => []
-      },
-      "business" => %{
-        "dataTitle" => "dataset title",
-        "description" => "description",
-        "keywords" => ["one", "two"],
-        "modifiedDate" => "date",
-        "orgTitle" => "org title",
-        "contactName" => "contact name",
-        "contactEmail" => "contact@email.com",
-        "license" => "license",
-        "rights" => "rights information",
-        "homepage" => ""
-      },
-      "_metadata" => %{
-        "intendedUse" => ["use 1", "use 2", "use 3"],
-        "expectedBenefit" => []
-      }
+        "id" => "222a39a5-e190-43c9-8c67-2c63885e5d51",
+        "name" => "sample_ingestion",
+        "allow_duplicates" => true,
+        "cadence" => "*/30 * * * * *",
+        "extractSteps" => [
+            %{
+                "type" => "http", 
+                "context" => %{
+                    "url" => "https://jsonplaceholder.typicode.com/posts/1", 
+                  	"body" => %{},
+                  	"headers" => %{},
+                  	"protocol" => nil,
+                  	"queryParams" => %{},
+                    "action" => "GET"
+                },
+                "assigns" => %{},
+              	"sequence" => 1
+            }
+        ],
+        "schema" => [
+            %{
+                "userId" => "integer",
+                "id" => "integer",
+                "title" => "string",
+                "body" => "string"
+            }
+        ],
+        "sourceFormat" => "application/json",
+        "targetDataset" => "68995b30-e2d8-4a5e-9951-6dc9e9184d40",
+        "topLevelSelector" => nil,
+        "transformations" => []
     }
 
- {:ok, sc_message} = SmartCity.Dataset.new(message)
- SmartCity.Dataset.write(sc_message)
+ ingestion = SmartCity.Ingestion.new(message)
+ Brook.Event.send(Reaper.instance_name(), "ingestion:update", :reaper, ingestion)
 ```
 
 ## Clustering
