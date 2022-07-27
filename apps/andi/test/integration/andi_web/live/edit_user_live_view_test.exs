@@ -116,8 +116,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
       org_id = org.id
 
       eventually(fn ->
-        assert [{"Please select an organization", ""}, {"Awesome Title", org_id} | rest] =
-                 get_all_select_options(html, "#organiation_org_id")
+        assert {:ok, view, html} = live(conn, @url_path <> user.id)
+        options = get_all_select_options(html, "#organiation_org_id")
+        assert {"Please select an organization", ""} == List.first(options)
+        assert {"Awesome Title", org_id} in options
       end)
 
       render_change(view, "associate", %{"organiation" => %{"org_id" => org_id}})

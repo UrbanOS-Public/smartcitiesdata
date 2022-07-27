@@ -1,7 +1,7 @@
 use Mix.Config
 aws_region = "local"
-System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
-System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
+System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]
 redix_args = [host: host]
@@ -14,7 +14,7 @@ config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 2000, max_tries: 35],
-  hosted_bucket: "kdp-cloud-storage",
+  hosted_bucket: "trino-hive-storage",
   hosted_region: aws_region,
   hsts_enabled: false
 
