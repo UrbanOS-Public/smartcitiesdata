@@ -34,3 +34,22 @@
 .transformation-form__type {
   margin-top: 1rem;
 }
+
+.transformation-item {
+  animation: open 300ms;
+}
+
+@keyframes open {
+  from {
+    max-height: 0;
+    opacity: 0%
+  }
+  to {
+    max-height: 277px;
+    opacity: 100%
+  }
+}
+
+@media screen and (prefers-reduced-motion: reduce) {
+  .transformation-item { animation: none !important; }
+}

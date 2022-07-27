@@ -2,10 +2,14 @@ FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name valkyrie
 
 FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.0
+ENV HOME /opt/app
 ENV REPLACE_OS_VARS=true
-RUN apk upgrade \
-  && apk add --no-cache bash openssl \
-  && rm -rf /var/cache/**/*
+WORKDIR ${HOME}
+RUN adduser -s /bin/sh -u 1001 -G root -h "${HOME}" -S -D default && \
+    chown -R 1001:0 "${HOME}" && \
+    apk upgrade && \
+    apk add --no-cache bash openssl && \
+    rm -rf /var/cache/**/*
 COPY --from=builder /app/_build/prod/rel/valkyrie/ .
 RUN chgrp -R 0 ${HOME} && \
     chmod -R g+rwX ${HOME}
