@@ -38,7 +38,7 @@ defmodule Pipeline.MixProject do
       {:configparser_ex, "~> 4.0"},
       {:ex_aws_sts, "~> 2.0"},
       {:retry, "~> 0.13"},
-      {:prestige, "~> 1.0"},
+      {:prestige, "~> 2.0.0"},
       {:timex, "~> 3.6"},
       {:sweet_xml, "~> 0.6"},
       {:temp, "~> 0.4"},

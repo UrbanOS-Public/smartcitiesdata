@@ -311,7 +311,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
       assert %{
                "message" =>
-                 "Syntax Error: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'ORDER', 'UNION', 'WHERE', <EOF>"
+                 "Syntax Error: Invalid X-Trino-Prepared-Statement header: line 1:43: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FETCH', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'OFFSET', 'ORDER', 'UNION', 'WHERE', 'WINDOW', <EOF>"
              } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
@@ -524,7 +524,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
       assert %{
                "message" =>
-                 "Syntax Error: mismatched input 'DROP'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
+                 "Syntax Error: Invalid X-Trino-Prepared-Statement header: line 3:3: mismatched input 'DROP'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FETCH', 'FOR', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'MATCH_RECOGNIZE', 'NATURAL', 'OFFSET', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', 'WINDOW', <EOF>, <identifier>"
              } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
@@ -544,13 +544,16 @@ defmodule DiscoveryApi.Data.QueryTest do
     } do
       request_body = "SELECT * FROM #{public_table}\rSELECT * FROM #{private_table}"
 
-      assert %{
-               "message" =>
-                 "Syntax Error: mismatched input 'SELECT'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
-             } ==
-               plain_text_post(conn, "/api/v1/query", request_body)
-               |> response(400)
-               |> Jason.decode!()
+      expected_message_content =
+        "mismatched input 'SELECT'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FETCH', 'FOR', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'MATCH_RECOGNIZE', 'NATURAL', 'OFFSET', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', 'WINDOW', <EOF>, <identifier>"
+
+      actual_message =
+        plain_text_post(conn, "/api/v1/query", request_body)
+        |> response(400)
+        |> Jason.decode!()
+        |> Map.get("message")
+
+      assert String.contains?(actual_message, expected_message_content)
     end
 
     test "any user can't perform multiple queries separated by a semicolon", %{
@@ -563,13 +566,16 @@ defmodule DiscoveryApi.Data.QueryTest do
         SELECT * FROM #{public_table}; DROP TABLE #{private_table}
       """
 
-      assert %{
-               "message" =>
-                 "Syntax Error: mismatched input ';'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'NATURAL', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', <EOF>, <identifier>"
-             } ==
-               plain_text_post(conn, "/api/v1/query", request_body)
-               |> response(400)
-               |> Jason.decode!()
+      expected_message_content =
+        "mismatched input ';'. Expecting: ',', '.', 'AS', 'CROSS', 'EXCEPT', 'FETCH', 'FOR', 'FULL', 'GROUP', 'HAVING', 'INNER', 'INTERSECT', 'JOIN', 'LEFT', 'LIMIT', 'MATCH_RECOGNIZE', 'NATURAL', 'OFFSET', 'ORDER', 'RIGHT', 'TABLESAMPLE', 'UNION', 'WHERE', 'WINDOW', <EOF>, <identifier>"
+
+      actual_message =
+        plain_text_post(conn, "/api/v1/query", request_body)
+        |> response(400)
+        |> Jason.decode!()
+        |> Map.get("message")
+
+      assert String.contains?(actual_message, expected_message_content)
 
       assert 3 ==
                prestige_session

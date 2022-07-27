@@ -136,15 +136,20 @@ if System.get_env("COMPACTION_SCHEDULE") do
     jobs: [
       data_migrator: [
         schedule: System.get_env("COMPACTION_SCHEDULE"),
-        task: {Forklift.Jobs.DataMigration, :run},
+        task: {Forklift.Jobs.DataMigration, :run, []},
         timezone: "America/New_York"
       ],
       partitioned_compactor: [
         schedule: "45 0 * * *",
-        task: {Forklift.Jobs.PartitionedCompaction, :run},
+        task: {Forklift.Jobs.PartitionedCompaction, :run, []},
         timezone: "America/New_York"
       ]
     ]
+end
+
+case System.get_env("OVERWRITE_MODE") do
+  "true" -> config :forklift, overwrite_mode: true
+  _ -> config :forklift, overwrite_mode: false
 end
 
 if System.get_env("RUN_IN_KUBERNETES") do

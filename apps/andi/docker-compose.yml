@@ -7,33 +7,6 @@ services:
       - ${PWD}/test/integration:/workdir
       - minio:/minio
     entrypoint: /workdir/setup.sh
-  metastore:
-    image: quay.io/cloudservices/ubi-hive:3.1.2-metastore-008
-    depends_on:
-    - postgres
-    - minio
-    ports:
-    - "8000:8000"
-    environment:
-      HOSTNAME: localhost
-      S3_HOST: minio
-      S3_PORT: 9000
-      S3_ACCESS_KEY: minioadmin
-      S3_SECRET: minioadmin
-      S3_BUCKET_NAME: trino-hive-storage
-      S3_BUCKET_PATH: hive-s3
-      DATABASE_USER: hive
-      DATABASE_PASSWORD: password123
-      POSTGRES_SQL_SERVICE_HOST: postgres
-      POSTGRES_SQL_SERVICE_PORT: 5432
-      DATABASE_NAME: metastore
-
-  postgres:
-    logging:
-      driver: none
-    image: smartcitiesdata/postgres-testo:development
-    ports:
-    - "5432:5432"
   minio:
     image: minio/minio:RELEASE.2022-07-17T15-43-14Z.fips
     command: server /data --console-address ":9001"
@@ -44,21 +17,14 @@ services:
     - "9001:9001"
     depends_on:
       - init
-  presto:
-    depends_on:
-    - metastore
-    - minio
-    image: trinodb/trino:389
+  ecto-postgres:
+    image: postgres:14.4-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: andi_test
     ports:
-    - "8080:8080"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8080/v1/info | grep -q '\"starting\":false'"]
-      interval: 10s
-      timeout: 30s
-      retries: 10
-    volumes:
-      - ${PWD}/test/integration/hive.properties:/etc/trino/catalog/hive.properties
-
+      - "5456:5432"
   zookeeper:
     image: wurstmeister/zookeeper
     ports:

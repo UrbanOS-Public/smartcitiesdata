@@ -1,6 +1,6 @@
 use Mix.Config
 
-local_bucket = "kdp-cloud-storage"
+local_bucket = "trino-hive-storage"
 local_presto = "http://localhost:8080"
 presto_bucket = System.get_env("S3_WRITER_BUCKET") || local_bucket
 presto_url = System.get_env("PRESTO_URL") || local_presto
@@ -50,8 +50,8 @@ if presto_bucket == local_bucket do
     divo_wait: [dwell: 1000, max_tries: 120]
 
   config :ex_aws,
-    access_key_id: "testing_access_key",
-    secret_access_key: "testing_secret_key",
+    access_key_id: "minioadmin",
+    secret_access_key: "minioadmin",
     awscli_auth_adapter: ExAws.STS.AuthCache.AssumeRoleCredentialsAdapter
 
   config :ex_aws, :s3,

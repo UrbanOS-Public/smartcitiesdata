@@ -34,5 +34,5 @@ config :andi, AndiWeb.Auth.TokenHandler,
 
 config :andi, Guardian.DB, repo: Andi.Repo
 
-System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
-System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
+System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")

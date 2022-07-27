@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.2.21",
+      version: "2.3.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -79,7 +79,7 @@ defmodule Andi.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.5"},
       {:postgrex, "~> 0.15.1"},
-      {:prestige, "~> 1.0"},
+      {:prestige, "~> 2.0.0"},
       {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},

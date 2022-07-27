@@ -81,10 +81,6 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
-  redis:
-    image: redis:latest
-    ports:
-      - "6379:6379"
 
 volumes:
   minio:
