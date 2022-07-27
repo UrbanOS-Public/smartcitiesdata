@@ -64,7 +64,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       assert MapSet.new(example_ingestions) == MapSet.new(actual_ingestions)
     end
 
-    test "returns a 404", %{conn: conn, example_ingestions: example_ingestions} do
+    test "returns a 404", %{conn: conn} do
       allow(IngestionStore.get_all(),
         return: {:error, "this was an error"},
         meck_options: [:passthrough]
@@ -166,7 +166,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-      conn = put(conn, @route, ingestion)
+      put(conn, @route, ingestion)
       assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion))
       assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_update(), smrt_ingestion), once())
     end

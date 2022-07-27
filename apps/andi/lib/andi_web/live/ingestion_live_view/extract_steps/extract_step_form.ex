@@ -205,12 +205,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      |> update_validation_status()}
   end
 
-  defp get_file_name_from_dataset_link(dataset_link) do
-    dataset_link
-    |> String.split("/")
-    |> List.last()
-  end
-
   defp move_extract_step(socket, extract_step_index, target_index) do
     updated_extract_steps =
       socket.assigns.extract_steps

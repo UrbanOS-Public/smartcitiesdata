@@ -256,7 +256,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         },
         %{assigns: %{dataset_id: dataset_id}} = socket
       ) do
-    file_type_for_upload = get_file_type_for_upload(file_type)
+    _file_type_for_upload = get_file_type_for_upload(file_type)
     generate_new_schema(socket, file, file_type)
   end
 

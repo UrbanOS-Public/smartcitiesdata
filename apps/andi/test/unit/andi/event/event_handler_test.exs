@@ -16,7 +16,6 @@ defmodule Andi.Event.EventHandlerTest do
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
-  alias SmartCity.DatasetAccessGroupRelation
 
   @instance_name Andi.instance_name()
 

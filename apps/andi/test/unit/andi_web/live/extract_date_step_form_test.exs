@@ -1,6 +1,5 @@
 defmodule AndiWeb.ExtractDateFormTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  alias SmartCity.TestDataGenerator, as: TDG
   use Placebo
   alias Andi.Schemas.User
   alias IngestionHelpers

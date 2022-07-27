@@ -5,7 +5,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.IngestionLiveView.Transformations.TransformationForm
-  alias AndiWeb.Views.Options
 
   @endpoint AndiWeb.Endpoint
 
