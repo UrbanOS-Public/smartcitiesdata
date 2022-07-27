@@ -98,7 +98,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(
-        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = _event
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} =
+          _event
       ) do
     user_organization_disassociate()
     |> add_event_count(author, nil)

@@ -330,5 +330,4 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       {field, {msg, opts}}
     end)
   end
-
 end
