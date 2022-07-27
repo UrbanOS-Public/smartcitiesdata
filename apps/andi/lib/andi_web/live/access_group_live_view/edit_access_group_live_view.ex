@@ -16,7 +16,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@socket, @is_curator) %>
+    <%= header_render(@is_curator) %>
     <div class="edit-page" id="access-groups-edit-page">
       <div class="edit-access-group-title">
         <h2 class="component-title-text access-groups-component-title-text">Edit Access Group </h2>
