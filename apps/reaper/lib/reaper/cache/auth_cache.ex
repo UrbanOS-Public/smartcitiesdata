@@ -5,7 +5,10 @@ defmodule Reaper.Cache.AuthCache do
   require Logger
 
   def child_spec([]) do
-    Cachex.child_spec(cache_name())
+    %{
+      id: cache_name(),
+      start: {Cachex, :start_link, [cache_name()]}
+    }
   end
 
   def cache_name() do
