@@ -6,6 +6,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
+  alias Reaper.Cache.MsgCountCache
   alias SmartCity.TestDataGenerator, as: TDG
 
   @ingestion_id "12345-6789"
@@ -64,6 +65,9 @@ defmodule Reaper.DataExtract.ProcessorTest do
     allow Elsa.topic?(any(), any()), return: true
     allow Elsa.Producer.ready?(any()), return: :does_not_matter
 
+    Cachex.start(MsgCountCache.cache_name())
+    Cachex.clear(MsgCountCache.cache_name())
+
     [bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl]
   end
 
@@ -79,7 +83,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       :ok
     end
 
-    test "parses turns csv into data messages and sends to kafka", %{ingestion: ingestion} do
+    test "parses csv into data messages and sends to kafka", %{ingestion: ingestion} do
       allow Persistence.get_last_processed_index(@ingestion_id), return: -1
       allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
 
@@ -96,6 +100,20 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
       assert_called Persistence.remove_last_processed_index(@ingestion_id), once()
+    end
+
+    test "returns the count of messages processed from MsgCountCache", %{ingestion: ingestion} do
+      allow Persistence.get_last_processed_index(@ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
+
+      message_count = Processor.process(ingestion)
+
+      expected = [
+        %{"a" => "one", "b" => "two", "c" => "three"},
+        %{"a" => "four", "b" => "five", "c" => "six"}
+      ]
+
+      assert message_count == length(expected)
     end
 
     test "eliminates duplicates before sending to kafka", %{ingestion: ingestion} do
