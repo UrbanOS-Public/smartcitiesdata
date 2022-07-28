@@ -8,6 +8,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import SmartCity.TestHelper, only: [eventually: 1]
 
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Ingestions.Transformations
@@ -80,9 +81,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
     save(view)
 
-    {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
-
-    assert ["Blue", "Black", "Green"] == find_ordered_names(refreshed_html)
+    eventually(fn ->
+      {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+      assert ["Blue", "Black", "Green"] == find_ordered_names(refreshed_html)
+    end)
   end
 
   test "cancelling with unsaved move changes prompts confirmation", %{conn: conn, view: view, html: html, ingestion: ingestion} do
