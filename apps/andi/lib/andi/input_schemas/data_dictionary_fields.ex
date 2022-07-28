@@ -109,7 +109,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
   defp adjust_parent_details_for_ingestion(field, parent_bread_crumb) do
     case parent_bread_crumb do
       @top_level_bread_crumb ->
-        {id, field} = Map.pop(field, :parent_id)
+        {_id, field} = Map.pop(field, :parent_id)
 
         Map.put(field, :bread_crumb, field.name)
 

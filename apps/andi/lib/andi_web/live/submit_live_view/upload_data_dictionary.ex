@@ -105,10 +105,6 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
     """
   end
 
-  def handle_event("validate", _, socket) do
-    {:noreply, socket}
-  end
-
   def handle_info(
         %{topic: "toggle-visibility", payload: %{expand: "metadata_form", dataset_id: dataset_id}},
         %{assigns: %{dataset_id: dataset_id}} = socket
@@ -117,6 +113,10 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   end
 
   def handle_info(%{topic: "toggle-visibility"}, socket) do
+    {:noreply, socket}
+  end
+
+  def handle_event("validate", _, socket) do
     {:noreply, socket}
   end
 

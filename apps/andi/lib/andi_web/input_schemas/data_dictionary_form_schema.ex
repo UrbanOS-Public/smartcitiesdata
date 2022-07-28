@@ -8,7 +8,6 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias SmartCity.SchemaGenerator
-  alias Andi.InputSchemas.Ingestion
 
   schema "data_dictionary" do
     has_many(:schema, DataDictionary, on_replace: :delete)

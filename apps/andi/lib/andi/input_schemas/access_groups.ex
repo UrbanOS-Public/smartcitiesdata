@@ -6,8 +6,6 @@ defmodule Andi.InputSchemas.AccessGroups do
   alias Andi.InputSchemas.AccessGroup
   alias Andi.InputSchemas.StructTools
 
-  import Ecto.Query, only: [from: 2]
-
   require Logger
 
   def get(id), do: Repo.get(AccessGroup, id)

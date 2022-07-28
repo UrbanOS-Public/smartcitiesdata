@@ -4,7 +4,6 @@ defmodule Andi.Schemas.DatasetAccessGroup do
   """
 
   use Ecto.Schema
-  alias Andi.Schemas.User
   alias Andi.InputSchemas.Datasets.Dataset
 
   @primary_key false

@@ -4,7 +4,6 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable do
   """
 
   use Phoenix.LiveComponent
-  alias Phoenix.HTML.Link
 
   def render(assigns) do
     ~L"""
