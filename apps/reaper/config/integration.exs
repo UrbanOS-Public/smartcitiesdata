@@ -1,8 +1,7 @@
 use Mix.Config
-import_config "../test/integration/divo_sftp.ex"
-import_config "../test/integration/divo_minio.ex"
-System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
-System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+
+System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
+System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
 
 host =
   case System.get_env("HOST_IP") do
@@ -18,20 +17,10 @@ System.put_env("HOST", host)
 config :logger,
   level: :info
 
-bucket_name = "kdp-cloud-storage"
+bucket_name = "trino-hive-storage"
 
 config :reaper,
-  divo: [
-    {DivoKafka,
-     [
-       create_topics: "event-stream:1:1,dead-letters:1:1",
-       outside_host: host,
-       kafka_image_version: "2.12-2.1.1"
-     ]},
-    DivoRedis,
-    Reaper.DivoSftp,
-    {Reaper.DivoMinio, [bucket_name: bucket_name]}
-  ],
+  divo: "docker-compose.yml",
   divo_wait: [dwell: 1000, max_tries: 120],
   elsa_brokers: endpoints,
   output_topic_prefix: "raw",
@@ -71,8 +60,8 @@ config :redix, :args, redix_args
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "testing_access_key",
-  secret_access_key: "testing_secret_key",
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
   region: "local"
 
 config :ex_aws, :s3,

@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.17.28",
+      version: "0.18.0",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -45,9 +45,9 @@ defmodule Forklift.MixProject do
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:poison, "~> 3.1", override: true},
-      {:prestige, "~> 1.0"},
+      {:prestige, "~> 2.0.0"},
       {:properties, in_umbrella: true},
-      {:quantum, "~>2.4"},
+      {:quantum, "~> 2.4"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14"},
       {:smart_city, "~> 5.2.4"},

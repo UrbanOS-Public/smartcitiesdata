@@ -67,7 +67,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
       eventually(fn ->
         assert {:ok, _} =
-                 ExAws.S3.get_object("kdp-cloud-storage", "samples/#{andi_dataset.id}/sample.json")
+                 ExAws.S3.get_object("trino-hive-storage", "samples/#{andi_dataset.id}/sample.json")
                  |> ExAws.request()
 
         assert "sample.json" == get_text(html, ".sample-file-display")
@@ -90,7 +90,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
 
       eventually(fn ->
         assert {:ok, _} =
-                 ExAws.S3.get_object("kdp-cloud-storage", "samples/#{andi_dataset.id}/sample.csv")
+                 ExAws.S3.get_object("trino-hive-storage", "samples/#{andi_dataset.id}/sample.csv")
                  |> ExAws.request()
 
         assert "sample.csv" == get_text(html, ".sample-file-display")

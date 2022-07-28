@@ -9,13 +9,11 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Ingestions
-  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets
   alias AndiWeb.IngestionLiveView.MetadataForm
 
   @endpoint AndiWeb.Endpoint
-  @url_path "/ingestions"
   @user UserHelpers.create_user()
 
   defp allowAuthUser do
@@ -35,7 +33,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
   end
 
   describe "Basic dataset search load" do
-    test "shows \"No Matching Datasets\" when there are no rows to show", %{conn: conn} do
+    test "shows \"No Matching Datasets\" when there are no rows to show" do
       ingestion = %Andi.InputSchemas.Ingestion{
         id: "id",
         targetDataset: "dataset_id",
@@ -59,7 +57,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       assert get_text(html, ".search-table__cell") =~ "No Matching Datasets"
     end
 
-    test "represents a dataset when one exists", %{conn: conn} do
+    test "represents a dataset when one exists" do
       ingestion = %Andi.InputSchemas.Ingestion{
         id: "id",
         targetDataset: "dataset_id",
@@ -90,7 +88,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       assert get_text(html, ".search-table__cell") =~ "Soup"
     end
 
-    test "represents multiple datasets", %{conn: conn} do
+    test "represents multiple datasets" do
       ingestion = %Andi.InputSchemas.Ingestion{
         id: "id",
         targetDataset: "dataset_id",
@@ -127,7 +125,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       assert get_text(html, ".search-table__cell") =~ "Pretty"
     end
 
-    test "only allows one dataset to be selected", %{conn: conn} do
+    test "only allows one dataset to be selected" do
       ingestion = %Andi.InputSchemas.Ingestion{
         id: "id",
         targetDataset: "dataset_id",
@@ -157,7 +155,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModalTest do
       select_dataset_button = find_select_dataset_button(view)
       render_click(select_dataset_button)
 
-      html = render_submit(view, "datasets-search", %{"search-value" => "Noodles"})
+      render_submit(view, "datasets-search", %{"search-value" => "Noodles"})
 
       # Select the first dataset
       select_search_result = element(view, "[phx-value-id=1]")

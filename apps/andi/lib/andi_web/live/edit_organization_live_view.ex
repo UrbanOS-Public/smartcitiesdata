@@ -18,7 +18,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@socket, @is_curator) %>
+    <%= header_render(@is_curator) %>
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
       <div class="edit-organization-title">
         <h2 class="component-title-text">Edit Organization </h2>

@@ -330,8 +330,4 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       {field, {msg, opts}}
     end)
   end
-
-  defp delete_in(data, path) do
-    pop_in(data, path) |> elem(1)
-  end
 end

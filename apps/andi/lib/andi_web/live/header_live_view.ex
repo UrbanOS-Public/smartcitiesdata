@@ -93,8 +93,8 @@ defmodule AndiWeb.HeaderLiveView do
     "/auth/auth0/logout"
   end
 
-  def header_render(socket, is_curator) do
-    live_component(socket, AndiWeb.HeaderLiveView, is_curator: is_curator)
+  def header_render(is_curator) do
+    live_component(AndiWeb.HeaderLiveView, is_curator: is_curator)
   end
 
   def __redirect__(%{assigns: %{unsaved_changes: true}} = socket, location) do

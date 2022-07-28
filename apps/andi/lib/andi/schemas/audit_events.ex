@@ -2,13 +2,12 @@ defmodule Andi.Schemas.AuditEvents do
   @moduledoc false
   alias Andi.Schemas.AuditEvent
   alias Andi.Repo
-  alias Andi.InputSchemas.StructTools
 
   import Ecto.Query, only: [from: 2]
 
   require Logger
 
-  def log_audit_event(user_id = :api, event_type, event_data) do
+  def log_audit_event(_user_id = :api, event_type, event_data) do
     audit_event_changes = %{
       user_id: "api",
       event_type: event_type,

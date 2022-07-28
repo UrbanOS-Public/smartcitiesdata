@@ -1,5 +1,4 @@
 use Mix.Config
-import_config "../test/integration/divo_minio.ex"
 
 System.put_env("AUTH0_DOMAIN", "project-hercules.us.auth0.com")
 System.put_env("AUTH0_CLIENT_ID", "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY")
@@ -18,22 +17,10 @@ db_username = "postgres"
 db_password = "postgres"
 db_port = "5456"
 
-bucket_name = "kdp-cloud-storage"
+bucket_name = "trino-hive-storage"
 
 config :andi,
-  divo: [
-    {DivoKafka, [create_topics: "event-stream:1:1", outside_host: host, kafka_image_version: "2.12-2.1.1"]},
-    {DivoRedis, []},
-    {
-      DivoPostgres,
-      [
-        user: db_username,
-        database: db_name,
-        port: db_port
-      ]
-    },
-    {Andi.DivoMinio, [bucket_name: bucket_name]}
-  ],
+  divo: "docker-compose.yml",
   divo_wait: [dwell: 700, max_tries: 50],
   kafka_broker: endpoint,
   dead_letter_topic: "dead-letters",
@@ -153,8 +140,8 @@ config :andi, Guardian.DB, repo: Andi.Repo
 
 config :ex_aws,
   debug_requests: true,
-  access_key_id: "testing_access_key",
-  secret_access_key: "testing_secret_key",
+  access_key_id: "minioadmin",
+  secret_access_key: "minioadmin",
   region: "local"
 
 config :ex_aws, :s3,
@@ -165,5 +152,5 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-System.put_env("AWS_ACCESS_KEY_ID", "testing_access_key")
-System.put_env("AWS_ACCESS_KEY_SECRET", "testing_secret_key")
+System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
+System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")

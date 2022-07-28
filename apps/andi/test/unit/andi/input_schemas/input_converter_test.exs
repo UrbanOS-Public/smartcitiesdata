@@ -448,7 +448,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
     test "internal spaces are preserved within a keyword" do
       keywords = "example, one blue sky"
-      assert = ["example", "one blue sky"] = InputConverter.keywords_to_list(keywords)
+      assert ["example", "one blue sky"] = InputConverter.keywords_to_list(keywords)
     end
 
     test "leading and trailing spaces are trimmed from a keyword" do
