@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4002],

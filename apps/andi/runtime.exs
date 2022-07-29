@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 live_view_salt = System.get_env("LIVEVIEW_SALT")
