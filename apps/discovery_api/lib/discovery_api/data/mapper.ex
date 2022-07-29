@@ -24,6 +24,7 @@ defmodule DiscoveryApi.Data.Mapper do
            title: biz.dataTitle,
            keywords: biz.keywords,
            modifiedDate: biz.modifiedDate,
+           fileTypes: [],
            description: biz.description,
            schema: tech.schema,
            systemName: tech.systemName,
