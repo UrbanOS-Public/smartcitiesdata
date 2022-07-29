@@ -1,4 +1,5 @@
 ExUnit.start()
+Logger.configure([level: :warning])
 
 defmodule TestHelpers do
   require Elsa.Message
