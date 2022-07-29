@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
