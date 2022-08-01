@@ -7,6 +7,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   alias SmartCity.Data
   alias Reaper.{Cache, Persistence}
+  alias Reaper.Cache.MsgCountCache
 
   getter(:batch_size_in_bytes, generic: true, default: 900_000)
   getter(:output_topic_prefix, generic: true)
@@ -26,6 +27,7 @@ defmodule Reaper.DataExtract.LoadStage do
       start_time: Keyword.fetch!(args, :start_time)
     }
 
+    MsgCountCache.reset(state.ingestion.id)
     {:consumer, state}
   end
 
@@ -49,7 +51,13 @@ defmodule Reaper.DataExtract.LoadStage do
     case fit_in_batch?(state, bytes) do
       false ->
         process_batch(state)
-        %{state | batch: [encoded_message], bytes: bytes, originals: [original]}
+
+        %{
+          state
+          | batch: [encoded_message],
+            bytes: bytes,
+            originals: [original]
+        }
 
       true ->
         %{
@@ -69,6 +77,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp process_batch(state) do
     send_to_kafka(state)
+    cache_message_count(state)
     mark_batch_processed(state)
     cache_batch(state)
   end
@@ -76,6 +85,10 @@ defmodule Reaper.DataExtract.LoadStage do
   defp send_to_kafka(%{ingestion: ingestion, batch: batch}) do
     topic = "#{output_topic_prefix()}-#{ingestion.id}"
     :ok = Elsa.produce(:"#{topic}_producer", topic, Enum.reverse(batch), partition: 0)
+  end
+
+  defp cache_message_count(%{ingestion: ingestion, batch: batch}) do
+    MsgCountCache.increment(ingestion.id, length(batch))
   end
 
   defp mark_batch_processed(%{ingestion: ingestion, originals: originals}) do

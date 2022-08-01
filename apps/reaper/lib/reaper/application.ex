@@ -22,6 +22,7 @@ defmodule Reaper.Application do
         Reaper.Horde.Supervisor,
         {Reaper.Horde.NodeListener, hordes: [Reaper.Horde.Supervisor, Reaper.Horde.Registry, Reaper.Cache.Registry]},
         Reaper.Cache.AuthCache,
+        Reaper.Cache.MsgCountCache,
         redis(),
         Reaper.Migrations,
         brook_instance(),
