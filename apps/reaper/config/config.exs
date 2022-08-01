@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :reaper,
   produce_retries: 10,

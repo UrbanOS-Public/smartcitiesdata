@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 required_envars = [
   "PRESTO_USER",

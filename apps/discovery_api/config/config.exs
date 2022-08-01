@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :prestige, :session_opts,
   user: "discovery-api",

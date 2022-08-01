@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :flair,
   topic_reader: Pipeline.Reader.TopicReader,

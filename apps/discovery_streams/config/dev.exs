@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   debug_errors: true,

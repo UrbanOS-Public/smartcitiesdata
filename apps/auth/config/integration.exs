@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 db_name = "auth_test"
 db_username = "postgres"

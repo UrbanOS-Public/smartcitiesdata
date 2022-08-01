@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :raptor, RaptorWeb.Endpoint,
   url: [scheme: "https", host: "data.integrationtests.example.com", port: 443],

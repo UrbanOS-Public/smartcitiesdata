@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 host = "127.0.0.1"
 endpoints = [{String.to_atom(host), 9092}]

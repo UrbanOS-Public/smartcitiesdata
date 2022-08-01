@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 get_redix_args = fn (host, port, password, ssl) ->

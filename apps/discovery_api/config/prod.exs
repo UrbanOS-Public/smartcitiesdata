@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :discovery_api, DiscoveryApiWeb.Endpoint,
   http: [port: {:system, "PORT"}],

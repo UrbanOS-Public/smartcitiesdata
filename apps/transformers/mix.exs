@@ -31,7 +31,8 @@ defmodule Transformers.MixProject do
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:placebo, path: "../../../Placebo"}, 
       {:smart_city, "~> 5.2.4"},
       {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
       {:timex, "~> 3.6"}

@@ -28,6 +28,7 @@ defmodule Pipeline.MixProject do
     [
       {:smart_city, "~> 5.2.4"},
       {:elsa, "~> 0.12", override: true},
+      {:kafka_protocol, "== 2.3.6", manager: :rebar3, override: true},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [
@@ -43,7 +44,8 @@ defmodule Pipeline.MixProject do
       {:sweet_xml, "~> 0.6"},
       {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:placebo, path: "../../../Placebo"}, 
       {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},

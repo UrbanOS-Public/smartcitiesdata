@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 get_redix_args = fn host, port, password, ssl ->
   [host: host, port: port, password: password, ssl: ssl]

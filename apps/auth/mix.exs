@@ -9,7 +9,7 @@ defmodule Auth.MixProject do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
@@ -39,7 +39,8 @@ defmodule Auth.MixProject do
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
+      {:placebo, path: "../../../Placebo"},
       {:testing, in_umbrella: true, only: [:test, :integration]}
     ]
   end

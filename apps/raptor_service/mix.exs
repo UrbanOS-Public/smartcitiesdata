@@ -29,7 +29,8 @@ defmodule RaptorService.MixProject do
       {:credo, "~> 1.3", only: [:dev]},
       {:httpoison, "~> 1.5"},
       {:jason, "~> 1.2", override: true},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:placebo, path: "../../../Placebo"}, 
       {:properties, in_umbrella: true}
     ]
   end

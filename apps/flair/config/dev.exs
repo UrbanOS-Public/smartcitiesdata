@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :prestige, :session_opts, url: "http://127.0.0.1:8080"
 

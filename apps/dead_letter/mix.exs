@@ -29,12 +29,14 @@ defmodule DeadLetter.MixProject do
     [
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:placebo, path: "../../../Placebo"}, 
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
       {:elsa, "~> 0.12"},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:integration]},
+      {:kafka_protocol, "== 2.3.6", manager: :rebar3, override: true},
       {:assertions, "~> 0.14", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true}

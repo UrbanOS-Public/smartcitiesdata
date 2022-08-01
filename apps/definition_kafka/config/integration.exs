@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :definition_kafka,
   divo: [DivoKafka],

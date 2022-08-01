@@ -28,6 +28,7 @@ defmodule DefinitionKafka.MixProject do
       {:annotated_retry, in_umbrella: true},
       {:dlq, in_umbrella: true},
       {:elsa, "~> 0.12", override: true},
+      {:kafka_protocol, "== 2.3.6", manager: :rebar3, override: true},
       {:jason, "~> 1.2"},
       {:ok, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
@@ -38,7 +39,8 @@ defmodule DefinitionKafka.MixProject do
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.6", only: [:integration]},
       {:mox, "~> 1.0", only: [:test]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test]},
+      {:placebo, path: "../../../Placebo"}, 
       {:testing, in_umbrella: true, only: [:test, :integration]}
     ]
   end

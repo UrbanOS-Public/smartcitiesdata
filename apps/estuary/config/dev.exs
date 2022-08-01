@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :estuary, EstuaryWeb.Endpoint,
   http: [port: 4000],

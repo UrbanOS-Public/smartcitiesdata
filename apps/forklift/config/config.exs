@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 input_topic_prefix = "transformed"
 

@@ -35,6 +35,7 @@ defmodule Flair.MixProject do
   defp deps do
     [
       {:elsa, "~> 0.12"},
+      {:kafka_protocol, "== 2.3.6", manager: :rebar3, override: true},
       {:flow, "~> 1.0"},
       {:gen_stage, "~> 1.0", override: true},
       {:jason, "~> 1.2"},
@@ -43,7 +44,8 @@ defmodule Flair.MixProject do
       {:credo, "~> 1.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.11", only: :dev},
       {:ex_doc, "~> 0.21"},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      # {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:placebo, path: "../../../Placebo"}, 
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},

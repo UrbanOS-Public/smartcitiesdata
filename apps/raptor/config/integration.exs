@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 System.put_env("AUTH0_DOMAIN", "project-hercules.us.auth0.com")
 System.put_env("AUTH0_CLIENT_ID", "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY")

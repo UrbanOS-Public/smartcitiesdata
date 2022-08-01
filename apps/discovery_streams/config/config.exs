@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001, stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]],
