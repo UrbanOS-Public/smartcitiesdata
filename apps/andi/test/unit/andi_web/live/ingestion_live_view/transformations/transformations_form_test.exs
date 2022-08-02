@@ -64,6 +64,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
                {"Remove", "remove"}
              ]
     end
+
+    test "can be expanded and collapsed when clicking the header" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+      assert has_element?(view, ".transformation-edit-form--collapsed")
+
+      element(view, ".transformation-header") |> render_click()
+      assert has_element?(view, ".transformation-edit-form--expanded")
+
+      element(view, ".transformation-header") |> render_click()
+      assert has_element?(view, ".transformation-edit-form--collapsed")
+    end
   end
 
   defp render_transformation_form(transformation_changeset) do
