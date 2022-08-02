@@ -1,7 +1,3 @@
-.transformation-form-container {
-  margin-bottom: 1.64rem;
-}
-
 .transformation-header {
   border: 1px solid #C9C6C7;
   padding: .6rem 1.6rem;
@@ -51,6 +47,7 @@
 
 .transformation-item {
   animation: open 300ms;
+  margin-bottom: 1.6rem;
 }
 
 .transformation-edit-form--collapsed {
