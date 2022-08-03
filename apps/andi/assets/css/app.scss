@@ -258,86 +258,6 @@ body {
     color: $disabled-background;
 }
 
-.page-header {
-    background-color: white;
-    height: 5rem;
-    box-shadow: $box-shadow;
-
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 2rem;
-
-    .material-icons {
-        font-size: 1.4em;
-        margin-right: 0.25em;
-    }
-
-    .page-header__primary {
-        display: flex;
-    }
-
-    .page-header__secondary {
-        display: flex;
-
-        & > span {
-            margin: 0 1rem;
-        }
-
-        & > span:last-child {
-            margin: 0 0 0 1rem;
-        }
-    }
-}
-
-.datasets-link {
-    display: flex;
-    align-items: center;
-    font-size: 1.6rem;
-
-    &:hover {
-        cursor: pointer;
-    }
-}
-
-.organization-link {
-    display: flex;
-    align-items: center;
-    font-size: 1.1rem;
-
-    &:hover {
-        cursor: pointer;
-    }
-}
-
-.user-link {
-    @extend .organization-link
-}
-
-.access-groups-link {
-    @extend .organization-link
-}
-
-.ingestions-link {
-    @extend .organization-link
-}
-
-.log-out-link {
-    display: flex;
-    color: $color-text-link;
-    align-items: center;
-    font-size: 1.1rem;
-
-    .log-out-link__text {
-        font-weight: bold;
-    }
-
-    &:hover {
-        cursor: pointer;
-    }
-}
-
-//////// New Isabel Styles
 $primary-blue: #1170C8;
 $button-padding: 10px 50px;
 .btn--primary {
@@ -451,3 +371,4 @@ $button-padding: 10px 50px;
 @import "./user.scss";
 @import "./search-modal.scss";
 @import "./transformations.scss";
+@import "./header.scss";

@@ -1,0 +1,64 @@
+.page-header {
+  background-color: white;
+  box-shadow: $box-shadow;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1.5rem .5rem;
+
+  .material-icons {
+      font-size: 1.4em;
+      margin-right: 0.25em;
+  }
+
+  .page-header__primary {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 1.65rem;
+      width: 100%;
+      margin-bottom: 1rem;
+
+      #header-logo {
+        margin-right: 1rem;
+      }
+
+      &:hover {
+          cursor: pointer;
+      }
+
+      .log-out-link {
+          display: flex;
+          color: $color-text-link;
+          align-items: center;
+          font-size: 1.1rem;
+          margin-left: auto;
+
+          .log-out-link__text {
+              font-weight: bold;
+          }
+
+          &:hover {
+              cursor: pointer;
+          }
+      }
+  }
+
+  .page-header__secondary {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+
+      .link {
+        display: flex;
+        align-items: center;
+        font-size: 1.1rem;
+        padding: .5rem .3rem .1rem;
+
+        &:hover {
+            cursor: pointer;
+        }
+      }
+  }
+}

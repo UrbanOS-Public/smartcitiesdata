@@ -6,34 +6,38 @@ defmodule AndiWeb.HeaderLiveView do
 
   def render(assigns) do
     ~L"""
-    <header class="root__header page-header">
-      <span class="page-header__primary datasets-link" phx-click="show-datasets">
-        <span class="material-icons">home</span>
-        <span class="datasets-link__text"><%= header_text(@is_curator) %></span>
+    <header class="page-header">
+      <span class="page-header__primary" phx-click="show-datasets">
+        <img id="header-logo" src="/images/UrbanOS.svg"></img>
+        <span><%= header_text(@is_curator) %></span>
+        <span class="log-out-link" phx-click="log-out">
+          <span class="material-icons">person</span>
+          <span class="log-out-link__text">Log Out</span>
+        </span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
-          <span class="organization-link" phx-click="show-organizations">
-            <span class="material-icons">settings</span>
-            <span class="organization-link__text">ORGANIZATIONS</span>
+          <span class="link" phx-click="show-datasets">
+            <span class="material-icons">storage</span>
+            <span>Datasets</span>
           </span>
-          <span class="ingestions-link" phx-click="show-ingestions">
+          <span class="link" phx-click="show-ingestions">
             <span class="material-icons">input</span>
-            <span class="user-link__text">INGESTIONS</span>
+            <span>Ingestions</span>
           </span>
-          <span class="access-groups-link" phx-click="show-access-groups">
+          <span class="link" phx-click="show-organizations">
+            <span class="material-icons">settings</span>
+            <span>Organizations</span>
+          </span>
+          <span class="link" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
-            <span class="access-groups-link__text">ACCESS GROUPS</span>
+            <span>Access Groups</span>
           </span>
-          <span class="user-link" phx-click="show-users">
+          <span class="link" phx-click="show-users">
             <span class="material-icons">people</span>
-            <span class="user-link__text">USERS</span>
+            <span>Users</span>
           </span>
         <% end %>
-        <span class="log-out-link" phx-click="log-out">
-          <span class="material-icons">person</span>
-          <span class="log-out-link__text">LOG OUT</span>
-        </span>
       </span>
     </header>
     """
@@ -105,6 +109,6 @@ defmodule AndiWeb.HeaderLiveView do
     {:noreply, redirect(socket, to: location)}
   end
 
-  defp header_text(true = _is_curator), do: "Dataset Ingestion Interface"
-  defp header_text(false = _is_curator), do: "Dataset Submission Interface"
+  defp header_text(true = _is_curator), do: "Data Management Tool"
+  defp header_text(false = _is_curator), do: "Data Submission Tool"
 end
