@@ -15,8 +15,7 @@ defmodule Reaper.RunTask do
   end
 
   def handle_continue(:run_task, %{mfa: {module, function, args}, completion_callback: callback} = state) do
-    apply(module, function, args)
-    callback.()
+    apply(module, function, args) |> callback.()
     {:stop, :normal, state}
   rescue
     e ->

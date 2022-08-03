@@ -19,23 +19,30 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
     {:ok,
      assign(socket,
-       transformation_changeset: transformation_changeset
+       transformation_changeset: transformation_changeset,
+       visibility: "collapsed"
      )}
   end
 
   def render(assigns) do
-    ~L"""
+    action =
+      case assigns.visibility do
+        "collapsed" -> "EDIT"
+        "expanded" -> "MINIMIZE"
+      end
 
+    ~L"""
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, class: "transformation-item"] %>
-        <div class="transformation-header">
+        <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
           <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
-          <div class="transformation-edit-buttons">
-            <span class="material-icons move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</span>
-            <span class="material-icons move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</span>
+          <div class="transformation-actions">
+            <div class="material-icons-outlined transformation-action">edit</div>
+            <div class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</div>
+            <div class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</div>
           </div>
         </div>
         <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
-        <div class="transformation-form">
+        <div class="transformation-form transformation-edit-form--<%= @visibility %>">
           <div class="transformation-form__name">
             <%= label(f, :name, "Name", class: "label label--required") %>
             <%= text_input(f, :name, class: "transformation-name input transformation-form-fields", phx_debounce: "1000") %>
@@ -65,6 +72,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     new_changeset = Transformation.changeset_from_form_data(form_data)
 
     {:noreply, assign(socket, transformation_changeset: new_changeset)}
+  end
+
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
+
+    {:noreply, assign(socket, visibility: new_visibility)}
   end
 
   def handle_info(

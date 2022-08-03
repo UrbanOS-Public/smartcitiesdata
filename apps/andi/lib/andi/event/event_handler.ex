@@ -15,18 +15,12 @@ defmodule Andi.Event.EventHandler do
       dataset_harvest_end: 0,
       user_login: 0,
       ingestion_update: 0,
-      ingestion_delete: 0,
-      dataset_access_group_associate: 0,
-      dataset_access_group_disassociate: 0,
-      user_access_group_associate: 0,
-      user_access_group_disassociate: 0
+      ingestion_delete: 0
     ]
 
   alias SmartCity.{Dataset, Organization, Ingestion}
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
-  alias SmartCity.DatasetAccessGroupRelation
-  alias SmartCity.UserAccessGroupRelation
 
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
@@ -86,7 +80,7 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: email},
+        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email},
         author: author
       }) do
     user_organization_associate()
@@ -104,7 +98,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(
-        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} =
+          _event
       ) do
     user_organization_disassociate()
     |> add_event_count(author, nil)
@@ -181,9 +176,6 @@ defmodule Andi.Event.EventHandler do
         :ok
     end
   end
-
-  defp add_to_set(nil, id), do: MapSet.new([id])
-  defp add_to_set(set, id), do: MapSet.put(set, id)
 
   defp add_event_count(event_type, author, dataset_id) do
     [

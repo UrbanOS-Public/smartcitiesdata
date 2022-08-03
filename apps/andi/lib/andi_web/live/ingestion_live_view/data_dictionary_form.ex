@@ -234,7 +234,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         },
         %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
-    file_type_for_upload = get_file_type_for_upload(file_type)
+    _file_type_for_upload = get_file_type_for_upload(file_type)
     generate_new_schema(socket, file, file_type)
   end
 

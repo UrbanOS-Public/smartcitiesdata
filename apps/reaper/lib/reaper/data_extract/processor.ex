@@ -14,6 +14,7 @@ defmodule Reaper.DataExtract.Processor do
   }
 
   alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage, ExtractStep}
+  alias Reaper.Cache.MsgCountCache
 
   use Retry
 
@@ -55,6 +56,8 @@ defmodule Reaper.DataExtract.Processor do
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
 
     Persistence.remove_last_processed_index(ingestion.id)
+
+    messages_processed_count(ingestion.id)
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
@@ -126,5 +129,15 @@ defmodule Reaper.DataExtract.Processor do
       Elsa.Supervisor.start_link(connection: connection_name, endpoints: elsa_brokers(), producer: [topic: topic])
 
     Elsa.Producer.ready?(connection_name)
+  end
+
+  defp messages_processed_count(ingestion_id) do
+    case MsgCountCache.get(ingestion_id) do
+      {:ok, count} ->
+        count
+
+      {:error, error} ->
+        raise "Unable to retrieve messages processed count ingestion #{ingestion_id} with error #{inspect(error)}"
+    end
   end
 end

@@ -1,16 +1,26 @@
 .transformation-header {
   border: 1px solid #C9C6C7;
   padding: .6rem 1.6rem;
+  &:hover {
+      cursor: pointer;
+  }
 }
 
 .transformation-header-name {
   display: inline-block;
+  margin: 10px;
 }
 
-.transformation-edit-buttons {
+.transformation-actions {
   float: right;
-  margin-block-start: 1em;
-  margin-block-end: 1em;
+  padding-top: 0.5rem;
+}
+
+.transformation-action {
+  margin-left: 1rem;
+  &:hover {
+      cursor: pointer;
+  }
 }
 
 #transformation-forms {
@@ -37,6 +47,11 @@
 
 .transformation-item {
   animation: open 300ms;
+  margin-bottom: 1.6rem;
+}
+
+.transformation-edit-form--collapsed {
+  display: none;
 }
 
 @keyframes open {
