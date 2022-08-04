@@ -16,7 +16,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
     <div class="edit-page" id="ingestions-edit-page">
       <%= f = form_for @changeset, "" %>
         <%= hidden_input(f, :sourceFormat) %>

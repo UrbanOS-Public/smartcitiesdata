@@ -13,7 +13,7 @@ defmodule AndiWeb.OrganizationLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
     <div class="organizations-view">
       <div class="organizations-index">
         <div class="organizations-index__header">

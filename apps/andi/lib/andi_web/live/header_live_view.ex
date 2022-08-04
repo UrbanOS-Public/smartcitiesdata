@@ -4,6 +4,30 @@ defmodule AndiWeb.HeaderLiveView do
   """
   use Phoenix.LiveComponent
 
+  defmacro header_datasets_path() do
+    "/datasets"
+  end
+
+  defmacro header_ingestions_path() do
+    "/ingestions"
+  end
+
+  defmacro header_organizations_path() do
+    "/organizations"
+  end
+
+  defmacro header_access_groups_path() do
+    "/access-groups"
+  end
+
+  defmacro header_users_path() do
+    "/users"
+  end
+
+  defmacro header_log_out_path() do
+    "/auth/auth0/logout"
+  end
+
   def render(assigns) do
     ~L"""
     <header class="page-header">
@@ -17,23 +41,23 @@ defmodule AndiWeb.HeaderLiveView do
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
-          <span class="link" phx-click="show-datasets">
+          <span class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets">
             <span class="material-icons">storage</span>
             <span>Datasets</span>
           </span>
-          <span class="link" phx-click="show-ingestions">
+          <span class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions">
             <span class="material-icons">input</span>
             <span>Ingestions</span>
           </span>
-          <span class="link" phx-click="show-organizations">
+          <span class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations">
             <span class="material-icons">settings</span>
             <span>Organizations</span>
           </span>
-          <span class="link" phx-click="show-access-groups">
+          <span class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
             <span>Access Groups</span>
           </span>
-          <span class="link" phx-click="show-users">
+          <span class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users">
             <span class="material-icons">people</span>
             <span>Users</span>
           </span>
@@ -73,32 +97,16 @@ defmodule AndiWeb.HeaderLiveView do
     end
   end
 
-  defmacro header_datasets_path() do
-    "/datasets"
+  def show_selected_if_active(match_path, current_path) do
+    if match_path == current_path do
+      "active-tab"
+    else
+      ""
+    end
   end
 
-  defmacro header_organizations_path() do
-    "/organizations"
-  end
-
-  defmacro header_users_path() do
-    "/users"
-  end
-
-  defmacro header_access_groups_path() do
-    "/access-groups"
-  end
-
-  defmacro header_ingestions_path() do
-    "/ingestions"
-  end
-
-  defmacro header_log_out_path() do
-    "/auth/auth0/logout"
-  end
-
-  def header_render(is_curator) do
-    live_component(AndiWeb.HeaderLiveView, is_curator: is_curator)
+  def header_render(is_curator, path) do
+    live_component(AndiWeb.HeaderLiveView, is_curator: is_curator, path: path)
   end
 
   def __redirect__(%{assigns: %{unsaved_changes: true}} = socket, location) do
