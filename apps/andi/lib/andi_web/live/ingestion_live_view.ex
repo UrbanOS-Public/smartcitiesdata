@@ -12,7 +12,7 @@ defmodule AndiWeb.IngestionLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
     <div class="ingestions-view">
       <div class="ingestions-index">
         <div class="ingestions-index__header">

@@ -15,7 +15,7 @@ defmodule AndiWeb.EditLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
     <div class="edit-page" id="dataset-edit-page">
       <%= f = form_for @changeset, "" %>
         <% [business] = inputs_for(f, :business) %>

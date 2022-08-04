@@ -8,7 +8,7 @@ defmodule AndiWeb.AccessGroupLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_access_groups_path()) %>
     <div class="access-groups-view">
       <div class="access-groups-index">
         <div class="access-groups-index__header">

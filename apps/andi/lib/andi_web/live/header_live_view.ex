@@ -4,36 +4,64 @@ defmodule AndiWeb.HeaderLiveView do
   """
   use Phoenix.LiveComponent
 
+  defmacro header_datasets_path() do
+    "/datasets"
+  end
+
+  defmacro header_ingestions_path() do
+    "/ingestions"
+  end
+
+  defmacro header_organizations_path() do
+    "/organizations"
+  end
+
+  defmacro header_access_groups_path() do
+    "/access-groups"
+  end
+
+  defmacro header_users_path() do
+    "/users"
+  end
+
+  defmacro header_log_out_path() do
+    "/auth/auth0/logout"
+  end
+
   def render(assigns) do
     ~L"""
-    <header class="root__header page-header">
-      <span class="page-header__primary datasets-link" phx-click="show-datasets">
-        <span class="material-icons">home</span>
-        <span class="datasets-link__text"><%= header_text(@is_curator) %></span>
+    <header class="page-header">
+      <span class="page-header__primary" phx-click="show-datasets">
+        <img id="header-logo" src="/images/UrbanOS.svg"></img>
+        <span><%= header_text(@is_curator) %></span>
+        <span class="log-out-link" phx-click="log-out">
+          <span class="material-icons">person</span>
+          <span class="log-out-link__text">Log Out</span>
+        </span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
-          <span class="organization-link" phx-click="show-organizations">
-            <span class="material-icons">settings</span>
-            <span class="organization-link__text">ORGANIZATIONS</span>
+          <span id="datasets-link" class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets">
+            <span class="material-icons">storage</span>
+            <span>Datasets</span>
           </span>
-          <span class="ingestions-link" phx-click="show-ingestions">
+          <span id="ingestions-link" class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions">
             <span class="material-icons">input</span>
-            <span class="user-link__text">INGESTIONS</span>
+            <span>Ingestions</span>
           </span>
-          <span class="access-groups-link" phx-click="show-access-groups">
+          <span id="organizations-link" class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations">
+            <span class="material-icons">settings</span>
+            <span>Organizations</span>
+          </span>
+          <span id="access-groups-link" class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
-            <span class="access-groups-link__text">ACCESS GROUPS</span>
+            <span>Access Groups</span>
           </span>
-          <span class="user-link" phx-click="show-users">
+          <span id="users-link" class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users">
             <span class="material-icons">people</span>
-            <span class="user-link__text">USERS</span>
+            <span>Users</span>
           </span>
         <% end %>
-        <span class="log-out-link" phx-click="log-out">
-          <span class="material-icons">person</span>
-          <span class="log-out-link__text">LOG OUT</span>
-        </span>
       </span>
     </header>
     """
@@ -69,32 +97,16 @@ defmodule AndiWeb.HeaderLiveView do
     end
   end
 
-  defmacro header_datasets_path() do
-    "/datasets"
+  def show_selected_if_active(match_path, current_path) do
+    if match_path == current_path do
+      "active-tab"
+    else
+      ""
+    end
   end
 
-  defmacro header_organizations_path() do
-    "/organizations"
-  end
-
-  defmacro header_users_path() do
-    "/users"
-  end
-
-  defmacro header_access_groups_path() do
-    "/access-groups"
-  end
-
-  defmacro header_ingestions_path() do
-    "/ingestions"
-  end
-
-  defmacro header_log_out_path() do
-    "/auth/auth0/logout"
-  end
-
-  def header_render(is_curator) do
-    live_component(AndiWeb.HeaderLiveView, is_curator: is_curator)
+  def header_render(is_curator, path) do
+    live_component(AndiWeb.HeaderLiveView, is_curator: is_curator, path: path)
   end
 
   def __redirect__(%{assigns: %{unsaved_changes: true}} = socket, location) do
@@ -105,6 +117,6 @@ defmodule AndiWeb.HeaderLiveView do
     {:noreply, redirect(socket, to: location)}
   end
 
-  defp header_text(true = _is_curator), do: "Dataset Ingestion Interface"
-  defp header_text(false = _is_curator), do: "Dataset Submission Interface"
+  defp header_text(true = _is_curator), do: "Data Management Tool"
+  defp header_text(false = _is_curator), do: "Data Submission Tool"
 end
