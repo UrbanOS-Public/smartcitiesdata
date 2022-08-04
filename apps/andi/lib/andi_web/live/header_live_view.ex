@@ -41,23 +41,23 @@ defmodule AndiWeb.HeaderLiveView do
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
-          <span class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets">
+          <span id="datasets-link" class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets">
             <span class="material-icons">storage</span>
             <span>Datasets</span>
           </span>
-          <span class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions">
+          <span id="ingestions-link" class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions">
             <span class="material-icons">input</span>
             <span>Ingestions</span>
           </span>
-          <span class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations">
+          <span id="organizations-link" class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations">
             <span class="material-icons">settings</span>
             <span>Organizations</span>
           </span>
-          <span class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups">
+          <span id="access-groups-link" class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups">
             <span class="material-icons">lock</span>
             <span>Access Groups</span>
           </span>
-          <span class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users">
+          <span id="users-link" class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users">
             <span class="material-icons">people</span>
             <span>Users</span>
           </span>
