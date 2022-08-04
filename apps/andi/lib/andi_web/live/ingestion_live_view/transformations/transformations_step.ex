@@ -13,6 +13,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("move-transformation")
+    AndiWeb.Endpoint.subscribe("delete-transformation")
 
     transformation_changesets =
       Enum.map(ingestion.transformations, fn transformation ->
@@ -71,13 +72,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: _}},
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
         %{assigns: %{transformations: transformations}} = socket
       ) do
-    Enum.each(transformations, fn transformation ->
-      Transformations.update(transformation)
-    end)
-
+    update_kept_transformations(transformations)
+    delete_discarded_transformations(transformations, ingestion_id)
     {:noreply, socket}
   end
 
@@ -101,6 +100,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       true -> move_transformation(socket, transformation_index, target_index)
       false -> {:noreply, socket}
     end
+  end
+
+  def handle_event("delete-transformation", %{"id" => transformation_id}, socket) do
+    filtered_changesets = socket.assigns.transformation_changesets
+      |> Enum.filter(fn changeset -> changeset.changes.id != transformation_id end)
+    filtered_transformations = socket.assigns.transformations
+      |> Enum.filter(fn transformation -> transformation.id != transformation_id end)
+    FormUpdate.send_value(socket.parent_pid, :form_update)
+    {:noreply, assign(socket, transformation_changesets: filtered_changesets, transformations: filtered_transformations)}
   end
 
   def handle_event("add-transformation", _, socket) do
@@ -144,5 +152,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     FormUpdate.send_value(socket.parent_pid, :form_update)
 
     {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
+  end
+
+  defp update_kept_transformations(transformations) do
+    Enum.each(transformations, fn transformation ->
+      Transformations.update(transformation)
+    end)
+  end
+
+  defp delete_discarded_transformations(transformations, ingestion_id) do
+    kept_transformation_ids = Enum.map(transformations, fn transformation -> transformation.id end)
+    Transformations.all_for_ingestion(ingestion_id)
+      |> Enum.map(fn transformation -> transformation.id end)
+      |> Enum.filter(fn id -> id not in kept_transformation_ids end)
+      |> Enum.each(fn id -> Transformations.delete(id) end)
   end
 end
