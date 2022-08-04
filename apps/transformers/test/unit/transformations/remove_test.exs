@@ -70,4 +70,17 @@ defmodule Transformers.RemoveTest do
       assert reason == "Missing transformation parameter: sourceField"
     end
   end
+
+  describe "fields/0" do
+    test "describes the fields needed for transformation" do
+      expected_fields = [%{
+        field_name: "sourceField",
+        field_type: "string",
+        field_label: "Field to Remove",
+        options: nil
+      }]
+
+      assert Remove.fields() == expected_fields
+    end
+  end
 end
