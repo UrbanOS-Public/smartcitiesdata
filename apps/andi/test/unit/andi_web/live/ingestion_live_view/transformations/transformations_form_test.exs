@@ -76,9 +76,25 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       element(view, ".transformation-header") |> render_click()
       assert has_element?(view, ".transformation-edit-form--collapsed")
     end
+
+    test "after selecting type with only one field, field appears" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      select_type("remove", view)
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, ".transformation-field-label", "Field to Remove") |> has_element?()
+      assert element(view, "#form_data_sourceField") |> has_element?()
+    end
   end
 
   defp render_transformation_form(transformation_changeset) do
     live_isolated(build_conn(), TransformationForm, session: %{"transformation_changeset" => transformation_changeset})
+  end
+
+  defp select_type(type, view) do
+    click_value = %{"value" => type}
+    element(view, "#form_data_type") |> render_click(click_value)
   end
 end
