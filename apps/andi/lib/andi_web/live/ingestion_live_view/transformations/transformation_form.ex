@@ -11,6 +11,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Ingestions.Transformation
   alias Andi.InputSchemas.Ingestions.Transformations
+  alias AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias Transformers.TransformationFields
@@ -53,7 +54,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
           </div>
           <div class="transformation-form__fields">
             <%= for field <- get_fields(@transformation_type) do %>
-              <%= build_input(field, assigns, f) %>
+              <%= TransformationFieldBuilder.build_input(field, assigns, f) %>
             <%= end %>
           </div>
         </div>
@@ -136,21 +137,5 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   defp get_fields(transformation_type) do
     TransformationFields.fields_for(transformation_type)
-  end
-
-  defp build_input(field, assigns, form) do
-    field_id = build_field_id(assigns, field.field_name)
-    ~L"""
-    <div class="transformation-field">
-      <%= label(form, field_id, field.field_label, class: "transformation-field-label label label--required") %>
-      <%= text_input(form, field_id, class: "input transformation-form-fields", phx_debounce: "1000") %>
-    </div>
-    """
-  end
-
-  defp build_field_id(assigns, field_name) do
-    transformation_id = assigns.transformation_changeset.changes.id
-    field_id_content = "transformation-#{transformation_id}-#{field_name}"
-    String.to_atom(field_id_content)
   end
 end
