@@ -1,5 +1,4 @@
 defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder do
-
   import Phoenix.HTML.Form
   import Phoenix.LiveView.Helpers
 
@@ -23,5 +22,4 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     field_id_content = "transformation-#{transformation_id}-#{field_name}"
     String.to_atom(field_id_content)
   end
-
 end

@@ -3,7 +3,6 @@ defmodule Transformers.RemoveTest do
 
   alias Transformers.Remove
 
-
   describe "transform/2" do
     test "if source field not specified, return error" do
       payload = %{
@@ -73,12 +72,14 @@ defmodule Transformers.RemoveTest do
 
   describe "fields/0" do
     test "describes the fields needed for transformation" do
-      expected_fields = [%{
-        field_name: "sourceField",
-        field_type: "string",
-        field_label: "Field to Remove",
-        options: nil
-      }]
+      expected_fields = [
+        %{
+          field_name: "sourceField",
+          field_type: "string",
+          field_label: "Field to Remove",
+          options: nil
+        }
+      ]
 
       assert Remove.fields() == expected_fields
     end

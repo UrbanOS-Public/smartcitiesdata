@@ -23,11 +23,13 @@ defmodule Transformers.Remove do
   end
 
   def fields() do
-    [%{
-      field_name: "sourceField",
-      field_type: "string",
-      field_label: "Field to Remove",
-      options: nil
-    }]
+    [
+      %{
+        field_name: "sourceField",
+        field_type: "string",
+        field_label: "Field to Remove",
+        options: nil
+      }
+    ]
   end
 end
