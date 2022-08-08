@@ -28,7 +28,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
-      schema = dataset.technical.schema
+      schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
 
       Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
       assert_receive table: ^table_name, schema: ^schema

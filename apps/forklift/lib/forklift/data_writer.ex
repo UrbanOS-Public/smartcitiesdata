@@ -134,10 +134,10 @@ defmodule Forklift.DataWriter do
     end
   end
 
-  defp add_ingestion_metadata_to_schema(schema) do
+  def add_ingestion_metadata_to_schema(schema) do
     ingestion_metadata_schema = [
-      %{name: "ingestion_id", type: "string"},
-      %{name: "ingestion_start", type: "date", format: "{ISO:Extended:Z}"}
+      %{name: "_ingestion_id", type: "string"},
+      %{name: "_extraction_start_time", type: "date", format: "{ISO:Extended:Z}"}
     ]
 
     schema ++ ingestion_metadata_schema
