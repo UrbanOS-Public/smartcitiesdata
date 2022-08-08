@@ -72,13 +72,13 @@ defmodule Forklift.Integration.MessageHandlingTest do
     end
 
     test "sends 'dataset:write_complete event' with timestamp after writing records" do
-      expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
+      expect(MockTable, :write, fn [%{payload: %{"foo" => "bar"}}, %{payload: %{"foz" => "baz"}}], _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foz" => "baz"}})
 
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
@@ -106,8 +106,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       dataset = TDG.create_dataset(%{})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foz" => "baz"}})
 
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
@@ -128,8 +128,8 @@ defmodule Forklift.Integration.MessageHandlingTest do
 
       dataset = TDG.create_dataset(%{})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foz" => "baz"}})
 
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
@@ -161,13 +161,13 @@ defmodule Forklift.Integration.MessageHandlingTest do
   describe "on receiving end-of-data message" do
     test "shuts down dataset reader" do
       Application.put_env(:forklift, :profiling_enabled, false)
-      expect(MockTable, :write, fn [%{payload: "foobar"}, %{payload: "foobaz"}], _ -> :ok end)
+      expect(MockTable, :write, fn [%{payload: %{"foo" => "bar"}}, %{payload: %{"foz" => "baz"}}], _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobar"})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: "foobaz"})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foz" => "baz"}})
 
       message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
       message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}

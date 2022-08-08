@@ -108,11 +108,12 @@ defmodule Forklift.DataWriter do
 
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
+    ingestion_info_data = Enum.map(started_data, &add_ingestion_info/1)
 
     retry with: exponential_backoff(100) |> cap(retry_max_wait()) |> Stream.take(retry_count()) do
-      write_to_table(started_data, dataset)
+      write_to_table(ingestion_info_data, dataset)
     after
-      {:ok, write_timing} -> add_total_time(data, started_data, write_timing)
+      {:ok, write_timing} -> add_total_time(data, ingestion_info_data, write_timing)
     else
       {:error, reason} ->
         raise RuntimeError, inspect(reason)
@@ -158,7 +159,19 @@ defmodule Forklift.DataWriter do
   end
 
   defp add_start_time(datum) do
-    Forklift.Util.add_to_metadata(datum, :forklift_start_time, Data.Timing.current_time())
+    datum |> Forklift.Util.add_to_metadata(:forklift_start_time, Data.Timing.current_time())
+  end
+
+  defp add_ingestion_info(data) do
+    payload = Map.get(data, :payload, %{})
+
+    ingestion_info_payload =
+      Map.merge(payload, %{
+        "_ingestion_id" => data.ingestion_id,
+        "_extraction_start_time" => data.extraction_start_time
+      })
+
+    data |> Map.merge(%{payload: ingestion_info_payload})
   end
 
   defp add_total_time(data, started_data, write_timing) do
