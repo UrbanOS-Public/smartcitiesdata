@@ -12,7 +12,7 @@ defmodule AndiWeb.UserLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator) %>
+    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
     <div class="users-view">
       <div class="users-index">
         <div class="users-index__header">
