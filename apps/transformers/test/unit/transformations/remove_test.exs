@@ -3,45 +3,47 @@ defmodule Transformers.RemoveTest do
 
   alias Transformers.Remove
 
-  test "if source field not specified, return error" do
-    payload = %{
-      "dead_field" => "goodbye"
-    }
+  describe "transform/2" do
+    test "if source field not specified, return error" do
+      payload = %{
+        "dead_field" => "goodbye"
+      }
 
-    parameters = %{}
+      parameters = %{}
 
-    {:error, reason} = Remove.transform(payload, parameters)
+      {:error, reason} = Remove.transform(payload, parameters)
 
-    assert reason == "Missing transformation parameter: sourceField"
-  end
+      assert reason == "Missing transformation parameter: sourceField"
+    end
 
-  test "if source field not on payload, return error" do
-    payload = %{
-      "undead_field" => "goodbye"
-    }
+    test "if source field not on payload, return error" do
+      payload = %{
+        "undead_field" => "goodbye"
+      }
 
-    parameters = %{
-      "sourceField" => "dead_field"
-    }
+      parameters = %{
+        "sourceField" => "dead_field"
+      }
 
-    {:error, reason} = Remove.transform(payload, parameters)
+      {:error, reason} = Remove.transform(payload, parameters)
 
-    assert reason == "Missing field in payload: dead_field"
-  end
+      assert reason == "Missing field in payload: dead_field"
+    end
 
-  test "remove specified field" do
-    payload = %{
-      "good_field" => "hello",
-      "dead_field" => "goodbye"
-    }
+    test "remove specified field" do
+      payload = %{
+        "good_field" => "hello",
+        "dead_field" => "goodbye"
+      }
 
-    parameters = %{
-      "sourceField" => "dead_field"
-    }
+      parameters = %{
+        "sourceField" => "dead_field"
+      }
 
-    {:ok, result} = Remove.transform(payload, parameters)
+      {:ok, result} = Remove.transform(payload, parameters)
 
-    assert result == %{"good_field" => "hello"}
+      assert result == %{"good_field" => "hello"}
+    end
   end
 
   describe "validate/1" do
@@ -65,6 +67,21 @@ defmodule Transformers.RemoveTest do
       {:error, reason} = Remove.validate(parameters)
 
       assert reason == "Missing transformation parameter: sourceField"
+    end
+  end
+
+  describe "fields/0" do
+    test "describes the fields needed for transformation" do
+      expected_fields = [
+        %{
+          field_name: "sourceField",
+          field_type: "string",
+          field_label: "Field to Remove",
+          options: nil
+        }
+      ]
+
+      assert Remove.fields() == expected_fields
     end
   end
 end

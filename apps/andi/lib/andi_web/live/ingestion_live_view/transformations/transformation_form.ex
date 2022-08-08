@@ -11,8 +11,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Ingestions.Transformation
   alias Andi.InputSchemas.Ingestions.Transformations
+  alias AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder
   alias AndiWeb.Views.DisplayNames
   alias AndiWeb.Helpers.MetadataFormHelpers
+  alias Transformers.TransformationFields
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
@@ -20,7 +22,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     {:ok,
      assign(socket,
        transformation_changeset: transformation_changeset,
-       visibility: "collapsed"
+       visibility: "collapsed",
+       transformation_type: ""
      )}
   end
 
@@ -46,8 +49,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
           <div class="transformation-form__type">
             <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
-            <%= select(f, :type, get_transformation_types(), [class: "select"]) %>
+            <%= select(f, :type, get_transformation_types(), phx_click: "transformation-type-selected", class: "select") %>
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
+          </div>
+          <div class="transformation-form__fields">
+            <%= for field <- get_fields(@transformation_type) do %>
+              <%= TransformationFieldBuilder.build_input(field, assigns, f) %>
+            <%= end %>
           </div>
         </div>
     </form>
@@ -79,6 +87,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       end
 
     {:noreply, assign(socket, visibility: new_visibility)}
+  end
+
+  def handle_event("transformation-type-selected", %{"value" => value}, socket) do
+    {:noreply, assign(socket, transformation_type: value)}
   end
 
   def handle_info(
@@ -121,5 +133,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     Enum.map(options, fn {actual_value, description} ->
       [key: description, value: actual_value]
     end)
+  end
+
+  defp get_fields(transformation_type) do
+    TransformationFields.fields_for(transformation_type)
   end
 end

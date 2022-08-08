@@ -21,4 +21,15 @@ defmodule Transformers.Remove do
       {:error, reason} -> {:error, reason}
     end
   end
+
+  def fields() do
+    [
+      %{
+        field_name: "sourceField",
+        field_type: "string",
+        field_label: "Field to Remove",
+        options: nil
+      }
+    ]
+  end
 end
