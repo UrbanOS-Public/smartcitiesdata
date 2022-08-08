@@ -88,18 +88,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
       assert element(view, "##{field_id}") |> has_element?()
     end
-
-    @tag :skip
-    test "transformation dynamic field with text input can be typed into" do
-      transformation_changeset = Transformation.changeset_for_draft(%{})
-      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
-
-      select_type("remove", view)
-      field_id = build_field_id(transformation_changeset.changes.id, "sourceField")
-      send_keys(view, field_id, "something")
-
-      assert element(view, "##{field_id}", "something") |> has_element?()
-    end
   end
 
   defp render_transformation_form(transformation_changeset) do
@@ -109,10 +97,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
   defp select_type(type, view) do
     click_value = %{"value" => type}
     element(view, "#form_data_type") |> render_click(click_value)
-  end
-
-  defp send_keys(view, field_id, keys) do
-    element(view, ".transformation-item") |> render_change(%{field_id => keys})
   end
 
   defp build_field_id(transformation_id, field_name) do

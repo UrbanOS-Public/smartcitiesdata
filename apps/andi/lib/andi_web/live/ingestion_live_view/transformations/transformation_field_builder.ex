@@ -10,7 +10,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     ~L"""
     <div class="transformation-field">
       <%= label(form, field_id, field.field_label, class: "transformation-field-label label label--required") %>
-      <%= text_input(form, field_id, class: "input transformation-form-fields", phx_debounce: "1000") %>
+      <%= text_input(form, field_id, name: field.field_name, class: "input transformation-form-fields", phx_debounce: "1000") %>
     </div>
     """
   end
