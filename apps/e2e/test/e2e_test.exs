@@ -166,7 +166,9 @@ defmodule E2ETest do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
-        %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"}
+        %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"},
+        %{"Column" => "_ingestion_id", "Comment" => "", "Extra" => "", "Type" => "varchar"},
+        %{"Column" => "_extraction_start_time", "Comment" => "", "Extra" => "", "Type" => "date"}
       ]
 
       eventually(
