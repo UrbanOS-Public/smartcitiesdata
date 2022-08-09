@@ -3,6 +3,10 @@ defmodule Transformers.FieldFetcher do
     fetch_or_error(params, field_name, "Missing transformation parameter: #{field_name}")
   end
 
+  def fetch_parameter_new(params, field_name) do
+    fetch_or_error(params, field_name, "Missing or empty field")
+  end
+
   def fetch_value(payload, field_name) do
     fetch_or_error(payload, field_name, "Missing field in payload: #{field_name}")
   end

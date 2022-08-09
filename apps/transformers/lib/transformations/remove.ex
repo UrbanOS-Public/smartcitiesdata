@@ -22,6 +22,14 @@ defmodule Transformers.Remove do
     end
   end
 
+  def validate_new(parameters) do
+    result = FieldFetcher.fetch_parameter_new(parameters, "sourceField")
+    case result do
+      {:ok, sourceField} -> {:ok, sourceField}
+      {:error, reason} -> {:error, %{"sourceField" => reason}}
+    end
+  end
+
   def fields() do
     [
       %{
