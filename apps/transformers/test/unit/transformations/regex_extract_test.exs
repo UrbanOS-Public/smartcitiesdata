@@ -137,4 +137,48 @@ defmodule Transformers.RegexExtractTest do
                "Invalid regular expression: missing ) at index 8"
     end
   end
+
+  describe "validate_new/1" do
+    test "returns :ok if all parameters are present and valid" do
+      parameters = %{
+        "sourceField" => "phone_number",
+        "targetField" => "area_code",
+        "regex" => "^\\((\\d{3})\\)"
+      }
+
+      {:ok, [source_field, target_field, regex]} = RegexExtract.validate_new(parameters)
+
+      assert source_field == parameters["sourceField"]
+      assert target_field == parameters["targetField"]
+      assert regex == Regex.compile!(parameters["regex"])
+    end
+
+    data_test "when missing parameter #{parameter} return error" do
+      parameters =
+        %{
+          "sourceField" => "phone_number",
+          "targetField" => "area_code",
+          "regex" => "^\\((\\d{3})\\)"
+        }
+        |> Map.delete(parameter)
+
+      {:error, reason} = RegexExtract.validate_new(parameters)
+
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
+
+      where(parameter: ["sourceField", "targetField", "regex"])
+    end
+
+    test "returns error when regex is invalid" do
+      params = %{
+        "sourceField" => "source_field",
+        "targetField" => "target_field",
+        "regex" => "^\((\d{3})"
+      }
+
+      {:error, reason} = RegexExtract.validate_new(params)
+
+      assert reason == %{"regex" => "Invalid regular expression: missing ) at index 8"}
+    end
+  end
 end
