@@ -67,7 +67,7 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.transform(%{}, params)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["sourceField", "sourceFormat", "targetField", "targetFormat"])
     end

@@ -13,7 +13,7 @@ defmodule Transformers.RemoveTest do
 
       {:error, reason} = Remove.transform(payload, parameters)
 
-      assert reason == "Missing transformation parameter: sourceField"
+      assert reason == %{"sourceField" => "Missing or empty field"}
     end
 
     test "if source field not on payload, return error" do

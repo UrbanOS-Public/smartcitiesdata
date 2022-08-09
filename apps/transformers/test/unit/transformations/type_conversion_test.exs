@@ -37,7 +37,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Missing transformation parameter: field"} == result
+    assert {:error, %{"field" => "Missing or empty field"}} == result
   end
 
   test "if params do not contain source type return error" do
@@ -46,7 +46,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Missing transformation parameter: sourceType"} == result
+    assert {:error, %{"sourceType" => "Missing or empty field"}} == result
   end
 
   test "if params do not contain target type return error" do
@@ -55,7 +55,7 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Missing transformation parameter: targetType"} == result
+    assert {:error, %{"targetType" => "Missing or empty field"}} == result
   end
 
   test "if field supposed to be float but is not, return error" do
@@ -170,9 +170,12 @@ defmodule Transformers.TypeConversionTest do
     payload = %{"thing" => true}
     parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
 
-    result = Transformers.TypeConversion.transform(payload, parameters)
+    {:error, reason} = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Conversion from boolean to string is not supported"} == result
+    assert reason == %{
+      "sourceType" => "Conversion from boolean to string is not supported",
+      "targetType" => "Conversion from boolean to string is not supported"
+    }
   end
 
   test "if string cannot be parsed into integer return error" do

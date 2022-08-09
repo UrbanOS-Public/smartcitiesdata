@@ -6,7 +6,7 @@ defmodule Transformers.DateTime do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field, source_format, target_field, target_format]} <-
-           validate(parameters),
+           validate_new(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime(payload_source_value, source_format, source_field),

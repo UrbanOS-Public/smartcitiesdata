@@ -5,7 +5,7 @@ defmodule Transformers.Concatenation do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
+    with {:ok, [source_fields, separator, target_field]} <- validate_new(parameters),
          {:ok, values} <- fetch_values(payload, source_fields),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)

@@ -21,7 +21,7 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["sourceFields", "separator", "targetField"])
     end

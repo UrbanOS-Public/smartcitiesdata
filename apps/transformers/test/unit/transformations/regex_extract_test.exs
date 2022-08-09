@@ -75,7 +75,7 @@ defmodule Transformers.RegexExtractTest do
 
       {:error, reason} = Transformers.RegexExtract.transform(message_payload, params)
 
-      assert reason == "Invalid regular expression: missing ) at index 8"
+      assert reason == %{"regex" => "Invalid regular expression: missing ) at index 8"}
     end
 
     test "if source and target field are the same overwrite original value" do

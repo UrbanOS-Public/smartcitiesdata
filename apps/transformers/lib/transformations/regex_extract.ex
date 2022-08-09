@@ -6,7 +6,7 @@ defmodule Transformers.RegexExtract do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field, target_field, regex]} <- validate(parameters),
+    with {:ok, [source_field, target_field, regex]} <- validate_new(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field) do
       case Regex.run(regex, value, capture: :all_but_first) do
         nil ->
