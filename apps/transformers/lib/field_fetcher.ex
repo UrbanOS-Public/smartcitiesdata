@@ -1,4 +1,13 @@
 defmodule Transformers.FieldFetcher do
+
+  def fetch_value_or_error(parameters, field) do
+    result = fetch_parameter_new(parameters, field)
+    case result do
+      {:ok, value} -> {:ok, value}
+      {:error, reason} -> {:error, %{field => reason}}
+    end
+  end
+
   def fetch_parameter(params, field_name) do
     fetch_or_error(params, field_name, "Missing transformation parameter: #{field_name}")
   end

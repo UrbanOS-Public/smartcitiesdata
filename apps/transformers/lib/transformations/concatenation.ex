@@ -26,6 +26,47 @@ defmodule Transformers.Concatenation do
     end
   end
 
+  def validate_new(parameters) do
+    reverse_fields_for_easier_list_updates_while_preserving_order()
+      |> validate_fields(parameters)
+      |> ordered_values_or_errors()
+  end
+
+  defp reverse_fields_for_easier_list_updates_while_preserving_order do
+    ["sourceFields", "separator", "targetField"] |> Enum.reverse()
+  end
+
+  defp validate_fields(required_fields, parameters) do
+    Enum.reduce(required_fields, %{values: [], errors: %{}}, fn required_field, accumulator ->
+      update_with_value_or_error(required_field, accumulator, parameters)
+    end)
+  end
+
+  defp update_with_value_or_error(required_field, accumulator, parameters) do
+    result = FieldFetcher.fetch_value_or_error(parameters, required_field)
+    case result do
+      {:ok, value} -> update_with_value(accumulator, value)
+      {:error, reason} -> update_with_error(accumulator, reason)
+    end
+  end
+
+  defp update_with_value(accumulator, value) do
+    Map.update(accumulator, :values, [], fn values -> [value | values] end)
+  end
+
+  defp update_with_error(accumulator, error_reason) do
+    Map.update(accumulator, :errors, %{}, fn errors -> Map.merge(errors, error_reason) end)
+  end
+
+  defp ordered_values_or_errors(accumulated) do
+    errors = Map.get(accumulated, :errors)
+    if length(Map.keys(errors)) > 0 do
+      {:error, errors}
+    else
+      {:ok, Map.get(accumulated, :values)}
+    end
+  end
+
   def fetch_values(payload, field_names) when is_list(field_names) do
     find_values_or_errors(payload, field_names)
     |> all_values_if_present_else_error()
