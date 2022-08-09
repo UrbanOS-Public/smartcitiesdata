@@ -179,4 +179,72 @@ defmodule Transformers.DateTimeTest do
       where(format: ["sourceFormat", "targetFormat"])
     end
   end
+
+  describe "validate_new/1" do
+    test "returns :ok if all parameters are present and valid" do
+      parameters = %{
+        "sourceField" => "date1",
+        "targetField" => "date2",
+        "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+      }
+
+      {:ok, [source_field, source_format, target_field, target_format]} =
+        DateTime.validate_new(parameters)
+
+      assert source_field == parameters["sourceField"]
+      assert source_format == parameters["sourceFormat"]
+      assert target_field == parameters["targetField"]
+      assert target_format == parameters["targetFormat"]
+    end
+
+    data_test "when missing parameter #{parameter} return error" do
+      parameters =
+        %{
+          "sourceField" => "date1",
+          "targetField" => "date2",
+          "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+          "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+        |> Map.delete(parameter)
+
+      {:error, reason} = DateTime.validate_new(parameters)
+
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
+
+      where(parameter: ["sourceField", "sourceFormat", "targetField", "targetFormat"])
+    end
+
+    data_test "returns error when #{format} is invalid Timex DateTime format" do
+      params =
+        %{
+          "sourceField" => "date1",
+          "targetField" => "date2",
+          "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+          "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+        |> Map.delete(format)
+        |> Map.put(format, "{invalid}")
+
+      {:error, reason} = Transformers.DateTime.validate_new(params)
+
+      assert reason == %{"#{format}" => "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."}
+      where(format: ["sourceFormat", "targetFormat"])
+    end
+
+    test "when one field has multiple errors the missing field error wins" do
+      parameters =
+        %{
+          "sourceField" => "date1",
+          "targetField" => "date2",
+          "sourceFormat" => "",
+          "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+        |> Map.delete("sourceFormat")
+
+      {:error, reason} = DateTime.validate_new(parameters)
+
+      assert reason == %{"sourceFormat" => "Missing or empty field"}
+    end
+  end
 end
