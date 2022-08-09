@@ -19,6 +19,7 @@ defmodule Helper do
   alias Pipeline.Writer.TableWriter.Statement
   alias Pipeline.Writer.S3Writer
   alias Forklift.Datasets
+  alias Forklift.DataWriter
   require ExUnit.Assertions
 
   @instance_name Forklift.instance_name()
@@ -59,7 +60,7 @@ defmodule Helper do
     S3Writer.write(data,
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
-      schema: dataset.technical.schema
+      schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema)
     )
   end
 
@@ -68,7 +69,9 @@ defmodule Helper do
   end
 
   defp insert_record(table, partition) do
-    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '#{partition}')"
+    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '1234-abc-zyx', cast(now() as date), '#{
+      partition
+    }')"
     |> PrestigeHelper.execute_query()
   end
 
@@ -78,7 +81,9 @@ defmodule Helper do
       "my_string" => "Bob",
       "my_date" => Timex.format!(DateTime.utc_now(), "{ISO:Extended:Z}"),
       "my_float" => 1.5,
-      "my_boolean" => "true"
+      "my_boolean" => "true",
+      "_ingestion_id" => "1234-abc-zyx",
+      "_extraction_start_time" => Timex.format!(DateTime.utc_now(), "{ISO:Extended:Z}")
     }
   end
 
