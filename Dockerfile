@@ -7,15 +7,15 @@ RUN apk update && \
     apk --no-cache --update upgrade alpine-sdk && \
     apk --no-cache add alpine-sdk && \
     apk --no-cache --update add \
-      make \
-      g++ \
-      wget \
-      ca-certificates \
-      curl \
-      inotify-tools \
-      nodejs \
-      nodejs-npm && \
-      npm install npm -g --no-progress && \
+    make \
+    g++ \
+    wget \
+    ca-certificates \
+    curl \
+    inotify-tools \
+    nodejs \
+    npm && \
+    npm install npm -g --no-progress && \
     rm -rf /var/cache/**/*
 
 RUN curl -L \
