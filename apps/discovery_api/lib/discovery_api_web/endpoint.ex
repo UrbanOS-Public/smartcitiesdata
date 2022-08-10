@@ -18,15 +18,15 @@ defmodule DiscoveryApiWeb.Endpoint do
     expose_headers: ["token"]
   )
 
-  if Application.get_env(:discovery_api, :hsts_enabled, true) do
-    plug(Plug.SSL,
-      hsts: true,
-      expires: 63_072_000,
-      subdomains: true,
-      preload: true,
-      rewrite_on: [:x_forwarded_proto]
-    )
-  end
+  # if Application.get_env(:discovery_api, :hsts_enabled, true) do
+  #   plug(Plug.SSL,
+  #     hsts: true,
+  #     expires: 63_072_000,
+  #     subdomains: true,
+  #     preload: true,
+  #     rewrite_on: [:x_forwarded_proto]
+  #   )
+  # end
 
   # Serve at "/" the static files from "priv/static" directory.
   #
