@@ -1,7 +1,7 @@
 FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name valkyrie
 
-FROM bitwalker/alpine-elixir:1.10.4
+FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.0
 ENV REPLACE_OS_VARS=true
 RUN apk upgrade \
   && apk add --no-cache bash openssl \
