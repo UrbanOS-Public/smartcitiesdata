@@ -260,7 +260,7 @@ defmodule E2ETest do
                      "three" => 10,
                      "two" => "foobar",
                      "_extraction_start_time" => get_current_yyyy_mm_dd,
-                     "_ingestion_id" => ingestion.id
+                     "_ingestion_id" => ingestion.id,
                      "os_partition" => get_current_yyyy_mm
                    }
                  ] ==
