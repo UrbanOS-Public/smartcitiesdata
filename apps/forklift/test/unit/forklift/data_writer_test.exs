@@ -35,4 +35,29 @@ defmodule Forklift.DataWriterTest do
 
     assert :ok == DataWriter.delete(expected_dataset)
   end
+
+  test "should add ingestion_time and ingestion_id to the dataset schema" do
+    expected_dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    fake_data = TDG.create_data(%{})
+
+    stub(MockTable, :write, fn _data, params ->
+      schema = params |> Keyword.fetch!(:schema)
+
+      schema_with_ingestion_metadata =
+        expected_dataset.technical.schema ++
+          [
+            %{name: "_ingestion_id", type: "string"},
+            %{name: "_extraction_start_time", type: "date", format: "{ISO:Extended:Z}"}
+          ]
+
+      assert schema == schema_with_ingestion_metadata
+      :ok
+    end)
+
+    DataWriter.write([fake_data], dataset: expected_dataset)
+  end
 end
