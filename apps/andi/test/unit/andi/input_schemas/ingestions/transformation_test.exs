@@ -32,7 +32,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
 
     changeset = Transformation.changeset(changes)
 
-    assert changeset.errors == [{:parameters, {"Missing or empty field", [field: "separator"]}}]
+    assert changeset.errors == [{"separator", {"Missing or empty field", []}}]
     assert not changeset.valid?
   end
 

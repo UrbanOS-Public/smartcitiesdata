@@ -71,9 +71,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       {:ok, _} -> changeset
       {:error, reason} when is_binary(reason) -> changeset
       {:error, reasons} ->
-        Enum.reduce(Map.keys(reasons), changeset, fn key, changeset ->
-          error_message = Map.get(reasons, key)
-          add_error(changeset, :parameters, error_message, field: key)
+        Enum.reduce(reasons, changeset, fn {key, value}, changeset ->
+          add_error(changeset, key, value)
         end)
     end
   end

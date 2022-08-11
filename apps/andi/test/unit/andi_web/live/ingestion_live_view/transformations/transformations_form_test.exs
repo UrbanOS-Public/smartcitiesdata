@@ -88,6 +88,20 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
       assert element(view, "##{field_id}") |> has_element?()
     end
+
+    @tag :skip
+    test "shows error message if field missing" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      select_type("remove", view)
+      form_update = %{
+        "parameters" => %{"sourceField" => ""}
+      }
+      element(view, ".transformation-item") |> render_change(form_update) |> IO.inspect()
+
+      assert element(view, "#sourceField-error-msg", "Please enter a valid field to remove") |> has_element?()
+    end
   end
 
   defp render_transformation_form(transformation_changeset) do
