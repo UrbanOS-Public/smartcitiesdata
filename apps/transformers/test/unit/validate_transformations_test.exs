@@ -67,7 +67,7 @@ defmodule Transformers.ValidateTest do
     }
 
     assert Transformers.validate([transformation1, transformation2]) ==
-             [{:ok, "Transformation valid."}, {:error, "Transformation not valid."}]
+             [{:ok, "Transformation valid."}, {:error, %{"sourceField" => "Missing or empty field"}}]
   end
 
   test "when provided an empty transformations list, an empty list is returned" do

@@ -28,27 +28,27 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("regex_extract", parameters) do
-    Transformers.RegexExtract.validate(parameters)
+    Transformers.RegexExtract.validate_new(parameters)
   end
 
   def validate("regex_replace", parameters) do
-    Transformers.RegexReplace.validate(parameters)
+    Transformers.RegexReplace.validate_new(parameters)
   end
 
   def validate("conversion", parameters) do
-    Transformers.TypeConversion.validate(parameters)
+    Transformers.TypeConversion.validate_new(parameters)
   end
 
   def validate("concatenation", parameters) do
-    Transformers.Concatenation.validate(parameters)
+    Transformers.Concatenation.validate_new(parameters)
   end
 
   def validate("datetime", parameters) do
-    Transformers.DateTime.validate(parameters)
+    Transformers.DateTime.validate_new(parameters)
   end
 
   def validate("remove", parameters) do
-    Transformers.Remove.validate(parameters)
+    Transformers.Remove.validate_new(parameters)
   end
 
   def validate(unsupported, _) do
