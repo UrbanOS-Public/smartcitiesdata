@@ -103,6 +103,17 @@ defmodule Transformers.RemoveTest do
 
       assert reason == %{"sourceField" => "Missing or empty field"}
     end
+
+    test "when whitespace sourceField return error" do
+      parameters =
+        %{
+          "sourceField" => "   "
+        }
+
+      {:error, reason} = Remove.validate_new(parameters)
+
+      assert reason == %{"sourceField" => "Missing or empty field"}
+    end
   end
 
   describe "fields/0" do

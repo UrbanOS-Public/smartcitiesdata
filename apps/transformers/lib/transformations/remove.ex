@@ -2,6 +2,8 @@ defmodule Transformers.Remove do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidationStatus
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -23,7 +25,19 @@ defmodule Transformers.Remove do
   end
 
   def validate_new(parameters) do
-    FieldFetcher.fetch_value_or_error(parameters, "sourceField")
+    result = %ValidationStatus{}
+      |> NotBlank.check(parameters, "sourceField")
+
+    if ValidationStatus.any_errors?(result) do
+      {:error, result.errors}
+    else
+      ok_with_ordered_values(result)
+    end
+  end
+
+  defp ok_with_ordered_values(status) do
+    source_field = ValidationStatus.get_value(status, "sourceField")
+    {:ok, source_field}
   end
 
   def fields() do

@@ -13,12 +13,7 @@ defmodule Transformers.FieldFetcher do
   end
 
   def fetch_parameter_new(params, field_name) do
-    error_msg = "Missing or empty field"
-    fetch_result = fetch_or_error(params, field_name, error_msg)
-    case fetch_result do
-      {:ok, field} -> non_empty_field_or_error(field, error_msg)
-      {:error, reason} -> {:error, reason}
-    end
+    fetch_or_error(params, field_name, "Missing or empty field")
   end
 
   def fetch_value(payload, field_name) do
@@ -29,14 +24,6 @@ defmodule Transformers.FieldFetcher do
     case Map.fetch(map, field_name) do
       {:ok, field} -> {:ok, field}
       :error -> {:error, error_msg}
-    end
-  end
-
-  defp non_empty_field_or_error(field, error_msg) do
-    if field == "" do
-      {:error, error_msg}
-    else
-      {:ok, field}
     end
   end
 end

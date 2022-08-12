@@ -96,6 +96,22 @@ defmodule Transformers.Validations.ValidationStatusTest do
     end
   end
 
+  describe("has_error?/2") do
+    test "return true if field has associated error" do
+      field = "awesome"
+      error = "oh no!"
+      status = %ValidationStatus{errors: %{field => error}}
+
+      assert ValidationStatus.has_error?(status, field)
+    end
+
+    test "return false if no matching error" do
+      status = %ValidationStatus{}
+
+      refute ValidationStatus.get_error(status, "something")
+    end
+  end
+
   describe("any_errors?/1") do
     test "return true if any errors" do
       status = %ValidationStatus{errors: %{"bad" => "thing"}}

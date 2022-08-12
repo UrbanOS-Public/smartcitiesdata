@@ -18,6 +18,10 @@ defmodule Transformers.Validations.ValidationStatus do
     Map.get(status, :errors) |> Map.get(field)
   end
 
+  def has_error?(status, field) do
+    Map.get(status, :errors) |> Map.has_key?(field)
+  end
+
   def any_errors?(status) do
     Map.get(status, :errors) |> Map.keys() |> length() |> greater_than_zero?()
   end
