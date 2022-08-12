@@ -40,7 +40,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("concatenation", parameters) do
-    Transformers.Concatenation.validate_new(parameters)
+    Transformers.Concatenation.validate(parameters)
   end
 
   def validate("datetime", parameters) do

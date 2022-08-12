@@ -1,14 +1,13 @@
 defmodule Transformers.Concatenation do
   @behaviour Transformation
 
-  alias Transformers.FieldFetcher
   alias Transformers.Validations.IsPresent
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_fields, separator, target_field]} <- validate_new(parameters),
+    with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
          {:ok, values} <- fetch_values(payload, source_fields),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)
@@ -20,16 +19,6 @@ defmodule Transformers.Concatenation do
   end
 
   def validate(parameters) do
-    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
-         {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField") do
-      {:ok, [source_fields, separator, target_field]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  def validate_new(parameters) do
     %ValidationStatus{}
       |> NotBlank.check(parameters, "sourceFields")
       |> NotBlank.check(parameters, "targetField")

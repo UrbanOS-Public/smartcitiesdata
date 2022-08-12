@@ -189,7 +189,7 @@ defmodule Transformers.ConcatenationTest do
       assert target_field == parameters["targetField"]
     end
 
-    data_test "when missing parameter #{parameter} return error" do
+    data_test "when missing parameter #{parameter} return error #{message}" do
       parameters =
         %{
           "sourceFields" => ["name", "last_name"],
@@ -200,38 +200,6 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.validate(parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
-
-      where(parameter: ["sourceFields", "separator", "targetField"])
-    end
-  end
-
-  describe "validate_new/1" do
-    test "returns :ok if all parameters are present" do
-      parameters = %{
-        "sourceFields" => ["other", "name"],
-        "separator" => ".",
-        "targetField" => "name"
-      }
-
-      {:ok, [source_fields, separator, target_field]} = Concatenation.validate_new(parameters)
-
-      assert source_fields == parameters["sourceFields"]
-      assert separator == parameters["separator"]
-      assert target_field == parameters["targetField"]
-    end
-
-    data_test "when missing parameter #{parameter} return error #{message}" do
-      parameters =
-        %{
-          "sourceFields" => ["name", "last_name"],
-          "separator" => ".",
-          "targetField" => "full_name"
-        }
-        |> Map.delete(parameter)
-
-      {:error, reason} = Concatenation.validate_new(parameters)
-
       assert reason == %{"#{parameter}" => "#{message}"}
 
       where(
@@ -241,7 +209,7 @@ defmodule Transformers.ConcatenationTest do
     end
 
     test "when all parameters missing return errors for all" do
-      {:error, reason} = Concatenation.validate_new(%{})
+      {:error, reason} = Concatenation.validate(%{})
 
       assert reason == %{
         "sourceFields" => "Missing or empty field",
