@@ -16,7 +16,8 @@ defmodule Pipeline.Writer.S3Writer do
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
-  @spec init(table: String.t(), schema: schema(), bucket: String.t()) :: :ok | {:error, term()}
+  @spec init(table: String.t(), schema: schema(), bucket: String.t(), partitions: [String.t()]) ::
+          :ok | {:error, term()}
   @doc """
   Ensures PrestoDB tables exist for JSON and ORC formats.
   """
@@ -159,7 +160,8 @@ defmodule Pipeline.Writer.S3Writer do
     %{
       table: table_name(format, options),
       schema: options[:schema],
-      format: format
+      format: format,
+      partitions: options[:partitions]
     }
   end
 

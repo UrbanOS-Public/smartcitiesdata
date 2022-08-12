@@ -11,7 +11,6 @@ defmodule Pipeline.Writer.S3WriterTest do
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @expected_table_values [
-    %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"},
     %{
       "Column" => "two",
       "Comment" => "",
@@ -23,18 +22,19 @@ defmodule Pipeline.Writer.S3WriterTest do
       "Comment" => "",
       "Extra" => "",
       "Type" => "array(row(five decimal(18,3)))"
-    }
+    },
+    %{"Column" => "five", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"}
   ]
 
   @table_schema [
-    %{name: "one", type: "list", itemType: "string"},
     %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
     %{
       name: "four",
       type: "list",
       itemType: "map",
       subSchema: [%{name: "five", type: "decimal(18,3)"}]
-    }
+    },
+    %{name: "five", type: "list", itemType: "string"}
   ]
 
   setup do
@@ -63,9 +63,35 @@ defmodule Pipeline.Writer.S3WriterTest do
       end)
     end
 
+    # TODO:
+    test "creates table with correct partitions", %{session: session} do
+      system_name = "system_name"
+
+      dataset =
+        TDG.create_dataset(%{
+          technical: %{systemName: system_name, schema: @table_schema}
+        })
+
+      S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema, partitions: ["five"])
+
+      eventually(fn ->
+        table = "describe hive.default.org_name__dataset_name__json"
+
+        result =
+          session
+          |> Prestige.execute!(table)
+          |> Prestige.Result.as_maps()
+
+        # todo: this should create with partitions fine, how are they reflected
+        # in "result" for assertions though
+        result |> IO.inspect(label: "result")
+        assert result == @expected_table_values
+      end)
+    end
+
     test "handles prestige errors for invalid table names" do
       schema = [
-        %{name: "one", type: "list", itemType: "string"},
+        %{name: "five", type: "list", itemType: "string"},
         %{name: "two", type: "map", subSchema: [%{name: "three", type: "decimal(18,3)"}]},
         %{name: "four", type: "list", itemType: "map", subSchema: [%{name: "five", type: "integer"}]}
       ]
@@ -96,13 +122,13 @@ defmodule Pipeline.Writer.S3WriterTest do
 
   describe "write/2" do
     test "inserts records", %{session: session} do
-      schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
+      schema = [%{name: "five", type: "string"}, %{name: "two", type: "integer"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__bar", schema: schema}})
 
       S3Writer.init(table: dataset.technical.systemName, schema: schema)
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "hello", "two" => 42}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "goodbye", "two" => 9001}})
 
       S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
 
@@ -114,16 +140,16 @@ defmodule Pipeline.Writer.S3WriterTest do
           |> Prestige.query!(query)
           |> Prestige.Result.as_maps()
 
-        assert result == [%{"one" => "hello", "two" => 42}, %{"one" => "goodbye", "two" => 9001}]
+        assert result == [%{"five" => "hello", "two" => 42}, %{"five" => "goodbye", "two" => 9001}]
       end)
     end
 
     test "inserts records, creating the table when it does not exist", %{session: session} do
-      schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
+      schema = [%{name: "five", type: "string"}, %{name: "two", type: "integer"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "Goo__Bar", schema: schema}})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "hello", "two" => 42}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "goodbye", "two" => 9001}})
 
       S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
 
@@ -135,16 +161,16 @@ defmodule Pipeline.Writer.S3WriterTest do
           |> Prestige.query!(query)
           |> Prestige.Result.as_maps()
 
-        assert result == [%{"one" => "hello", "two" => 42}, %{"one" => "goodbye", "two" => 9001}]
+        assert result == [%{"five" => "hello", "two" => 42}, %{"five" => "goodbye", "two" => 9001}]
       end)
     end
 
     test "returns an error if it cannot create the table" do
-      schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
+      schema = [%{name: "five", type: "string"}, %{name: "two", type: "integer"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "suprisingly__there", schema: schema}})
 
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
+      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "hello", "two" => 42}})
+      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"five" => "goodbye", "two" => 9001}})
 
       ExAws.S3.upload(["Blarg"], "trino-hive-storage", "hive-s3/suprisingly__there/blarg.gz")
       |> ExAws.request()
@@ -243,19 +269,19 @@ defmodule Pipeline.Writer.S3WriterTest do
   describe "compact/1" do
     test "compacts a table without changing data", %{session: session} do
       sub = [%{name: "three", type: "boolean"}]
-      schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
+      schema = [%{name: "five", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
 
       S3Writer.init(table: dataset.technical.systemName, schema: schema)
 
       Enum.each(1..15, fn n ->
-        payload = %{"one" => [n], "two" => %{"three" => false}}
+        payload = %{"five" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
         S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
       end)
 
       Enum.each(1..5, fn n ->
-        payload = %{"one" => [n], "two" => %{"three" => false}}
+        payload = %{"five" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
         TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
       end)
@@ -301,13 +327,13 @@ defmodule Pipeline.Writer.S3WriterTest do
 
     test "skips compaction (and tells you that it skipped it) for empty json table", %{session: session} do
       sub = [%{name: "three", type: "boolean"}]
-      schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
+      schema = [%{name: "five", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "d__e"}})
 
       S3Writer.init(table: dataset.technical.systemName, schema: schema)
 
       Enum.each(1..5, fn n ->
-        payload = %{"one" => [n], "two" => %{"three" => false}}
+        payload = %{"five" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
         TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
       end)
