@@ -168,7 +168,12 @@ defmodule E2ETest do
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
         %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"},
         %{"Column" => "_ingestion_id", "Comment" => "", "Extra" => "", "Type" => "varchar"},
-        %{"Column" => "_extraction_start_time", "Comment" => "", "Extra" => "", "Type" => "date"}
+        %{
+          "Column" => "_extraction_start_time",
+          "Comment" => "",
+          "Extra" => "",
+          "Type" => "timestamp(3)"
+        }
       ]
 
       eventually(
@@ -257,15 +262,17 @@ defmodule E2ETest do
           assert [
                    %{
                      "one" => true,
-                     "three" => 10,
                      "two" => "foobar",
-                     "_extraction_start_time" => get_current_yyyy_mm_dd,
+                     "three" => 10,
                      "_ingestion_id" => ingestion.id,
-                     "os_partition" => get_current_yyyy_mm
+                     "os_partition" => get_current_yyyy_mm,
+                     "_extraction_start_time" => get_current_yyyy_mm_dd
                    }
                  ] ==
                    query(
-                     "select * from #{table}",
+                     "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                       table
+                     }",
                      true
                    )
         end,
@@ -347,13 +354,15 @@ defmodule E2ETest do
 
           assert %{
                    "one" => true,
-                   "three" => 10,
                    "two" => "foobar",
-                   "_extraction_start_time" => get_current_yyyy_mm_dd,
+                   "three" => 10,
                    "_ingestion_id" => ingestion.id,
-                   "os_partition" => get_current_yyyy_mm
+                   "os_partition" => get_current_yyyy_mm,
+                   "_extraction_start_time" => get_current_yyyy_mm_dd
                  } in query(
-                   "select * from #{table}",
+                   "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                     table
+                   }",
                    true
                  )
         end,
@@ -475,7 +484,7 @@ defmodule E2ETest do
     day = DateTime.utc_now().day |> Integer.to_string() |> String.pad_leading(2, "0")
     month = DateTime.utc_now().month |> Integer.to_string() |> String.pad_leading(2, "0")
     year = DateTime.utc_now().year |> Integer.to_string()
-    "#{year}-#{month}-#{day}"
+    "#{year}_#{month}_#{day}"
   end
 
   defp prestige_session(),

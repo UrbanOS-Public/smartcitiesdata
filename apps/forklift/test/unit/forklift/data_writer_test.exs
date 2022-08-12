@@ -51,7 +51,7 @@ defmodule Forklift.DataWriterTest do
         expected_dataset.technical.schema ++
           [
             %{name: "_ingestion_id", type: "string"},
-            %{name: "_extraction_start_time", type: "date", format: "{ISO:Extended:Z}"}
+            %{name: "_extraction_start_time", type: "timestamp", format: "{ISO:Extended:Z}"}
           ]
 
       assert schema == schema_with_ingestion_metadata
