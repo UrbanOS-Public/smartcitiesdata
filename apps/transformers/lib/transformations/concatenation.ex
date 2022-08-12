@@ -2,6 +2,9 @@ defmodule Transformers.Concatenation do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
+  alias Transformers.Validations.IsPresent
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidationStatus
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -27,44 +30,26 @@ defmodule Transformers.Concatenation do
   end
 
   def validate_new(parameters) do
-    reverse_fields_for_easier_list_updates_while_preserving_order()
-      |> validate_fields(parameters)
+    %ValidationStatus{}
+      |> NotBlank.check(parameters, "sourceFields")
+      |> IsPresent.check(parameters, "separator")
+      |> NotBlank.check(parameters, "targetField")
       |> ordered_values_or_errors()
   end
 
-  defp reverse_fields_for_easier_list_updates_while_preserving_order do
-    ["sourceFields", "separator", "targetField"] |> Enum.reverse()
-  end
-
-  defp validate_fields(required_fields, parameters) do
-    Enum.reduce(required_fields, %{values: [], errors: %{}}, fn required_field, accumulator ->
-      update_with_value_or_error(required_field, accumulator, parameters)
-    end)
-  end
-
-  defp update_with_value_or_error(required_field, accumulator, parameters) do
-    result = FieldFetcher.fetch_value_or_error(parameters, required_field)
-    case result do
-      {:ok, value} -> update_with_value(accumulator, value)
-      {:error, reason} -> update_with_error(accumulator, reason)
-    end
-  end
-
-  defp update_with_value(accumulator, value) do
-    Map.update(accumulator, :values, [], fn values -> [value | values] end)
-  end
-
-  defp update_with_error(accumulator, error_reason) do
-    Map.update(accumulator, :errors, %{}, fn errors -> Map.merge(errors, error_reason) end)
-  end
-
-  defp ordered_values_or_errors(accumulated) do
-    errors = Map.get(accumulated, :errors)
-    if length(Map.keys(errors)) > 0 do
-      {:error, errors}
+  defp ordered_values_or_errors(status) do
+    if ValidationStatus.any_errors?(status) do
+      {:error, status.errors}
     else
-      {:ok, Map.get(accumulated, :values)}
+      ok_with_ordered_values(status)
     end
+  end
+
+  defp ok_with_ordered_values(status) do
+    source_fields = ValidationStatus.get_value(status, "sourceFields")
+    separator = ValidationStatus.get_value(status, "separator")
+    target_field = ValidationStatus.get_value(status, "targetField")
+    {:ok, [source_fields, separator, target_field]}
   end
 
   def fetch_values(payload, field_names) when is_list(field_names) do
