@@ -48,7 +48,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("remove", parameters) do
-    Transformers.Remove.validate_new(parameters)
+    Transformers.Remove.validate(parameters)
   end
 
   def validate(unsupported, _) do

@@ -7,7 +7,7 @@ defmodule Transformers.Remove do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, source_field} <- validate_new(parameters),
+    with {:ok, source_field} <- validate(parameters),
          {:ok, _} <- FieldFetcher.fetch_value(payload, source_field) do
       transformed_payload = Map.delete(payload, source_field)
       {:ok, transformed_payload}
@@ -17,14 +17,6 @@ defmodule Transformers.Remove do
   end
 
   def validate(parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField") do
-      {:ok, source_field}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  def validate_new(parameters) do
     result = %ValidationStatus{}
       |> NotBlank.check(parameters, "sourceField")
 

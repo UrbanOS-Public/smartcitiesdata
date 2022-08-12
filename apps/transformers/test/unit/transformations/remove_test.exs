@@ -66,30 +66,6 @@ defmodule Transformers.RemoveTest do
 
       {:error, reason} = Remove.validate(parameters)
 
-      assert reason == "Missing transformation parameter: sourceField"
-    end
-  end
-
-  describe "validate_new/1" do
-    test "returns :ok if all parameters are present" do
-      parameters = %{
-        "sourceField" => "dead_field"
-      }
-
-      {:ok, source_field} = Remove.validate_new(parameters)
-
-      assert source_field == parameters["sourceField"]
-    end
-
-    test "when missing parameter sourceField return error" do
-      parameters =
-        %{
-          "sourceField" => "dead_field"
-        }
-        |> Map.delete("sourceField")
-
-      {:error, reason} = Remove.validate_new(parameters)
-
       assert reason == %{"sourceField" => "Missing or empty field"}
     end
 
@@ -99,7 +75,7 @@ defmodule Transformers.RemoveTest do
           "sourceField" => ""
         }
 
-      {:error, reason} = Remove.validate_new(parameters)
+      {:error, reason} = Remove.validate(parameters)
 
       assert reason == %{"sourceField" => "Missing or empty field"}
     end
@@ -110,7 +86,7 @@ defmodule Transformers.RemoveTest do
           "sourceField" => "   "
         }
 
-      {:error, reason} = Remove.validate_new(parameters)
+      {:error, reason} = Remove.validate(parameters)
 
       assert reason == %{"sourceField" => "Missing or empty field"}
     end
