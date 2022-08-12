@@ -32,8 +32,8 @@ defmodule Transformers.Concatenation do
   def validate_new(parameters) do
     %ValidationStatus{}
       |> NotBlank.check(parameters, "sourceFields")
-      |> IsPresent.check(parameters, "separator")
       |> NotBlank.check(parameters, "targetField")
+      |> IsPresent.check(parameters, "separator")
       |> ordered_values_or_errors()
   end
 
