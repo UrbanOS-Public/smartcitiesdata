@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.ValidationStatus do
-
   defstruct values: %{}, errors: %{}
 
   def update_value(status, field, value) do

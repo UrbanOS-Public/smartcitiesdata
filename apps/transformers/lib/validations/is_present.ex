@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.IsPresent do
-
   alias Transformers.Validations.ValidationStatus
 
   def check(status, parameters, field) do
@@ -10,5 +9,4 @@ defmodule Transformers.Validations.IsPresent do
       _ -> ValidationStatus.update_value(status, field, value)
     end
   end
-
 end

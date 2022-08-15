@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.ValidTypeConversion do
-
   alias Transformers.ConversionFunctions
   alias Transformers.Validations.ValidationStatus
 
@@ -19,8 +18,11 @@ defmodule Transformers.Validations.ValidTypeConversion do
 
   defp attempt_validation(status, parameters, source, target, function_field) do
     case pick_conversion(parameters) do
-      {:ok, conversion_function} -> add_function_to_designated_field(status, function_field, conversion_function)
-      {:error, reason} -> add_error_to_source_and_target(status, source, target, reason)
+      {:ok, conversion_function} ->
+        add_function_to_designated_field(status, function_field, conversion_function)
+
+      {:error, reason} ->
+        add_error_to_source_and_target(status, source, target, reason)
     end
   end
 
@@ -36,7 +38,6 @@ defmodule Transformers.Validations.ValidTypeConversion do
 
   defp add_error_to_source_and_target(status, source, target, reason) do
     ValidationStatus.add_error(status, source, reason)
-      |> ValidationStatus.add_error(target, reason)
+    |> ValidationStatus.add_error(target, reason)
   end
-
 end

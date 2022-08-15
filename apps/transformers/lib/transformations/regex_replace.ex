@@ -26,11 +26,11 @@ defmodule Transformers.RegexReplace do
 
   def validate(parameters) do
     %ValidationStatus{}
-      |> NotBlank.check(parameters, @source_field)
-      |> NotBlank.check(parameters, @replacement)
-      |> NotBlank.check(parameters, @regex)
-      |> ValidRegex.check(parameters, @regex)
-      |> ValidationStatus.ordered_values_or_errors([@source_field, @replacement, @regex])
+    |> NotBlank.check(parameters, @source_field)
+    |> NotBlank.check(parameters, @replacement)
+    |> NotBlank.check(parameters, @regex)
+    |> ValidRegex.check(parameters, @regex)
+    |> ValidationStatus.ordered_values_or_errors([@source_field, @replacement, @regex])
   end
 
   defp abort_if_not_string(value, field_name) do

@@ -173,9 +173,9 @@ defmodule Transformers.TypeConversionTest do
     {:error, reason} = Transformers.TypeConversion.transform(payload, parameters)
 
     assert reason == %{
-      "sourceType" => "Conversion from boolean to string is not supported",
-      "targetType" => "Conversion from boolean to string is not supported"
-    }
+             "sourceType" => "Conversion from boolean to string is not supported",
+             "targetType" => "Conversion from boolean to string is not supported"
+           }
   end
 
   test "if string cannot be parsed into integer return error" do
@@ -235,9 +235,9 @@ defmodule Transformers.TypeConversionTest do
       {:error, reasons} = TypeConversion.validate(parameters)
 
       assert reasons == %{
-        "sourceType" => "Conversion from boolean to string is not supported",
-        "targetType" => "Conversion from boolean to string is not supported"
-      }
+               "sourceType" => "Conversion from boolean to string is not supported",
+               "targetType" => "Conversion from boolean to string is not supported"
+             }
     end
   end
 end

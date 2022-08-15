@@ -23,7 +23,9 @@ defmodule Transformers.Validations.DateTimeFormatTest do
 
     result = DateTimeFormat.check(status, parameters, key)
 
-    expected_message = "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."
+    expected_message =
+      "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."
+
     assert ValidationStatus.get_error(result, key) == expected_message
   end
 

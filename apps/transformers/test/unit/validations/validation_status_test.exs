@@ -128,7 +128,8 @@ defmodule Transformers.Validations.ValidationStatusTest do
 
   describe("ordered_values_or_errors/2") do
     test "returns error map if any errors" do
-      {:error, result} = %ValidationStatus{}
+      {:error, result} =
+        %ValidationStatus{}
         |> ValidationStatus.add_error("alpha", "nonsense")
         |> ValidationStatus.ordered_values_or_errors(["alpha"])
 
@@ -136,7 +137,8 @@ defmodule Transformers.Validations.ValidationStatusTest do
     end
 
     test "returns values in specified order if no errors" do
-      {:ok, result} = %ValidationStatus{}
+      {:ok, result} =
+        %ValidationStatus{}
         |> ValidationStatus.update_value("three", "C")
         |> ValidationStatus.update_value("one", "A")
         |> ValidationStatus.update_value("four", "D")

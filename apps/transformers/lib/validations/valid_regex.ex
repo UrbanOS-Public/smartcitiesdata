@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.ValidRegex do
-
   alias Transformers.RegexUtils
   alias Transformers.Validations.ValidationStatus
 

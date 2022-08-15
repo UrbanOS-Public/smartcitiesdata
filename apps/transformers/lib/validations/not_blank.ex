@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.NotBlank do
-
   alias Transformers.Validations.ValidationStatus
 
   def check(status, parameters, field) do
@@ -31,8 +30,8 @@ defmodule Transformers.Validations.NotBlank do
 
   defp is_blank?(field) do
     String.trim(field)
-      |> String.length()
-      |> is_zero?()
+    |> String.length()
+    |> is_zero?()
   end
 
   defp is_zero?(length) do

@@ -212,11 +212,10 @@ defmodule Transformers.ConcatenationTest do
       {:error, reason} = Concatenation.validate(%{})
 
       assert reason == %{
-        "sourceFields" => "Missing or empty field",
-        "separator" => "Missing field",
-        "targetField" => "Missing or empty field"
-      }
+               "sourceFields" => "Missing or empty field",
+               "separator" => "Missing field",
+               "targetField" => "Missing or empty field"
+             }
     end
-
   end
 end

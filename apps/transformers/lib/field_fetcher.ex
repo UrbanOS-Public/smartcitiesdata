@@ -1,7 +1,7 @@
 defmodule Transformers.FieldFetcher do
-
   def fetch_value_or_error(parameters, field) do
     result = fetch_parameter_new(parameters, field)
+
     case result do
       {:ok, value} -> {:ok, value}
       {:error, reason} -> {:error, %{field => reason}}

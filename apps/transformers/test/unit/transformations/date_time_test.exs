@@ -173,7 +173,11 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.validate(params)
 
-      assert reason == %{"#{format}" => "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."}
+      assert reason == %{
+               "#{format}" =>
+                 "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."
+             }
+
       where(format: ["sourceFormat", "targetFormat"])
     end
 

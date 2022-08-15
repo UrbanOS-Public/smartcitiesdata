@@ -70,10 +70,9 @@ defmodule Transformers.RemoveTest do
     end
 
     test "when empty sourceField return error" do
-      parameters =
-        %{
-          "sourceField" => ""
-        }
+      parameters = %{
+        "sourceField" => ""
+      }
 
       {:error, reason} = Remove.validate(parameters)
 
@@ -81,10 +80,9 @@ defmodule Transformers.RemoveTest do
     end
 
     test "when whitespace sourceField return error" do
-      parameters =
-        %{
-          "sourceField" => "   "
-        }
+      parameters = %{
+        "sourceField" => "   "
+      }
 
       {:error, reason} = Remove.validate(parameters)
 

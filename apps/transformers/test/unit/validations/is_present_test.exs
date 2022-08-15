@@ -22,5 +22,4 @@ defmodule Transformers.Validations.IsPresentTest do
 
     assert result == %ValidationStatus{errors: %{"gone" => "Missing field"}}
   end
-
 end

@@ -1,5 +1,4 @@
 defmodule Transformers.Validations.DateTimeFormat do
-
   alias Transformers.Validations.ValidationStatus
 
   def check(status, parameters, field) do
@@ -18,6 +17,7 @@ defmodule Transformers.Validations.DateTimeFormat do
 
   defp check_if_valid(status, field, value) do
     result = Timex.Format.DateTime.Formatter.validate(value)
+
     case result do
       :ok -> ValidationStatus.update_value(status, field, value)
       {:error, reason} -> add_error(status, field, value, reason)
