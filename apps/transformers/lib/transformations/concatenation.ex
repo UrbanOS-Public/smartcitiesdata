@@ -23,22 +23,7 @@ defmodule Transformers.Concatenation do
       |> NotBlank.check(parameters, "sourceFields")
       |> NotBlank.check(parameters, "targetField")
       |> IsPresent.check(parameters, "separator")
-      |> ordered_values_or_errors()
-  end
-
-  defp ordered_values_or_errors(status) do
-    if ValidationStatus.any_errors?(status) do
-      {:error, status.errors}
-    else
-      ok_with_ordered_values(status)
-    end
-  end
-
-  defp ok_with_ordered_values(status) do
-    source_fields = ValidationStatus.get_value(status, "sourceFields")
-    separator = ValidationStatus.get_value(status, "separator")
-    target_field = ValidationStatus.get_value(status, "targetField")
-    {:ok, [source_fields, separator, target_field]}
+      |> ValidationStatus.ordered_values_or_errors(["sourceFields", "separator", "targetField"])
   end
 
   def fetch_values(payload, field_names) when is_list(field_names) do

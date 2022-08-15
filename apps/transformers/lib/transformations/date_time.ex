@@ -32,23 +32,7 @@ defmodule Transformers.DateTime do
       |> NotBlank.check(parameters, "targetFormat")
       |> DateTimeFormat.check(parameters, "sourceFormat")
       |> DateTimeFormat.check(parameters, "targetFormat")
-      |> ordered_values_or_errors()
-  end
-
-  defp ordered_values_or_errors(status) do
-    if ValidationStatus.any_errors?(status) do
-      {:error, status.errors}
-    else
-      ok_with_ordered_values(status)
-    end
-  end
-
-  defp ok_with_ordered_values(status) do
-    source_field = ValidationStatus.get_value(status, "sourceField")
-    source_format = ValidationStatus.get_value(status, "sourceFormat")
-    target_field = ValidationStatus.get_value(status, "targetField")
-    target_format = ValidationStatus.get_value(status, "targetFormat")
-    {:ok, [source_field, source_format, target_field, target_format]}
+      |> ValidationStatus.ordered_values_or_errors(["sourceField", "sourceFormat", "targetField", "targetFormat"])
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do

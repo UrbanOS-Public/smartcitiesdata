@@ -29,4 +29,13 @@ defmodule Transformers.Validations.ValidationStatus do
   defp greater_than_zero?(length) do
     length > 0
   end
+
+  def ordered_values_or_errors(status, field_order) do
+    if any_errors?(status) do
+      {:error, status.errors}
+    else
+      ordered = Enum.map(field_order, fn field -> get_value(status, field) end)
+      {:ok, ordered}
+    end
+  end
 end

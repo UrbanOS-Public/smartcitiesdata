@@ -54,7 +54,7 @@ defmodule Transformers.RemoveTest do
 
       {:ok, source_field} = Remove.validate(parameters)
 
-      assert source_field == parameters["sourceField"]
+      assert source_field == ["dead_field"]
     end
 
     test "when missing parameter sourceField return error" do
