@@ -28,7 +28,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("regex_extract", parameters) do
-    Transformers.RegexExtract.validate_new(parameters)
+    Transformers.RegexExtract.validate(parameters)
   end
 
   def validate("regex_replace", parameters) do
