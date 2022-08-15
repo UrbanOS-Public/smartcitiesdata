@@ -2,6 +2,9 @@ defmodule Transformers.DateTime do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
+  alias Transformers.Validations.DateTimeFormat
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidationStatus
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -35,65 +38,30 @@ defmodule Transformers.DateTime do
   end
 
   def validate_new(parameters) do
-    ["sourceField", "sourceFormat", "targetField", "targetFormat"]
-      |> Enum.reverse()
-      |> check_for_missing_fields(parameters)
-      |> check_for_incorrect_datetime_format(["sourceFormat", "targetFormat"], parameters)
+    %ValidationStatus{}
+      |> NotBlank.check(parameters, "sourceField")
+      |> NotBlank.check(parameters, "sourceFormat")
+      |> NotBlank.check(parameters, "targetField")
+      |> NotBlank.check(parameters, "targetFormat")
+      |> DateTimeFormat.check(parameters, "sourceFormat")
+      |> DateTimeFormat.check(parameters, "targetFormat")
       |> ordered_values_or_errors()
   end
 
-  defp check_for_incorrect_datetime_format(accumulated, datetime_fields, parameters) do
-    Enum.reduce(datetime_fields, accumulated, fn field, accumulator ->
-      if field_has_no_prior_errors?(accumulator, field) do
-        update_with_any_datetime_errors(accumulator, parameters, field)
-      else
-        accumulator
-      end
-    end)
-  end
-
-  defp field_has_no_prior_errors?(accumulator, field) do
-    get_in(accumulator, [:errors, field]) == nil
-  end
-
-  defp update_with_any_datetime_errors(accumulator, parameters, field) do
-    {:ok, value} = FieldFetcher.fetch_parameter(parameters, field)
-    result = validate_datetime_format(value)
-    case result do
-      :ok -> accumulator
-      {:error, reason} -> Map.update(accumulator, :errors, %{}, fn errors -> Map.put(errors, field, reason) end)
-    end
-  end
-
-  defp check_for_missing_fields(required_fields, parameters) do
-    Enum.reduce(required_fields, %{values: [], errors: %{}}, fn required_field, accumulator ->
-      update_with_value_or_error(required_field, accumulator, parameters)
-    end)
-  end
-
-  defp update_with_value_or_error(required_field, accumulator, parameters) do
-    result = FieldFetcher.fetch_value_or_error(parameters, required_field)
-    case result do
-      {:ok, value} -> update_with_value(accumulator, value)
-      {:error, reason} -> update_with_error(accumulator, reason)
-    end
-  end
-
-  defp update_with_value(accumulator, value) do
-    Map.update(accumulator, :values, [], fn values -> [value | values] end)
-  end
-
-  defp update_with_error(accumulator, error_reason) do
-    Map.update(accumulator, :errors, %{}, fn errors -> Map.merge(errors, error_reason) end)
-  end
-
-  defp ordered_values_or_errors(accumulated) do
-    errors = Map.get(accumulated, :errors)
-    if length(Map.keys(errors)) > 0 do
-      {:error, errors}
+  defp ordered_values_or_errors(status) do
+    if ValidationStatus.any_errors?(status) do
+      {:error, status.errors}
     else
-      {:ok, Map.get(accumulated, :values)}
+      ok_with_ordered_values(status)
     end
+  end
+
+  defp ok_with_ordered_values(status) do
+    source_field = ValidationStatus.get_value(status, "sourceField")
+    source_format = ValidationStatus.get_value(status, "sourceFormat")
+    target_field = ValidationStatus.get_value(status, "targetField")
+    target_format = ValidationStatus.get_value(status, "targetFormat")
+    {:ok, [source_field, source_format, target_field, target_format]}
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do
