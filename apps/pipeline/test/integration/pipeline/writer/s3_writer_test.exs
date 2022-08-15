@@ -8,6 +8,7 @@ defmodule Pipeline.Writer.S3WriterTest do
   alias Pipeline.Writer.S3Writer.Compaction
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Pipeline.TestHandler
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @expected_table_values [
@@ -23,7 +24,23 @@ defmodule Pipeline.Writer.S3WriterTest do
       "Extra" => "",
       "Type" => "array(row(five decimal(18,3)))"
     },
-    %{"Column" => "five", "Comment" => "", "Extra" => "", "Type" => "array(varchar)"}
+    %{"Column" => "six", "Comment" => "", "Extra" => "", "Type" => "integer"}
+  ]
+
+  @expected_table_values_partitioned [
+    %{
+      "Column" => "two",
+      "Comment" => "",
+      "Extra" => "",
+      "Type" => "row(three decimal(18,3))"
+    },
+    %{
+      "Column" => "four",
+      "Comment" => "",
+      "Extra" => "",
+      "Type" => "array(row(five decimal(18,3)))"
+    },
+    %{"Column" => "six", "Comment" => "", "Extra" => "partition key", "Type" => "integer"}
   ]
 
   @table_schema [
@@ -34,11 +51,12 @@ defmodule Pipeline.Writer.S3WriterTest do
       itemType: "map",
       subSchema: [%{name: "five", type: "decimal(18,3)"}]
     },
-    %{name: "five", type: "list", itemType: "string"}
+    %{name: "six", type: "integer"}
   ]
 
   setup do
     session = PrestigeHelper.create_session()
+    TestHandler.drop_all_tables()
     [session: session]
   end
 
@@ -63,29 +81,28 @@ defmodule Pipeline.Writer.S3WriterTest do
       end)
     end
 
-    # TODO:
     test "creates table with correct partitions", %{session: session} do
-      system_name = "system_name"
+      system_name = "org_name__partition_dataset"
 
       dataset =
         TDG.create_dataset(%{
           technical: %{systemName: system_name, schema: @table_schema}
         })
 
-      S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema, partitions: ["five"])
+      init_result =
+        S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema, partitions: ["six"])
+
+      assert init_result == :ok
 
       eventually(fn ->
-        table = "describe hive.default.org_name__dataset_name__json"
+        table = "describe hive.default.#{system_name}"
 
-        result =
+        resulting_table =
           session
           |> Prestige.execute!(table)
           |> Prestige.Result.as_maps()
 
-        # todo: this should create with partitions fine, how are they reflected
-        # in "result" for assertions though
-        result |> IO.inspect(label: "result")
-        assert result == @expected_table_values
+        assert resulting_table == @expected_table_values_partitioned
       end)
     end
 

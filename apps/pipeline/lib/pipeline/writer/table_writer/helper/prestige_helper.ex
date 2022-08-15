@@ -26,8 +26,14 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
     |> Prestige.new_session()
   end
 
-  def drop_table(table) do
-    %{table: table}
+  def drop_table(%{"Table" => table_name}) do
+    %{table: table_name}
+    |> Statement.drop()
+    |> execute_query()
+  end
+
+  def drop_table(table_name) do
+    %{table: table_name}
     |> Statement.drop()
     |> execute_query()
   end
