@@ -2,14 +2,13 @@ defmodule Transformers.RegexReplace do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
-  alias Transformers.RegexUtils
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidRegex
   alias Transformers.Validations.ValidationStatus
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field, replacement, regex]} <- validate_new(parameters),
+    with {:ok, [source_field, replacement, regex]} <- validate(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          :ok <- abort_if_not_string(value, source_field),
          :ok <- abort_if_not_string(replacement, "replacement") do
@@ -22,17 +21,6 @@ defmodule Transformers.RegexReplace do
   end
 
   def validate(parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
-         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
-         {:ok, replacement} <- FieldFetcher.fetch_parameter(parameters, "replacement"),
-         {:ok, regex} <- RegexUtils.regex_compile(regex_pattern) do
-      {:ok, [source_field, replacement, regex]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  def validate_new(parameters) do
     %ValidationStatus{}
       |> NotBlank.check(parameters, "sourceField")
       |> NotBlank.check(parameters, "replacement")

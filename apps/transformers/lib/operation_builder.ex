@@ -32,7 +32,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("regex_replace", parameters) do
-    Transformers.RegexReplace.validate_new(parameters)
+    Transformers.RegexReplace.validate(parameters)
   end
 
   def validate("conversion", parameters) do
