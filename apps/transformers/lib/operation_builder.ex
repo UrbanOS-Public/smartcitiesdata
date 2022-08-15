@@ -36,7 +36,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("conversion", parameters) do
-    Transformers.TypeConversion.validate_new(parameters)
+    Transformers.TypeConversion.validate(parameters)
   end
 
   def validate("concatenation", parameters) do

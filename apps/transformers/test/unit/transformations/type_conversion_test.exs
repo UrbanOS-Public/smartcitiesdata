@@ -224,48 +224,6 @@ defmodule Transformers.TypeConversionTest do
 
       {:error, reason} = TypeConversion.validate(parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
-
-      where(parameter: ["field", "sourceType", "targetType"])
-    end
-
-    test "if conversion is not supported return error" do
-      parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
-
-      result = TypeConversion.validate(parameters)
-
-      assert {:error, "Conversion from boolean to string is not supported"} == result
-    end
-  end
-
-  describe "validate_new/1" do
-    test "returns :ok if all parameters are present and the type conversion is valid" do
-      parameters = %{
-        "field" => "some_int",
-        "sourceType" => "integer",
-        "targetType" => "string"
-      }
-
-      {:ok, [field, source_type, target_type, conversion_function]} =
-        TypeConversion.validate_new(parameters)
-
-      assert field == parameters["field"]
-      assert source_type == parameters["sourceType"]
-      assert target_type == parameters["targetType"]
-      assert is_function(conversion_function)
-    end
-
-    data_test "when missing parameter #{parameter} return error" do
-      parameters =
-        %{
-          "field" => "some_int",
-          "sourceType" => "integer",
-          "targetType" => "string"
-        }
-        |> Map.delete(parameter)
-
-      {:error, reason} = TypeConversion.validate_new(parameters)
-
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["field", "sourceType", "targetType"])
@@ -274,7 +232,7 @@ defmodule Transformers.TypeConversionTest do
     test "if conversion is not supported return error" do
       parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
 
-      {:error, reasons} = TypeConversion.validate_new(parameters)
+      {:error, reasons} = TypeConversion.validate(parameters)
 
       assert reasons == %{
         "sourceType" => "Conversion from boolean to string is not supported",
