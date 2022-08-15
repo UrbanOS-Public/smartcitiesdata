@@ -44,7 +44,7 @@ defmodule Transformers.OperationBuilder do
   end
 
   def validate("datetime", parameters) do
-    Transformers.DateTime.validate_new(parameters)
+    Transformers.DateTime.validate(parameters)
   end
 
   def validate("remove", parameters) do

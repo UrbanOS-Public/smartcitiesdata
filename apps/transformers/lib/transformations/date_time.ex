@@ -9,7 +9,7 @@ defmodule Transformers.DateTime do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field, source_format, target_field, target_format]} <-
-           validate_new(parameters),
+           validate(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime(payload_source_value, source_format, source_field),
@@ -25,19 +25,6 @@ defmodule Transformers.DateTime do
   end
 
   def validate(parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
-         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, "sourceFormat"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
-         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, "targetFormat"),
-         :ok <- validate_datetime_format(source_format),
-         :ok <- validate_datetime_format(target_format) do
-      {:ok, [source_field, source_format, target_field, target_format]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  def validate_new(parameters) do
     %ValidationStatus{}
       |> NotBlank.check(parameters, "sourceField")
       |> NotBlank.check(parameters, "sourceFormat")
@@ -73,15 +60,6 @@ defmodule Transformers.DateTime do
          "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
            timexReason
          }"}
-    end
-  end
-
-  defp validate_datetime_format(format) do
-    with :ok <- Timex.Format.DateTime.Formatter.validate(format) do
-      :ok
-    else
-      {:error, reason} ->
-        {:error, "DateTime format \"#{format}\" is invalid: #{reason}"}
     end
   end
 
