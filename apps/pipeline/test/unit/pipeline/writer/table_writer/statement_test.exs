@@ -58,7 +58,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
     end
 
     @tag capture_log: true
-    test "handles a single partition parameters" do
+    test "handles a single column in the partitions parameter" do
       schema = [
         %{name: "street", type: "string"},
         %{name: "first_name", type: "string"}
@@ -72,7 +72,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
     end
 
     @tag capture_log: true
-    test "handles multiple partition parameters" do
+    test "handles multiple columns in the partition parameter" do
       schema = [
         %{name: "street", type: "string"},
         %{name: "first_name", type: "string"},
