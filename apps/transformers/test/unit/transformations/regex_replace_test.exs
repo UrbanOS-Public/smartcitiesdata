@@ -69,7 +69,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Value of field replacement is not a string: 123"
+    assert reason == %{"replacement" => "Not a string or list"}
   end
 
   test "if source field is not a string, return error" do

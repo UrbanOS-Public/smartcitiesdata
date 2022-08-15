@@ -1,7 +1,6 @@
 defmodule Transformers.Validations.NotBlankTest do
   use ExUnit.Case
 
-  alias Transformers.Validations.NeverSupportedThing
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
 
@@ -96,14 +95,15 @@ defmodule Transformers.Validations.NotBlankTest do
   end
 
   describe("check/3 for unsupported type") do
-    test "do nothing" do
+    test "add error if value neither string or list" do
       field = "something"
-      parameters = %{field => %NeverSupportedThing{}}
+      value = 123
+      parameters = %{field => value}
       status = %ValidationStatus{}
 
       result = NotBlank.check(status, parameters, field)
 
-      assert result == status
+      assert result.errors == %{field => "Not a string or list"}
     end
   end
 end
