@@ -5,6 +5,8 @@ defmodule Transformers.Remove do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
 
+  @source_field "sourceField"
+
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field]} <- validate(parameters),
@@ -18,14 +20,14 @@ defmodule Transformers.Remove do
 
   def validate(parameters) do
     %ValidationStatus{}
-      |> NotBlank.check(parameters, "sourceField")
-      |> ValidationStatus.ordered_values_or_errors(["sourceField"])
+      |> NotBlank.check(parameters, @source_field)
+      |> ValidationStatus.ordered_values_or_errors([@source_field])
   end
 
   def fields() do
     [
       %{
-        field_name: "sourceField",
+        field_name: @source_field,
         field_type: "string",
         field_label: "Field to Remove",
         options: nil

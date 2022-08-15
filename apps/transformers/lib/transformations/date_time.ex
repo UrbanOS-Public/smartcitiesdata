@@ -6,6 +6,11 @@ defmodule Transformers.DateTime do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
 
+  @source_field "sourceField"
+  @source_format "sourceFormat"
+  @target_field "targetField"
+  @target_format "targetFormat"
+
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field, source_format, target_field, target_format]} <-
@@ -26,13 +31,13 @@ defmodule Transformers.DateTime do
 
   def validate(parameters) do
     %ValidationStatus{}
-      |> NotBlank.check(parameters, "sourceField")
-      |> NotBlank.check(parameters, "sourceFormat")
-      |> NotBlank.check(parameters, "targetField")
-      |> NotBlank.check(parameters, "targetFormat")
-      |> DateTimeFormat.check(parameters, "sourceFormat")
-      |> DateTimeFormat.check(parameters, "targetFormat")
-      |> ValidationStatus.ordered_values_or_errors(["sourceField", "sourceFormat", "targetField", "targetFormat"])
+      |> NotBlank.check(parameters, @source_field)
+      |> NotBlank.check(parameters, @source_format)
+      |> NotBlank.check(parameters, @target_field)
+      |> NotBlank.check(parameters, @target_format)
+      |> DateTimeFormat.check(parameters, @source_format)
+      |> DateTimeFormat.check(parameters, @target_format)
+      |> ValidationStatus.ordered_values_or_errors([@source_field, @source_format, @target_field, @target_format])
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do

@@ -6,6 +6,11 @@ defmodule Transformers.TypeConversion do
   alias Transformers.Validations.ValidTypeConversion
   alias Transformers.Validations.ValidationStatus
 
+  @field "field"
+  @source_type "sourceType"
+  @target_type "targetType"
+  @conversion_function "conversionFunction"
+
   @impl Transformation
   def transform(payload, params) do
     with {:ok, [field, source_type, target_type, conversion_function]} <- validate(params),
@@ -21,11 +26,11 @@ defmodule Transformers.TypeConversion do
 
   def validate(parameters) do
     %ValidationStatus{}
-      |> NotBlank.check(parameters, "field")
-      |> NotBlank.check(parameters, "sourceType")
-      |> NotBlank.check(parameters, "targetType")
-      |> ValidTypeConversion.check(parameters, "sourceType", "targetType", "conversionFunction")
-      |> ValidationStatus.ordered_values_or_errors(["field", "sourceType", "targetType", "conversionFunction"])
+      |> NotBlank.check(parameters, @field)
+      |> NotBlank.check(parameters, @source_type)
+      |> NotBlank.check(parameters, @target_type)
+      |> ValidTypeConversion.check(parameters, @source_type, @target_type, @conversion_function)
+      |> ValidationStatus.ordered_values_or_errors([@field, @source_type, @target_type, @conversion_function])
   end
 
   defp abort_if_missing_value(payload, field, value) do

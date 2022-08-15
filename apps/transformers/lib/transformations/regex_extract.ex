@@ -6,6 +6,10 @@ defmodule Transformers.RegexExtract do
   alias Transformers.Validations.ValidRegex
   alias Transformers.Validations.ValidationStatus
 
+  @source_field "sourceField"
+  @target_field "targetField"
+  @regex "regex"
+
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field, target_field, regex]} <- validate(parameters),
@@ -27,11 +31,11 @@ defmodule Transformers.RegexExtract do
 
   def validate(parameters) do
     %ValidationStatus{}
-      |> NotBlank.check(parameters, "sourceField")
-      |> NotBlank.check(parameters, "regex")
-      |> NotBlank.check(parameters, "targetField")
-      |> ValidRegex.check(parameters, "regex")
-      |> ValidationStatus.ordered_values_or_errors(["sourceField", "targetField", "regex"])
+      |> NotBlank.check(parameters, @source_field)
+      |> NotBlank.check(parameters, @target_field)
+      |> NotBlank.check(parameters, @regex)
+      |> ValidRegex.check(parameters, @regex)
+      |> ValidationStatus.ordered_values_or_errors([@source_field, @target_field, @regex])
   end
 
 end
