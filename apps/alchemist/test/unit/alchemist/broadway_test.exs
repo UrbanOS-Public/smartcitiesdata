@@ -121,7 +121,9 @@ defmodule Alchemist.BroadwayTest do
     end
 
     test "should send the messages to the output kafka topic", %{broadway: broadway} do
-      data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+      data1 =
+        TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+
       data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(123) 456-7890", "first_name" => "carl"})
       kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
 
@@ -221,7 +223,8 @@ defmodule Alchemist.BroadwayTest do
     end
 
     test "should dead letter messages", %{broadway: broadway} do
-      data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+      data1 =
+        TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 
@@ -241,7 +244,6 @@ defmodule Alchemist.BroadwayTest do
     end
   end
 end
-
 
 defmodule Fake.Producer do
   use GenStage
