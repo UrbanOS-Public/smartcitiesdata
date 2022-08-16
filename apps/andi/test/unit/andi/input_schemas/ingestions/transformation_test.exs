@@ -20,7 +20,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
     assert changeset.valid?
   end
 
-  test "fails for an invalid transformation" do
+  test "fails for an invalid transformation with atom key" do
     changes = %{
       type: "concatenation",
       name: "name",
@@ -32,7 +32,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
 
     changeset = Transformation.changeset(changes)
 
-    assert changeset.errors == [{"separator", {"Missing or empty field", []}}]
+    assert changeset.errors == [{:separator, {"Missing field", []}}]
     assert not changeset.valid?
   end
 

@@ -83,7 +83,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       select_type("remove", view)
 
-      field_id = build_field_id(transformation_changeset.changes.id, "sourceField")
+      field_id = build_field_id("sourceField")
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
       assert element(view, "##{field_id}") |> has_element?()
@@ -113,7 +113,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     element(view, "#form_data_type") |> render_click(click_value)
   end
 
-  defp build_field_id(transformation_id, field_name) do
-    "form_data_transformation-#{transformation_id}-#{field_name}"
+  defp build_field_id(field_name) do
+    "form_data_#{field_name}"
   end
 end

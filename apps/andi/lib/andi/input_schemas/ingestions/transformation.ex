@@ -72,7 +72,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       {:error, reason} when is_binary(reason) -> changeset
       {:error, reasons} ->
         Enum.reduce(reasons, changeset, fn {key, value}, changeset ->
-          add_error(changeset, key, value)
+          atom_key = String.to_atom(key)
+          add_error(changeset, atom_key, value)
         end)
     end
   end
