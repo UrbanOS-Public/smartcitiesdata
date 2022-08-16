@@ -33,8 +33,9 @@ defmodule Forklift.DataWriter do
   @doc """
   Ensures a table exists using `:table_writer` from Forklift's application environment.
   """
-  def init(args) do
-    table_writer().init(args)
+  def init(table: table, schema: dataset_schema) do
+    schema_with_ingestion_metadata = dataset_schema |> add_ingestion_metadata_to_schema()
+    table_writer().init(table: table, schema: schema_with_ingestion_metadata)
   end
 
   @impl Pipeline.Writer
@@ -107,39 +108,70 @@ defmodule Forklift.DataWriter do
 
   defp do_write(data, dataset) do
     started_data = Enum.map(data, &add_start_time/1)
+    ingestion_info_data = Enum.map(started_data, &add_ingestion_info/1)
 
     retry with: exponential_backoff(100) |> cap(retry_max_wait()) |> Stream.take(retry_count()) do
-      write_to_table(started_data, dataset)
+      write_to_table(ingestion_info_data, dataset)
     after
-      {:ok, write_timing} -> add_total_time(data, started_data, write_timing)
+      {:ok, write_timing} -> add_total_time(data, ingestion_info_data, write_timing)
     else
       {:error, reason} ->
         raise RuntimeError, inspect(reason)
     end
   end
 
-  defp write_to_table(data, %{technical: metadata}) do
+  defp write_to_table(data, %{technical: technical}) do
     with write_start <- Data.Timing.current_time(),
          :ok <-
-           table_writer().write(data, table: metadata.systemName, schema: metadata.schema, bucket: s3_writer_bucket()),
+           table_writer().write(data,
+             table: technical.systemName,
+             schema: add_ingestion_metadata_to_schema(technical.schema),
+             bucket: s3_writer_bucket()
+           ),
          write_end <- Data.Timing.current_time(),
-         write_timing <- Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
+         write_timing <-
+           Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       {:ok, write_timing}
     end
+  end
+
+  def add_ingestion_metadata_to_schema(schema) do
+    ingestion_metadata_schema = [
+      %{name: "_ingestion_id", type: "string"},
+      %{name: "_extraction_start_time", type: "timestamp", format: "{ISO:Extended:Z}"}
+    ]
+
+    schema ++ ingestion_metadata_schema
   end
 
   def write_to_topic(data) do
     writer_args = [instance: @instance_name, producer_name: producer_name()]
 
     data
-    |> Enum.map(fn datum -> {datum._metadata.kafka_key, Forklift.Util.remove_from_metadata(datum, :kafka_key)} end)
+    |> Enum.map(fn datum ->
+      {datum._metadata.kafka_key, Forklift.Util.remove_from_metadata(datum, :kafka_key)}
+    end)
     |> Enum.map(fn {key, datum} -> {key, Jason.encode!(datum)} end)
-    |> Forklift.Util.chunk_by_byte_size(max_outgoing_bytes(), fn {key, value} -> byte_size(key) + byte_size(value) end)
+    |> Forklift.Util.chunk_by_byte_size(max_outgoing_bytes(), fn {key, value} ->
+      byte_size(key) + byte_size(value)
+    end)
     |> Enum.each(fn msg_chunk -> topic_writer().write(msg_chunk, writer_args) end)
   end
 
   defp add_start_time(datum) do
-    Forklift.Util.add_to_metadata(datum, :forklift_start_time, Data.Timing.current_time())
+    datum |> Forklift.Util.add_to_metadata(:forklift_start_time, Data.Timing.current_time())
+  end
+
+  defp add_ingestion_info(data) do
+    payload = Map.get(data, :payload, %{})
+
+    ingestion_info_payload =
+      Map.merge(payload, %{
+        "_ingestion_id" => data.ingestion_id,
+        "_extraction_start_time" => data.extraction_start_time
+      })
+
+    data |> Map.merge(%{payload: ingestion_info_payload})
   end
 
   defp add_total_time(data, started_data, write_timing) do

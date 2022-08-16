@@ -166,7 +166,14 @@ defmodule E2ETest do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
-        %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"}
+        %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"},
+        %{"Column" => "_ingestion_id", "Comment" => "", "Extra" => "", "Type" => "varchar"},
+        %{
+          "Column" => "_extraction_start_time",
+          "Comment" => "",
+          "Extra" => "",
+          "Type" => "timestamp(3)"
+        }
       ]
 
       eventually(
@@ -233,7 +240,7 @@ defmodule E2ETest do
     end
 
     @tag timeout: :infinity, capture_log: true
-    test "persists in PrestoDB", %{dataset: ds} do
+    test "persists in PrestoDB", %{dataset: ds, ingestion: ingestion} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
@@ -255,13 +262,17 @@ defmodule E2ETest do
           assert [
                    %{
                      "one" => true,
-                     "three" => 10,
                      "two" => "foobar",
-                     "os_partition" => get_current_yyyy_mm
+                     "three" => 10,
+                     "_ingestion_id" => ingestion.id,
+                     "os_partition" => get_current_yyyy_mm,
+                     "_extraction_start_time" => get_current_yyyy_mm_dd
                    }
                  ] ==
                    query(
-                     "select * from #{table}",
+                     "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                       table
+                     }",
                      true
                    )
         end,
@@ -322,7 +333,7 @@ defmodule E2ETest do
     end
 
     @tag timeout: :infinity, capture_log: true
-    test "persists in PrestoDB", %{streaming_dataset: ds} do
+    test "persists in PrestoDB", %{streaming_dataset: ds, streaming_ingestion: ingestion} do
       topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
       table = ds.technical.systemName
 
@@ -343,11 +354,15 @@ defmodule E2ETest do
 
           assert %{
                    "one" => true,
-                   "three" => 10,
                    "two" => "foobar",
-                   "os_partition" => get_current_yyyy_mm
+                   "three" => 10,
+                   "_ingestion_id" => ingestion.id,
+                   "os_partition" => get_current_yyyy_mm,
+                   "_extraction_start_time" => get_current_yyyy_mm_dd
                  } in query(
-                   "select * from #{table}",
+                   "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                     table
+                   }",
                    true
                  )
         end,
@@ -463,6 +478,13 @@ defmodule E2ETest do
     month = DateTime.utc_now().month |> Integer.to_string() |> String.pad_leading(2, "0")
     year = DateTime.utc_now().year |> Integer.to_string()
     "#{year}_#{month}"
+  end
+
+  defp get_current_yyyy_mm_dd() do
+    day = DateTime.utc_now().day |> Integer.to_string() |> String.pad_leading(2, "0")
+    month = DateTime.utc_now().month |> Integer.to_string() |> String.pad_leading(2, "0")
+    year = DateTime.utc_now().year |> Integer.to_string()
+    "#{year}_#{month}_#{day}"
   end
 
   defp prestige_session(),

@@ -62,7 +62,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     eventually(fn -> assert table_exists?(dataset.technical.systemName) end, 100, 1_000)
     eventually(fn -> assert table_exists?(dataset.technical.systemName <> "__json") end, 100, 1_000)
 
-    "insert into #{dataset.technical.systemName} values (1, 'Bob', cast(now() as date), 1.5, true)"
+    "insert into #{dataset.technical.systemName} values (1, 'Bob', cast(now() as date), 1.5, true, '1234-abc-zyx', cast(now() as date))"
     |> PrestigeHelper.execute_query()
 
     expected_records = 10

@@ -11,6 +11,7 @@ defmodule AndiWeb.Endpoint do
     at: "/",
     from: :andi,
     gzip: false,
+    cache_control_for_etags: "public, max-age=432000",
     only: ~w(css fonts images js favicon.ico robots.txt)
 
   if code_reloading? do
