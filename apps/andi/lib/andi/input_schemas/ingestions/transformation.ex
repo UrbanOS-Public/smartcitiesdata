@@ -68,8 +68,12 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
     converted_parameters = convert_parameters_from_atom_to_string(parameters)
 
     case Transformers.OperationBuilder.validate(type, converted_parameters) do
-      {:ok, _} -> changeset
-      {:error, reason} when is_binary(reason) -> changeset
+      {:ok, _} ->
+        changeset
+
+      {:error, reason} when is_binary(reason) ->
+        changeset
+
       {:error, reasons} ->
         Enum.reduce(reasons, changeset, fn {key, value}, changeset ->
           atom_key = String.to_atom(key)

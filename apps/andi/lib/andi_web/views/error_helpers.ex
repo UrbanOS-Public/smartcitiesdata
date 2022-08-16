@@ -10,7 +10,6 @@ defmodule AndiWeb.ErrorHelpers do
   alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
   alias AndiWeb.Views.DisplayNames
 
-
   @doc """
   Generates tag for inlined form input errors.
   """
@@ -39,6 +38,7 @@ defmodule AndiWeb.ErrorHelpers do
 
   def error_tag_with_label(form, field, label, options \\ [])
   def error_tag_with_label(form, _, _, _) when not is_map(form), do: []
+
   def error_tag_with_label(form, field, label, options) do
     form.errors
     |> Map.new()
@@ -50,9 +50,12 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp generate_error_tag_with_label(error, field, form, label, options) do
     %{data: %form_type{}} = form
-    translated = error
+
+    translated =
+      error
       |> interpret_error_with_label(field, form_type, label)
       |> translate_error()
+
     content_tag(:span, translated,
       class: "error-msg",
       id: "#{field}-error-msg",
@@ -130,7 +133,8 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error_message(_message, field, _), do: default_error_message(field)
 
-  defp interpret_error_with_label({_message, opts}, _field, form_type, label), do: {interpret_error_message_with_label(label, form_type), opts}
+  defp interpret_error_with_label({_message, opts}, _field, form_type, label),
+    do: {interpret_error_message_with_label(label, form_type), opts}
 
   defp interpret_error_message_with_label(label, Transformation) do
     "Please enter a valid #{String.downcase(label)}"

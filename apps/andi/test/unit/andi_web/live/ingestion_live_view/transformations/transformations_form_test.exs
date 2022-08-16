@@ -121,10 +121,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       field_id = build_field_id("sourceField")
       {:ok, document} = Floki.parse_document(html)
-      
-      assert parameter_value == document
-      |> Floki.attribute("##{field_id}", "value")
-      |> Enum.join()
+
+      assert parameter_value ==
+               document
+               |> Floki.attribute("##{field_id}", "value")
+               |> Enum.join()
     end
   end
 
