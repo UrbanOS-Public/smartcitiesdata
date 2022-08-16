@@ -17,7 +17,7 @@ defmodule Transformers.Validations.ValidTypeConversion do
   end
 
   defp attempt_validation(status, parameters, source, target, function_field) do
-    case pick_conversion(parameters) do
+    case pick_conversion(parameters, source, target) do
       {:ok, conversion_function} ->
         add_function_to_designated_field(status, function_field, conversion_function)
 
@@ -26,10 +26,10 @@ defmodule Transformers.Validations.ValidTypeConversion do
     end
   end
 
-  defp pick_conversion(parameters) do
+  defp pick_conversion(parameters, source, target) do
     source_type = Map.get(parameters, source)
     target_type = Map.get(parameters, target)
-    result = ConversionFunctions.pick(source_type, target_type)
+    ConversionFunctions.pick(source_type, target_type)
   end
 
   defp add_function_to_designated_field(status, function_field, conversion_function) do

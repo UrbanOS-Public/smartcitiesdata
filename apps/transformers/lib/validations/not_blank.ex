@@ -16,7 +16,7 @@ defmodule Transformers.Validations.NotBlank do
       nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
       value when is_binary(value) -> check_if_blank_string(status, field, value)
       value when is_list(value) -> check_if_blank_list(status, field, value)
-      _ -> add_unsupported_type_error(status, field, value)
+      _ -> add_unsupported_type_error(status, field)
     end
   end
 
@@ -50,7 +50,7 @@ defmodule Transformers.Validations.NotBlank do
     length(list) == 0
   end
 
-  defp add_unsupported_type_error(status, field, value) do
+  defp add_unsupported_type_error(status, field) do
     ValidationStatus.add_error(status, field, "Not a string or list")
   end
 end
