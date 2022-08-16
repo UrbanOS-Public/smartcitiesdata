@@ -19,11 +19,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
 
+    transformation_type = Map.get(transformation_changeset.changes, :type)
+
     {:ok,
      assign(socket,
        transformation_changeset: transformation_changeset,
        visibility: "collapsed",
-       transformation_type: ""
+       transformation_type: transformation_type
      )}
   end
 

@@ -89,6 +89,17 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "##{field_id}") |> has_element?()
     end
 
+    test "if type is selected show fields on load" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      field_id = build_field_id("sourceField")
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
+      assert element(view, "##{field_id}") |> has_element?()
+    end
+
     @tag :skip
     test "shows error message if field missing" do
       transformation_changeset = Transformation.changeset_for_draft(%{})
