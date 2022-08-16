@@ -100,18 +100,31 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "##{field_id}") |> has_element?()
     end
 
-    @tag :skip
     test "shows error message if field missing" do
-      transformation_changeset = Transformation.changeset_for_draft(%{})
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)
 
-      select_type("remove", view)
       form_update = %{
         "parameters" => %{"sourceField" => ""}
       }
-      element(view, ".transformation-item") |> render_change(form_update) |> IO.inspect()
+
+      element(view, ".transformation-item") |> render_change(form_update)
 
       assert element(view, "#sourceField-error-msg", "Please enter a valid field to remove") |> has_element?()
+    end
+
+    test "shows parameter field value on load" do
+      parameter_value = "something"
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove", parameters: %{sourceField: parameter_value}})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      field_id = build_field_id("sourceField")
+      {:ok, document} = Floki.parse_document(html)
+      
+      assert parameter_value == document
+      |> Floki.attribute("##{field_id}", "value")
+      |> Enum.join()
     end
   end
 
