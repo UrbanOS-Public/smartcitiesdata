@@ -2,6 +2,14 @@ defmodule Transformers.TypeConversion do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidTypeConversion
+  alias Transformers.Validations.ValidationStatus
+
+  @field "field"
+  @source_type "sourceType"
+  @target_type "targetType"
+  @conversion_function "conversionFunction"
 
   @impl Transformation
   def transform(payload, params) do
@@ -16,27 +24,18 @@ defmodule Transformers.TypeConversion do
     end
   end
 
-  def validate(params) do
-    with {:ok, field} <- FieldFetcher.fetch_parameter(params, "field"),
-         {:ok, source_type} <- FieldFetcher.fetch_parameter(params, "sourceType"),
-         {:ok, target_type} <- FieldFetcher.fetch_parameter(params, "targetType"),
-         {:ok, conversion_function} <- pick_conversion(source_type, target_type) do
-      {:ok, [field, source_type, target_type, conversion_function]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
-  end
-
-  defp pick_conversion(source_type, target_type) do
-    case {source_type, target_type} do
-      {"float", "integer"} -> {:ok, fn value -> Float.round(value) end}
-      {"float", "string"} -> {:ok, fn value -> to_string(value) end}
-      {"integer", "float"} -> {:ok, fn value -> value / 1 end}
-      {"integer", "string"} -> {:ok, fn value -> to_string(value) end}
-      {"string", "integer"} -> {:ok, fn value -> String.to_integer(value) end}
-      {"string", "float"} -> {:ok, fn value -> String.to_float(value) end}
-      _ -> {:error, "Conversion from #{source_type} to #{target_type} is not supported"}
-    end
+  def validate(parameters) do
+    %ValidationStatus{}
+    |> NotBlank.check(parameters, @field)
+    |> NotBlank.check(parameters, @source_type)
+    |> NotBlank.check(parameters, @target_type)
+    |> ValidTypeConversion.check(parameters, @source_type, @target_type, @conversion_function)
+    |> ValidationStatus.ordered_values_or_errors([
+      @field,
+      @source_type,
+      @target_type,
+      @conversion_function
+    ])
   end
 
   defp abort_if_missing_value(payload, field, value) do

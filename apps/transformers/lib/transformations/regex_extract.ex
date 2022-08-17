@@ -2,7 +2,13 @@ defmodule Transformers.RegexExtract do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
-  alias Transformers.RegexUtils
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidRegex
+  alias Transformers.Validations.ValidationStatus
+
+  @source_field "sourceField"
+  @target_field "targetField"
+  @regex "regex"
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -24,13 +30,11 @@ defmodule Transformers.RegexExtract do
   end
 
   def validate(parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
-         {:ok, regex_pattern} <- FieldFetcher.fetch_parameter(parameters, "regex"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
-         {:ok, regex} <- RegexUtils.regex_compile(regex_pattern) do
-      {:ok, [source_field, target_field, regex]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
+    %ValidationStatus{}
+    |> NotBlank.check(parameters, @source_field)
+    |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check(parameters, @regex)
+    |> ValidRegex.check(parameters, @regex)
+    |> ValidationStatus.ordered_values_or_errors([@source_field, @target_field, @regex])
   end
 end

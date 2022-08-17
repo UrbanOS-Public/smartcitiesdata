@@ -18,7 +18,7 @@ defmodule Transformers do
            {:ok, parameters} <- Map.fetch(transformation, :parameters) do
         case Transformers.OperationBuilder.validate(type, parameters) do
           {:ok, _} -> {:ok, "Transformation valid."}
-          {:error, _} -> {:error, "Transformation not valid."}
+          {:error, reasons} -> {:error, reasons}
         end
       else
         :error -> {:error, "Map provided is not a valid transformation"}

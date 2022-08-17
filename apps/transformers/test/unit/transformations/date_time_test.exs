@@ -67,7 +67,7 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.transform(%{}, params)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["sourceField", "sourceFormat", "targetField", "targetFormat"])
     end
@@ -155,7 +155,7 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = DateTime.validate(parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["sourceField", "sourceFormat", "targetField", "targetFormat"])
     end
@@ -173,10 +173,27 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.validate(params)
 
-      assert reason ==
-               "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."
+      assert reason == %{
+               "#{format}" =>
+                 "DateTime format \"{invalid}\" is invalid: Expected at least one parser to succeed at line 1, column 0."
+             }
 
       where(format: ["sourceFormat", "targetFormat"])
+    end
+
+    test "when one field has multiple errors the missing field error wins" do
+      parameters =
+        %{
+          "sourceField" => "date1",
+          "targetField" => "date2",
+          "sourceFormat" => "",
+          "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+        |> Map.delete("sourceFormat")
+
+      {:error, reason} = DateTime.validate(parameters)
+
+      assert reason == %{"sourceFormat" => "Missing or empty field"}
     end
   end
 end

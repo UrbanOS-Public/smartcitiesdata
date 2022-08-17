@@ -1,7 +1,13 @@
 defmodule Transformers.Concatenation do
   @behaviour Transformation
 
-  alias Transformers.FieldFetcher
+  alias Transformers.Validations.IsPresent
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidationStatus
+
+  @source_fields "sourceFields"
+  @target_field "targetField"
+  @separator "separator"
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -17,13 +23,11 @@ defmodule Transformers.Concatenation do
   end
 
   def validate(parameters) do
-    with {:ok, source_fields} <- FieldFetcher.fetch_parameter(parameters, "sourceFields"),
-         {:ok, separator} <- FieldFetcher.fetch_parameter(parameters, "separator"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField") do
-      {:ok, [source_fields, separator, target_field]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
+    %ValidationStatus{}
+    |> NotBlank.check(parameters, @source_fields)
+    |> NotBlank.check(parameters, @target_field)
+    |> IsPresent.check(parameters, @separator)
+    |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])
   end
 
   def fetch_values(payload, field_names) when is_list(field_names) do
@@ -31,7 +35,8 @@ defmodule Transformers.Concatenation do
     |> all_values_if_present_else_error()
   end
 
-  def fetch_values(_, _), do: {:error, "Expected list but received single value: sourceFields"}
+  def fetch_values(_, _),
+    do: {:error, "Expected list but received single value: #{@source_fields}"}
 
   def find_values_or_errors(payload, field_names) do
     Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->

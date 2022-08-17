@@ -19,7 +19,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Missing transformation parameter: #{parameter}"
+    assert reason == %{"#{parameter}" => "Missing or empty field"}
 
     where(parameter: ["sourceField", "regex", "replacement"])
   end
@@ -53,7 +53,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Invalid regular expression: missing ) at index 3"
+    assert reason == %{"regex" => "Invalid regular expression: missing ) at index 3"}
   end
 
   test "when replacement is not a string, return error" do
@@ -69,7 +69,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Value of field replacement is not a string: 123"
+    assert reason == %{"replacement" => "Not a string or list"}
   end
 
   test "if source field is not a string, return error" do
@@ -162,7 +162,7 @@ defmodule Transformers.RegexReplaceTest do
 
       {:error, reason} = RegexReplace.validate(parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "Missing or empty field"}
 
       where(parameter: ["sourceField", "replacement", "regex"])
     end
@@ -176,8 +176,7 @@ defmodule Transformers.RegexReplaceTest do
 
       {:error, reason} = RegexReplace.validate(parameters)
 
-      assert reason ==
-               "Invalid regular expression: missing ) at index 3"
+      assert reason == %{"regex" => "Invalid regular expression: missing ) at index 3"}
     end
   end
 end

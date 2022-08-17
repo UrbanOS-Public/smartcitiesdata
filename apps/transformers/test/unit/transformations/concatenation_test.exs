@@ -5,7 +5,7 @@ defmodule Transformers.ConcatenationTest do
   alias Transformers.Concatenation
 
   describe "transform/2" do
-    data_test "when missing parameter #{parameter} return error" do
+    data_test "when missing parameter #{parameter} return error #{message}" do
       payload = %{
         "string1" => "one",
         "string2" => "two"
@@ -21,9 +21,12 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "#{message}"}
 
-      where(parameter: ["sourceFields", "separator", "targetField"])
+      where(
+        parameter: ["sourceFields", "separator", "targetField"],
+        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+      )
     end
 
     test "error if a source field is missing" do
@@ -186,7 +189,7 @@ defmodule Transformers.ConcatenationTest do
       assert target_field == parameters["targetField"]
     end
 
-    data_test "when missing parameter #{parameter} return error" do
+    data_test "when missing parameter #{parameter} return error #{message}" do
       parameters =
         %{
           "sourceFields" => ["name", "last_name"],
@@ -197,9 +200,22 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.validate(parameters)
 
-      assert reason == "Missing transformation parameter: #{parameter}"
+      assert reason == %{"#{parameter}" => "#{message}"}
 
-      where(parameter: ["sourceFields", "separator", "targetField"])
+      where(
+        parameter: ["sourceFields", "separator", "targetField"],
+        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+      )
+    end
+
+    test "when all parameters missing return errors for all" do
+      {:error, reason} = Concatenation.validate(%{})
+
+      assert reason == %{
+               "sourceFields" => "Missing or empty field",
+               "separator" => "Missing field",
+               "targetField" => "Missing or empty field"
+             }
     end
   end
 end

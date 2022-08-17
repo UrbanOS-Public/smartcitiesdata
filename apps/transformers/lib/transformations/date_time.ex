@@ -2,6 +2,14 @@ defmodule Transformers.DateTime do
   @behaviour Transformation
 
   alias Transformers.FieldFetcher
+  alias Transformers.Validations.DateTimeFormat
+  alias Transformers.Validations.NotBlank
+  alias Transformers.Validations.ValidationStatus
+
+  @source_field "sourceField"
+  @source_format "sourceFormat"
+  @target_field "targetField"
+  @target_format "targetFormat"
 
   @impl Transformation
   def transform(payload, parameters) do
@@ -22,16 +30,19 @@ defmodule Transformers.DateTime do
   end
 
   def validate(parameters) do
-    with {:ok, source_field} <- FieldFetcher.fetch_parameter(parameters, "sourceField"),
-         {:ok, source_format} <- FieldFetcher.fetch_parameter(parameters, "sourceFormat"),
-         {:ok, target_field} <- FieldFetcher.fetch_parameter(parameters, "targetField"),
-         {:ok, target_format} <- FieldFetcher.fetch_parameter(parameters, "targetFormat"),
-         :ok <- validate_datetime_format(source_format),
-         :ok <- validate_datetime_format(target_format) do
-      {:ok, [source_field, source_format, target_field, target_format]}
-    else
-      {:error, reason} -> {:error, reason}
-    end
+    %ValidationStatus{}
+    |> NotBlank.check(parameters, @source_field)
+    |> NotBlank.check(parameters, @source_format)
+    |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check(parameters, @target_format)
+    |> DateTimeFormat.check(parameters, @source_format)
+    |> DateTimeFormat.check(parameters, @target_format)
+    |> ValidationStatus.ordered_values_or_errors([
+      @source_field,
+      @source_format,
+      @target_field,
+      @target_format
+    ])
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do
@@ -43,15 +54,6 @@ defmodule Transformers.DateTime do
          "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
            timexReason
          }"}
-    end
-  end
-
-  defp validate_datetime_format(format) do
-    with :ok <- Timex.Format.DateTime.Formatter.validate(format) do
-      :ok
-    else
-      {:error, reason} ->
-        {:error, "DateTime format \"#{format}\" is invalid: #{reason}"}
     end
   end
 

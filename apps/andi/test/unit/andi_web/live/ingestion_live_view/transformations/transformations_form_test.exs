@@ -83,10 +83,49 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       select_type("remove", view)
 
-      field_id = build_field_id(transformation_changeset.changes.id, "sourceField")
+      field_id = build_field_id("sourceField")
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
       assert element(view, "##{field_id}") |> has_element?()
+    end
+
+    test "if type is selected show fields on load" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      field_id = build_field_id("sourceField")
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{field_id}]", "Field to Remove") |> has_element?()
+      assert element(view, "##{field_id}") |> has_element?()
+    end
+
+    test "shows error message if field missing" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      form_update = %{
+        "parameters" => %{"sourceField" => ""}
+      }
+
+      element(view, ".transformation-item") |> render_change(form_update)
+
+      assert element(view, "#sourceField-error-msg", "Please enter a valid field to remove") |> has_element?()
+    end
+
+    test "shows parameter field value on load" do
+      parameter_value = "something"
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove", parameters: %{sourceField: parameter_value}})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      field_id = build_field_id("sourceField")
+      {:ok, document} = Floki.parse_document(html)
+
+      assert parameter_value ==
+               document
+               |> Floki.attribute("##{field_id}", "value")
+               |> Enum.join()
     end
   end
 
@@ -99,7 +138,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     element(view, "#form_data_type") |> render_click(click_value)
   end
 
-  defp build_field_id(transformation_id, field_name) do
-    "form_data_transformation-#{transformation_id}-#{field_name}"
+  defp build_field_id(field_name) do
+    "form_data_#{field_name}"
   end
 end

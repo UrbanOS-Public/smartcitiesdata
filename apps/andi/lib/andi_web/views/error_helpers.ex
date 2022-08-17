@@ -5,9 +5,10 @@ defmodule AndiWeb.ErrorHelpers do
 
   use Phoenix.HTML
 
-  alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.Datasets.DataDictionary
+  alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
+  alias AndiWeb.Views.DisplayNames
 
   @doc """
   Generates tag for inlined form input errors.
@@ -27,6 +28,33 @@ defmodule AndiWeb.ErrorHelpers do
   defp generate_error_tag(error, field, form, options) do
     %{data: %form_type{}} = form
     translated = error |> interpret_error(field, form_type) |> translate_error()
+
+    content_tag(:span, translated,
+      class: "error-msg",
+      id: "#{field}-error-msg",
+      data: get_additional_content_tag_data(form, field, options)
+    )
+  end
+
+  def error_tag_with_label(form, field, label, options \\ [])
+  def error_tag_with_label(form, _, _, _) when not is_map(form), do: []
+
+  def error_tag_with_label(form, field, label, options) do
+    form.errors
+    |> Map.new()
+    |> Map.get(field)
+    |> generate_error_tag_with_label(field, form, label, options)
+  end
+
+  defp generate_error_tag_with_label(nil, _, _, _, _), do: nil
+
+  defp generate_error_tag_with_label(error, field, form, label, options) do
+    %{data: %form_type{}} = form
+
+    translated =
+      error
+      |> interpret_error_with_label(field, form_type, label)
+      |> translate_error()
 
     content_tag(:span, translated,
       class: "error-msg",
@@ -104,6 +132,13 @@ defmodule AndiWeb.ErrorHelpers do
     do: "Please enter valid key(s)."
 
   defp interpret_error_message(_message, field, _), do: default_error_message(field)
+
+  defp interpret_error_with_label({_message, opts}, _field, form_type, label),
+    do: {interpret_error_message_with_label(label, form_type), opts}
+
+  defp interpret_error_message_with_label(label, Transformation) do
+    "Please enter a valid #{String.downcase(label)}"
+  end
 
   defp default_error_message(field), do: "Please enter a valid #{get_downcased_display_name(field)}."
 
