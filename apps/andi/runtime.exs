@@ -87,7 +87,7 @@ config :andi, Andi.Repo,
 postgres_verify_sni = Regex.match?(~r/^true$/i, System.get_env("POSTGRES_VERIFY_SNI"))
 
 if postgres_verify_sni do
-  config :discovery_api, DiscoveryApi.Repo,
+  config :andi, Andi.Repo,
     ssl_opts: [
       verify: :verify_peer,
       server_name_indication: String.to_charlist(System.get_env("POSTGRES_HOST", "")),
