@@ -3,13 +3,14 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
   LiveComponent for scheduling dataset ingestion
   """
   use Phoenix.LiveView
-  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.FinalizeFormSchema
+  use AndiWeb.IngestionFormSection
   import Phoenix.HTML.Form
   require Logger
 
   alias Andi.InputSchemas.Ingestions
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias AndiWeb.ErrorHelpers
+  alias AndiWeb.IngestionLiveView.FormUpdate
 
   @quick_schedules %{
     "hourly" => "0 0 * * * *",
@@ -150,6 +151,20 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
     """
   end
 
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{assigns: %{changeset: changeset}} = socket
+      ) do
+    original_ingestion = Ingestions.get(ingestion_id)
+    {status, _} = Ingestions.update(original_ingestion, changeset.changes)
+    valid? = if status == :ok, do: "valid", else: "invalid"
+    FormUpdate.send_value(socket.parent_pid, {:update_save_message, valid?})
+    {:noreply,
+     assign(socket,
+       validation_status: get_new_validation_status(changeset)
+     )}
+  end
+
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     form_data
     |> FinalizeFormSchema.changeset_from_form_data()
@@ -188,20 +203,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
       |> complete_validation(socket)
 
     {:noreply, assign(updated_socket, crontab: cronstring, crontab_list: parse_crontab(cronstring))}
-  end
-
-  def handle_info(
-        %{
-          topic: "toggle-visibility",
-          payload: %{expand: "finalize_form", ingestion_id: ingestion_id}
-        },
-        %{assigns: %{ingestion_id: ingestion_id}} = socket
-      ) do
-    {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
-  end
-
-  def handle_info(%{topic: "toggle-visibility"}, socket) do
-    {:noreply, socket}
   end
 
   defp parse_crontab(nil), do: %{}
