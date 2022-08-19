@@ -3,7 +3,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   LiveComponent for editing ingestion schema
   """
   use Phoenix.LiveView
-  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.DataDictionaryFormSchema
+  use AndiWeb.IngestionFormSection
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
@@ -239,14 +239,22 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_info(
-        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", ingestion_id: ingestion_id}},
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
         %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
-    {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
-  end
+    new_validation_status =
+      case socket.assigns.changeset.valid? do
+        true -> "valid"
+        false -> "invalid"
+      end
 
-  def handle_info(%{topic: "toggle-visibility"}, socket) do
-    {:noreply, socket}
+    {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.save_form_changeset(socket.assigns.ingestion_id, socket.assigns.changeset)
+
+    new_changeset =
+      apply(AndiWeb.InputSchemas.DataDictionaryFormSchema, :changeset_from_andi_ingestion, [andi_ingestion])
+      |> Map.put(:action, :update)
+
+    {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
   end
 
   def handle_info({:add_data_dictionary_field_succeeded, field_id}, socket) do
