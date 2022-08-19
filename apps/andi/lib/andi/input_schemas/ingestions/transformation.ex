@@ -42,7 +42,6 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
 
     transformation
     |> cast(changes_with_id, @cast_fields)
-    |> validate_required(@required_fields, message: "is required")
   end
 
   def changeset_from_form_data(form_data) do
