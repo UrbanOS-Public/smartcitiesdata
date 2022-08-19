@@ -81,25 +81,6 @@ defmodule AndiWeb.FormSection do
         {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
       end
 
-      def handle_info(
-            %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-            %{assigns: %{ingestion_id: ingestion_id}} = socket
-          ) do
-        new_validation_status =
-          case socket.assigns.changeset.valid? do
-            true -> "valid"
-            false -> "invalid"
-          end
-
-        {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.save_form_changeset(socket.assigns.ingestion_id, socket.assigns.changeset)
-
-        new_changeset =
-          apply(unquote(schema_module), :changeset_from_andi_ingestion, [andi_ingestion])
-          |> Map.put(:action, :update)
-
-        {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
-      end
-
       def handle_info(%{topic: "form-save"}, socket) do
         {:noreply, socket}
       end
