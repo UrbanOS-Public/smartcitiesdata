@@ -75,6 +75,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     new_changeset = Transformation.changeset_from_form_data(form_data)
+      |> Map.put(:action, :update)
+    send(socket.parent_pid, {:transformation_update, new_changeset.changes.id, new_changeset})
 
     {:noreply, assign(socket, transformation_changeset: new_changeset)}
   end
@@ -111,10 +113,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     |> Transformations.get()
     |> Transformations.update(changes)
 
-    {:noreply,
-     assign(socket,
-       validation_status: "valid"
-     )}
+    {:noreply, socket}
   end
 
   defp transformation_name(form) do
