@@ -16,8 +16,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     AndiWeb.Endpoint.subscribe("delete-transformation")
 
     transformation_changesets =
-      Enum.map(ingestion.transformations, fn transformation ->
-        Transformation.convert_andi_transformation_to_changeset(transformation)
+      Enum.reduce(ingestion.transformations, %{}, fn transformation, acc ->
+        changeset = Transformation.convert_andi_transformation_to_changeset(transformation)
+        Map.put(acc, transformation.id, changeset)
       end)
 
     {:ok,
@@ -58,7 +59,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         <div class="component-edit-section--<%= @visibility %> transformations--<%= @visibility %>">
 
           <div id="transformation-forms">
-            <%= for changeset <- @transformation_changesets do %>
+            <%= for changeset <- Map.values(@transformation_changesets) do %>
               <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: "transform-#{changeset.changes.id}", session: %{"transformation_changeset" => changeset}) %>
             <% end %>
             </div>
@@ -73,15 +74,27 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{assigns: %{transformations: transformations}} = socket
+        %{assigns: %{transformations: transformations, transformation_changesets: transformation_changesets}} = socket
       ) do
-    update_kept_transformations(transformations)
     delete_discarded_transformations(transformations, ingestion_id)
-    {:noreply, socket}
+    changesets = Map.values(transformation_changesets)
+    {:noreply,
+     assign(socket,
+       validation_status: get_new_validation_status(changesets)
+     )}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info({:transformation_update, transformation_id, new_changeset}, socket) do
+    updated_transformation_changesets =
+      socket.assigns.transformation_changesets
+      |> Map.put(transformation_id, new_changeset)
+
+    {:noreply,
+     assign(socket, transformation_changesets: updated_transformation_changesets, validation_status: get_new_validation_status(updated_transformation_changesets))}
   end
 
   def handle_info(
@@ -100,6 +113,22 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
       true -> move_transformation(socket, transformation_index, target_index)
       false -> {:noreply, socket}
     end
+  end
+
+  def handle_event("toggle-component-visibility", _, socket) do
+    current_visibility = Map.get(socket.assigns, :visibility)
+
+    new_visibility =
+      case current_visibility do
+        "expanded" -> "collapsed"
+        "collapsed" -> "expanded"
+      end
+
+    {:noreply, assign(socket, visibility: new_visibility, validation_status: get_new_validation_status(socket.assigns.transformation_changesets))}
+  end
+
+  def handle_info(%{topic: "toggle-component-visibility"}, socket) do
+    {:noreply, socket}
   end
 
   def handle_event("delete-transformation", %{"id" => transformation_id}, socket) do
@@ -122,21 +151,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
     {:noreply,
      assign(socket,
-       transformation_changesets: socket.assigns.transformation_changesets ++ [new_transformation],
+       transformation_changesets: Map.put(socket.assigns.transformation_changesets, new_transformation.changes.id, new_transformation),
        transformations: socket.assigns.transformations ++ [Transformations.get(new_transformation.changes.id)]
      )}
-  end
-
-  def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
-
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
-      end
-
-    {:noreply, assign(socket, visibility: new_visibility)}
   end
 
   defp move_transformation(socket, transformation_index, target_index) do
@@ -158,12 +175,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
   end
 
-  defp update_kept_transformations(transformations) do
-    Enum.each(transformations, fn transformation ->
-      Transformations.update(transformation)
-    end)
-  end
-
   defp delete_discarded_transformations(transformations, ingestion_id) do
     kept_transformation_ids = Enum.map(transformations, fn transformation -> transformation.id end)
 
@@ -171,5 +182,21 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     |> Enum.map(fn transformation -> transformation.id end)
     |> Enum.filter(fn id -> id not in kept_transformation_ids end)
     |> Enum.each(fn id -> Transformations.delete(id) end)
+  end
+
+  defp get_new_validation_status(transformation_changesets) when transformation_changesets == %{}, do: "valid"
+
+  defp get_new_validation_status(transformation_changesets) do
+    case transformation_changesets_valid?(transformation_changesets) do
+      true -> "valid"
+      false -> "invalid"
+    end
+  end
+
+  defp transformation_changesets_valid?(transformation_changesets) do
+    Enum.all?(transformation_changesets, fn
+      {_, %{changes: _} = changeset} -> changeset.valid?
+      _ -> true
+    end)
   end
 end
