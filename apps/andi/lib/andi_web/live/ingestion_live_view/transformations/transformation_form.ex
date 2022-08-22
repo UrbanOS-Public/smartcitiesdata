@@ -37,8 +37,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
           <div class="transformation-actions">
             <div class="material-icons-outlined transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" phx-click="delete-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-target="#transformations-form">delete</div>
             <div class="material-icons-outlined transformation-action">edit</div>
-            <div class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</div>
-            <div class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</div>
+            <div class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1" phx-target="#transformations-form">arrow_upward</div>
+            <div class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1" phx-target="#transformations-form">arrow_downward</div>
           </div>
         </div>
         <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
@@ -62,15 +62,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         </div>
     </form>
     """
-  end
-
-  def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index}, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{
-      "id" => transformation_id,
-      "move-index" => move_index
-    })
-
-    {:noreply, socket}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
