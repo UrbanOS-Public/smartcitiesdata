@@ -69,10 +69,11 @@ defmodule Helper do
   end
 
   defp insert_record(table, partition) do
-    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '1234-abc-zyx', cast(now() as date), '#{
-      partition
-    }')"
-    |> PrestigeHelper.execute_query()
+    {:ok, _} =
+      "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, cast(now() as date), '1234-abc-zyx', '#{
+        partition
+      }')"
+      |> PrestigeHelper.execute_query()
   end
 
   def payload() do
