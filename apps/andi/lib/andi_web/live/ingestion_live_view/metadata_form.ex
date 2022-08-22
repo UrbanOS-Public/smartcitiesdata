@@ -1,5 +1,6 @@
 defmodule AndiWeb.IngestionLiveView.MetadataForm do
   use Phoenix.LiveView
+  use AndiWeb.IngestionFormSection
   import Phoenix.HTML.Form
   import Ecto.Query, only: [from: 2]
 

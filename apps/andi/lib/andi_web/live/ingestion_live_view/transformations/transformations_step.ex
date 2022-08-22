@@ -134,6 +134,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   def handle_event("delete-transformation", %{"id" => transformation_id}, socket) do
     filtered_changesets =
       socket.assigns.transformation_changesets
+      |> Map.values()
       |> Enum.filter(fn changeset -> changeset.changes.id != transformation_id end)
 
     filtered_transformations =
