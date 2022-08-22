@@ -51,13 +51,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
           <div class="transformation-form__type">
             <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
-            <%= select(f, :type, get_transformation_types(), phx_click: "transformation-type-selected", class: "select") %>
+            <%= select(f, :type, get_transformation_types(), phx_click: "transformation-type-selected", class: "select transformation-type") %>
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
           </div>
           <div class="transformation-form__fields">
             <%= for field <- get_fields(@transformation_type) do %>
               <%= TransformationFieldBuilder.build_input(field, assigns, f) %>
-            <%= end %>
+            <% end %>
           </div>
         </div>
     </form>
