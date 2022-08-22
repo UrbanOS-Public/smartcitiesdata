@@ -70,11 +70,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
     end)
   end
 
-  @tag :skip
   test "can save transformation fields", %{conn: conn, view: view, ingestion: ingestion} do
     transformation_id = add_transformation(view)
-    parameters = %{"sourceField" => "sourcey"}
-    data = %{"name" => "", "id" => transformation_id, "type" => "remove", "parameters" => parameters}
+    data = %{"name" => "", "id" => transformation_id, "type" => "remove", "sourceField" => "sourcey"}
     edit_transformation(view, transformation_id, data)
     save(view)
 
