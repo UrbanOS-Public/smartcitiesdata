@@ -66,6 +66,10 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     "select * from #{table_one} union all select * from #{table_two}"
   end
 
+  def sync_partition_metadata(table_name) do
+    "CALL system.sync_partition_metadata('default', '#{table_name}', 'ADD')"
+  end
+
   def create_new_table_with_existing_table(%{new_table_name: new_table_name, table_name: table_name}) do
     %{table: "#{new_table_name}", as: "select * from #{table_name}"}
     |> create()
