@@ -13,7 +13,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
     AndiWeb.Endpoint.subscribe("move-transformation")
-    AndiWeb.Endpoint.subscribe("delete-transformation")
 
     transformation_changesets =
       Enum.map(ingestion.transformations, fn transformation ->
