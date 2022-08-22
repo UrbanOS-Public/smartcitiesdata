@@ -52,7 +52,7 @@ defmodule Pipeline.Writer.S3Writer do
     case table_exists?(json_config) do
       true ->
         if is_partitioned_write(options) do
-          get_partition_folder(options) |> IO.inspect(label: "get_partition_folder(options)")
+          get_partition_folder(options)
           upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder(options))
           PrestigeHelper.execute_query(Statement.sync_partition_metadata(json_config.table))
           :ok

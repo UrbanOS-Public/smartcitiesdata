@@ -60,7 +60,9 @@ defmodule Helper do
     S3Writer.write(data,
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
-      schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema)
+      schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema),
+      partition_key: "_ingestion_id",
+      partition_value: "1234-abcd"
     )
   end
 
