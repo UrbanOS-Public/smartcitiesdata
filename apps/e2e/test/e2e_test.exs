@@ -173,7 +173,12 @@ defmodule E2ETest do
           "Extra" => "",
           "Type" => "timestamp(3)"
         },
-        %{"Column" => "_ingestion_id", "Comment" => "", "Extra" => "", "Type" => "varchar"}
+        %{
+          "Column" => "_ingestion_id",
+          "Comment" => "",
+          "Extra" => "partition key",
+          "Type" => "varchar"
+        }
       ]
 
       eventually(
