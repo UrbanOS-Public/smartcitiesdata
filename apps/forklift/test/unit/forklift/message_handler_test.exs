@@ -6,6 +6,13 @@ defmodule Forklift.MessageHandlerTest do
   alias Forklift.MessageHandler
   import SmartCity.TestHelper, only: [eventually: 1]
 
+  @instance_name Forklift.instance_name()
+
+  setup do
+    Brook.Test.register(@instance_name)
+    :ok
+  end
+
   @moduletag capture_log: true
   test "malformed messages are sent to dead letter queue" do
     malformed_kafka_message =
@@ -20,7 +27,6 @@ defmodule Forklift.MessageHandlerTest do
 
     dataset = TDG.create_dataset(%{id: "ds1", technical: %{systemName: "system__name", schema: []}})
 
-    expect Forklift.DataWriter.write(any(), dataset: dataset), return: []
     allow Elsa.produce(any(), any(), any()), return: :ok
 
     MessageHandler.handle_messages([malformed_kafka_message], %{dataset: dataset})

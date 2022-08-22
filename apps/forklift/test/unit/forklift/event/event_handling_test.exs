@@ -31,7 +31,7 @@ defmodule Forklift.Event.EventHandlingTest do
       schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
 
       Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
-      assert_receive table: ^table_name, schema: ^schema
+      assert_receive table: ^table_name, schema: ^schema, partitions: ["_ingestion_id"]
     end
 
     test "does not create table for non-ingestible dataset" do

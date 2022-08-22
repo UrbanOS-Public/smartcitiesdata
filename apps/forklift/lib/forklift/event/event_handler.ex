@@ -48,7 +48,7 @@ defmodule Forklift.Event.EventHandler do
 
     Forklift.Datasets.update(dataset)
 
-    [table: dataset.technical.systemName, schema: dataset.technical.schema]
+    [table: dataset.technical.systemName, schema: dataset.technical.schema, partitions: ["_ingestion_id"]]
     |> Forklift.DataWriter.init()
 
     :discard

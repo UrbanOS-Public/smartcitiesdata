@@ -16,7 +16,8 @@ defmodule Pipeline.Writer.S3Writer do
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
-  @spec init(table: String.t(), schema: schema(), bucket: String.t()) :: :ok | {:error, term()}
+  @spec init(table: String.t(), schema: schema(), bucket: String.t(), partitions: [String.t()]) ::
+          :ok | {:error, term()}
   @doc """
   Ensures PrestoDB tables exist for JSON and ORC formats.
   """
@@ -50,7 +51,14 @@ defmodule Pipeline.Writer.S3Writer do
 
     case table_exists?(json_config) do
       true ->
-        upload_content(content, json_config.schema, json_config.table, bucket)
+        if is_partitioned_write(options) do
+          get_partition_folder(options)
+          upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder(options))
+          PrestigeHelper.execute_query(Statement.sync_partition_metadata(json_config.table))
+          :ok
+        else
+          upload_content(content, json_config.schema, json_config.table, bucket)
+        end
 
       {:error, %{name: "TABLE_NOT_FOUND", type: "USER_ERROR"}} ->
         case init(options) do
@@ -63,17 +71,15 @@ defmodule Pipeline.Writer.S3Writer do
     end
   end
 
+  defp upload_content(content, schema, table, bucket, partition_folder) do
+    source_file_path = write_content_to_temp(content, schema, table)
+    destination_file_path = generate_unique_s3_file_path(table, partition_folder)
+    upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
+  end
+
   defp upload_content(content, schema, table, bucket) do
-    source_file_path =
-      content
-      |> Enum.map(&Map.get(&1, :payload))
-      |> Enum.map(&S3SafeJson.build(&1, schema))
-      |> Enum.map(&Jason.encode!/1)
-      |> Enum.join("\n")
-      |> write_to_temporary_file(table)
-
+    source_file_path = write_content_to_temp(content, schema, table)
     destination_file_path = generate_unique_s3_file_path(table)
-
     upload_to_kdp_s3_folder(bucket, source_file_path, destination_file_path)
   end
 
@@ -119,6 +125,11 @@ defmodule Pipeline.Writer.S3Writer do
     temporary_file_path
   end
 
+  defp generate_unique_s3_file_path(table_name, partition_folder) do
+    time = DateTime.utc_now() |> DateTime.to_unix() |> to_string()
+    "hive-s3/#{table_name}/#{partition_folder}/#{time}-#{System.unique_integer()}.gz"
+  end
+
   defp generate_unique_s3_file_path(table_name) do
     time = DateTime.utc_now() |> DateTime.to_unix() |> to_string()
     "hive-s3/#{table_name}/#{time}-#{System.unique_integer()}.gz"
@@ -159,7 +170,8 @@ defmodule Pipeline.Writer.S3Writer do
     %{
       table: table_name(format, options),
       schema: options[:schema],
-      format: format
+      format: format,
+      partitions: options[:partitions]
     }
   end
 
@@ -195,5 +207,24 @@ defmodule Pipeline.Writer.S3Writer do
 
     table_name
     |> StatementUtils.drop_table()
+  end
+
+  defp get_partition_folder(options) do
+    partition_key = Keyword.fetch!(options, :partition_key)
+    partition_value = Keyword.fetch!(options, :partition_value)
+    "#{partition_key}=#{partition_value}"
+  end
+
+  defp is_partitioned_write(options) do
+    Keyword.has_key?(options, :partition_key) && Keyword.has_key?(options, :partition_value)
+  end
+
+  defp write_content_to_temp(content, schema, table) do
+    content
+    |> Enum.map(&Map.get(&1, :payload))
+    |> Enum.map(&S3SafeJson.build(&1, schema))
+    |> Enum.map(&Jason.encode!/1)
+    |> Enum.join("\n")
+    |> write_to_temporary_file(table)
   end
 end

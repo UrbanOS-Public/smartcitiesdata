@@ -58,6 +58,40 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
     end
 
     @tag capture_log: true
+    test "handles a single column in the partitions parameter" do
+      schema = [
+        %{name: "street", type: "string"},
+        %{name: "first_name", type: "string"}
+      ]
+
+      expected =
+        ~s|CREATE TABLE IF NOT EXISTS table_name ("street" varchar, "first_name" varchar) WITH (partitioned_by = ARRAY['first_name'], format = 'JSON')|
+
+      assert {:ok, ^expected} =
+               Statement.create(%{table: "table_name", schema: schema, format: "JSON", partitions: ["first_name"]})
+    end
+
+    @tag capture_log: true
+    test "handles multiple columns in the partition parameter" do
+      schema = [
+        %{name: "street", type: "string"},
+        %{name: "first_name", type: "string"},
+        %{name: "last_name", type: "string"}
+      ]
+
+      expected =
+        ~s|CREATE TABLE IF NOT EXISTS table_name ("street" varchar, "first_name" varchar, "last_name" varchar) WITH (partitioned_by = ARRAY['first_name', 'last_name'], format = 'JSON')|
+
+      assert {:ok, ^expected} =
+               Statement.create(%{
+                 table: "table_name",
+                 schema: schema,
+                 format: "JSON",
+                 partitions: ["first_name", "last_name"]
+               })
+    end
+
+    @tag capture_log: true
     test "handles array of maps" do
       schema = [
         %{
