@@ -83,6 +83,29 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
     end)
   end
 
+  @tag :skip
+  test "can change transformation fields after save", %{conn: conn, view: view, ingestion: ingestion} do
+    transformation_id = add_transformation(view)
+
+    data = %{"name" => "", "id" => transformation_id, "type" => "remove", "sourceField" => "sourcey"}
+    edit_transformation(view, transformation_id, data)
+    save(view)
+
+    eventually(fn ->
+      {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+      assert transformation_has_parameter?(refreshed_html, "sourceField", "sourcey")
+    end)
+
+    data = %{"name" => "", "id" => transformation_id, "type" => "remove", "sourceField" => "changed my mind"}
+    edit_transformation(view, transformation_id, data)
+    save(view)
+
+    eventually(fn ->
+      {:ok, _, refreshed_html} = navigate_to_edit_page(conn, ingestion)
+      assert transformation_has_parameter?(refreshed_html, "sourceField", "changed my mind")
+    end)
+  end
+
   defp navigate_to_edit_page(conn, ingestion) do
     live(conn, @url_path <> ingestion.id)
   end
