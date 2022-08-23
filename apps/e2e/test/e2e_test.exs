@@ -167,12 +167,17 @@ defmodule E2ETest do
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
         %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"},
-        %{"Column" => "_ingestion_id", "Comment" => "", "Extra" => "", "Type" => "varchar"},
         %{
           "Column" => "_extraction_start_time",
           "Comment" => "",
           "Extra" => "",
           "Type" => "timestamp(3)"
+        },
+        %{
+          "Column" => "_ingestion_id",
+          "Comment" => "",
+          "Extra" => "partition key",
+          "Type" => "varchar"
         }
       ]
 
