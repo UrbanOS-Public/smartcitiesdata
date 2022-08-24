@@ -4,7 +4,7 @@ defmodule Performance.MixProject do
   def project do
     [
       app: :performance,
-      version: "0.1.7",
+      version: "0.1.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -24,7 +24,7 @@ defmodule Performance.MixProject do
   defp deps do
     [
       {:combinatorics, "~> 0.1.0", only: [:integration]},
-      {:smart_city_test, "~> 2.2.4", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.5", only: [:test, :integration]},
       {:benchee, "~> 1.1", only: [:integration]},
       {:exprof, "~> 0.2.3", only: [:integration]},
       {:retry, "~> 0.13"}
