@@ -57,24 +57,30 @@ defmodule Forklift.IngestionProgressTest do
       assert Redix.command!(:redix, ["GET", ingestion_id <> "_count"]) == nil
     end
 
-    # @tag :skip
-    # test "store_target stores target value in redis", %{ingestion_id: ingestion_id} do
-    # end
+    test "store_target stores target value in redis", %{ingestion_id: ingestion_id} do
+      IngestionProgress.store_target(ingestion_id, 7)
+      assert Redix.command!(:redix, ["GET", ingestion_id <> "_target"]) == "7"
+    end
 
-    # @tag :skip
-    # test "store_target" returns :in_progress if count doesn't exist", %{ingestion_id: ingestion_id} do
-    # end
+    test "store_target returns :in_progress if count doesn't exist", %{ingestion_id: ingestion_id} do
+      assert IngestionProgress.store_target(ingestion_id, 7) == :in_progress
+    end
 
-    # @tag :skip
-    # test "store_target" returns :in_progress if count is *less than* new target", %{ingestion_id: ingestion_id} do
-    # end
+    test "store_target returns :in_progress if count is *less than* new target", %{ingestion_id: ingestion_id} do
+      Redix.command!(:redix, ["SET", ingestion_id <> "_count", 6])
+      assert IngestionProgress.store_target(ingestion_id, 7) == :in_progress
+    end
 
-    # @tag :skip
-    # test "store_target" returns :ingestion_complete if count meets new target", %{ingestion_id: ingestion_id} do
-    # end
+    test "store_target returns :ingestion_complete if count meets new target", %{ingestion_id: ingestion_id} do
+      Redix.command!(:redix, ["SET", ingestion_id <> "_count", 3])
+      assert IngestionProgress.store_target(ingestion_id, 3) == :ingestion_complete
+    end
 
-    # @tag :skip
-    # test "ingestion count and target are cleared when target is achieved", %{ingestion_id: ingestion_id} do
-    # end
+    test "ingestion count and target are cleared when target is achieved", %{ingestion_id: ingestion_id} do
+      Redix.command!(:redix, ["SET", ingestion_id <> "_count", 3])
+      IngestionProgress.store_target(ingestion_id, 3)
+      assert Redix.command!(:redix, ["GET", ingestion_id <> "_target"]) == nil
+      assert Redix.command!(:redix, ["GET", ingestion_id <> "_count"]) == nil
+    end
   end
 end
