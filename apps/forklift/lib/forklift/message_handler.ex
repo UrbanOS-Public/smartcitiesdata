@@ -27,7 +27,12 @@ defmodule Forklift.MessageHandler do
       |> Enum.map(&parse/1)
       |> Enum.map(&yeet_error/1)
       |> Enum.reject(&error_tuple?/1)
-      |> Forklift.DataWriter.write(dataset: dataset)
+      |> Enum.reject(fn msg -> filter_end_of_data(msg, dataset) end)
+      |> Enum.group_by(fn msg -> Map.get(msg, :ingestion_id) end)
+      |> Enum.map(fn {ingestion_id, msgs} ->
+        Forklift.DataWriter.write(msgs, dataset: dataset, ingestion_id: ingestion_id)
+      end)
+      |> List.flatten()
 
     Task.start(fn ->
       result = Forklift.DataWriter.write_to_topic(timed_messages)
@@ -51,6 +56,17 @@ defmodule Forklift.MessageHandler do
     case SmartCity.Data.new(value) do
       {:ok, datum} -> Util.add_to_metadata(datum, :kafka_key, key)
       {:error, reason} -> {:error, reason, message}
+    end
+  end
+
+  defp filter_end_of_data(msg, dataset) do
+    case msg do
+      end_of_data() ->
+        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil)
+        true
+
+      _ ->
+        false
     end
   end
 

@@ -14,8 +14,18 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     {:ok, "create table #{name} as (#{select})"}
   end
 
-  def create(%{table: name, schema: schema, format: format}) do
+  def create(%{table: name, schema: schema, format: format, partitions: nil}) do
     {:ok, Create.compose(name, schema, format)}
+  rescue
+    e in FieldTypeError ->
+      {:error, e.message}
+
+    e ->
+      {:error, "Unable to parse schema: #{inspect(e)}"}
+  end
+
+  def create(%{table: name, schema: schema, format: format, partitions: partitions}) do
+    {:ok, Create.compose(name, schema, format, partitions)}
   rescue
     e in FieldTypeError ->
       {:error, e.message}
@@ -54,6 +64,10 @@ defmodule Pipeline.Writer.TableWriter.Statement do
 
   def union(table_one, table_two) do
     "select * from #{table_one} union all select * from #{table_two}"
+  end
+
+  def sync_partition_metadata(table_name) do
+    "CALL system.sync_partition_metadata('default', '#{table_name}', 'ADD')"
   end
 
   def create_new_table_with_existing_table(%{new_table_name: new_table_name, table_name: table_name}) do

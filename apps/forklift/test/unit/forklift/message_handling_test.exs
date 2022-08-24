@@ -1,4 +1,4 @@
-defmodule Forklift.Integration.MessageHandlingTest do
+defmodule Forklift.MessageHandlingTest do
   use ExUnit.Case
   use Placebo
 
@@ -72,7 +72,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
     end
 
     test "sends 'dataset:write_complete event' with timestamp after writing records" do
-      expect(MockTable, :write, fn [%{payload: %{"foo" => "bar"}}, %{payload: %{"foz" => "baz"}}], _ -> :ok end)
+      expect(MockTable, :write, 2, fn _, _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
@@ -161,7 +161,7 @@ defmodule Forklift.Integration.MessageHandlingTest do
   describe "on receiving end-of-data message" do
     test "shuts down dataset reader" do
       Application.put_env(:forklift, :profiling_enabled, false)
-      expect(MockTable, :write, fn [%{payload: %{"foo" => "bar"}}, %{payload: %{"foz" => "baz"}}], _ -> :ok end)
+      expect(MockTable, :write, 3, fn _, _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})

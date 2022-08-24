@@ -60,7 +60,9 @@ defmodule Helper do
     S3Writer.write(data,
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
-      schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema)
+      schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema),
+      partition_key: "_ingestion_id",
+      partition_value: "1234-abcd"
     )
   end
 
@@ -69,10 +71,11 @@ defmodule Helper do
   end
 
   defp insert_record(table, partition) do
-    "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, '1234-abc-zyx', cast(now() as date), '#{
-      partition
-    }')"
-    |> PrestigeHelper.execute_query()
+    {:ok, _} =
+      "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, cast(now() as date), '1234-abc-zyx', '#{
+        partition
+      }')"
+      |> PrestigeHelper.execute_query()
   end
 
   def payload() do

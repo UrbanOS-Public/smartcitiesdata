@@ -1,4 +1,4 @@
-defmodule Forklift.Integration.InitServerTest do
+defmodule Forklift.InitServerTest do
   use ExUnit.Case
   use Placebo
 
