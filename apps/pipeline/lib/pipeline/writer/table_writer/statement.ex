@@ -11,17 +11,13 @@ defmodule Pipeline.Writer.TableWriter.Statement do
   end
 
   def create(%{table: name, schema: schema, format: format, partitions: partitions}) do
-    {:ok, Create.compose(name, schema, format, partitions)}
-  rescue
-    e in FieldTypeError ->
-      {:error, e.message}
+    case partitions do
+      nil ->
+        {:ok, Create.compose(name, schema, format)}
 
-    e ->
-      {:error, "Unable to parse schema: #{inspect(e)}"}
-  end
-
-  def create(%{table: name, schema: schema, format: format}) do
-    {:ok, Create.compose(name, schema, format)}
+      _ ->
+        {:ok, Create.compose(name, schema, format, partitions)}
+    end
   rescue
     e in FieldTypeError ->
       {:error, e.message}
