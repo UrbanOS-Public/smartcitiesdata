@@ -61,8 +61,7 @@ defmodule Helper do
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
       schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema),
-      partition_key: "_ingestion_id",
-      partition_value: "1234-abcd"
+      partition_values: [_ingestion_id: "1234-abcd", _extraction_start_time: Timex.now() |> Timex.to_unix()]
     )
   end
 

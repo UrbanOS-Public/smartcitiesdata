@@ -16,14 +16,16 @@ defmodule Pipeline.Writer.S3Writer do
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
-  @spec init(table: String.t(), schema: schema(), bucket: String.t(), partitions: [String.t()]) ::
+  @spec init(table: String.t(), schema: schema(), bucket: String.t(), json_partitions: [String.t()], main_partitions: [String.t()]) ::
           :ok | {:error, term()}
   @doc """
   Ensures PrestoDB tables exist for JSON and ORC formats.
   """
   def init(options) do
-    with {:ok, orc_table_name} <- create_table("ORC", options),
-         {:ok, _json_table_name} <- create_table("JSON", options) do
+    main_partitions = options |> Keyword.fetch!(:main_partitions)
+    json_partitions = options |> Keyword.fetch!(:json_partitions)
+    with {:ok, orc_table_name} <- create_table("ORC", options |> Keyword.merge([partitions: main_partitions])),
+         {:ok, _json_table_name} <- create_table("JSON", options |> Keyword.merge([partitions: json_partitions])) do
       Logger.info("Created #{orc_table_name} table")
       :ok
     else
@@ -52,9 +54,8 @@ defmodule Pipeline.Writer.S3Writer do
     case table_exists?(json_config) do
       true ->
         if is_partitioned_write(options) do
-          get_partition_folder(options)
-          upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder(options))
-          PrestigeHelper.execute_query(Statement.sync_partition_metadata(json_config.table))
+          :ok = upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder_path(options))
+          {:ok, _} = PrestigeHelper.execute_query(Statement.sync_partition_metadata(json_config.table))
           :ok
         else
           upload_content(content, json_config.schema, json_config.table, bucket)
@@ -209,14 +210,13 @@ defmodule Pipeline.Writer.S3Writer do
     |> StatementUtils.drop_table()
   end
 
-  defp get_partition_folder(options) do
-    partition_key = Keyword.fetch!(options, :partition_key)
-    partition_value = Keyword.fetch!(options, :partition_value)
-    "#{partition_key}=#{partition_value}"
+  defp get_partition_folder_path(options) do
+    partition_values = Keyword.fetch!(options, :partition_values)
+    partition_values |> Enum.map(fn {k, v} -> "#{k}=#{v}" end) |> Enum.join("/")
   end
 
   defp is_partitioned_write(options) do
-    Keyword.has_key?(options, :partition_key) && Keyword.has_key?(options, :partition_value)
+    Keyword.has_key?(options, :partition_values)
   end
 
   defp write_content_to_temp(content, schema, table) do
