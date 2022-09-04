@@ -16,7 +16,13 @@ defmodule Pipeline.Writer.S3Writer do
   @type schema() :: [map()]
 
   @impl Pipeline.Writer
-  @spec init(table: String.t(), schema: schema(), bucket: String.t(), json_partitions: [String.t()], main_partitions: [String.t()]) ::
+  @spec init(
+          table: String.t(),
+          schema: schema(),
+          bucket: String.t(),
+          json_partitions: [String.t()],
+          main_partitions: [String.t()]
+        ) ::
           :ok | {:error, term()}
   @doc """
   Ensures PrestoDB tables exist for JSON and ORC formats.
@@ -24,8 +30,9 @@ defmodule Pipeline.Writer.S3Writer do
   def init(options) do
     main_partitions = options |> Keyword.fetch!(:main_partitions)
     json_partitions = options |> Keyword.fetch!(:json_partitions)
-    with {:ok, orc_table_name} <- create_table("ORC", options |> Keyword.merge([partitions: main_partitions])),
-         {:ok, _json_table_name} <- create_table("JSON", options |> Keyword.merge([partitions: json_partitions])) do
+
+    with {:ok, orc_table_name} <- create_table("ORC", options |> Keyword.merge(partitions: main_partitions)),
+         {:ok, _json_table_name} <- create_table("JSON", options |> Keyword.merge(partitions: json_partitions)) do
       Logger.info("Created #{orc_table_name} table")
       :ok
     else
@@ -54,7 +61,9 @@ defmodule Pipeline.Writer.S3Writer do
     case table_exists?(json_config) do
       true ->
         if is_partitioned_write(options) do
-          :ok = upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder_path(options))
+          :ok =
+            upload_content(content, json_config.schema, json_config.table, bucket, get_partition_folder_path(options))
+
           {:ok, _} = PrestigeHelper.execute_query(Statement.sync_partition_metadata(json_config.table))
           :ok
         else
