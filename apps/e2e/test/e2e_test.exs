@@ -170,7 +170,7 @@ defmodule E2ETest do
         %{
           "Column" => "_extraction_start_time",
           "Comment" => "",
-          "Extra" => "partition key",
+          "Extra" => "",
           "Type" => "bigint"
         },
         %{
