@@ -62,7 +62,7 @@ defmodule Forklift.MessageHandler do
   defp filter_end_of_data(msg, dataset) do
     case msg do
       end_of_data() ->
-        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil)
+        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil, extraction_start_time: nil)
         true
 
       _ ->
