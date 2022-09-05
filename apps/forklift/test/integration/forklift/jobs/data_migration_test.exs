@@ -28,18 +28,17 @@ defmodule Forklift.Jobs.DataMigrationTest do
     [dataset: dataset, ingestion_id: Faker.UUID.v4(), extract_start: 123_456]
   end
 
-  test "should insert partitioned data for each valid provided extraction", %{
+  test "should insert partitioned data for only the specified extraction", %{
     dataset: dataset,
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
     expected_records = 10
+    other_ingestion_records = 1
+    other_extraction_records = 3
     write_records(dataset, expected_records, ingestion_id, extract_start)
-    # todo:
-    # other_ingestion_records =
-    # other_extraction_records =
-    # write other records
-    # write other records
+    write_records(dataset, other_ingestion_records, Faker.UUID.v4(), extract_start)
+    write_records(dataset, other_extraction_records, ingestion_id, 789_101)
 
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
 
@@ -54,8 +53,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
     assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
 
-    # todo: = other_ingestion_records + other_extraction_records
-    assert count(dataset.technical.systemName <> "__json") == 0
+    assert count(dataset.technical.systemName <> "__json") == other_ingestion_records + other_extraction_records
   end
 
   test "Should refit tables before migration if they do not have an os_partition field", %{
@@ -151,12 +149,12 @@ defmodule Forklift.Jobs.DataMigrationTest do
     assert result == {:error, dataset.id}
   end
 
-  test "should abort `no data was found to migrate` per extraction", %{
+  test "should abort `no data was found to migrate` per specified extraction", %{
     dataset: dataset,
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    # todo: write data unrelated to ingestion_id + extract_start
+    :ok = write_records(dataset, 8, Faker.UUID.v4(), 456_771)
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
     assert result == {:abort, dataset.id}
   end
