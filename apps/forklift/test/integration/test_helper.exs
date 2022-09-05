@@ -54,14 +54,19 @@ defmodule Helper do
     |> PrestigeHelper.execute_query()
   end
 
-  def write_records(dataset, count) do
+  def write_records(
+        dataset,
+        count,
+        ingestion_id,
+        extract_time
+      ) do
     data = 1..count |> Enum.map(fn _ -> TDG.create_data(%{payload: payload()}) end)
 
     S3Writer.write(data,
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
       schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema),
-      partition_values: [_extraction_start_time: Timex.now() |> Timex.to_unix(), _ingestion_id: "1234-abcd"],
+      partition_values: [_extraction_start_time: extract_time, _ingestion_id: ingestion_id],
       json_partitions: ["_extraction_start_time", "_ingestion_id"],
       main_partitions: ["_ingestion_id"]
     )
@@ -119,7 +124,15 @@ defmodule Helper do
   end
 
   def delete_all_datasets() do
-    Datasets.get_all!()
-    |> Enum.each(fn dataset -> Brook.Event.send(@instance_name, dataset_delete(), :forklift, dataset) end)
+    datasets = Datasets.get_all!()
+    datasets |> Enum.each(fn dataset -> Brook.Event.send(@instance_name, dataset_delete(), :forklift, dataset) end)
+
+    eventually(
+      fn ->
+        ExUnit.Assertions.assert(Enum.all?(datasets, fn dataset -> !table_exists?(dataset.technical.systemName) end))
+      end,
+      100,
+      1_000
+    )
   end
 end

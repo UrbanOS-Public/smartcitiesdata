@@ -139,6 +139,8 @@ defmodule Forklift.DataWriter do
              json_partitions: ["_extraction_start_time", "_ingestion_id"],
              main_partitions: ["_ingestion_id"]
            ),
+         # todo: increment ingestion progress
+         #  todo: if complete, kickoff data_migration.compact (dataset, ingestion, extraction)
          write_end <- Data.Timing.current_time(),
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do

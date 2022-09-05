@@ -10,36 +10,53 @@ defmodule Forklift.Jobs.DataMigration do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  def run() do
-    Forklift.Datasets.get_all!()
-    |> Enum.map(&compact/1)
-  end
-
-  def compact(%{id: id, technical: %{systemName: system_name}} = dataset) do
+  @spec compact(SmartCity.Dataset.t(), String.t(), Integer.t()) ::
+          {:abort, any} | {:error, any} | {:ok, any}
+  def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
     Forklift.DataReaderHelper.terminate(dataset)
+    # todo: include ingestion id + extraction id
     Logger.info("Beginning data migration for dataset #{id} (#{system_name})")
     json_table = json_table_name(system_name)
 
     with {:ok, original_count} <- PrestigeHelper.count(system_name),
+         # todo: json_count should represent extraction count, not all in table
+         #  rename as `extraction count`
          {:ok, json_count} <- PrestigeHelper.count(json_table),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
+         # todo: check_for_data checks for data in extraction, not any in table
          {:ok, _} <- check_for_data_to_migrate(json_count),
+         #  flag: if overwrite mode, delete past ingestion_id data from table
+         #  delete only if newer
+         #  todo: insert only data from extraction
          {:ok, _} <- insert_partitioned_data(json_table, system_name),
+         # verify with extraction count instead of json_count
          {:ok, _} <-
            verify_count(system_name, original_count + json_count, "main table contains all records from the json table"),
+         #  todo: don't truncate, just remove entries related to extraction
          {:ok, _} <- truncate_table(json_table),
+         #  todo: remove this verify because operations could be overlapping
          {:ok, _} <- verify_count(json_table, 0, "json table is empty") do
+      # todo: include ingestion id + extraction id
       Logger.info("Successful data migration for dataset #{id}")
       update_migration_status(id, :ok)
       {:ok, id}
     else
       {:error, error} ->
-        Logger.error("Error migrating records for dataset #{id}: " <> inspect(error))
+        Logger.error(
+          "Error migrating records for dataset #{id}: #{system_name}, ingestion: #{ingestion_id}, extract: #{
+            extract_time
+          }" <> inspect(error)
+        )
+
         update_migration_status(id, :error)
         {:error, id}
 
       {:abort, reason} ->
-        Logger.info("Aborted migration of dataset #{id}: " <> reason)
+        Logger.info(
+          "Aborted migration of dataset: #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}, reason" <>
+            reason
+        )
+
         {:abort, id}
     end
   after
