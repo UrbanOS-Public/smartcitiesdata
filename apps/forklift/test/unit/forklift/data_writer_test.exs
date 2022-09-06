@@ -64,4 +64,7 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: "1662175490"
     )
   end
+
+  # todo: if ingestion_progress returns in progress, compaction is not called
+  # todo: if ingestion_progress returns complete, compaction is called
 end

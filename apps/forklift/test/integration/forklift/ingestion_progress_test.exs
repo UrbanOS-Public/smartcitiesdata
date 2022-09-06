@@ -13,11 +13,6 @@ defmodule Forklift.IngestionProgressTest do
     [ingestion_id: Faker.UUID.v4()]
   end
 
-  # todo: new compaction kickoff integration test:
-  # - data_extract_end stores message target, assert from redis
-  # - compacts when target achieved, assert compaction called
-  # - doesn't compact when target not achieved, assert compaction not called
-
   describe "IngestionTest" do
     test "new_message updates the message count when called", %{ingestion_id: ingestion_id} do
       IngestionProgress.new_message(ingestion_id)

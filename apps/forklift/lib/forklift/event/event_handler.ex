@@ -63,6 +63,8 @@ defmodule Forklift.Event.EventHandler do
       :discard
   end
 
+  # todo: data_extract_end fire ingestion_progress store set
+
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset, author: author}) do
     data_ingest_end()
     |> add_event_count(author, dataset.id)
