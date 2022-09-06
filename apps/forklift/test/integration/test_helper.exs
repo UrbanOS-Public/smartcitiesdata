@@ -61,8 +61,9 @@ defmodule Helper do
       bucket: s3_writer_bucket(),
       table: dataset.technical.systemName,
       schema: DataWriter.add_ingestion_metadata_to_schema(dataset.technical.schema),
-      partition_key: "_ingestion_id",
-      partition_value: "1234-abcd"
+      partition_values: [_extraction_start_time: Timex.now() |> Timex.to_unix(), _ingestion_id: "1234-abcd"],
+      json_partitions: ["_extraction_start_time", "_ingestion_id"],
+      main_partitions: ["_ingestion_id"]
     )
   end
 
@@ -72,9 +73,7 @@ defmodule Helper do
 
   defp insert_record(table, partition) do
     {:ok, _} =
-      "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, cast(now() as date), '1234-abc-zyx', '#{
-        partition
-      }')"
+      "insert into #{table} values (1, 'Bob', cast(now() as date), 1.5, true, 1662175490, '1234-abc-zyx', '#{partition}')"
       |> PrestigeHelper.execute_query()
   end
 

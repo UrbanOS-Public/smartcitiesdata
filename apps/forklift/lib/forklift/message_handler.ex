@@ -28,9 +28,9 @@ defmodule Forklift.MessageHandler do
       |> Enum.map(&yeet_error/1)
       |> Enum.reject(&error_tuple?/1)
       |> Enum.reject(fn msg -> filter_end_of_data(msg, dataset) end)
-      |> Enum.group_by(fn msg -> Map.get(msg, :ingestion_id) end)
-      |> Enum.map(fn {ingestion_id, msgs} ->
-        Forklift.DataWriter.write(msgs, dataset: dataset, ingestion_id: ingestion_id)
+      |> group_by_each_extraction()
+      |> Enum.map(fn {%{ingestion_id: i, extraction_start_time: e}, msgs} ->
+        Forklift.DataWriter.write(msgs, dataset: dataset, ingestion_id: i, extraction_start_time: e)
       end)
       |> List.flatten()
 
@@ -62,7 +62,7 @@ defmodule Forklift.MessageHandler do
   defp filter_end_of_data(msg, dataset) do
     case msg do
       end_of_data() ->
-        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil)
+        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil, extraction_start_time: nil)
         true
 
       _ ->
@@ -79,4 +79,14 @@ defmodule Forklift.MessageHandler do
 
   defp error_tuple?({:error, _, _}), do: true
   defp error_tuple?(_), do: false
+
+  defp group_by_each_extraction(msgs) do
+    msgs
+    |> Enum.group_by(fn msg ->
+      i = Map.get(msg, :ingestion_id)
+      e = Map.get(msg, :extraction_start_time)
+      unix_e = e |> Timex.parse!("{ISO:Extended:Z}") |> Timex.to_unix()
+      %{:ingestion_id => i, :extraction_start_time => unix_e}
+    end)
+  end
 end

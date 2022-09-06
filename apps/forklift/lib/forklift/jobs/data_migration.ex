@@ -73,7 +73,7 @@ defmodule Forklift.Jobs.DataMigration do
   defp create_partitioned_table(table) do
     Logger.info("Table #{table} needs to be partitioned")
 
-    "create table #{table}__partitioned with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
+    "create table #{table}__partitioned with (partitioned_by = ARRAY['_ingestion_id', 'os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
       table
     })"
     |> PrestigeHelper.execute_query()
