@@ -1,9 +1,11 @@
 defmodule Forklift.Jobs.DataMigrationTest do
   use ExUnit.Case
+  use Mix.Config
 
   alias Forklift.Jobs.DataMigration
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+  alias Forklift.Jobs.JobUtils
   import Helper
 
   use Placebo
@@ -25,6 +27,10 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
     wait_for_tables_to_be_created([dataset])
 
+    on_exit(fn ->
+      Application.put_env(:forklift, :overwrite_mode, false)
+    end)
+
     [dataset: dataset, ingestion_id: Faker.UUID.v4(), extract_start: 123_456]
   end
 
@@ -36,9 +42,9 @@ defmodule Forklift.Jobs.DataMigrationTest do
     expected_records = 10
     other_ingestion_records = 2
     other_extraction_records = 3
-    write_records(dataset, expected_records, ingestion_id, extract_start)
-    write_records(dataset, other_ingestion_records, Faker.UUID.v4(), extract_start)
-    write_records(dataset, other_extraction_records, ingestion_id, 789_101)
+    write_json_records(dataset, expected_records, ingestion_id, extract_start)
+    write_json_records(dataset, other_ingestion_records, Faker.UUID.v4(), extract_start)
+    write_json_records(dataset, other_extraction_records, ingestion_id, 789_101)
 
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
 
@@ -66,7 +72,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
       |> PrestigeHelper.execute_query()
 
     expected_records = 10
-    write_records(dataset, expected_records, ingestion_id, extract_start)
+    write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     DataMigration.compact(dataset, ingestion_id, extract_start)
 
@@ -88,7 +94,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     expected_records = 10
-    write_records(dataset, expected_records, ingestion_id, extract_start)
+    write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     insert_query =
       "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{
@@ -111,7 +117,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     expected_records = 10
-    write_records(dataset, expected_records, ingestion_id, extract_start)
+    write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     delete_query =
       "delete from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
@@ -146,7 +152,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     expected_records = 10
-    write_records(dataset, expected_records, ingestion_id, extract_start)
+    write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     "drop table #{dataset.technical.systemName}__json"
     |> PrestigeHelper.execute_query()
@@ -160,29 +166,167 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    :ok = write_records(dataset, 8, Faker.UUID.v4(), 456_771)
+    :ok = write_json_records(dataset, 8, Faker.UUID.v4(), 456_771)
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
     assert result == {:abort, dataset.id}
   end
 
-  @tag :skip
   test "in overwrite mode, past extraction data should be deleted ", %{
-    dataset: _dataset,
-    ingestion_id: _ingestion_id,
-    extract_start: _extract_start
+    dataset: dataset,
+    ingestion_id: ingestion_id
   } do
-    # todo:
-    assert true == false
+    Application.put_env(:forklift, :overwrite_mode, true)
+
+    main_table = dataset.technical.systemName
+    json_table = dataset.technical.systemName <> "__json"
+    past_data_extract_time = 000_001
+    past_data_messages_count = 5
+    new_data_extract_time = 000_005
+    new_data_messages_count = 2
+    other_extraction_messages = 11
+
+    :ok = write_json_records(dataset, new_data_messages_count, ingestion_id, new_data_extract_time)
+
+    {:ok, _past_data_messages_count} =
+      populate_main_table(
+        dataset,
+        past_data_messages_count,
+        ingestion_id,
+        past_data_extract_time,
+        "test setup failed to populate data in main table"
+      )
+
+    {:ok, _other_data_in_main_should_not_interfere} =
+      populate_main_table(
+        dataset,
+        other_extraction_messages,
+        Faker.UUID.v4(),
+        123_456,
+        "test setup failed to populate data in main table"
+      )
+
+    {:ok, _new_data_messages_count} =
+      JobUtils.verify_extraction_count_in_table(
+        json_table,
+        ingestion_id,
+        new_data_extract_time,
+        new_data_messages_count,
+        "test failed to simulate new data in json table"
+      )
+
+    # now there's old data in the main table, and new data in the json table
+    # assert compaction in overwrite mode removes past extraction data from main
+    assert {:ok, _} = DataMigration.compact(dataset, ingestion_id, new_data_extract_time)
+
+    assert {:ok, _} =
+             JobUtils.verify_extraction_count_in_table(
+               json_table,
+               ingestion_id,
+               new_data_extract_time,
+               0,
+               "compaction failed to remove data from json table"
+             )
+
+    assert {:ok, _} =
+             JobUtils.verify_extraction_count_in_table(
+               main_table,
+               ingestion_id,
+               new_data_extract_time,
+               new_data_messages_count,
+               "compaction failed to copy data from json table into main table"
+             )
+
+    assert count(main_table) == new_data_messages_count + other_extraction_messages
   end
 
-  @tag :skip
-  test "in overwrite mode, newer extraction data should not be deleted if present from completed extractions",
+  test "in overwrite mode, newer extraction data should not be deleted if present from already completed extractions",
        %{
-         dataset: _dataset,
-         ingestion_id: _ingestion_id,
-         extract_start: _extract_start
+         dataset: dataset,
+         ingestion_id: ingestion_id
        } do
-    # todo:
-    assert true == false
+    Application.put_env(:forklift, :overwrite_mode, true)
+
+    main_table = dataset.technical.systemName
+    json_table = dataset.technical.systemName <> "__json"
+    past_data_extract_time = 000_001
+    past_data_messages_count = 5
+    new_data_extract_time = 000_005
+    new_data_messages_count = 2
+    other_extraction_messages = 11
+
+    {:ok, new_data_messages_count} =
+      populate_main_table(
+        dataset,
+        new_data_messages_count,
+        ingestion_id,
+        new_data_extract_time,
+        "test failed to populate data in main table"
+      )
+
+    {:ok, _other_extraction_data_shouldnt_interfere} =
+      populate_main_table(
+        dataset,
+        other_extraction_messages,
+        Faker.UUID.v4(),
+        123_456,
+        "test failed to populate data in main table"
+      )
+
+    :ok = write_json_records(dataset, past_data_messages_count, ingestion_id, past_data_extract_time)
+
+    {:ok, _} =
+      JobUtils.verify_extraction_count_in_table(
+        json_table,
+        ingestion_id,
+        past_data_extract_time,
+        past_data_messages_count,
+        "test failed to simulate data in json table"
+      )
+
+    # now there's new data in the main table, and stale data in the json table
+    # this could happen if compactions are very very frequent, and one lags behind
+    # assert that compaction has no effect, as we don't want to replace more
+    #   recent data with old data
+    assert {:ok, _} = DataMigration.compact(dataset, ingestion_id, past_data_extract_time)
+
+    assert {:ok, _} =
+             JobUtils.verify_extraction_count_in_table(
+               json_table,
+               ingestion_id,
+               past_data_extract_time,
+               0,
+               "compaction failed to remove stale data from json table"
+             )
+
+    assert {:ok, _} =
+             JobUtils.verify_extraction_count_in_table(
+               main_table,
+               ingestion_id,
+               new_data_extract_time,
+               new_data_messages_count,
+               "compaction inappropriately altered more recent data"
+             )
+
+    assert count(main_table) == new_data_messages_count + other_extraction_messages
+  end
+
+  @spec populate_main_table(
+          SmartCity.Dataset.t(),
+          Integer.t(),
+          String.t(),
+          Integer.t(),
+          String.t()
+        ) :: {:ok, Integer.t()} | {:error, any()}
+  defp populate_main_table(dataset, desired_count, ingestion_id, extract_time, err_msg) do
+    write_json_records(dataset, desired_count, ingestion_id, extract_time)
+    DataMigration.compact(dataset, ingestion_id, extract_time)
+
+    JobUtils.verify_extraction_count_in_table(
+      dataset.technical.systemName,
+      ingestion_id,
+      extract_time,
+      desired_count,
+      err_msg
+    )
   end
 end

@@ -13,6 +13,9 @@ defmodule Forklift.Jobs.DataMigration do
   @spec compact(SmartCity.Dataset.t(), String.t(), Integer.t()) ::
           {:abort, any} | {:error, any} | {:ok, any}
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
+    _overwrite_mode =
+      Application.fetch_env!(:forklift, :overwrite_mode) |> IO.inspect(label: "compaction thinks OVERWRITE MODE is")
+
     Forklift.DataReaderHelper.terminate(dataset)
 
     Logger.info(

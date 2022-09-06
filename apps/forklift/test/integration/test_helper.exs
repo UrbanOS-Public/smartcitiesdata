@@ -54,7 +54,7 @@ defmodule Helper do
     |> PrestigeHelper.execute_query()
   end
 
-  def write_records(
+  def write_json_records(
         dataset,
         count,
         ingestion_id,
