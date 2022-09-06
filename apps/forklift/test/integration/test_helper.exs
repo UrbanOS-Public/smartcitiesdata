@@ -109,6 +109,10 @@ defmodule Helper do
     eventually(
       fn ->
         ExUnit.Assertions.assert(Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end))
+
+        ExUnit.Assertions.assert(
+          Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName <> "__json") end)
+        )
       end,
       100,
       1_000

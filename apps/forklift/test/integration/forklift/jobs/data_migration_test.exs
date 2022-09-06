@@ -34,7 +34,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     expected_records = 10
-    other_ingestion_records = 1
+    other_ingestion_records = 2
     other_extraction_records = 3
     write_records(dataset, expected_records, ingestion_id, extract_start)
     write_records(dataset, other_ingestion_records, Faker.UUID.v4(), extract_start)
@@ -90,12 +90,13 @@ defmodule Forklift.Jobs.DataMigrationTest do
     expected_records = 10
     write_records(dataset, expected_records, ingestion_id, extract_start)
 
+    insert_query =
+      "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{
+        dataset.technical.systemName
+      }__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
+
     allow(
-      PrestigeHelper.execute_query(
-        "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{
-          dataset.technical.systemName
-        }__json"
-      ),
+      PrestigeHelper.execute_query(insert_query),
       return: {:ok, :false_positive},
       meck_options: [:passthrough]
     )
@@ -112,8 +113,13 @@ defmodule Forklift.Jobs.DataMigrationTest do
     expected_records = 10
     write_records(dataset, expected_records, ingestion_id, extract_start)
 
+    delete_query =
+      "delete from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
+        extract_start
+      })"
+
     allow(
-      PrestigeHelper.execute_query("delete from #{dataset.technical.systemName}__json"),
+      PrestigeHelper.execute_query(delete_query),
       return: {:ok, :false_positive},
       meck_options: [:passthrough]
     )

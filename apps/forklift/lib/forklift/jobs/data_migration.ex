@@ -14,30 +14,50 @@ defmodule Forklift.Jobs.DataMigration do
           {:abort, any} | {:error, any} | {:ok, any}
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
     Forklift.DataReaderHelper.terminate(dataset)
-    # todo: include ingestion id + extraction id
-    Logger.info("Beginning data migration for dataset #{id} (#{system_name})")
+
+    Logger.info(
+      "Beginning data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}"
+    )
+
     json_table = json_table_name(system_name)
 
     with {:ok, original_count} <- PrestigeHelper.count(system_name),
-         # todo: json_count should represent extraction count, not all in table
-         #  rename as `extraction count`
-         {:ok, json_count} <- PrestigeHelper.count(json_table),
+         {:ok, extraction_count} <-
+           PrestigeHelper.count_query(
+             "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
+               extract_time
+             })"
+           ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
-         # todo: check_for_data checks for data in extraction, not any in table
-         {:ok, _} <- check_for_data_to_migrate(json_count),
-         #  flag: if overwrite mode, delete past ingestion_id data from table
-         #  delete only if newer
-         #  todo: insert only data from extraction
-         {:ok, _} <- insert_partitioned_data(json_table, system_name),
-         # verify with extraction count instead of json_count
+         {:ok, _} <- check_for_data_to_migrate(extraction_count),
+         #  todo: if overwrite mode, delete past ingestion_id data from table
+         #  note: delete only if newer
          {:ok, _} <-
-           verify_count(system_name, original_count + json_count, "main table contains all records from the json table"),
-         #  todo: don't truncate, just remove entries related to extraction
-         {:ok, _} <- truncate_table(json_table),
-         #  todo: remove this verify because operations could be overlapping
-         {:ok, _} <- verify_count(json_table, 0, "json table is empty") do
-      # todo: include ingestion id + extraction id
-      Logger.info("Successful data migration for dataset #{id}")
+           insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
+         {:ok, _} <-
+           verify_extraction_count_in_table(
+             system_name,
+             ingestion_id,
+             extract_time,
+             extraction_count,
+             "main table includes all messages related to the extraction from the json table"
+           ),
+         {:ok, _} <-
+           remove_extraction(json_table, ingestion_id, extract_time),
+         {:ok, _} <-
+           verify_extraction_count_in_table(
+             json_table,
+             ingestion_id,
+             extract_time,
+             0,
+             "json table no longer includes messages related to the extraction"
+           ) do
+      Logger.info(
+        "Successful data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{
+          extract_time
+        }"
+      )
+
       update_migration_status(id, :ok)
       {:ok, id}
     else
@@ -102,14 +122,15 @@ defmodule Forklift.Jobs.DataMigration do
     |> PrestigeHelper.execute_query()
   end
 
-  defp insert_partitioned_data(source, target) do
-    "insert into #{target} select *, date_format(now(), '%Y_%m') as os_partition from #{source}"
+  defp insert_partitioned_data(source, target, ingestion_id, extract_time) do
+    "insert into #{target} select *, date_format(now(), '%Y_%m') as os_partition from #{source} where (_ingestion_id = '#{
+      ingestion_id
+    }' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
   end
 
-  defp truncate_table(table) do
-    %{table: table}
-    |> Statement.truncate()
+  defp remove_extraction(table, ingestion_id, extract_time) do
+    "delete from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
   end
 
