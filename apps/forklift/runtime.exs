@@ -145,6 +145,7 @@ config :forklift, Forklift.Quantum.Scheduler,
       task: {Forklift.Jobs.PartitionedCompaction, :run, []},
       timezone: "America/New_York"
     ]
+    # todo: ticket for clearing all json tables
   ]
 # end
 

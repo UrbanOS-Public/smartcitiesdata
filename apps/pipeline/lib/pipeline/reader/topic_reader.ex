@@ -44,12 +44,14 @@ defmodule Pipeline.Reader.TopicReader do
   Destroys topic consumer infrastructure.
   """
   def terminate(args) do
-    with name <- parse_name(args),
-         [{pid, _}] <- Registry.lookup(Pipeline.Registry, name),
-         :ok <- DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid) do
-      Registry.unregister(Pipeline.Registry, name)
+    with name <- parse_name(args) |> IO.inspect(label: "name"),
+         [{pid, _}] <- Registry.lookup(Pipeline.Registry, name) |> IO.inspect(label: "lookup"),
+        #  TODO: this fails causing compaction to never kickoff
+         :ok <- DynamicSupervisor.terminate_child(Pipeline.DynamicSupervisor, pid) |> IO.inspect(label: "supervisor") do
+      Registry.unregister(Pipeline.Registry, name) |> IO.inspect(label: "unregister")
     else
       lookup when is_list(lookup) ->
+        "" |> IO.inspect(label: "cant find pid to terminate")
         {:error, "Cannot find pid to terminate: #{inspect(lookup)}"}
 
       error ->
