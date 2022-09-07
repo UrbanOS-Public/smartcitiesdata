@@ -45,9 +45,9 @@ defmodule Transformers.ArithmeticAdd do
         options: nil
       },
       %{
-        field_name: "targetField",
+        field_name: "addends",
         field_type: "list",
-        field_label: "List of values or fields to add to targetField",
+        field_label: "List of values or fields to add together",
         options: nil
       }
     ]
