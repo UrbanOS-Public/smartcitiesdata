@@ -67,7 +67,12 @@ defmodule Pipeline.Writer.S3WriterTest do
           technical: %{systemName: "org_name__dataset_name", schema: @table_schema}
         })
 
-      S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
+      S3Writer.init(
+        table: dataset.technical.systemName,
+        schema: dataset.technical.schema,
+        main_partitions: [],
+        json_partitions: []
+      )
 
       eventually(fn ->
         table = "describe hive.default.org_name__dataset_name__json"
@@ -90,7 +95,12 @@ defmodule Pipeline.Writer.S3WriterTest do
         })
 
       init_result =
-        S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema, partitions: ["six"])
+        S3Writer.init(
+          table: dataset.technical.systemName,
+          schema: dataset.technical.schema,
+          main_partitions: ["six"],
+          json_partitions: []
+        )
 
       assert init_result == :ok
 
@@ -115,14 +125,26 @@ defmodule Pipeline.Writer.S3WriterTest do
 
       dataset = TDG.create_dataset(%{technical: %{systemName: "this.is.invalid", schema: schema}})
 
-      assert {:error, _} = S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
+      assert {:error, _} =
+               S3Writer.init(
+                 table: dataset.technical.systemName,
+                 schema: dataset.technical.schema,
+                 main_partitions: [],
+                 json_partitions: []
+               )
     end
 
     test "escapes invalid column names", %{session: session} do
       expected = [%{"Column" => "on", "Comment" => "", "Extra" => "", "Type" => "boolean"}]
       schema = [%{name: "on", type: "boolean"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo", schema: schema}})
-      S3Writer.init(table: dataset.technical.systemName, schema: dataset.technical.schema)
+
+      S3Writer.init(
+        table: dataset.technical.systemName,
+        schema: dataset.technical.schema,
+        main_partitions: [],
+        json_partitions: []
+      )
 
       eventually(fn ->
         table = "describe hive.default.foo__json"
@@ -142,12 +164,18 @@ defmodule Pipeline.Writer.S3WriterTest do
       schema = [%{name: "one", type: "string"}, %{name: "two", type: "integer"}]
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__bar", schema: schema}})
 
-      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema, main_partitions: [], json_partitions: [])
 
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
 
-      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
+      S3Writer.write([datum1, datum2],
+        table: dataset.technical.systemName,
+        schema: schema,
+        bucket: "trino-hive-storage",
+        main_partitions: [],
+        json_partitions: []
+      )
 
       eventually(fn ->
         query = "select * from foo__bar__json"
@@ -168,7 +196,13 @@ defmodule Pipeline.Writer.S3WriterTest do
       datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "hello", "two" => 42}})
       datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"one" => "goodbye", "two" => 9001}})
 
-      S3Writer.write([datum1, datum2], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
+      S3Writer.write([datum1, datum2],
+        table: dataset.technical.systemName,
+        schema: schema,
+        bucket: "trino-hive-storage",
+        main_partitions: [],
+        json_partitions: []
+      )
 
       eventually(fn ->
         query = "select * from goo__bar__json"
@@ -196,7 +230,9 @@ defmodule Pipeline.Writer.S3WriterTest do
                S3Writer.write([datum1, datum2],
                  table: dataset.technical.systemName,
                  schema: schema,
-                 bucket: "trino-hive-storage"
+                 bucket: "trino-hive-storage",
+                 main_partitions: [],
+                 json_partitions: []
                )
     end
 
@@ -251,7 +287,7 @@ defmodule Pipeline.Writer.S3WriterTest do
       }
 
       dataset = TDG.create_dataset(%{technical: %{systemName: "foo__baz", schema: schema}})
-      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema, main_partitions: [], json_partitions: [])
 
       datum = TDG.create_data(dataset_id: dataset.id, payload: payload)
 
@@ -268,7 +304,13 @@ defmodule Pipeline.Writer.S3WriterTest do
       }
 
       assert :ok =
-               S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
+               S3Writer.write([datum],
+                 table: dataset.technical.systemName,
+                 schema: schema,
+                 bucket: "trino-hive-storage",
+                 main_partitions: [],
+                 json_partitions: []
+               )
 
       eventually(fn ->
         query = "select * from foo__baz__json"
@@ -289,18 +331,31 @@ defmodule Pipeline.Writer.S3WriterTest do
       schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "a__b"}})
 
-      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema, main_partitions: [], json_partitions: [])
 
       Enum.each(1..15, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        S3Writer.write([datum], table: dataset.technical.systemName, schema: schema, bucket: "trino-hive-storage")
+
+        S3Writer.write([datum],
+          table: dataset.technical.systemName,
+          schema: schema,
+          bucket: "trino-hive-storage",
+          main_partitions: [],
+          json_partitions: []
+        )
       end)
 
       Enum.each(1..5, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
+
+        TableWriter.write([datum],
+          table: dataset.technical.systemName,
+          schema: schema,
+          main_partitions: [],
+          json_partitions: []
+        )
       end)
 
       eventually(fn ->
@@ -347,12 +402,18 @@ defmodule Pipeline.Writer.S3WriterTest do
       schema = [%{name: "one", type: "list", itemType: "decimal"}, %{name: "two", type: "map", subSchema: sub}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "d__e"}})
 
-      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema, main_partitions: [], json_partitions: [])
 
       Enum.each(1..5, fn n ->
         payload = %{"one" => [n], "two" => %{"three" => false}}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        TableWriter.write([datum], table: dataset.technical.systemName, schema: schema)
+
+        TableWriter.write([datum],
+          table: dataset.technical.systemName,
+          schema: schema,
+          main_partitions: [],
+          json_partitions: []
+        )
       end)
 
       eventually(fn ->
@@ -406,12 +467,19 @@ defmodule Pipeline.Writer.S3WriterTest do
       schema = [%{name: "abc", type: "string"}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})
 
-      S3Writer.init(table: dataset.technical.systemName, schema: schema)
+      S3Writer.init(table: dataset.technical.systemName, schema: schema, main_partitions: [], json_partitions: [])
 
       Enum.each(1..15, fn n ->
         payload = %{"abc" => "#{n}"}
         datum = TDG.create_data(%{dataset_id: dataset.id, payload: payload})
-        S3Writer.write([datum], table: "xyz", schema: schema, bucket: "trino-hive-storage")
+
+        S3Writer.write([datum],
+          table: "xyz",
+          schema: schema,
+          bucket: "trino-hive-storage",
+          main_partitions: [],
+          json_partitions: []
+        )
       end)
 
       assert {:error, _} = S3Writer.compact(table: "xyz")
@@ -434,7 +502,7 @@ defmodule Pipeline.Writer.S3WriterTest do
         technical: %{systemName: "some_system_name", schema: @table_schema}
       })
 
-    [table: dataset.technical.systemName, schema: dataset.technical.schema]
+    [table: dataset.technical.systemName, schema: dataset.technical.schema, main_partitions: [], json_partitions: []]
     |> S3Writer.init()
 
     eventually(fn ->
@@ -458,7 +526,7 @@ defmodule Pipeline.Writer.S3WriterTest do
           tables["Table"]
           |> String.ends_with?(dataset.technical.systemName)
         end)
-        |> verify_deleted_table_name(dataset.technical.systemName)
+        |> verify_deleted_table_name()
 
       assert @expected_table_values ==
                "DESCRIBE #{expected_table_name}"
@@ -476,7 +544,7 @@ defmodule Pipeline.Writer.S3WriterTest do
     |> Prestige.Result.as_maps()
   end
 
-  defp verify_deleted_table_name(table, table_name) do
+  defp verify_deleted_table_name(table) do
     case String.starts_with?(table["Table"], "deleted") do
       true -> table["Table"]
       _ -> nil

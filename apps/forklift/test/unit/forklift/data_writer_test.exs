@@ -50,7 +50,7 @@ defmodule Forklift.DataWriterTest do
       schema_with_ingestion_metadata =
         expected_dataset.technical.schema ++
           [
-            %{name: "_extraction_start_time", type: "timestamp", format: "{ISO:Extended:Z}"},
+            %{name: "_extraction_start_time", type: "long"},
             %{name: "_ingestion_id", type: "string"}
           ]
 
@@ -58,6 +58,10 @@ defmodule Forklift.DataWriterTest do
       :ok
     end)
 
-    DataWriter.write([fake_data], dataset: expected_dataset, ingestion_id: "1234-abcd")
+    DataWriter.write([fake_data],
+      dataset: expected_dataset,
+      ingestion_id: "1234-abcd",
+      extraction_start_time: "1662175490"
+    )
   end
 end

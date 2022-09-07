@@ -33,9 +33,15 @@ defmodule Forklift.DataWriter do
   @doc """
   Ensures a table exists using `:table_writer` from Forklift's application environment.
   """
-  def init(table: table, schema: dataset_schema, partitions: partitions) do
+  def init(table: table, schema: dataset_schema, json_partitions: json_partitions, main_partitions: main_partitions) do
     schema_with_ingestion_metadata = dataset_schema |> add_ingestion_metadata_to_schema()
-    table_writer().init(table: table, schema: schema_with_ingestion_metadata, partitions: partitions)
+
+    table_writer().init(
+      table: table,
+      schema: schema_with_ingestion_metadata,
+      json_partitions: json_partitions,
+      main_partitions: main_partitions
+    )
   end
 
   @impl Pipeline.Writer
@@ -51,16 +57,17 @@ defmodule Forklift.DataWriter do
   def write(data, opts) do
     dataset = Keyword.fetch!(opts, :dataset)
     ingestion_id = Keyword.fetch!(opts, :ingestion_id)
+    extraction_start_time = Keyword.fetch!(opts, :extraction_start_time)
 
     case ingest_status(data) do
       {:ok, batch_data} ->
         Enum.reverse(batch_data)
-        |> do_write(dataset, ingestion_id)
+        |> do_write(dataset, ingestion_id, extraction_start_time)
 
       {:final, batch_data} ->
         results =
           Enum.reverse(batch_data)
-          |> do_write(dataset, ingestion_id)
+          |> do_write(dataset, ingestion_id, extraction_start_time)
 
         Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset)
 
@@ -107,12 +114,12 @@ defmodule Forklift.DataWriter do
     {:cont, {:ok, [message | acc]}}
   end
 
-  defp do_write(data, dataset, ingestion_id) do
+  defp do_write(data, dataset, ingestion_id, extraction_start_time) do
     started_data = Enum.map(data, &add_start_time/1)
     ingestion_info_data = Enum.map(started_data, &add_ingestion_info/1)
 
     retry with: exponential_backoff(100) |> cap(retry_max_wait()) |> Stream.take(retry_count()) do
-      write_to_table(ingestion_info_data, dataset, ingestion_id)
+      write_to_table(ingestion_info_data, dataset, ingestion_id, extraction_start_time)
     after
       {:ok, write_timing} -> add_total_time(data, ingestion_info_data, write_timing)
     else
@@ -121,15 +128,16 @@ defmodule Forklift.DataWriter do
     end
   end
 
-  defp write_to_table(data, %{technical: technical}, ingestion_id) do
+  defp write_to_table(data, %{technical: technical}, ingestion_id, extraction_start_time) do
     with write_start <- Data.Timing.current_time(),
          :ok <-
            table_writer().write(data,
              table: technical.systemName,
              schema: add_ingestion_metadata_to_schema(technical.schema),
              bucket: s3_writer_bucket(),
-             partition_key: "_ingestion_id",
-             partition_value: ingestion_id
+             partition_values: [_extraction_start_time: extraction_start_time, _ingestion_id: ingestion_id],
+             json_partitions: ["_extraction_start_time", "_ingestion_id"],
+             main_partitions: ["_ingestion_id"]
            ),
          write_end <- Data.Timing.current_time(),
          write_timing <-
@@ -140,7 +148,7 @@ defmodule Forklift.DataWriter do
 
   def add_ingestion_metadata_to_schema(schema) do
     ingestion_metadata_schema = [
-      %{name: "_extraction_start_time", type: "timestamp", format: "{ISO:Extended:Z}"},
+      %{name: "_extraction_start_time", type: "long"},
       %{name: "_ingestion_id", type: "string"}
     ]
 

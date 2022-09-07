@@ -88,10 +88,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
                     <%= radio_button(f, :cadence, "once")%>
                   </div>
                   <div class="finalize-form__schedule-option">
-                  <%= label(f, :cadence, "Never", class: "finalize-form__schedule-option-label") %>
-                  <%= radio_button(f, :cadence, "never") %>
-                  </div>
-                  <div class="finalize-form__schedule-option">
                     <%= label(f, :cadence, "Repeat", class: "finalize-form__schedule-option-label") %>
                     <%= radio_button(f, :cadence, @crontab) %>
                   </div>

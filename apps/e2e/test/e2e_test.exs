@@ -171,7 +171,7 @@ defmodule E2ETest do
           "Column" => "_extraction_start_time",
           "Comment" => "",
           "Extra" => "",
-          "Type" => "timestamp(3)"
+          "Type" => "bigint"
         },
         %{
           "Column" => "_ingestion_id",
@@ -275,7 +275,7 @@ defmodule E2ETest do
                    }
                  ] ==
                    query(
-                     "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                     "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
                        table
                      }",
                      true
@@ -365,7 +365,7 @@ defmodule E2ETest do
                    "os_partition" => get_current_yyyy_mm,
                    "_extraction_start_time" => get_current_yyyy_mm_dd
                  } in query(
-                   "select one, two, three, _ingestion_id, os_partition, date_format(_extraction_start_time, '%Y_%m_%d') as _extraction_start_time from #{
+                   "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
                      table
                    }",
                    true

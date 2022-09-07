@@ -50,27 +50,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
     end
   end
 
-  describe "never ingestion" do
-    setup %{conn: conn} do
-      ingestion = create_ingestion_with_cadence("never")
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-
-      [
-        view: view,
-        html: html
-      ]
-    end
-
-    test "shows the Never ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_cadence_never", "checked"))
-    end
-
-    test "does not show cron scheduler", %{html: html} do
-      assert Enum.empty?(find_elements(html, ".finalize-form__scheduler--visible"))
-      refute Enum.empty?(find_elements(html, ".finalize-form__scheduler--hidden"))
-    end
-  end
-
   describe "repeat ingestion" do
     setup %{conn: conn} do
       ingestion = create_ingestion_with_cadence("0 * * * * *")
