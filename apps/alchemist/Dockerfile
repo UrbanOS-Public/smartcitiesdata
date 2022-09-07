@@ -7,7 +7,8 @@ ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}
 RUN adduser -s /bin/sh -u 1001 -G root -h "${HOME}" -S -D default && \
   chown -R 1001:0 "${HOME}" && \
-  apk upgrade \
+  apk upgrade && \
+  apk update \
   && apk add --no-cache bash openssl \
   && rm -rf /var/cache/**/*
 COPY --from=builder /app/_build/prod/rel/alchemist/ .
