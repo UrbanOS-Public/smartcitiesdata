@@ -14,8 +14,8 @@ defmodule Forklift.IngestionProgress do
     end
   end
 
-  @spec store_target(String.t(), Integer.t(), Integer.t()) :: :in_progress | :ingestion_complete
-  def store_target(ingestion_id, extract_time, target) do
+  @spec store_target(Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
+  def store_target(target, ingestion_id, extract_time) do
     extract_id = get_extract_id(ingestion_id, extract_time)
 
     set_extract_target(extract_id, target)

@@ -57,7 +57,7 @@ defmodule Forklift.IngestionProgressTest do
     end
 
     test "store_target stores target value in redis", %{ingestion_id: ingestion_id, extract_time: extract_time} do
-      IngestionProgress.store_target(ingestion_id, extract_time, 7)
+      IngestionProgress.store_target(7, ingestion_id, extract_time)
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_target"]) == "7"
     end
 
@@ -65,7 +65,7 @@ defmodule Forklift.IngestionProgressTest do
       ingestion_id: ingestion_id,
       extract_time: extract_time
     } do
-      assert IngestionProgress.store_target(ingestion_id, extract_time, 7) == :in_progress
+      assert IngestionProgress.store_target(7, ingestion_id, extract_time) == :in_progress
     end
 
     test "store_target returns :in_progress if count is *less than* new target", %{
@@ -73,7 +73,7 @@ defmodule Forklift.IngestionProgressTest do
       extract_time: extract_time
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_count", 6])
-      assert IngestionProgress.store_target(ingestion_id, extract_time, 7) == :in_progress
+      assert IngestionProgress.store_target(7, ingestion_id, extract_time) == :in_progress
     end
 
     test "store_target returns :ingestion_complete if count meets new target", %{
