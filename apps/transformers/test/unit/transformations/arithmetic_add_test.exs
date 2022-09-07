@@ -4,6 +4,26 @@ defmodule Transformers.ArithmeticAddTest do
   alias Transformers.ArithmeticAdd
 
   describe "transform/2" do
+    test "sums combination of several fields and numbers" do
+      parameters = %{
+        "addends" => [1, 2, "firstField", "secondField"],
+        "targetField" => "total"
+      }
+
+      payload = %{
+        "firstField" => 3,
+        "secondField" => 4
+      }
+
+      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
+
+      assert result == %{
+               "firstField" => 3,
+               "secondField" => 4,
+               "total" => 10
+             }
+    end
+
     test "if addends are not specified, return error" do
       payload = %{
         "target" => 0
@@ -45,37 +65,6 @@ defmodule Transformers.ArithmeticAddTest do
       {:error, reason} = ArithmeticAdd.transform(payload, parameters)
 
       assert reason == %{"targetField" => "Missing or empty field"}
-    end
-
-    test "when given two numbers, sets the target field to be equal to their sum" do
-      payload = %{}
-
-      parameters = %{
-        "addends" => [1, 2],
-        "targetField" => "targetField"
-      }
-
-      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
-
-      assert result == %{"targetField" => 3}
-    end
-
-    test "when given a field and a number, sets a new target field to be equal to their sum" do
-      payload = %{
-        "old_value" => 5
-      }
-
-      parameters = %{
-        "addends" => ["old_value", 2],
-        "targetField" => "new_value"
-      }
-
-      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
-
-      assert result == %{
-               "old_value" => 5,
-               "new_value" => 7
-             }
     end
 
     test "if specified addend is not on payload, return error" do
@@ -122,26 +111,6 @@ defmodule Transformers.ArithmeticAddTest do
       {:ok, result} = ArithmeticAdd.transform(payload, parameters)
 
       assert result == %{"target" => 1}
-    end
-
-    test "sums combination of several fields and numbers" do
-      parameters = %{
-        "addends" => [1, 2, "firstField", "secondField"],
-        "targetField" => "total"
-      }
-
-      payload = %{
-        "firstField" => 3,
-        "secondField" => 4
-      }
-
-      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
-
-      assert result == %{
-        "firstField" => 3,
-        "secondField" => 4,
-        "total" => 10
-      }
     end
   end
 

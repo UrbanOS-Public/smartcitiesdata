@@ -4,16 +4,15 @@ defmodule Transformers.ArithmeticAdd do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
 
-  @impl Transformation
-
   @addends "addends"
   @target_field "targetField"
 
+  @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [addends, target_field]} <- validate(parameters),
          {:ok, value} <- sumValues(addends, payload) do
-      modified_payload = Map.put(payload, target_field, value)
-      {:ok, modified_payload}
+      transformed_payload = Map.put(payload, target_field, value)
+      {:ok, transformed_payload}
     else
       {:error, reason} -> {:error, reason}
     end
