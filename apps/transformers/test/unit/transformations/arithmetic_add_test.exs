@@ -78,8 +78,6 @@ defmodule Transformers.ArithmeticAddTest do
              }
     end
 
-    # test "if a field key is a number, ...?!?" do
-
     test "if specified addend is not on payload, return error" do
       payload = %{
         "some_field" => 0
@@ -95,36 +93,76 @@ defmodule Transformers.ArithmeticAddTest do
       assert reason == "Missing field in payload: target"
     end
 
-    # test "sets target field to addend when given single addend" do
-    #   payload = %{
-    #     "addends" => [1],
-    #     "targetField" => "target"
-    #   }
+    test "if specified addend is not a number, return error" do
+      payload = %{
+        "some_field" => 0,
+        "target" => "target"
+      }
 
-    #   payload = %{
-    #     "target" => 0,
-    #   }
+      parameters = %{
+        "addends" => ["target"],
+        "targetField" => "some_field"
+      }
 
-    #   {:ok, result} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
 
-    #   assert result == %{"target" => 1}
-    # end
+      assert reason == "A value is not a number: target"
+    end
 
-    # test "if addend field is not a number, return error" do
-    #    payload = %{
-    #      "addends" => ["target"],
-    #      "targetField" => "target"
-    #    }
+    test "sets target field to addend when given single addend" do
+      parameters = %{
+        "addends" => [1],
+        "targetField" => "target"
+      }
 
-    #   payload = %{
-    #     "target" => "some string",
-    #   }
+      payload = %{
+        "target" => 0
+      }
 
-    #   {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
 
-    #   assert result == %{"target" => 1}
-    # assert reason == %{"addends" => "Field is not a number"}
-    #  # Note - should this reason be tied to the field associated with the non-number?
-    # end
+      assert result == %{"target" => 1}
+    end
+
+    test "sums combination of several fields and numbers" do
+      parameters = %{
+        "addends" => [1, 2, "firstField", "secondField"],
+        "targetField" => "total"
+      }
+
+      payload = %{
+        "firstField" => 3,
+        "secondField" => 4
+      }
+
+      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
+
+      assert result == %{
+        "firstField" => 3,
+        "secondField" => 4,
+        "total" => 10
+      }
+    end
+  end
+
+  describe "fields/0" do
+    test "describes the fields needed for transformation" do
+      expected_fields = [
+        %{
+          field_name: "targetField",
+          field_type: "string",
+          field_label: "Field to populate with sum",
+          options: nil
+        },
+        %{
+          field_name: "targetField",
+          field_type: "list",
+          field_label: "List of values or fields to add to targetField",
+          options: nil
+        }
+      ]
+
+      assert ArithmeticAdd.fields() == expected_fields
+    end
   end
 end
