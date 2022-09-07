@@ -14,44 +14,44 @@ defmodule Forklift.IngestionProgressTest do
   end
 
   describe "IngestionTest" do
-    test "new_message updates the message count when called", %{ingestion_id: ingestion_id, extract_time: extract_time} do
-      IngestionProgress.new_message(ingestion_id, extract_time)
+    test "new_messages updates the message count when called", %{ingestion_id: ingestion_id, extract_time: extract_time} do
+      IngestionProgress.new_messages(1, ingestion_id, extract_time)
       resulting_count = Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_count"])
       assert resulting_count == "1"
     end
 
-    test "new_message returns :in_progress if message count *has not* met existing ingestion target", %{
+    test "new_messages returns :in_progress if message count *has not* met existing ingestion target", %{
       ingestion_id: ingestion_id,
       extract_time: extract_time
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_target", 2])
-      result = IngestionProgress.new_message(ingestion_id, extract_time)
+      result = IngestionProgress.new_messages(1, ingestion_id, extract_time)
       assert result == :in_progress
     end
 
-    test "new_message returns :in_progress if message count ingestion target does not exist", %{
+    test "new_messages returns :in_progress if message count ingestion target does not exist", %{
       ingestion_id: ingestion_id,
       extract_time: extract_time
     } do
-      result = IngestionProgress.new_message(ingestion_id, extract_time)
+      result = IngestionProgress.new_messages(1, ingestion_id, extract_time)
       assert result == :in_progress
     end
 
-    test "new_message returns :ingestion_complete if message count *has* met ingestion target", %{
+    test "new_messages returns :ingestion_complete if message count *has* met ingestion target", %{
       ingestion_id: ingestion_id,
       extract_time: extract_time
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_target", 1])
-      result = IngestionProgress.new_message(ingestion_id, extract_time)
+      result = IngestionProgress.new_messages(1, ingestion_id, extract_time)
       assert result == :ingestion_complete
     end
 
-    test "new_message resets _count and _target if message count *has* met ingestion target", %{
+    test "new_messages resets _count and _target if message count *has* met ingestion target", %{
       ingestion_id: ingestion_id,
       extract_time: extract_time
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_target", 1])
-      IngestionProgress.new_message(ingestion_id, extract_time)
+      IngestionProgress.new_messages(1, ingestion_id, extract_time)
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_target"]) == nil
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_count"]) == nil
     end

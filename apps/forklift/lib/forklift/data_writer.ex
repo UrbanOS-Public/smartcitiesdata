@@ -144,8 +144,7 @@ defmodule Forklift.DataWriter do
          write_end <- Data.Timing.current_time(),
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
-      # TODO: add message count not just increment
-      ingestion_status = IngestionProgress.new_message(ingestion_id, extraction_start_time)
+      ingestion_status = IngestionProgress.new_messages(ingestion_id, extraction_start_time, Enum.count(data))
 
       if ingestion_status == :ingestion_complete do
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)

@@ -1,9 +1,9 @@
 defmodule Forklift.IngestionProgress do
-  @spec new_message(String.t(), Integer.t()) :: :in_progress | :ingestion_complete
-  def new_message(ingestion_id, extract_time) do
+  @spec new_messages(Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
+  def new_messages(count, ingestion_id, extract_time) do
     extract_id = get_extract_id(ingestion_id, extract_time)
 
-    increment_ingestion_count(extract_id)
+    increment_ingestion_count(extract_id, count)
 
     case(is_extract_done(extract_id)) do
       false ->
@@ -29,9 +29,9 @@ defmodule Forklift.IngestionProgress do
     end
   end
 
-  @spec increment_ingestion_count(String.t()) :: integer()
-  defp increment_ingestion_count(extract_id) do
-    Redix.command!(:redix, ["INCR", get_count_key(extract_id)])
+  @spec increment_ingestion_count(String.t(), Integer.t()) :: integer()
+  defp increment_ingestion_count(extract_id, count) do
+    Redix.command!(:redix, ["INCRBY", get_count_key(extract_id), count])
   end
 
   @spec set_extract_target(String.t(), Integer.t()) :: integer()
