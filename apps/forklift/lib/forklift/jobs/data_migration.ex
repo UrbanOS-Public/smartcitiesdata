@@ -13,12 +13,11 @@ defmodule Forklift.Jobs.DataMigration do
   @spec compact(SmartCity.Dataset.t(), String.t(), Integer.t()) ::
           {:abort, any} | {:error, any} | {:ok, any}
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
-    _overwrite_mode =
-      Application.fetch_env!(:forklift, :overwrite_mode) |> IO.inspect(label: "compaction thinks OVERWRITE MODE is")
+    overwrite_mode = Application.fetch_env!(:forklift, :overwrite_mode)
 
     Forklift.DataReaderHelper.terminate(dataset)
 
-    Logger.info(
+    Logger.debug(
       "Beginning data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}"
     )
 
@@ -33,8 +32,7 @@ defmodule Forklift.Jobs.DataMigration do
            ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(extraction_count),
-         #  todo: if overwrite mode, delete past ingestion_id data from table
-         #  note: delete only if newer
+         {:ok, _} <- drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
@@ -46,16 +44,16 @@ defmodule Forklift.Jobs.DataMigration do
              "main table includes all messages related to the extraction from the json table"
            ),
          {:ok, _} <-
-           remove_extraction(json_table, ingestion_id, extract_time),
+           remove_extraction_from_table(json_table, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
              json_table,
              ingestion_id,
              extract_time,
              0,
-             "json table no longer includes messages related to the extraction"
+             "json table was cleared of the compacted extraction"
            ) do
-      Logger.info(
+      Logger.debug(
         "Successful data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{
           extract_time
         }"
@@ -92,7 +90,7 @@ defmodule Forklift.Jobs.DataMigration do
          {:ok, _} <- PrestigeHelper.drop_table(table),
          {:ok, _} <- rename_partitioned_table(table),
          {:ok, _} <- verify_count(table, original_count, "refit table retains all records") do
-      Logger.info("Table #{table} successfully refit to be partitioned")
+      Logger.debug("Table #{table} successfully refit to be partitioned")
       {:ok, :refit}
     else
       true -> {:ok, :no_refit}
@@ -111,7 +109,7 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp create_partitioned_table(table) do
-    Logger.info("Table #{table} needs to be partitioned")
+    Logger.debug("Table #{table} needs to be partitioned")
 
     "create table #{table}__partitioned with (partitioned_by = ARRAY['_ingestion_id', 'os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
       table
@@ -132,9 +130,42 @@ defmodule Forklift.Jobs.DataMigration do
     |> PrestigeHelper.execute_query()
   end
 
-  defp remove_extraction(table, ingestion_id, extract_time) do
+  defp remove_extraction_from_table(table, ingestion_id, extract_time) do
     "delete from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
+  end
+
+  defp remove_ingestion_from_table(table, ingestion_id) do
+    "delete from #{table} where _ingestion_id = '#{ingestion_id}'"
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp table_contains_more_recent_data(table, ingestion_id, extract_start) do
+    count_newer_extractions =
+      "select count(1) from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time > #{
+        extract_start
+      })"
+
+    case PrestigeHelper.count_query(count_newer_extractions) do
+      {:ok, 0} ->
+        false
+
+      {:ok, _} ->
+        true
+    end
+  end
+
+  defp drop_last_extraction_if_overwrite(overwrite_mode, main_table, ingestion_id, extract_start) do
+    if not overwrite_mode do
+      {:ok, :overwrite_mode_disabled}
+    else
+      if(table_contains_more_recent_data(main_table, ingestion_id, extract_start)) do
+        remove_extraction_from_table(main_table <> "__json", ingestion_id, extract_start)
+        {:abort, "aborting compaction because more recent data is present in main table"}
+      else
+        remove_ingestion_from_table(main_table, ingestion_id)
+      end
+    end
   end
 
   defp json_table_name(system_name), do: system_name <> "__json"

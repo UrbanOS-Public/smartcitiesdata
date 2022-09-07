@@ -175,8 +175,6 @@ defmodule Forklift.Jobs.DataMigrationTest do
     dataset: dataset,
     ingestion_id: ingestion_id
   } do
-    Application.put_env(:forklift, :overwrite_mode, true)
-
     main_table = dataset.technical.systemName
     json_table = dataset.technical.systemName <> "__json"
     past_data_extract_time = 000_001
@@ -216,6 +214,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
     # now there's old data in the main table, and new data in the json table
     # assert compaction in overwrite mode removes past extraction data from main
+    Application.put_env(:forklift, :overwrite_mode, true)
     assert {:ok, _} = DataMigration.compact(dataset, ingestion_id, new_data_extract_time)
 
     assert {:ok, _} =
@@ -244,8 +243,6 @@ defmodule Forklift.Jobs.DataMigrationTest do
          dataset: dataset,
          ingestion_id: ingestion_id
        } do
-    Application.put_env(:forklift, :overwrite_mode, true)
-
     main_table = dataset.technical.systemName
     json_table = dataset.technical.systemName <> "__json"
     past_data_extract_time = 000_001
@@ -287,7 +284,8 @@ defmodule Forklift.Jobs.DataMigrationTest do
     # this could happen if compactions are very very frequent, and one lags behind
     # assert that compaction has no effect, as we don't want to replace more
     #   recent data with old data
-    assert {:ok, _} = DataMigration.compact(dataset, ingestion_id, past_data_extract_time)
+    Application.put_env(:forklift, :overwrite_mode, true)
+    assert {:abort, _} = DataMigration.compact(dataset, ingestion_id, past_data_extract_time)
 
     assert {:ok, _} =
              JobUtils.verify_extraction_count_in_table(
@@ -295,7 +293,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
                ingestion_id,
                past_data_extract_time,
                0,
-               "compaction failed to remove stale data from json table"
+               "compaction removed stale data from json table"
              )
 
     assert {:ok, _} =
@@ -304,7 +302,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
                ingestion_id,
                new_data_extract_time,
                new_data_messages_count,
-               "compaction inappropriately altered more recent data"
+               "compaction left more recent data unaffected"
              )
 
     assert count(main_table) == new_data_messages_count + other_extraction_messages
