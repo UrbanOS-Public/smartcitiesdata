@@ -9,6 +9,8 @@ defmodule Forklift.DataWriter do
   use Properties, otp_app: :forklift
 
   alias SmartCity.Data
+  alias Forklift.IngestionProgress
+  alias Forklift.Jobs.DataMigration
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
@@ -128,7 +130,7 @@ defmodule Forklift.DataWriter do
     end
   end
 
-  defp write_to_table(data, %{technical: technical}, ingestion_id, extraction_start_time) do
+  defp write_to_table(data, %{technical: technical} = dataset, ingestion_id, extraction_start_time) do
     with write_start <- Data.Timing.current_time(),
          :ok <-
            table_writer().write(data,
@@ -139,11 +141,16 @@ defmodule Forklift.DataWriter do
              json_partitions: ["_extraction_start_time", "_ingestion_id"],
              main_partitions: ["_ingestion_id"]
            ),
-         # todo: increment ingestion progress
-         #  todo: if complete, kickoff data_migration.compact (dataset, ingestion, extraction)
          write_end <- Data.Timing.current_time(),
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
+      # TODO: add message count not just increment
+      ingestion_status = IngestionProgress.new_message(ingestion_id, extraction_start_time)
+
+      if ingestion_status == :ingestion_complete do
+        DataMigration.compact(dataset, ingestion_id, extraction_start_time)
+      end
+
       {:ok, write_timing}
     end
   end

@@ -13,6 +13,11 @@ defmodule Forklift.DataWriterTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
+  setup do
+    allow(Forklift.IngestionProgress.new_message(any(), any()), return: :in_progress)
+    :ok
+  end
+
   test "should delete table and topic when delete is called" do
     expected_dataset =
       TDG.create_dataset(%{
