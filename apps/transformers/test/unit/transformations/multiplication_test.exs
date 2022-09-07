@@ -34,7 +34,7 @@ defmodule Transformers.MultiplicationTest do
     end
 
     test "returns payload with a different multiplicands" do
-      
+
       params = %{
         "multiplicands" => ["some_other_input_number", 9],
         "targetField" => "some_other_output_number"
@@ -74,7 +74,21 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason } = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "Missing multiplicand field in payload: bar"
+      assert reason == "Missing field in payload: bar"
+    end
+
+    test "returns an error if a field in the multiplicand is not a number" do
+
+      params = %{
+        "multiplicands" => ["some_other_input_number", "invalid"],
+        "targetField" => "some_other_output_number"
+      }
+
+      message_payload = %{"input_number" => 8, "some_other_input_number" => 3, "invalid" => "not a number"}
+
+      {:error, reason } = Transformers.Multiplication.transform(message_payload, params)
+
+      assert reason == "multiplicand field not a number: invalid"
     end
 
   #   test "returns payload with null value in target field if no regex match" do

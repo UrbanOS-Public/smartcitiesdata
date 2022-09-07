@@ -12,16 +12,15 @@ defmodule Transformers.Multiplication do
   def transform(payload, parameters) do
     with {:ok, target_field_name} <- FieldFetcher.fetch_value(parameters, @target_field),
          {:ok, multiplicands} <- FieldFetcher.fetch_value(parameters, @multiplicands),
-         resolved_multiplicands <-
-           Enum.map(multiplicands, fn multiplicand ->
-             resolve_multiplicand_field(payload, multiplicand)
-           end) do
+         {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands) do
       {:ok,
        payload
        |> Map.put(
          target_field_name,
          Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc -> multiplicand * acc end)
        )}
+    else
+      {:error, reason} -> {:error, reason}
     end
 
     # {:ok, payload |> Map.put("output_number", 40)}
@@ -42,17 +41,40 @@ defmodule Transformers.Multiplication do
     # end
   end
 
+  defp resolve_multiplicand_fields(payload, multiplicands) do
+    numbers = Enum.reduce_while(multiplicands, [], fn multiplicand, acc ->
+      case resolve_multiplicand_field(payload, multiplicand) do
+        {:ok, result} -> {:cont, acc ++ [result]}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+
+    case numbers do
+      {:error, reason} -> {:error, reason}
+      _ -> {:ok, numbers}
+    end
+  end
+
   defp resolve_multiplicand_field(payload, multiplicand) do
     case multiplicand do
       constant when is_number(constant) ->
-        constant
+        {:ok, constant}
 
-      payload_field ->
-        case FieldFetcher.fetch_value(payload, payload_field) do
-          {:ok, result} -> result
-        end
+      payload_field -> FieldFetcher.fetch_value(payload, payload_field)
     end
   end
+
+  # defp string_to_datetime(date_string, date_format, source_field) do
+  #   with {:ok, result} <- Timex.parse(date_string, date_format) do
+  #     {:ok, result}
+  #   else
+  #     {:error, timexReason} ->
+  #       {:error,
+  #        "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
+  #          timexReason
+  #        }"}
+  #   end
+  # end
 
   # def validate(parameters) do
   #   %ValidationStatus{}
