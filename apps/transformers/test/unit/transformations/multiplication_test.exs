@@ -40,7 +40,7 @@ defmodule Transformers.MultiplicationTest do
         "targetField" => "some_other_output_number"
       }
 
-      message_payload = %{"input_number" => 8, "some_other_input_number" => 3}
+      message_payload = %{"some_other_input_number" => 3}
 
       {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
 
@@ -55,7 +55,7 @@ defmodule Transformers.MultiplicationTest do
         "targetField" => "some_other_output_number"
       }
 
-      message_payload = %{"input_number" => 8, "some_other_input_number" => 3, "foo" => 6}
+      message_payload = %{"some_other_input_number" => 3, "foo" => 6}
 
       {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
 
@@ -70,11 +70,26 @@ defmodule Transformers.MultiplicationTest do
         "targetField" => "some_other_output_number"
       }
 
-      message_payload = %{"input_number" => 8, "some_other_input_number" => 3}
+      message_payload = %{"some_other_input_number" => 3}
 
       {:error, reason } = Transformers.Multiplication.transform(message_payload, params)
 
       assert reason == "Missing field in payload: bar"
+    end
+
+    test "ignores additional payload fields that are not in the multiplicands" do
+
+      params = %{
+        "multiplicands" => ["some_other_input_number", 9],
+        "targetField" => "some_other_output_number"
+      }
+
+      message_payload = %{"input_number" => 8, "some_other_input_number" => 3}
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "some_other_output_number")
+      assert actual_target_field == 27
     end
 
     test "returns an error if a field in the multiplicand is not a number" do
@@ -84,12 +99,13 @@ defmodule Transformers.MultiplicationTest do
         "targetField" => "some_other_output_number"
       }
 
-      message_payload = %{"input_number" => 8, "some_other_input_number" => 3, "invalid" => "not a number"}
+      message_payload = %{"some_other_input_number" => 3, "invalid" => "not a number"}
 
       {:error, reason } = Transformers.Multiplication.transform(message_payload, params)
 
       assert reason == "multiplicand field not a number: invalid"
     end
+
 
   #   test "returns payload with null value in target field if no regex match" do
   #     params = %{
@@ -162,9 +178,9 @@ defmodule Transformers.MultiplicationTest do
 
   #     assert transformed_payload == %{"name" => "Emily"}
   #   end
-  # end
+   end
 
-  # describe "validate/1" do
+   describe "validate/1" do
   #   test "returns :ok if all parameters are present and valid" do
   #     parameters = %{
   #       "sourceField" => "phone_number",
@@ -179,21 +195,20 @@ defmodule Transformers.MultiplicationTest do
   #     assert regex == Regex.compile!(parameters["regex"])
   #   end
 
-  #   data_test "when missing parameter #{parameter} return error" do
-  #     parameters =
-  #       %{
-  #         "sourceField" => "phone_number",
-  #         "targetField" => "area_code",
-  #         "regex" => "^\\((\\d{3})\\)"
-  #       }
-  #       |> Map.delete(parameter)
+     data_test "when missing parameter #{parameter} return error" do
+       parameters =
+         %{
+           "multiplicands" => [1,2],
+           "targetField" => "area_code"
+         }
+         |> Map.delete(parameter)
 
-  #     {:error, reason} = RegexExtract.validate(parameters)
+       {:error, reason } = Transformers.Multiplication.transform(%{}, parameters)
 
-  #     assert reason == %{"#{parameter}" => "Missing or empty field"}
+       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
-  #     where(parameter: ["sourceField", "targetField", "regex"])
-  #   end
+       where(parameter: ["multiplicands", "targetField"])
+     end
 
   #   test "returns error when regex is invalid" do
   #     params = %{
@@ -205,6 +220,5 @@ defmodule Transformers.MultiplicationTest do
   #     {:error, reason} = RegexExtract.validate(params)
 
   #     assert reason == %{"regex" => "Invalid regular expression: missing ) at index 8"}
-  #   end
-  end
+     end
 end

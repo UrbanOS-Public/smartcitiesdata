@@ -55,12 +55,17 @@ defmodule Transformers.Multiplication do
     end
   end
 
+#  Is there a better way to use pattern matching within pattern matching?
   defp resolve_multiplicand_field(payload, multiplicand) do
     case multiplicand do
       constant when is_number(constant) ->
         {:ok, constant}
 
-      payload_field -> FieldFetcher.fetch_value(payload, payload_field)
+      payload_field ->
+        case FieldFetcher.fetch_value(payload, payload_field) do
+          {:ok, result} when not is_number(result) -> {:error, "multiplicand field not a number: #{payload_field}"}
+          any -> any
+        end
     end
   end
 
@@ -76,19 +81,19 @@ defmodule Transformers.Multiplication do
   #   end
   # end
 
-  # def validate(parameters) do
-  #   %ValidationStatus{}
-  #   |> NotBlank.check(parameters, @source_field)
-  #   |> NotBlank.check(parameters, @source_format)
-  #   |> NotBlank.check(parameters, @target_field)
-  #   |> NotBlank.check(parameters, @target_format)
-  #   |> DateTimeFormat.check(parameters, @source_format)
-  #   |> DateTimeFormat.check(parameters, @target_format)
-  #   |> ValidationStatus.ordered_values_or_errors([
-  #     @source_field,
-  #     @source_format,
-  #     @target_field,
-  #     @target_format
-  #   ])
-  # end
+#   def validate(parameters) do
+#     %ValidationStatus{}
+#     |> NotBlank.check(parameters, @source_field)
+#     |> NotBlank.check(parameters, @source_format)
+#     |> NotBlank.check(parameters, @target_field)
+#     |> NotBlank.check(parameters, @target_format)
+#     |> DateTimeFormat.check(parameters, @source_format)
+#     |> DateTimeFormat.check(parameters, @target_format)
+#     |> ValidationStatus.ordered_values_or_errors([
+#       @source_field,
+#       @source_format,
+#       @target_field,
+#       @target_format
+#     ])
+#   end
 end
