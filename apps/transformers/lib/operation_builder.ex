@@ -23,6 +23,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.Remove.transform(payload, parameters) end
   end
 
+  def build("arithmetic_add", parameters) do
+    fn payload -> Transformers.ArithmeticAdd.transform(payload, parameters) end
+  end
+
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
@@ -49,6 +53,10 @@ defmodule Transformers.OperationBuilder do
 
   def validate_parameters("remove", parameters) do
     Transformers.Remove.validate_parameters(parameters)
+  end
+
+  def validate_parameters("arithmetic_add", parameters) do
+    Transformers.ArithmeticAdd.validate_parameters(parameters)
   end
 
   def validate_parameters(unsupported, _) do
