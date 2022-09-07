@@ -20,10 +20,10 @@ defmodule Transformers.ArithmeticSubtractTest do
       {:ok, result} = ArithmeticSubtract.transform(payload, parameters)
 
       assert result == %{
-              "firstTotal" => 20,
-              "firstField" => 3,
-              "secondField" => 4,
-              "lastTotal" => 10
+               "firstTotal" => 20,
+               "firstField" => 3,
+               "secondField" => 4,
+               "lastTotal" => 10
              }
     end
 
@@ -42,9 +42,9 @@ defmodule Transformers.ArithmeticSubtractTest do
       {:ok, result} = ArithmeticSubtract.transform(payload, parameters)
 
       assert result == %{
-              "firstField" => 3,
-              "secondField" => 4,
-              "lastTotal" => -10
+               "firstField" => 3,
+               "secondField" => 4,
+               "lastTotal" => -10
              }
     end
 

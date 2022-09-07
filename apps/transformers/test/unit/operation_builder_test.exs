@@ -136,4 +136,23 @@ defmodule Transformers.OperationBuilderTest do
     assert function.(payload) == Transformers.ArithmeticAdd.transform(payload, params)
     assert validation == Transformers.ArithmeticAdd.validate(params)
   end
+
+  test "arithmetic subtract function" do
+    params = %{
+      "minuend" => "two",
+      "subtrahends" => ["one", 1],
+      "targetField" => "target"
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("arithmetic_subtract", params)
+    validation = OperationBuilder.validate("arithmetic_subtract", params)
+
+    assert function.(payload) == Transformers.ArithmeticSubtract.transform(payload, params)
+    assert validation == Transformers.ArithmeticSubtract.validate(params)
+  end
 end

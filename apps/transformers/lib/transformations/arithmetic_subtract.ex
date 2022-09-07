@@ -21,6 +21,7 @@ defmodule Transformers.ArithmeticSubtract do
 
   defp subtractValues(minuend, subtrahends, payload) do
     minuendValue = Map.get(payload, minuend, minuend)
+
     if is_number(minuendValue) do
       Enum.reduce_while(subtrahends, {:ok, minuendValue}, fn subtrahend, {:ok, acc} ->
         payloadValue = Map.get(payload, subtrahend)
