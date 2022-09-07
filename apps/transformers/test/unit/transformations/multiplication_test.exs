@@ -48,6 +48,35 @@ defmodule Transformers.MultiplicationTest do
       assert actual_target_field == 27
     end
 
+    test "returns payload with multiple multiplicands fields" do
+
+      params = %{
+        "multiplicands" => ["some_other_input_number", "foo"],
+        "targetField" => "some_other_output_number"
+      }
+
+      message_payload = %{"input_number" => 8, "some_other_input_number" => 3, "foo" => 6}
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "some_other_output_number")
+      assert actual_target_field == 18
+    end
+
+    test "returns an error if a field in the multiplicand doesnt exist" do
+
+      params = %{
+        "multiplicands" => ["some_other_input_number", "bar"],
+        "targetField" => "some_other_output_number"
+      }
+
+      message_payload = %{"input_number" => 8, "some_other_input_number" => 3}
+
+      {:error, reason } = Transformers.Multiplication.transform(message_payload, params)
+
+      assert reason == "Missing multiplicand field in payload: bar"
+    end
+
   #   test "returns payload with null value in target field if no regex match" do
   #     params = %{
   #       "sourceField" => "phone_number",

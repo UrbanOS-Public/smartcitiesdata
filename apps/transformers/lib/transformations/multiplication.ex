@@ -10,14 +10,21 @@ defmodule Transformers.Multiplication do
 
   @impl Transformation
   def transform(payload, parameters) do
-
     with {:ok, target_field_name} <- FieldFetcher.fetch_value(parameters, @target_field),
-          {:ok, multiplicands} <- FieldFetcher.fetch_value(parameters, @multiplicands),
-          {:ok, resolved_multiplicands} <-
-              resolve_multiplicands_types(payload, multiplicands) do
-      {:ok, payload |> Map.put(target_field_name, Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc -> multiplicand * acc end))}
+         {:ok, multiplicands} <- FieldFetcher.fetch_value(parameters, @multiplicands),
+         resolved_multiplicands <-
+           Enum.map(multiplicands, fn multiplicand ->
+             resolve_multiplicand_field(payload, multiplicand)
+           end) do
+      {:ok,
+       payload
+       |> Map.put(
+         target_field_name,
+         Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc -> multiplicand * acc end)
+       )}
     end
-    #{:ok, payload |> Map.put("output_number", 40)}
+
+    # {:ok, payload |> Map.put("output_number", 40)}
 
     # with {:ok, [source_field, source_format, target_field, target_format]} <-
     #        validate(parameters),
@@ -35,24 +42,16 @@ defmodule Transformers.Multiplication do
     # end
   end
 
-  defp resolve_multiplicands_types(payload, multiplicands) do
-    IO.puts "hello, world part 2"
-    #numbers =
-     #Enum.map(multiplicands, fn multiplicand -> if is_number(multiplicand), do: multiplicand, else: FieldFetcher.fetch_value(payload, multiplicand) end)
-    numbers = for multiplicand <- multiplicands do
-      if (is_number(multiplicand)) do
-        multiplicand
-      else
-        case FieldFetcher.fetch_value(payload, multiplicand) do
+  defp resolve_multiplicand_field(payload, multiplicand) do
+    case multiplicand do
+      constant when is_number(constant) ->
+        constant
+
+      payload_field ->
+        case FieldFetcher.fetch_value(payload, payload_field) do
           {:ok, result} -> result
         end
-        # {:ok, result} = FieldFetcher.fetch_value(payload, multiplicand)
-        # result
-      end
     end
-
-    IO.inspect numbers
-    IO.puts "hello, world part 2: electric boogaloo"
   end
 
   # def validate(parameters) do
