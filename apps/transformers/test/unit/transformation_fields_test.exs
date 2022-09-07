@@ -12,6 +12,11 @@ defmodule Transformers.TransformationFieldsTest do
              Transformers.ArithmeticAdd.fields()
   end
 
+  test "return fields for multiplication transform" do
+    assert TransformationFields.fields_for("multiplication") ==
+             Transformers.Multiplication.fields()
+  end
+
   test "returns empty array for unsupported transformations" do
     assert TransformationFields.fields_for("") == []
     assert TransformationFields.fields_for("nonsense") == []

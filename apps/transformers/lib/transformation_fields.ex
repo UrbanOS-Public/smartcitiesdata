@@ -9,6 +9,10 @@ defmodule Transformers.TransformationFields do
     Transformers.ArithmeticAdd.fields()
   end
 
+  def fields_for("multiplication") do
+    Transformers.Multiplication.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end

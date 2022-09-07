@@ -10,7 +10,7 @@ defmodule Transformers.Multiplication do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [multiplicands, target_field_name]} <- validate_parameters(parameters),
+    with {:ok, [multiplicands, target_field_name]} <- validate(parameters),
          {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands) do
       {:ok,
        payload
@@ -54,7 +54,7 @@ defmodule Transformers.Multiplication do
     end
   end
 
-  def validate_parameters(parameters) do
+  def validate(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @multiplicands)
     |> NotBlank.check(parameters, @target_field)
