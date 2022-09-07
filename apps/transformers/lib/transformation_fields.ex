@@ -5,6 +5,10 @@ defmodule Transformers.TransformationFields do
     Transformers.Remove.fields()
   end
 
+  def fields_for("arithmetic_add") do
+    Transformers.ArithmeticAdd.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
