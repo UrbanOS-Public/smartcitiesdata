@@ -100,7 +100,7 @@ defmodule Forklift.DataWriterTest do
     )
 
     assert_called Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start), once()
-    refute_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
+    refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
 
   test "compaction *is* kicked off if ingestion_progress reports \"ingestion_complete\"" do
