@@ -13,7 +13,8 @@ defmodule Forklift.Event.EventHandler do
       data_ingest_end: 0,
       data_write_complete: 0,
       error_dataset_update: 0,
-      dataset_delete: 0
+      dataset_delete: 0,
+      data_extract_end: 0
     ]
 
   import Brook.ViewState
@@ -63,8 +64,6 @@ defmodule Forklift.Event.EventHandler do
       :discard
   end
 
-  # todo: data_extract_end fire ingestion_progress store set
-
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset, author: author}) do
     data_ingest_end()
     |> add_event_count(author, dataset.id)
@@ -100,7 +99,7 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset, author: author}) do
-    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+    Logger.debug("#{__MODULE__}: Deleting Dataset: #{dataset.id}")
 
     dataset_delete()
     |> add_event_count(author, dataset.id)
@@ -112,6 +111,25 @@ defmodule Forklift.Event.EventHandler do
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
     end
+  end
+
+  # todo: data_extract_end fire ingestion_progress store set
+  def handle_event(%Brook.Event{
+        type: data_extract_end(),
+        data: %{
+          dataset_id: dataset_id,
+          extract_start_unix: extract_start,
+          ingestion_id: ingestion_id,
+          msgs_extracted: msg_target
+        }
+      }) do
+    # todo: add_event_count
+    # data_extract_end() |> add_event_count(author, dataset_id)
+    # ingestion_id
+    # dataset_id (will need to get dataset)
+    # msgs_extracted
+    # extract_start_unix
+    :ok
   end
 
   defp delete_dataset(dataset) do
