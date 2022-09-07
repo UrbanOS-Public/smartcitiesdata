@@ -113,7 +113,6 @@ defmodule Forklift.Event.EventHandler do
     end
   end
 
-  # todo: data_extract_end fire ingestion_progress store set
   def handle_event(%Brook.Event{
         type: data_extract_end(),
         data: %{
@@ -121,14 +120,18 @@ defmodule Forklift.Event.EventHandler do
           extract_start_unix: extract_start,
           ingestion_id: ingestion_id,
           msgs_extracted: msg_target
-        }
+        },
+        author: author
       }) do
-    # todo: add_event_count
-    # data_extract_end() |> add_event_count(author, dataset_id)
-    # ingestion_id
-    # dataset_id (will need to get dataset)
-    # msgs_extracted
-    # extract_start_unix
+    data_extract_end() |> add_event_count(author, dataset_id)
+
+    ingestion_status = Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start)
+
+    if ingestion_status == :ingestion_complete do
+      dataset = Forklift.Datasets.get!(dataset_id)
+      Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
+    end
+
     :ok
   end
 
