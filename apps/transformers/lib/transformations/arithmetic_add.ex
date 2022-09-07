@@ -10,9 +10,8 @@ defmodule Transformers.ArithmeticAdd do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [addends, target_field]} <- validate(parameters),
-         {:ok, value} <- sumValues(addends, payload) do
-      transformed_payload = Map.put(payload, target_field, value)
-      {:ok, transformed_payload}
+         {:ok, sum} <- sumValues(addends, payload) do
+      {:ok, payload |> Map.put(target_field, sum)}
     else
       {:error, reason} -> {:error, reason}
     end
