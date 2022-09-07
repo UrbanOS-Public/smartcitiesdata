@@ -11,7 +11,7 @@ defmodule Transformers.ArithmeticAdd do
   def transform(payload, parameters) do
     with {:ok, [addends, target_field]} <- validate(parameters),
          {:ok, sum} <- sumValues(addends, payload) do
-         {:ok, payload |> Map.put(target_field, sum)}
+      {:ok, payload |> Map.put(target_field, sum)}
     else
       {:error, reason} -> {:error, reason}
     end
@@ -20,6 +20,7 @@ defmodule Transformers.ArithmeticAdd do
   defp sumValues(addends, payload) do
     Enum.reduce_while(addends, {:ok, 0}, fn addend, {:ok, acc} ->
       payloadValue = Map.get(payload, addend)
+
       cond do
         is_number(addend) -> {:cont, {:ok, acc + addend}}
         is_number(payloadValue) -> {:cont, {:ok, acc + payloadValue}}
