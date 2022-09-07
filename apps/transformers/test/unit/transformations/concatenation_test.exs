@@ -182,7 +182,8 @@ defmodule Transformers.ConcatenationTest do
         "targetField" => "name"
       }
 
-      {:ok, [source_fields, separator, target_field]} = Concatenation.validate_parameters(parameters)
+      {:ok, [source_fields, separator, target_field]} =
+        Concatenation.validate_parameters(parameters)
 
       assert source_fields == parameters["sourceFields"]
       assert separator == parameters["separator"]
