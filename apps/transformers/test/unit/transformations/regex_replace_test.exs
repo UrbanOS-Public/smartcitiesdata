@@ -144,7 +144,7 @@ defmodule Transformers.RegexReplaceTest do
         "replacement" => "123"
       }
 
-      {:ok, [source_field, replacement, regex]} = RegexReplace.validate(parameters)
+      {:ok, [source_field, replacement, regex]} = RegexReplace.validate_parameters(parameters)
 
       assert source_field == parameters["sourceField"]
       assert replacement == parameters["replacement"]
@@ -160,7 +160,7 @@ defmodule Transformers.RegexReplaceTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = RegexReplace.validate(parameters)
+      {:error, reason} = RegexReplace.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -174,7 +174,7 @@ defmodule Transformers.RegexReplaceTest do
         "replacement" => "123"
       }
 
-      {:error, reason} = RegexReplace.validate(parameters)
+      {:error, reason} = RegexReplace.validate_parameters(parameters)
 
       assert reason == %{"regex" => "Invalid regular expression: missing ) at index 3"}
     end

@@ -12,7 +12,7 @@ defmodule Transformers.ValidateTest do
     }
 
     assert [{:ok, "Transformation valid."}] ==
-             Transformers.validate([transformation])
+             Transformers.validate_parameters([transformation])
   end
 
   test "returns an error when the transformation is formatted incorrectly" do
@@ -25,7 +25,7 @@ defmodule Transformers.ValidateTest do
     }
 
     assert [{:error, "Map provided is not a valid transformation"}] ==
-             Transformers.validate([invalid_transformation])
+             Transformers.validate_parameters([invalid_transformation])
   end
 
   test "multiple transformations return a list of valid transformation responses" do
@@ -47,7 +47,7 @@ defmodule Transformers.ValidateTest do
       }
     }
 
-    assert Transformers.validate([transformation1, transformation2]) ==
+    assert Transformers.validate_parameters([transformation1, transformation2]) ==
              [{:ok, "Transformation valid."}, {:ok, "Transformation valid."}]
   end
 
@@ -66,7 +66,7 @@ defmodule Transformers.ValidateTest do
       parameters: %{}
     }
 
-    assert Transformers.validate([transformation1, transformation2]) ==
+    assert Transformers.validate_parameters([transformation1, transformation2]) ==
              [
                {:ok, "Transformation valid."},
                {:error, %{"sourceField" => "Missing or empty field"}}
@@ -74,6 +74,6 @@ defmodule Transformers.ValidateTest do
   end
 
   test "when provided an empty transformations list, an empty list is returned" do
-    assert Transformers.validate([]) == []
+    assert Transformers.validate_parameters([]) == []
   end
 end

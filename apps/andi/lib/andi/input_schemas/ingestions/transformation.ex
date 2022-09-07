@@ -67,7 +67,7 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   defp validate_parameters(%{changes: %{type: type, parameters: parameters}} = changeset) do
     converted_parameters = convert_parameters_from_atom_to_string(parameters)
 
-    case Transformers.OperationBuilder.validate(type, converted_parameters) do
+    case Transformers.OperationBuilder.validate_parameters(type, converted_parameters) do
       {:ok, _} ->
         changeset
 

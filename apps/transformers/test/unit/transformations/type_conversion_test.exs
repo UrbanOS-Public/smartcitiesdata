@@ -205,7 +205,7 @@ defmodule Transformers.TypeConversionTest do
       }
 
       {:ok, [field, source_type, target_type, conversion_function]} =
-        TypeConversion.validate(parameters)
+        TypeConversion.validate_parameters(parameters)
 
       assert field == parameters["field"]
       assert source_type == parameters["sourceType"]
@@ -222,7 +222,7 @@ defmodule Transformers.TypeConversionTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = TypeConversion.validate(parameters)
+      {:error, reason} = TypeConversion.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -232,7 +232,7 @@ defmodule Transformers.TypeConversionTest do
     test "if conversion is not supported return error" do
       parameters = %{"field" => "thing", "sourceType" => "boolean", "targetType" => "string"}
 
-      {:error, reasons} = TypeConversion.validate(parameters)
+      {:error, reasons} = TypeConversion.validate_parameters(parameters)
 
       assert reasons == %{
                "sourceType" => "Conversion from boolean to string is not supported",

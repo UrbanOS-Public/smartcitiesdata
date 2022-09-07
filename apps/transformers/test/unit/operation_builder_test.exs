@@ -15,13 +15,13 @@ defmodule Transformers.OperationBuilderTest do
       OperationBuilder.build("regex_extract", first_name_extractor_parameters)
 
     first_name_extractor_validation =
-      OperationBuilder.validate("regex_extract", first_name_extractor_parameters)
+      OperationBuilder.validate_parameters("regex_extract", first_name_extractor_parameters)
 
     assert first_name_extractor_function.(payload) ==
              Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
 
     assert first_name_extractor_validation ==
-             Transformers.RegexExtract.validate(first_name_extractor_parameters)
+             Transformers.RegexExtract.validate_parameters(first_name_extractor_parameters)
   end
 
   test "attempting to build function for unsupported transformation raises error" do
@@ -33,7 +33,7 @@ defmodule Transformers.OperationBuilderTest do
              })
 
     assert {:error, "Unsupported transformation validation type: #{bad_transformation_type}"} ==
-             OperationBuilder.validate(bad_transformation_type, %{
+             OperationBuilder.validate_parameters(bad_transformation_type, %{
                "foo" => "bar"
              })
   end
@@ -48,10 +48,10 @@ defmodule Transformers.OperationBuilderTest do
     }
 
     function = OperationBuilder.build("conversion", parameters)
-    validation = OperationBuilder.validate("conversion", parameters)
+    validation = OperationBuilder.validate_parameters("conversion", parameters)
 
     assert function.(payload) == Transformers.TypeConversion.transform(payload, parameters)
-    assert validation == Transformers.TypeConversion.validate(parameters)
+    assert validation == Transformers.TypeConversion.validate_parameters(parameters)
   end
 
   test "datetime function" do
@@ -65,10 +65,10 @@ defmodule Transformers.OperationBuilderTest do
     payload = %{"date1" => "2022-02-28 16:53"}
 
     function = OperationBuilder.build("datetime", params)
-    validation = OperationBuilder.validate("datetime", params)
+    validation = OperationBuilder.validate_parameters("datetime", params)
 
     assert function.(payload) == Transformers.DateTime.transform(payload, params)
-    assert validation == Transformers.DateTime.validate(params)
+    assert validation == Transformers.DateTime.validate_parameters(params)
   end
 
   test "regex replace function" do
@@ -81,10 +81,10 @@ defmodule Transformers.OperationBuilderTest do
     payload = %{"arbitrary" => "abc"}
 
     function = OperationBuilder.build("regex_replace", params)
-    validation = OperationBuilder.validate("regex_replace", params)
+    validation = OperationBuilder.validate_parameters("regex_replace", params)
 
     assert function.(payload) == Transformers.RegexReplace.transform(payload, params)
-    assert validation == Transformers.RegexReplace.validate(params)
+    assert validation == Transformers.RegexReplace.validate_parameters(params)
   end
 
   test "concatenation function" do
@@ -97,10 +97,10 @@ defmodule Transformers.OperationBuilderTest do
     payload = %{"greeting" => "Hello", "target" => "World"}
 
     function = OperationBuilder.build("concatenation", params)
-    validation = OperationBuilder.validate("concatenation", params)
+    validation = OperationBuilder.validate_parameters("concatenation", params)
 
     assert function.(payload) == Transformers.Concatenation.transform(payload, params)
-    assert validation == Transformers.Concatenation.validate(params)
+    assert validation == Transformers.Concatenation.validate_parameters(params)
   end
 
   test "remove function" do
@@ -113,9 +113,9 @@ defmodule Transformers.OperationBuilderTest do
     }
 
     function = OperationBuilder.build("remove", params)
-    validation = OperationBuilder.validate("remove", params)
+    validation = OperationBuilder.validate_parameters("remove", params)
 
     assert function.(payload) == Transformers.Remove.transform(payload, params)
-    assert validation == Transformers.Remove.validate(params)
+    assert validation == Transformers.Remove.validate_parameters(params)
   end
 end

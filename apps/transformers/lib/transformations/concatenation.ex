@@ -11,7 +11,7 @@ defmodule Transformers.Concatenation do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
+    with {:ok, [source_fields, separator, target_field]} <- validate_parameters(parameters),
          {:ok, values} <- fetch_values(payload, source_fields),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)
@@ -22,7 +22,8 @@ defmodule Transformers.Concatenation do
     end
   end
 
-  def validate(parameters) do
+  @impl Transformation
+  def validate_parameters(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @source_fields)
     |> NotBlank.check(parameters, @target_field)

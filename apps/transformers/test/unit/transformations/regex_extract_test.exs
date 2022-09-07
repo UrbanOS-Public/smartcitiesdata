@@ -101,7 +101,7 @@ defmodule Transformers.RegexExtractTest do
         "regex" => "^\\((\\d{3})\\)"
       }
 
-      {:ok, [source_field, target_field, regex]} = RegexExtract.validate(parameters)
+      {:ok, [source_field, target_field, regex]} = RegexExtract.validate_parameters(parameters)
 
       assert source_field == parameters["sourceField"]
       assert target_field == parameters["targetField"]
@@ -117,7 +117,7 @@ defmodule Transformers.RegexExtractTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = RegexExtract.validate(parameters)
+      {:error, reason} = RegexExtract.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -131,7 +131,7 @@ defmodule Transformers.RegexExtractTest do
         "regex" => "^\((\d{3})"
       }
 
-      {:error, reason} = RegexExtract.validate(params)
+      {:error, reason} = RegexExtract.validate_parameters(params)
 
       assert reason == %{"regex" => "Invalid regular expression: missing ) at index 8"}
     end

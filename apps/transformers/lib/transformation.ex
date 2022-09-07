@@ -7,4 +7,7 @@ defmodule Transformation do
   """
   @callback transform(payload :: Map.t(), parameters :: Map.t()) ::
               {:ok, Map.t()} | {:error, String.t()}
+
+  @callback validate_parameters(parameters :: Map.t()) ::
+              List.t() | {:error, Map.t()}
 end

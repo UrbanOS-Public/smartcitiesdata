@@ -12,11 +12,11 @@ defmodule Transformers do
     end)
   end
 
-  def validate(transformations) do
+  def validate_parameters(transformations) do
     Enum.map(transformations, fn transformation ->
       with {:ok, type} <- Map.fetch(transformation, :type),
            {:ok, parameters} <- Map.fetch(transformation, :parameters) do
-        case Transformers.OperationBuilder.validate(type, parameters) do
+        case Transformers.OperationBuilder.validate_parameters(type, parameters) do
           {:ok, _} -> {:ok, "Transformation valid."}
           {:error, reasons} -> {:error, reasons}
         end

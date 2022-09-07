@@ -135,7 +135,7 @@ defmodule Transformers.DateTimeTest do
       }
 
       {:ok, [source_field, source_format, target_field, target_format]} =
-        DateTime.validate(parameters)
+        DateTime.validate_parameters(parameters)
 
       assert source_field == parameters["sourceField"]
       assert source_format == parameters["sourceFormat"]
@@ -153,7 +153,7 @@ defmodule Transformers.DateTimeTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = DateTime.validate(parameters)
+      {:error, reason} = DateTime.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -171,7 +171,7 @@ defmodule Transformers.DateTimeTest do
         |> Map.delete(format)
         |> Map.put(format, "{invalid}")
 
-      {:error, reason} = Transformers.DateTime.validate(params)
+      {:error, reason} = Transformers.DateTime.validate_parameters(params)
 
       assert reason == %{
                "#{format}" =>
@@ -191,7 +191,7 @@ defmodule Transformers.DateTimeTest do
         }
         |> Map.delete("sourceFormat")
 
-      {:error, reason} = DateTime.validate(parameters)
+      {:error, reason} = DateTime.validate_parameters(parameters)
 
       assert reason == %{"sourceFormat" => "Missing or empty field"}
     end

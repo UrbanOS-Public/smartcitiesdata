@@ -14,7 +14,7 @@ defmodule Transformers.DateTime do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_field, source_format, target_field, target_format]} <-
-           validate(parameters),
+           validate_parameters(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime(payload_source_value, source_format, source_field),
@@ -29,7 +29,8 @@ defmodule Transformers.DateTime do
     end
   end
 
-  def validate(parameters) do
+  @impl Transformation
+  def validate_parameters(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @source_field)
     |> NotBlank.check(parameters, @source_format)
