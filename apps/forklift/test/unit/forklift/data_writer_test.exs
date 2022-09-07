@@ -61,10 +61,65 @@ defmodule Forklift.DataWriterTest do
     DataWriter.write([fake_data],
       dataset: expected_dataset,
       ingestion_id: "1234-abcd",
-      extraction_start_time: "1662175490"
+      extraction_start_time: 1_662_175_490
     )
   end
 
-  # todo: if ingestion_progress returns in progress, compaction is not called
-  # todo: if ingestion_progress returns complete, compaction is called
+  test "compaction *is not* kicked off if ingestion_progress reports \"in progress\"" do
+    ingestion_status = :in_progress
+
+    ingestion_id = "1234-abcd"
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    allow(Forklift.IngestionProgress.new_message(ingestion_id, extract_start), return: ingestion_status)
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+
+    fake_data = TDG.create_data(%{})
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    DataWriter.write([fake_data],
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
+    )
+
+    refute_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
+  end
+
+  test "compaction *is* kicked off if ingestion_progress reports \"ingestion_complete\"" do
+    ingestion_status = :ingestion_complete
+
+    ingestion_id = "1234-abcd"
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    allow(Forklift.IngestionProgress.new_message(ingestion_id, extract_start), return: ingestion_status)
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+
+    fake_data = TDG.create_data(%{})
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    DataWriter.write([fake_data],
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
+    )
+
+    assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
+  end
 end

@@ -129,4 +129,8 @@ defmodule Forklift.Event.EventHandlingTest do
       )
     end)
   end
+
+  # in data_extract_end tests:
+  # todo: if ingestion_progress returns in progress, compaction is not called
+  # todo: if ingestion_progress returns complete, compaction is called
 end
