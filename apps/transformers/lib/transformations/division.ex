@@ -64,15 +64,13 @@ defmodule Transformers.Division do
       %{
         field_name: "dividend",
         field_type: "string or number",
-        field_label:
-          "A field or number that will be used as the number being divided",
+        field_label: "A field or number that will be used as the number being divided",
         options: nil
       },
       %{
         field_name: "divisor",
         field_type: "string or number",
-        field_label:
-          "A field or number that will be used as the number to divide by",
+        field_label: "A field or number that will be used as the number to divide by",
         options: nil
       }
     ]
