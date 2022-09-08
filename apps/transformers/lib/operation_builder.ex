@@ -70,7 +70,7 @@ defmodule Transformers.OperationBuilder do
   def validate("arithmetic_subtract", parameters) do
     Transformers.ArithmeticSubtract.validate(parameters)
   end
-  
+
   def validate("multiplication", parameters) do
     Transformers.Multiplication.validate(parameters)
   end

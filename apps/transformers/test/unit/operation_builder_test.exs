@@ -143,7 +143,7 @@ defmodule Transformers.OperationBuilderTest do
       "subtrahends" => ["one", 1],
       "targetField" => "target"
     }
-    
+
     payload = %{
       "one" => 1,
       "two" => 2

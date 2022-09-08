@@ -12,7 +12,7 @@ defmodule Transformers.TransformationFields do
   def fields_for("arithmetic_subtract") do
     Transformers.ArithmeticSubtract.fields()
   end
-  
+
   def fields_for("multiplication") do
     Transformers.Multiplication.fields()
   end
