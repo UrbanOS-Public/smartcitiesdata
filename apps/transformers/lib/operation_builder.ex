@@ -35,6 +35,10 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.Multiplication.transform(payload, parameters) end
   end
 
+  def build("division", parameters) do
+    fn payload -> Transformers.Division.transform(payload, parameters) end
+  end
+
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
@@ -73,6 +77,10 @@ defmodule Transformers.OperationBuilder do
 
   def validate("multiplication", parameters) do
     Transformers.Multiplication.validate(parameters)
+  end
+
+  def validate("division", parameters) do
+    Transformers.Division.validate(parameters)
   end
 
   def validate(unsupported, _) do

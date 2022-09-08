@@ -9,6 +9,15 @@ defmodule Transformers.Validations.NotBlank do
     end
   end
 
+  def check_nil(status, parameters, field) do
+    value = Map.get(parameters, field)
+
+    case value do
+      nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
+      _ -> ValidationStatus.update_value(status, field, value)
+    end
+  end
+
   defp check_if_blank(status, parameters, field) do
     value = Map.get(parameters, field)
 
