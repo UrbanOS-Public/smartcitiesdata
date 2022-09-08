@@ -6,15 +6,15 @@ defmodule Transformers.Division do
   alias Transformers.Validations.ValidationStatus
   alias Decimal, as: D
 
-  @dividends "dividends"
-  @divisors "divisors"
+  @dividend "dividend"
+  @divisor "divisor"
   @target_field "targetField"
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [dividends, divisors, target_field_name]} <- validate(parameters),
-         {:ok, dividend_product} <- resolve_product(payload, dividends),
-         {:ok, divisor_product} <- resolve_product(payload, divisors),
+    with {:ok, [dividend, divisor, target_field_name]} <- validate(parameters),
+         {:ok, dividend_product} <- resolve_payload_field(payload, dividend),
+         {:ok, divisor_product} <- resolve_divisor(payload, divisor),
          {:ok, quotient} <- {:ok, D.div(D.new(dividend_product), D.new(divisor_product))} do
       {:ok, payload |> Map.put(target_field_name, quotient)}
     else
@@ -22,18 +22,10 @@ defmodule Transformers.Division do
     end
   end
 
-  defp resolve_product(payload, value_list) do
-    product =
-      Enum.reduce_while(value_list, 1, fn value, acc ->
-        case resolve_payload_field(payload, value) do
-          {:ok, result} -> {:cont, acc * result}
-          {:error, reason} -> {:halt, {:error, reason}}
-        end
-      end)
-
-    case product do
-      {:error, reason} -> {:error, reason}
-      _ -> {:ok, product}
+  defp resolve_divisor(payload, field) do
+    case resolve_payload_field(payload, field) do
+      {:ok, divisor} when divisor == 0 -> {:error, "divisor cannot be equal to 0"}
+      any -> any
     end
   end
 
@@ -55,10 +47,10 @@ defmodule Transformers.Division do
 
   def validate(parameters) do
     %ValidationStatus{}
-    |> NotBlank.check(parameters, @dividends)
-    |> NotBlank.check(parameters, @divisors)
+    |> NotBlank.check_nil(parameters, @dividend)
+    |> NotBlank.check_nil(parameters, @divisor)
     |> NotBlank.check(parameters, @target_field)
-    |> ValidationStatus.ordered_values_or_errors([@dividends, @divisors, @target_field])
+    |> ValidationStatus.ordered_values_or_errors([@dividend, @divisor, @target_field])
   end
 
   def fields() do
@@ -70,17 +62,17 @@ defmodule Transformers.Division do
         options: nil
       },
       %{
-        field_name: "dividends",
-        field_type: "list",
+        field_name: "dividend",
+        field_type: "string or number",
         field_label:
-          "List of values or fields, multiplied together, that will be used as the number being divided",
+          "A field or number that will be used as the number being divided",
         options: nil
       },
       %{
-        field_name: "divisors",
-        field_type: "list",
+        field_name: "divisor",
+        field_type: "string or number",
         field_label:
-          "List of values or fields, multiplied together, that will be used as the number to divide by",
+          "A field or number that will be used as the number to divide by",
         options: nil
       }
     ]

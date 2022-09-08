@@ -94,16 +94,26 @@ defmodule Transformers.Validations.NotBlankTest do
     end
   end
 
-  describe("check/3 for number") do
+  describe("check_nil/3 for nil") do
     test "if field present return ok with value" do
       field = "something"
       value = 5
       parameters = %{field => value}
       status = %ValidationStatus{}
 
-      result = NotBlank.check(status, parameters, field)
+      result = NotBlank.check_nil(status, parameters, field)
 
       assert result == %ValidationStatus{values: %{field => value}}
+    end
+
+    test "if field present return error on nil" do
+      field = "something"
+      parameters = %{field => nil}
+      status = %ValidationStatus{}
+
+      result = NotBlank.check_nil(status, parameters, field)
+
+      assert result.errors == %{field => "Missing or empty field"}
     end
   end
 

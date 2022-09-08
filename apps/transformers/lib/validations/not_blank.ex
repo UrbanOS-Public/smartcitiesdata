@@ -9,6 +9,15 @@ defmodule Transformers.Validations.NotBlank do
     end
   end
 
+  def check_nil(status, parameters, field) do
+    value = Map.get(parameters, field)
+
+    case value do
+      nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
+      _ -> ValidationStatus.update_value(status, field, value)
+    end
+  end
+
   defp check_if_blank(status, parameters, field) do
     value = Map.get(parameters, field)
 
@@ -16,7 +25,6 @@ defmodule Transformers.Validations.NotBlank do
       nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
       value when is_binary(value) -> check_if_blank_string(status, field, value)
       value when is_list(value) -> check_if_blank_list(status, field, value)
-      value when is_number(value) -> ValidationStatus.update_value(status, field, value)
       _ -> add_unsupported_type_error(status, field)
     end
   end
