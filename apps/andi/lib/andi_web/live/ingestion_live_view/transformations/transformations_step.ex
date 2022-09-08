@@ -5,6 +5,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   use Phoenix.LiveView
   require Logger
 
+  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.IngestionLiveView.FormUpdate
@@ -12,6 +13,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("transformation")
+    IO.inspect("STEP: mount")
 
     transformation_changesets =
       Enum.map(ingestion.transformations, fn transformation ->
@@ -30,6 +33,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   def render(assigns) do
+    IO.inspect(assigns.transformation_changesets, label: "STEP: render")
     action =
       case assigns.visibility do
         "collapsed" -> "EDIT"
@@ -59,7 +63,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
             <%= for changeset <- @transformation_changesets do %>
               <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationForm, id: "transform-#{changeset.changes.id}", session: %{"transformation_changeset" => changeset}) %>
             <% end %>
-            </div>
+          </div>
 
           <button id="add-transformation" class="btn btn--primary-outline btn--save btn--large" type="button" phx-click="add-transformation">+ Add New Transformation</button>
 
@@ -71,15 +75,32 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{assigns: %{transformations: transformations}} = socket
+        %{assigns: %{transformations: transformations, transformation_changesets: transformation_changesets}} = socket
       ) do
-    update_kept_transformations(transformations)
+    update_kept_transformations(transformation_changesets, ingestion_id)
     delete_discarded_transformations(transformations, ingestion_id)
     {:noreply, socket}
   end
 
   def handle_info(%{topic: "form-save"}, socket) do
     {:noreply, socket}
+  end
+
+  def handle_info(
+    %{topic: "transformation", event: "changed", payload: %{changeset: new_changeset}},
+    %{assigns: %{transformation_changesets: transformation_changesets}} = socket
+  ) do
+
+    IO.inspect(new_changeset, label: "STEP: new changeset")
+    updated_changesets = Enum.map(transformation_changesets, fn changeset ->
+      if changeset.changes.id == new_changeset.changes.id do
+         new_changeset
+      else
+        changeset
+      end
+    end)
+
+    {:noreply, assign(socket, transformation_changesets: updated_changesets)}
   end
 
   def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index_string}, socket) do
@@ -149,9 +170,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     {:noreply, assign(socket, transformations: updated_transformations, transformation_changesets: transformation_changesets)}
   end
 
-  defp update_kept_transformations(transformations) do
-    Enum.each(transformations, fn transformation ->
-      Transformations.update(transformation)
+  defp update_kept_transformations(transformation_changesets, ingestion_id) do
+    Enum.each(transformation_changesets, fn changeset ->
+      changes =
+        InputConverter.form_changes_from_changeset(changeset)
+        |> Map.put(:ingestion_id, ingestion_id)
+
+      changeset.changes.id
+      |> Transformations.get()
+      |> Transformations.update(changes)
     end)
   end
 

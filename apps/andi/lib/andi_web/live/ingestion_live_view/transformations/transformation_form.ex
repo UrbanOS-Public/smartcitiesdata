@@ -17,8 +17,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Transformers.TransformationFields
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
-    AndiWeb.Endpoint.subscribe("form-save")
-
     transformation_type = Map.get(transformation_changeset.changes, :type)
 
     {:ok,
@@ -30,6 +28,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   def render(assigns) do
+    IO.inspect("FORM: render called")
     ~L"""
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, class: "transformation-item"] %>
         <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
@@ -66,8 +65,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     new_changeset = Transformation.changeset_from_form_data(form_data)
-
-    {:noreply, assign(socket, transformation_changeset: new_changeset)}
+    AndiWeb.Endpoint.broadcast_from(self(), "transformation", "changed", %{changeset: new_changeset})
+    # {:noreply, assign(socket, transformation_changeset: new_changeset)}
+    {:noreply, socket}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -84,28 +84,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def handle_event("transformation-type-selected", %{"value" => value}, socket) do
     {:noreply, assign(socket, transformation_type: value)}
-  end
-
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{
-          assigns: %{
-            transformation_changeset: transformation_changeset
-          }
-        } = socket
-      ) do
-    changes =
-      InputConverter.form_changes_from_changeset(transformation_changeset)
-      |> Map.put(:ingestion_id, ingestion_id)
-
-    transformation_changeset.changes.id
-    |> Transformations.get()
-    |> Transformations.update(changes)
-
-    {:noreply,
-     assign(socket,
-       validation_status: "valid"
-     )}
   end
 
   defp transformation_name(form) do
