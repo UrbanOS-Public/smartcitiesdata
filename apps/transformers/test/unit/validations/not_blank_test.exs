@@ -94,10 +94,23 @@ defmodule Transformers.Validations.NotBlankTest do
     end
   end
 
+  describe("check/3 for number") do
+    test "if field present return ok with value" do
+      field = "something"
+      value = 5
+      parameters = %{field => value}
+      status = %ValidationStatus{}
+
+      result = NotBlank.check(status, parameters, field)
+
+      assert result == %ValidationStatus{values: %{field => value}}
+    end
+  end
+
   describe("check/3 for unsupported type") do
     test "add error if value neither string or list" do
       field = "something"
-      value = 123
+      value = %{"not" => "valid"}
       parameters = %{field => value}
       status = %ValidationStatus{}
 

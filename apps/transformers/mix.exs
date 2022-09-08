@@ -34,7 +34,8 @@ defmodule Transformers.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:smart_city, "~> 5.2.5"},
       {:smart_city_test, "~> 2.2.5", only: [:test, :integration]},
-      {:timex, "~> 3.6"}
+      {:timex, "~> 3.6"},
+      {:decimal, "~> 1.9.0"}
     ]
   end
 
