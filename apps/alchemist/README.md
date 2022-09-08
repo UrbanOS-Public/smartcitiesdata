@@ -10,23 +10,23 @@ Validates data by evaluating each message and verifying that it has the required
 
 - To startup external dependancies in docker:
   ```bash
-  `MIX_ENV=integration mix docker.start`
+  MIX_ENV=integration mix docker.start
   ```
 - To run a single instance with no data in it:
   ```bash
-  `MIX_ENV=integration iex -S mix`
+  MIX_ENV=integration iex -S mix
   ```
 - To run a single instance with test data added to it:
   ```bash
-  `MIX_ENV=integration iex -S mix test --no-start`
+  MIX_ENV=integration iex -S mix test --no-start
   ```
 - To stop the docker:
   ```bash
-  `MIX_ENV=integration mix docker.stop`
+  MIX_ENV=integration mix docker.stop
   ```
 - To kill the docker:
   ```bash
-  `MIX_ENV=integration mix docker.kill`
+  MIX_ENV=integration mix docker.kill
   ```
 
 ### To run the tests
@@ -109,6 +109,8 @@ Brook.Event.send(Alchemist.instance_name(), "ingestion:update", :testing, ingest
 msg = %SmartCity.Data{
   _metadata: %{name: "fake name", org: "fake org"},
   dataset_id: datasetId,
+  ingestion_id: ingestId,
+  extraction_start_time: Timex.now(),
   operational: %{timing: []},
   payload: payloadToTransform,
   version: "0.1"
