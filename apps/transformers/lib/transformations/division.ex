@@ -13,9 +13,9 @@ defmodule Transformers.Division do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [dividend, divisor, target_field_name]} <- validate(parameters),
-         {:ok, dividend_product} <- resolve_payload_field(payload, dividend),
-         {:ok, divisor_product} <- resolve_divisor(payload, divisor),
-         {:ok, quotient} <- {:ok, D.div(D.new(dividend_product), D.new(divisor_product))} do
+         {:ok, dividend} <- resolve_payload_field(payload, dividend),
+         {:ok, divisor} <- resolve_divisor(payload, divisor),
+         {:ok, quotient} <- {:ok, D.div(D.new(dividend), D.new(divisor))} do
       {:ok, payload |> Map.put(target_field_name, quotient)}
     else
       {:error, reason} -> {:error, reason}
