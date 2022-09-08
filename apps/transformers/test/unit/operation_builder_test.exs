@@ -136,4 +136,22 @@ defmodule Transformers.OperationBuilderTest do
     assert function.(payload) == Transformers.ArithmeticAdd.transform(payload, params)
     assert validation == Transformers.ArithmeticAdd.validate(params)
   end
+
+  test "multiplication function" do
+    params = %{
+      "targetField" => "target",
+      "multiplicands" => ["one", "two", 3]
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("multiplication", params)
+    validation = OperationBuilder.validate("multiplication", params)
+
+    assert function.(payload) == Transformers.Multiplication.transform(payload, params)
+    assert validation == Transformers.Multiplication.validate(params)
+  end
 end
