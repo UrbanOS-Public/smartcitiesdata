@@ -143,7 +143,7 @@ defmodule Transformers.OperationBuilderTest do
       "subtrahends" => ["one", 1],
       "targetField" => "target"
     }
-
+    
     payload = %{
       "one" => 1,
       "two" => 2
@@ -154,5 +154,23 @@ defmodule Transformers.OperationBuilderTest do
 
     assert function.(payload) == Transformers.ArithmeticSubtract.transform(payload, params)
     assert validation == Transformers.ArithmeticSubtract.validate(params)
+  end
+
+  test "multiplication function" do
+    params = %{
+      "targetField" => "target",
+      "multiplicands" => ["one", "two", 3]
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("multiplication", params)
+    validation = OperationBuilder.validate("multiplication", params)
+
+    assert function.(payload) == Transformers.Multiplication.transform(payload, params)
+    assert validation == Transformers.Multiplication.validate(params)
   end
 end
