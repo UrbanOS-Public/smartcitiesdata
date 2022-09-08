@@ -173,4 +173,23 @@ defmodule Transformers.OperationBuilderTest do
     assert function.(payload) == Transformers.Multiplication.transform(payload, params)
     assert validation == Transformers.Multiplication.validate(params)
   end
+
+  test "division function" do
+    params = %{
+      "targetField" => "target",
+      "divisor" => "two",
+      "dividend" => "one"
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("division", params)
+    validation = OperationBuilder.validate("division", params)
+
+    assert function.(payload) == Transformers.Division.transform(payload, params)
+    assert validation == Transformers.Division.validate(params)
+  end
 end

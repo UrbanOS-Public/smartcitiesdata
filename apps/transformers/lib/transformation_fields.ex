@@ -17,6 +17,10 @@ defmodule Transformers.TransformationFields do
     Transformers.Multiplication.fields()
   end
 
+  def fields_for("division") do
+    Transformers.Division.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
