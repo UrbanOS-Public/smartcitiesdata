@@ -65,6 +65,8 @@ to demonstrate transformations running correctly. Transformed messages
 can be viewed on the output kafka topic.
 
 ```
+Logger.configure(level: :debug)
+
 datasetId = "2222demo"
 ingestId = "1111demo"
 rawTopic = "raw-#{ingestId}"
