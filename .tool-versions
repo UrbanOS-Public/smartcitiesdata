@@ -2,5 +2,8 @@
 erlang 23.2.7.5
 elixir 1.10.4-otp-23
 
+# when updating this file, ensure smart_city and smart_city_test
+# tool versions are updated as well
+
 # these versions support MacOS on both Intel and M1
 # elixir version here should align with smartcitiesdata base elixir docker image
