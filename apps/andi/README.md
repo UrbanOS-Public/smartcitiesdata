@@ -2,6 +2,8 @@
 
 This application is used to administer the creation and ongoing management of datasets and their associated organizations for the Smart Cities data platform. The name `Andi` is an acronym that stands for "Administrative Network Data Interface".
 
+A detailed user guide explaining how Andi works from a user perspective is [available here](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Data-Curator-Interface-(ANDI)-User-Manual)
+
 Andi is a Phoenix web application defining a RESTful interface to fill the dataset registry. Incoming JSON messages are parsed to create and save dataset definitions into Redis and save the associated organization into both Redis and LDAP.
 
 Interactions with Redis are abstracted with `smartcitiesdata.smart_city*` functions, which format and parse dataset and org definitions into smart_city structs.
