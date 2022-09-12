@@ -32,9 +32,9 @@ defmodule Alchemist.BroadwayTest do
         TDG.create_transformation(%{
           type: "regex_extract",
           parameters: %{
-            "sourceField" => "first_name",
-            "targetField" => "first_letter",
-            "regex" => "^(\\w)"
+            sourceField: "first_name",
+            targetField: "first_letter",
+            regex: "^(\\w)"
           }
         })
 
