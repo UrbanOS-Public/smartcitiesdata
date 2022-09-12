@@ -15,6 +15,20 @@ defmodule Transformers.ValidateTest do
              Transformers.validate([transformation])
   end
 
+  test "given a list of one valid transformation with atom keys, a single valid transformation response is returned" do
+    transformation = %{
+      type: "regex_extract",
+      parameters: %{
+        sourceField: "name",
+        targetField: "firstName",
+        regex: "^(\\w+)"
+      }
+    }
+
+    assert [{:ok, "Transformation valid."}] ==
+             Transformers.validate([transformation])
+  end
+
   test "returns an error when the transformation is formatted incorrectly" do
     invalid_transformation = %{
       parameters: %{

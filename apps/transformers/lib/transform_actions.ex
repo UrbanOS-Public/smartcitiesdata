@@ -16,7 +16,8 @@ defmodule Transformers do
   def validate(transformations) do
     Enum.map(transformations, fn transformation ->
       with {:ok, type} <- Map.fetch(transformation, :type),
-           {:ok, parameters} <- Map.fetch(transformation, :parameters) do
+           {:ok, raw_parameters} <- Map.fetch(transformation, :parameters),
+           parameters <- SmartCity.Helpers.to_string_keys(raw_parameters) do
         case Transformers.OperationBuilder.validate(type, parameters) do
           {:ok, _} -> {:ok, "Transformation valid."}
           {:error, reasons} -> {:error, reasons}
