@@ -35,12 +35,9 @@ a RESTful API, or a web socket API for streaming data feeds.
 * [Presto](https://prestodb.io/) - Big Data storage of ingested data
 * [Vault](https://www.vaultproject.io/) - Secure storage of secrets
 
-### Development Enviornment Prerequisites
-* [General Setup Information](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Setup)
-* [Windows](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Windows-Setup)
-* [macOS](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/macOS-Setup)
-* [Linux](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Linux-Setup)
+### Development Enviornment Setup
 
+[Setup guide available on our wiki](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Setup)
 
 # Usage
 The microservices written in Elixir use [Mix](https://elixir-lang.org/getting-started/mix-otp/introduction-to-mix.html) as the build tool.
