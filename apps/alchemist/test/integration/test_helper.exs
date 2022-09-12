@@ -65,7 +65,7 @@ defmodule TestHelpers do
         |> Enum.map(&Elsa.Message.kafka_message(&1, :value))
 
       {:error, reason} ->
-        Logger.warn("Failed to extract messages: #{inspect(reason)}")
+        Logger.warn("Failed to extract messages from the topic #{topic}}: #{inspect(reason)}")
         []
     end
   end
