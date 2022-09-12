@@ -56,7 +56,7 @@ defmodule AlchemistTest do
     ]
 
     input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
-    output_topic = "#{output_topic_prefix()}-#{ingestion.id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
 
     Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
@@ -73,7 +73,7 @@ defmodule AlchemistTest do
     eventually fn ->
       post_transform_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
 
-      assert pre_transform_messages = post_transform_messages
+      assert pre_transform_messages == post_transform_messages
     end
   end
 
@@ -99,7 +99,7 @@ defmodule AlchemistTest do
       Enum.map(pre_transform_messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
 
     input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
-    output_topic = "#{output_topic_prefix()}-#{ingestion.id}"
+    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
 
     Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
@@ -114,7 +114,7 @@ defmodule AlchemistTest do
     eventually fn ->
       post_transform_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
 
-      assert pre_transform_messages = post_transform_messages
+      assert pre_transform_messages == post_transform_messages
     end
   end
 
