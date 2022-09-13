@@ -255,13 +255,6 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
-        end,
-        5_000
-      )
-
-      eventually(
-        fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
           assert [
@@ -345,13 +338,6 @@ defmodule E2ETest do
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
       end)
-
-      eventually(
-        fn ->
-          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
-        end,
-        10_000
-      )
 
       eventually(
         fn ->
