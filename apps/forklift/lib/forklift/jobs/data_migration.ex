@@ -15,12 +15,6 @@ defmodule Forklift.Jobs.DataMigration do
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
     overwrite_mode = Application.fetch_env!(:forklift, :overwrite_mode)
 
-    "" |> IO.inspect(label: "attempting terminate")
-
-    # Forklift.DataReaderHelper.terminate(dataset)
-
-    "" |> IO.inspect(label: "beginning")
-
     Logger.debug(
       "Beginning data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}"
     )
@@ -36,11 +30,6 @@ defmodule Forklift.Jobs.DataMigration do
            ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(extraction_count),
-         #  NOTE: this drop_last_... means that for a split moment, there's no data (rel ingestion) in the table
-         # how can we handle that?
-         #  note: "insert overwrite" make insert_overwrite_partitioned_data that's called when
-         # overwrite mode is enabled https://sparkbyexamples.com/apache-hive/hive-insert-into-vs-insert-overwrite/
-         # https://github.com/trinodb/trino/issues/11602
          {:ok, _} <- drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),

@@ -123,30 +123,15 @@ defmodule Forklift.Event.EventHandler do
         },
         author: author
       }) do
-    "" |> IO.inspect(label: "data extract end received")
     data_extract_end() |> add_event_count(author, dataset_id)
 
     ingestion_status = Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start)
 
     if ingestion_status == :ingestion_complete do
-      "" |> IO.inspect(label: "end attempting dataset lookup")
       dataset = Forklift.Datasets.get!(dataset_id)
 
-      "" |> IO.inspect(label: "end attempting compaction")
-
       Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
-      |> IO.inspect(label: "compaction result extract end")
     end
-
-    :ok
-  end
-
-  def handle_event(
-        %Brook.Event{
-          type: data_extract_end()
-        } = data
-      ) do
-    data |> IO.inspect(label: "data extract end received backup")
 
     :ok
   end

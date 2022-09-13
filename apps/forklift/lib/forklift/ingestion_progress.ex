@@ -44,9 +44,6 @@ defmodule Forklift.IngestionProgress do
     target = Redix.command!(:redix, ["GET", get_target_key(extract_id)])
     current = Redix.command!(:redix, ["GET", get_count_key(extract_id)])
 
-    current |> IO.inspect(label: "current")
-    target |> IO.inspect(label: "target")
-
     case target && current do
       nil ->
         false

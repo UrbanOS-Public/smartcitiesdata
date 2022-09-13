@@ -131,23 +131,14 @@ if System.get_env("S3_HOST_NAME") do
     port: System.get_env("S3_PORT") |> String.to_integer()
 end
 
-# if System.get_env("COMPACTION_SCHEDULE") do
 config :forklift, Forklift.Quantum.Scheduler,
   jobs: [
-    # todo: remove COMPACTION_SCHEDULE / draft PR for removing from chart / link that draft in this draft so it's not forgotten
-    # data_migrator: [
-    #   schedule: System.get_env("COMPACTION_SCHEDULE"),
-    #   task: {Forklift.Jobs.DataMigration, :run, []},
-    #   timezone: "America/New_York"
-    # ],
     partitioned_compactor: [
       schedule: "45 0 * * *",
       task: {Forklift.Jobs.PartitionedCompaction, :run, []},
       timezone: "America/New_York"
     ]
-    # todo: ticket for clearing all json tables
   ]
-# end
 
 case System.get_env("OVERWRITE_MODE") do
   "true" -> config :forklift, overwrite_mode: true
