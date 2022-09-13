@@ -60,10 +60,10 @@ defmodule Reaper.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: data_extract_end(),
         data: %{
-          dataset_id: dataset_id,
-          extract_start_unix: _extract_start,
-          ingestion_id: ingestion_id,
-          msgs_extracted: _msg_target
+          "dataset_id" => dataset_id,
+          "extract_start_unix" => _extract_start,
+          "ingestion_id" => ingestion_id,
+          "msgs_extracted" => _msg_target
         }
       }) do
     data_extract_end()

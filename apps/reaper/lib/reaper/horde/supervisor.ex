@@ -46,7 +46,6 @@ defmodule Reaper.Horde.Supervisor do
         extract_start_unix: extract_start
       }
 
-      message |> IO.inspect(label: "reaper sending message")
       Brook.Event.send(@instance_name, data_extract_end(), :reaper, message)
     end
 
