@@ -3,7 +3,6 @@ defmodule Transformers.DivisionTest do
   use Checkov
 
   alias Transformers.Division
-  alias Decimal, as: D
 
   describe "The division transform" do
     test "returns payload with target field equal to the quotient of a dividend and divisor" do
@@ -18,7 +17,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(5)
+      assert actual_target_field == 5
     end
 
     test "returns payload with target field equal to the quotient of a single input dividend variable and divisor constant" do
@@ -33,7 +32,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(4)
+      assert actual_target_field == 4
     end
 
     test "returns payload with target field with a specified target field name" do
@@ -48,7 +47,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "some_other_output_number")
-      assert actual_target_field == D.new(4)
+      assert actual_target_field == 4
     end
 
     test "returns payload with target field equal to the quotient of single input dividend constant and single divisor variables" do
@@ -63,7 +62,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(4)
+      assert actual_target_field == 4
     end
 
     test "returns payload with a decimal in the target field equal to the quotient of dividend decimal constant and divisor decimal constant" do
@@ -78,7 +77,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(4.1)
+      assert actual_target_field == 4.1
     end
 
     test "returns input fields along with output fields" do
@@ -93,7 +92,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(14)
+      assert actual_target_field == 14
       {:ok, source_field1} = Map.fetch(transformed_payload, "input_number")
       assert source_field1 == 3
     end
@@ -110,7 +109,7 @@ defmodule Transformers.DivisionTest do
       {:ok, transformed_payload} = Division.transform(message_payload, params)
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
-      assert actual_target_field == D.new(3)
+      assert actual_target_field == 3
       {:ok, foo_field} = Map.fetch(transformed_payload, "foo")
       assert foo_field == 8
     end
