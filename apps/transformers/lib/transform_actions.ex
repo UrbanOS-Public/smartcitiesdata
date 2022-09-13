@@ -4,7 +4,8 @@ defmodule Transformers do
   def construct(transformations) do
     Enum.map(transformations, fn transformation ->
       with {:ok, type} <- Map.fetch(transformation, :type),
-           {:ok, parameters} <- Map.fetch(transformation, :parameters) do
+           {:ok, raw_parameters} <- Map.fetch(transformation, :parameters),
+           parameters <- SmartCity.Helpers.to_string_keys(raw_parameters) do
         Transformers.OperationBuilder.build(type, parameters)
       else
         :error -> {:error, "Map provided is not a valid transformation"}
@@ -15,8 +16,9 @@ defmodule Transformers do
   def validate_parameters(transformations) do
     Enum.map(transformations, fn transformation ->
       with {:ok, type} <- Map.fetch(transformation, :type),
-           {:ok, parameters} <- Map.fetch(transformation, :parameters) do
-        case Transformers.OperationBuilder.validate_parameters(type, parameters) do
+           {:ok, raw_parameters} <- Map.fetch(transformation, :parameters),
+           parameters <- SmartCity.Helpers.to_string_keys(raw_parameters) do
+        case Transformers.OperationBuilder.validate(type, parameters) do
           {:ok, _} -> {:ok, "Transformation valid."}
           {:error, reasons} -> {:error, reasons}
         end

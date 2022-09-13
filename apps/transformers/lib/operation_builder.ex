@@ -27,6 +27,18 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.ArithmeticAdd.transform(payload, parameters) end
   end
 
+  def build("arithmetic_subtract", parameters) do
+    fn payload -> Transformers.ArithmeticSubtract.transform(payload, parameters) end
+  end
+
+  def build("multiplication", parameters) do
+    fn payload -> Transformers.Multiplication.transform(payload, parameters) end
+  end
+
+  def build("division", parameters) do
+    fn payload -> Transformers.Division.transform(payload, parameters) end
+  end
+
   def build(unsupported, _) do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
@@ -59,7 +71,19 @@ defmodule Transformers.OperationBuilder do
     Transformers.ArithmeticAdd.validate_parameters(parameters)
   end
 
-  def validate_parameters(unsupported, _) do
+  def validate("arithmetic_subtract", parameters) do
+    Transformers.ArithmeticSubtract.validate(parameters)
+  end
+
+  def validate("multiplication", parameters) do
+    Transformers.Multiplication.validate(parameters)
+  end
+
+  def validate("division", parameters) do
+    Transformers.Division.validate(parameters)
+  end
+
+  def validate(unsupported, _) do
     {:error, "Unsupported transformation validation type: #{unsupported}"}
   end
 end

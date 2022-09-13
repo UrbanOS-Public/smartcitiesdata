@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
-DOCKER_COMPOSE_VERSION=1.23.1
+DOCKER_COMPOSE_VERSION=1.29.2
 
 app="$1"
 
