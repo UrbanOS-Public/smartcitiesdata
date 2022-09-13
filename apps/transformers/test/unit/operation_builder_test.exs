@@ -136,4 +136,60 @@ defmodule Transformers.OperationBuilderTest do
     assert function.(payload) == Transformers.ArithmeticAdd.transform(payload, params)
     assert validation == Transformers.ArithmeticAdd.validate(params)
   end
+
+  test "arithmetic subtract function" do
+    params = %{
+      "minuend" => "two",
+      "subtrahends" => ["one", 1],
+      "targetField" => "target"
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("arithmetic_subtract", params)
+    validation = OperationBuilder.validate("arithmetic_subtract", params)
+
+    assert function.(payload) == Transformers.ArithmeticSubtract.transform(payload, params)
+    assert validation == Transformers.ArithmeticSubtract.validate(params)
+  end
+
+  test "multiplication function" do
+    params = %{
+      "targetField" => "target",
+      "multiplicands" => ["one", "two", 3]
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("multiplication", params)
+    validation = OperationBuilder.validate("multiplication", params)
+
+    assert function.(payload) == Transformers.Multiplication.transform(payload, params)
+    assert validation == Transformers.Multiplication.validate(params)
+  end
+
+  test "division function" do
+    params = %{
+      "targetField" => "target",
+      "divisor" => "two",
+      "dividend" => "one"
+    }
+
+    payload = %{
+      "one" => 1,
+      "two" => 2
+    }
+
+    function = OperationBuilder.build("division", params)
+    validation = OperationBuilder.validate("division", params)
+
+    assert function.(payload) == Transformers.Division.transform(payload, params)
+    assert validation == Transformers.Division.validate(params)
+  end
 end

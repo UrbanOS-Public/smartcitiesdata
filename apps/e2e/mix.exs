@@ -37,7 +37,7 @@ defmodule E2E.MixProject do
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:ranch, "~> 1.7.1", override: true},
-      {:smart_city, "~> 5.2.5"},
+      {:smart_city, "~> 5.2.6"},
       {:jason, "~> 1.2", override: true}
     ]
   end

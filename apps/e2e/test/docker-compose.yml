@@ -8,6 +8,7 @@ services:
       - minio:/minio
     entrypoint: /workdir/setup.sh
   metastore:
+    platform: linux/amd64
     image: quay.io/cloudservices/ubi-hive:3.1.2-metastore-008
     depends_on:
     - postgres
@@ -93,6 +94,7 @@ services:
       - "6379:6379"
 
   elasticsearch:
+    platform: linux/amd64
     image: elasticsearch:7.4.2
     ports:
     - "9200:9200"
