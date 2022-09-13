@@ -38,7 +38,8 @@ defmodule Transformers.ArithmeticSubtract do
     end
   end
 
-  def validate(parameters) do
+  @impl Transformation
+  def validate_parameters(parameters) do
     %ValidationStatus{}
     |> IsPresent.check(parameters, @minuend)
     |> NotBlank.check(parameters, @target_field)

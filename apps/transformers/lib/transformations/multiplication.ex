@@ -57,7 +57,8 @@ defmodule Transformers.Multiplication do
     end
   end
 
-  def validate(parameters) do
+  @impl Transformation
+  def validate_parameters(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @multiplicands)
     |> NotBlank.check(parameters, @target_field)

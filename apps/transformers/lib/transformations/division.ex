@@ -45,7 +45,8 @@ defmodule Transformers.Division do
     end
   end
 
-  def validate(parameters) do
+  @impl Transformation
+  def validate_parameters(parameters) do
     %ValidationStatus{}
     |> NotBlank.check_nil(parameters, @dividend)
     |> NotBlank.check_nil(parameters, @divisor)
