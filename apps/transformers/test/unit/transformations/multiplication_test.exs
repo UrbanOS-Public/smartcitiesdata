@@ -93,6 +93,20 @@ defmodule Transformers.MultiplicationTest do
       assert source_field2 == 6
     end
 
+    test "returns payload with target field a product of decimal values" do
+      params = %{
+        "multiplicands" => [12.5433, 2.33],
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{}
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 29.225889
+    end
+
     test "returns an error if a field in the multiplicand doesnt exist" do
       params = %{
         "multiplicands" => ["some_other_input_number", "bar"],

@@ -16,7 +16,7 @@ defmodule Transformers.Division do
          {:ok, dividend} <- resolve_payload_field(payload, dividend),
          {:ok, divisor} <- resolve_divisor(payload, divisor),
          {:ok, quotient} <- {:ok, D.div(D.new(dividend), D.new(divisor))} do
-      {:ok, payload |> Map.put(target_field_name, quotient)}
+      {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
       {:error, reason} -> {:error, reason}
     end

@@ -4,6 +4,7 @@ defmodule Transformers.Multiplication do
   alias Transformers.FieldFetcher
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Decimal, as: D
 
   @multiplicands "multiplicands"
   @target_field "targetField"
@@ -11,16 +12,18 @@ defmodule Transformers.Multiplication do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [multiplicands, target_field_name]} <- validate(parameters),
-         {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands) do
-      {:ok,
-       payload
-       |> Map.put(
-         target_field_name,
-         Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc -> multiplicand * acc end)
-       )}
+         {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands),
+         product <- multiply_multiplicands(resolved_multiplicands) do
+      {:ok, payload |> Map.put(target_field_name, D.to_float(product))}
     else
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  defp multiply_multiplicands(resolved_multiplicands) do
+    Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc ->
+      D.mult(D.new(multiplicand), D.new(acc))
+    end)
   end
 
   defp resolve_multiplicand_fields(payload, multiplicands) do
