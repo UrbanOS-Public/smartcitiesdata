@@ -138,10 +138,10 @@ defmodule Forklift.Event.EventHandlingTest do
       extract_start = Timex.now() |> Timex.to_unix()
 
       fake_extract_end_msg = %{
-        dataset_id: dataset.id,
-        extract_start_unix: extract_start,
-        ingestion_id: ingestion_id,
-        msgs_extracted: msg_target
+        "dataset_id" => dataset.id,
+        "extract_start_unix" => extract_start,
+        "ingestion_id" => ingestion_id,
+        "msgs_extracted" => msg_target
       }
 
       [
