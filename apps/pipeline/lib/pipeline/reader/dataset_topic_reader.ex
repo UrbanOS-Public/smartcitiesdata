@@ -46,7 +46,6 @@ defmodule Pipeline.Reader.DatasetTopicReader do
     with instance <- Keyword.fetch!(args, :instance),
          dataset <- Keyword.fetch!(args, :dataset),
          topic <- "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}" do
-          "" |> IO.inspect(label: "terminating")
       TopicReader.terminate(instance: instance, topic: topic)
     end
   end
