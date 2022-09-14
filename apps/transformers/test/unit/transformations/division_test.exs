@@ -3,7 +3,6 @@ defmodule Transformers.DivisionTest do
   use Checkov
 
   alias Transformers.Division
-  alias Decimal
 
   describe "The division transform" do
     test "returns payload with target field equal to the quotient of a dividend and divisor" do
@@ -79,10 +78,6 @@ defmodule Transformers.DivisionTest do
 
       {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
       assert actual_target_field == 4.1
-    end
-
-    test "delete me" do
-      Decimal.from_float(12.73)
     end
 
     test "returns input fields along with output fields" do
