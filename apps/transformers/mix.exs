@@ -35,7 +35,7 @@ defmodule Transformers.MixProject do
       {:smart_city, "~> 5.2.6"},
       {:smart_city_test, "~> 2.2.5", only: [:test, :integration]},
       {:timex, "~> 3.6"},
-      {:decimal, "~> 1.0"}
+      {:decimal, "~> 2.0"}
     ]
   end
 

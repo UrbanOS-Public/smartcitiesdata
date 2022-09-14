@@ -2,8 +2,6 @@ defmodule Transformers.MultiplicationTest do
   use ExUnit.Case
   use Checkov
 
-  alias Transformers.Multiplication
-
   describe "The multiplication transform" do
     test "returns payload with target field of a single input multiplicand" do
       params = %{
@@ -170,7 +168,7 @@ defmodule Transformers.MultiplicationTest do
           "multiplicands" => [1, 2],
           "targetField" => "area_code"
         }
-        |> Map.replace(parameter, nil)
+        |> Map.put(parameter, nil)
 
       {:error, reason} = Transformers.Multiplication.validate_parameters(parameters)
 
