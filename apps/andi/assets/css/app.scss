@@ -35,171 +35,14 @@ body {
   right: 0;
 }
 
-.btn {
-  padding: 0.3rem 1.2rem;
-  display: inline-block;
-  text-decoration: none;
-  cursor: pointer;
-  background-color: black;
-  color: white;
-  border: none;
-
-  &:hover {
-    background-color: lighten(black, 20%);
-  }
-
-  &:active {
-    background-color: lighten(black, 40%);
-  }
-}
-
 .error-msg {
-  color: red;
+  color: $color-error;
   display: block; 
   margin: 5px 0 5px 0;
 }
 
-.btn--large {
-  padding: 0.6rem 1.7rem;
-  font-size: 20px;
-  min-width: 10rem;
-  border: 2px solid black;
-  background-color: white;
-  color: black;
-
-  &:hover {
-    background-color: lighten(#6C787F1A, 10%);
-  }
-
-  &:active {
-    background-color: lighten(#6C787F33, 20%);
-  }
-
-}
-
-.btn--cancel {
-    color: black;
-    background-color: white;
-    border: 0px;
-
-    &:hover {
-        color: black;
-        background-color: rgba(#6C787F, 10%);
-    }
-}
-
-.btn--review {
-    min-width: 10rem;
-    min-height: 2rem;
-    line-height: 2rem;
-    font-size: 1.2rem;
-    margin-right: 1rem;
-}
-
-.btn--action {
-  color: white;
-  background-color: $color-text-link;
-  border: 2px solid $color-text-link;
-  &:hover {
-    background-color: #1279D8;
-    border: 2px solid #1279D8;
-  }
-  &:disabled {
-      background-color: #7f7676;
-      border: 2px solid #7f7676;
-      cursor: default;
-  }
-}
-
-.btn--save {
-  color: $color-text-link;
-  background-color: white;
-  border: 2px solid $color-text-link;
-  :hover {
-    background: rgba($color-text-link, 10%);
-    border: 2px solid $color-text-link;
-  }
-
-}
-
-.btn--submit {
-  @extend .btn--save;
-  background-color: $color-text-link;
-  color: white;
-
-  &:disabled {
-    background-color: #a9d3e6;
-    border: 2px solid #a9d3e6;
-    cursor: default;
-
-    &:hover {
-      background-color: #a9d3e6;
-      border: 2px solid #a9d3e6;
-      color: white;
-      cursor: default;
-    }
-  }
-}
-
-.btn--next {
-  float: right;
-  margin-right: 0;
-  text-align: center;
-  min-width: 6.5rem;
-}
-
-.btn--back {
-    margin-right: 1rem;
-    text-align: center;
-    min-width: 6.5rem;
-}
-
-.btn--delete {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  color: black;
-  background-color: white;
-  border: 1px solid black;
-  
-  min-width: 10rem;
-  min-height: 2rem;
-  line-height: 2rem;
-  font-size: 1.2rem;
-
-  .delete-icon {
-    height: 1.65rem;
-    width: 1.5rem;
-    margin-right: .3em;
-    vertical-align: sub;
-  }
-
-  &:hover {
-    background-color: $color-error;
-    color: white;
-    border: 1px solid $color-error;
-  }
-}
-
-.btn--test {
-  font-size: 1rem;
-
-  &:disabled, &:disabled:hover {
-    background-color: $disabled-background;
-  }
-}
-
-.btn--submit:hover {
-  background: white;
-  color: $color-text-link;
-  border: 2px solid $color-text-link;
-}
-
-
-
 .label {
-  color: #7f7676;
+  color: #1D2528;
   display: block;
   margin-bottom: 0.3rem;
   letter-spacing: 0.03rem;
@@ -258,117 +101,20 @@ body {
     color: $disabled-background;
 }
 
-$primary-blue: #1170C8;
-$button-padding: 10px 50px;
-.btn--primary {
-  color: white;
-  background-color: $primary-blue;
-  border: none;
-  padding: $button-padding;
-  &:active {
-    background-color: #0F64B3;
-  }
-  &:hover {
-    background-color: #1279D8;
-    border: none;
-  }
-  &:disabled {
-      background-color: #AAD3F8;
-      border: none;
-      cursor: default;
-  }
-}
-
-.btn--primary-outline { 
-  background-color: white;
-  color: $primary-blue;
-  border: 1px solid $primary-blue;
-  padding: $button-padding;
-
-  &:active {
-    background-color: rgba($primary-blue, 20%);
-    //will the boader stay the same 
-  }
-  &:hover {
-    background-color:rgba($primary-blue, 10%);
-    border: 1px solid $primary-blue;
-  }
-  &:disabled {
-      background-color: rgba($primary-blue, 50%);
-      border: 1px solid $primary-blue;
-      cursor: default;
-  }
-}
-
-.btn--secondary{
-  //not seeing colors
-  background-color: white;
-  color: black;
-  border: 0px;
-  padding: $button-padding;
-  &:active {
-    background-color: rgba(#6C787F, 20%);
-    //will the boader stay the same 
-  }
-  &:hover {
-      color: black;
-      background-color: rgba(#6C787F, 10%);
-  }
-  &:disabled {
-    background-color: rgba(#6C787F, 50%);
-    cursor: default;
-}
-}
-
-.btn--danger {
-  background-color: white;
-  color: #DF1618;
-  border: 1px solid #DF1618;
-  padding: $button-padding;
-  .material-icons {
-    color:#DF1618;
-  }
-  &:active {
-    .material-icons {
-    color: white;
-    }
-    background-color: #B21212;
-    //will the boader stay the same 
-  }
-  &:hover {
-    .material-icons {
-    color: white;
-    }
-      color: white;
-      background-color:#CD1517;
-  }
-  &:disabled {
-    .material-icons {
-    color: white;
-    }
-    background-color: #FC7071;
-    cursor: default;
-  }
-}
-
-.btn--right {
-  margin-left: auto;
-}
-
-
-@import "./datasets.scss";
 @import "./access-groups.scss";
-@import "./edit.scss";
+@import "./button.scss";
 @import "./data_dictionary_form.scss";
-@import "./ingestions.scss";
-@import "./upload_data_dictionary.scss";
-@import "./metadata_form.scss";
-@import "./url_form.scss";
-@import "./finalize_form.scss";
-@import "./organizations.scss";
-@import "./users.scss";
+@import "./datasets.scss";
+@import "./edit.scss";
 @import "./extract_steps.scss";
-@import "./user.scss";
+@import "./finalize_form.scss";
+@import "./header.scss";
+@import "./ingestions.scss";
+@import "./metadata_form.scss";
+@import "./organizations.scss";
 @import "./search-modal.scss";
 @import "./transformations.scss";
-@import "./header.scss";
+@import "./upload_data_dictionary.scss";
+@import "./url_form.scss";
+@import "./user.scss";
+@import "./users.scss";
