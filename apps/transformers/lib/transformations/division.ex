@@ -15,7 +15,7 @@ defmodule Transformers.Division do
     with {:ok, [dividend, divisor, target_field_name]} <- validate_parameters(parameters),
          {:ok, dividend} <- resolve_payload_field(payload, dividend),
          {:ok, divisor} <- resolve_divisor(payload, divisor),
-         {:ok, quotient} <- {:ok, D.div(get_decimal(dividend), get_decimal(divisor))} do
+         {:ok, quotient} <- {:ok, D.div(D.new(dividend), D.new(divisor))} do
       {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
       {:error, reason} -> {:error, reason}
@@ -43,11 +43,6 @@ defmodule Transformers.Division do
             any
         end
     end
-  end
-
-  defp get_decimal(value) do
-    {:ok, decimal} = D.cast(value)
-    decimal
   end
 
   @impl Transformation
