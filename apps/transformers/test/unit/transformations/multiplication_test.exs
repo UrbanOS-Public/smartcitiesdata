@@ -148,7 +148,7 @@ defmodule Transformers.MultiplicationTest do
     end
   end
 
-  describe "validate/1" do
+  describe "validate_parameters/1" do
     data_test "when missing parameter #{parameter} return error" do
       parameters =
         %{
@@ -157,7 +157,7 @@ defmodule Transformers.MultiplicationTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = Transformers.Multiplication.validate(parameters)
+      {:error, reason} = Transformers.Multiplication.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -172,7 +172,7 @@ defmodule Transformers.MultiplicationTest do
         }
         |> Map.replace(parameter, nil)
 
-      {:error, reason} = Transformers.Multiplication.validate(parameters)
+      {:error, reason} = Transformers.Multiplication.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 

@@ -185,7 +185,7 @@ defmodule Transformers.DivisionTest do
     end
   end
 
-  describe "validate/1" do
+  describe "validate_parameters/1" do
     data_test "when missing parameter #{parameter} return error" do
       parameters =
         %{
@@ -195,7 +195,7 @@ defmodule Transformers.DivisionTest do
         }
         |> Map.delete(parameter)
 
-      {:error, reason} = Division.validate(parameters)
+      {:error, reason} = Division.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -211,7 +211,7 @@ defmodule Transformers.DivisionTest do
         }
         |> Map.put(parameter, nil)
 
-      {:error, reason} = Division.validate(parameters)
+      {:error, reason} = Division.validate_parameters(parameters)
 
       assert reason == %{"#{parameter}" => "Missing or empty field"}
 
@@ -225,7 +225,7 @@ defmodule Transformers.DivisionTest do
         "targetField" => ""
       }
 
-      {:error, reason} = Division.validate(parameters)
+      {:error, reason} = Division.validate_parameters(parameters)
 
       assert reason == %{"targetField" => "Missing or empty field"}
     end

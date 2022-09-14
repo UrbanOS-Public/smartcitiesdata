@@ -26,7 +26,7 @@ defmodule Transformers.ValidateTest do
     }
 
     assert [{:ok, "Transformation valid."}] ==
-             Transformers.validate([transformation])
+             Transformers.validate_parameters([transformation])
   end
 
   test "returns an error when the transformation is formatted incorrectly" do

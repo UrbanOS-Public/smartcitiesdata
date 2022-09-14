@@ -11,7 +11,7 @@ defmodule Transformers.ArithmeticSubtract do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [minuend, subtrahends, target_field]} <- validate(parameters),
+    with {:ok, [minuend, subtrahends, target_field]} <- validate_parameters(parameters),
          {:ok, difference} <- subtractValues(minuend, subtrahends, payload) do
       {:ok, payload |> Map.put(target_field, difference)}
     else

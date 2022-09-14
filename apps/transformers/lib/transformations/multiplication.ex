@@ -11,7 +11,7 @@ defmodule Transformers.Multiplication do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [multiplicands, target_field_name]} <- validate(parameters),
+    with {:ok, [multiplicands, target_field_name]} <- validate_parameters(parameters),
          {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands),
          product <- multiply_multiplicands(resolved_multiplicands) do
       {:ok, payload |> Map.put(target_field_name, D.to_float(product))}

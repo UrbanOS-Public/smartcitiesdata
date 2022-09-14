@@ -150,10 +150,10 @@ defmodule Transformers.OperationBuilderTest do
     }
 
     function = OperationBuilder.build("arithmetic_subtract", params)
-    validation = OperationBuilder.validate("arithmetic_subtract", params)
+    validation = OperationBuilder.validate_parameters("arithmetic_subtract", params)
 
     assert function.(payload) == Transformers.ArithmeticSubtract.transform(payload, params)
-    assert validation == Transformers.ArithmeticSubtract.validate(params)
+    assert validation == Transformers.ArithmeticSubtract.validate_parameters(params)
   end
 
   test "multiplication function" do
@@ -168,10 +168,10 @@ defmodule Transformers.OperationBuilderTest do
     }
 
     function = OperationBuilder.build("multiplication", params)
-    validation = OperationBuilder.validate("multiplication", params)
+    validation = OperationBuilder.validate_parameters("multiplication", params)
 
     assert function.(payload) == Transformers.Multiplication.transform(payload, params)
-    assert validation == Transformers.Multiplication.validate(params)
+    assert validation == Transformers.Multiplication.validate_parameters(params)
   end
 
   test "division function" do
@@ -187,9 +187,9 @@ defmodule Transformers.OperationBuilderTest do
     }
 
     function = OperationBuilder.build("division", params)
-    validation = OperationBuilder.validate("division", params)
+    validation = OperationBuilder.validate_parameters("division", params)
 
     assert function.(payload) == Transformers.Division.transform(payload, params)
-    assert validation == Transformers.Division.validate(params)
+    assert validation == Transformers.Division.validate_parameters(params)
   end
 end

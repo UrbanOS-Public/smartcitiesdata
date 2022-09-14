@@ -12,7 +12,7 @@ defmodule Transformers.Division do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [dividend, divisor, target_field_name]} <- validate(parameters),
+    with {:ok, [dividend, divisor, target_field_name]} <- validate_parameters(parameters),
          {:ok, dividend} <- resolve_payload_field(payload, dividend),
          {:ok, divisor} <- resolve_divisor(payload, divisor),
          {:ok, quotient} <- {:ok, D.div(D.new(dividend), D.new(divisor))} do

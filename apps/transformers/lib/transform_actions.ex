@@ -18,7 +18,7 @@ defmodule Transformers do
       with {:ok, type} <- Map.fetch(transformation, :type),
            {:ok, raw_parameters} <- Map.fetch(transformation, :parameters),
            parameters <- SmartCity.Helpers.to_string_keys(raw_parameters) do
-        case Transformers.OperationBuilder.validate(type, parameters) do
+        case Transformers.OperationBuilder.validate_parameters(type, parameters) do
           {:ok, _} -> {:ok, "Transformation valid."}
           {:error, reasons} -> {:error, reasons}
         end
