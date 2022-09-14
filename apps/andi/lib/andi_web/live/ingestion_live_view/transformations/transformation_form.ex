@@ -4,6 +4,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   """
   use Phoenix.LiveView
   use Phoenix.LiveComponent
+  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.TransformationFormSchema
+
   require Logger
   import Phoenix.HTML.Form
 
@@ -17,6 +19,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias Transformers.TransformationFields
 
   def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
+    # not sure if needed
+    AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("transformation")
     transformation_type = Map.get(transformation_changeset.changes, :type)
 
     {:ok,
@@ -28,7 +33,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   def render(assigns) do
-    IO.inspect("FORM: render called")
     ~L"""
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, class: "transformation-item"] %>
         <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
@@ -65,9 +69,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     new_changeset = Transformation.changeset_from_form_data(form_data)
-    AndiWeb.Endpoint.broadcast_from(self(), "transformation", "changed", %{changeset: new_changeset})
-    # {:noreply, assign(socket, transformation_changeset: new_changeset)}
-    {:noreply, socket}
+    validation_status = get_validation_status(new_changeset)
+    {:noreply, assign(socket, transformation_changeset: new_changeset, transformation_type: form_data["type"])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -86,6 +89,28 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     {:noreply, assign(socket, transformation_type: value)}
   end
 
+  def handle_info(
+        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
+        %{
+          assigns: %{
+            transformation_changeset: transformation_changeset
+          }
+        } = socket
+      ) do
+    changes =
+      InputConverter.form_changes_from_changeset(transformation_changeset)
+      |> Map.put(:ingestion_id, ingestion_id)
+
+    transformation_changeset.changes.id
+    |> Transformations.get()
+    |> Transformations.update(changes)
+
+    {:noreply,
+     assign(socket,
+       validation_status: "valid"
+     )}
+  end
+
   defp transformation_name(form) do
     name_field_value = input_value(form, :name)
 
@@ -97,6 +122,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
+
+  defp get_validation_status(new_changeset) do
+    if new_changeset.valid? do
+      "valid"
+    else
+      "invalid"
+    end
+  end
 
   defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
 
