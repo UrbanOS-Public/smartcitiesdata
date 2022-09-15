@@ -31,7 +31,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
         <div class="data-dictionary-field-editor__selector">
-          <%= label(@form, :name, "Selector", class: "label label--required") %>
+          <%= label(@form, :selector, "Selector", class: "label label--required") %>
           <%= text_input(@form, :selector, [id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format), required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
         </div>

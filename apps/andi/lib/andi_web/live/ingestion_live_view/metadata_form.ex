@@ -40,11 +40,11 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
         <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
       </div>
       <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
-        <%= label(f, :targetDataset, "Dataset Name", class: "label label--required") %>
-        <%= hidden_input(f, :targetDataset, value: @selected_dataset) %>
+        <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
+        <%= hidden_input(f, :targetDatasetName, value: @selected_dataset) %>
         <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(@selected_dataset), disabled: true, required: true]) %>
         <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" type="button">Select Dataset</button>
-        <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
+        <%= ErrorHelpers.error_tag(f, :targetDatasetName, bind_to_input: false) %>
       </div>
 
     </form>

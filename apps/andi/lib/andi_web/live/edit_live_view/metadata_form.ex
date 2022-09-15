@@ -163,7 +163,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__organization">
-                <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
+                <%= label(f, :orgId, DisplayNames.get(:orgTitle), class: "label label--required") %>
                 <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: "", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
               </div>
