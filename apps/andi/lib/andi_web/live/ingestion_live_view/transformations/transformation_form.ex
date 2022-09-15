@@ -45,13 +45,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <div class="transformation-form transformation-edit-form--<%= @visibility %>">
           <div class="transformation-form__name">
             <%= label(f, :name, "Name", class: "label label--required") %>
-            <%= text_input(f, :name, class: "transformation-name input transformation-form-fields", phx_debounce: "1000") %>
+            <%= text_input(f, :name, [class: "transformation-name input transformation-form-fields", phx_debounce: "1000", required: true]) %>
             <%= ErrorHelpers.error_tag(f.source, :name, bind_to_input: false) %>
           </div>
 
           <div class="transformation-form__type">
             <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
-            <%= select(f, :type, get_transformation_types(), phx_click: "transformation-type-selected", class: "select") %>
+            <%= select(f, :type, get_transformation_types(), [phx_click: "transformation-type-selected", class: "select", required: true]) %>
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
           </div>
           <div class="transformation-form__fields">

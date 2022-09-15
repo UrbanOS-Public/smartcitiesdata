@@ -11,7 +11,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     ~L"""
     <div class="transformation-field">
       <%= label(form, name, field.field_label, class: "transformation-field-label label label--required") %>
-      <%= text_input(form, name, value: value, class: "input transformation-form-fields", phx_debounce: "1000") %>
+      <%= text_input(form, name, [value: value, class: "input transformation-form-fields", phx_debounce: "1000", required: true]) %>
       <%= ErrorHelpers.error_tag_with_label(form.source, name, field.field_label, bind_to_input: false) %>
     </div>
     """

@@ -29,7 +29,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
               <div class="data-dictionary-add-field-editor__name form-block">
                 <div class="form-input">
                   <%= label(form, :name, "Name", class: "label label--required") %>
-                  <%= text_input(form, :name, id: id <> "_name", class: "input") %>
+                  <%= text_input(form, :name, [id: id <> "_name", class: "input", required: true]) %>
                 </div>
                 <%= error_tag(form, :name) %>
               </div>
@@ -37,7 +37,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
               <div class="data-dictionary-add-field-editor__type form-block">
                 <div class="form-input">
                   <%= label(form, :type, "Type", class: "label label--required") %>
-                  <%= select(form, :type, get_item_types(), id: id <> "_type", class: "select") %>
+                  <%= select(form, :type, get_item_types(), [id: id <> "_type", class: "select", required: true]) %>
                 </div>
                 <%= error_tag(form, :type) %>
               </div>

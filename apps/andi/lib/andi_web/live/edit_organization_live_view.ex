@@ -34,19 +34,19 @@ defmodule AndiWeb.EditOrganizationLiveView do
         <div class="organization-form-edit-section form-grid">
           <div class="organization-form__title">
             <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-            <%= text_input(f, :orgTitle, class: "input", phx_blur: "validate_unique_org_name") %>
+            <%= text_input(f, :orgTitle, [class: "input", phx_blur: "validate_unique_org_name", required: true]) %>
             <%= ErrorHelpers.error_tag(f, :orgTitle, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__name">
             <%= label(f, :orgName, DisplayNames.get(:orgName), class: "label label--required") %>
-            <%= text_input(f, :orgName, [class: "input input--text", readonly: true]) %>
+            <%= text_input(f, :orgName, [class: "input input--text", readonly: true, required: true]) %>
             <%= ErrorHelpers.error_tag(f, :orgName, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__description">
             <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
-            <%= textarea(f, :description, class: "input textarea") %>
+            <%= textarea(f, :description, class: "input textarea", required: true) %>
             <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
           </div>
 

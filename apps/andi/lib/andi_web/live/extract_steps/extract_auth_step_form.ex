@@ -36,13 +36,13 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
 
             <div class="extract-auth-step-form__destination">
               <%= label(f, :destination, DisplayNames.get(:destination),  class: "label label--required") %>
-              <%= text_input(f, :destination, id: "step_#{@id}__auth_destination", class: "input") %>
+              <%= text_input(f, :destination, [id: "step_#{@id}__auth_destination", class: "input", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false) %>
             </div>
 
             <div class="extract-auth-step-form__url">
               <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
-              <%= text_input(f, :url, id: "step_#{@id}__auth_url", class: "input full-width") %>
+              <%= text_input(f, :url, [id: "step_#{@id}__auth_url", class: "input full-width", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
             </div>
 
@@ -57,7 +57,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
             <div class="extract-auth-step-form__path">
               <%= label(f, :path, DisplayNames.get(:path),  class: "label label--required") %>
               <% form_path = input_value(f, :path) %>
-              <%= text_input(f, :path, id: "step_#{@id}__auth_path", class: "input", value: path_to_string(form_path)) %>
+              <%= text_input(f, :path, [id: "step_#{@id}__auth_path", class: "input", value: path_to_string(form_path), required: true]) %>
               <span class="input__help-text">Separate response path keys with a period (.) (e.g. 'data.token' for response {"data": {"token": "abc123"}}) </span>
               <%= ErrorHelpers.error_tag(f, :path, bind_to_input: false) %>
             </div>
@@ -65,7 +65,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
             <div class="extract-auth-step-form__cacheTtl">
               <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl),  class: "label label--required") %>
               <% form_ttl = input_value(f, :cacheTtl) %>
-              <%= text_input(f, :cacheTtl, id: "step_#{@id}__auth_cache_ttl", class: "input", value: milliseconds_to_minutes(form_ttl)) %>
+              <%= text_input(f, :cacheTtl, [id: "step_#{@id}__auth_cache_ttl", class: "input", value: milliseconds_to_minutes(form_ttl), required: true]) %>
               <span class="input__help-text">Time in minutes that credentials are stored (defaults to 15 minutes)</span>
               <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false) %>
             </div>

@@ -26,24 +26,24 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required") %>
-          <%= text_input(@form, :name, id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000") %>
+          <%= text_input(@form, :name, [id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
         <div class="data-dictionary-field-editor__selector">
           <%= label(@form, :name, "Selector", class: "label label--required") %>
-          <%= text_input(@form, :selector, id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format)) %>
+          <%= text_input(@form, :selector, [id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format), required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
         </div>
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required") %>
-          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), id: id <> "_type", class: "data-dictionary-field-editor__type select") %>
+          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
 
       <div class="data-dictionary-field-editor__type-info">
         <%= if field_type == "list" do %>
           <%= label(@form, :itemType, "Item Type", class: "label label--required") %>
-          <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select") %>
+          <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), [id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
         <% end %>
 
@@ -52,7 +52,7 @@ defmodule AndiWeb.SubmitLiveView.DataDictionaryFieldEditor do
             <%= label(@form, :format, "Format", class: "label label--required") %>
             <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
           </div>
-          <%= text_input(@form, :format, id: id <> "_format", class: "data-dictionary-field-editor__format input") %>
+          <%= text_input(@form, :format, [id: id <> "_format", class: "data-dictionary-field-editor__format input", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
         <% end %>
       </div>

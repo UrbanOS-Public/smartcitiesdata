@@ -30,7 +30,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
         <div class="access-group-form__name">
           <%= label(form, :name, class: "label label--required") do "Access Group Name" end %>
-          <%= text_input(form, :name, class: "input") %>
+          <%= text_input(form, :name, [class: "input", required: true]) %>
         </div>
 
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>

@@ -24,7 +24,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, phx_submit: :associate] %>
               <div class="user-form__email">
                   <%= label(f, :email, class: "label label--required") %>
-                  <%= text_input(f, :email, class: "input", readonly: true) %>
+                  <%= text_input(f, :email, [class: "input", readonly: true, required: true]) %>
               </div>
               <div class="user-form__role">
                   <%= label(f, :role, class: "label") %>

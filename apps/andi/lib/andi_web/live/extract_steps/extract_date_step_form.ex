@@ -34,7 +34,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
             <div class="extract-date-step-form-edit-section form-grid">
               <div class="extract-date-step-form__destination">
                 <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required") %>
-                <%= text_input(f, :destination, id: "step-#{@id}__date-destination", class: "extract-date-step-form__destination input", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
+                <%= text_input(f, :destination, [id: "step-#{@id}__date-destination", class: "extract-date-step-form__destination input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :destination) %>
               </div>
 
@@ -55,7 +55,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
                   <%= label(f, :format, "Format", class: "label label--required") %>
                   <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
                 </div>
-                <%= text_input(f, :format, id: "step_#{@id}__date_format", class: "extract-date-step-form__format input", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
+                <%= text_input(f, :format, [id: "step_#{@id}__date_format", class: "extract-date-step-form__format input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :format) %>
               </div>
 

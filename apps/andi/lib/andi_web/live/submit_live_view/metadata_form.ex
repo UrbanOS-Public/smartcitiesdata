@@ -68,31 +68,31 @@ defmodule AndiWeb.SubmitLiveView.MetadataForm do
             <div class="submission-metadata-form-edit-section form-grid">
               <div class="metadata-form__title">
                 <%= label(f, :dataTitle, DisplayNames.get(:dataTitle), class: "label label--required") %>
-                <%= text_input(f, :dataTitle, class: "input", phx_value_field: "dataTitle", phx_debounce: "1000") %>
+                <%= text_input(f, :dataTitle, [class: "input", phx_value_field: "dataTitle", phx_debounce: "1000", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :dataTitle, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__description">
                 <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
-                <%= textarea(f, :description, class: "input textarea") %>
+                <%= textarea(f, :description, [class: "input textarea", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__format">
                 <%= label(f, :sourceFormat, DisplayNames.get(:sourceFormat), class: "label label--required") %>
-                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?]) %>
+                <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(input_value(f, :sourceType)), [class: "select", disabled: @dataset_published?, required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__maintainer-name">
                 <%= label(f, :contactName, DisplayNames.get(:contactName), class: "label label--required") %>
-                <%= text_input(f, :contactName, class: "input") %>
+                <%= text_input(f, :contactName, class: "input", required: true) %>
                 <%= ErrorHelpers.error_tag(f, :contactName, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__keywords">
                 <%= label(f, :keywords, DisplayNames.get(:keywords), class: "label") %>
-                <%= text_input(f, :keywords, value: MetadataFormHelpers.keywords_to_string(input_value(f, :keywords)), class: "input") %>
+                <%= text_input(f, :keywords, [value: MetadataFormHelpers.keywords_to_string(input_value(f, :keywords)), class: "input", required: true]) %>
                 <div class="label label--inline">Separated by comma</div>
               </div>
 
