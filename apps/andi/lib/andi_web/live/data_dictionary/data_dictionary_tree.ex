@@ -125,9 +125,7 @@ defmodule AndiWeb.DataDictionary.Tree do
 
     ~E"""
       <div class="data-dictionary-tree__getting-started-help">
-        <span>Click the&nbsp;</span>
-        <span class="data-dictionary-form__add-field-button" phx-click="<%= @event_name %>"></span>
-        <span>&nbsp;button below to add a new field or <a phx-click="<%= @event_name %>">Click here...</a></span>
+        <span>Click the add button below to add a new field or <a phx-click="<%= @event_name %>">Click here...</a></span>
       </div>
     """
   end
