@@ -11,7 +11,7 @@ defmodule Reaper.Event.Handlers.Helper.StopIngestionTest do
     TestHelper.start_horde()
     {:ok, scheduler} = Reaper.Scheduler.start_link()
 
-    allow(Reaper.DataExtract.Processor.process(any()),
+    allow(Reaper.DataExtract.Processor.process(any(), any()),
       exec: fn _ingestion -> Process.sleep(10 * 60_000) end
     )
 

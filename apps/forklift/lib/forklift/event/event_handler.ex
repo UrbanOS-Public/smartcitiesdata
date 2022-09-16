@@ -13,7 +13,8 @@ defmodule Forklift.Event.EventHandler do
       data_ingest_end: 0,
       data_write_complete: 0,
       error_dataset_update: 0,
-      dataset_delete: 0
+      dataset_delete: 0,
+      data_extract_end: 0
     ]
 
   import Brook.ViewState
@@ -98,7 +99,7 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset, author: author}) do
-    Logger.debug("#{__MODULE__}: Deleting Datatset: #{dataset.id}")
+    Logger.debug("#{__MODULE__}: Deleting Dataset: #{dataset.id}")
 
     dataset_delete()
     |> add_event_count(author, dataset.id)
@@ -110,6 +111,29 @@ defmodule Forklift.Event.EventHandler do
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{dataset.id}, Reason: #{inspect(error)}")
     end
+  end
+
+  def handle_event(%Brook.Event{
+        type: data_extract_end(),
+        data: %{
+          "dataset_id" => dataset_id,
+          "extract_start_unix" => extract_start,
+          "ingestion_id" => ingestion_id,
+          "msgs_extracted" => msg_target
+        },
+        author: author
+      }) do
+    data_extract_end() |> add_event_count(author, dataset_id)
+
+    ingestion_status = Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start)
+
+    if ingestion_status == :ingestion_complete do
+      dataset = Forklift.Datasets.get!(dataset_id)
+
+      Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
+    end
+
+    :ok
   end
 
   defp delete_dataset(dataset) do

@@ -87,7 +87,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       allow Persistence.get_last_processed_index(@ingestion_id), return: -1
       allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
 
-      Processor.process(ingestion)
+      Processor.process(ingestion, DateTime.utc_now())
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
@@ -106,7 +106,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       allow Persistence.get_last_processed_index(@ingestion_id), return: -1
       allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
 
-      message_count = Processor.process(ingestion)
+      message_count = Processor.process(ingestion, DateTime.utc_now())
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
@@ -122,7 +122,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: ingestion.id})
       Cache.cache(ingestion.id, %{"a" => "one", "b" => "two", "c" => "three"})
 
-      Processor.process(ingestion)
+      Processor.process(ingestion, DateTime.utc_now())
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
       assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
@@ -173,7 +173,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         ]
       })
 
-    Processor.process(ingestion)
+    Processor.process(ingestion, DateTime.utc_now())
   end
 
   describe "process/2 happy path with extract steps" do
@@ -211,7 +211,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       }
 
       put_in(ingestion, [:extractSteps], [extract_step])
-      |> Processor.process()
+      |> Processor.process(DateTime.utc_now())
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
@@ -266,7 +266,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       ]
 
       put_in(ingestion, [:extractSteps], extract_steps)
-      |> Processor.process()
+      |> Processor.process(DateTime.utc_now())
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
@@ -300,7 +300,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         meck_options: [:passthrough]
 
       assert_raise RuntimeError, fn ->
-        Processor.process(ingestion)
+        Processor.process(ingestion, DateTime.utc_now())
       end
 
       assert false == File.exists?(@download_dir <> ingestion.id)
@@ -314,7 +314,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       log =
         capture_log(fn ->
           assert_raise RuntimeError, fn ->
-            Processor.process(ingestion)
+            Processor.process(ingestion, DateTime.utc_now())
           end
         end)
 
@@ -369,7 +369,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
           allow_duplicates: false
         })
 
-      Processor.process(provisioned_ingestion)
+      Processor.process(provisioned_ingestion, DateTime.utc_now())
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
