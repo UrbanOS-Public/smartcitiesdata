@@ -401,7 +401,11 @@ defmodule E2ETest do
           %{}
         )
 
-      assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar", "parsed" => "oo"}, 30_000)
+      assert_push(
+        "update",
+        %{"one" => true, "three" => 10, "two" => "foobar", "parsed" => "oo"},
+        30_000
+      )
     end
 
     test "forklift sends event to update last ingested time for streaming datasets", %{
