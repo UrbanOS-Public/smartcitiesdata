@@ -71,7 +71,7 @@ defmodule E2ETest do
         parameters: %{
           :sourceField => "two",
           :targetField => "parsed",
-          :regex => "^f(\w{2})bar"
+          :regex => "^f(\\w{2})bar"
         }
       })
 
@@ -243,6 +243,18 @@ defmodule E2ETest do
         {:ok, data} = SmartCity.Data.new(message.value)
 
         assert %{"one" => "true", "two" => "foobar", "three" => "10"} ==
+                 data.payload
+      end)
+    end
+
+    test "is transformed by alchemist", %{dataset: dataset} do
+      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset.id}"
+
+      eventually(fn ->
+        {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        {:ok, data} = SmartCity.Data.new(message.value)
+
+        assert %{"one" => true, "two" => "foobar", "three" => "10", "parsed" => "oo"} ==
                  data.payload
       end)
     end
