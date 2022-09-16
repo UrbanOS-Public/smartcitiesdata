@@ -140,8 +140,6 @@ defmodule E2ETest do
     end
 
     test "persists the organization for downstream use" do
-      base = Application.get_env(:paddle, Paddle)[:base]
-
       eventually(fn ->
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
@@ -199,7 +197,7 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{dataset: ds, ingestion: ingestion} do
+    test "via RESTful PUT", %{ingestion: ingestion} do
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
           {"Content-Type", "application/json"}
@@ -263,8 +261,8 @@ defmodule E2ETest do
                      "two" => "foobar",
                      "three" => 10,
                      "_ingestion_id" => ingestion.id,
-                     "os_partition" => get_current_yyyy_mm,
-                     "_extraction_start_time" => get_current_yyyy_mm_dd
+                     "os_partition" => get_current_yyyy_mm(),
+                     "_extraction_start_time" => get_current_yyyy_mm_dd()
                    }
                  ] ==
                    query(
@@ -343,19 +341,31 @@ defmodule E2ETest do
         fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
+          query_result =
+            query(
+              "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
+                table
+              }",
+              true
+            )
+
+          table_contents =
+            case query_result do
+              {:error, _} ->
+                []
+
+              rows ->
+                rows
+            end
+
           assert %{
                    "one" => true,
                    "two" => "foobar",
                    "three" => 10,
                    "_ingestion_id" => ingestion.id,
-                   "os_partition" => get_current_yyyy_mm,
-                   "_extraction_start_time" => get_current_yyyy_mm_dd
-                 } in query(
-                   "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
-                     table
-                   }",
-                   true
-                 )
+                   "os_partition" => get_current_yyyy_mm(),
+                   "_extraction_start_time" => get_current_yyyy_mm_dd()
+                 } in table_contents
         end,
         5_000
       )

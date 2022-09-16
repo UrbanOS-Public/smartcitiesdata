@@ -83,8 +83,8 @@ defmodule Reaper.Event.EventHandlerTest do
 
       Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
 
-      allow Reaper.DataExtract.Processor.process(any()),
-        exec: fn processor_ingestion ->
+      allow Reaper.DataExtract.Processor.process(any(), any()),
+        exec: fn processor_ingestion, timestamp ->
           [{_pid, _}] = Horde.Registry.lookup(Reaper.Horde.Registry, ingestion.id)
           send(test_pid, {:registry, processor_ingestion})
         end
@@ -138,7 +138,7 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send #{data_extract_end()} when processor is completed" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
       ingestion = TDG.create_ingestion(%{id: "ds3"})
       Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
       Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
