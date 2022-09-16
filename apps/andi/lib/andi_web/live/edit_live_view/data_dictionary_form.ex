@@ -117,7 +117,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
                   <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
-                  <div class="data-dictionary-form__remove-field-button" phx-click="remove_data_dictionary_field"></div>
+                  <button id="remove-button" name="remove-button" class="data-dictionary-form__remove-field-button shadow-none" phx-click="remove_data_dictionary_field"></button>
                 </div>
               </div>
 

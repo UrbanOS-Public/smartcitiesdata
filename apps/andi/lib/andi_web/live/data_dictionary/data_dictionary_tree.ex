@@ -28,7 +28,16 @@ defmodule AndiWeb.DataDictionary.Tree do
           <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
 
           <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
-          <div class="data-dictionary-tree-field__action" phx-click="<%= if is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected" %>" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>"></div>
+          <%= checkbox(field, :selected_modifier,
+              [class: "data-dictionary-tree-field__action",
+              checked: selected_modifier == "selected",
+              "phx-click": if(is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected"),
+              "phx-value-field-id": input_value(field, :id),
+              "phx-value-index": field.index,
+              "phx-value-name": field.name,
+              "phx-value-id": field.id,
+              "phx-target": "##{@root_id}"]) %>
+
           <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>">
               <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
               <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
@@ -49,12 +58,14 @@ defmodule AndiWeb.DataDictionary.Tree do
   end
 
   def handle_event("toggle_expanded", %{"field-id" => field_id}, %{assigns: %{expansion_map: expansion_map}} = socket) do
+    IO.inspect "hello, world 1"
     updated_expansion_map = toggle_expansion(field_id, expansion_map)
 
     {:noreply, assign(socket, expansion_map: updated_expansion_map)}
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
+    IO.inspect "hello, world 2"
     assign_current_dictionary_field(field_id, index, name, id)
     {:noreply, assign(socket, selected_field_id: field_id, new_field_initial_render: false)}
   end

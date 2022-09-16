@@ -199,6 +199,8 @@ $tick-height: 1rem + $field-padding - 0.44;
       height: 24px;
       background-image: url('/static/images/delete_field.svg');
       cursor: pointer;
+      border: none;
+      background-color: transparent;
   }
 
   .data-dictionary-form__remove-field-button {
