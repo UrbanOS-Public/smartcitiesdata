@@ -19,7 +19,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_access_groups_path()) %>
     <div class="edit-page" id="access-groups-edit-page">
       <div class="edit-access-group-title">
-        <h2 class="component-title-text access-groups-component-title-text">Edit Access Group </h2>
+        <h1 class="component-title-text access-groups-component-title-text">Edit Access Group </h1>
       </div>
 
       <hr class="search-modal-divider">

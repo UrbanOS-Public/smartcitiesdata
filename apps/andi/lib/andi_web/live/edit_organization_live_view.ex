@@ -21,7 +21,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
     <div id="edit-organization-live-view" class="organization-edit-page edit-page">
       <div class="edit-organization-title">
-        <h2 class="component-title-text">Edit Organization </h2>
+        <h1 class="component-title-text">Edit Organization </h1>
       </div>
 
       <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>

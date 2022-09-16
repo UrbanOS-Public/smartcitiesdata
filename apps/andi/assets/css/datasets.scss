@@ -1,3 +1,10 @@
+.edit-dataset-title {
+  display: inline-flex;
+  height: 3.5rem;
+  border-bottom: 1px solid $color-form-border;
+  margin-right: 2rem;
+}
+
 .datasets-view {
     flex: 1;
     background: $color-content-background;

@@ -21,7 +21,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       <%= f = form_for @changeset, "" %>
         <%= hidden_input(f, :sourceFormat) %>
         <div class="edit-ingestion-title">
-          <h2 class="component-title-text">Define Data Ingestion</h2>
+          <h1 class="component-title-text">Define Data Ingestion</h1>
         </div>
 
         <div>

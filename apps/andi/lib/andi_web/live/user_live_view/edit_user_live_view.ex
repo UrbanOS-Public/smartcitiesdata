@@ -18,7 +18,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
       <div id="edit-user-live-view" class="user-edit-page edit-page">
           <div class="edit-user-title">
-              <h2 class="component-title-text">Edit User </h2>
+              <h1 class="component-title-text">Edit User </h1>
           </div>
 
           <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data, phx_submit: :associate] %>
