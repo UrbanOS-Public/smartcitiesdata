@@ -66,6 +66,7 @@ defmodule E2ETest do
 
     regex_transformation =
       TDG.create_transformation(%{
+        name: "Some Test Transformation",
         type: "regex_extract",
         sequence: 1,
         parameters: %{
