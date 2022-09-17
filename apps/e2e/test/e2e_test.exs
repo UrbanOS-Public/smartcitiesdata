@@ -64,9 +64,21 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
-    regex_transformation =
+    ingest_regex_transformation =
       TDG.create_transformation(%{
-        name: "Some Test Transformation",
+        name: "Ingest Transformation",
+        type: "regex_extract",
+        sequence: 1,
+        parameters: %{
+          :sourceField => "two",
+          :targetField => "parsed",
+          :regex => "^f(\\w{2})bar"
+        }
+      })
+
+    streaming_regex_transformation =
+      TDG.create_transformation(%{
+        name: "Streaming Transformation",
         type: "regex_extract",
         sequence: 1,
         parameters: %{
@@ -101,7 +113,7 @@ defmodule E2ETest do
             assigns: %{}
           }
         ],
-        transformations: [regex_transformation]
+        transformations: [ingest_regex_transformation]
       })
 
     streaming_ingestion =
@@ -129,7 +141,7 @@ defmodule E2ETest do
             assigns: %{}
           }
         ],
-        transformations: [regex_transformation]
+        transformations: [streaming_regex_transformation]
       })
 
     [
