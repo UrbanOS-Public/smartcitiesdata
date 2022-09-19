@@ -1,8 +1,9 @@
 .transformation-header {
   border: 1px solid #C9C6C7;
   padding: .6rem 1.6rem;
+
   &:hover {
-      cursor: pointer;
+    cursor: pointer;
   }
 }
 
@@ -20,8 +21,9 @@
   margin-left: 1rem;
   border: none;
   background-color: transparent;
+
   &:hover {
-      cursor: pointer;
+    cursor: pointer;
   }
 }
 
@@ -65,6 +67,7 @@
     max-height: 0;
     opacity: 0%
   }
+
   to {
     max-height: 277px;
     opacity: 100%
@@ -72,5 +75,7 @@
 }
 
 @media screen and (prefers-reduced-motion: reduce) {
-  .transformation-item { animation: none !important; }
+  .transformation-item {
+    animation: none !important;
+  }
 }

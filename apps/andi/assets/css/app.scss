@@ -28,7 +28,7 @@ body {
   align-items: center;
   display: flex;
   z-index: 998;
-  background-color: rgba(255,255,255,0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   top: 0;
   left: 0;
   bottom: 0;
@@ -37,7 +37,7 @@ body {
 
 .error-msg {
   color: $color-error;
-  display: block; 
+  display: block;
   margin: 5px 0 5px 0;
 }
 
@@ -77,9 +77,9 @@ body {
 }
 
 .input__help-text {
-    margin-left: 1rem;
-    font-style: italic;
-    color: #7f7676;
+  margin-left: 1rem;
+  font-style: italic;
+  color: #7f7676;
 }
 
 .textarea {
@@ -97,8 +97,8 @@ body {
 }
 
 .select[disabled] {
-    background-color: #f3f3f3;
-    color: $disabled-background;
+  background-color: #f3f3f3;
+  color: $disabled-background;
 }
 
 @import "./access-groups.scss";

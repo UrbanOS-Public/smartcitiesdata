@@ -58,14 +58,12 @@ defmodule AndiWeb.DataDictionary.Tree do
   end
 
   def handle_event("toggle_expanded", %{"field-id" => field_id}, %{assigns: %{expansion_map: expansion_map}} = socket) do
-    IO.inspect "hello, world 1"
     updated_expansion_map = toggle_expansion(field_id, expansion_map)
 
     {:noreply, assign(socket, expansion_map: updated_expansion_map)}
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
-    IO.inspect "hello, world 2"
     assign_current_dictionary_field(field_id, index, name, id)
     {:noreply, assign(socket, selected_field_id: field_id, new_field_initial_render: false)}
   end
