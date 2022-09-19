@@ -46,13 +46,13 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
               <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
             </div>
 
+            <%= live_component(@socket, KeyValueEditor, id: "step_#{@id}__key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
+
             <div class="extract-auth-step-form__body">
               <%= label(f, :body, DisplayNames.get(:body),  class: "label") %>
               <%= textarea(f, :body, id: "step_#{@id}__auth_url", class: "input full-width", phx_hook: "prettify") %>
               <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
             </div>
-
-            <%= live_component(@socket, KeyValueEditor, id: "step_#{@id}__key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
 
             <div class="extract-auth-step-form__path">
               <%= label(f, :path, DisplayNames.get(:path),  class: "label label--required") %>

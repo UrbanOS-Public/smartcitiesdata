@@ -269,3 +269,14 @@ $button-padding: 10px 50px;
 .btn--right {
     margin-left: auto;
 }
+
+.btn--transparent {
+    border: none;
+    background-color: transparent;
+    color: black;
+}
+
+.btn--transparent:hover {
+    background-color: transparent;
+    color: black;
+}

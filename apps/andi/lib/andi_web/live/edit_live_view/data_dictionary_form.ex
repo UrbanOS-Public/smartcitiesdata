@@ -67,10 +67,12 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Data Dictionary</h2>
-          <div class="component-title-action">
-            <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
-            <div class="component-title-icon--<%= @visibility %>"></div>
-          </div>
+          <button type="button" class="btn btn--right btn--transparent">
+            <div class="component-title-action">
+              <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+              <div class="component-title-icon--<%= @visibility %>"></div>
+            </div>
+          </button>
         </div>
       </div>
 
