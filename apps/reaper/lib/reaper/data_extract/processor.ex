@@ -27,8 +27,8 @@ defmodule Reaper.DataExtract.Processor do
   getter(:elsa_brokers, generic: true)
   getter(:output_topic_prefix, generic: true)
 
-  @spec process(SmartCity.Ingestion.t()) :: Redix.Protocol.redis_value() | no_return()
-  def process(%SmartCity.Ingestion{} = unprovisioned_ingestion) do
+  @spec process(SmartCity.Ingestion.t(), DateTime.t()) :: Redix.Protocol.redis_value() | no_return()
+  def process(%SmartCity.Ingestion{} = unprovisioned_ingestion, extract_time) do
     Process.flag(:trap_exit, true)
 
     ingestion =
@@ -38,16 +38,10 @@ defmodule Reaper.DataExtract.Processor do
     validate_destination(ingestion)
     validate_cache(ingestion)
 
-    generated_time_stamp = DateTime.utc_now()
-
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
-
-    {:ok, schema_stage} =
-      SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
-
-    {:ok, load_stage} =
-      LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: generated_time_stamp)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion)
+    {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: extract_time)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)

@@ -19,7 +19,8 @@ defmodule E2ETest do
       schema: [
         %{name: "one", type: "boolean"},
         %{name: "two", type: "string"},
-        %{name: "three", type: "integer"}
+        %{name: "three", type: "integer"},
+        %{name: "parsed", type: "string"}
       ],
       sourceType: "ingest",
       sourceUrl: "http://example.com",
@@ -63,6 +64,30 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
+    ingest_regex_transformation =
+      TDG.create_transformation(%{
+        name: "Ingest Transformation",
+        type: "regex_extract",
+        sequence: 1,
+        parameters: %{
+          :sourceField => "two",
+          :targetField => "parsed",
+          :regex => "^f(\\w{2})bar"
+        }
+      })
+
+    streaming_regex_transformation =
+      TDG.create_transformation(%{
+        name: "Streaming Transformation",
+        type: "regex_extract",
+        sequence: 1,
+        parameters: %{
+          :sourceField => "two",
+          :targetField => "parsed",
+          :regex => "^f(\\w{2})bar"
+        }
+      })
+
     ingestion =
       TDG.create_ingestion(%{
         targetDataset: dataset.id,
@@ -87,7 +112,8 @@ defmodule E2ETest do
             },
             assigns: %{}
           }
-        ]
+        ],
+        transformations: [ingest_regex_transformation]
       })
 
     streaming_ingestion =
@@ -114,7 +140,8 @@ defmodule E2ETest do
             },
             assigns: %{}
           }
-        ]
+        ],
+        transformations: [streaming_regex_transformation]
       })
 
     [
@@ -140,8 +167,6 @@ defmodule E2ETest do
     end
 
     test "persists the organization for downstream use" do
-      base = Application.get_env(:paddle, Paddle)[:base]
-
       eventually(fn ->
         with resp <- HTTPoison.get!("http://localhost:4000/api/v1/organizations"),
              [org] <- Jason.decode!(resp.body) do
@@ -167,6 +192,7 @@ defmodule E2ETest do
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
         %{"Column" => "three", "Comment" => "", "Extra" => "", "Type" => "integer"},
+        %{"Column" => "parsed", "Comment" => "", "Extra" => "", "Type" => "varchar"},
         %{
           "Column" => "_extraction_start_time",
           "Comment" => "",
@@ -199,7 +225,7 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{dataset: ds, ingestion: ingestion} do
+    test "via RESTful PUT", %{ingestion: ingestion} do
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
           {"Content-Type", "application/json"}
@@ -229,7 +255,20 @@ defmodule E2ETest do
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
 
-        assert %{"one" => "true", "two" => "foobar", "three" => "10"} == data.payload
+        assert %{"one" => "true", "two" => "foobar", "three" => "10"} ==
+                 data.payload
+      end)
+    end
+
+    test "is transformed by alchemist", %{dataset: dataset} do
+      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset.id}"
+
+      eventually(fn ->
+        {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        {:ok, data} = SmartCity.Data.new(message.value)
+
+        assert %{"one" => "true", "two" => "foobar", "three" => "10", "parsed" => "oo"} ==
+                 data.payload
       end)
     end
 
@@ -240,7 +279,8 @@ defmodule E2ETest do
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
 
-        assert %{"one" => true, "two" => "foobar", "three" => 10} == data.payload
+        assert %{"one" => true, "two" => "foobar", "three" => 10, "parsed" => "oo"} ==
+                 data.payload
       end)
     end
 
@@ -255,13 +295,6 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
-        end,
-        5_000
-      )
-
-      eventually(
-        fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
 
           assert [
@@ -269,13 +302,14 @@ defmodule E2ETest do
                      "one" => true,
                      "two" => "foobar",
                      "three" => 10,
+                     "parsed" => "oo",
                      "_ingestion_id" => ingestion.id,
-                     "os_partition" => get_current_yyyy_mm,
-                     "_extraction_start_time" => get_current_yyyy_mm_dd
+                     "os_partition" => get_current_yyyy_mm(),
+                     "_extraction_start_time" => get_current_yyyy_mm_dd()
                    }
                  ] ==
                    query(
-                     "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
+                     "select one, two, three, parsed, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
                        table
                      }",
                      true
@@ -322,7 +356,8 @@ defmodule E2ETest do
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
 
-        assert %{"one" => "true", "two" => "foobar", "three" => "10"} == data.payload
+        assert %{"one" => "true", "two" => "foobar", "three" => "10"} ==
+                 data.payload
       end)
     end
 
@@ -333,7 +368,8 @@ defmodule E2ETest do
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
 
-        assert %{"one" => true, "two" => "foobar", "three" => 10} == data.payload
+        assert %{"one" => true, "two" => "foobar", "three" => 10, "parsed" => "oo"} ==
+                 data.payload
       end)
     end
 
@@ -348,28 +384,34 @@ defmodule E2ETest do
 
       eventually(
         fn ->
-          assert {:ok, _id} = Forklift.Jobs.DataMigration.compact(ds)
-        end,
-        10_000
-      )
-
-      eventually(
-        fn ->
           assert [%{"Table" => table}] == query("show tables like '#{table}'", true)
+
+          query_result =
+            query(
+              "select one, two, three, parsed, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
+                table
+              }",
+              true
+            )
+
+          table_contents =
+            case query_result do
+              {:error, _} ->
+                []
+
+              rows ->
+                rows
+            end
 
           assert %{
                    "one" => true,
                    "two" => "foobar",
                    "three" => 10,
+                   "parsed" => "oo",
                    "_ingestion_id" => ingestion.id,
-                   "os_partition" => get_current_yyyy_mm,
-                   "_extraction_start_time" => get_current_yyyy_mm_dd
-                 } in query(
-                   "select one, two, three, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
-                     table
-                   }",
-                   true
-                 )
+                   "os_partition" => get_current_yyyy_mm(),
+                   "_extraction_start_time" => get_current_yyyy_mm_dd()
+                 } in table_contents
         end,
         5_000
       )
@@ -384,7 +426,11 @@ defmodule E2ETest do
           %{}
         )
 
-      assert_push("update", %{"one" => true, "three" => 10, "two" => "foobar"}, 30_000)
+      assert_push(
+        "update",
+        %{"one" => true, "three" => 10, "two" => "foobar", "parsed" => "oo"},
+        30_000
+      )
     end
 
     test "forklift sends event to update last ingested time for streaming datasets", %{

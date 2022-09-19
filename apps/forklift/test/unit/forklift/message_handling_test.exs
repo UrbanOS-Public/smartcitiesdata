@@ -14,6 +14,7 @@ defmodule Forklift.MessageHandlingTest do
 
   setup do
     Brook.Test.register(@instance_name)
+    allow(Forklift.IngestionProgress.new_messages(any(), any(), any()), return: :in_progress)
     :ok
   end
 

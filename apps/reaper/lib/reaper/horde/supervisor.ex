@@ -36,15 +36,15 @@ defmodule Reaper.Horde.Supervisor do
   def start_data_extract(%SmartCity.Ingestion{} = ingestion) do
     Logger.debug(fn -> "#{__MODULE__} Start data extract process for ingestion #{ingestion.id}" end)
 
-    ingestion_start = %{
-      ingestion_start: DateTime.utc_now()
-    }
+    extract_start = DateTime.utc_now()
 
     send_extract_complete_event = fn processor_result ->
-      message =
-        ingestion
-        |> Map.merge(ingestion_start)
-        |> Map.merge(%{msg_count: processor_result})
+      message = %{
+        ingestion_id: ingestion.id,
+        dataset_id: ingestion.targetDataset,
+        msgs_extracted: processor_result,
+        extract_start_unix: extract_start |> DateTime.to_unix()
+      }
 
       Brook.Event.send(@instance_name, data_extract_end(), :reaper, message)
     end
@@ -52,7 +52,7 @@ defmodule Reaper.Horde.Supervisor do
     start_child(
       {Reaper.RunTask,
        name: ingestion.id,
-       mfa: {Reaper.DataExtract.Processor, :process, [ingestion]},
+       mfa: {Reaper.DataExtract.Processor, :process, [ingestion, extract_start]},
        completion_callback: send_extract_complete_event}
     )
   end

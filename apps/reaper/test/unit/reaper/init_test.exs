@@ -29,7 +29,7 @@ defmodule Reaper.InitTest do
 
   describe "Extractions" do
     test "starts all extract processes that should be running" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
 
       ingestion = TDG.create_ingestion(%{id: "ds1", sourceType: "ingest"})
 
@@ -42,12 +42,12 @@ defmodule Reaper.InitTest do
       Reaper.Init.run()
 
       eventually(fn ->
-        assert_called Reaper.DataExtract.Processor.process(ingestion)
+        assert_called Reaper.DataExtract.Processor.process(ingestion, any())
       end)
     end
 
     test "does not start successfully completed extract processes" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
 
       start_time = DateTime.utc_now()
       end_time = start_time |> DateTime.add(3600, :second)
@@ -62,11 +62,11 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      refute_called Reaper.DataExtract.Processor.process(ingestion)
+      refute_called Reaper.DataExtract.Processor.process(ingestion, any())
     end
 
     test "does not start a ingestion that is disabled" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
 
       start_time = DateTime.utc_now()
 
@@ -80,11 +80,11 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      refute_called Reaper.DataExtract.Processor.process(ingestion)
+      refute_called Reaper.DataExtract.Processor.process(ingestion, any())
     end
 
     test "starts data extract process when started_timestamp > last_fetched_timestamp" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
 
       start_time = DateTime.utc_now()
       end_time = start_time |> DateTime.add(-3600, :second)
@@ -100,12 +100,12 @@ defmodule Reaper.InitTest do
       Reaper.Init.run()
 
       eventually(fn ->
-        assert_called Reaper.DataExtract.Processor.process(ingestion)
+        assert_called Reaper.DataExtract.Processor.process(ingestion, any())
       end)
     end
 
     test "does not start extract process when started_timestamp was not available" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
       dataset = TDG.create_dataset(id: "ds1", technical: %{sourceType: "ingest"})
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -114,7 +114,7 @@ defmodule Reaper.InitTest do
 
       Reaper.Init.run()
 
-      refute_called Reaper.DataExtract.Processor.process(dataset)
+      refute_called Reaper.DataExtract.Processor.process(dataset, any())
     end
   end
 

@@ -24,6 +24,28 @@ defmodule Forklift.Jobs.JobUtils do
     end
   end
 
+  def verify_extraction_count_in_table(table, ingestion_id, extract_start, target_count, message) do
+    with {:ok, actual_count} <-
+           PrestigeHelper.count_query(
+             "select count(1) from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
+               extract_start
+             })"
+           ),
+         {:ok, _} <- check_count(actual_count, target_count) do
+      {:ok, actual_count}
+    else
+      {:error, actual_count} when is_number(actual_count) ->
+        {:error,
+         "Table #{table} with count #{actual_count} did not match expected record count of #{target_count} while trying to verify that #{
+           message
+         }"}
+
+      {:error, error} ->
+        {:error,
+         "Could not verify record count of table #{table} while trying to verify that #{message}: #{inspect(error)}"}
+    end
+  end
+
   defp check_count(actual_count, target_count) do
     case actual_count == target_count do
       true ->
