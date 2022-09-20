@@ -117,7 +117,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
       render_change(view, "validate", %{"form_data" => form_data})
 
-      error = element(view, "#targetDatasetName-error-msg", "Please enter a valid target dataset.") |> render()
+      error = element(view, "#targetDataset-error-msg", "Please enter a valid target dataset.") |> render()
       refute error == nil
     end
 
@@ -131,7 +131,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
       render_change(view, "validate", %{"form_data" => form_data})
 
       error =
-        element(view, "#targetDatasetName-error-msg", "Dataset with id: id_of_deleted_dataset does not exist. It may have been deleted.")
+        element(view, "#targetDataset-error-msg", "Dataset with id: id_of_deleted_dataset does not exist. It may have been deleted.")
         |> render()
 
       refute error == nil
