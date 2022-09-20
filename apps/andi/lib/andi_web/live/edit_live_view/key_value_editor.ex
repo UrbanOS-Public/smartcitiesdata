@@ -34,7 +34,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
             <%= text_input(f, :value, class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}") %>
           </td>
           <td class="url-form-table__cell url-form-table__cell--delete">
-            <button type="button" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="remove" phx-target="<%= event_handler_target %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
+            <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= event_handler_target %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
               <img src="/images/remove.svg" alt="Remove"/>
             </button>
           </td>
