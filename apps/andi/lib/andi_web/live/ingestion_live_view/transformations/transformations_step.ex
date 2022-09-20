@@ -4,7 +4,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   """
   use Phoenix.LiveView
 
-  # use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.TransformationFormSchema
   require Logger
 
   alias Andi.InputSchemas.InputConverter
