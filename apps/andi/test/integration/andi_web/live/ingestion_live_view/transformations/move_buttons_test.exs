@@ -132,14 +132,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
 
   defp move_up(transformation, view) do
     find_live_child(view, "transformations_form_editor")
-    |> find_live_child("transform-#{transformation.id}")
     |> element(".move-up-#{transformation.id}")
     |> render_click()
   end
 
   defp move_down(transformation, view) do
     find_live_child(view, "transformations_form_editor")
-    |> find_live_child("transform-#{transformation.id}")
     |> element(".move-down-#{transformation.id}")
     |> render_click()
   end
