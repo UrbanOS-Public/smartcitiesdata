@@ -57,11 +57,19 @@ defmodule Reaper.Event.EventHandler do
     :ok
   end
 
-  def handle_event(%Brook.Event{type: data_extract_end(), data: %SmartCity.Ingestion{} = ingestion}) do
+  def handle_event(%Brook.Event{
+        type: data_extract_end(),
+        data: %{
+          "dataset_id" => dataset_id,
+          "extract_start_unix" => _extract_start,
+          "ingestion_id" => ingestion_id,
+          "msgs_extracted" => _msg_target
+        }
+      }) do
     data_extract_end()
-    |> add_event_count(ingestion.targetDataset)
+    |> add_event_count(dataset_id)
 
-    Extractions.update_last_fetched_timestamp(ingestion.id)
+    Extractions.update_last_fetched_timestamp(ingestion_id)
   end
 
   defp add_event_count(event_type, dataset_id) do

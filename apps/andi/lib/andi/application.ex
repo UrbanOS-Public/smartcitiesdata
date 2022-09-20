@@ -28,6 +28,7 @@ defmodule Andi.Application do
 
     set_auth0_credentials()
     set_aws_keys()
+    set_other_env_variables()
 
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
     Supervisor.start_link(children, opts)
@@ -116,6 +117,19 @@ defmodule Andi.Application do
   def set_aws_keys() do
     Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID", true))
     Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET", true))
+  end
+
+  def set_other_env_variables() do
+    Application.put_env(:andi, :logo_url, get_logo_url())
+  end
+
+  def get_logo_url() do
+    env_url = get_env_variable("ANDI_LOGO_URL", false)
+
+    case is_nil(env_url) do
+      false -> env_url
+      true -> "/images/UrbanOS.svg"
+    end
   end
 
   defp guardian_db_sweeper do

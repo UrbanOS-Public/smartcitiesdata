@@ -83,8 +83,8 @@ defmodule Reaper.Event.EventHandlerTest do
 
       Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
 
-      allow Reaper.DataExtract.Processor.process(any()),
-        exec: fn processor_ingestion ->
+      allow Reaper.DataExtract.Processor.process(any(), any()),
+        exec: fn processor_ingestion, timestamp ->
           [{_pid, _}] = Horde.Registry.lookup(Reaper.Horde.Registry, ingestion.id)
           send(test_pid, {:registry, processor_ingestion})
         end
@@ -126,10 +126,10 @@ defmodule Reaper.Event.EventHandlerTest do
 
     test "should not send ingest_start event for data that updates more than once per minute on subsequent events" do
       allow Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid}
-      ingestion = TDG.create_ingestion(%{id: "ds2", cadence: "* 2 24 * * *"})
+      ingestion = TDG.create_ingestion(%{id: "in1", targetDataset: "ds2", cadence: "* 2 24 * * *"})
       Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
       Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
-      Brook.Test.send(@instance_name, data_extract_end(), :reaper, ingestion)
+      send_data_extract_end(ingestion.id, ingestion.targetDataset, 0, Timex.to_unix(Timex.now()))
 
       assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}
 
@@ -138,7 +138,7 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send #{data_extract_end()} when processor is completed" do
-      allow Reaper.DataExtract.Processor.process(any()), return: :ok
+      allow Reaper.DataExtract.Processor.process(any(), any()), return: :ok
       ingestion = TDG.create_ingestion(%{id: "ds3"})
       Brook.Test.with_event(@instance_name, fn -> Reaper.Collections.Extractions.update_ingestion(ingestion) end)
       Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
@@ -151,8 +151,8 @@ defmodule Reaper.Event.EventHandlerTest do
     test "should persist last fetched timestamp" do
       date = DateTime.utc_now()
       allow DateTime.utc_now(), return: date, meck_options: [:passthrough]
-      ingestion = TDG.create_ingestion(%{id: "ds1"})
-      Brook.Test.send(@instance_name, data_extract_end(), "testing", ingestion)
+      ingestion = TDG.create_ingestion(%{id: "ing1", targetDataset: "ds1"})
+      send_data_extract_end(ingestion.id, ingestion.targetDataset, 0, Timex.to_unix(date))
 
       eventually(fn ->
         extraction = Brook.get!(@instance_name, :extractions, ingestion.id)
@@ -192,6 +192,17 @@ defmodule Reaper.Event.EventHandlerTest do
                       }},
                      10_000
     end
+  end
+
+  defp send_data_extract_end(ingestion_id, dataset_id, msgs_count, unix_time) do
+    msg = %{
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id,
+      msgs_extracted: msgs_count,
+      extract_start_unix: unix_time
+    }
+
+    Brook.Test.send(@instance_name, data_extract_end(), "testing", msg)
   end
 
   defp kill(pid) do

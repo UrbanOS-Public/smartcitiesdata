@@ -47,7 +47,8 @@ defmodule Forklift.Jobs.PartitionedCompaction do
            ),
          {:ok, _} <- reinsert_compacted_data(system_name, compact_table),
          {:ok, _} <- verify_count(system_name, initial_count, "main table once again contains all records"),
-         {:ok, _} <- PrestigeHelper.drop_table(compact_table) do
+         {:ok, _} <- PrestigeHelper.drop_table(compact_table),
+         remove_stale_data_from_json_table(system_name) do
       Logger.info("Successfully compacted partition #{partition} in dataset #{id}")
       update_compaction_status(id, :ok)
       {:ok, id}
@@ -84,6 +85,13 @@ defmodule Forklift.Jobs.PartitionedCompaction do
 
   defp reinsert_compacted_data(table, compact_table) do
     "insert into #{table} select * from #{compact_table}"
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp remove_stale_data_from_json_table(system_name) do
+    seven_days_ago = (Timex.now() |> Timex.to_unix()) - 604_800
+
+    "delete from #{system_name <> "__json"} where _extraction_start_time < #{seven_days_ago}"
     |> PrestigeHelper.execute_query()
   end
 
