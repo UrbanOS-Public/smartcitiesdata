@@ -123,7 +123,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
     test "shows an error if there is a target dataset that does not exist in the database" do
       ingestion = TDG.create_ingestion(%{})
-      form_data = %{"targetDatasetName" => "id_of_deleted_dataset"}
+      form_data = %{"targetDataset" => "id_of_deleted_dataset"}
       allow Datasets.get(any()), return: nil
 
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
