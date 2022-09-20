@@ -39,11 +39,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
       click_form_header(view)
 
       assert element(view, ".component-edit-section--expanded") |> has_element?
+      assert element(view, ".component-number--expanded") |> has_element?
+      assert element(view, ".component-number-status--expanded") |> has_element?
       refute element(view, ".component-edit-section--collapsed") |> has_element?
 
       click_form_header(view)
 
       assert element(view, ".component-edit-section--collapsed") |> has_element?
+      assert element(view, ".component-number--valid") |> has_element?
+      assert element(view, ".component-number-status--valid") |> has_element?
       refute element(view, ".component-edit-section--expanded") |> has_element?
     end
 
