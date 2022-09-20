@@ -72,6 +72,14 @@ For integration testing, Andi encapsulates its external dependencies in Docker i
 
 `mix test.integration`
 
+Individual files can be run using the following command:
+
+`mix test.integration /path/to/file.exs`
+
+Individual tests can be run by adding the test's line number to the end of the file:
+
+`mix test.integration /path/to/file.exs:10`
+
 ## Documentation 
 
 For details on how to use the ANDI API, please review the Postman collection located [here](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/apps/andi/ANDI.postman_collection.json).
