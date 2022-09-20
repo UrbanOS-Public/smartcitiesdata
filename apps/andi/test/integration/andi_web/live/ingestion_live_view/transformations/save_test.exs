@@ -123,6 +123,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
 
   defp find_transformation_id(html) do
     {:ok, document} = Floki.parse_document(html)
+
     Floki.find(document, "#transformation-forms")
     |> Floki.find("[data-phx-view=\"IngestionLiveView.Transformations.TransformationForm\"]")
     |> Floki.attribute("id")
@@ -132,6 +133,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
 
   defp edit_transformation(view, transformation_id, data) do
     data = %{"form_data" => data}
+
     find_live_child(view, "transformations_form_editor")
     |> find_live_child("transform-#{transformation_id}")
     |> element(".transformation-item")
@@ -147,26 +149,35 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
 
   defp transformation_has_name?(html, expected_name) do
     {:ok, document} = Floki.parse_document(html)
-    actual_name = Floki.find(document, ".transformation-name")
-    |> Floki.attribute("value")
-    |> List.first()
+
+    actual_name =
+      Floki.find(document, ".transformation-name")
+      |> Floki.attribute("value")
+      |> List.first()
+
     actual_name == expected_name
   end
 
   defp transformation_has_type?(html, expected_type) do
     {:ok, document} = Floki.parse_document(html)
-    actual_type = Floki.find(document, ".transformation-type")
-    |> Floki.find("option:checked")
-    |> Floki.attribute("value")
-    |> List.first()
+
+    actual_type =
+      Floki.find(document, ".transformation-type")
+      |> Floki.find("option:checked")
+      |> Floki.attribute("value")
+      |> List.first()
+
     actual_type == expected_type
   end
 
   defp transformation_has_parameter?(html, parameter, expected_value) do
     {:ok, document} = Floki.parse_document(html)
-    actual_value = Floki.find(document, "#form_data_#{parameter}")
-    |> Floki.attribute("value")
-    |> List.first()
+
+    actual_value =
+      Floki.find(document, "#form_data_#{parameter}")
+      |> Floki.attribute("value")
+      |> List.first()
+
     actual_value == expected_value
   end
 end

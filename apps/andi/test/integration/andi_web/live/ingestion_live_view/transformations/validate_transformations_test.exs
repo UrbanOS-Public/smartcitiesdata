@@ -77,6 +77,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.ValidateTransformationsTest 
 
   defp find_transformation_id(html) do
     {:ok, document} = Floki.parse_document(html)
+
     Floki.find(document, "#transformation-forms")
     |> Floki.find("[data-phx-view=\"IngestionLiveView.Transformations.TransformationForm\"]")
     |> Floki.attribute("id")
@@ -86,6 +87,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.ValidateTransformationsTest 
 
   defp edit_transformation(view, transformation_id, data) do
     data = %{"form_data" => data}
+
     find_live_child(view, "transformations_form_editor")
     |> find_live_child("transform-#{transformation_id}")
     |> element(".transformation-item")

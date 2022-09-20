@@ -78,7 +78,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
         %{assigns: %{transformations: transformations}} = socket
       ) do
-        update_kept_transformations(transformations)
+    update_kept_transformations(transformations)
     delete_discarded_transformations(transformations, ingestion_id)
     {:noreply, socket}
   end
@@ -87,19 +87,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     {:noreply, socket}
   end
 
-
   def handle_info(
-    %{topic: "transformation", event: "changed", payload: %{transformation_changeset: new_changeset}},
-    %{assigns: %{transformation_changesets: transformation_changesets}} = socket
-  ) do
-
-    updated_changesets = Enum.map(transformation_changesets, fn changeset ->
-      if changeset.changes.id == new_changeset.changes.id do
-         new_changeset
-      else
-        changeset
-      end
-    end)
+        %{topic: "transformation", event: "changed", payload: %{transformation_changeset: new_changeset}},
+        %{assigns: %{transformation_changesets: transformation_changesets}} = socket
+      ) do
+    updated_changesets =
+      Enum.map(transformation_changesets, fn changeset ->
+        if changeset.changes.id == new_changeset.changes.id do
+          new_changeset
+        else
+          changeset
+        end
+      end)
 
     {:noreply, assign(socket, transformation_changesets: updated_changesets)}
   end
@@ -179,11 +178,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
   end
 
   defp update_validation_status(transformation_changesets, visibility) do
-    updated_changesets = Enum.map(transformation_changesets, fn changeset ->
-      Transformation.changeset(changeset.changes)
-    end)
+    updated_changesets =
+      Enum.map(transformation_changesets, fn changeset ->
+        Transformation.changeset(changeset.changes)
+      end)
 
     all_changesets_valid = Enum.map(updated_changesets, fn changeset -> changeset.valid? end) |> Enum.all?()
+
     cond do
       visibility == "expanded" -> "expanded"
       all_changesets_valid -> "valid"

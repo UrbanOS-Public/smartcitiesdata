@@ -69,7 +69,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     new_changeset = Transformation.changeset_from_form_data(form_data)
     AndiWeb.Endpoint.broadcast_from(self(), "transformation", "changed", %{transformation_changeset: new_changeset})
 
-    {:noreply, assign(socket, transformation_changeset: new_changeset, transformation_type: form_data["type"], transformation_name: form_data["name"])}
+    {:noreply,
+     assign(socket, transformation_changeset: new_changeset, transformation_type: form_data["type"], transformation_name: form_data["name"])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
