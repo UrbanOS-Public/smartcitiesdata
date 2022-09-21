@@ -125,21 +125,11 @@ defmodule Andi.Application do
   end
 
   def get_logo_url() do
-    env_url = get_env_variable("ANDI_LOGO_URL", false)
-
-    case is_nil(env_url) do
-      false -> env_url
-      true -> "/images/UrbanOS.svg"
-    end
+    env_url = get_env_variable("ANDI_LOGO_URL", true)
   end
 
   def get_header_text() do
-    env_url = get_env_variable("ANDI_HEADER_TEXT", false)
-
-    case is_invalid_env_variable(env_url) do
-      false -> env_url
-      true -> "Data Submission Tool"
-    end
+    env_url = get_env_variable("ANDI_HEADER_TEXT", true)
   end
 
   defp guardian_db_sweeper do
