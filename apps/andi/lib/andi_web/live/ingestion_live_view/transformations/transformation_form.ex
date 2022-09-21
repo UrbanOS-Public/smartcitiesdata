@@ -4,6 +4,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   """
   use Phoenix.LiveView
   use Phoenix.LiveComponent
+
   require Logger
   import Phoenix.HTML.Form
 
@@ -37,8 +38,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
           <div class="transformation-actions">
             <button class="material-icons-outlined transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" phx-click="delete-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-target="#transformations-form">delete</button>
             <button class="material-icons-outlined transformation-action" type="button">edit</button>
-            <button class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1">arrow_upward</button>
-            <button class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1">arrow_downward</button>
+            <button class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1" phx-target="#transformations-form">arrow_upward</button>
+            <button class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1" phx-target="#transformations-form">arrow_downward</button>
           </div>
         </div>
         <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
@@ -51,32 +52,25 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
           <div class="transformation-form__type">
             <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
-            <%= select(f, :type, get_transformation_types(), [phx_click: "transformation-type-selected", class: "select", required: true]) %>
+            <%= select(f, :type, get_transformation_types(), [phx_click: "transformation-type-selected", class: "select transformation-type", required: true]) %>
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
           </div>
           <div class="transformation-form__fields">
             <%= for field <- get_fields(@transformation_type) do %>
               <%= TransformationFieldBuilder.build_input(field, assigns, f) %>
-            <%= end %>
+            <% end %>
           </div>
         </div>
     </form>
     """
   end
 
-  def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index}, socket) do
-    AndiWeb.Endpoint.broadcast_from(self(), "move-transformation", "move-transformation", %{
-      "id" => transformation_id,
-      "move-index" => move_index
-    })
-
-    {:noreply, socket}
-  end
-
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     new_changeset = Transformation.changeset_from_form_data(form_data)
+    AndiWeb.Endpoint.broadcast_from(self(), "transformation", "changed", %{transformation_changeset: new_changeset})
 
-    {:noreply, assign(socket, transformation_changeset: new_changeset)}
+    {:noreply,
+     assign(socket, transformation_changeset: new_changeset, transformation_type: form_data["type"], transformation_name: form_data["name"])}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -128,6 +122,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
+
+  defp get_validation_status(new_changeset) do
+    if new_changeset.valid? do
+      "valid"
+    else
+      "invalid"
+    end
+  end
 
   defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
 
