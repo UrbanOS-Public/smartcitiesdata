@@ -244,11 +244,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
       html = render_submit(view, "dataset-search", %{"search-value" => dataset_a.business.orgTitle})
 
-      select_dataset = element(view, ".modal-action-text", "Select")
+      select_dataset = element(view, "#select-dataset-search", "Select")
       html = render_click(select_dataset)
       assert get_text(html, ".search-table") =~ "Remove"
 
-      remove_dataset = element(view, ".search-table__cell", "Remove")
+      remove_dataset = element(view, "#select-dataset-search", "Remove")
       html = render_click(remove_dataset)
       refute get_text(html, ".search-table") =~ "Remove"
     end
