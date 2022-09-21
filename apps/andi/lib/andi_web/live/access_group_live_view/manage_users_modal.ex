@@ -52,7 +52,9 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
                     <td class="search-table__cell search-table__cell--break search-table__user-name-cell wide-column"><%= user.name %></td>
                     <td class="search-table__cell search-table__cell--break search-table__user-email-cell wide-column"><%= user.email %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= pretty_print_orgs(user.organizations) %></td>
-                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column" phx-click="select-user-search" phx-value-id=<%= user.subject_id %>><%=selected_value(user.subject_id, @selected_users)%></td>
+                    <td class="search-table__cell search-table__cell--break thin-column">
+                      <a class="modal-action-text" href="javascript:void(0)" phx-click="select-user-search" phx-value-id=<%= user.subject_id %>><%=selected_value(user.subject_id, @selected_users)%></a>
+                    </td>
                     <td></td>
                   </tr>
                 <% end %>

@@ -53,8 +53,8 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
                     <td class="search-table__cell search-table__cell--break search-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                    <td class="search-table__cell search-table__cell--break modal-action-text thin-column">
-                      <a href="javascript:void(0)" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_dataset)%></a>
+                    <td class="search-table__cell search-table__cell--break thin-column">
+                      <a class="modal-action-text" href="javascript:void(0)" phx-click="select-dataset-search" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_dataset)%></a>
                     </td>
                   </tr>
                 <% end %>

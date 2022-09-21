@@ -155,7 +155,9 @@ $tick-height: 1rem + $field-padding - 0.44;
     border-top: none;
     display: inline-flex;
     height: 2.5rem;
+    width: -moz-available;
     width: -webkit-fill-available;
+    width: -fill-available;
     justify-content: space-between;
     align-items: center;
     padding: 0.25rem 0.75rem 0.25rem 0.75rem;
@@ -336,7 +338,9 @@ $tick-height: 1rem + $field-padding - 0.44;
   .label {
     margin-left: 1rem;
     font-size: 1.1rem;
+    width: -moz-available;
     width: -webkit-fill-available;
+    width: -fill-available;
   }
 }
 
