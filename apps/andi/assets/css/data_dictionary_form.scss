@@ -111,10 +111,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 
     .data-dictionary-tree-field__action {
-      width: 3rem;
-      height: 24px;
+      width: 1.5rem;
+      height: 16px;
       background-repeat: no-repeat;
       background-color: white;
+      margin-right: 15px;
     }
 
     .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
