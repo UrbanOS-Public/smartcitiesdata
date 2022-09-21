@@ -10,9 +10,10 @@ defmodule AndiWeb.HeaderLiveViewTest do
     test "Displays default logo when none is provided" do
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
-      header_logo = Floki.parse_fragment!(html)
-      |> Floki.attribute("img", "src")
-      |> List.first()
+      header_logo =
+        Floki.parse_fragment!(html)
+        |> Floki.attribute("img", "src")
+        |> List.first()
 
       assert header_logo == "/images/UrbanOS.svg"
     end
@@ -22,9 +23,10 @@ defmodule AndiWeb.HeaderLiveViewTest do
 
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
-      header_logo = Floki.parse_fragment!(html)
-      |> Floki.attribute("img", "src")
-      |> List.first()
+      header_logo =
+        Floki.parse_fragment!(html)
+        |> Floki.attribute("img", "src")
+        |> List.first()
 
       assert header_logo == "/images/RuralOS.svg"
     end
@@ -32,10 +34,11 @@ defmodule AndiWeb.HeaderLiveViewTest do
     test "Displays default header text when none is provided" do
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
-      header_text = Floki.parse_fragment!(html)
-      |> Floki.filter_out(".log-out-link")
-      |> Floki.find(".page-header__primary")
-      |> Floki.text()
+      header_text =
+        Floki.parse_fragment!(html)
+        |> Floki.filter_out(".log-out-link")
+        |> Floki.find(".page-header__primary")
+        |> Floki.text()
 
       assert header_text == "Data Submission Tool"
     end
@@ -45,10 +48,11 @@ defmodule AndiWeb.HeaderLiveViewTest do
 
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
-      header_text = Floki.parse_fragment!(html)
-      |> Floki.filter_out(".log-out-link")
-      |> Floki.find(".page-header__primary")
-      |> Floki.text()
+      header_text =
+        Floki.parse_fragment!(html)
+        |> Floki.filter_out(".log-out-link")
+        |> Floki.find(".page-header__primary")
+        |> Floki.text()
 
       assert header_text == "Definitely Not Data Submission Tool"
     end
