@@ -6,7 +6,7 @@ defmodule AndiWeb.Router do
          "style-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;" <>
          "script-src 'self' 'unsafe-inline' 'unsafe-eval';" <>
          "font-src https://fonts.gstatic.com data: 'self';" <>
-         "img-src 'self' data:;"
+         "img-src 'self' #{Application.get_env(:andi, :logo_url)} data:;"
 
   pipeline :browser do
     plug Plug.Logger

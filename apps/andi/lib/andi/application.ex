@@ -126,7 +126,7 @@ defmodule Andi.Application do
   def get_logo_url() do
     env_url = get_env_variable("ANDI_LOGO_URL", false)
 
-    case is_nil(env_url) do
+    case is_invalid_env_variable(env_url) do
       false -> env_url
       true -> "/images/UrbanOS.svg"
     end
