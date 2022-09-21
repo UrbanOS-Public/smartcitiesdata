@@ -66,7 +66,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Ingestion Schema</h2>
-          <button type="button" class="btn btn--right btn--transparent">
+          <button type="button" class="btn btn--right btn--transparent component-title-button">
             <div class="component-title-action">
               <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
               <div class="component-title-icon--<%= @visibility %>"></div>
@@ -113,7 +113,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-                  <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save" style="width: 1.5rem" type="button" phx-click="add_data_dictionary_field">Add</button>
+                  <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
                   <button id="remove-button" name="remove-button" class="data-dictionary-form__remove-field-button" type="button" phx-click="remove_data_dictionary_field"></button>
                 </div>
               </div>
