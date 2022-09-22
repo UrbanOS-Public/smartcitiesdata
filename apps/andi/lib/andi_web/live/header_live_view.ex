@@ -33,7 +33,7 @@ defmodule AndiWeb.HeaderLiveView do
     <header class="page-header">
       <span class="page-header__primary" phx-click="show-datasets">
         <img id="header-logo" src=<%= get_logo() %>></img>
-        <span><%= header_text(@is_curator) %></span>
+        <span><%= get_header_text() %></span>
         <span class="log-out-link" phx-click="log-out">
           <span class="material-icons">person</span>
           <span class="log-out-link__text">Log Out</span>
@@ -118,6 +118,5 @@ defmodule AndiWeb.HeaderLiveView do
   end
 
   defp get_logo(), do: Application.get_env(:andi, :logo_url)
-  defp header_text(true = _is_curator), do: "Data Management Tool"
-  defp header_text(false = _is_curator), do: "Data Submission Tool"
+  defp get_header_text(), do: Application.get_env(:andi, :header_text)
 end

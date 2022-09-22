@@ -154,3 +154,5 @@ config :ex_aws, :s3,
 
 System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
 System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
+System.put_env("ANDI_LOGO_URL", "/images/UrbanOS.svg")
+System.put_env("ANDI_HEADER_TEXT", "Data Submission Tool")

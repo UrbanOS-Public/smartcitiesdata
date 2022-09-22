@@ -121,15 +121,15 @@ defmodule Andi.Application do
 
   def set_other_env_variables() do
     Application.put_env(:andi, :logo_url, get_logo_url())
+    Application.put_env(:andi, :header_text, get_header_text())
   end
 
   def get_logo_url() do
-    env_url = get_env_variable("ANDI_LOGO_URL", false)
+    env_url = get_env_variable("ANDI_LOGO_URL", true)
+  end
 
-    case is_invalid_env_variable(env_url) do
-      false -> env_url
-      true -> "/images/UrbanOS.svg"
-    end
+  def get_header_text() do
+    env_url = get_env_variable("ANDI_HEADER_TEXT", true)
   end
 
   defp guardian_db_sweeper do
