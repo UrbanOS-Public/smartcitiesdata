@@ -31,18 +31,18 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     <%= f = form_for @changeset, "#", [ as: :form_data, phx_change: :validate, id: :ingestion_metadata_form] %>
       <div class="ingestion-metadata-form ingestion-metadata-form__name">
         <%= label(f, :name, "Name", class: "label label--required") %>
-        <%= text_input(f, :name, class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000") %>
+        <%= text_input(f, :name, [class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000", required: true]) %>
         <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false) %>
       </div>
       <div class="ingestion-metadata-form ingestion-metadata-form__format">
         <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
-        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields"]) %>
+        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields", required: true]) %>
         <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
       </div>
       <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
-        <%= label(f, :targetDataset, "Dataset Name", class: "label label--required") %>
+        <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
         <%= hidden_input(f, :targetDataset, value: @selected_dataset) %>
-        <%= text_input(f, :targetDatasetName, class: "input ingestion-form-fields", value: get_dataset_name(@selected_dataset), disabled: true) %>
+        <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(@selected_dataset), disabled: true, required: true]) %>
         <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" type="button">Select Dataset</button>
         <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
       </div>

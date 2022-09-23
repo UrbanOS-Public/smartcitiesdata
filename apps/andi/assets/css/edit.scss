@@ -28,7 +28,7 @@ $component-header-height: 7.5rem;
 
 .form-grid {
   display: grid;
-  grid-column-gap: 10rem;
+  grid-column-gap: 5rem;
   grid-row-gap: 1rem;
 }
 
@@ -103,9 +103,9 @@ $component-header-height: 7.5rem;
 }
 
 .component-number--expanded {
-    background-color: $color-text-link;
+    background-color: $primary-blue;
     color: white;
-    border: 1px solid $color-text-link;
+    border: 1px solid $primary-blue;
 }
 
 .component-number--collapsed {
@@ -159,6 +159,10 @@ $component-header-height: 7.5rem;
 
 .component-title-text--collapsed {
     color: black;
+}
+
+.component-title-button {
+    padding-right: 0;
 }
 
 .edit-button-group__messages {

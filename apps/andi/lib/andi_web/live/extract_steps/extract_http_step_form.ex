@@ -43,13 +43,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
                 <div class="extract-http-step-form__method">
                   <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
-                  <%= select(f, :action, get_http_methods(), id: "step_#{@id}__http_method", class: "extract-http-step-form__method select") %>
+                  <%= select(f, :action, get_http_methods(), [id: "step_#{@id}__http_method", class: "extract-http-step-form__method select", required: true]) %>
                   <%= ErrorHelpers.error_tag(f, :action) %>
                 </div>
 
                 <div class="extract-http-step-form__url">
                   <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
-                  <%= text_input(f, :url, id: "step_#{@id}__url", class: "input full-width", disabled: @testing) %>
+                  <%= text_input(f, :url, [id: "step_#{@id}__url", class: "input full-width", disabled: @testing, required: true]) %>
                   <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
                 </div>
 

@@ -1,9 +1,16 @@
+.edit-dataset-title {
+  display: inline-flex;
+  height: 3.5rem;
+  border-bottom: 1px solid $color-form-border;
+  margin-right: 2rem;
+}
+
 .datasets-view {
-    flex: 1;
-    background: $color-content-background;
-    box-shadow: $box-shadow;
-    height: 100%;
-    margin: 1em;
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: 100%;
+  margin: 1em;
 }
 
 .datasets-line {
@@ -14,7 +21,7 @@
 
 
 .datasets-index {
-    padding: 1rem 3rem;
+  padding: 1rem 3rem;
 }
 
 .datasets-index__title {
@@ -22,37 +29,37 @@
 }
 
 .datasets-index__header {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 .input-container {
-    display: flex;
-    width: 100%;
+  display: flex;
+  width: 100%;
 }
 
 .checkbox {
-    cursor: pointer;
-    position: relative;
-    align-self: center;
-    margin-left: 1rem;
+  cursor: pointer;
+  position: relative;
+  align-self: center;
+  margin-left: 1rem;
 
-    span {
-        font-size: 1rem;
-        padding-left: 0.25rem;
-        vertical-align: middle;
-    }
+  span {
+    font-size: 1rem;
+    padding-left: 0.25rem;
+    vertical-align: middle;
+  }
 
-    input {
-        vertical-align: middle;
-        height: 1rem;
-        width: 1rem;
-    }
+  input {
+    vertical-align: middle;
+    height: 1rem;
+    width: 1rem;
+  }
 }
 
 .datasets-index__search {
-    width: 50%;
-    margin-right: 1rem;
+  width: 50%;
+  margin-right: 1rem;
 }
 
 .datasets-index__search-input-container {
@@ -110,50 +117,53 @@
 }
 
 .datasets-table__status-cell {
-    width: 10%;
+  width: 10%;
 }
 
 $icon-width: 30px;
 
 .dataset__status {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+
+  .status {
     display: flex;
     align-items: center;
-    justify-content: left;
+  }
 
-    .status {
-        display: flex;
-        align-items: center;
-    }
-
-    .status__icon {
-        height: $icon-width;
-        width: $icon-width;
-    }
+  .status__icon {
+    height: $icon-width;
+    width: $icon-width;
+  }
 }
 
 .dataset__status--success {
-    color: green;
+  color: green;
 
-    .status__icon {
-        background-image: url('/static/images/check.svg');
-        height: $icon-width;
-        width: $icon-width;
-    }
+  .status__icon {
+    background-image: url('/static/images/check.svg');
+    height: $icon-width;
+    width: $icon-width;
+  }
 }
 
 $error-icon-width: 16px;
-$error-icon-margin: ($icon-width - 16px) / 2;
+$error-icon-margin: (
+  $icon-width - 16px) / 2;
 
-.dataset__status--error, .dataset__status--rejected {
-    color: red;
+.dataset__status--error,
+.dataset__status--rejected {
+  color: red;
 
-    .status__icon {
-        background-image: url('/static/images/X.svg');
-        height: $error-icon-width;
-        width: $error-icon-width;
-        margin-left: $error-icon-margin;
-        margin-right: $error-icon-margin;
-    }
+  .status__icon {
+    background-image: url('/static/images/X.svg'
+    );
+  height: $error-icon-width;
+  width: $error-icon-width;
+  margin-left: $error-icon-margin;
+  margin-right: $error-icon-margin;
+}
 }
 
 

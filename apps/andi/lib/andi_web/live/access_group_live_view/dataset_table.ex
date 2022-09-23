@@ -26,7 +26,9 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break access-groups-sub-table__data-title-cell wide-column"><%= dataset.business.dataTitle %></td>
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
-                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break modal-action-text thin-column" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</td>
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break thin-column">
+                  <a class="modal-action-text" href="javascript:void(0)" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>Remove</a>
+                </td>
               </tr>
             <% end %>
           <% end %>

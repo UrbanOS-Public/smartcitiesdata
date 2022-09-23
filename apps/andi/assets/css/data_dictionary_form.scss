@@ -11,7 +11,7 @@ $tick-height: 1rem + $field-padding - 0.44;
     "tree-section edit-section";
 
   .data-dictionary-field-editor {
-    border: solid 1px  #C9C7C7;
+    border: solid 1px #C9C7C7;
     display: grid;
     padding: 2rem;
     margin-right: 2rem;
@@ -26,32 +26,33 @@ $tick-height: 1rem + $field-padding - 0.44;
       "pii masked demographic"
       "biased rationale .";
 
-      .select, .input {
-        margin: 10px 0 10px 0;
-        width: 90%;
-      }
+    .select,
+    .input {
+      margin: 10px 0 10px 0;
+      width: 90%;
+    }
 
-      .textarea {
-        max-width: 90%;
-        height: 7rem;
-      }
+    .textarea {
+      max-width: 90%;
+      height: 7rem;
+    }
 
-      .format-label {
-          display: inline-flex;
-          width: 95%;
-          position: relative;
+    .format-label {
+      display: inline-flex;
+      width: 95%;
+      position: relative;
 
-          a {
-              position: absolute;
-              right: 0;
-              color: $color-text-link;
-              font-size: 14px;
-          }
+      a {
+        position: absolute;
+        right: 0;
+        color: $color-text-link;
+        font-size: 14px;
       }
+    }
   }
 
   .upload-section {
-      display: block;
+    display: block;
   }
 
   .data-dictionary-form-tree-header {
@@ -69,11 +70,11 @@ $tick-height: 1rem + $field-padding - 0.44;
   }
 
   .data-dictionary-form-tree-content {
-      border: solid 1px  #C9C7C7;
-      border-bottom: none;
-      padding-bottom: 2rem;
-      overflow-y: scroll;
-      height: 37.5rem;
+    border: solid 1px #C9C7C7;
+    border-bottom: none;
+    padding-bottom: 2rem;
+    overflow-y: scroll;
+    height: 38.75rem;
   }
 
   .data-dictionary-tree {
@@ -110,10 +111,11 @@ $tick-height: 1rem + $field-padding - 0.44;
     }
 
     .data-dictionary-tree-field__action {
-      width: 3rem;
-      height: 24px;
+      width: 1.5rem;
+      height: 16px;
       background-repeat: no-repeat;
       background-color: white;
+      margin-right: 15px;
     }
 
     .data-dictionary-tree__field--collapsed .data-dictionary-tree-field__action {
@@ -146,77 +148,82 @@ $tick-height: 1rem + $field-padding - 0.44;
   }
 
   .data-dictionary-tree--top-level {
-      padding-left: 2rem;
+    padding-left: 2rem;
   }
 
   .data-dictionary-form-tree-footer {
-      border: solid 1px  #C9C7C7;
-      border-top: none;
-      display: inline-flex;
-      height: 2.5rem;
-      width: -webkit-fill-available;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.25rem 0.75rem 0.25rem 0.75rem;
-      position: relative;
-      box-shadow: 0 -1rem 3rem -1rem #C9C7C7;
+    border: solid 1px #C9C7C7;
+    border-top: none;
+    display: inline-flex;
+    height: 2.5rem;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    width: -fill-available;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.75rem 0.25rem 0.75rem;
+    position: relative;
+    box-shadow: 0 -1rem 3rem -1rem #C9C7C7;
 
   }
 
   .data-dictionary-form__file-upload {
-      display: flex;
+    display: flex;
 
-      .file-input-button {
-          display: block;
-      }
+    .file-input-button {
+      display: block;
+    }
   }
 
   .data-dictionary-tree__getting-started-help {
-      display: flex;
-      justify-content: left;
-      align-items: center;
-      padding: 1rem;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    padding: 1rem;
 
-      color: #7f7676;
-      a {
-          background-color: transparent;
-          color: #00aeef;
-          text-decoration: underline;
-          cursor: pointer;
-      }
+    color: #7f7676;
+
+    a {
+      background-color: transparent;
+      color: #00aeef;
+      text-decoration: underline;
+      cursor: pointer;
+    }
   }
 
   .data-dictionary-form__add-field-button {
-      display: inline-block;
-      width: 1.5rem;
-      height: 24px;
-      background-image: url('/static/images/add_field.svg');
-      cursor: pointer;
+    display: inline-block;
+    width: 1.5rem;
+    height: 24px;
+    background-image: url('/static/images/add_field.svg');
+    cursor: pointer;
   }
 
   .data-dictionary-form__remove-field-button {
-      width: 1.5rem;
-      height: 24px;
-      background-image: url('/static/images/delete_field.svg');
-      cursor: pointer;
+    width: 1.5rem;
+    height: 24px;
+    background-image: url('/static/images/delete_field.svg');
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
   }
 
   .data-dictionary-form__remove-field-button {
-      width: 1.5rem;
-      height: 24px;
+    width: 1.5rem;
+    height: 24px;
   }
 }
 
 .overwrite-schema-modal--hidden {
-    display: none;
+  display: none;
 }
 
 .overwrite-schema-modal--visible {
-    @include modal-wrapper();
+  @include modal-wrapper();
 }
 
 .data-dictionary-remove-field-editor--hidden {
-    display: none;
+  display: none;
 }
 
 .data-dictionary-remove-field-editor--visible {
@@ -224,121 +231,128 @@ $tick-height: 1rem + $field-padding - 0.44;
 }
 
 .data-dictionary-add-field-editor--hidden {
-    display: none;
+  display: none;
 }
 
 .data-dictionary-add-field-editor--visible {
-    @include modal-wrapper();
+  @include modal-wrapper();
 
-    .error-msg {
-        width: 23rem;
-    }
+  .error-msg {
+    width: 23rem;
+  }
 }
 
 .modal-form-container {
-    position: relative;
-    z-index: 999;
-    background-color: white;
-    padding: 0 2rem 2rem 2rem;
-    -webkit-box-shadow: 0 0 2rem gray;
-    box-shadow: 0 0 2rem gray;
+  position: relative;
+  z-index: 999;
+  background-color: white;
+  padding: 0 2rem 2rem 2rem;
+  -webkit-box-shadow: 0 0 2rem gray;
+  box-shadow: 0 0 2rem gray;
 
-    h2 {
-        font-size: 22px;
-        font-weight: normal;
-        color: rgb(70,70,70);
+  h2 {
+    font-size: 22px;
+    font-weight: normal;
+    color: rgb(70, 70, 70);
+  }
+
+
+  .form-input-container {
+    padding: 1rem;
+
+    .form-block {
+      margin-bottom: 1rem;
     }
 
+    .form-input {
+      display: flex;
+      justify-content: space-between;
 
-    .form-input-container {
-        padding: 1rem;
+      .label {
+        align-self: center;
+      }
 
-        .form-block {
-            margin-bottom: 1rem;
-        }
+      .select {
+        margin-left: 1rem;
+        width: 18rem;
+      }
 
-        .form-input {
-            display: flex;
-            justify-content: space-between;
+      .input {
+        margin-left: 1rem;
+        width: 17rem;
+      }
+    }
+  }
 
-            .label {
-                align-self: center;
-            }
+  .button-container {
+    display: flex;
+    justify-content: space-between;
 
-            .select {
-                margin-left: 1rem;
-                width: 18rem;
-            }
-
-            .input {
-                margin-left: 1rem;
-                width: 17rem;
-            }
-        }
+    .btn {
+      height: 2.5rem;
     }
 
-    .button-container {
-        display: flex;
-        justify-content: space-between;
-
-        .btn {
-            height: 2.5rem;
-        }
-
-        .submit_button {
-            background-color: #26ADEB;
-        }
+    .submit_button {
+      background-color: #26ADEB;
     }
+  }
 }
 
 .add-default-tooltip {
-    text-decoration: underline;
-    color: #26adeb;
-    font-size: 14px;
-    margin-left: 4rem;
+  text-decoration: underline;
+  color: #26adeb;
+  font-size: 14px;
+  margin-left: 4rem;
 }
 
 .file-input-button--loading {
-    display: none;
+  display: none;
 }
 
 .data-dictionary-form__loader {
-    border: 6px solid #f3f3f3;
-    border-top: 6px solid #26ADEB;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 2s linear infinite;
-    margin-left: 1rem;
-    margin-top: 10px;
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #26ADEB;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+  margin-left: 1rem;
+  margin-top: 10px;
 }
 
 .data-dictionary-form__loader--hidden {
-    display: none;
+  display: none;
 }
 
 .file-upload-cancel-button--hidden {
-    display: none;
+  display: none;
 }
 
 .data-dictionary-help {
-    color: $color-form-label;
-    font-size: 1.1rem;
+  color: $color-form-label;
+  font-size: 1.1rem;
 }
 
 .inline {
-    width: max-content;
+  width: max-content;
 
-    .label {
-        margin-left: 1rem;
-        font-size: 1.1rem;
-        width: -webkit-fill-available;
-    }
+  .label {
+    margin-left: 1rem;
+    font-size: 1.1rem;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    width: -fill-available;
+  }
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @include area(data-dictionary-form, file-upload);

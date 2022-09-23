@@ -110,7 +110,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
     test "shows an error if blank" do
       ingestion = TDG.create_ingestion(%{})
-      form_data = %{"targetDataset" => ""}
+      form_data = %{"targetDatasetName" => ""}
       allow Datasets.get(any()), return: nil
 
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})

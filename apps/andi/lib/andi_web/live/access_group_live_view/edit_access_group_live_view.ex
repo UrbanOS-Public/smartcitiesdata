@@ -19,7 +19,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_access_groups_path()) %>
     <div class="edit-page" id="access-groups-edit-page">
       <div class="edit-access-group-title">
-        <h2 class="component-title-text access-groups-component-title-text">Edit Access Group </h2>
+        <h1 class="component-title-text access-groups-component-title-text">Edit Access Group </h1>
       </div>
 
       <hr class="search-modal-divider">
@@ -30,7 +30,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
         <div class="access-group-form__name">
           <%= label(form, :name, class: "label label--required") do "Access Group Name" end %>
-          <%= text_input(form, :name, class: "input") %>
+          <%= text_input(form, :name, [class: "input", required: true]) %>
         </div>
 
         <%= live_component(@socket, AndiWeb.AccessGroupLiveView.DatasetTable, selected_datasets: @selected_datasets) %>

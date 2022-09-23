@@ -9,9 +9,9 @@ defmodule AndiWeb.ExtractSteps.ExtractStepHeader do
     <div class="extract-step-header full-width">
       <h3><%= @step_name %></h3>
       <div class="edit-buttons">
-        <span class="extract-step-header__up material-icons" phx-click="move-extract-step" phx-value-id=<%= @step_id %> phx-value-move-index="-1">keyboard_arrow_up</span>
-        <span class="extract-step-header__down material-icons" phx-click="move-extract-step" phx-value-id=<%= @step_id %> phx-value-move-index="1">keyboard_arrow_down</span>
-        <div class="extract-step-header__remove" phx-click="remove-extract-step" phx-value-id=<%= @step_id %>></div>
+        <button type="button" class="btn btn--right btn--transparent extract-step-header__up material-icons" phx-click="move-extract-step" phx-value-id="<%= @step_id %>" phx-value-move-index="-1">keyboard_arrow_up</button>
+        <button type="button" class="btn btn--right btn--transparent extract-step-header__down material-icons" phx-click="move-extract-step" phx-value-id="<%= @step_id %>" phx-value-move-index="1">keyboard_arrow_down</button>
+        <button type="button" class="btn btn--right btn--transparent extract-step-header__remove" phx-click="remove-extract-step" phx-value-id="<%= @step_id %>"></button>
       </div>
     </div>
     """

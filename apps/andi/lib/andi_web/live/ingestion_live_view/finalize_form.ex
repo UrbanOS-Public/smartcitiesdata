@@ -68,10 +68,12 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Finalize</h2>
-          <div class="component-title-action">
-            <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
-            <div class="component-title-icon--<%= @visibility %>"></div>
-          </div>
+          <button type="button" class="btn btn--right btn--transparent component-title-button">
+            <div class="component-title-action">
+              <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
+              <div class="component-title-icon--<%= @visibility %>"></div>
+            </div>
+          </button>
         </div>
       </div>
 

@@ -9,59 +9,61 @@
 .url-form-header {
   a {
     color: #00aeef;
-  } 
+  }
 }
 
 .url-form-table {
+  width: 100%;
+  font-size: 0.8em;
+
+  .url-form-table__title {
+    padding: 0.5rem;
+    color: $color-form-label;
+    background-color: $color-form-table-header;
+    border-left: $table-border;
+    border-top: $table-border;
+    border-right: $table-border;
+  }
+
+  .url-form-table__table {
     width: 100%;
-    font-size: 0.8em;
+    border-collapse: collapse;
 
-    .url-form-table__title {
-        padding: 0.5rem;
-        color: $color-form-label;
-        background-color: $color-form-table-header;
-        border-left: $table-border;
-        border-top: $table-border;
-        border-right: $table-border;
+    .url-form-table__row {
+      padding: 0;
+      border: $table-border;
     }
 
-    .url-form-table__table {
-        width: 100%;
-        border-collapse: collapse;
+    .url-form-table__cell {
+      padding: 0;
+      text-align: left;
 
-        .url-form-table__row {
-            padding: 0;
-            border: $table-border;
-        }
-
-        .url-form-table__cell {
-            padding: 0;
-            text-align: left;
-
-            input {
-                border: none
-            }
-        }
-
-        .url-form-table__cell--bordered {
-            border-left: $table-border;
-        }
-
-        .url-form-table__cell--delete {
-            padding: 0.2em;
-            text-align: center;
-        }
-
-        .url-form-table__cell--header {
-            padding: 0.5rem;
-        }
+      input {
+        border: none
+      }
     }
+
+    .url-form-table__cell--bordered {
+      border-left: $table-border;
+    }
+
+    .url-form-table__cell--delete {
+      padding: 0.2em;
+      text-align: center;
+    }
+
+    .url-form-table__cell--header {
+      padding: 0.5rem;
+    }
+  }
 }
 
 .url-form-table__btn {
-    cursor: pointer;
-    max-width: 0;
-    text-align: center;
+  cursor: pointer;
+  max-width: 0;
+  text-align: center;
+  border: none;
+  background-color: transparent;
 }
 
 .test-status {
@@ -99,6 +101,7 @@
     }
   }
 }
+
 .test-status__tooltip--hidden {
   display: none;
 }
