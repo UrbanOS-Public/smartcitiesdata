@@ -64,11 +64,13 @@ services:
     ports:
     - "2181:2181"
   kafka:
-    image: wurstmeister/kafka:2.12-2.1.1
+    image: bitnami/kafka:3.1.2
     depends_on:
     - zookeeper
     ports:
     - "9092:9092"
+    expose:
+    - "9094"
     environment:
     - "KAFKA_ADVERTISED_LISTENERS=INSIDE://:9094,OUTSIDE://${HOST_IP:-localhost}:9092"
     - "KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT"
@@ -76,11 +78,28 @@ services:
     - "KAFKA_INTER_BROKER_LISTENER_NAME=INSIDE"
     - "KAFKA_CREATE_TOPICS=event-stream:1:1,streaming-transformed:1:1,dead-letters:1:1,streaming-persisted:1:1"
     - "KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181"
+    - "ALLOW_PLAINTEXT_LISTENER=yes"
     healthcheck:
-      test: ["CMD-SHELL", "cat /opt/kafka/logs/server.log | grep \"Previous Leader Epoch was: -1\""]
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --list"]
       interval: 10s
       timeout: 20s
       retries: 3
+
+  kafka-init:
+    image: bitnami/kafka:3.1.2
+    depends_on:
+      - kafka
+    entrypoint: ['/bin/bash', '-c']
+    command: |
+      "
+      echo -e 'Creating kafka topics'
+      kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic event-stream --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic streaming-transformed --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic dead-letters --replication-factor 1 --partitions 1
+      kafka-topics.sh --bootstrap-server kafka:9094 --create --if-not-exists --topic streaming-persisted --replication-factor 1 --partitions 1
+      echo -e 'Successfully created the following topics:'
+      kafka-topics.sh --bootstrap-server kafka:9094 --list
+      "
 
 volumes:
   minio:

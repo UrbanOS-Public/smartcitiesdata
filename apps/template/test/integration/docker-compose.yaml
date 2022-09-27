@@ -15,7 +15,7 @@ services:
     ports:
     - "2181:2181"
   kafka:
-    image: wurstmeister/kafka:2.12-2.1.1
+    image: bitnami/kafka:3.1.2
     container_name: kafka
     depends_on:
     - zookeeper
