@@ -73,6 +73,13 @@ mix test.e2e
 * [Starting All of the Microservices](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Run)
 # Version History and Retention
 Each microservice is released independently and can be found here in the [Releases](https://github.com/UrbanOS-Public/smartcitiesdata/releases) section.  All releases will be kept indefinitely.
+
+Versioning conforms to the standard versioning pattern of <major>.<minor>.<patch>, for example 3.0.1. 3 being major, 0 being minor, and 1 being patch.
+
+Patch version increments should introduce no breaking changes to the existing public chart. Docker images/Elixir apps are able to be updated in-place with no changes needed.
+Minor version increments may require chart changes to function properly. These changes should be reviewed and charts should be adjusted accordingly before updating.
+Major version increments likely introduce wide-spread or structural changes that require many configuration changes. 
+
 # License
 Released under [Apache 2 license](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/LICENSE).
 # Contributions
