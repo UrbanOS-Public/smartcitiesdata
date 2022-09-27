@@ -18,6 +18,6 @@ printf "%s \n\n" "$mix_vsn"
 ./scripts/publish.sh $app $mix_vsn
 
 if [[ $tag_as_development == true ]]; then
-  docker tag smartcitiesdata/$app:$mix_vsn smartcitiesdata/$app:deployment
+  docker tag smartcitiesdata/$app:$mix_vsn smartcitiesdata/$app:development
   ./scripts/publish.sh $app development
 fi
