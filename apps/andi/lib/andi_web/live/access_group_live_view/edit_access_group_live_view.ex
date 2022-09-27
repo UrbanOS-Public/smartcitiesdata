@@ -1,6 +1,7 @@
 defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
   require Logger
 
   import Phoenix.HTML.Form
@@ -64,6 +65,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
       <%= live_component(@socket, AndiWeb.ConfirmDeleteModal, type: "Access Group", visibility: @delete_access_group_modal_visibility, id: @access_group.id) %>
     </div>
+    <%= footer_render(@is_curator) %>
     """
   end
 

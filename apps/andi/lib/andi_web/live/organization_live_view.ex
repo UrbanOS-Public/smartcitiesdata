@@ -1,6 +1,7 @@
 defmodule AndiWeb.OrganizationLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   import Ecto.Query, only: [from: 2]
 
@@ -13,36 +14,40 @@ defmodule AndiWeb.OrganizationLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
-    <div class="organizations-view">
-      <div class="organizations-index">
-        <div class="organizations-index__header">
-          <h1 class="organizations-index__title">All Organizations</h1>
-          <button type="button" class="btn btn--primary  btn--action" phx-click="add-organization">+ Add Organization</button>
-        </div>
-        <hr class="organizations-line">
+    <div class="content">
+      <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
+      <div class="organizations-view">
+        <div class="organizations-index">
+          <div class="organizations-index__header">
+            <h1 class="organizations-index__title">All Organizations</h1>
+            <button type="button" class="btn btn--primary  btn--action" phx-click="add-organization">+ Add Organization</button>
+          </div>
+          <hr class="organizations-line">
 
-        <div class="organizations-index__search">
-          <form phx-change="search" phx-submit="search">
-            <div class="organizations-index__search-input-container">
-              <label for="organizations-index__search-input">
-                <i class="material-icons organizations-index__search-icon">search</i>
-              </label>
-              <input
-                name="search-value"
-                phx-debounce="250"
-                id="organizations-index__search-input"
-                class="organizations-index__search-input"
-                type="text"
-                value="<%= @search_text %>"
-                placeholder="Search Organizations"
-              >
-            </div>
-          </form>
-        </div>
+          <div class="organizations-index__search">
+            <form phx-change="search" phx-submit="search">
+              <div class="organizations-index__search-input-container">
+                <label for="organizations-index__search-input">
+                 <i class="material-icons organizations-index__search-icon">search</i>
+               </label>
+                <input
+                  name="search-value"
+                  phx-debounce="250"
+                  id="organizations-index__search-input"
+                  class="organizations-index__search-input"
+                  type="text"
+                  value="<%= @search_text %>"
+                  placeholder="Search Organizations"
+                >
+              </div>
+            </form>
+          </div>
 
-        <%= live_component(@socket, Table, id: :organizations_table, organizations: @organizations, order: @order) %>
-    </div>
+          <%= live_component(@socket, Table, id: :organizations_table, organizations: @organizations, order: @order) %>
+        </div>
+      </div>
+      <%= footer_render(@is_curator) %>
+      </div>
     """
   end
 

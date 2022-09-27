@@ -1,6 +1,7 @@
 defmodule AndiWeb.UserLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   import Ecto.Query, only: [from: 2]
 
@@ -12,33 +13,37 @@ defmodule AndiWeb.UserLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
-    <div class="users-view">
-      <div class="users-index">
-        <div class="users-index__header">
-          <h1 class="users-index__title">All Users</h1>
-        </div>
-        <hr class="users-line">
+    <div class="content">
+      <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
+      <div class="users-view">
+        <div class="users-index">
+          <div class="users-index__header">
+            <h1 class="users-index__title">All Users</h1>
+          </div>
+          <hr class="users-line">
 
-        <div class="users-index__search">
-          <form phx-change="search" phx-submit="search">
-            <div class="users-index__search-input-container">
-              <label for="users-index__search-input">
-                <i class="material-icons users-index__search-icon">search</i>
-              </label>
-              <input
-                name="search-value"
-                phx-debounce="250"
-                id="users-index__search-input"
-                class="users-index__search-input"
-                type="text"
-                value="<%= @search_text %>"
-                placeholder="Search Users"
-              >
-            </div>
-          </form>
+          <div class="users-index__search">
+            <form phx-change="search" phx-submit="search">
+              <div class="users-index__search-input-container">
+                <label for="users-index__search-input">
+                  <i class="material-icons users-index__search-icon">search</i>
+                </label>
+                <input
+                  name="search-value"
+                  phx-debounce="250"
+                  id="users-index__search-input"
+                  class="users-index__search-input"
+                  type="text"
+                  value="<%= @search_text %>"
+                  placeholder="Search Users"
+                >
+              </div>
+            </form>
+          </div>
+          <%= live_component(@socket, Table, id: :users_table, users: @users, order: @order) %>
         </div>
-        <%= live_component(@socket, Table, id: :users_table, users: @users, order: @order) %>
+      </div>
+      <%= footer_render(@is_curator) %>
     </div>
     """
   end

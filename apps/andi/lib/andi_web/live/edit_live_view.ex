@@ -1,6 +1,7 @@
 defmodule AndiWeb.EditLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
@@ -90,6 +91,7 @@ defmodule AndiWeb.EditLiveView do
       </div>
 
     </div>
+    <%= footer_render(@is_curator) %>
     """
   end
 
