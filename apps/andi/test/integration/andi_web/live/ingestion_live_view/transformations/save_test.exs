@@ -83,6 +83,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.SaveTest do
     end)
   end
 
+  @tag :skip
   test "can change transformation fields after save", %{conn: conn, view: view, ingestion: ingestion} do
     transformation_id = add_transformation(view)
 
