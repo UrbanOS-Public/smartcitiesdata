@@ -5,6 +5,14 @@ body {
   background: $color-background;
 }
 
+.content {
+  min-height: 100vh; 
+  margin: 0; 
+  
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
 .root {
   height: 100vh;
   display: flex;
@@ -108,6 +116,7 @@ body {
 @import "./edit.scss";
 @import "./extract_steps.scss";
 @import "./finalize_form.scss";
+@import "./footer.scss";
 @import "./header.scss";
 @import "./ingestions.scss";
 @import "./metadata_form.scss";
