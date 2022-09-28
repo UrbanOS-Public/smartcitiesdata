@@ -32,7 +32,7 @@ defmodule AndiWeb.IngestionLiveView.Table do
               </td>
               <td class="ingestions-table__cell ingestions-table__cell--break"><%= ingestion["ingestion_name"] %></td>
               <td class="ingestions-table__cell ingestions-table__cell--break"><%= ingestion["dataset_name"] %></td>
-              <td class="ingestions-table__cell ingestions-table__cell--break" style="width: 10%;"><%= Link.link("Edit", to: "/ingestions/#{ingestion["id"]}", class: "btn") %></td>
+              <td class="ingestions-table__cell ingestions-table__cell--break primary-color-link" style="width: 10%;"><%= Link.link("Edit", to: "/ingestions/#{ingestion["id"]}", class: "btn") %></td>
             </tr>
           <% end %>
         <% end %>

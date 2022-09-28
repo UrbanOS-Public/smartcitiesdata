@@ -5,17 +5,7 @@ $button-padding: 10px 50px;
     display: inline-block;
     text-decoration: none;
     cursor: pointer;
-    background-color: black;
-    color: white;
     border: none;
-
-    &:hover {
-        background-color: lighten(black, 20%);
-    }
-
-    &:active {
-        background-color: lighten(black, 40%);
-    }
 }
 
 
