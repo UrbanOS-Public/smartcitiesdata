@@ -1,6 +1,7 @@
 defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
   require Logger
 
   alias Andi.InputSchemas.Ingestions
@@ -77,6 +78,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           <% end %>
       </div>
     </div>
+    <%= footer_render(@is_curator) %>
     """
   end
 

@@ -1,6 +1,7 @@
 defmodule AndiWeb.UserLiveView.EditUserLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
   require Logger
 
   import Phoenix.HTML.Form
@@ -56,6 +57,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
       </div>
+      <%= footer_render(@is_curator) %>
     """
   end
 

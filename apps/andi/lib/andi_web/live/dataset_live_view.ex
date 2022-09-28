@@ -1,6 +1,7 @@
 defmodule AndiWeb.DatasetLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   import Ecto.Query, only: [from: 2]
 
@@ -20,50 +21,53 @@ defmodule AndiWeb.DatasetLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
-    <div class="datasets-view">
-      <div class="datasets-index">
-        <div class="datasets-index__header">
-          <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
-          <button type="button" class="btn--primary" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
-        </div>
-        <hr class="datasets-line">
+    <div class="content">
+      <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
+      <div class="datasets-view">
+        <div class="datasets-index">
+          <div class="datasets-index__header">
+            <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
+            <button type="button" class="btn--primary" phx-click="add-dataset"><%= action_text(@is_curator) %></button>
+          </div>
+          <hr class="datasets-line">
 
-        <div class="input-container">
-          <div class="datasets-index__search">
-            <form phx-change="search" phx-submit="search">
-              <div class="datasets-index__search-input-container">
-                <label for="datasets-index__search-input">
-                  <i class="material-icons datasets-index__search-icon">search</i>
-                </label>
-                <input
-                  name="search-value"
-                  phx-debounce="250"
-                  id="datasets-index__search-input"
-                  class="datasets-index__search-input"
-                  type="text"
-                  value="<%= @search_text %>"
-                  placeholder="Search datasets"
-                >
-              </div>
-            </form>
+          <div class="input-container">
+            <div class="datasets-index__search">
+              <form phx-change="search" phx-submit="search">
+                <div class="datasets-index__search-input-container">
+                  <label for="datasets-index__search-input">
+                    <i class="material-icons datasets-index__search-icon">search</i>
+                  </label>
+                  <input
+                    name="search-value"
+                    phx-debounce="250"
+                    id="datasets-index__search-input"
+                    class="datasets-index__search-input"
+                    type="text"
+                    value="<%= @search_text %>"
+                    placeholder="Search datasets"
+                  >
+                </div>
+              </form>
+            </div>
+
+            <label class="checkbox">
+              <input type="checkbox" phx-click="toggle_remotes" <%= if !@include_remotes, do: "checked" %>/>
+              <span>Exclude Remote Datasets</span>
+            </label>
+
+            <%= if @is_curator do %>
+            <label class="checkbox">
+              <input type="checkbox" phx-click="toggle_submitted" <%= if @only_submitted, do: "checked" %>/>
+              <span>Show Submitted Datasets Only</span>
+            </label>
+            <% end %>
           </div>
 
-          <label class="checkbox">
-            <input type="checkbox" phx-click="toggle_remotes" <%= if !@include_remotes, do: "checked" %>/>
-            <span>Exclude Remote Datasets</span>
-          </label>
-
-          <%= if @is_curator do %>
-          <label class="checkbox">
-            <input type="checkbox" phx-click="toggle_submitted" <%= if @only_submitted, do: "checked" %>/>
-            <span>Show Submitted Datasets Only</span>
-          </label>
-          <% end %>
+          <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order, is_curator: @is_curator) %>
         </div>
-
-        <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order, is_curator: @is_curator) %>
       </div>
+      <%= footer_render(@is_curator) %>
     </div>
     """
   end

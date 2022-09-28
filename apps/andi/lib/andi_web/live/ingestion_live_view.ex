@@ -1,6 +1,7 @@
 defmodule AndiWeb.IngestionLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   import Ecto.Query, only: [from: 2]
 
@@ -12,18 +13,21 @@ defmodule AndiWeb.IngestionLiveView do
 
   def render(assigns) do
     ~L"""
-    <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
-    <div class="ingestions-view">
-      <div class="ingestions-index">
-        <div class="ingestions-index__header">
-          <h1 class="ingestions-index__title">All Data Ingestions</h1>
-          <button type="button" class="btn btn--primary btn--add-ingestion btn--action" phx-click="add-ingestion">+ Add Data Ingestion</button>
+    <div class="content">
+      <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
+      <div class="ingestions-view">
+        <div class="ingestions-index">
+          <div class="ingestions-index__header">
+            <h1 class="ingestions-index__title">All Data Ingestions</h1>
+            <button type="button" class="btn btn--primary btn--add-ingestion btn--action" phx-click="add-ingestion">+ Add Data Ingestion</button>
+          </div>
+          <hr class="ingestion-line">
+
+          <%= live_component(@socket, Table, id: :ingestions_table, ingestions: @view_models, is_curator: @is_curator) %>
+
         </div>
-        <hr class="ingestion-line">
-
-        <%= live_component(@socket, Table, id: :ingestions_table, ingestions: @view_models, is_curator: @is_curator) %>
-
       </div>
+      <%= footer_render(@is_curator) %>
     </div>
     """
   end

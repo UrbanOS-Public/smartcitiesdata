@@ -1,6 +1,7 @@
 defmodule AndiWeb.EditOrganizationLiveView do
   use AndiWeb, :live_view
   use AndiWeb.HeaderLiveView
+  use AndiWeb.FooterLiveView
 
   import Phoenix.HTML.Form
   import SmartCity.Event, only: [organization_update: 0, dataset_delete: 0]
@@ -93,6 +94,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       </div>
 
     </div>
+    <%= footer_render(@is_curator) %>
     """
   end
 

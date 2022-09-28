@@ -120,13 +120,20 @@ defmodule Andi.Application do
 
   def set_aws_keys() do
     Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID", true))
-    Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET", true))
+
+    Application.put_env(
+      :ex_aws,
+      :secret_access_key,
+      get_env_variable("AWS_ACCESS_KEY_SECRET", true)
+    )
   end
 
   def set_other_env_variables() do
     Application.put_env(:andi, :logo_url, get_logo_url())
     Application.put_env(:andi, :header_text, get_header_text())
     Application.put_env(:andi, :primary_color, get_primary_color())
+    Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
+    Application.put_env(:andi, :andi_footer_links, get_footer_links())
   end
 
   def get_logo_url() do
@@ -139,6 +146,14 @@ defmodule Andi.Application do
 
   def get_primary_color() do
     get_env_variable("ANDI_PRIMARY_COLOR", true)
+  end
+
+  def get_footer_left_side_text() do
+    get_env_variable("ANDI_FOOTER_LEFT_SIDE_TEXT", true)
+  end
+
+  def get_footer_links() do
+    get_env_variable("ANDI_FOOTER_LINKS", true)
   end
 
   defp guardian_db_sweeper do
