@@ -29,7 +29,7 @@ defmodule AndiWeb.FooterLiveView do
   end
 
   def get_links() do
-    env_var = Application.get_env(:andi, :footer_links)
+    env_var = Application.get_env(:andi, :andi_footer_links)
     Jason.decode!(env_var)
   end
 
