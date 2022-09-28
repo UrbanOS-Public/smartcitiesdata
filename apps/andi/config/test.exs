@@ -41,6 +41,6 @@ System.put_env("ANDI_HEADER_TEXT", "Data Submission Tool")
 System.put_env("ANDI_FOOTER_LEFT_SIDE_TEXT", "Some Left Side Text")
 
 System.put_env(
-  "footer_links",
+  "ANDI_FOOTER_LINKS",
   "[{\"linkText\":\"Example 1\", \"url\":\"https://www.example.com\"}, {\"linkText\":\"Example 2\", \"url\":\"https://www.google.com\"}]"
 )
