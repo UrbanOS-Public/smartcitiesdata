@@ -10,14 +10,11 @@
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
     <title>Andi · Data Curator Interface</title>
     <style>
-          .active {border-bottom: 3px solid <%= get_primary_color() %>; color: <%= get_primary_color() %>;}
           .active-tab {
-            color: <%= get_primary_color() %>;
             border-bottom: 3px solid <%= get_primary_color() %>;
           }
           .component-number--expanded {
             background-color: <%= get_primary_color() %>;
-            color: white;
             border: 1px solid <%= get_primary_color() %>;
           }
           .btn--primary-outline {
@@ -26,6 +23,23 @@
           }
           .btn--primary {
             background-color: <%= get_primary_color() %>;
+          }
+          .data-dictionary-form-edit-section {
+            .data-dictionary-field-editor {
+              .format-label {
+                a {
+                  color:  <%= get_primary_color() %>;
+                }
+              }
+            }
+          }
+          .help-text-label {
+              a {
+                  color: <%= get_primary_color() %>;
+              }
+          }
+          .primary-color {
+            color: <%= get_primary_color() %>;
           }
     </style>
   </head>
