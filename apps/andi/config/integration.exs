@@ -156,7 +156,7 @@ System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
 System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
 System.put_env("ANDI_LOGO_URL", "/images/UrbanOS.svg")
 System.put_env("ANDI_HEADER_TEXT", "Data Submission Tool")
-System.put_env("ANDI_PRIMARY_COLOR", "#28807C")
+System.put_env("ANDI_PRIMARY_COLOR", "#1170C8")
 System.put_env("ANDI_FOOTER_LEFT_SIDE_TEXT", "Some Left Side Text")
 
 System.put_env(

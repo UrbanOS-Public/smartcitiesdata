@@ -9,44 +9,7 @@
     <%= csrf_meta_tag() %>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
     <title>Andi · Data Curator Interface</title>
-    <style>
-      .root {
-        accent-color: <%= get_primary_color() %>;
-      }
-      .active-tab {
-        border-bottom: 3px solid <%= get_primary_color() %>;
-      }
-      .component-number--expanded {
-        background-color: <%= get_primary_color() %>;
-        border: 1px solid <%= get_primary_color() %>;
-      }
-      .btn--primary-outline {
-        color:  <%= get_primary_color() %>;
-        border: 1px solid  <%= get_primary_color() %>;
-      }
-      .btn--primary {
-        background-color: <%= get_primary_color() %>;
-      }
-      .data-dictionary-form-edit-section .data-dictionary-field-editor .format-label a  {
-        color:  <%= get_primary_color() %>;
-      }
-      .help-text-label a {
-        color: <%= get_primary_color() %>;
-      }
-      .primary-color {
-        color: <%= get_primary_color() %>;
-      }
-      .primary-color-link a {
-        background-color: transparent;
-        color: <%= get_primary_color() %>;
-      }
-      .primary-color-link a:hover {
-        background-color: transparent;
-      }
-      .primary-color-link a:active {
-        background-color: #ddd;
-      }
-    </style>
+    <%= render "style.html" %>
   </head>
   <body>
     <div class="root">
