@@ -92,7 +92,11 @@ defmodule Andi.Application do
   end
 
   def get_env_variable(var_name, throw_if_absent) do
-    var = System.get_env(var_name)
+    var =
+      case Application.get_env(:andi, :var_name) do
+        nil -> System.get_env(var_name)
+        value -> value
+      end
 
     if is_invalid_env_variable(var) do
       Logger.warn("Required environment variable #{var_name} is nil.")
@@ -116,22 +120,32 @@ defmodule Andi.Application do
 
   def set_aws_keys() do
     Application.put_env(:ex_aws, :access_key_id, get_env_variable("AWS_ACCESS_KEY_ID", true))
-    Application.put_env(:ex_aws, :secret_access_key, get_env_variable("AWS_ACCESS_KEY_SECRET", true))
+
+    Application.put_env(
+      :ex_aws,
+      :secret_access_key,
+      get_env_variable("AWS_ACCESS_KEY_SECRET", true)
+    )
   end
 
   def set_other_env_variables() do
     Application.put_env(:andi, :logo_url, get_logo_url())
     Application.put_env(:andi, :header_text, get_header_text())
+    Application.put_env(:andi, :primary_color, get_primary_color())
     Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
     Application.put_env(:andi, :andi_footer_links, get_footer_links())
   end
 
   def get_logo_url() do
-    env_url = get_env_variable("ANDI_LOGO_URL", true)
+    get_env_variable("ANDI_LOGO_URL", true)
   end
 
   def get_header_text() do
-    env_url = get_env_variable("ANDI_HEADER_TEXT", true)
+    get_env_variable("ANDI_HEADER_TEXT", true)
+  end
+
+  def get_primary_color() do
+    get_env_variable("ANDI_PRIMARY_COLOR", true)
   end
 
   def get_footer_left_side_text() do

@@ -9,6 +9,7 @@
     <%= csrf_meta_tag() %>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
     <title>Andi · Data Curator Interface</title>
+    <%= render "style.html" %>
   </head>
   <body>
     <div class="root">

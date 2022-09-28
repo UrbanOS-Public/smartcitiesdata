@@ -2,16 +2,16 @@ $component-number-width: 4rem;
 $component-header-height: 7.5rem;
 
 .edit-page {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 2fr;
-  grid-row-gap: 4rem;
-  padding: 2rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 2fr;
+    grid-row-gap: 4rem;
+    padding: 2rem;
 
-  flex: 1;
-  background: $color-content-background;
-  box-shadow: $box-shadow;
-  margin: 1em;
+    flex: 1;
+    background: $color-content-background;
+    box-shadow: $box-shadow;
+    margin: 1em;
 }
 
 .form-component {
@@ -19,24 +19,24 @@ $component-header-height: 7.5rem;
 }
 
 .form-section {
-  padding-left: $component-number-width - 1rem;
-  margin-top: -$component-header-height + 1rem;
-  padding-top: $component-header-height;
-  margin-left: 1rem;
-  border-left: 2px solid $color-form-border;
+    padding-left: $component-number-width - 1rem;
+    margin-top: -$component-header-height + 1rem;
+    padding-top: $component-header-height;
+    margin-left: 1rem;
+    border-left: 2px solid $color-form-border;
 }
 
 .form-grid {
-  display: grid;
-  grid-column-gap: 5rem;
-  grid-row-gap: 1rem;
+    display: grid;
+    grid-column-gap: 5rem;
+    grid-row-gap: 1rem;
 }
 
 .edit-button-group {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
-  grid-template-areas:
-    "cancel-btn messages save-btn";
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    grid-template-areas:
+        "cancel-btn messages save-btn";
 }
 
 .edit-button-group__messages {
@@ -44,8 +44,8 @@ $component-header-height: 7.5rem;
 }
 
 .full-width {
-  width: 100%;
-  box-sizing: border-box;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .component-edit-section--collapsed {
@@ -64,22 +64,22 @@ $component-header-height: 7.5rem;
     cursor: pointer;
 }
 
-#metadata-form > .form-section {
+#metadata-form>.form-section {
     margin-top: -3rem;
     padding-top: 4rem;
 }
 
-#extract-step-form > .form-section {
+#extract-step-form>.form-section {
     margin-top: -3rem;
     padding-top: 4rem;
 }
 
-.finalize-form--collapsed > .form-section {
-  margin-top: -9.5rem;
-  margin-bottom: 4rem;
+.finalize-form--collapsed>.form-section {
+    margin-top: -9.5rem;
+    margin-bottom: 4rem;
 }
 
-.datasets-data-dictionary { 
+.datasets-data-dictionary {
     .form-section {
         margin-top: -8.75rem;
     }
@@ -103,9 +103,7 @@ $component-header-height: 7.5rem;
 }
 
 .component-number--expanded {
-    background-color: $primary-blue;
     color: white;
-    border: 1px solid $primary-blue;
 }
 
 .component-number--collapsed {
@@ -113,6 +111,7 @@ $component-header-height: 7.5rem;
     color: white;
     border: 1px solid black;
 }
+
 .component-number--valid {
     background-color: #27cb00;
     color: white;
@@ -166,8 +165,8 @@ $component-header-height: 7.5rem;
 }
 
 .edit-button-group__messages {
-  margin: auto;
-  text-align: center;
+    margin: auto;
+    text-align: center;
 }
 
 .component-title-action {
@@ -220,7 +219,6 @@ $component-header-height: 7.5rem;
     a {
         position: absolute;
         right: 0;
-        color: $color-text-link;
         font-size: 14px;
     }
 }
@@ -267,9 +265,11 @@ $component-header-height: 7.5rem;
 
 .btn-group__standard {
     display: flex;
+
     button {
         margin-right: 20px;
     }
+
     button:last-child {
         margin-right: 0px;
     }
@@ -331,12 +331,11 @@ $component-header-height: 7.5rem;
 }
 
 .document-link {
-    color: $color-text-link;
     margin-bottom: 0.3rem;
     letter-spacing: 0.03rem;
     font-size: 1.2rem;
     font-weight: bold;
-  }
+}
 
 .section-help {
     margin-bottom: 1rem;
@@ -393,23 +392,51 @@ $component-header-height: 7.5rem;
 }
 
 @-webkit-keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
 }
 
 @keyframes fadein {
-    from {bottom: 0; opacity: 0;}
-    to {bottom: 30px; opacity: 1;}
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 1;
+    }
 }
 
 @-webkit-keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
 }
 
 @keyframes fadeout {
-    from {bottom: 30px; opacity: 1;}
-    to {bottom: 0; opacity: 0;}
+    from {
+        bottom: 30px;
+        opacity: 1;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
 }
 
 @include area(edit-button-group, cancel-btn);

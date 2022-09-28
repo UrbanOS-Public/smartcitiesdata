@@ -5,17 +5,7 @@ $button-padding: 10px 50px;
     display: inline-block;
     text-decoration: none;
     cursor: pointer;
-    background-color: black;
-    color: white;
     border: none;
-
-    &:hover {
-        background-color: lighten(black, 20%);
-    }
-
-    &:active {
-        background-color: lighten(black, 40%);
-    }
 }
 
 
@@ -162,7 +152,6 @@ $button-padding: 10px 50px;
 
 .btn--primary {
     color: white;
-    background-color: $primary-blue;
     border: none;
     padding: $button-padding;
 
@@ -183,26 +172,7 @@ $button-padding: 10px 50px;
 }
 
 .btn--primary-outline {
-    background-color: white;
-    color: $primary-blue;
-    border: 1px solid $primary-blue;
-    padding: $button-padding;
-
-    &:active {
-        background-color: rgba($primary-blue, 20%);
-        //will the boader stay the same 
-    }
-
-    &:hover {
-        background-color: rgba($primary-blue, 10%);
-        border: 1px solid $primary-blue;
-    }
-
-    &:disabled {
-        background-color: rgba($primary-blue, 50%);
-        border: 1px solid $primary-blue;
-        cursor: default;
-    }
+    background: white;
 }
 
 .btn--secondary {
