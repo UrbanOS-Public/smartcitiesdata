@@ -45,7 +45,7 @@ defmodule Alchemist.BroadwayTest do
           transformations: [transform1, transform2]
         })
 
-      allow Brook.get!(any(), :ingestions, @ingestion_id), return: [ingestion]
+      allow Brook.get!(any(), :ingestions, @ingestion_id), return: ingestion
 
       {:ok, broadway} =
         Alchemist.Broadway.start_link(
@@ -201,7 +201,7 @@ defmodule Alchemist.BroadwayTest do
           transformations: [transform]
         })
 
-      allow Brook.get!(any(), :ingestions, @ingestion_id), return: [ingestion]
+      allow Brook.get!(any(), :ingestions, @ingestion_id), return: ingestion
 
       {:ok, broadway} =
         Alchemist.Broadway.start_link(
