@@ -15,6 +15,14 @@
   }
   .btn--primary {
     background-color: <%= get_primary_color() %>;
+    cursor: pointer;
+    color: <%= get_primary_button_text_color() %>;
+  }
+  .btn--primary:hover {
+    background-color: <%= get_hover_primary_color() %>;
+  }
+  .btn--primary:active {
+    background-color: <%= get_active_primary_color() %>;
   }
   .data-dictionary-form-edit-section .data-dictionary-field-editor .format-label a  {
     color:  <%= get_primary_color() %>;
@@ -25,9 +33,12 @@
   .primary-color {
     color: <%= get_primary_color() %>;
   }
+  .primary-color-text {
+    color: <%= get_primary_text_color() %>;
+  }
   .primary-color-link a {
     background-color: transparent;
-    color: <%= get_primary_color() %>;
+    color: <%= get_primary_text_color() %>;
   }
   .primary-color-link a:hover {
     background-color: transparent;

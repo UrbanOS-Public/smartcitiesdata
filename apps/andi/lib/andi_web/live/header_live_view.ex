@@ -34,7 +34,7 @@ defmodule AndiWeb.HeaderLiveView do
       <span class="page-header__primary" phx-click="show-datasets">
         <img id="header-logo" src=<%= get_logo() %>></img>
         <span><%= get_header_text() %></span>
-        <span class="log-out-link primary-color" phx-click="log-out">
+        <span class="log-out-link primary-color-text" phx-click="log-out">
           <span class="material-icons">person</span>
           <span class="log-out-link__text">Log Out</span>
         </span>
@@ -99,7 +99,7 @@ defmodule AndiWeb.HeaderLiveView do
 
   def show_selected_if_active(match_path, current_path) do
     if match_path == current_path do
-      "active-tab primary-color"
+      "active-tab primary-color-text"
     else
       ""
     end
