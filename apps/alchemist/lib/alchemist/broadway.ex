@@ -76,8 +76,7 @@ defmodule Alchemist.Broadway do
   end
 
   defp update_config(ingestion_id) do
-    values = Brook.get_all_values!(Alchemist.instance_name(), :ingestions)
-    opts = Enum.find(values, fn value -> value.id == ingestion_id end)
+    opts = Brook.get!(Alchemist.instance_name(), :ingestions, ingestion_id)
     Transformers.construct(opts.transformations)
   end
 
