@@ -2,7 +2,11 @@ defmodule Alchemist.Broadway do
   @moduledoc """
   Broadway implementation for Alchemist
   """
-  @producer_module Application.get_env(:alchemist, :broadway_producer_module, OffBroadway.Kafka.Producer)
+  @producer_module Application.get_env(
+                     :alchemist,
+                     :broadway_producer_module,
+                     OffBroadway.Kafka.Producer
+                   )
   use Broadway
   use Properties, otp_app: :alchemist
 
@@ -55,10 +59,9 @@ defmodule Alchemist.Broadway do
   # used by processor.
   # This is where we alter the message to be transformed
   #   on it's way out of alchemist.
-  def handle_message(_processor, %Message{data: message_data} = message, %{
-        ingestion: ingestion,
-        transformations: transformations
-      }) do
+  def handle_message(_processor, %Message{data: message_data} = message, %{ingestion: ingestion}) do
+    transformations = update_config(ingestion.id)
+
     with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
          {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
@@ -67,8 +70,15 @@ defmodule Alchemist.Broadway do
     else
       {:error, reason} ->
         DeadLetter.process(ingestion.targetDataset, ingestion.id, message_data.value, @app_name, reason: reason)
+
         Message.failed(message, reason)
     end
+  end
+
+  defp update_config(ingestion_id) do
+    values = Brook.get_all_values!(Alchemist.instance_name(), :ingestions)
+    opts = Enum.find(values, fn value -> value.id == ingestion_id end)
+    Transformers.construct(opts.transformations)
   end
 
   # used by batcher
