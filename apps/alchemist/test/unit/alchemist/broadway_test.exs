@@ -45,6 +45,8 @@ defmodule Alchemist.BroadwayTest do
           transformations: [transform1, transform2]
         })
 
+      allow Brook.get!(any(), :ingestions, @ingestion_id), return: [ingestion]
+
       {:ok, broadway} =
         Alchemist.Broadway.start_link(
           # ingestion is destructured in handle message as the th~ird argument
@@ -198,6 +200,8 @@ defmodule Alchemist.BroadwayTest do
           targetDataset: @dataset_id,
           transformations: [transform]
         })
+
+      allow Brook.get!(any(), :ingestions, @ingestion_id), return: [ingestion]
 
       {:ok, broadway} =
         Alchemist.Broadway.start_link(
