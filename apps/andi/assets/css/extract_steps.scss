@@ -8,7 +8,7 @@
         "body body"
         "test-section .";
 
-    .extract-http-step-form__body textarea{
+    .extract-http-step-form__body textarea {
         height: 8rem;
         font-family: 'Courier New', Courier, monospace;
     }
@@ -24,7 +24,7 @@
         "path ."
         "cacheTtl .";
 
-    .extract-auth-step-form__body textarea{
+    .extract-auth-step-form__body textarea {
         height: 8rem;
         font-family: 'Courier New', Courier, monospace;
     }
@@ -50,7 +50,7 @@
     #download_dataset_sample_link {
         margin-left: 0.5rem;
         text-decoration: underline;
-        color: $color-text-link;
+        color: blue;
 
         &:hover {
             cursor: pointer;
@@ -92,7 +92,6 @@
     .extract-step-header__up {
         width: 24px;
         height: 24px;
-        color: $color-text-link;
         cursor: pointer;
         padding: 0;
     }
@@ -101,7 +100,6 @@
         width: 24px;
         height: 24px;
         cursor: pointer;
-        color: $color-text-link;
         padding: 0;
     }
 
@@ -114,7 +112,7 @@
     }
 }
 
-.extract-steps__error-message{
+.extract-steps__error-message {
     color: red;
     margin-bottom: 2rem;
 }

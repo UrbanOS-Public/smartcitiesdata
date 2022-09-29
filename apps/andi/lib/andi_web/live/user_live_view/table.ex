@@ -21,7 +21,7 @@ defmodule AndiWeb.UserLiveView.Table do
           <%= for user <- @users do %>
           <tr class="users-table__tr">
             <td class="users-table__cell users-table__cell--break users-table__cell--email" style="width: 80%;"><%= user["email"] %></td>
-            <td class="users-table__cell users-table__cell--break"><%= Link.link("Edit", to: "/user/#{user["id"]}", class: "btn") %></td>
+            <td class="users-table__cell users-table__cell--break primary-color-link"><%= Link.link("Edit", to: "/user/#{user["id"]}", class: "btn") %></td>
           </tr>
           <% end %>
         <% end %>

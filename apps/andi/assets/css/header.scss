@@ -33,7 +33,6 @@
 
     .log-out-link {
       display: flex;
-      color: $color-text-link;
       align-items: center;
       font-size: 1.1rem;
       margin-left: auto;
@@ -62,11 +61,6 @@
       &:hover {
         cursor: pointer;
       }
-    }
-
-    .active-tab {
-      color: $primary-blue;
-      border-bottom: 3px solid $primary-blue;
     }
   }
 }

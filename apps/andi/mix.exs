@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.3.12",
+      version: "2.4.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -44,6 +44,7 @@ defmodule Andi.MixProject do
       {:cowlib, "== 2.9.1", override: true},
       {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
       {:crontab, "~> 1.1"},
+      {:css_colors, "~> 0.2.2"},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
