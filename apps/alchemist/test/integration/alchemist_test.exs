@@ -77,47 +77,6 @@ defmodule AlchemistTest do
     end
   end
 
-  test "alchemist only starts the processes for ingest once on event handle", %{
-    pre_transform_messages: pre_transform_messages
-  } do
-    dataset =
-      TDG.create_dataset(%{
-        id: "pirates2",
-        technical: %{
-          sourceType: "ingest",
-          schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
-          ]
-        }
-      })
-
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
-
-    pre_transform_messages =
-      Enum.map(pre_transform_messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
-
-    input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
-    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
-
-    Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
-    TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
-
-    1..100
-    |> Enum.each(fn _ ->
-      Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
-    end)
-
-    TestHelpers.produce_messages(pre_transform_messages, input_topic, elsa_brokers())
-
-    eventually fn ->
-      post_transform_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
-
-      assert pre_transform_messages == post_transform_messages
-    end
-  end
-
   # test "alchemist sends invalid data messages to the dlq", %{invalid_message: invalid_message} do
   #   encoded_og_message = invalid_message |> Jason.encode!()
 
