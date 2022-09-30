@@ -63,7 +63,6 @@ defmodule Alchemist.Broadway do
         ingestion: ingestion,
         transformations: transformations
       }) do
-
     with {:ok, %{payload: payload} = smart_city_data} <- SmartCity.Data.new(message_data.value),
          {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
