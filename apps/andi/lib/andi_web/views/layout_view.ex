@@ -8,7 +8,7 @@ defmodule AndiWeb.LayoutView do
   def get_primary_button_text_color() do
     color = CssColors.parse!(get_primary_color())
 
-    case CssColors.get_lightness(color) < 0.25 do
+    case CssColors.get_lightness(color) < 0.5 do
       false -> "black"
       true -> "white"
     end
@@ -17,7 +17,7 @@ defmodule AndiWeb.LayoutView do
   def get_primary_text_color() do
     color = CssColors.parse!(get_primary_color())
 
-    case CssColors.get_lightness(color) < 0.25 do
+    case CssColors.get_lightness(color) < 0.5 do
       false -> to_string(CssColors.darken(color, 0.2))
       true -> to_string(color)
     end
@@ -26,7 +26,7 @@ defmodule AndiWeb.LayoutView do
   def get_hover_primary_color() do
     color = CssColors.parse!(get_primary_color())
 
-    case CssColors.get_lightness(color) < 0.25 do
+    case CssColors.get_lightness(color) < 0.5 do
       false -> to_string(CssColors.darken(color, 0.1))
       true -> to_string(CssColors.lighten(color, 0.1))
     end
@@ -35,7 +35,7 @@ defmodule AndiWeb.LayoutView do
   def get_active_primary_color() do
     color = CssColors.parse!(get_primary_color())
 
-    case CssColors.get_lightness(color) < 0.25 do
+    case CssColors.get_lightness(color) < 0.5 do
       false -> to_string(CssColors.darken(color, 0.2))
       true -> to_string(CssColors.lighten(color, 0.2))
     end
