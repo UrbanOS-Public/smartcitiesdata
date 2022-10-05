@@ -125,11 +125,11 @@ defmodule Forklift.Event.EventHandler do
       }) do
     data_extract_end() |> add_event_count(author, dataset_id)
 
-    ingestion_status = Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start)
+    dataset = Forklift.Datasets.get!(dataset_id)
+
+    ingestion_status = Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start)
 
     if ingestion_status == :ingestion_complete do
-      dataset = Forklift.Datasets.get!(dataset_id)
-
       Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
     end
 
