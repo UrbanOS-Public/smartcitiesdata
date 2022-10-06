@@ -5,6 +5,7 @@
     "watch": "webpack --mode development --watch"
   },
   "dependencies": {
+    "@fontsource/roboto": "^4.5.8",
     "cacache": "^15.2.0",
     "material-icons": "^1.11.8",
     "phoenix": "file:../../../deps/phoenix",
