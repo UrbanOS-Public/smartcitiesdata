@@ -160,7 +160,11 @@ defmodule Forklift.Event.EventHandlingTest do
       msg_target: msg_target,
       fake_extract_end_msg: fake_extract_end_msg
     } do
-      expect(Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start), return: :in_progress)
+      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
+        return: :in_progress
+      )
+
+      expect(Forklift.Datasets.get!(dataset.id), return: dataset)
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
@@ -180,7 +184,7 @@ defmodule Forklift.Event.EventHandlingTest do
       msg_target: msg_target,
       fake_extract_end_msg: fake_extract_end_msg
     } do
-      expect(Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start),
+      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
         return: :ingestion_complete
       )
 
@@ -205,7 +209,7 @@ defmodule Forklift.Event.EventHandlingTest do
       msg_target: msg_target,
       fake_extract_end_msg: fake_extract_end_msg
     } do
-      expect(Forklift.IngestionProgress.store_target(msg_target, ingestion_id, extract_start),
+      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
         return: :in_progress
       )
 
@@ -222,7 +226,6 @@ defmodule Forklift.Event.EventHandlingTest do
         )
       end)
 
-      refute_called Forklift.Datasets.get!(any())
       refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
     end
   end

@@ -14,11 +14,18 @@ defmodule Forklift.IngestionProgress do
     end
   end
 
-  @spec store_target(SmartCity.Dataset.t(), Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
-  def store_target(dataset, target, ingestion_id, extract_time) do
+  @spec store_target(SmartCity.Dataset.t(), Integer.t(), String.t(), Integer.t(), Integer.t()) ::
+          :in_progress | :ingestion_complete
+  def store_target(dataset, target, ingestion_id, extract_time, timer_time \\ 240_000) do
     extract_id = get_extract_id(ingestion_id, extract_time)
 
-    timer = :timer.apply_after(240000, Forklift.IngestionTimer, :compact_if_not_finished, [dataset, ingestion_id, extract_id, extract_time])
+    timer =
+      :timer.apply_after(timer_time, Forklift.IngestionTimer, :compact_if_not_finished, [
+        dataset,
+        ingestion_id,
+        extract_id,
+        extract_time
+      ])
 
     set_extract_target(extract_id, target)
 
@@ -71,6 +78,7 @@ defmodule Forklift.IngestionProgress do
     if timer != nil do
       :timer.cancel(timer)
     end
+
     :ingestion_complete
   end
 

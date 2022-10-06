@@ -2,8 +2,6 @@ defmodule Forklift.IngestionProgressTest do
   alias Forklift.IngestionProgress
   use ExUnit.Case
 
-  import Mock
-
   setup_all do
     on_exit(fn ->
       {:ok, _} = Redix.command(:redix, ["flushall"])
@@ -63,7 +61,7 @@ defmodule Forklift.IngestionProgressTest do
       extract_time: extract_time,
       dataset: dataset
     } do
-      IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time)
+      IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time, 1000)
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_target"]) == "7"
     end
 
@@ -72,7 +70,7 @@ defmodule Forklift.IngestionProgressTest do
       extract_time: extract_time,
       dataset: dataset
     } do
-      assert IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time) == :in_progress
+      assert IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time, 1000) == :in_progress
     end
 
     test "store_target returns :in_progress if count is *less than* new target", %{
@@ -81,7 +79,7 @@ defmodule Forklift.IngestionProgressTest do
       dataset: dataset
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_count", 6])
-      assert IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time) == :in_progress
+      assert IngestionProgress.store_target(dataset, 7, ingestion_id, extract_time, 1000) == :in_progress
     end
 
     test "store_target returns :ingestion_complete if count meets new target", %{
@@ -90,7 +88,7 @@ defmodule Forklift.IngestionProgressTest do
       dataset: dataset
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_count", 3])
-      assert IngestionProgress.store_target(dataset, 3, ingestion_id, extract_time) == :ingestion_complete
+      assert IngestionProgress.store_target(dataset, 3, ingestion_id, extract_time, 1000) == :ingestion_complete
     end
 
     test "ingestion count and target are cleared when target is achieved", %{
@@ -99,7 +97,7 @@ defmodule Forklift.IngestionProgressTest do
       dataset: dataset
     } do
       Redix.command!(:redix, ["SET", get_extract_id(ingestion_id, extract_time) <> "_count", 3])
-      IngestionProgress.store_target(dataset, 3, ingestion_id, extract_time)
+      IngestionProgress.store_target(dataset, 3, ingestion_id, extract_time, 1000)
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_target"]) == nil
       assert Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, extract_time) <> "_count"]) == nil
     end
