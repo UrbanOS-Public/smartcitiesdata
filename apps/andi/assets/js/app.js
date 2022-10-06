@@ -4,8 +4,6 @@
 import 'tippy.js/dist/tippy.css';
 import normalize_css from 'normalize.css'
 import scss from "../css/app.scss"
-import "@fontsource/roboto";
-
 import tippy from 'tippy.js';
 
 // webpack automatically bundles all modules in your
