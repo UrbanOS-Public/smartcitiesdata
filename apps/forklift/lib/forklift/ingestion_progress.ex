@@ -14,11 +14,11 @@ defmodule Forklift.IngestionProgress do
     end
   end
 
-  @spec store_target(any, Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
+  @spec store_target(SmartCity.Dataset.t(), Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
   def store_target(dataset, target, ingestion_id, extract_time) do
     extract_id = get_extract_id(ingestion_id, extract_time)
 
-    timer = Forklift.IngestionTimer.start(dataset, ingestion_id, extract_id, extract_time)
+    timer = :timer.apply_after(240000, Forklift.IngestionTimer, :compact_if_not_finished, [dataset, ingestion_id, extract_id, extract_time])
 
     set_extract_target(extract_id, target)
 
@@ -63,12 +63,13 @@ defmodule Forklift.IngestionProgress do
     extract_id <> "_target"
   end
 
+  @spec complete_extract(binary, any) :: :ingestion_complete
   def complete_extract(extract_id, timer \\ nil) do
     Redix.command!(:redix, ["GETDEL", get_count_key(extract_id)])
     Redix.command!(:redix, ["GETDEL", get_target_key(extract_id)])
 
     if timer != nil do
-      Task.shutdown(timer)
+      :timer.cancel(timer)
     end
     :ingestion_complete
   end

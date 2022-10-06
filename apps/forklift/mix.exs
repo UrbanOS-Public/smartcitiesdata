@@ -42,6 +42,7 @@ defmodule Forklift.MixProject do
       {:libcluster, "~> 3.1"},
       {:libvault, "~> 0.2"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:observer_cli, "~> 1.5"},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:poison, "~> 3.1", override: true},
