@@ -3,7 +3,7 @@ defmodule AndiWeb.Router do
   require Ueberauth
 
   @csp "default-src 'self';" <>
-         "style-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com;" <>
+         "style-src 'self' 'unsafe-inline' 'unsafe-eval';" <>
          "script-src 'self' 'unsafe-inline' 'unsafe-eval';" <>
          "font-src https://fonts.gstatic.com data: 'self';" <>
          "img-src 'self' https: data:;"

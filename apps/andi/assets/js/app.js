@@ -4,7 +4,6 @@
 import 'tippy.js/dist/tippy.css';
 import normalize_css from 'normalize.css'
 import scss from "../css/app.scss"
-
 import tippy from 'tippy.js';
 
 // webpack automatically bundles all modules in your
@@ -120,4 +119,3 @@ const fileToText = (file) => new Promise((resolve, reject) => {
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket('/live', Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 liveSocket.connect()
-
