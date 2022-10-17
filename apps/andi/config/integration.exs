@@ -158,8 +158,9 @@ System.put_env("ANDI_LOGO_URL", "/images/UrbanOS.svg")
 System.put_env("ANDI_HEADER_TEXT", "Data Submission Tool")
 System.put_env("ANDI_PRIMARY_COLOR", "#1170C8")
 System.put_env("ANDI_FOOTER_LEFT_SIDE_TEXT", "Some Left Side Text")
+System.put_env("ANDI_FOOTER_LEFT_SIDE_LINK", "https://www.example.com")
 
 System.put_env(
-  "ANDI_FOOTER_LINKS",
+  "ANDI_FOOTER_RIGHT_LINKS",
   "[{\"linkText\":\"Example 1\", \"url\":\"https://www.example.com\"}, {\"linkText\":\"Example 2\", \"url\":\"https://www.google.com\"}]"
 )
