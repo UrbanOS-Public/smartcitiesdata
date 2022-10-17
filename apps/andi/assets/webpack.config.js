@@ -35,7 +35,7 @@ module.exports = (env, options) => ({
         ]
       },
       {
-        test: /\.(woff|svg)(\?v=[a-z0-9]\.[a-z0-9]\.[a-z0-9])?$/,
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=[a-z0-9]\.[a-z0-9]\.[a-z0-9])?$/,
         use: [
           {
             loader: 'file-loader',
