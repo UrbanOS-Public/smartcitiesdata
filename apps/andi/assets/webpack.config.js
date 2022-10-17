@@ -35,15 +35,13 @@ module.exports = (env, options) => ({
         ]
       },
       {
-        test: /\.(woff|svg)(\?v=[a-z0-9]\.[a-z0-9]\.[a-z0-9])?$/,
+        test: /\.(woff)(\?v=[a-z0-9]\.[a-z0-9]\.[a-z0-9])?$/,
         use: [
           {
             loader: 'file-loader',
             options: {
               name: '[name].[ext]',
-              outputPath: '../fonts/',
-              mimetype: 'font/woff2',
-              encoding: false
+              outputPath: '../fonts/'
             }
           }
         ]
