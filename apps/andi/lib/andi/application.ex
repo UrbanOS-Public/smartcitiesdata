@@ -133,7 +133,8 @@ defmodule Andi.Application do
     Application.put_env(:andi, :header_text, get_header_text())
     Application.put_env(:andi, :primary_color, get_primary_color())
     Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
-    Application.put_env(:andi, :andi_footer_links, get_footer_links())
+    Application.put_env(:andi, :footer_left_side_link, get_footer_left_side_link())
+    Application.put_env(:andi, :andi_footer_right_links, get_footer_right_links())
   end
 
   def get_logo_url() do
@@ -152,8 +153,12 @@ defmodule Andi.Application do
     get_env_variable("ANDI_FOOTER_LEFT_SIDE_TEXT", true)
   end
 
-  def get_footer_links() do
-    get_env_variable("ANDI_FOOTER_LINKS", true)
+  def get_footer_left_side_link() do
+    get_env_variable("ANDI_FOOTER_LEFT_SIDE_LINK", false)
+  end
+
+  def get_footer_right_links() do
+    get_env_variable("ANDI_FOOTER_RIGHT_LINKS", true)
   end
 
   defp guardian_db_sweeper do

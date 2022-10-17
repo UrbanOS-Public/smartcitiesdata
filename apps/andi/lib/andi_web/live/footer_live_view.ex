@@ -7,10 +7,16 @@ defmodule AndiWeb.FooterLiveView do
   def render(assigns) do
     ~L"""
       <footer class="page-footer">
-        <span class="left-side-text"><%= get_left_side_text() %></span>
+        <span class="left-side-text">
+          <%= if get_left_side_link() do %>
+            <a class="footer-link" href="<%= get_left_side_link() %>"><%= get_left_side_text() %></a>
+          <% else %>
+            <%= get_left_side_text() %>
+          <% end %>
+        </span>
         <span class="links">
-          <%= for link <- get_links() do %>
-            <a class="link" href=<%= link["url"] %>><%= link["linkText"] %></a>
+          <%= for link <- get_right_links() do %>
+            <a class="footer-link" href='<%= link["url"] %>'><%= link["linkText"] %></a>
           <% end %>
         </span>
       </footer>
@@ -28,10 +34,11 @@ defmodule AndiWeb.FooterLiveView do
     live_component(AndiWeb.FooterLiveView, is_curator: is_curator)
   end
 
-  def get_links() do
-    env_var = Application.get_env(:andi, :andi_footer_links)
+  def get_right_links() do
+    env_var = Application.get_env(:andi, :andi_footer_right_links)
     Jason.decode!(env_var)
   end
 
   def get_left_side_text(), do: Application.get_env(:andi, :footer_left_side_text)
+  def get_left_side_link(), do: Application.get_env(:andi, :footer_left_side_link)
 end
