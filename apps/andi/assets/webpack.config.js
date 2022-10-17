@@ -42,7 +42,6 @@ module.exports = (env, options) => ({
             options: {
               name: '[name].[ext]',
               outputPath: '../fonts/',
-              mimetype: 'font/woff2',
               encoding: false
             }
           }
