@@ -34,30 +34,30 @@ defmodule AndiWeb.HeaderLiveView do
       <span class="page-header__primary" phx-click="show-datasets">
         <img id="header-logo" src=<%= get_logo() %>></img>
         <span><%= get_header_text() %></span>
-        <span class="log-out-link primary-color-text" phx-click="log-out">
+        <span id="log-out-link" class="log-out-link primary-color-text" phx-click="log-out" phx-keydown="log-out" tabindex="0">
           <span class="material-icons">person</span>
           <span class="log-out-link__text">Log Out</span>
         </span>
       </span>
       <span class="page-header__secondary">
         <%= if @is_curator do %>
-          <span id="datasets-link" class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets">
+          <span id="datasets-link" class='link <%= show_selected_if_active(header_datasets_path(), assigns.path) %>' phx-click="show-datasets" phx-keydown="show-datasets" tabindex="0">
             <span class="material-icons">storage</span>
             <span>Datasets</span>
           </span>
-          <span id="ingestions-link" class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions">
+          <span id="ingestions-link" class="link <%= show_selected_if_active(header_ingestions_path(), assigns.path) %>" phx-click="show-ingestions" phx-keydown="show-ingestions" tabindex="0">
             <span class="material-icons">input</span>
             <span>Ingestions</span>
           </span>
-          <span id="organizations-link" class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations">
+          <span id="organizations-link" class="link <%= show_selected_if_active(header_organizations_path(), assigns.path) %>" phx-click="show-organizations" phx-keydown="show-organizations" tabindex="0">
             <span class="material-icons">settings</span>
             <span>Organizations</span>
           </span>
-          <span id="access-groups-link" class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups">
+          <span id="access-groups-link" class="link <%= show_selected_if_active(header_access_groups_path(), assigns.path) %>" phx-click="show-access-groups" phx-keydown="show-access-groups" tabindex="0">
             <span class="material-icons">lock</span>
             <span>Access Groups</span>
           </span>
-          <span id="users-link" class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users">
+          <span id="users-link" class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users" phx-keydown="show-users" tabindex="0">
             <span class="material-icons">people</span>
             <span>Users</span>
           </span>
@@ -71,28 +71,36 @@ defmodule AndiWeb.HeaderLiveView do
     quote do
       import AndiWeb.HeaderLiveView
 
-      def handle_event("show-datasets", _, socket) do
+      @click %{}
+      @enter %{"key" => "Enter"}
+      @space %{"key" => " "}
+
+      def handle_event("show-datasets", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_datasets_path())
       end
 
-      def handle_event("show-organizations", _, socket) do
+      def handle_event("show-organizations", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path())
       end
 
-      def handle_event("show-users", _, socket) do
+      def handle_event("show-users", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_users_path())
       end
 
-      def handle_event("show-access-groups", _, socket) do
+      def handle_event("show-access-groups", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_access_groups_path())
       end
 
-      def handle_event("show-ingestions", _, socket) do
+      def handle_event("show-ingestions", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_ingestions_path())
       end
 
-      def handle_event("log-out", _, socket) do
+      def handle_event("log-out", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
+      end
+
+      def handle_event(_, _, socket) do
+        {:noreply, socket}
       end
     end
   end

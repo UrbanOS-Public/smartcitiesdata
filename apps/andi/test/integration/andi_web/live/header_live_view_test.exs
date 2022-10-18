@@ -8,7 +8,7 @@ defmodule AndiWeb.HeaderLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
-
+  import Checkov
   import FlokiHelpers,
     only: [
       find_elements: 2
@@ -84,6 +84,32 @@ defmodule AndiWeb.HeaderLiveViewTest do
 
       render_click(ingestions_button)
       assert_redirected(view, "/ingestions")
+    end
+  end
+
+  describe "accessibility" do
+    data_test "#{button} button responds to #{key_type}", %{curator_conn: conn} do
+      {:ok, view, _html} = live(conn, @url_path)
+
+      datasets_button = element(view, selector)
+      render_keydown(datasets_button, %{"key" => key})
+      assert_redirected(view, redirect)
+
+      where ([
+          [:button, :key_type, :selector, :key, :redirect],
+          ["datasets", "enter", "#datasets-link", "Enter", "/datasets"],
+          ["datasets", "space", "#datasets-link", " ", "/datasets"],
+          ["ingestions", "enter", "#ingestions-link", "Enter", "/ingestions"],
+          ["ingestions", "space", "#ingestions-link", " ", "/ingestions"],
+          ["organizations", "enter", "#organizations-link", "Enter", "/organizations"],
+          ["organizations", "space", "#organizations-link", " ", "/organizations"],
+          ["access groups", "enter", "#access-groups-link", "Enter", "/access-groups"],
+          ["access groups", "space", "#access-groups-link", " ", "/access-groups"],
+          ["users", "enter", "#users-link", "Enter", "/users"],
+          ["users", "space", "#users-link", " ", "/users"],
+          ["log-out", "enter", "#log-out-link", "Enter", "/auth/auth0/logout"],
+          ["log-out", "space", "#log-out-link", " ", "/auth/auth0/logout"]
+        ])
     end
   end
 end
