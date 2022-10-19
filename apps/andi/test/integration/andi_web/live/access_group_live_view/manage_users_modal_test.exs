@@ -116,7 +116,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
     assert get_text(html, ".selected-results-from-search") =~ user.name
 
-    remove_action = element(view, ".access-groups-sub-table__cell--break.modal-action-text", "Remove")
+    remove_action = element(view, ".access-groups-sub-table__cell.modal-action-text", "Remove")
     html = render_click(remove_action)
 
     refute get_text(html, ".selected-results-from-search") =~ user.name
