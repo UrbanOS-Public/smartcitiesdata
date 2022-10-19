@@ -1,0 +1,34 @@
+name: test master cron
+on:
+  schedule:
+    - cron: '0 * * * *' 
+jobs:
+  dependencies:
+    name: Get Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.5.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.10.4
+          experimental-otp: true
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
+  test_matrix:
+    name: Run all tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [alchemist, dead_letter, definition_kafka, e2e, initializer, pipeline, protocol_source, reaper, testing, andi, definition, discovery_api, estuary, management, properties, providers, tasks, transformers, annotated_retry, definition_deadletter, discovery_streams, flair, ok, protocol_decoder, raptor, telemetry_event, valkyrie, auth, definition_dictionary, dlq, forklift, performance, protocol_destination, raptor_service, template, web]
+    steps:
+      - name: Run static checks
+        run: |
+          bash scripts/gh-action-static-checks.sh ${{ matrix.app }}
+      - name: Run unit tests
+        run: |
+          bash scripts/gh-action-unit-test.sh ${{ matrix.app }}
+      - name: Run integration tests
+        run: |
+          bash scripts/gh-action-integration-test.sh ${{ matrix.app }}
