@@ -1,4 +1,4 @@
- <%# This file is needed because it's the best way too access the styles set in the env %>
+ <%# This file is needed because it's the best way too access the styles set in the env (i.e. coolor) %>
  <style>
   .root {
     accent-color: <%= get_primary_color() %>;
