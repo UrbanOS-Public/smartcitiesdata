@@ -67,10 +67,6 @@
   border: 1px solid $search-unfocused;
 }
 
-.organizations-index__search-input-container:focus-within {
-  border: 1px solid $search-focused;
-}
-
 .organizations-index__search-icon {
   padding: 0.1rem;
   color: $search-unfocused;

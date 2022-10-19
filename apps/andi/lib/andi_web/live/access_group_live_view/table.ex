@@ -23,7 +23,7 @@ defmodule AndiWeb.AccessGroupLiveView.Table do
           <tr class="access-groups-table__tr">
               <td class="access-groups-table__cell access-groups-table__cell--break access-groups-table__data-title-cell"><%= access_group["name"] %></td>
               <td class="access-groups-table__cell access-groups-table__cell--break"><%= format_modified_date(access_group["modified_date"]) %></td>
-              <td class="access-groups-table__cell access-groups-table__cell--break primary-color-link" style="width: 10%;"><%= Link.link("Edit", to: "/access-groups/#{access_group["id"]}", class: "btn") %></td>
+              <td class="access-groups-table__cell access-groups-table__cell primary-color-link" style="width: 10%;"><%= Link.link("Edit", to: "/access-groups/#{access_group["id"]}", class: "btn") %></td>
             </tr>
           <% end %>
         <% end %>

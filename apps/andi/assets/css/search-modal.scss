@@ -38,10 +38,6 @@
   border: 1px solid $search-unfocused;
 }
 
-.search-modal__search_bar-input-container:focus-within {
-  border: 1px solid $search-focused;
-}
-
 .search-modal__search_bar-icon {
   padding: 0.1rem;
   color: $search-unfocused;

@@ -1,9 +1,9 @@
 .users-view {
-    flex: 1;
-    background: $color-content-background;
-    box-shadow: $box-shadow;
-    height: max-content;
-    margin: 1em;
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: max-content;
+  margin: 1em;
 }
 
 .users-line {
@@ -12,20 +12,20 @@
 }
 
 .users-index {
-    padding: 1rem 3rem;
+  padding: 1rem 3rem;
 }
 
 .users-index__header {
-    display: flex;
-    justify-content: space-between;
+  display: flex;
+  justify-content: space-between;
 }
 
 .users-index__title {
-    font-size: 1.5rem;
-  }
+  font-size: 1.5rem;
+}
 
 .users-index__search {
-    width: 50%;
+  width: 50%;
 }
 
 .users-index__search-input-container {
@@ -33,10 +33,6 @@
   width: 100%;
   margin: 0.5rem;
   border: 1px solid $search-unfocused;
-}
-
-.users-index__search-input-container:focus-within {
-  border: 1px solid $search-focused;
 }
 
 .users-index__search-icon {

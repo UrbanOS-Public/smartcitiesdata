@@ -27,7 +27,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTable do
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break access-groups-sub-table__data-title-cell wide-column"><%= user.name %></td>
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= user.email %></td>
                 <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break wide-column"><%= Enum.join(Enum.map(user.organizations, fn org -> org.orgTitle end), ", ") %></td>
-                <td class="access-groups-sub-table__cell access-groups-sub-table__cell--break modal-action-text thin-column" phx-click="remove-selected-user" phx-value-id=<%= user.subject_id %>>Remove</td>
+                <td class="access-groups-sub-table__cell access-groups-sub-table__cell modal-action-text thin-column" phx-click="remove-selected-user" phx-value-id=<%= user.subject_id %>>Remove</td>
               </tr>
             <% end %>
           <% end %>
