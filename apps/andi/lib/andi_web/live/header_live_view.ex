@@ -79,27 +79,47 @@ defmodule AndiWeb.HeaderLiveView do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_datasets_path())
       end
 
+      def handle_event("show-datasets", _, socket) do
+        {:noreply, socket}
+      end
+
       def handle_event("show-organizations", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_organizations_path())
+      end
+
+      def handle_event("show-organizations", _, socket) do
+        {:noreply, socket}
       end
 
       def handle_event("show-users", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_users_path())
       end
 
+      def handle_event("show-users", _, socket) do
+        {:noreply, socket}
+      end
+
       def handle_event("show-access-groups", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_access_groups_path())
+      end
+
+      def handle_event("show-access-groups", _, socket) do
+        {:noreply, socket}
       end
 
       def handle_event("show-ingestions", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_ingestions_path())
       end
 
+      def handle_event("show-ingestions", _, socket) do
+        {:noreply, socket}
+      end
+
       def handle_event("log-out", key, socket) when key in [@click, @enter, @space] do
         AndiWeb.HeaderLiveView.__redirect__(socket, header_log_out_path())
       end
 
-      def handle_event(_, _, socket) do
+      def handle_event("log-out", _, socket) do
         {:noreply, socket}
       end
     end
