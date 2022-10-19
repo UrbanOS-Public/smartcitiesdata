@@ -21,7 +21,7 @@ defmodule AndiWeb.OrganizationLiveView.Table do
           <%= for org <- @organizations do %>
           <tr class="organizations-table__tr">
             <td class="organizations-table__cell organizations-table__cell--break" style="width: 80%;"><%= org["org_title"] %></td>
-            <td class="organizations-table__cell organizations-table__cell--break primary-color-link"><%= Link.link("Edit", to: "/organizations/#{org["id"]}", class: "btn") %></td>
+            <td class="organizations-table__cell organizations-table__cell primary-color-link"><%= Link.link("Edit", to: "/organizations/#{org["id"]}", class: "btn") %></td>
           </tr>
           <% end %>
         <% end %>

@@ -1,3 +1,4 @@
+ <%# This file is needed because it's the best way too access the styles set in the env (i.e. coolor) %>
  <style>
   .root {
     accent-color: <%= get_primary_color() %>;
@@ -45,5 +46,20 @@
   }
   .primary-color-link a:active {
     background-color: #ddd;
+  }
+  .datasets-index__search-input-container:focus-within {
+    border: 1px solid <%= get_primary_text_color() %>;
+  }
+  .organizations-index__search-input-container:focus-within {
+    border: 1px solid <%= get_primary_text_color() %>;
+  }
+  .search-modal__search_bar-input-container:focus-within {
+    border: 1px solid <%= get_primary_text_color() %>;
+  }
+  .users-index__search-input-container:focus-within {
+    border: 1px solid <%= get_primary_text_color() %>;
+  }
+  .input {
+    outline-color: <%= get_primary_text_color() %>;
   }
 </style>

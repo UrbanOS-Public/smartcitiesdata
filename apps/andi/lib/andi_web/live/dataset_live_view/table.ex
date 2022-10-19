@@ -25,7 +25,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
             <% status_modifier = get_status_class(status) %>
 
             <tr class="datasets-table__tr">
-              <td class="datasets-table__cell datasets-table__cell--break dataset__status dataset__status--<%= status_modifier %>">
+              <td class="datasets-table__cell datasets-table__cell dataset__status dataset__status--<%= status_modifier %>">
                 <div class="status">
                   <div class="status__icon"></div>
                   <div class="status__message"><%= status %></div>
@@ -33,7 +33,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
               </td>
               <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= dataset["data_title"] %></td>
               <td class="datasets-table__cell datasets-table__cell--break"><%= dataset["org_title"] %></td>
-              <td class="datasets-table__cell datasets-table__cell--break primary-color-link" style="width: 10%;"><%= Link.link("Edit", to: "/#{edit_type(@is_curator)}/#{dataset["id"]}", class: "btn") %></td>
+              <td class="datasets-table__cell datasets-table__cell primary-color-link" style="width: 10%;"><%= Link.link("Edit", to: "/#{edit_type(@is_curator)}/#{dataset["id"]}", class: "btn") %></td>
             </tr>
           <% end %>
         <% end %>
