@@ -1,7 +1,7 @@
 name: test master cron
 on:
   schedule:
-    - cron: '0 * * * *' 
+    - cron: '0 5 * * *' 
 jobs:
   dependencies:
     name: Get Dependencies
@@ -19,6 +19,7 @@ jobs:
   test_matrix:
     name: Run all tests
     runs-on: ubuntu-latest
+    needs: dependencies
     strategy:
       matrix:
         app: [alchemist, dead_letter, definition_kafka, e2e, initializer, pipeline, protocol_source, reaper, testing, andi, definition, discovery_api, estuary, management, properties, providers, tasks, transformers, annotated_retry, definition_deadletter, discovery_streams, flair, ok, protocol_decoder, raptor, telemetry_event, valkyrie, auth, definition_dictionary, dlq, forklift, performance, protocol_destination, raptor_service, template, web]
