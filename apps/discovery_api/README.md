@@ -7,7 +7,12 @@ Discovery API serves as middleware between our data storage and our Discovery UI
     * Install dependencies with `mix deps.get`
   * Step 2: Start all docker microservices necessary for discovery_api.
     * `MIX_ENV=integration mix docker.start` (in this directory)
+  * Step 3: Start raptor service to handle authentication
+    * From discovery_api directory:
+    * `cd ../raptor`
+    * `AUTH0_CLIENT_SECRET={auth0_key} MIX_ENV=integration iex -S mix start`
   * Step 3: Actually run the application
+    * From discovery_api directory
     * `MIX_ENV=integration iex -S mix start --config config/auth0.exs` (in this directory)
     or just `MIX_ENV=integration iex -S mix start` if you want to try it without an auth config
   * Step 4: When you are done using the app you can run this to stop the docker microservices.
