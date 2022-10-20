@@ -2,8 +2,6 @@ defmodule AndiWeb.HeaderLiveViewTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
 
-  alias AndiWeb.HeaderLiveView
-
   import Phoenix.LiveViewTest
 
   describe "Header Live View" do
