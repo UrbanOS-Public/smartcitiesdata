@@ -1,11 +1,15 @@
-name: test master cron
+name: All tests cron
 on:
   schedule:
-    - cron: '0 5 * * *' 
+    - cron: "0 5 * * *"
+    - cron: "30 * * * 6,0"
 jobs:
-  dependencies:
-    name: Get Dependencies
+  unit_tests:
+    name: Run all unit tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [andi, discovery_api]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-elixir@v1.5.0
@@ -16,25 +20,25 @@ jobs:
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
-  unit_tests:
-    name: Run all unit tests
-    runs-on: ubuntu-latest
-    needs: dependencies
-    strategy:
-      matrix:
-        app: [andi, discovery_api]
-    steps:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${{ matrix.app }}
   integration_tests:
     name: Run all integration tests
     runs-on: ubuntu-latest
-    needs: dependencies
     strategy:
       matrix:
         app: [andi, discovery_api, pipeline, e2e]
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-elixir@v1.5.0
+        with:
+          otp-version: 21.3
+          elixir-version: 1.10.4
+          experimental-otp: true
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${{ matrix.app }}
