@@ -9,6 +9,7 @@ defmodule Forklift.DataWriterTest do
 
   getter(:elsa_brokers, generic: true)
   getter(:input_topic_prefix, generic: true)
+  getter(:table_writer, generic: true)
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -68,6 +69,38 @@ defmodule Forklift.DataWriterTest do
       ingestion_id: "1234-abcd",
       extraction_start_time: 1_662_175_490
     )
+  end
+
+  test "should raise exception when writer fails" do
+    ingestion_status = :in_progress
+
+    ingestion_id = "1234-abcd"
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
+
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start),
+      return: ingestion_status
+    )
+
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+
+    stub(MockTable, :write, fn _data, _params ->
+      :error
+    end)
+
+    assert_raise RuntimeError, ":error", fn ->
+      DataWriter.write(fake_data,
+        dataset: dataset,
+        ingestion_id: ingestion_id,
+        extraction_start_time: extract_start
+      )
+    end
   end
 
   test "compaction *is not* kicked off if ingestion_progress reports \"in progress\"" do
