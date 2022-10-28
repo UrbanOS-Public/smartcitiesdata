@@ -151,6 +151,10 @@ defmodule Forklift.DataWriter do
       end
 
       {:ok, write_timing}
+    else
+      error ->
+        Logger.error(inspect(error))
+        {:error, error}
     end
   end
 
