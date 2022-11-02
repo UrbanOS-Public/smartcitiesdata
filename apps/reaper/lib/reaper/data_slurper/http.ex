@@ -30,6 +30,7 @@ defmodule Reaper.DataSlurper.Http do
       Logger.error(fn ->
         "Unable to retrieve data for #{ingestion_id}: #{Exception.message(error)}"
       end)
+
       reraise inspect(error), __STACKTRACE__
   end
 
