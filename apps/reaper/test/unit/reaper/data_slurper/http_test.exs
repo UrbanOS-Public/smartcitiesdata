@@ -81,14 +81,15 @@ defmodule Reaper.DataSlurper.HttpTest do
 
       url = "http://localhost:#{bypass.port}/some/johnson.csv"
 
-      expected_message = "%Reaper.DataSlurper.Http.HttpDownloadTimeoutError{message: \"Timed out downloading ingestion #{@ingestion_id} at #{url} in 1 ms\"}"
+      expected_message =
+        "%Reaper.DataSlurper.Http.HttpDownloadTimeoutError{message: \"Timed out downloading ingestion #{@ingestion_id} at #{
+          url
+        } in 1 ms\"}"
 
       assert_raise RuntimeError, expected_message, fn ->
         DataSlurper.Http.slurp(url, @ingestion_id)
       end
     end
-
-    #RuntimeError ()
 
     test "makes call with headers", %{bypass: bypass} do
       file_url = "/some/other/csv-file2.csv"
