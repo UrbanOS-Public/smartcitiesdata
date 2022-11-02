@@ -184,7 +184,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       modifier: modifier
     }
 
-    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
+    ~E(<sup class="test-status__tooltip-wrapper"><i id="test-tooltip" phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
   end
 
   defp key_values_to_keyword_list(form_data, field) do
