@@ -30,8 +30,7 @@ defmodule Reaper.DataSlurper.Http do
       Logger.error(fn ->
         "Unable to retrieve data for #{ingestion_id}: #{Exception.message(error)}"
       end)
-
-      reraise error, __STACKTRACE__
+      reraise inspect(error), __STACKTRACE__
   end
 
   defp download(ingestion_id, url, filename, headers, protocol, action, body) do
@@ -44,6 +43,6 @@ defmodule Reaper.DataSlurper.Http do
       raise HttpDownloadTimeoutError, message
 
     :exit, error ->
-      reraise error, __STACKTRACE__
+      reraise inspect(error), __STACKTRACE__
   end
 end
