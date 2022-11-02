@@ -202,7 +202,6 @@ defmodule Reaper.Event.EventHandlerTest do
   end
 
   describe "#{dataset_delete()}" do
-    @tag focus: true
     test "should delete associated raw topic when dataset:delete event fires" do
       dataset = TDG.create_dataset(id: "dataset_id", technical: %{sourceType: "ingest"})
 
