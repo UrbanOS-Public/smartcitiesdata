@@ -29,16 +29,6 @@
     url('../static/fonts/material-icons/MaterialIcons-Regular.ttf') format('truetype');
 }
 
-@font-face {
-  font-family: 'Material Icons Outlined';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Material Icons Outlined'),
-    local('MaterialIcons-Outlined'),
-    url('../static/fonts/material-icons/MaterialIcons-Outlined.woff2') format('woff2'),
-    url('../static/fonts/material-icons/MaterialIcons-Outlined.ttf') format('truetype');
-}
-
 body {
   background: $color-background;
 }
