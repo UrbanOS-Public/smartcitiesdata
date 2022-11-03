@@ -118,6 +118,10 @@ defmodule Reaper.Http.Downloader do
     {:ok, response}
   end
 
+  defp stream_responses({response, %Mint.HTTPError{} = reason}, _opts) do
+    {:error, response.conn, reason}
+  end
+
   defp stream_responses({response, file}, opts) do
     idle_timeout = Keyword.get(opts, :idle_timeout, :infinity)
 
@@ -161,6 +165,10 @@ defmodule Reaper.Http.Downloader do
 
   defp handle_http_message({:done, _request_ref}, {response, file}) do
     {%{response | done: true}, file}
+  end
+
+  defp handle_http_message({:error, _request_ref, reason}, {response, _file}) do
+    {response, reason}
   end
 
   defp handle_status(%Response{status: 200} = response, _headers) do
