@@ -36,8 +36,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
           <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
           <div class="transformation-actions">
-            <button class="material-icons-outlined transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-target="#transformations-form">delete</button>
-            <button class="material-icons-outlined transformation-action" type="button">edit</button>
+            <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-target="#transformations-form">delete_outline</button>
+            <button class="material-icons transformation-action" type="button">edit</button>
             <button class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" type="button" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1" phx-target="#transformations-form">arrow_upward</button>
             <button class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" type="button" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1" phx-target="#transformations-form">arrow_downward</button>
           </div>
