@@ -92,7 +92,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def wait_for_brook_to_be_ready() do
-    Process.sleep(5_000)
+    Process.sleep(20_000)
   end
 
   def create_persisted_user() do
