@@ -78,6 +78,7 @@ defmodule AndiWeb.Router do
     get "/v1/ingestion/:ingestion_id", IngestionController, :get
     put "/v1/dataset", DatasetController, :create
     put "/v1/ingestion", IngestionController, :create
+    post "/v1/ingestion/publish", IngestionController, :publish
     post "/v1/dataset/disable", DatasetController, :disable
     post "/v1/dataset/delete", DatasetController, :delete
     post "/v1/ingestion/delete", IngestionController, :delete

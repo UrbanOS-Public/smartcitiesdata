@@ -8,7 +8,16 @@ defmodule Andi.IngestionControllerTest do
   @moduletag shared_data_connection: true
 
   import SmartCity.TestHelper, only: [eventually: 1]
-  import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0, dataset_update: 0, ingestion_delete: 0, ingestion_update: 0]
+
+  import SmartCity.Event,
+    only: [
+      dataset_disable: 0,
+      dataset_delete: 0,
+      dataset_update: 0,
+      ingestion_delete: 0,
+      ingestion_update: 0
+    ]
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.Datasets
@@ -57,6 +66,39 @@ defmodule Andi.IngestionControllerTest do
     end
   end
 
+  describe "ingestion publish" do
+    test "sends ingestion:update event" do
+      dataset = setup_dataset()
+      ingestion = TDG.create_ingestion(%{sourceType: "remote", targetDataset: dataset.id})
+      {:ok, _} = create_ingestion(ingestion)
+
+      eventually(fn ->
+        {:ok, value} = IngestionStore.get(ingestion.id)
+        assert value != nil
+      end)
+
+      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+
+      eventually(fn ->
+        values =
+          Elsa.Fetch.fetch(kafka_broker(), "event-stream")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            message.key == ingestion_update() && String.contains?(message.value, ingestion.id)
+          end)
+
+        assert 1 = length(values)
+      end)
+    end
+
+    test "returns 404 when ingestion does not exist in database" do
+      {:ok, %{status: 404, body: body}} =
+        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+
+      assert Jason.decode!(body) == "Ingestion not found"
+    end
+  end
+
   describe "ingestion put" do
     setup do
       dataset = setup_dataset()
@@ -65,7 +107,9 @@ defmodule Andi.IngestionControllerTest do
       request = %{
         "id" => uuid,
         "name" => "Name",
-        "extractSteps" => [%{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}],
+        "extractSteps" => [
+          %{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}
+        ],
         "sourceFormat" => "application/gtfs+protobuf",
         "cadence" => "*/9000 * * * * *",
         "schema" => [%{name: "billy", type: "writer"}],
@@ -119,7 +163,9 @@ defmodule Andi.IngestionControllerTest do
       new_ingestion =
         TDG.create_ingestion(%{
           id: uuid,
-          extractSteps: [%{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}],
+          extractSteps: [
+            %{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}
+          ],
           sourceFormat: "application/gtfs+protobuf",
           cadence: "*/9000 * * * * *",
           schema: [%{name: "billy", type: "writer"}],
@@ -231,6 +277,7 @@ defmodule Andi.IngestionControllerTest do
   describe "dataset get" do
     test "andi doesn't return server in response headers" do
       {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/ingestions", headers: [{"content-type", "application/json"}])
+
       refute headers |> Map.new() |> Map.has_key?("server")
     end
   end
