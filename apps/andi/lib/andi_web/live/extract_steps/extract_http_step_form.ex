@@ -68,7 +68,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 <% end %>
 
                 <div class="extract-http-step-form__test-section">
-                  <button type="button" class="extract_step__test-btn btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-<%= @id %>" <%= disabled?(@testing) %>>Test</button>
+                  <button type="button" class="extract_step__test-btn btn--primary btn--test btn btn--large btn--action" phx-click="test_url" phx-target="#step-<%= @id %>" <%= disabled?(@testing) %>>Test</button>
                   <%= if @test_results do %>
                     <div class="test-status">
                     Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
@@ -267,7 +267,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       modifier: modifier
     }
 
-    ~E(<sup class="test-status__tooltip-wrapper"><i phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons-outlined test-status__tooltip--<%= @modifier %>">info</i></sup>)
+    ~E(<sup class="test-status__tooltip-wrapper"><i id="test-tooltip" phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons test-status__tooltip--<%= @modifier %>">info_outline</i></sup>)
   end
 
   defp key_values_to_keyword_list(form_data, field) do

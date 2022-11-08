@@ -7,6 +7,7 @@ defmodule AndiWeb.API.IngestionController do
 
   require Logger
   import SmartCity.Event, only: [ingestion_update: 0]
+  import AndiWeb.IngestionLiveView.EditIngestionLiveView, only: [publish_ingestion: 2]
 
   alias SmartCity.Ingestion
   alias Andi.Services.IngestionStore
@@ -58,6 +59,26 @@ defmodule AndiWeb.API.IngestionController do
     |> Ecto.Changeset.traverse_errors(fn {msg, _opts} ->
       msg
     end)
+  end
+
+  @doc """
+  Publish an already created ingestion
+  """
+  @spec publish(Plug.Conn.t(), any()) :: Plug.Conn.t()
+  def publish(conn, _params) do
+    with message <- add_uuid(conn.body_params),
+         {:ok, parsed_message} <- trim_required_fields(message),
+         :valid <- validate_changes(parsed_message),
+         ingestion_changeset <- publish_ingestion(parsed_message, :api) do
+      respond(conn, :published, ingestion_changeset)
+    else
+      {:invalid, errors} ->
+        respond(conn, :bad_request, %{errors: errors})
+
+      error ->
+        Logger.error("Failed to publish ingestion: #{inspect(error)}")
+        respond(conn, :internal_server_error, "Unable to process your request")
+    end
   end
 
   @doc """

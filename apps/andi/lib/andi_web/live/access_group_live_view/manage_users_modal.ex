@@ -75,7 +75,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
         <hr class="search-modal-divider">
 
         <div class="btn-group__standard">
-          <button class="btn btn--large btn--action save-search" type="button" phx-click="save-user-search">Save</button>
+          <button class="btn btn--primary-outline btn--large save-search" type="button" phx-click="save-user-search">Save</button>
         </div>
       </div>
     </div>

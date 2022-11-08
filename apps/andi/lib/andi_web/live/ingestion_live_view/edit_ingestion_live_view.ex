@@ -147,22 +147,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
     Process.sleep(1_000)
 
-    andi_ingestion = Ingestions.get(ingestion_id)
-    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
-
-    if ingestion_changeset.valid? do
-      ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
-      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
-
-      case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
-        :ok ->
-          Ingestions.update_submission_status(ingestion_id, :published)
-          Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, ingestion_update(), smrt_ingestion)
-
-        error ->
-          Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
-      end
-    end
+    ingestion_changeset = publish_ingestion(ingestion_id, socket.assigns.user_id)
 
     {:noreply, assign(socket, changeset: ingestion_changeset)}
   end
@@ -200,4 +185,25 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   defp save_message(true = _valid?), do: "Saved successfully."
   defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
+
+  def publish_ingestion(ingestion_id, user_id) do
+    andi_ingestion = Ingestions.get(ingestion_id)
+    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
+
+    if ingestion_changeset.valid? do
+      ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
+      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+
+      case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
+        :ok ->
+          Ingestions.update_submission_status(ingestion_id, :published)
+          Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_update(), smrt_ingestion)
+
+        error ->
+          Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
+      end
+    end
+
+    ingestion_changeset
+  end
 end
