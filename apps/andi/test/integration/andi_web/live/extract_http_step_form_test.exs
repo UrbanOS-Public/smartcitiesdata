@@ -6,6 +6,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   import Checkov
 
   alias Andi.Services.UrlTest
+  alias Andi.InputSchemas.Ingestions
+  alias Reaper.SecretRetriever
 
   @moduletag shared_data_connection: true
 
@@ -115,8 +117,11 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       )
     end
 
-    data_test "does not have key/value inputs when ingestion has no source #{field}", %{conn: conn} do
+    data_test "does not have key/value inputs when ingestion has no source #{field}", %{
+      conn: conn
+    } do
       {:ok, ingestion} = IngestionHelpers.create_ingestion(%{}) |> IngestionHelpers.save_ingestion()
+
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
       assert html |> find_elements(key_class) |> Enum.empty?()
@@ -169,8 +174,14 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   end
 
   describe "url testing" do
+    setup do
+      bypass = Bypass.open()
+
+      [bypass: bypass]
+    end
+
     @tag capture_log: true
-    test "uses provided query params and headers", %{conn: conn} do
+    test "test uses provided query params and headers", %{conn: conn} do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
@@ -194,8 +205,64 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       [extract_step_id: extract_step_id]
     end
 
+    test "should import other steps to fill out the url upon testing", %{bypass: bypass, conn: conn} do
+      Bypass.stub(bypass, "POST", "/", fn connection ->
+        {:ok, body, connection} = Plug.Conn.read_body(connection)
+
+        Plug.Conn.resp(connection, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
+      end)
+
+      http_step = create_step("http", %{action: "GET",url: "{{secret}}.com/{{auth}}",queryParams: %{"date" => "{{date}}"},headers: %{"header" => "{{secret2}}"}})
+      auth_step = create_step("auth", %{
+        path: ["sub", "path"],
+        destination: "auth",
+        url: "http://localhost:#{bypass.port}",
+        encodeMethod: "json",
+        headers: %{},
+        cache_ttl: nil
+      })
+      date_step = create_step("date", %{destination: "date",delta_time_unit: "years",delta_time_value: 5,format: "{YYYY}-{M}-{D}"})
+      secret_step = create_step("secret",
+        %{
+          destination: "secret",
+          key: "secret1-key",
+          sub_key: "secret1-sub-key"
+        })
+      secret2_step = create_step("secret",
+        %{
+          destination: "secret2",
+          key: "secret2-key",
+          sub_key: "secret2-sub-key"
+        })
+      extract_steps = [auth_step, date_step, secret_step, secret2_step, http_step]
+      {:ok, ingestion} = IngestionHelpers.create_ingestion(%{extractSteps: extract_steps})
+        |> IngestionHelpers.save_ingestion()
+
+      extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 4)
+
+      allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
+      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret1-key"), return: {:ok, %{"secret1-sub-key" => "secret"}})
+      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
+      unit = String.to_atom(date_step.context.delta_time_unit)
+      expected_date = Timex.shift(Timex.now(), [{unit, date_step.context.delta_time_value}])
+        |> Timex.format!(date_step.context.format)
+
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+      test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
+      render_click(test_url_button)
+
+      assert_called(
+        UrlTest.test("secret.com/auth_token",
+          query_params: [{"date", expected_date}],
+          headers: [{"header", "secret2"}]
+        )
+      )
+    end
+
     data_test "queryParams are updated when query params are added to url", %{conn: conn} do
       {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
+
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -225,6 +292,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     data_test "url is updated when query params are added", %{conn: conn} do
       {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
+
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
@@ -441,5 +509,13 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     html = render_change(es_form, %{"form_data" => form_data})
 
     assert get_text(html, "#body-error-msg") == ""
+  end
+
+  defp create_step(type, context) do
+    %{
+      type: type,
+      id: UUID.uuid4(),
+      context: context
+    }
   end
 end
