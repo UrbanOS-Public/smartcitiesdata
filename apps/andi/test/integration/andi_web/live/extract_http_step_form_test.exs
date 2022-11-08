@@ -212,30 +212,50 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         Plug.Conn.resp(connection, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
       end)
 
-      http_step = create_step("http", %{action: "GET",url: "{{secret}}.com/{{auth}}",queryParams: %{"date" => "{{date}}"},headers: %{"header" => "{{secret2}}"}})
-      auth_step = create_step("auth", %{
-        path: ["sub", "path"],
-        destination: "auth",
-        url: "http://localhost:#{bypass.port}",
-        encodeMethod: "json",
-        headers: %{},
-        cache_ttl: nil
-      })
-      date_step = create_step("date", %{destination: "date",delta_time_unit: "years",delta_time_value: 5,format: "{YYYY}-{M}-{D}"})
-      secret_step = create_step("secret",
-        %{
-          destination: "secret",
-          key: "secret1-key",
-          sub_key: "secret1-sub-key"
+      http_step =
+        create_step("http", %{
+          action: "GET",
+          url: "{{secret}}.com/{{auth}}",
+          queryParams: %{"date" => "{{date}}"},
+          headers: %{"header" => "{{secret2}}"}
         })
-      secret2_step = create_step("secret",
-        %{
-          destination: "secret2",
-          key: "secret2-key",
-          sub_key: "secret2-sub-key"
+
+      auth_step =
+        create_step("auth", %{
+          path: ["sub", "path"],
+          destination: "auth",
+          url: "http://localhost:#{bypass.port}",
+          encodeMethod: "json",
+          headers: %{},
+          cache_ttl: nil
         })
+
+      date_step = create_step("date", %{destination: "date", delta_time_unit: "years", delta_time_value: 5, format: "{YYYY}-{M}-{D}"})
+
+      secret_step =
+        create_step(
+          "secret",
+          %{
+            destination: "secret",
+            key: "secret1-key",
+            sub_key: "secret1-sub-key"
+          }
+        )
+
+      secret2_step =
+        create_step(
+          "secret",
+          %{
+            destination: "secret2",
+            key: "secret2-key",
+            sub_key: "secret2-sub-key"
+          }
+        )
+
       extract_steps = [auth_step, date_step, secret_step, secret2_step, http_step]
-      {:ok, ingestion} = IngestionHelpers.create_ingestion(%{extractSteps: extract_steps})
+
+      {:ok, ingestion} =
+        IngestionHelpers.create_ingestion(%{extractSteps: extract_steps})
         |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 4)
@@ -244,7 +264,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret1-key"), return: {:ok, %{"secret1-sub-key" => "secret"}})
       allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
       unit = String.to_atom(date_step.context.delta_time_unit)
-      expected_date = Timex.shift(Timex.now(), [{unit, date_step.context.delta_time_value}])
+
+      expected_date =
+        Timex.shift(Timex.now(), [{unit, date_step.context.delta_time_value}])
         |> Timex.format!(date_step.context.format)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)

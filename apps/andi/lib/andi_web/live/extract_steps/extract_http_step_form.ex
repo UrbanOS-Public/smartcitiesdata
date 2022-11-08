@@ -235,10 +235,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp evaluate_body_and_headers(step, assigns) do
-    body = case Map.fetch(step.context, :body) do
-      {:ok, body} -> process_body(body, assigns)
-      _ -> ""
-    end
+    body =
+      case Map.fetch(step.context, :body) do
+        {:ok, body} -> process_body(body, assigns)
+        _ -> ""
+      end
 
     headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, assigns)
 
