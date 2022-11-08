@@ -19,6 +19,50 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
   @geo_json_features_encoded Enum.map(@geo_json_features_raw, &Jason.encode!/1)
   @geo_json_features Enum.map(@geo_json_features_encoded, fn x -> %{"feature" => x} end)
 
+  setup_all do
+    model =
+      Helper.sample_model(%{
+        id: @dataset_id,
+        systemName: @system_name,
+        name: @data_name,
+        private: false,
+        lastUpdatedDate: nil,
+        queries: 7,
+        downloads: 9,
+        schema: [
+          %{name: "number", type: "integer"},
+          %{name: "name", type: "string"}
+        ]
+      })
+
+    allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
+    allow(Model.get(@dataset_id), return: model)
+    allow(QueryAccessUtils.get_affected_models(any()), return: {:ok, nil})
+    allow(QueryAccessUtils.user_is_authorized?(any(), any(), any()), return: true, meck_options: [:passthrough])
+    allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
+
+    # these clearly need to be condensed
+    allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
+    allow(PrestoService.preview_columns(any(), @system_name), return: ["feature"])
+    allow(PrestoService.preview(any(), @system_name), return: @geo_json_features)
+    allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
+
+    allow(Prestige.new_session(any()), return: :connect)
+    allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
+    allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+
+    allow(Prestige.Result.as_maps(any()),
+      return: [
+        %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
+        %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
+        %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
+        %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
+      ]
+    )
+
+    :ok
+  end
+
   describe "geojson data" do
     defp assert_content_matches(:csv, actual) do
       assert "feature\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,0],[0,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,0]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,1]]}}\"\n" ==
@@ -40,50 +84,6 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
                "name" => "foobar__company_data",
                "type" => "FeatureCollection"
              } == Jason.decode!(actual)
-    end
-
-    setup_all do
-      model =
-        Helper.sample_model(%{
-          id: @dataset_id,
-          systemName: @system_name,
-          name: @data_name,
-          private: false,
-          lastUpdatedDate: nil,
-          queries: 7,
-          downloads: 9,
-          schema: [
-            %{name: "number", type: "integer"},
-            %{name: "name", type: "string"}
-          ]
-        })
-
-      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
-      allow(Model.get(@dataset_id), return: model)
-      allow(QueryAccessUtils.get_affected_models(any()), return: {:ok, nil})
-      allow(QueryAccessUtils.user_is_authorized?(any(), any(), any()), return: true, meck_options: [:passthrough])
-      allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
-
-      # these clearly need to be condensed
-      allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
-      allow(PrestoService.preview_columns(any(), @system_name), return: ["feature"])
-      allow(PrestoService.preview(any(), @system_name), return: @geo_json_features)
-      allow(PrestoService.build_query(any(), any()), return: {:ok, "select * from #{@system_name}"})
-
-      allow(Prestige.new_session(any()), return: :connect)
-      allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
-      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
-
-      allow(Prestige.Result.as_maps(any()),
-        return: [
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
-        ]
-      )
-
-      :ok
     end
 
     data_test "returns data in #{expected_format} format for url #{url} and headers #{inspect(headers)}", %{conn: conn} do
