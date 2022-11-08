@@ -48,7 +48,9 @@ defmodule DiscoveryApi.Schemas.Visualizations do
 
   def get_visualizations_to_be_migrated() do
     from(v in Visualization, where: is_nil(v.valid_query))
+    |> IO.inspect(label: "visualisation: ")
     |> Repo.all()
+    |> IO.inspect(label: "repo.all: ")
   end
 
   def update_visualization_by_id(id, visualization_changes, user) do

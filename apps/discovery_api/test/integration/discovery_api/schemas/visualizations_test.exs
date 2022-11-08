@@ -71,58 +71,85 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "public_dataset_a", "public_org")
+      IO.inspect("test1")
+      IO.inspect(table, label: "Table: ")
+      IO.inspect(id, label: "ID: ")
       query = "select * from #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
-
+      IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
-
+      IO.inspect(saved, label: "Visualization: ")
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [] == actual.datasets
+      end)
       actual = Repo.get(Visualization, saved.id)
-      assert [id] == actual.datasets
       assert actual.valid_query
     end
 
     test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123AB", "public_dataset_b", "public_org")
+      IO.inspect("test2")
+      IO.inspect(table, label: "Table: ")
+      IO.inspect(id, label: "ID: ")
       query = "select * from #{table} union all select * from #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
-
+      IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+      IO.inspect(saved, label: "Visualization: ")
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [] == actual.datasets
 
+      end)
       actual = Repo.get(Visualization, saved.id)
-      assert [id] == actual.datasets
       assert actual.valid_query
     end
 
     test "given an invalid query, it is created with an empty list of datasets and is flagged invalid" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, _id} = Helper.create_persisted_dataset("123AC", "public_dataset_c", "public_org")
-
+      IO.inspect("test3")
+      IO.inspect(table, label: "Table: ")
+      IO.inspect(_id, label: "ID: ")
       query = "select * from INVALID #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
-
+      IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
+      IO.inspect(saved, label: "Visualization: ")
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [] == actual.datasets
 
+      end)
       actual = Repo.get(Visualization, saved.id)
-      assert [] == actual.datasets
       refute actual.valid_query
     end
 
     test "given a query containing a dataset the user is not authorized to query, it is created with an empty list of datasets and is flagged invalid" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, _id} = Helper.create_persisted_dataset("123AD", "private_dataset_d", "private_org", true)
+      IO.inspect("test4")
+      IO.inspect(table, label: "Table: ")
+      IO.inspect(_id, label: "ID: ")
       query = "select * from #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
       {:ok, owner_with_orgs} = Users.get_user_with_organizations(owner.id)
-
+      IO.inspect(owner, label: "Owner: ")
+      IO.inspect(owner_with_orgs, labesl: "Owner with orgs: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner_with_orgs, title: title})
+      IO.inspect(saved, label: "Visualization: ")
 
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [] == actual.datasets
+      end)
       actual = Repo.get(Visualization, saved.id)
-      assert [] == actual.datasets
       refute actual.valid_query
     end
 
@@ -257,7 +284,9 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     } do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
-
+      IO.inspect("test5")
+      IO.inspect(table, label: "Table: ")
+      IO.inspect(id, label: "ID: ")
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
 
       assert put(authorized_conn, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
@@ -265,6 +294,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       eventually(fn ->
         {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
+        IO.inspect(viz, label: "VIZ: ")
         assert [id] == viz.datasets
       end)
     end

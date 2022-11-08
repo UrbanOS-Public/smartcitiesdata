@@ -35,5 +35,9 @@ defmodule DiscoveryApi.Schemas.Organizations do
     end
   end
 
-  def get_organization!(id), do: Repo.get(Organization, id)
+  def get_organization!(id) do
+    IO.inspect(Organization, label: "Organization: ")
+    IO.inspect(id, label: "ID: ")
+    Repo.get(Organization, id)
+  end
 end

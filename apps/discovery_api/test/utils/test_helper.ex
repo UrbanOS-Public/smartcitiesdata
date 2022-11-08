@@ -92,7 +92,7 @@ defmodule DiscoveryApi.Test.Helper do
   end
 
   def wait_for_brook_to_be_ready() do
-    Process.sleep(20_000)
+    Process.sleep(30_000)
   end
 
   def create_persisted_user() do
@@ -107,7 +107,7 @@ defmodule DiscoveryApi.Test.Helper do
   def create_persisted_organization(map \\ %{}) do
     organization = TDG.create_organization(map)
     Brook.Event.send(@instance_name, "organization:update", :test, organization)
-
+    |> IO.inspect(label: "Persisted Organization: ")
     Patiently.wait_for(
       fn ->
         DiscoveryApi.Schemas.Organizations.get_organization!(organization.id) != nil

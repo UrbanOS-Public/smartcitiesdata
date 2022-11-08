@@ -3,6 +3,6 @@ defmodule Template.Test.Helper do
   Utility functions for tests
   """
   def wait_for_brook_to_be_ready() do
-    Process.sleep(5_000)
+    Process.sleep(30_000)
   end
 end
