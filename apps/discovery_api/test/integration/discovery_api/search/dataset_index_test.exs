@@ -162,6 +162,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
       bypass = Bypass.open()
       reconfigure_es_url("http://localhost:#{bypass.port}")
       IO.inspect(bypass.port, label: "bypass port: ")
+
       name =
         Faker.Person.first_name()
         |> String.downcase()

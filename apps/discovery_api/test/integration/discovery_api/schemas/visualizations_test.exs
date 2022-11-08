@@ -80,10 +80,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
       IO.inspect(saved, label: "Visualization: ")
+
       eventually(fn ->
         actual = Repo.get(Visualization, saved.id)
         assert [] == actual.datasets
       end)
+
       actual = Repo.get(Visualization, saved.id)
       assert actual.valid_query
     end
@@ -100,11 +102,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
       IO.inspect(saved, label: "Visualization: ")
+
       eventually(fn ->
         actual = Repo.get(Visualization, saved.id)
         assert [] == actual.datasets
-
       end)
+
       actual = Repo.get(Visualization, saved.id)
       assert actual.valid_query
     end
@@ -121,11 +124,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       IO.inspect(owner, label: "Owner: ")
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
       IO.inspect(saved, label: "Visualization: ")
+
       eventually(fn ->
         actual = Repo.get(Visualization, saved.id)
         assert [] == actual.datasets
-
       end)
+
       actual = Repo.get(Visualization, saved.id)
       refute actual.valid_query
     end
@@ -149,6 +153,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
         actual = Repo.get(Visualization, saved.id)
         assert [] == actual.datasets
       end)
+
       actual = Repo.get(Visualization, saved.id)
       refute actual.valid_query
     end
