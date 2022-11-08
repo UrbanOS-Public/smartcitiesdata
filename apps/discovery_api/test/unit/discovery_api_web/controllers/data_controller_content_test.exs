@@ -42,7 +42,7 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
              } == Jason.decode!(actual)
     end
 
-    setup do
+    setup_all do
       model =
         Helper.sample_model(%{
           id: @dataset_id,
