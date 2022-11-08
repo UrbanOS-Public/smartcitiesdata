@@ -234,7 +234,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
     defp delete_ingestion_in_ui(view) do
       view |> element("#ingestion-delete-button") |> render_click
-      view |> element(".delete-button") |> render_click
+      view |> element(".btn--right .btn--danger .btn--delete") |> render_click
     end
 
     defp get_extract_step_id(ingestion, index) do
