@@ -74,19 +74,19 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
       expected_dataset1_column_stats = %{
         "id" => dataset1.id,
         "fields" => %{
-          "bikes_allowed" => %{"count" => 7343, "required" => false},
-          "block_id" => %{"count" => 7343, "required" => false},
-          "direction_id" => %{"count" => 7343, "required" => false},
-          "route_id" => %{"count" => 7343, "required" => false},
-          "service_id" => %{"count" => 7343, "required" => false},
-          "shape_id" => %{"count" => 7343, "required" => false},
-          "trip_headsign" => %{"count" => 7343, "required" => false},
-          "trip_id" => %{"count" => 7343, "required" => false},
+          "bikes_allowed" => %{"count" => 20, "required" => false},
+          "block_id" => %{"count" => 20, "required" => false},
+          "direction_id" => %{"count" => 20, "required" => false},
+          "route_id" => %{"count" => 20, "required" => false},
+          "service_id" => %{"count" => 20, "required" => false},
+          "shape_id" => %{"count" => 20, "required" => false},
+          "trip_headsign" => %{"count" => 20, "required" => false},
+          "trip_id" => %{"count" => 20, "required" => false},
           "trip_short_name" => %{"count" => 0, "required" => false},
-          "wheelchair_accessible" => %{"count" => 7343, "required" => false}
+          "wheelchair_accessible" => %{"count" => 20, "required" => false}
         },
         "total_score" => 0.9,
-        "record_count" => 7343
+        "record_count" => 20
       }
 
       expected_dataset2_column_stats = %{
