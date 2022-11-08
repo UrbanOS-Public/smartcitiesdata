@@ -19,7 +19,29 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
   @geo_json_features_encoded Enum.map(@geo_json_features_raw, &Jason.encode!/1)
   @geo_json_features Enum.map(@geo_json_features_encoded, fn x -> %{"feature" => x} end)
 
-  setup_all do
+  describe "geojson data" do
+    defp assert_content_matches(:csv, actual) do
+      assert "feature\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,0],[0,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,0]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,1]]}}\"\n" ==
+               actual
+    end
+
+    defp assert_content_matches(:json, actual) do
+      assert @geo_json_features == Jason.decode!(actual)
+    end
+
+    defp assert_content_matches(:preview_json, actual) do
+      assert %{"meta" => %{"columns" => ["feature"]}, "data" => @geo_json_features} == Jason.decode!(actual)
+    end
+
+    defp assert_content_matches(:geojson, actual) do
+      assert %{
+               "bbox" => [0, 0, 1, 1],
+               "features" => @geo_json_features_raw,
+               "name" => "foobar__company_data",
+               "type" => "FeatureCollection"
+             } == Jason.decode!(actual)
+    end
+
     model =
       Helper.sample_model(%{
         id: @dataset_id,
@@ -61,30 +83,6 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
     )
 
     :ok
-  end
-
-  describe "geojson data" do
-    defp assert_content_matches(:csv, actual) do
-      assert "feature\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,0],[0,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,0]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[1,1]]}}\"\n\"{\"\"geometry\"\":{\"\"coordinates\"\":[[0,1]]}}\"\n" ==
-               actual
-    end
-
-    defp assert_content_matches(:json, actual) do
-      assert @geo_json_features == Jason.decode!(actual)
-    end
-
-    defp assert_content_matches(:preview_json, actual) do
-      assert %{"meta" => %{"columns" => ["feature"]}, "data" => @geo_json_features} == Jason.decode!(actual)
-    end
-
-    defp assert_content_matches(:geojson, actual) do
-      assert %{
-               "bbox" => [0, 0, 1, 1],
-               "features" => @geo_json_features_raw,
-               "name" => "foobar__company_data",
-               "type" => "FeatureCollection"
-             } == Jason.decode!(actual)
-    end
 
     data_test "returns data in #{expected_format} format for url #{url} and headers #{inspect(headers)}", %{conn: conn} do
       conn =
