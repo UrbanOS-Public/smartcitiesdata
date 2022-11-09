@@ -11,6 +11,10 @@ defmodule Andi.SecretService do
   getter(:secrets_endpoint, generic: true)
   getter(:vault_role, generic: true)
 
+  def retrieve_ingestion_credentials(ingestion_id) do
+    retrieve("ingestion/#{ingestion_id}")
+  end
+  
   def retrieve(path) do
     vault_path = "#{@root_path}#{path}"
 

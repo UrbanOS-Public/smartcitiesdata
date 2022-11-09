@@ -215,7 +215,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp process_extract_step(_ingestion, %{type: "secret"} = step, assigns) do
-    {:ok, cred} = Reaper.SecretRetriever.retrieve_ingestion_credentials(step.context.key)
+    {:ok, cred} = Andi.SecretService.retrieve_ingestion_credentials(step.context.key)
     secret = Map.get(cred, step.context.sub_key)
 
     Map.put(assigns, step.context.destination |> String.to_atom(), secret)
@@ -227,7 +227,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     url = UrlBuilder.build_safe_url_path(step.context.url, assigns)
 
     response =
-      Reaper.AuthRetriever.authorize(ingestion_id, url, body, step.context.encode_method, headers, step.context.cache_ttl)
+      Andi.AuthRetriever.authorize(ingestion_id, url, body, step.context.encode_method, headers)
       |> Jason.decode!()
       |> get_in(step.context.path)
 

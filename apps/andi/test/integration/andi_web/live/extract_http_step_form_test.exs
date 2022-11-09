@@ -7,7 +7,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
   alias Andi.Services.UrlTest
   alias Andi.InputSchemas.Ingestions
-  alias Reaper.SecretRetriever
+  alias Andi.SecretService
 
   @moduletag shared_data_connection: true
 
@@ -261,8 +261,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 4)
 
       allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
-      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret1-key"), return: {:ok, %{"secret1-sub-key" => "secret"}})
-      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
+      allow(Andi.SecretService.retrieve_ingestion_credentials("secret1-key"), return: {:ok, %{"secret1-sub-key" => "secret"}})
+      allow(Andi.SecretService.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
       unit = String.to_atom(date_step.context.delta_time_unit)
 
       expected_date =
