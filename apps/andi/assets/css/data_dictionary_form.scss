@@ -247,6 +247,7 @@ $tick-height: 1rem + $field-padding - 0.44;
   padding: 0 2rem 2rem 2rem;
   -webkit-box-shadow: 0 0 2rem gray;
   box-shadow: 0 0 2rem gray;
+  min-width: 600px;
 
   h2 {
     font-size: 22px;
@@ -284,7 +285,8 @@ $tick-height: 1rem + $field-padding - 0.44;
 
   .button-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 20px;
 
     .btn {
       height: 2.5rem;

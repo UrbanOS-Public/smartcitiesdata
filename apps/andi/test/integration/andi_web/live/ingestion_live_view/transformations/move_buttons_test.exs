@@ -143,7 +143,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.MoveButtonsTest do
   end
 
   defp cancel(view) do
-    element(view, ".btn--cancel")
+    element(view, ".btn--cancel", "Discard Changes")
     |> render_click()
   end
 
