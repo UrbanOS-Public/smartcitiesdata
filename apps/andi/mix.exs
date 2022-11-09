@@ -84,7 +84,6 @@ defmodule Andi.MixProject do
       {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
-      #{:reaper, in_umbrella: true},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 5.2.6"},
       {:smart_city_test, "~> 2.2.5", only: [:test, :integration]},
