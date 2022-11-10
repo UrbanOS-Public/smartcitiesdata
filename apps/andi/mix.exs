@@ -42,7 +42,7 @@ defmodule Andi.MixProject do
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},
       {:cowlib, "== 2.9.1", override: true},
-      {:credo, "~> 1.0", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.0", runtime: false},
       {:crontab, "~> 1.1"},
       {:css_colors, "~> 0.2.2"},
       {:distillery, "~> 2.1"},
