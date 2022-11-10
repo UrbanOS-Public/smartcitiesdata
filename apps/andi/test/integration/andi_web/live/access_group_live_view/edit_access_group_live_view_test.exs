@@ -763,11 +763,11 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
 
   defp delete_access_group_in_ui(view) do
     view |> element("#access-group-delete-button") |> render_click
-    view |> element(".delete-button") |> render_click
+    view |> element("#confirm-delete-button") |> render_click
   end
 
   defp cancel_delete_access_group_in_ui(view) do
     view |> element("#access-group-delete-button") |> render_click
-    view |> element(".cancel-delete-button", "Cancel") |> render_click
+    view |> element("#confirm-cancel-button", "Cancel") |> render_click
   end
 end
