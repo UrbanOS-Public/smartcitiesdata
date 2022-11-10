@@ -81,7 +81,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
         <%= f = form_for @changeset, "#", [phx_change: :validate, as: :form_data] %>
           <div class="component-edit-section--<%= @visibility %>">
             <div class="finalize-form-edit-section form-grid">
-              <div "finalize-form__schedule">
+              <div class="finalize-form__schedule">
                 <h3>Schedule Job</h3>
 
                 <div class="finalize-form__schedule-options">
