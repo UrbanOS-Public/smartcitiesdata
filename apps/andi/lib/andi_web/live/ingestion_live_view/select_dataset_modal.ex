@@ -7,6 +7,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
       <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
+          <span class="material-icons search-index__exit" phx-click="cancel-dataset-search">close</span>
         </div>
 
         <hr class="search-modal-divider">

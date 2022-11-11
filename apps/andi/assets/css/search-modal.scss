@@ -75,6 +75,23 @@
     margin: 2.8rem 0 0 0;
 }
 
+.search-index__exit {
+    display: flex;
+    align-items: center;
+    font-size: 2.0rem;
+    font-weight: normal;
+    margin: 2.8rem 0 0 0;
+    
+    &:hover {
+        background-color: lighten(#6C787F1A, 10%);
+        cursor: default;
+    }
+
+    &:active {
+        background-color: lighten(#6C787F33, 20%);
+    }
+}
+
 .search-index__header {
     display: flex;
     justify-content: space-between;
