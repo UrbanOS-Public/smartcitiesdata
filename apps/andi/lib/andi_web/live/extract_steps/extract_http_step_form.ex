@@ -215,10 +215,10 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp process_extract_step(_ingestion, %{type: "secret"} = step, assigns) do
-    {:ok, cred} = Andi.SecretService.retrieve_ingestion_credentials(step.context.key)
-    secret = Map.get(cred, step.context.sub_key)
-
-    Map.put(assigns, step.context.destination |> String.to_atom(), secret)
+    case Andi.SecretService.retrieve_ingestion_credentials(step.context.key) do
+      {:ok, cred} -> Map.put(assigns, step.context.destination |> String.to_atom(), Map.get(cred, step.context.sub_key))
+      _ -> assigns
+    end
   end
 
   defp process_extract_step(ingestion_id, %{type: "auth"} = step, assigns) do
