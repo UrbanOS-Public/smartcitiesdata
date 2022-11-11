@@ -113,8 +113,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert new_source_format in current_select_value
     end
 
-    # todo: ticket #757 will fullfil this test
-    @tag :skip
     test "can not edit source format for published ingestion", %{
       view: view,
       html: html,
@@ -131,23 +129,39 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       end)
 
       {:ok, ingestion} =
-        TDG.create_ingestion(%{targetDataset: dataset.id, submissionStatus: :published})
+        TDG.create_ingestion(%{targetDataset: dataset.id, name: "testing123"})
         |> Ingestions.update()
+
+      Ingestions.update_submission_status(ingestion.id, :published)
+
+      eventually(fn ->
+        ing = Ingestions.get(ingestion.id)
+        assert ing.submissionStatus == :published
+      end)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
-      refute Enum.empty?(get_attributes(html, ".ingestion-metadata-form__format select", "disabled"))
+      refute Enum.empty?(get_attributes(html, "#ingestion_metadata_form_sourceFormat", "disabled"))
     end
   end
 
-  # todo: ticket #757 will fullfil this test
-  @tag :skip
   test "topLevelSelector is read only when sourceFormat is not xml nor json", %{conn: conn} do
-    smrt_dataset = TDG.create_dataset(%{technical: %{sourceFormat: "text/csv"}})
-    {:ok, dataset} = Datasets.update(smrt_dataset)
+    {:ok, dataset} =
+      TDG.create_dataset(%{name: "sample_dataset", submissionStatus: :published})
+      |> Datasets.update()
 
-    assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-    refute Enum.empty?(get_attributes(html, "#form_data_topLevelSelector", "readonly"))
+    eventually(fn ->
+      andi_dataset = Datasets.get(dataset.id)
+      assert andi_dataset.id == dataset.id
+    end)
+
+    {:ok, ingestion} =
+      TDG.create_ingestion(%{targetDataset: dataset.id, submissionStatus: :published, sourceFormat: "text/csv"})
+      |> Ingestions.update()
+
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+
+    refute Enum.empty?(get_attributes(html, ".metadata-form__top-level-selector input", "readonly"))
   end
 
   defp find_select_dataset_btn(view) do

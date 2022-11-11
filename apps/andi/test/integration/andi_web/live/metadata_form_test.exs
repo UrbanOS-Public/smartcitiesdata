@@ -577,24 +577,6 @@ defmodule AndiWeb.MetadataFormTest do
       assert get_text(html, "#issuedDate-error-msg") == ""
     end
 
-    # todo: ticket #757 will move this test to an /ingestions page test
-    @tag :skip
-    test "displays error when topLevelSelector jpath is invalid", %{conn: conn} do
-      smrt_dataset = TDG.create_dataset(%{})
-
-      {:ok, dataset} =
-        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-        |> Datasets.save()
-
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_live_child(view, "metadata_form_editor")
-
-      form_data = %{"sourceFormat" => "application/json", "topLevelSelector" => "$.data[x]"}
-      html = render_change(metadata_view, :validate, %{"form_data" => form_data})
-
-      assert get_text(html, "#topLevelSelector-error-msg") == "Error: Expected an integer at `x]`"
-    end
-
     test "dataset owner lists all the users in the system by email", %{conn: conn} do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, user} = User.create_or_update("64d1c660-4734-4b96-96e4-075f7ac9ae30", %{email: "hello@world.com", name: "Hello World"})

@@ -48,6 +48,22 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
       assert changeset.errors == [{:name, {"is required", [validation: :required]}}]
     end
 
+    test "displays error when topLevelSelector json Jaxon validation is invalid" do
+      badJsonPath = "$.data[x]"
+
+      form_data = %{
+        sourceFormat: "application/json",
+        targetDataset: "Dataset Name",
+        name: "ingestion123",
+        topLevelSelector: badJsonPath
+      }
+
+      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
+      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
+      refute changeset.valid?
+      assert changeset.errors == [{:topLevelSelector, {"Expected an integer at `x]`", []}}]
+    end
+
     test "generates a changeset with errors when targetDataset is absent" do
       form_data = %{
         sourceFormat: "csv",
