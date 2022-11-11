@@ -126,7 +126,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply,
      assign(socket,
        select_dataset_modal_visibility: "hidden",
-       selected_dataset: (if socket.assigns.old_selected_dataset, do: socket.assigns.old_selected_dataset, else: nil),
+       selected_dataset: if(socket.assigns.old_selected_dataset, do: socket.assigns.old_selected_dataset, else: nil),
        search_results: [],
        old_selected_dataset: nil
      )}
