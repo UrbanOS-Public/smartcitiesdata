@@ -85,6 +85,10 @@ defmodule AndiWeb.FormSection do
             %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
             %{assigns: %{ingestion_id: ingestion_id}} = socket
           ) do
+
+        IO.puts("This is thread 2")
+        Process.sleep(500)
+        IO.puts("Thread 2 slept")
         new_validation_status =
           case socket.assigns.changeset.valid? do
             true -> "valid"

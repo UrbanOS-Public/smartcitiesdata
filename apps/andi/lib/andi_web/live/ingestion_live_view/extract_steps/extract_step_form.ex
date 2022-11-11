@@ -185,6 +185,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
           }
         } = socket
       ) do
+    IO.puts("This is thread 1")
     save_step_changesets(extract_step_changesets)
 
     {:noreply,
