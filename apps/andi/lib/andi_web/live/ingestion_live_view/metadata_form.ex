@@ -123,8 +123,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("cancel-dataset-search", _, socket) do
-    IO.inspect("testing")
-    IO.inspect(socket.assigns.selected_dataset)
     {:noreply,
      assign(socket,
        select_dataset_modal_visibility: "hidden",
