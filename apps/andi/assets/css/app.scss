@@ -49,6 +49,16 @@ body {
   font-family: "Roboto", Arial, Helvetica, sans-serif;
   font-size: 1em;
   color: $color-text-primary;
+
+  .root__main {
+    height: 100%;
+
+    .phx-connected {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+  }
 }
 
 @mixin area($block, $element) {
