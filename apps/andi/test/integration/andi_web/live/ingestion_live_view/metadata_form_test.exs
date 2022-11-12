@@ -11,6 +11,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
 
   import FlokiHelpers,
     only: [
+      find_elements: 2,
       get_attributes: 3,
       get_text: 2,
       get_value: 2,
@@ -113,6 +114,26 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert new_source_format in current_select_value
     end
 
+    test "can close dataset modal", %{
+      view: view,
+      html: html,
+      ingestion: ingestion
+    } do
+      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+
+      assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
+
+      html = render_click(metadata_view, "select-dataset", %{})
+
+      refute Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
+
+      html = render_click(metadata_view, "cancel-dataset-search", %{})
+
+      assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
+    end
+
+    # todo: ticket #757 will fullfil this test
+    @tag :skip
     test "can not edit source format for published ingestion", %{
       view: view,
       html: html,

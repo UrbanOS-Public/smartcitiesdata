@@ -25,6 +25,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
        search_text: "",
        ingestion_published?: ingestion_published?,
        selected_dataset: ingestion.targetDataset,
+       old_selected_dataset: nil,
        ingestion_id: ingestion.id
      )}
   end
@@ -85,14 +86,14 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
     if(socket.assigns.selected_dataset == id) do
-      {:noreply, assign(socket, selected_dataset: nil)}
+      {:noreply, assign(socket, selected_dataset: nil, old_selected_dataset: id)}
     else
-      {:noreply, assign(socket, selected_dataset: id)}
+      {:noreply, assign(socket, selected_dataset: id, old_selected_dataset: socket.assigns.selected_dataset)}
     end
   end
 
-  def handle_event("remove-selected-dataset", %{"id" => _id}, socket) do
-    {:noreply, assign(socket, selected_dataset: nil)}
+  def handle_event("remove-selected-dataset", %{"id" => id}, socket) do
+    {:noreply, assign(socket, selected_dataset: nil, old_selected_dataset: id)}
   end
 
   def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "sourceFormat"]}, socket) do
@@ -129,9 +130,20 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply,
      assign(socket,
        select_dataset_modal_visibility: "hidden",
-       search_results: socket.assigns.search_results,
+       search_results: [],
        selected_dataset: id,
-       changeset: changeset
+       changeset: changeset,
+       old_selected_dataset: nil
+     )}
+  end
+
+  def handle_event("cancel-dataset-search", _, socket) do
+    {:noreply,
+     assign(socket,
+       select_dataset_modal_visibility: "hidden",
+       selected_dataset: if(socket.assigns.old_selected_dataset, do: socket.assigns.old_selected_dataset, else: nil),
+       search_results: [],
+       old_selected_dataset: nil
      )}
   end
 
