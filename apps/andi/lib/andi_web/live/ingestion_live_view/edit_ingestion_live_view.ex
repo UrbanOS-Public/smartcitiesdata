@@ -198,6 +198,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         :ok ->
           Ingestions.update_submission_status(ingestion_id, :published)
           Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_update(), smrt_ingestion)
+          AndiWeb.Endpoint.broadcast_from(self(), "ingestion-published", "ingestion-published", %{})
 
         error ->
           Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")

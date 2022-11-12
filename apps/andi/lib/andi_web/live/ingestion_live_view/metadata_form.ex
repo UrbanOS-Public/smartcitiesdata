@@ -14,6 +14,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   def mount(_, %{"ingestion" => ingestion}, socket) do
     changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("ingestion-published")
     AndiWeb.Endpoint.subscribe("source-format")
     ingestion_published? = ingestion.submissionStatus == :published
 
@@ -78,6 +79,13 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     valid? = if status == :ok, do: "valid", else: "invalid"
     FormUpdate.send_value(socket.parent_pid, {:update_save_message, valid?})
     {:noreply, socket}
+  end
+
+  def handle_info(
+        %{topic: "ingestion-published"},
+        socket
+      ) do
+    {:noreply, assign(socket, ingestion_published?: true)}
   end
 
   def handle_event("select-dataset", _, socket) do
