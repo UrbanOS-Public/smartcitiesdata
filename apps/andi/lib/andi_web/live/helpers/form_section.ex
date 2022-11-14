@@ -15,7 +15,6 @@ defmodule AndiWeb.FormSection do
           |> Map.put(:action, :update)
 
         AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: socket.assigns.dataset_id})
-
         AndiWeb.Endpoint.broadcast_from(self(), "form-save", "form-save", %{
           form_changeset: changeset,
           dataset_id: socket.assigns.dataset_id
@@ -66,12 +65,16 @@ defmodule AndiWeb.FormSection do
             %{topic: "form-save", event: "save-all", payload: %{dataset_id: dataset_id}},
             %{assigns: %{dataset_id: dataset_id}} = socket
           ) do
+
         new_validation_status =
           case socket.assigns.changeset.valid? do
             true -> "valid"
             false -> "invalid"
           end
 
+        #Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
+        #This sleep is needed because other save events are processing currently. Andi.InputSchemas.Datasets.save_form_changeset will load the dataset from the database.
+        Process.sleep(1_000)
         {:ok, andi_dataset} = Andi.InputSchemas.Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
 
         new_changeset =
@@ -85,12 +88,16 @@ defmodule AndiWeb.FormSection do
             %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
             %{assigns: %{ingestion_id: ingestion_id}} = socket
           ) do
+
         new_validation_status =
           case socket.assigns.changeset.valid? do
             true -> "valid"
             false -> "invalid"
           end
 
+        #Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
+        #This sleep is needed because other save events are processing currently. Andi.InputSchemas.Ingestions.save_form_changeset will load the dataset from the database.
+        Process.sleep(1_000)
         {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.save_form_changeset(socket.assigns.ingestion_id, socket.assigns.changeset)
 
         new_changeset =
