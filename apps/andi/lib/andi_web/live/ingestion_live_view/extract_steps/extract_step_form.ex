@@ -189,7 +189,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     {:noreply,
      assign(socket,
-        validation_status: get_new_validation_status(extract_step_changesets, extract_steps)
+       validation_status: get_new_validation_status(extract_step_changesets, extract_steps)
      )}
   end
 
