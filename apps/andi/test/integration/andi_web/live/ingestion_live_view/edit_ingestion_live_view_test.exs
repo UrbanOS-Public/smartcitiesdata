@@ -225,7 +225,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       |> element("#add-transformation")
       |> render_click()
 
-      element(view, ".btn--cancel")
+      element(view, ".btn--cancel", "Discard Changes")
       |> render_click()
 
       assert element(view, ".unsaved-changes-modal--visible")
@@ -234,7 +234,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
     defp delete_ingestion_in_ui(view) do
       view |> element("#ingestion-delete-button") |> render_click
-      view |> element(".delete-button") |> render_click
+      view |> element("#confirm-delete-button") |> render_click
     end
 
     defp get_extract_step_id(ingestion, index) do
