@@ -142,7 +142,7 @@ defmodule AndiWeb.SubmitLiveView do
     dataset_id = socket.assigns.dataset.id
 
     AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
-
+    #Todo: Rearchitect how concurrent form events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
     Process.sleep(1_000)
 
     andi_dataset = Datasets.get(dataset_id)
@@ -169,7 +169,7 @@ defmodule AndiWeb.SubmitLiveView do
     dataset_id = socket.assigns.dataset.id
 
     AndiWeb.Endpoint.broadcast("form-save", "save-all", %{dataset_id: dataset_id})
-
+    #Todo: Rearchitect how concurrent form events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
     Process.sleep(1_000)
 
     andi_dataset = Datasets.get(dataset_id)

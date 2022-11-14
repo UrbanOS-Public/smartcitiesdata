@@ -97,6 +97,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
           }
         } = socket
       ) do
+
     changes =
       InputConverter.form_changes_from_changeset(transformation_changeset)
       |> Map.put(:ingestion_id, ingestion_id)
