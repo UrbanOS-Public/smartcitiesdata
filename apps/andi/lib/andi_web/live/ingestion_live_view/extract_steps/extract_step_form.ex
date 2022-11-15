@@ -145,7 +145,9 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
   def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
     move_index = String.to_integer(move_index_string)
+
     extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
+
     target_index = extract_step_index + move_index
 
     case target_index >= 0 && target_index < Enum.count(socket.assigns.extract_steps) do
@@ -154,13 +156,18 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     end
   end
 
-  def handle_event("remove-extract-step", %{"id" => extract_step_id}, %{assigns: %{ingestion_id: ingestion_id}} = socket) do
+  def handle_event(
+        "remove-extract-step",
+        %{"id" => extract_step_id},
+        %{assigns: %{ingestion_id: ingestion_id}} = socket
+      ) do
     ExtractSteps.delete(extract_step_id)
     updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
     all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()
 
     {:noreply,
-     assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map) |> update_validation_status()}
+     assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map)
+     |> update_validation_status()}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
@@ -189,7 +196,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     {:noreply,
      assign(socket,
-        validation_status: get_new_validation_status(extract_step_changesets, extract_steps)
+       validation_status: get_new_validation_status(extract_step_changesets, extract_steps)
      )}
   end
 

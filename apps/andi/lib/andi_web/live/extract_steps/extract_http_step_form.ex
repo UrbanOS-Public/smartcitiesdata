@@ -165,8 +165,9 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   def handle_event("test_url", _, socket) do
     Ecto.Changeset.apply_changes(socket.assigns.changeset)
-
     ingestion_id = socket.assigns.extract_step.ingestion_id
+    send(self(), %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}})
+
     steps = ExtractSteps.all_for_ingestion(ingestion_id)
     {new_url, new_query_params, new_headers} = concat_steps(ingestion_id, steps)
 
