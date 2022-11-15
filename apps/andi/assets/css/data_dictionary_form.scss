@@ -292,6 +292,15 @@ $tick-height: 1rem + $field-padding - 0.44;
       height: 2.5rem;
     }
   }
+
+  .button-container-publish-success {
+    display: flex;
+    justify-content: space-between;
+
+    .btn {
+      height: 2.5rem;
+    }
+  }
 }
 
 .add-default-tooltip {
