@@ -63,6 +63,7 @@ defmodule Andi.InputSchemas.Organization do
   def validate_unique_org_name(changeset) do
     id = Ecto.Changeset.get_field(changeset, :id)
     org_name = Ecto.Changeset.get_field(changeset, :orgName)
+
     safe_org_name =
       case org_name do
         nil -> ""
