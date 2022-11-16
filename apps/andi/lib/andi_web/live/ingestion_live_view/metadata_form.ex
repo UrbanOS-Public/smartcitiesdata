@@ -89,7 +89,11 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("select-dataset", _, socket) do
-    {:noreply, assign(socket, select_dataset_modal_visibility: "visible")}
+    {:noreply,
+     assign(socket,
+       select_dataset_modal_visibility: "visible",
+       old_selected_dataset: socket.assigns.selected_dataset
+     )}
   end
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
