@@ -125,7 +125,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
               <div class="data-dictionary-form__edit-section">
                 <%= if @is_curator do %>
-                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
+                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, dataset_or_ingestion: :dataset) %>
                 <% else %>
                   <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
                 <% end %>
