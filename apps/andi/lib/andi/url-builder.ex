@@ -4,7 +4,7 @@ defmodule Andi.UrlBuilder do
           any
         ) :: binary
   def decode_http_extract_step(step, assigns) do
-    if step.context.query_params == %{} do
+    if step.context.query_params == [] do
       build_safe_url_path(step.context.url, assigns)
     else
       no_param_url =

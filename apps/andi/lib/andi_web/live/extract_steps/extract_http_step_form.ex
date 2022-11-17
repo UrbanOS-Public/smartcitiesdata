@@ -20,6 +20,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   alias AndiWeb.Helpers.FormTools
   alias AndiWeb.ExtractSteps.ExtractStepHeader
   alias Andi.UrlBuilder
+  alias Andi.InputSchemas.InputConverter
 
   def mount(socket) do
     {:ok,
@@ -165,14 +166,28 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   def handle_event("test_url", _, socket) do
     Ecto.Changeset.apply_changes(socket.assigns.changeset)
-    ingestion_id = socket.assigns.extract_step.ingestion_id
-    send(self(), %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}})
 
+    send(socket.parent_pid, :test_url)
+    send_update_after(__MODULE__, %{id: socket.assigns.extract_step.id, update: :test_url}, 2000)
+    {:noreply, socket}
+  end
+
+  def handle_info(:update, socket) do
+    {:noreply, socket}
+  end
+
+  def update(%{update: :test_url}, socket) do
+    ingestion_id = socket.assigns.extract_step.ingestion_id
     steps = ExtractSteps.all_for_ingestion(ingestion_id)
+
     {new_url, new_query_params, new_headers} = concat_steps(ingestion_id, steps)
 
     test_results = Andi.Services.UrlTest.test(new_url, query_params: new_query_params, headers: new_headers)
-    {:noreply, assign(socket, test_results: test_results)}
+    {:ok, assign(socket, test_results: test_results)}
+  end
+
+  def update(assigns, socket) do
+    {:ok, assign(socket, assigns)}
   end
 
   defp concat_steps(ingestion_id, steps) do
@@ -190,17 +205,17 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       reraise "Unable to process #{step.type} step for ingestion #{ingestion_id}.", __STACKTRACE__
   end
 
-  defp process_extract_step(_ingestion_id, %{type: "http"} = step, assigns) do
-    {_body, headers} = evaluate_body_and_headers(step, assigns)
+  defp process_extract_step(_ingestion_id, %{type: "http"} = step, bindings) do
+    {_body, headers} = evaluate_body_and_headers(step, bindings)
 
-    url = UrlBuilder.decode_http_extract_step(step, assigns)
+    url = UrlBuilder.decode_http_extract_step(step, bindings)
 
-    query_params = UrlBuilder.safe_evaluate_parameters(step.context.query_params, assigns)
+    query_params = UrlBuilder.safe_evaluate_parameters(step.context.query_params, bindings)
 
     {url, query_params, headers}
   end
 
-  defp process_extract_step(_ingestion, %{type: "date"} = step, assigns) do
+  defp process_extract_step(_ingestion, %{type: "date"} = step, bindings) do
     date =
       case step.context.delta_time_unit do
         nil ->
@@ -212,37 +227,37 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       end
 
     formatted_date = Timex.format!(date, step.context.format)
-    Map.put(assigns, step.context.destination |> String.to_atom(), formatted_date)
+    Map.put(bindings, step.context.destination |> String.to_atom(), formatted_date)
   end
 
-  defp process_extract_step(_ingestion, %{type: "secret"} = step, assigns) do
+  defp process_extract_step(_ingestion, %{type: "secret"} = step, bindings) do
     case Andi.SecretService.retrieve_ingestion_credentials(step.context.key) do
-      {:ok, cred} -> Map.put(assigns, step.context.destination |> String.to_atom(), Map.get(cred, step.context.sub_key))
-      _ -> assigns
+      {:ok, cred} -> Map.put(bindings, step.context.destination |> String.to_atom(), Map.get(cred, step.context.sub_key))
+      _ -> bindings
     end
   end
 
-  defp process_extract_step(ingestion_id, %{type: "auth"} = step, assigns) do
-    {body, headers} = evaluate_body_and_headers(step, assigns)
+  defp process_extract_step(ingestion_id, %{type: "auth"} = step, bindings) do
+    {body, headers} = evaluate_body_and_headers(step, bindings)
 
-    url = UrlBuilder.build_safe_url_path(step.context.url, assigns)
+    url = UrlBuilder.build_safe_url_path(step.context.url, bindings)
 
     response =
       Andi.AuthRetriever.authorize(ingestion_id, url, body, step.context.encode_method, headers)
       |> Jason.decode!()
       |> get_in(step.context.path)
 
-    Map.put(assigns, step.context.destination |> String.to_atom(), response)
+    Map.put(bindings, step.context.destination |> String.to_atom(), response)
   end
 
-  defp evaluate_body_and_headers(step, assigns) do
+  defp evaluate_body_and_headers(step, bindings) do
     body =
       case Map.fetch(step.context, :body) do
-        {:ok, body} -> process_body(body, assigns)
+        {:ok, body} -> process_body(body, bindings)
         _ -> ""
       end
 
-    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, assigns)
+    headers = UrlBuilder.safe_evaluate_parameters(step.context.headers, bindings)
 
     {body, headers}
   end
