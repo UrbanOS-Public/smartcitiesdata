@@ -200,6 +200,10 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
       render_click(test_url_button)
 
+      # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
+      # This sleep is needed because this has to wait until the processes are complete in order to test if the test_url button calls the UrlTest.text
+      Process.sleep(3000)
+
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
 
       [extract_step_id: extract_step_id]
@@ -207,7 +211,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     test "should import other steps to fill out the url upon testing", %{bypass: bypass, conn: conn} do
       Bypass.stub(bypass, "POST", "/", fn connection ->
-        {:ok, body, connection} = Plug.Conn.read_body(connection)
+        {:ok, _body, connection} = Plug.Conn.read_body(connection)
 
         Plug.Conn.resp(connection, 200, %{sub: %{path: "auth_token"}} |> Jason.encode!())
       end)
@@ -225,12 +229,21 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
           path: ["sub", "path"],
           destination: "auth",
           url: "http://localhost:#{bypass.port}",
-          encodeMethod: "json",
+          encode_method: "json",
           headers: %{},
           cache_ttl: nil
         })
 
-      date_step = create_step("date", %{destination: "date", delta_time_unit: "years", delta_time_value: 5, format: "{YYYY}-{M}-{D}"})
+      date_step =
+        create_step(
+          "date",
+          %{
+            destination: "date",
+            deltaTimeUnit: "years",
+            deltaTimeValue: 5,
+            format: "{YYYY}-{M}-{D}"
+          }
+        )
 
       secret_step =
         create_step(
@@ -263,16 +276,18 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       allow(UrlTest.test(any(), any()), return: %{time: 1_000, status: 200})
       allow(Andi.SecretService.retrieve_ingestion_credentials("secret1-key"), return: {:ok, %{"secret1-sub-key" => "secret"}})
       allow(Andi.SecretService.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
-      unit = String.to_atom(date_step.context.delta_time_unit)
+
+      unit = String.to_atom(date_step.context.deltaTimeUnit)
 
       expected_date =
-        Timex.shift(Timex.now(), [{unit, date_step.context.delta_time_value}])
+        Timex.shift(Timex.now(), [{unit, date_step.context.deltaTimeValue}])
         |> Timex.format!(date_step.context.format)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
       render_click(test_url_button)
+      Process.sleep(3000)
 
       assert_called(
         UrlTest.test("secret.com/auth_token",

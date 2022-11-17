@@ -94,7 +94,6 @@ defmodule AndiWeb.FormSection do
         # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
         # This sleep is needed because other save events are executing. save_form_changeset will load the ingestion from the database.
         Process.sleep(1_000)
-
         {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.save_form_changeset(socket.assigns.ingestion_id, socket.assigns.changeset)
 
         new_changeset =
