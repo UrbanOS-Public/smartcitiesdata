@@ -3,17 +3,17 @@ defmodule Andi.UrlBuilder do
           atom | %{:context => atom | %{:url => binary, optional(any) => any}, optional(any) => any},
           any
         ) :: binary
-  def decode_http_extract_step(step, assigns) do
-    if step.context.query_params == [] do
-      build_safe_url_path(step.context.url, assigns)
-    else
-      no_param_url =
-        step.context.url
-        |> String.split("?")
-        |> hd()
+  def decode_http_extract_step(%{context: %{query_params: []}} = step, assigns) do
+    build_safe_url_path(step.context.url, assigns)
+  end
 
-      build_safe_url_path(no_param_url, assigns)
-    end
+  def decode_http_extract_step(step, assigns) do
+    no_param_url =
+      step.context.url
+      |> String.split("?")
+      |> hd()
+
+    build_safe_url_path(no_param_url, assigns)
   end
 
   def build_safe_url_path(url, bindings) do

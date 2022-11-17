@@ -199,6 +199,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
       test_url_button = element(extract_step_form_view, "#step-#{extract_step_id} button", "Test")
       render_click(test_url_button)
+
+      # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
+      # This sleep is needed because this has to wait until the processes are complete in order to test if the test_url button calls the UrlTest.text
       Process.sleep(3000)
 
       assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
