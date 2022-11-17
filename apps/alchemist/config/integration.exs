@@ -16,7 +16,7 @@ config :logger,
 config :alchemist,
   elsa_brokers: endpoints,
   input_topic_prefix: "raw",
-  output_topic_prefix: "validated",
+  output_topic_prefix: "transformed",
   profiling_enabled: true,
   divo: [
     {DivoKafka,
