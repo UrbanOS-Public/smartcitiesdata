@@ -232,14 +232,15 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
         })
 
       date_step =
-        create_step("date",
-        %{
-          destination: "date",
-          deltaTimeUnit: "years",
-          deltaTimeValue: 5,
-          format: "{YYYY}-{M}-{D}"
-        }
-      )
+        create_step(
+          "date",
+          %{
+            destination: "date",
+            deltaTimeUnit: "years",
+            deltaTimeValue: 5,
+            format: "{YYYY}-{M}-{D}"
+          }
+        )
 
       secret_step =
         create_step(
@@ -274,6 +275,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       allow(Andi.SecretService.retrieve_ingestion_credentials("secret2-key"), return: {:ok, %{"secret2-sub-key" => "secret2"}})
 
       unit = String.to_atom(date_step.context.deltaTimeUnit)
+
       expected_date =
         Timex.shift(Timex.now(), [{unit, date_step.context.deltaTimeValue}])
         |> Timex.format!(date_step.context.format)
