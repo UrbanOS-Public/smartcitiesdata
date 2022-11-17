@@ -72,9 +72,6 @@ defmodule AndiWeb.FormSection do
             false -> "invalid"
           end
 
-        # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-        # This sleep is needed because other save events are processing currently. Andi.InputSchemas.Datasets.save_form_changeset will load the dataset from the database.
-        Process.sleep(1_000)
         {:ok, andi_dataset} = Andi.InputSchemas.Datasets.save_form_changeset(socket.assigns.dataset_id, socket.assigns.changeset)
 
         new_changeset =

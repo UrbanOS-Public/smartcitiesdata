@@ -159,22 +159,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_event("save", _, socket) do
-    ingestion_id = socket.assigns.ingestion.id
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
-    # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-    # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
-    Process.sleep(1_000)
-
-    andi_ingestion = Ingestions.get(ingestion_id)
-    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
-
-    {:noreply,
-     assign(socket,
-       changeset: ingestion_changeset,
-       save_success: true,
-       click_id: UUID.uuid4(),
-       success_message: save_message(ingestion_changeset.valid?)
-     )}
+    save_ingestion(socket)
   end
 
   def handle_event("cancel-edit", _, socket) do
@@ -193,6 +178,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def test_url(socket) do
+    save_ingestion(socket)
+  end
+
+  defp save_ingestion(socket) do
     ingestion_id = socket.assigns.ingestion.id
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
     # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
