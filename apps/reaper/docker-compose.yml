@@ -3,12 +3,14 @@ version: '3.4'
 services:
   init:
     image: alpine:3.16.0
+    platform: linux/amd64
     volumes:
       - ${PWD}/test/integration:/workdir
       - minio:/minio
     entrypoint: /workdir/setup.sh
   minio:
     image: minio/minio:RELEASE.2022-10-15T19-57-03Z.fips
+    platform: linux/amd64
     command: server /data --console-address ":9001"
     volumes:
       - minio:/data
@@ -19,10 +21,12 @@ services:
       - init
   zookeeper:
     image: wurstmeister/zookeeper
+    platform: linux/amd64
     ports:
     - "2181:2181"
   kafka:
     image: bitnami/kafka:3.1.2
+    platform: linux/amd64
     depends_on:
     - zookeeper
     ports:
@@ -44,6 +48,7 @@ services:
 
   kafka-init:
     image: bitnami/kafka:3.1.2
+    platform: linux/amd64
     depends_on:
       - kafka
     entrypoint: ['/bin/bash', '-c']
@@ -60,10 +65,12 @@ services:
 
   redis:
     image: redis:latest
+    platform: linux/amd64
     ports:
       - "6379:6379"
   sftp:
     image: atmoz/sftp:alpine
+    platform: linux/amd64
     ports: 
      - "2222:22"
     command: "sftp_user:sftp_password:1001::upload"

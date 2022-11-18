@@ -3,12 +3,14 @@ version: '3.4'
 services:
   init:
     image: alpine:3.16.0
+    platform: linux/amd64
     volumes:
       - ${PWD}/test:/workdir
       - minio:/minio
     entrypoint: /workdir/setup.sh
   metastore:
     image: quay.io/cloudservices/ubi-hive:3.1.2-metastore-008
+    platform: linux/amd64
     depends_on:
     - postgres
     - minio
@@ -27,9 +29,9 @@ services:
       POSTGRES_SQL_SERVICE_HOST: postgres
       POSTGRES_SQL_SERVICE_PORT: 5432
       DATABASE_NAME: metastore
-
   postgres:
     image: smartcitiesdata/postgres-testo:0.9.12
+    platform: linux/amd64
     ports:
       - "5455:5432"
   ecto-postgres:
@@ -42,6 +44,7 @@ services:
       - "5456:5432"
   minio:
     image: minio/minio:RELEASE.2022-10-15T19-57-03Z.fips
+    platform: linux/amd64
     command: server /data --console-address ":9001"
     volumes:
       - minio:/data
@@ -55,6 +58,7 @@ services:
     - metastore
     - minio
     image: trinodb/trino:389
+    platform: linux/amd64
     ports:
     - "8080:8080"
     healthcheck:
@@ -64,13 +68,14 @@ services:
       retries: 10
     volumes:
       - ${PWD}/test/hive.properties:/etc/trino/catalog/hive.properties
-
   zookeeper:
     image: wurstmeister/zookeeper
+    platform: linux/amd64
     ports:
     - "2181:2181"
   kafka:
     image: bitnami/kafka:3.1.2
+    platform: linux/amd64
     depends_on:
     - zookeeper
     ports:
@@ -87,14 +92,14 @@ services:
       interval: 10s
       timeout: 20s
       retries: 3
-
   redis:
     image: redis:latest
+    platform: linux/amd64
     ports:
       - "6379:6379"
-
   elasticsearch:
     image: elasticsearch:7.4.2
+    platform: linux/amd64
     ports:
     - "9200:9200"
     - "9300:9300"
