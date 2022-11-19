@@ -3,6 +3,7 @@ version: '2'
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:4.1.0
+    platform: linux/amd64
     ports:
       - 2181:2181
     environment:
@@ -12,6 +13,7 @@ services:
       - "moby:127.0.0.1"
   kafka:
     image: confluentinc/cp-kafka:4.1.0
+    platform: linux/amd64
     ports:
       - 9092:9092
       - 9093:9093
@@ -30,6 +32,7 @@ services:
     build:
       context: .
     image: consumer
+    platform: linux/amd64
     depends_on:
       - kafka
     ports:
