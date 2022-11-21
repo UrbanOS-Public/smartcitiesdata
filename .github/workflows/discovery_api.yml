@@ -32,32 +32,32 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: "10"
-      - name: Get dependencies
-        run: |
-          bash scripts/gh-action-get-deps.sh
-      - name: Run static checks
-        run: |
-          bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
-      - name: Run unit tests
-        run: |
-          bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
+      # - name: Get dependencies
+      #   run: |
+      #     bash scripts/gh-action-get-deps.sh
+      # - name: Run static checks
+      #   run: |
+      #     bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
+      # - name: Run unit tests
+      #   run: |
+      #     bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
-      - name: Run WDC tests
-        run: |
-          bash scripts/gh-action-wdc-test.sh
-      - name: Publish development image
-        run: |
-          bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Publish to Quay
-        run: |
-          bash scripts/gh-action-quay.sh ${GITHUB_WORKFLOW} development
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        env:
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+      # - name: Run WDC tests
+      #   run: |
+      #     bash scripts/gh-action-wdc-test.sh
+      # - name: Publish development image
+      #   run: |
+      #     bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}
+      #   if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        # env:
+        #   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        #   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Publish to Quay
+      #   run: |
+      #     bash scripts/gh-action-quay.sh ${GITHUB_WORKFLOW} development
+      #   if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      #   env:
+      #     QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      #     QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
