@@ -17,6 +17,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
     id = Atom.to_string(assigns.id)
     form_with_errors = DataDictionaryHelpers.add_errors_to_form(assigns.form)
     field_type = input_value(assigns.form, :type)
+    editing_ingestion? = assigns.dataset_or_ingestion == :ingestion
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -30,11 +31,19 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
           <%= text_input(@form, :name, [id: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
+
+        <%= if editing_ingestion? do %>
         <div class="data-dictionary-field-editor__selector">
-          <%= label(@form, :selector, "Selector", class: "label label--required") %>
+          <%= if DataDictionaryHelpers.is_source_format_xml(@source_format) do %>
+            <%= label(@form, :selector, "Selector", class: "label label--required") %>
+          <% else %>
+            <%= label(@form, :selector, "Selector", class: "label") %>
+          <% end %>
           <%= text_input(@form, :selector, [id: id <> "_name", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format), required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
         </div>
+        <% end %>
+
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required") %>
           <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>

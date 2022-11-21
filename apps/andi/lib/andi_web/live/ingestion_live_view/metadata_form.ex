@@ -9,11 +9,14 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.IngestionLiveView.FormUpdate
+  alias AndiWeb.Views.DisplayNames
 
   def mount(_, %{"ingestion" => ingestion}, socket) do
     changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
     AndiWeb.Endpoint.subscribe("form-save")
+    AndiWeb.Endpoint.subscribe("ingestion-published")
     AndiWeb.Endpoint.subscribe("source-format")
+    ingestion_published? = ingestion.submissionStatus == :published
 
     {:ok,
      assign(socket,
@@ -21,6 +24,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
        select_dataset_modal_visibility: "hidden",
        search_results: [],
        search_text: "",
+       ingestion_published?: ingestion_published?,
        selected_dataset: ingestion.targetDataset,
        old_selected_dataset: nil,
        ingestion_id: ingestion.id
@@ -35,11 +39,23 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
         <%= text_input(f, :name, [class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000", required: true]) %>
         <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false) %>
       </div>
+
       <div class="ingestion-metadata-form ingestion-metadata-form__format">
         <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
-        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields", required: true]) %>
+        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields", required: true, disabled: @ingestion_published?]) %>
         <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
       </div>
+
+      <div class="metadata-form__top-level-selector">
+        <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+        <%= if input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"] do %>
+          <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
+        <% else %>
+          <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
+        <% end %>
+        <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
+      </div>
+
       <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
         <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
         <%= hidden_input(f, :targetDataset, value: @selected_dataset) %>
@@ -63,6 +79,13 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     valid? = if status == :ok, do: "valid", else: "invalid"
     FormUpdate.send_value(socket.parent_pid, {:update_save_message, valid?})
     {:noreply, socket}
+  end
+
+  def handle_info(
+        %{topic: "ingestion-published"},
+        socket
+      ) do
+    {:noreply, assign(socket, ingestion_published?: true)}
   end
 
   def handle_event("select-dataset", _, socket) do
