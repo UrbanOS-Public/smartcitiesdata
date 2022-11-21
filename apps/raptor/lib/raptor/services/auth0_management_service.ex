@@ -26,6 +26,13 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
+  def patch_api_key(apiKey) do
+    #TODO: Test
+    url = Keyword.fetch!(auth0(), :audience)
+
+    IO.inspect(url, label: "Auth0 URL")
+  end
+
   defp client_id() do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
