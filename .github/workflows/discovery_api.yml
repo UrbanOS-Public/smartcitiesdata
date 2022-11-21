@@ -32,9 +32,9 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: "10"
-      # - name: Get dependencies
-      #   run: |
-      #     bash scripts/gh-action-get-deps.sh
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
       # - name: Run static checks
       #   run: |
       #     bash scripts/gh-action-static-checks.sh ${GITHUB_WORKFLOW}
