@@ -93,7 +93,9 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
        dataset_search_text: "",
        user_search_text: "",
        selected_datasets: starting_dataset_ids,
-       selected_users: starting_user_ids
+       selected_users: starting_user_ids,
+       old_selected_datasets: [],
+       old_selected_users: []
      )}
   end
 
@@ -106,14 +108,16 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
      assign(socket,
        manage_datasets_modal_visibility: "hidden",
        dataset_search_results: socket.assigns.dataset_search_results,
-       selected_datasets: socket.assigns.selected_datasets
+       selected_datasets: socket.assigns.selected_datasets,
+       old_selected_datasets: []
      )}
   end
 
   def handle_event("save-user-search", _, socket) do
     {:noreply,
      assign(socket,
-       manage_users_modal_visibility: "hidden"
+       manage_users_modal_visibility: "hidden",
+       old_selected_users: []
      )}
   end
 
@@ -164,11 +168,39 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   end
 
   def handle_event("manage-datasets", _, socket) do
-    {:noreply, assign(socket, manage_datasets_modal_visibility: "visible")}
+    {:noreply,
+     assign(socket,
+       manage_datasets_modal_visibility: "visible",
+       old_selected_datasets: socket.assigns.selected_datasets
+     )}
   end
 
   def handle_event("manage-users", _, socket) do
-    {:noreply, assign(socket, manage_users_modal_visibility: "visible")}
+    {:noreply,
+     assign(socket,
+       manage_users_modal_visibility: "visible",
+       old_selected_users: socket.assigns.selected_users
+     )}
+  end
+
+  def handle_event("cancel-manage-datasets", _, socket) do
+    {:noreply,
+     assign(socket,
+       manage_datasets_modal_visibility: "hidden",
+       selected_datasets: if(socket.assigns.old_selected_datasets, do: socket.assigns.old_selected_datasets, else: []),
+       dataset_search_results: [],
+       old_selected_datasets: []
+     )}
+  end
+
+  def handle_event("cancel-manage-users", _, socket) do
+    {:noreply,
+     assign(socket,
+       manage_users_modal_visibility: "hidden",
+       selected_users: if(socket.assigns.old_selected_users, do: socket.assigns.old_selected_users, else: []),
+       user_search_results: [],
+       old_selected_users: []
+     )}
   end
 
   def handle_event("dataset-search", %{"search-value" => search_value}, socket) do
@@ -213,11 +245,23 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
     case id in socket.assigns.selected_users do
       true ->
         selected_users = List.delete(socket.assigns.selected_users, id)
-        {:noreply, assign(socket, add_user_modal_visibility: "visible", selected_users: selected_users)}
+
+        {:noreply,
+         assign(socket,
+           add_user_modal_visibility: "visible",
+           selected_users: selected_users,
+           old_selected_users: socket.assigns.selected_users
+         )}
 
       _ ->
         selected_users = [id | socket.assigns.selected_users]
-        {:noreply, assign(socket, add_user_modal_visibility: "visible", selected_users: selected_users)}
+
+        {:noreply,
+         assign(socket,
+           add_user_modal_visibility: "visible",
+           selected_users: selected_users,
+           old_selected_users: socket.assigns.selected_users
+         )}
     end
   end
 
@@ -230,12 +274,12 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
 
   defp remove_from_selected_datasets(id, socket) do
     selected_datasets = List.delete(socket.assigns.selected_datasets, id)
-    {:noreply, assign(socket, selected_datasets: selected_datasets)}
+    {:noreply, assign(socket, selected_datasets: selected_datasets, old_selected_datasets: socket.assigns.selected_datasets)}
   end
 
   defp add_to_selected_datasets(id, socket) do
     selected_datasets = [id | socket.assigns.selected_datasets]
-    {:noreply, assign(socket, selected_datasets: selected_datasets)}
+    {:noreply, assign(socket, selected_datasets: selected_datasets, old_selected_datasets: socket.assigns.selected_datasets)}
   end
 
   defp query_on_dataset_search_change(search_value, %{assigns: %{dataset_search_text: search_value, dataset_search_results: search_results}}) do

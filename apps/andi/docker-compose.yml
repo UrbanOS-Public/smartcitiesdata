@@ -3,12 +3,14 @@ version: '3.4'
 services:
   init:
     image: alpine:3.16.0
+    platform: linux/amd64
     volumes:
       - ${PWD}/test/integration:/workdir
       - minio:/minio
     entrypoint: /workdir/setup.sh
   minio:
     image: minio/minio:RELEASE.2022-10-15T19-57-03Z.fips
+    platform: linux/amd64
     command: server /data --console-address ":9001"
     volumes:
       - minio:/data
@@ -19,6 +21,7 @@ services:
       - init
   ecto-postgres:
     image: postgres:14.4-alpine
+    platform: linux/amd64
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -27,10 +30,12 @@ services:
       - "5456:5432"
   zookeeper:
     image: wurstmeister/zookeeper
+    platform: linux/amd64
     ports:
     - "2181:2181"
   kafka:
     image: bitnami/kafka:3.1.2
+    platform: linux/amd64
     depends_on:
     - zookeeper
     ports:
@@ -52,6 +57,7 @@ services:
 
   kafka-init:
     image: bitnami/kafka:3.1.2
+    platform: linux/amd64
     depends_on:
       - kafka
     entrypoint: ['/bin/bash', '-c']
@@ -68,6 +74,7 @@ services:
 
   redis:
     image: redis:latest
+    platform: linux/amd64
     ports:
       - "6379:6379"
 

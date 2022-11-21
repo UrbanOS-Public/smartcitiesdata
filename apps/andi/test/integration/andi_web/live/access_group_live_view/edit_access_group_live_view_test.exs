@@ -178,7 +178,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       assert has_element?(add_dataset_modal)
     end
 
-    test "closes modal on click", %{curator_conn: conn} do
+    test "closes modal on save click", %{curator_conn: conn} do
       access_group = create_access_group()
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -191,6 +191,40 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveViewTest do
       render_click(save_button)
 
       refute Enum.empty?(find_elements(html, ".manage-datasets-modal--hidden"))
+    end
+
+    test "can exit dataset modal via X button", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      manage_datasets_button = find_manage_datasets_button(view)
+
+      render_click(manage_datasets_button)
+
+      assert has_element?(element(view, ".manage-datasets-modal--visible"))
+
+      close_button = element(view, ".manage-datasets-modal .search-index__exit", "close")
+
+      render_click(close_button)
+
+      assert has_element?(element(view, ".manage-datasets-modal--hidden"))
+    end
+
+    test "can exit users modal via X button", %{curator_conn: conn} do
+      access_group = create_access_group()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
+
+      manage_users_button = find_manage_users_button(view)
+
+      render_click(manage_users_button)
+
+      assert has_element?(element(view, ".manage-users-modal--visible"))
+
+      close_button = element(view, ".manage-users-modal .search-index__exit", "close")
+
+      render_click(close_button)
+
+      assert has_element?(element(view, ".manage-users-modal--hidden"))
     end
   end
 
