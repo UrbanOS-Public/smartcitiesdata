@@ -71,15 +71,18 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
     test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "public_dataset_a", "public_org")
+
       query = "select * from #{table}"
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
-      actual = Repo.get(Visualization, saved.id)
-      assert [id] == actual.datasets
-      assert actual.valid_query
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [id] == actual.datasets
+        assert actual.valid_query
+      end)
     end
 
     test "given a valid query using the same dataset twice, the saved list of datasets contains only one entry for it" do
