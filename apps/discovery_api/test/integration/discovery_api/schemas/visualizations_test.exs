@@ -64,8 +64,10 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
-      actual = Repo.get(Visualization, saved.id)
-      assert query == actual.query
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert query == actual.query
+      end)
     end
 
     test "given a valid query, it is created with a list of datasets used in it and is flagged valid" do
@@ -94,9 +96,11 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
 
-      actual = Repo.get(Visualization, saved.id)
-      assert [id] == actual.datasets
-      assert actual.valid_query
+      eventually(fn ->
+        actual = Repo.get(Visualization, saved.id)
+        assert [id] == actual.datasets
+        assert actual.valid_query
+      end)
     end
 
     test "given an invalid query, it is created with an empty list of datasets and is flagged invalid" do
