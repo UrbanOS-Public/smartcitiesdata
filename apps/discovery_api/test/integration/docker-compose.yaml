@@ -113,6 +113,7 @@ services:
     - "9300:9300"
     environment:
     - "discovery.type=single-node"
+    - "bootstrap.system_call_filter=false"
     healthcheck:
       test: ["CMD-SHELL", "curl --fail 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
       interval: 10s
