@@ -55,7 +55,7 @@ jobs:
         env:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-      - name: Report Status
+      - name: Report Status Master
         if: github.ref == 'refs/heads/master'
         uses: ravsamhq/notify-slack-action@v1
         with:
@@ -65,7 +65,7 @@ jobs:
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
-      - name: Report Status
+      - name: Report Status PR
         if: github.ref != 'refs/heads/master'
         uses: ravsamhq/notify-slack-action@v1
         with:
