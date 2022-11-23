@@ -209,9 +209,7 @@ defmodule AndiWeb.EditLiveView do
     |> publish()
   end
 
-  def handle_event("reject-dataset", _, socket) do
-    {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected)
-    IO.inspect("test")
+  def handle_event("reject-dataset", _, socket) do {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected) IO.inspect("test")
 
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 

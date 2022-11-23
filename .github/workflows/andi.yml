@@ -56,7 +56,7 @@ jobs:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
       - name: Report Status
-        if: always()
+        if: github.ref == 'refs/heads/master'
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
