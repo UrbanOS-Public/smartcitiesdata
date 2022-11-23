@@ -61,6 +61,16 @@ jobs:
         with:
           status: ${{ job.status }}
           notify_when: 'failure'
+          mention_groups: "SAZ94GDB8,!channel"
+          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
+      - name: Report Status
+        if: github.ref != 'refs/heads/master'
+        uses: ravsamhq/notify-slack-action@v1
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure'
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
