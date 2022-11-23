@@ -153,6 +153,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("force-cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
+    
   end
 
   def handle_event("cancel-edit", _, socket) do
