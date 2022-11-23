@@ -153,7 +153,6 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("force-cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
-    
   end
 
   def handle_event("cancel-edit", _, socket) do
@@ -212,6 +211,7 @@ defmodule AndiWeb.EditLiveView do
 
   def handle_event("reject-dataset", _, socket) do
     {:ok, updated_dataset} = Datasets.update_submission_status(socket.assigns.dataset_id, :rejected)
+    IO.inspect("test")
 
     new_changeset = InputConverter.andi_dataset_to_full_ui_changeset(updated_dataset)
 
