@@ -46,7 +46,7 @@ but the information is here for developers making changes to the system.
    1. The entires that were copied (matching `_ingestion_id` and
       `_extraction_start_time`) are removed from the json_table.
 
-1. On a nightly cadence, another compaction process called
+1. On a nightly cadence ([00:45](https://github.com/UrbanOS-Public/smartcitiesdata/blob/e044d548461cb6a53b915e082bf613387c491005/apps/forklift/runtime.exs#L137)), another compaction process called
    `PartitionedCompaction.compact` occurs. The goal of `ParitionedCompaction`
    is to further reduce the number of files stored in hive.
    1. Create an intermediate "compact" table which is just a copy of the main
