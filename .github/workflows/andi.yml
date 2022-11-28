@@ -29,6 +29,8 @@ jobs:
           otp-version: 21.3
           elixir-version: 1.10.4
           experimental-otp: true
+      - name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
