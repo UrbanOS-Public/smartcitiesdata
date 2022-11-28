@@ -1,7 +1,7 @@
 use Mix.Config
 
-System.put_env("AUTH0_DOMAIN", "project-hercules.us.auth0.com")
-System.put_env("AUTH0_CLIENT_ID", "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY")
+System.put_env("AUTH0_DOMAIN", "urbanos-dev.us.auth0.com")
+System.put_env("AUTH0_CLIENT_ID", "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa")
 
 host =
   case System.get_env("HOST_IP") do
@@ -75,8 +75,8 @@ config :andi, :brook,
   ]
 
 config :andi, :auth0,
-  url: "https://project-hercules.us.auth0.com/oauth/token",
-  audience: "https://project-hercules.us.auth0.com/api/v2/"
+  url: "https://urbanos-dev.us.auth0.com/oauth/token",
+  audience: "https://urbanos-dev.us.auth0.com/api/v2/"
 
 config :andi, AndiWeb.Endpoint,
   pubsub_server: Andi.PubSub,
@@ -126,12 +126,12 @@ config :ueberauth, Ueberauth,
   ]
 
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-  domain: "project-hercules.us.auth0.com",
-  client_id: "VHr6xrLKUMsLg1AZYXXLgJBI3LOhcLbY",
+  domain: "urbanos-dev.us.auth0.com",
+  client_id: "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa",
   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
 
 config :andi, AndiWeb.Auth.TokenHandler,
-  issuer: "https://project-hercules.us.auth0.com/",
+  issuer: "https://urbanos-dev.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000

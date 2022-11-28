@@ -117,6 +117,10 @@ body {
   border-radius: 2px;
 }
 
+.disable-focus {
+  outline: none;
+}
+
 .input--text:read-only {
   background: #f3f3f3;
   color: $disabled-background;
