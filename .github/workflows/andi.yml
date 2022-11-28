@@ -61,6 +61,6 @@ jobs:
         with:
           status: ${{ job.status }}
           notify_when: 'failure'
-          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}> for branch {branch}'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
