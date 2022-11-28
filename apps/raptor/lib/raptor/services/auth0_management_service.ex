@@ -26,11 +26,19 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
-  def patch_api_key(apiKey) do
+  def patch_api_key(userID, apiKey) do
     #TODO: Test
     url = Keyword.fetch!(auth0(), :audience)
+    IO.puts("1")
+    {:ok, access_token} = get_token()
+    IO.puts("2")
+    body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
+    headers = [{"Authorization", "Bearer #{access_token}"}]
+    {:ok, response} = HTTPoison.patch("#{url}users/#{userID}}", body, headers, [])
+    IO.puts("3")
+    IO.inspect(response, label: "Patch Response")
 
-    IO.inspect(url, label: "Auth0 URL")
+
   end
 
   defp client_id() do
@@ -60,6 +68,7 @@ defmodule Raptor.Services.Auth0Management do
     case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
       {:ok, response} ->
         access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
+        IO.inspect(access_token, label: "Auth response access token")
         {:ok, access_token}
 
       {_, error} ->

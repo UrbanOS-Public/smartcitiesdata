@@ -10,12 +10,12 @@ defmodule RaptorWeb.ApiKeyController do
 
   plug(:accepts, ["json"])
 
-  def regenerateApiKey(conn, %{"auth0_user" => user}) do
+  def regenerateApiKey(conn, %{"user_id" => user_id}) do
     #TODO: Test
-    IO.inspect(user, label: "Auth0 User")
+    IO.inspect(user_id, label: "user_id")
 
     new_api_key = randomApiKey(24)
-    response = Auth0Management.patch_api_key(new_api_key)
+    response = Auth0Management.patch_api_key(user_id, new_api_key)
     render(conn, %{apiKey: new_api_key})
   end
 
