@@ -29,8 +29,6 @@ jobs:
           otp-version: 21.3
           elixir-version: 1.10.4
           experimental-otp: true
-      - name: Branch name
-        run: echo running on branch ${GITHUB_REF}
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
@@ -67,7 +65,7 @@ jobs:
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
-      - if: ${{ github.ref != 'refs/heads/master' }}
+      - if: ${{ github.event_name == 'pull_request' }}
         name: Report Status PR
         uses: ravsamhq/notify-slack-action@v1
         with:
