@@ -93,9 +93,10 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+        post("/api/v1/ingestion/publish", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      IO.write body
 
-      assert Jason.decode!(body) == "Ingestion not found"
+        assert Jason.decode!(body) == "Ingestion not found"
     end
   end
 
