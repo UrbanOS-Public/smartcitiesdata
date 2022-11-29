@@ -68,7 +68,7 @@ defmodule AndiWeb.API.IngestionController do
   @spec publish(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def publish(conn, %{"id" => ingestion_id}) do
     with {:ok, _} <- publish_ingestion(ingestion_id, :api),
-          {:ok, ingestion} <- IngestionStore.get(ingestion_id) do
+         {:ok, ingestion} <- IngestionStore.get(ingestion_id) do
       respond(conn, 200, ingestion)
     else
       {:not_found, _} ->
