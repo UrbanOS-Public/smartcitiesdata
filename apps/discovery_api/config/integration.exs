@@ -114,7 +114,7 @@ config :discovery_api, DiscoveryApi.Repo,
   port: "5456"
 
 config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
-  issuer: "https://project-hercules.us.auth0.com/",
+  issuer: "https://urbanos-dev.us.auth0.com/",
   allowed_algos: ["RS256"],
   verify_issuer: false,
   allowed_drift: 3_000_000_000_000

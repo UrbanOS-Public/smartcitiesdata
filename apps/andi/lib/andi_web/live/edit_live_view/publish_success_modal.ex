@@ -10,7 +10,7 @@ defmodule AndiWeb.EditLiveView.PublishSuccessModal do
       <div class="modal-form-container">
         <p>Published successfully</p>
         <br>
-        <div class="button-container">
+        <div class="button-container-publish-success">
           <button type="button" class="btn" phx-click="cancel-edit">RETURN HOME</button>
           <button type="button" class="btn submit_button" phx-click="reload-page" >CONTINUE EDITING</button>
         </div>

@@ -104,6 +104,10 @@ defmodule Andi.InputSchemas.Organizations do
     end
   end
 
+  def is_unique?(id, nil) do
+    false
+  end
+
   def is_unique?(id, org_name) do
     from(org in Andi.InputSchemas.Organization,
       where: org.orgName == ^org_name and org.id != ^id

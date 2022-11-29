@@ -119,7 +119,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
               </div>
 
               <div class="data-dictionary-form__edit-section">
-                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat) %>
+                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, source_format: @sourceFormat, dataset_or_ingestion: :ingestion) %>
               </div>
             </div>
           </div>

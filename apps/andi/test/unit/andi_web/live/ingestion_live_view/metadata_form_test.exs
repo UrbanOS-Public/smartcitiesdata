@@ -22,7 +22,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
   describe "name field" do
     test "can be updated" do
-      ingestion = TDG.create_ingestion(%{name: "Original"})
+      ingestion = create_ingestion(%{name: "Original"})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(ingestion, %{name: "Updated"}), return: {:ok, ingestion}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
@@ -41,7 +41,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "shows an error if blank" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       form_data = %{"name" => ""}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
 
@@ -56,7 +56,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
   describe "source format" do
     test "can be updated" do
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/xml"})
+      ingestion = create_ingestion(%{sourceFormat: "text/xml"})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(ingestion, any()), return: {:ok, ingestion}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
@@ -75,7 +75,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "shows an error if blank" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       form_data = %{"sourceFormat" => ""}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
 
@@ -90,7 +90,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
   describe "selected dataset" do
     test "button opens select dataset modal" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
       assert element(view, ".manage-datasets-modal--hidden") |> has_element?
@@ -100,7 +100,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "form can be updated" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
       assert {:ok, view, html} = live_isolated(build_conn(), MetadataForm, session: %{"ingestion" => ingestion})
       assert element(view, ".manage-datasets-modal--hidden") |> has_element?
@@ -109,7 +109,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "shows an error if blank" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       form_data = %{"targetDatasetName" => ""}
       allow Datasets.get(any()), return: nil
 
@@ -122,7 +122,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "shows an error if there is a target dataset that does not exist in the database" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = create_ingestion(%{})
       form_data = %{"targetDataset" => "id_of_deleted_dataset"}
       allow Datasets.get(any()), return: nil
 
@@ -140,7 +140,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
   describe "after successful save" do
     test "notify if no missing fields" do
-      ingestion = TDG.create_ingestion(%{name: "Validity Is Great"})
+      ingestion = create_ingestion(%{name: "Validity Is Great"})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(any(), any()), return: {:ok, ingestion}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
@@ -155,7 +155,7 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
     end
 
     test "notify if required fields missing" do
-      ingestion = TDG.create_ingestion(%{name: ""})
+      ingestion = create_ingestion(%{name: ""})
       allow Ingestions.get(ingestion.id), return: ingestion
       allow Ingestions.update(any(), any()), return: {:error, %Ecto.Changeset{errors: [name: {"is required", []}]}}
       allow Datasets.get(any()), return: %{business: %{dataTitle: "Dataset Name"}}
@@ -172,5 +172,9 @@ defmodule AndiWeb.Unit.IngestionLiveView.MetadataFormTest do
 
   defp find_select_dataset_btn(view) do
     element(view, ".btn", "Select Dataset")
+  end
+
+  def create_ingestion(overrides) do
+    ingestion = TDG.create_ingestion(overrides) |> Map.put(:submissionStatus, :draft)
   end
 end

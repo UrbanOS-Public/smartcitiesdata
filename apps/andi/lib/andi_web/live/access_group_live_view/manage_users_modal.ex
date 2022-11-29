@@ -7,6 +7,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
       <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">User Search</h1>
+          <span class="material-icons search-index__exit" phx-click="cancel-manage-users">close</span>
         </div>
 
         <hr class="search-modal-divider">

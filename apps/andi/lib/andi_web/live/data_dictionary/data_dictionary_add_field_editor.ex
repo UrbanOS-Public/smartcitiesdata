@@ -52,7 +52,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
 
             <div class="button-container">
               <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
-              <button class="btn submit_button" type="button" phx-click="add_field" phx-target="<%= @myself %>" >ADD FIELD</button>
+              <button class="btn submit_button btn--primary" type="button" phx-click="add_field" phx-target="<%= @myself %>" >ADD FIELD</button>
             </div>
           </form>
         </div>

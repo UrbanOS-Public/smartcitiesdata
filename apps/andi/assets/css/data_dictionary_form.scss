@@ -291,9 +291,14 @@ $tick-height: 1rem + $field-padding - 0.44;
     .btn {
       height: 2.5rem;
     }
+  }
 
-    .submit_button {
-      background-color: #26ADEB;
+  .button-container-publish-success {
+    display: flex;
+    justify-content: space-between;
+
+    .btn {
+      height: 2.5rem;
     }
   }
 }

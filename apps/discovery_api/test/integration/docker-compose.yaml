@@ -2,12 +2,14 @@
 version: '3.4'
 services:
   init:
+    platform: linux/amd64
     image: alpine:3.16.0
     volumes:
       - ${PWD}/test/integration:/workdir
       - minio:/minio
     entrypoint: /workdir/setup.sh
   metastore:
+    platform: linux/amd64
     image: quay.io/cloudservices/ubi-hive:3.1.2-metastore-008
     depends_on:
     - postgres
@@ -29,6 +31,7 @@ services:
       DATABASE_NAME: metastore
 
   postgres:
+    platform: linux/amd64
     image: postgres:14.4-alpine
     environment:
       POSTGRES_USER: hive
@@ -37,6 +40,7 @@ services:
     ports:
       - "5455:5432"
   ecto-postgres:
+    platform: linux/amd64
     image: postgres:14.4-alpine
     environment:
       POSTGRES_USER: postgres
@@ -45,6 +49,7 @@ services:
     ports:
       - "5456:5432"
   minio:
+    platform: linux/amd64
     image: minio/minio:RELEASE.2022-10-15T19-57-03Z.fips
     command: server /data --console-address ":9001"
     volumes:
@@ -58,6 +63,7 @@ services:
     depends_on:
     - metastore
     - minio
+    platform: linux/amd64
     image: trinodb/trino:389
     ports:
     - "8080:8080"
@@ -70,10 +76,12 @@ services:
       - ${PWD}/test/integration/hive.properties:/etc/trino/catalog/hive.properties
 
   zookeeper:
+    platform: linux/amd64
     image: wurstmeister/zookeeper
     ports:
     - "2181:2181"
   kafka:
+    platform: linux/amd64
     image: bitnami/kafka:3.1.2
     depends_on:
     - zookeeper
@@ -92,17 +100,20 @@ services:
       timeout: 20s
       retries: 3
   redis:
+    platform: linux/amd64
     image: redis:latest
     ports:
       - "6379:6379"
 
   elasticsearch:
+    platform: linux/amd64
     image: elasticsearch:7.4.2
     ports:
     - "9200:9200"
     - "9300:9300"
     environment:
     - "discovery.type=single-node"
+    - "bootstrap.system_call_filter=false"
     healthcheck:
       test: ["CMD-SHELL", "curl --fail 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=5s'"]
       interval: 10s
