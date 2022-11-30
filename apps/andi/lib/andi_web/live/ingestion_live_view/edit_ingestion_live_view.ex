@@ -166,11 +166,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {_, ingestion_changeset} = publish_ingestion(ingestion_id, socket.assigns.user_id)
 
     {:noreply, assign(socket, changeset: ingestion_changeset)}
-
-    case publish_ingestion(ingestion_id, socket.assigns.user_id) do
-      {:ok, ingestion_changeset} -> {:noreply, assign(socket, changeset: ingestion_changeset)}
-      _ -> {:noreply, assign(socket, page_error: true, save_success: false)}
-    end
   end
 
   def handle_event("save", _, socket) do
@@ -233,7 +228,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
          true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
-
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
           Ingestions.update_submission_status(ingestion_id, :published)
@@ -245,7 +239,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
       end
     else
-      {:ok, nil} ->
+      nil ->
         {:not_found, nil}
 
       false ->

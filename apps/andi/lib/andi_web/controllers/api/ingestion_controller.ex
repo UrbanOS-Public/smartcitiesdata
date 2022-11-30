@@ -8,7 +8,6 @@ defmodule AndiWeb.API.IngestionController do
   require Logger
   import SmartCity.Event, only: [ingestion_update: 0]
   import AndiWeb.IngestionLiveView.EditIngestionLiveView, only: [publish_ingestion: 2]
-  alias Andi.InputSchemas.Ingestions
   alias SmartCity.Ingestion
   alias Andi.Services.IngestionStore
   alias Andi.InputSchemas.InputConverter
@@ -67,11 +66,11 @@ defmodule AndiWeb.API.IngestionController do
   """
   @spec publish(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def publish(conn, %{"id" => ingestion_id}) do
-    with {:ok, _} <- publish_ingestion(ingestion_id, :api),
+    with {:ok, _} <- IO.inspect(publish_ingestion(ingestion_id, :api)),
          {:ok, ingestion} <- IngestionStore.get(ingestion_id) do
-      respond(conn, 200, ingestion)
+          respond(conn, 200, ingestion)
     else
-      {:not_found, _} ->
+      {:not_found, nil} ->
         respond(conn, 404, "Ingestion not found")
 
       error ->
