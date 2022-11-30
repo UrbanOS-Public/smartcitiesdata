@@ -66,7 +66,7 @@ defmodule Andi.Harvest.HarvesterTest do
     test "map_data_json_to_dataset/2", %{data_json: data_json, org: org} do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
-      assert length(datasets) == 3
+      assert length(datasets) == 555
     end
 
     test "map_data_json_to_harvested_dataset/2", %{data_json: data_json, org: org} do
