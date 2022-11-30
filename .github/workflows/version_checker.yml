@@ -37,7 +37,7 @@ jobs:
           fi
           # echo -e "${MESSAGE:-No app changes detected}" > comment-updates.txt
         id: differ
-      - if: always()
+      - if: always() && github.ref == 'refs/heads/master'
         name: Report Status
         uses: ravsamhq/notify-slack-action@v1
         with:
