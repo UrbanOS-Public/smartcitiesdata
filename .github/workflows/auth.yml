@@ -38,7 +38,7 @@ jobs:
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
-      - if: always()
+      - if: always() && github.ref == 'refs/heads/master'
         name: Report Status
         uses: ravsamhq/notify-slack-action@v1
         with:

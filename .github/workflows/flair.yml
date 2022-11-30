@@ -45,7 +45,7 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      - if: always()
+      - if: always() && github.ref == 'refs/heads/master'
         name: Report Status
         uses: ravsamhq/notify-slack-action@v1
         with:
