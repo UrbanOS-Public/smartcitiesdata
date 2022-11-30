@@ -228,6 +228,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
          true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
           Ingestions.update_submission_status(ingestion_id, :published)

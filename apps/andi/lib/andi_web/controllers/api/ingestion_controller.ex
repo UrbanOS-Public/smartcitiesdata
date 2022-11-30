@@ -68,7 +68,7 @@ defmodule AndiWeb.API.IngestionController do
   def publish(conn, %{"id" => ingestion_id}) do
     with {:ok, _} <- IO.inspect(publish_ingestion(ingestion_id, :api)),
          {:ok, ingestion} <- IngestionStore.get(ingestion_id) do
-          respond(conn, 200, ingestion)
+      respond(conn, 200, ingestion)
     else
       {:not_found, nil} ->
         respond(conn, 404, "Ingestion not found")
