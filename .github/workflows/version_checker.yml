@@ -6,7 +6,7 @@ on:
 jobs:
   check-apps-for-update:
     if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v2
@@ -15,7 +15,7 @@ jobs:
         with:
           elixir-version: 1.9
           otp-version: 22.2
-          runs-on: ubuntu-latest
+          runs-on: ubuntu-22.04
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
