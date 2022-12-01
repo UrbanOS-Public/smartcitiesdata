@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1.5.0
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: 21.3
           elixir-version: 1.10.4
@@ -28,7 +28,7 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notify_when: 'failure'
-          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+          notify_when: "failure"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
