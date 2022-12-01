@@ -32,14 +32,9 @@ defmodule Raptor.Services.Auth0Management do
     url = "#{audience}users/#{userID}"
     IO.inspect(url, label: "URL")
     {:ok, access_token} = get_token()
-    IO.puts("2")
     body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
     headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
     {:ok, response} = HTTPoison.patch(url, body, headers, [])
-    IO.puts("3")
-    IO.inspect(response, label: "Patch Response")
-
-
   end
 
   defp client_id() do

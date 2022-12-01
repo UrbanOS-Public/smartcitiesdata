@@ -71,12 +71,13 @@ defmodule RaptorService do
   end
 
   def regenerate_api_key_for_user(raptor_url, user_id) do
-    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), body: %{"user_id" => user_id}) do
+    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), '') do
       {:ok, %{body: body}} ->
+        IO.inspect(body, label: "BODY")
         {:ok, apiKey} = Jason.decode(body)
-        apiKey
 
       error ->
+        IO.inspect(error, label: "ERROR")
         Logger.error("Raptor failed to regenerate api key with error: #{inspect(error)}")
         "Something went wrong"
     end

@@ -77,6 +77,8 @@ defmodule DiscoveryApiWeb.Router do
     get("/dataset/:dataset_id/query", DataController, :query)
     get("/dataset/:dataset_id/download/presigned_url", DataController, :download_presigned_url)
 
+    patch("/regenerateApiKey", ApiKeyController, :regenerate_api_key)
+
     resources("/visualization", VisualizationController, only: [:show])
   end
 
