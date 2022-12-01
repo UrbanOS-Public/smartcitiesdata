@@ -28,6 +28,7 @@ jobs:
         with:
           otp-version: 21.3.8
           elixir-version: 1.10.4
+          version-type: strict
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
