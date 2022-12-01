@@ -20,7 +20,6 @@ jobs:
         with:
           otp-version: 21.3.8
           elixir-version: 1.10.4
-          version-type: strict
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
@@ -39,7 +38,6 @@ jobs:
       - uses: erlef/setup-beam@v1
         with:
           otp-version: 21.3.8
-          version-type: strict
           elixir-version: 1.10.4
       - name: Get dependencies
         run: |
