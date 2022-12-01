@@ -6,7 +6,7 @@ on:
 jobs:
   unit_tests:
     name: Run all unit tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     continue-on-error: true
     strategy:
       matrix:
@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          otp-version: 21.3.8
+          otp-version: 21.3.8.24
           elixir-version: 1.10.4
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 21.3.8
+          otp-version: 21.3.8.24
           elixir-version: 1.10.4
           version-type: strict
       - name: Get dependencies
@@ -29,7 +29,7 @@ jobs:
           bash scripts/gh-action-unit-test.sh ${{ matrix.app }}
   integration_tests:
     name: Run all integration tests
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     continue-on-error: true
     strategy:
       matrix:
@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 21.3.8
+          otp-version: 21.3.8.24
           version-type: strict
           elixir-version: 1.10.4
       - name: Get dependencies
