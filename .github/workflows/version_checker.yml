@@ -7,10 +7,10 @@ jobs:
   check-apps-for-update:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-20.04
+    name: Setup Elixir
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Elixir
-        uses: actions/setup-elixir@v1.5.0
+      - uses: erlef/setup-beam@v1
         with:
           otp-version: 21.3.8.24
           elixir-version: 1.10.4
