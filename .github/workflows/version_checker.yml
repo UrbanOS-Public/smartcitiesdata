@@ -15,7 +15,6 @@ jobs:
         with:
           elixir-version: 1.9
           otp-version: 22.2
-          experimental-otp: true
           runs-on: ubuntu-latest
       - name: Get dependencies
         run: |
@@ -42,8 +41,8 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }}
-          notify_when: 'failure'
-          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
+          notify_when: "failure"
+          message_format: "{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
       # - name: Comment PR

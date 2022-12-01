@@ -23,9 +23,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 21.3
+          otp-version: 21.3.8.24
+          version-type: strict
           elixir-version: 1.10.4
-          experimental-otp: true
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
