@@ -26,6 +26,22 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
+  def patch_api_key(userID, apiKey) do
+    #TODO: Test
+    audience = Keyword.fetch!(auth0(), :audience)
+    url = "#{audience}users/#{userID}"
+    IO.inspect(url, label: "URL")
+    {:ok, access_token} = get_token()
+    IO.puts("2")
+    body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
+    headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
+    {:ok, response} = HTTPoison.patch(url, body, headers, [])
+    IO.puts("3")
+    IO.inspect(response, label: "Patch Response")
+
+
+  end
+
   defp client_id() do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
@@ -52,10 +68,13 @@ defmodule Raptor.Services.Auth0Management do
 
     case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
       {:ok, response} ->
+        IO.inspect(response, label: "Auth response")
         access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
+        IO.inspect(access_token, label: "Auth access token")
         {:ok, access_token}
 
       {_, error} ->
+        IO.inspect(error, label: "Auth Error")
         {:error, error}
     end
   end
