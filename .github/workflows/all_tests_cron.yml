@@ -6,18 +6,21 @@ on:
 jobs:
   unit_tests:
     name: Run all unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     continue-on-error: true
     strategy:
       matrix:
         app: [andi, discovery_api]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1.5.0
         with:
-          otp-version: 21.3
+          otp-version: 21.3.8.24
           elixir-version: 1.10.4
-          experimental-otp: true
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 21.3.8.24
+          elixir-version: 1.10.4
+          version-type: strict
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
@@ -26,18 +29,18 @@ jobs:
           bash scripts/gh-action-unit-test.sh ${{ matrix.app }}
   integration_tests:
     name: Run all integration tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     continue-on-error: true
     strategy:
       matrix:
         app: [andi, discovery_api, pipeline, e2e]
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-elixir@v1.5.0
+      - uses: erlef/setup-beam@v1
         with:
-          otp-version: 21.3
+          otp-version: 21.3.8.24
+          version-type: strict
           elixir-version: 1.10.4
-          experimental-otp: true
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
