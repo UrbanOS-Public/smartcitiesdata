@@ -45,7 +45,7 @@ defmodule Raptor.MixProject do
       {:tesla, "~> 1.3"},
       {:ueberauth_auth0, "~> 0.8.1"},
       {:distillery, "~> 2.1"},
-      {:httpoison, "~> 1.5"},
+      {:httpoison, "~> 1.5"}
     ]
   end
 

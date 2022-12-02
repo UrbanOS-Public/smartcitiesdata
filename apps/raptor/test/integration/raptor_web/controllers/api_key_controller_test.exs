@@ -25,22 +25,28 @@ defmodule Raptor.ApiKeyControllerTest do
   describe "regenerateApiKey" do
     test "returns apiKey for user when auth0 patch is successful" do
       userId = "auth0|001122"
+
       allow(Auth0Management.patch_api_key(userId, any()),
         return: {:ok, %{body: "{\"app_metadata\": {\"apiKey\": \"testApiKey\"}}"}}
       )
 
-      {:ok, response} = HTTPoison.patch("http://localhost:4002/api/regenerateApiKey?user_id=#{userId}", "")
+      {:ok, response} =
+        HTTPoison.patch("http://localhost:4002/api/regenerateApiKey?user_id=#{userId}", "")
+
       {:ok, body} = Jason.decode(response.body)
       assert body == %{"apiKey" => "testApiKey"}
     end
 
     test "returns Internal Server Error when auth0 call fails" do
       userId = "auth0|001122"
+
       allow(Auth0Management.patch_api_key(userId, any()),
         return: {:error, "error"}
       )
 
-      {:ok, response} = HTTPoison.patch("http://localhost:4002/api/regenerateApiKey?user_id=#{userId}", "")
+      {:ok, response} =
+        HTTPoison.patch("http://localhost:4002/api/regenerateApiKey?user_id=#{userId}", "")
+
       {:ok, body} = Jason.decode(response.body)
 
       assert response.status_code == 500
@@ -49,6 +55,7 @@ defmodule Raptor.ApiKeyControllerTest do
 
     test "returns error when user_id is not given" do
       userId = "auth0|001122"
+
       allow(Auth0Management.patch_api_key(userId, any()),
         return: {:ok, %{body: "{\"apiKey\": \"testApiKey\"}"}}
       )

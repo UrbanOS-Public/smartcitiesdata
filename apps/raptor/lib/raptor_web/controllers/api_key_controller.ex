@@ -12,10 +12,12 @@ defmodule RaptorWeb.ApiKeyController do
 
   def regenerateApiKey(conn, %{"user_id" => user_id}) do
     new_api_key = randomApiKey(24)
+
     case Auth0Management.patch_api_key(user_id, new_api_key) do
       {:ok, response} ->
         {:ok, body} = Jason.decode(response.body)
         render(conn, %{apiKey: body["app_metadata"]["apiKey"]})
+
       {:error, response} ->
         Logger.error("Auth0 returned error patching API key #{inspect(response)}")
         render_error(conn, 500, "Internal Server Error")

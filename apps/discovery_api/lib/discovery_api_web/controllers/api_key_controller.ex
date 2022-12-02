@@ -10,6 +10,7 @@ defmodule DiscoveryApiWeb.ApiKeyController do
 
   def regenerate_api_key(conn, _) do
     current_user = conn.assigns.current_user.subject_id
+
     case RaptorService.regenerate_api_key_for_user(raptor_url(), current_user) do
       {:error, error} ->
         Logger.error("DiscoveryApi failed to regenerate api key with error: #{inspect(error)}")

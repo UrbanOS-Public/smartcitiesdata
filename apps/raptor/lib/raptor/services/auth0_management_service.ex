@@ -27,7 +27,7 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   def patch_api_key(userID, apiKey) do
-    #TODO: Test
+    # TODO: Test
     audience = Keyword.fetch!(auth0(), :audience)
     url = "#{audience}users/#{userID}"
     IO.inspect(url, label: "URL")
@@ -35,7 +35,8 @@ defmodule Raptor.Services.Auth0Management do
     body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
     headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
     {:ok, response} = HTTPoison.patch(url, body, headers, [])
-    if (response.status_code >= 400) do
+
+    if response.status_code >= 400 do
       {:error, response.body}
     else
       {:ok, response}
