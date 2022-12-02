@@ -11,21 +11,23 @@ defmodule RaptorWeb.ApiKeyController do
   plug(:accepts, ["json"])
 
   def regenerateApiKey(conn, %{"user_id" => user_id}) do
-    #TODO: Test
-    IO.inspect(user_id, label: "user_id")
-
     new_api_key = randomApiKey(24)
-    response = Auth0Management.patch_api_key(user_id, new_api_key)
-    render(conn, %{apiKey: new_api_key})
+    case Auth0Management.patch_api_key(user_id, new_api_key) do
+      {:ok, response} ->
+        {:ok, body} = Jason.decode(response.body)
+        render(conn, %{apiKey: body["app_metadata"]["apiKey"]})
+      {:error, response} ->
+        Logger.error("Auth0 returned error patching API key #{inspect(response)}")
+        render_error(conn, 500, "Internal Server Error")
+    end
   end
 
   def regenerateApiKey(conn, _) do
-    #TODO: Test
-      render_error(conn, 400, "user_id is a required parameter")
-    end
+    Logger.error("Someone attempted to generate an api key with no user_id")
+    render_error(conn, 400, "user_id is a required parameter")
+  end
 
   defp randomApiKey(length) do
-    #TODO: Test
     :crypto.strong_rand_bytes(length)
     |> Base.url_encode64()
     |> binary_part(0, length)

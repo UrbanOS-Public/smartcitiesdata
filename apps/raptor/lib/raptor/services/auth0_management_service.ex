@@ -35,6 +35,11 @@ defmodule Raptor.Services.Auth0Management do
     body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
     headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
     {:ok, response} = HTTPoison.patch(url, body, headers, [])
+    if (response.status_code >= 400) do
+      {:error, response.body}
+    else
+      {:ok, response}
+    end
   end
 
   defp client_id() do

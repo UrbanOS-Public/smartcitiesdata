@@ -38,6 +38,22 @@ defmodule RaptorServiceTest do
     end
   end
 
+  describe "regenerate_api_key_for_user/2" do
+    allow(HTTPoison.patch(any(), any()),
+        return: {:ok, %{body: "{\"apiKey\": \"testApiKey\"}", status_code: 200}}
+      )
+
+    assert RaptorService.regenerate_api_key_for_user("raptor_url", "user_id") == {:ok, %{"apiKey" => "testApiKey"}}
+  end
+
+  describe "regenerate_api_key_for_user/2 returns error when status code is >= 400" do
+    allow(HTTPoison.patch(any(), any()),
+        return: {:ok, %{body: "errorBody", status_code: 400}}
+      )
+
+    assert RaptorService.regenerate_api_key_for_user("raptor_url", "user_id") == {:error, "errorBody"}
+  end
+
   describe "list_access_groups_by_user/2" do
     test "returns a list of authorized access groups in Raptor" do
       allow(HTTPoison.get(any()),
