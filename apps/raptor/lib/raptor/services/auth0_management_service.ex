@@ -30,7 +30,6 @@ defmodule Raptor.Services.Auth0Management do
     # TODO: Test
     audience = Keyword.fetch!(auth0(), :audience)
     url = "#{audience}users/#{userID}"
-    IO.inspect(url, label: "URL")
     {:ok, access_token} = get_token()
     body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
     headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
@@ -69,13 +68,10 @@ defmodule Raptor.Services.Auth0Management do
 
     case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
       {:ok, response} ->
-        IO.inspect(response, label: "Auth response")
         access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
-        IO.inspect(access_token, label: "Auth access token")
         {:ok, access_token}
 
       {_, error} ->
-        IO.inspect(error, label: "Auth Error")
         {:error, error}
     end
   end

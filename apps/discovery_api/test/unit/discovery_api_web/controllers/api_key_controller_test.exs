@@ -19,9 +19,7 @@ defmodule DiscoveryApiWeb.ApiKeyControllerTest do
 
       actual =
         conn
-        |> IO.inspect(label: "into_get")
         |> patch("/api/v1/regenerateApiKey")
-        |> IO.inspect(label: "into_json_response")
         |> json_response(200)
 
       assert expected == actual
