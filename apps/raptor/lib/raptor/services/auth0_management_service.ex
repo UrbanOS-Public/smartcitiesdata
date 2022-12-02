@@ -27,7 +27,6 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   def patch_api_key(userID, apiKey) do
-    # TODO: Test
     audience = Keyword.fetch!(auth0(), :audience)
     url = "#{audience}users/#{userID}"
     {:ok, access_token} = get_token()
