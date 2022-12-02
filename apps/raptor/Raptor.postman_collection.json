@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9b243b03-59ad-478c-bf40-37dfbb9d1b07",
+		"_postman_id": "6871532e-16db-46c4-9851-12f467caa61f",
 		"name": "Raptor",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -133,6 +133,31 @@
 							"port": "4002",
 							"path": [
 								"healthcheck"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Regenerate API Key",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "localhost:4002/api/regenerateApiKey?user_id={{INSERT_AUTH0_USER_ID}}",
+							"host": [
+								"localhost"
+							],
+							"port": "4002",
+							"path": [
+								"api",
+								"regenerateApiKey"
+							],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "{{INSERT_AUTH0_USER_ID}}"
+								}
 							]
 						}
 					},

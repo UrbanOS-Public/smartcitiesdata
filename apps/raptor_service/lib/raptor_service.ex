@@ -70,6 +70,25 @@ defmodule RaptorService do
     end
   end
 
+  def regenerate_api_key_for_user(raptor_url, user_id) do
+    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), '') do
+      {:ok, %{body: body, status_code: status_code}} ->
+        if (status_code >= 400) do
+          {:error, body}
+        else
+          {:ok, apiKey} = Jason.decode(body)
+        end
+
+      error ->
+        Logger.error("Raptor failed to regenerate api key with error: #{inspect(error)}")
+        "Something went wrong"
+    end
+  end
+
+  defp url_for_api_key_regeneration(raptor_url, user_id) do
+    "#{raptor_url}/regenerateApiKey?user_id=#{user_id}"
+    end
+
   defp list_url_with_api_key_params(raptor_url, nil) do
     "#{raptor_url}/listAccessGroups"
   end

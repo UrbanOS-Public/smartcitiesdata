@@ -26,6 +26,21 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
+  def patch_api_key(userID, apiKey) do
+    audience = Keyword.fetch!(auth0(), :audience)
+    url = "#{audience}users/#{userID}"
+    {:ok, access_token} = get_token()
+    body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
+    headers = [{"Authorization", "Bearer #{access_token}"}, {"Content-Type", "application/json"}]
+    {:ok, response} = HTTPoison.patch(url, body, headers, [])
+
+    if response.status_code >= 400 do
+      {:error, response.body}
+    else
+      {:ok, response}
+    end
+  end
+
   defp client_id() do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
