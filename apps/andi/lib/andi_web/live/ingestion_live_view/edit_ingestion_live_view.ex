@@ -82,7 +82,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     """
   end
 
-  def mount(_params, %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session, socket) do
+  def mount(
+        _params,
+        %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
+        socket
+      ) do
     default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
 
     {:ok,
@@ -112,7 +116,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_info({:update_save_message, status}, socket) do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
 
-    {:noreply, assign(socket, click_id: UUID.uuid4(), save_success: true, success_message: message, unsaved_changes: false)}
+    {:noreply,
+     assign(socket,
+       click_id: UUID.uuid4(),
+       save_success: true,
+       success_message: message,
+       unsaved_changes: false
+     )}
   end
 
   # This handle_info takes care of all exceptions in a generic way.
@@ -153,7 +163,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
     Process.sleep(1_000)
 
-    ingestion_changeset = publish_ingestion(ingestion_id, socket.assigns.user_id)
+    {_, ingestion_changeset} = publish_ingestion(ingestion_id, socket.assigns.user_id)
 
     {:noreply, assign(socket, changeset: ingestion_changeset)}
   end
@@ -164,8 +174,15 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("cancel-edit", _, socket) do
     case socket.assigns.unsaved_changes do
-      true -> {:noreply, assign(socket, unsaved_changes_link: header_ingestions_path(), unsaved_changes_modal_visibility: "visible")}
-      false -> {:noreply, redirect(socket, to: header_ingestions_path())}
+      true ->
+        {:noreply,
+         assign(socket,
+           unsaved_changes_link: header_ingestions_path(),
+           unsaved_changes_modal_visibility: "visible"
+         )}
+
+      false ->
+        {:noreply, redirect(socket, to: header_ingestions_path())}
     end
   end
 
@@ -201,13 +218,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   defp save_message(true = _valid?), do: "Saved successfully."
-  defp save_message(false = _valid?), do: "Saved successfully. You may need to fix errors before publishing."
+
+  defp save_message(false = _valid?),
+    do: "Saved successfully. You may need to fix errors before publishing."
 
   def publish_ingestion(ingestion_id, user_id) do
-    andi_ingestion = Ingestions.get(ingestion_id)
-    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
-
-    if ingestion_changeset.valid? do
+    with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
+         ingestion_changeset <- InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(andi_ingestion),
+         true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 
@@ -216,12 +234,20 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           Ingestions.update_submission_status(ingestion_id, :published)
           Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_update(), smrt_ingestion)
           AndiWeb.Endpoint.broadcast_from(self(), "ingestion-published", "ingestion-published", %{})
+          {:ok, ingestion_changeset}
 
         error ->
           Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
       end
-    end
+    else
+      nil ->
+        {:not_found, nil}
 
-    ingestion_changeset
+      false ->
+        {:error, InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(Ingestions.get(ingestion_id))}
+
+      error ->
+        {:error, error}
+    end
   end
 end

@@ -87,13 +87,13 @@ defmodule Andi.IngestionControllerTest do
             message.key == ingestion_update() && String.contains?(message.value, ingestion.id)
           end)
 
-        assert 1 = length(values)
+        assert 2 = length(values)
       end)
     end
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+        post("/api/v1/ingestion/publish", %{id: Faker.UUID.v4()} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       assert Jason.decode!(body) == "Ingestion not found"
     end
@@ -261,7 +261,6 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 400 when cron string is longer than 6 characters" do
       dataset = setup_dataset()
-      uuid = Faker.UUID.v4()
 
       new_ingestion =
         TDG.create_ingestion(%{

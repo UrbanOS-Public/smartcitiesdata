@@ -8,7 +8,6 @@ defmodule AndiWeb.API.IngestionController do
   require Logger
   import SmartCity.Event, only: [ingestion_update: 0]
   import AndiWeb.IngestionLiveView.EditIngestionLiveView, only: [publish_ingestion: 2]
-
   alias SmartCity.Ingestion
   alias Andi.Services.IngestionStore
   alias Andi.InputSchemas.InputConverter
@@ -17,7 +16,8 @@ defmodule AndiWeb.API.IngestionController do
     create: [:private],
     get: [:private],
     get_all: [:private],
-    delete: [:private]
+    delete: [:private],
+    publish: [:private]
   )
 
   @instance_name Andi.instance_name()
@@ -65,19 +65,17 @@ defmodule AndiWeb.API.IngestionController do
   Publish an already created ingestion
   """
   @spec publish(Plug.Conn.t(), any()) :: Plug.Conn.t()
-  def publish(conn, _params) do
-    with message <- add_uuid(conn.body_params),
-         {:ok, parsed_message} <- trim_required_fields(message),
-         :valid <- validate_changes(parsed_message),
-         ingestion_changeset <- publish_ingestion(parsed_message, :api) do
-      respond(conn, :published, ingestion_changeset)
+  def publish(conn, %{"id" => ingestion_id}) do
+    with {:ok, _} <- IO.inspect(publish_ingestion(ingestion_id, :api)),
+         {:ok, ingestion} <- IngestionStore.get(ingestion_id) do
+      respond(conn, 200, ingestion)
     else
-      {:invalid, errors} ->
-        respond(conn, :bad_request, %{errors: errors})
+      {:not_found, nil} ->
+        respond(conn, 404, "Ingestion not found")
 
       error ->
-        Logger.error("Failed to publish ingestion: #{inspect(error)}")
-        respond(conn, :internal_server_error, "Unable to process your request")
+        Logger.error("Could not publish ingestion due to #{inspect(error)}")
+        respond(conn, 500, "An error occcured when publishing the ingestion")
     end
   end
 
