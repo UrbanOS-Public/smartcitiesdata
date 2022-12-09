@@ -243,7 +243,13 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
     cadence = Ecto.Changeset.get_field(changeset, :cadence)
-    Ingestions.update_cadence(socket.assigns.ingestion_id, cadence)
+
+    # Call update_cadence here as there is a disconnect between the form validation in this file, and the Ingestions schema required field validation
+    # Only call update_cadence when it equals "once" for immedate cadence, as scheduled cadences call update_cadence on their own
+    if cadence == "once" do
+      Ingestions.update_cadence(socket.assigns.ingestion_id, cadence)
+    end
+
     repeat_ingestion? = cadence not in ["once", "never", nil]
     send(socket.parent_pid, :form_update)
 
