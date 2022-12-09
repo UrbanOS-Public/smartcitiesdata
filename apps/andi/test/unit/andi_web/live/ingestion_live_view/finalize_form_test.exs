@@ -29,18 +29,23 @@ defmodule AndiWeb.Unit.IngestionLiveView.FinalizeFormTest do
 
       form_data = %{cadence: "once"}
       ingestion_id = "foo"
-      socket = %Phoenix.LiveView.Socket{assigns: %{
+
+      socket = %Phoenix.LiveView.Socket{
+        assigns: %{
           ingestion_id: ingestion_id,
           visibility: "hidden"
         },
         parent_pid: conn.owner
       }
 
-      expect(FinalizeFormSchema.changeset_from_form_data(form_data), return: %Ecto.Changeset{
+      expect(FinalizeFormSchema.changeset_from_form_data(form_data),
+        return: %Ecto.Changeset{
           changes: form_data,
           data: %FinalizeFormSchema{},
           types: %{}
-        })
+        }
+      )
+
       expect(Ingestions.update_cadence(ingestion_id, form_data.cadence), return: nil)
 
       FinalizeForm.handle_event("validate", %{"form_data" => form_data}, socket)
