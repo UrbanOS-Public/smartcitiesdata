@@ -2,35 +2,22 @@ defmodule AndiWeb.Unit.IngestionLiveView.FinalizeFormTest do
   use ExUnit.Case
   use Placebo
 
-  import Phoenix.ConnTest
+  import Phoenix.ConnTest, only: [build_conn: 0]
   import Phoenix.LiveViewTest
-  import SmartCity.TestHelper, only: [eventually: 1]
 
   alias AndiWeb.IngestionLiveView.FinalizeForm
-
   alias Andi.InputSchemas.Ingestions
-  alias AndiWeb.IngestionLiveView.FormUpdate
-  alias AndiWeb.IngestionLiveView.MetadataForm
-  alias Andi.InputSchemas.Datasets
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias Phoenix.LiveView
-  alias SmartCity.TestDataGenerator, as: TDG
-
-  @endpoint AndiWeb.Endpoint
-
-  setup do
-    allow FormUpdate.send_value(any(), any()), return: {:ok}
-    :ok
-  end
 
   describe "Immediate cadence selection" do
     test "Fires update_cadence when complete_validation is called with cadence of 'once'", %{} do
-      conn = Phoenix.ConnTest.build_conn()
+      conn = build_conn()
 
       form_data = %{cadence: "once"}
       ingestion_id = "foo"
 
-      socket = %Phoenix.LiveView.Socket{
+      socket = %LiveView.Socket{
         assigns: %{
           ingestion_id: ingestion_id,
           visibility: "hidden"
