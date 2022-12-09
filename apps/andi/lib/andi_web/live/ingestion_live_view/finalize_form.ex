@@ -243,6 +243,11 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
   defp complete_validation(changeset, socket) do
     new_changeset = Map.put(changeset, :action, :update)
     cadence = Ecto.Changeset.get_field(changeset, :cadence)
+
+    if cadence == "once" do
+      Ingestions.update_cadence(socket.assigns.ingestion_id, cadence)
+    end
+
     repeat_ingestion? = cadence not in ["once", "never", nil]
     send(socket.parent_pid, :form_update)
 
