@@ -6,7 +6,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
 
   require Logger
 
-  alias Andi.InputSchemas.InputConverter
   alias Andi.InputSchemas.Ingestions.Transformations
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.IngestionLiveView.FormUpdate

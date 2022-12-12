@@ -7,6 +7,8 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   alias Raptor.Services.DatasetAccessGroupRelationStore
   alias Raptor.Services.UserAccessGroupRelationStore
 
+  # these simulate "raw json" attributes of an auth0 user
+  #   available in the "Raw JSON" tab of a user's page
   @authorized_call [
     %{
       "email_verified" => true,
@@ -30,6 +32,13 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   ]
 
   @unauthorized_call []
+
+  @blocked_user [
+    %{
+      "email_verified" => true,
+      "blocked" => true
+    }
+  ]
 
   describe "private dataset authorization without api key" do
     test "returns true when the user has access to the given dataset via an organization", %{
@@ -446,6 +455,36 @@ defmodule RaptorWeb.AuthorizeControllerTest do
 
       expect(Auth0Management.get_users_by_api_key(api_key),
         return: {:ok, @multiple_users_call}
+      )
+
+      actual =
+        conn
+        |> get("/api/authorize?apiKey=#{api_key}&systemName=system__name")
+        |> json_response(200)
+
+      assert actual == expected
+    end
+
+    test "returns false when the api key matches a user but the user has been blocked", %{
+      conn: conn
+    } do
+      api_key = "intrepid"
+      expected = %{"is_authorized" => false}
+
+      expect(DatasetStore.get(any()),
+        return: %{
+          dataset_id: "wags",
+          system_name: "system__name",
+          org_id: "dog_stats",
+          is_private: true
+        }
+      )
+
+      # mock that the user is in the org of the private dataset
+      allow(UserOrgAssocStore.get(any(), "dog_stats"), return: %{"user|id|blah": true})
+
+      expect(Auth0Management.get_users_by_api_key(api_key),
+        return: {:ok, @blocked_user}
       )
 
       actual =
