@@ -70,13 +70,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     """
   end
 
-  def handle_info(%{topic: topic, event: event, payload: %{ingestion_id: ingestion_id}} = outerPayload, socket) do
-    IO.inspect(topic, label: "TOPIC")
-    IO.inspect(event, label: "Event")
-    IO.inspect(ingestion_id, label: "ID")
-    IO.inspect(outerPayload, label: "OuterPayload")
-  end
-
   def handle_info(
         %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
         %{assigns: %{changeset: changeset}} = socket
