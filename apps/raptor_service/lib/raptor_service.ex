@@ -86,7 +86,7 @@ defmodule RaptorService do
   end
 
   def is_valid_api_key(raptor_url, api_key) do
-    case HTTPoison.get(url_for_api_key_validation(raptor_url), '') do
+    case HTTPoison.post(url_for_api_key_validation(raptor_url), Jason.encode!(%{apiKey: api_key})) do
       {:ok, %{body: body, status_code: status_code}} ->
         {:ok, is_valid_api_key} = Jason.decode(body)
         is_valid_api_key["is_valid_api_key"]

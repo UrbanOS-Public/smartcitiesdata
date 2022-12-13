@@ -110,7 +110,7 @@ defmodule RaptorServiceTest do
 
   describe "is_valid_api_key/2" do
     test "returns false when raptor returns an error" do
-      allow(HTTPoison.get(any(), any()),
+      allow(HTTPoison.post(any(), any()),
           return: {:error, %{body: "errorBody", status_code: 400}}
         )
 
@@ -118,15 +118,15 @@ defmodule RaptorServiceTest do
     end
 
     test "returns false when raptor returns is_valid_api_key false" do
-      allow(HTTPoison.get(any(), any()),
+      allow(HTTPoison.post(any(), any()),
           return: {:ok, %{body: "{\"is_valid_api_key\": false}", status_code: 200}}
         )
 
       assert RaptorService.is_valid_api_key("raptor_url", "invalidApiKey") == false
     end
 
-    test "returns true when raptor returns is_valid_api_key trie" do
-      allow(HTTPoison.get(any(), any()),
+    test "returns true when raptor returns is_valid_api_key true" do
+      allow(HTTPoison.post(any(), any()),
           return: {:ok, %{body: "{\"is_valid_api_key\": true}", status_code: 200}}
         )
 
