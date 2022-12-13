@@ -67,4 +67,44 @@ defmodule Raptor.ApiKeyControllerTest do
       assert body["message"] == "user_id is a required parameter"
     end
   end
+
+  describe "isValidApiKey" do
+    test "returns Internal Server Error when auth0 call fails" do
+      allow(Auth0Management.get_users_by_api_key(any()),
+        return: {:error, "error"}
+      )
+
+      {:ok, response} =
+        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+
+      {:ok, body} = Jason.decode(response.body)
+
+      assert response.status_code == 500
+      assert body["message"] == "Internal Server Error"
+    end
+
+    test "returns false when apiKey does not match any users" do
+      allow(Auth0Management.get_users_by_api_key(any()),
+        return: {:ok, []}
+      )
+
+      {:ok, response} =
+        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+
+      {:ok, body} = Jason.decode(response.body)
+      assert body == %{"is_valid_api_key" => false}
+    end
+
+    test "returns true when apiKey has a single matching user" do
+      allow(Auth0Management.get_users_by_api_key(any()),
+        return: {:ok, [%{"email_verified" => true, "user_id" => "123"}]}
+      )
+
+      {:ok, response} =
+        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+
+      {:ok, body} = Jason.decode(response.body)
+      assert body == %{"is_valid_api_key" => true}
+    end
+  end
 end
