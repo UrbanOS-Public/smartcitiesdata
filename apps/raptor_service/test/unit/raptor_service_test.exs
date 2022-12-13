@@ -107,4 +107,30 @@ defmodule RaptorServiceTest do
       assert RaptorService.list_groups_by_api_key("raptor_url", "apiKey") == %{access_groups: [], organizations: []}
     end
   end
+
+  describe "is_valid_api_key/2" do
+    test "returns false when raptor returns an error" do
+      allow(HTTPoison.get(any(), any()),
+          return: {:error, %{body: "errorBody", status_code: 400}}
+        )
+
+      assert RaptorService.is_valid_api_key("raptor_url", "invalidApiKey") == false
+    end
+
+    test "returns false when raptor returns is_valid_api_key false" do
+      allow(HTTPoison.get(any(), any()),
+          return: {:ok, %{body: "{\"is_valid_api_key\": false}", status_code: 200}}
+        )
+
+      assert RaptorService.is_valid_api_key("raptor_url", "invalidApiKey") == false
+    end
+
+    test "returns true when raptor returns is_valid_api_key trie" do
+      allow(HTTPoison.get(any(), any()),
+          return: {:ok, %{body: "{\"is_valid_api_key\": true}", status_code: 200}}
+        )
+
+      assert RaptorService.is_valid_api_key("raptor_url", "validApiKey") == true
+    end
+  end
 end

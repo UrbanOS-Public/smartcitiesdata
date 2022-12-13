@@ -86,12 +86,24 @@ defmodule RaptorService do
   end
 
   def is_valid_api_key(raptor_url, api_key) do
-    true
+    case HTTPoison.get(url_for_api_key_validation(raptor_url), '') do
+      {:ok, %{body: body, status_code: status_code}} ->
+        {:ok, is_valid_api_key} = Jason.decode(body)
+        is_valid_api_key["is_valid_api_key"]
+
+      error ->
+        Logger.error("Raptor failed while attempting to validate api key with error: #{inspect(error)}")
+        false
+    end
   end
 
   defp url_for_api_key_regeneration(raptor_url, user_id) do
     "#{raptor_url}/regenerateApiKey?user_id=#{user_id}"
-    end
+  end
+
+  defp url_for_api_key_validation(raptor_url) do
+    "#{raptor_url}/isApiKeyValid"
+  end
 
   defp list_url_with_api_key_params(raptor_url, nil) do
     "#{raptor_url}/listAccessGroups"
