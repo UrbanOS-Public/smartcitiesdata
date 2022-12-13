@@ -85,6 +85,10 @@ defmodule RaptorService do
     end
   end
 
+  def is_valid_api_key(raptor_url, api_key) do
+    true
+  end
+
   defp url_for_api_key_regeneration(raptor_url, user_id) do
     "#{raptor_url}/regenerateApiKey?user_id=#{user_id}"
     end
