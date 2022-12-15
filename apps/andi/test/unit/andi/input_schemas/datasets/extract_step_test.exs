@@ -57,14 +57,14 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       changes = %{
         type: "http",
         context: %{
-          url: "www.example.com"
+          url: "http://www.example.com"
         }
       }
 
       changeset = ExtractStep.changeset(changes)
 
       assert changeset.errors[:url] == nil
-      assert changeset.changes.context.url == "www.example.com"
+      assert changeset.changes.context.url == "http://www.example.com"
     end
   end
 

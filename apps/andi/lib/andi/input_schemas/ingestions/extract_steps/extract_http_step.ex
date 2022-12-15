@@ -90,6 +90,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
     end
   end
 
+  defp validate_url(changeset), do: changeset
+
   defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) do
