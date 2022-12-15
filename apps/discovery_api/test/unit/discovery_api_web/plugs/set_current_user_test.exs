@@ -9,6 +9,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
 
   describe "call/1 REQUIRE_API_KEY true" do
     setup do
+      on_exit(fn -> System.put_env("REQUIRE_API_KEY", "false") end)
       System.put_env("REQUIRE_API_KEY", "true")
 
       :ok
