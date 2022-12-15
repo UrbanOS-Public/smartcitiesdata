@@ -29,10 +29,8 @@ defmodule RaptorWeb.ApiKeyController do
     render_error(conn, 400, "user_id is a required parameter")
   end
 
-  def isValidApiKey(conn, _) do
-    {:ok, body, _conn} = Plug.Conn.read_body(conn)
-
-    case Auth0Management.get_users_by_api_key(api_key_from_body(body)) do
+  def getUserIdFromApiKey(conn, %{"api_key" => api_key}) do
+    case Auth0Management.get_users_by_api_key(api_key) do
       {:ok, user_list} ->
         case get_valid_user_id(user_list) do
           {:ok, user_id} ->
@@ -72,9 +70,5 @@ defmodule RaptorWeb.ApiKeyController do
         Logger.warn("Multiple users cannot have the same API Key.")
         {:error, "Multiple users cannot have the same API Key."}
     end
-  end
-
-  defp api_key_from_body(body) do
-    Jason.decode!(body)["apiKey"]
   end
 end
