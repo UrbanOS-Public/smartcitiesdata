@@ -482,7 +482,30 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
     html = render_change(es_form, %{"form_data" => form_data})
 
-    assert get_text(html, "#url-error-msg") == "Please enter a valid url."
+    assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
+  end
+
+  test "validated url field displays proper error message", %{conn: conn} do
+    {:ok, ingestion} =
+      IngestionHelpers.create_with_http_extract_step(%{
+        action: "GET",
+        url: "123.com",
+        queryParams: %{"x" => "y"},
+        headers: %{"api-key" => "to-my-heart"}
+      })
+      |> IngestionHelpers.save_ingestion()
+
+    extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
+
+    assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+    extract_step_form_view = find_live_child(view, "extract_step_form_editor")
+    es_form = element(extract_step_form_view, "#step-#{extract_step_id} form")
+
+    form_data = %{"url" => "example.com"}
+
+    html = render_change(es_form, %{"form_data" => form_data})
+
+    assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do
