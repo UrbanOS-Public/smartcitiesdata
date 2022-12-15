@@ -37,7 +37,9 @@ defmodule RaptorWeb.ApiKeyController do
             render(conn, %{
               user_id: user_id
             })
-          {:error, reason} -> render_error(conn, 401, reason)
+
+          {:error, reason} ->
+            render_error(conn, 401, reason)
         end
 
       {:error, _} ->
@@ -63,7 +65,8 @@ defmodule RaptorWeb.ApiKeyController do
         if(user["email_verified"] and !user["blocked"]) do
           {:ok, user["user_id"]}
         else
-          {:error, "Only users who have validated their email address and aren't blocked may make API calls"}
+          {:error,
+           "Only users who have validated their email address and aren't blocked may make API calls"}
         end
 
       _ ->

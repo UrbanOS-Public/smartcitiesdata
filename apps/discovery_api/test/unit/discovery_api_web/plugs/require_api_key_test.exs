@@ -19,8 +19,11 @@ defmodule DiscoveryApiWeb.Plugs.RequireApiKeyTest do
     test "responds with a 401 when require_api_key env var is true and user passes invalid api_key" do
       allow(RaptorService.is_valid_api_key(any(), any()), return: false)
       allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
-      conn = build_conn(:get, "/doesnt/matter")
-      |> put_req_header("api_key", "invalidApiKey")
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "invalidApiKey")
+
       result = RequireApiKey.call(conn)
 
       assert_called(DiscoveryApiWeb.RenderError.render_error(conn, 401, "Unauthorized: invalid api_key"))
@@ -29,8 +32,11 @@ defmodule DiscoveryApiWeb.Plugs.RequireApiKeyTest do
 
     test "responds with a 200 when require_api_key env var is true and user passes valid api_key" do
       allow(RaptorService.is_valid_api_key(any(), any()), return: true)
-      conn = build_conn(:get, "/doesnt/matter")
-      |> put_req_header("api_key", "validApiKey")
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "validApiKey")
+
       result = RequireApiKey.call(conn)
 
       assert result == conn
