@@ -40,6 +40,22 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       assert result.halted == true
     end
 
+    test "responds with a 401 when users call fails" do
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:error, "401 error", 401})
+      allow(Guardian.Plug.current_resource(any()), return: nil)
+      allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
+      allow(Users.get_user(any(), any()), return: {:error, "reason"})
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "invalidApiKey")
+
+      result = SetCurrentUser.call(conn, [])
+
+      assert_called(DiscoveryApiWeb.RenderError.render_error(conn, 401, "Unauthorized: invalid api_key"))
+      assert result.halted == true
+    end
+
     test "responds with a 500 when raptor encounters and unexpected error" do
       allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:error, "Unmatched response"})
       allow(Guardian.Plug.current_resource(any()), return: nil)

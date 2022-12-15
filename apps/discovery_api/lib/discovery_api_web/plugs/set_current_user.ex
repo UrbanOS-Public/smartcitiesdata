@@ -25,13 +25,16 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and is_nil(api_key) do
     render_401_missing_api_key(conn)
+#    assign(conn, :current_user, current_user)
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
     case RaptorService.get_user_id_from_api_key(raptor_url(), api_key) do
       {:ok, user_id} ->
-        {:ok, user} = Users.get_user(user_id, :subject_id)
-        assign(conn, :current_user, user)
+        case Users.get_user(user_id, :subject_id) do
+          {:ok, user} -> assign(conn, :current_user, user)
+          {:error, _reason} -> render_401_invalid_api_key(conn)
+        end
 
       {:error, reason, status_code} when status_code == 401 ->
         render_401_invalid_api_key(conn)
