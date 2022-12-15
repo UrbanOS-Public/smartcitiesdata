@@ -68,14 +68,14 @@ defmodule Raptor.ApiKeyControllerTest do
     end
   end
 
-  describe "isValidApiKey" do
+  describe "getUserIdFromApiKey" do
     test "returns Internal Server Error when auth0 call fails" do
       allow(Auth0Management.get_users_by_api_key(any()),
         return: {:error, "error"}
       )
 
       {:ok, response} =
-        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=invalidApiKey")
 
       {:ok, body} = Jason.decode(response.body)
 
@@ -89,22 +89,26 @@ defmodule Raptor.ApiKeyControllerTest do
       )
 
       {:ok, response} =
-        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=invalidApiKey")
 
-      {:ok, body} = Jason.decode(response.body)
-      assert body == %{"is_valid_api_key" => false}
+      body = Jason.decode!(response.body)
+
+      assert body == %{"message" => "No user found with given API Key."}
+      assert response.status_code == 401
     end
 
     test "returns true when apiKey has a single matching user" do
+      user_id = "123"
+      api_key = "validApiKey"
+
       allow(Auth0Management.get_users_by_api_key(any()),
-        return: {:ok, [%{"email_verified" => true, "user_id" => "123"}]}
+        return: {:ok, [%{"email_verified" => true, "user_id" => "#{user_id}"}]}
       )
 
       {:ok, response} =
-        HTTPoison.post("http://localhost:4002/api/isValidApiKey", '{"apiKey": "test"}')
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
 
-      {:ok, body} = Jason.decode(response.body)
-      assert body == %{"is_valid_api_key" => true}
+      assert response == {:ok, %{body: "{\"user_id\": \"#{user_id}\"}"}, status_code: 200}
     end
   end
 end
