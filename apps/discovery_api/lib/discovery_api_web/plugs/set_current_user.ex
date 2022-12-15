@@ -19,7 +19,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
     end
   end
 
-  defp assign_current_user(conn, current_user, api_key) when not is_nil(current_user)  do
+  defp assign_current_user(conn, current_user, api_key) when not is_nil(current_user) do
     assign(conn, :current_user, current_user)
   end
 
@@ -32,8 +32,10 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
       {:ok, user_id} ->
         {:ok, user} = Users.get_user(user_id, :subject_id)
         assign(conn, :current_user, user)
+
       {:error, reason, status_code} when status_code == 401 ->
         render_401_invalid_api_key(conn)
+
       error ->
         render_500_internal_server_error(conn)
     end
