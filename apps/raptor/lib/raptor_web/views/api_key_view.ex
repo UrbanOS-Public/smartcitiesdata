@@ -7,9 +7,9 @@ defmodule RaptorWeb.ApiKeyView do
     }
   end
 
-  def render("isValidApiKey.json", %{is_valid_api_key: isValidApiKey}) do
+  def render("isValidApiKey.json", %{user_id: user_id}) do
     %{
-      is_valid_api_key: isValidApiKey
+      user_id: user_id
     }
   end
 end

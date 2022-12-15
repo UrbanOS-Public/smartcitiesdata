@@ -31,12 +31,16 @@ defmodule RaptorWeb.ApiKeyController do
 
   def isValidApiKey(conn, _) do
     {:ok, body, _conn} = Plug.Conn.read_body(conn)
-    IO.inspect(Jason.decode!(body)["apiKey"], label: "body")
-    case Auth0Management.get_users_by_api_key(Jason.decode!(body)["apiKey"]) do
+
+    case Auth0Management.get_users_by_api_key(api_key_from_body(body)) do
       {:ok, user_list} ->
-        render(conn, %{
-          is_valid_api_key: validate_user_list(user_list)
-        })
+        case get_valid_user_id(user_list) do
+          {:ok, user_id} ->
+            render(conn, %{
+              user_id: user_id
+            })
+          {:error, reason} -> render_error(conn, 401, reason)
+        end
 
       {:error, _} ->
         render_error(conn, 500, "Internal Server Error")
@@ -49,25 +53,28 @@ defmodule RaptorWeb.ApiKeyController do
     |> binary_part(0, length)
   end
 
-  defp validate_user_list(user_list) do
+  defp get_valid_user_id(user_list) do
     case length(user_list) do
       0 ->
         Logger.warn("No user found with given API Key.")
-        false
+        {:error, "No user found with given API Key."}
 
       1 ->
         user = user_list |> Enum.at(0)
 
         if(user["email_verified"] and !user["blocked"]) do
-          true
+          {:ok, user["user_id"]}
         else
-          # Only users who have validated their email address and aren't blocked may make API calls
-          false
+          {:error, "Only users who have validated their email address and aren't blocked may make API calls"}
         end
 
       _ ->
         Logger.warn("Multiple users cannot have the same API Key.")
-        false
+        {:error, "Multiple users cannot have the same API Key."}
     end
+  end
+
+  defp api_key_from_body(body) do
+    Jason.decode!(body)["apiKey"]
   end
 end

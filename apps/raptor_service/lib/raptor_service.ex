@@ -66,7 +66,7 @@ defmodule RaptorService do
 
       error ->
         Logger.error("Raptor failed to authorize with error: #{inspect(error)}")
-        false
+        error
     end
   end
 
@@ -87,13 +87,18 @@ defmodule RaptorService do
 
   def is_valid_api_key(raptor_url, api_key) do
     case HTTPoison.post(url_for_api_key_validation(raptor_url), Jason.encode!(%{apiKey: api_key})) do
-      {:ok, %{body: body, status_code: status_code}} ->
-        {:ok, is_valid_api_key} = Jason.decode(body)
-        is_valid_api_key["is_valid_api_key"]
+      {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
+        decoded_response = Jason.decode!(body)
+        {:ok, decoded_response["user_id"]}
+
+      {:ok, %{body: body, status_code: status_code} = response} when status_code == 401 ->
+        error_reason = Jason.decode!(body)["message"]
+        Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
+        {:error, error_reason, status_code}
 
       error ->
-        Logger.error("Raptor failed while attempting to validate api key with error: #{inspect(error)}")
-        false
+        Logger.error("Raptor encountered an unknown error while attempting to validate api key")
+        {:error, "Internal Server Error", 500}
     end
   end
 
@@ -102,7 +107,7 @@ defmodule RaptorService do
   end
 
   defp url_for_api_key_validation(raptor_url) do
-    "#{raptor_url}/isApiKeyValid"
+    "#{raptor_url}/isValidApiKey"
   end
 
   defp list_url_with_api_key_params(raptor_url, nil) do

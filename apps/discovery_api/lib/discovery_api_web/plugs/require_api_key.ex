@@ -14,10 +14,10 @@ defmodule DiscoveryApiWeb.Plugs.RequireApiKey do
 
   def init(default), do: default
 
-  def call(conn) do
-    api_key = get_req_header(conn, "api_key")
+  def call(conn, _) do
+    api_key = get_req_header(conn, "api_key") |> List.first()
 
-    if api_key != [] do
+    if api_key != "" do
       case RaptorService.is_valid_api_key(raptor_url(), api_key) do
         true -> conn
         _ -> render_401_invalid_api_key(conn)
