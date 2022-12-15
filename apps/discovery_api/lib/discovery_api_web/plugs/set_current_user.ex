@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and is_nil(api_key) do
     render_401_missing_api_key(conn)
-#    assign(conn, :current_user, current_user)
+    #    assign(conn, :current_user, current_user)
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
