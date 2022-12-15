@@ -105,10 +105,12 @@ defmodule Raptor.ApiKeyControllerTest do
         return: {:ok, [%{"email_verified" => true, "user_id" => "#{user_id}"}]}
       )
 
-      {:ok, response} =
-        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
+      {:ok, response} = HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
 
-      assert response == {:ok, %{body: "{\"user_id\": \"#{user_id}\"}"}, status_code: 200}
+      body = Jason.decode!(response.body)
+
+      assert body == %{"user_id" => "#{user_id}"}
+      assert response.status_code == 200
     end
   end
 end

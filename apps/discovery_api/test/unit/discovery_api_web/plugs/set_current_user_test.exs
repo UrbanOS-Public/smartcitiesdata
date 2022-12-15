@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 401 when user passes invalid api_key" do
-      allow(RaptorService.is_valid_api_key(any(), any()), return: {:error, "401 error", 401})
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:error, "401 error", 401})
       allow(Guardian.Plug.current_resource(any()), return: nil)
       allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
 
@@ -41,7 +41,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 500 when raptor encounters and unexpected error" do
-      allow(RaptorService.is_valid_api_key(any(), any()), return: {:error, "Unmatched response"})
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:error, "Unmatched response"})
       allow(Guardian.Plug.current_resource(any()), return: nil)
       allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
 
@@ -59,7 +59,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       userId = "userId"
       userObject = "I am a user object"
 
-      allow(RaptorService.is_valid_api_key(any(), any()), return: {:ok, userId})
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:ok, userId})
       allow(Guardian.Plug.current_resource(any()), return: nil)
       allow(Users.get_user(userId, :subject_id), return: {:ok, userObject})
 
@@ -76,7 +76,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       userId = "userId"
       userObject = "I am a user object"
 
-      allow(RaptorService.is_valid_api_key(any(), any()), return: {:ok, userId})
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:ok, userId})
       allow(Guardian.Plug.current_resource(any()), return: userObject)
 
       conn =
