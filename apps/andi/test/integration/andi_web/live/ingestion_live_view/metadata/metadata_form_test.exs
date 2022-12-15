@@ -61,6 +61,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       html: html,
       ingestion: ingestion
     } do
+
+
       new_name = "new_name"
 
       form_data = %{
@@ -68,10 +70,16 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       }
 
       metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
-      render_change(view, "save")
+#      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      IO.inspect("About to send message", label: "MESSAGE")
+      render_change(view, :ryan_test)
+#      render_change(view, "save")
 
+      IO.inspect("About to ReRender", label: "MESSAGE")
       html = render(view)
+      html = render(metadata_view)
+
+      assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == "fail"
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
     end
 

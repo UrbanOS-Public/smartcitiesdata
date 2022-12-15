@@ -8,6 +8,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
+  alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
+  alias Andi.InputSchemas.StructTools
+
+  alias AndiWeb.ErrorHelpers
+  alias AndiWeb.Helpers.MetadataFormHelpers
+  alias AndiWeb.Views.DisplayNames
 
   import SmartCity.Event, only: [ingestion_update: 0]
 
@@ -15,19 +21,52 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   access_levels(render: [:private])
 
+  def mount(
+        _params,
+        %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
+        socket
+      ) do
+    IO.inspect(__MODULE__, label: "Mount")
+    default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
+
+    {:ok,
+      assign(socket,
+        changeset: default_changeset,
+        click_id: nil,
+        delete_ingestion_modal_visibility: "hidden",
+        unsaved_changes_modal_visibility: "hidden",
+        is_curator: is_curator,
+        unsaved_changes: false,
+        page_error: false,
+        ingestion: ingestion,
+        save_success: false,
+        success_message: "",
+        user_id: user_id
+      )}
+  end
+
   def render(assigns) do
+    IO.inspect(__MODULE__, label: "Render")
+    IO.inspect(assigns, label: "Assigns")
+
+    metadata_changeset = IngestionMetadataFormSchema.changeset(assigns.changeset.changes)
+    IO.inspect(metadata_changeset, label: "MetadataChangeset")
+    ingestion_published? = assigns.ingestion.submissionStatus == :published
+
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
     <div class="edit-page" id="ingestions-edit-page">
-      <%= f = form_for @changeset, "" %>
-        <%= hidden_input(f, :sourceFormat) %>
         <div class="edit-ingestion-title">
           <h1 class="component-title-text">Define Data Ingestion</h1>
         </div>
 
-        <div>
-          <%= live_render(@socket, AndiWeb.IngestionLiveView.MetadataForm, id: :ingestion_metadata_form_editor, session: %{"ingestion" => @ingestion}) %>
-        </div>
+      <div>
+        <%= live_component(@socket, AndiWeb.IngestionLiveView.MetadataForm,
+              id: :ingestion_metadata_form_editor,
+              changeset: metadata_changeset,
+              ingestion_published?: ingestion_published?
+            ) %>
+      </div>
 
         <div>
           <div>
@@ -46,7 +85,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
             <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
           </div>
         </div>
-      </form>
 
       <div class="edit-page__btn-group">
       <hr>
@@ -82,27 +120,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     """
   end
 
-  def mount(
-        _params,
-        %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
-        socket
-      ) do
-    default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
+  def handle_info({:updated_metadata_changeset, changeset}, socket) do
+    update_changeset()
+  end
 
-    {:ok,
-     assign(socket,
-       changeset: default_changeset,
-       click_id: nil,
-       delete_ingestion_modal_visibility: "hidden",
-       unsaved_changes_modal_visibility: "hidden",
-       is_curator: is_curator,
-       unsaved_changes: false,
-       page_error: false,
-       ingestion: ingestion,
-       save_success: false,
-       success_message: "",
-       user_id: user_id
-     )}
+  def handle_info({:form_update, update}, socket) do
+    IO.inspect(update, label: "form_update")
+    {:noreply, assign(socket, unsaved_changes: true)}
   end
 
   def handle_info(:form_update, socket) do
@@ -168,7 +192,23 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: ingestion_changeset)}
   end
 
+  def handle_event("save-dataset-search", %{"id" => id}, socket) do
+    IO.inspect("Handing save", label: "Saving in #{__MODULE__}}")
+    changeset =
+      socket.assigns.changeset.changes
+      |> Map.put(:targetDataset, id)
+      |> IngestionMetadataFormSchema.changeset_from_form_data()
+      |> complete_validation(socket)
+
+
+    {:noreply,
+      assign(socket,
+        metadata_changeset: changeset
+      )}
+  end
+
   def handle_event("save", _, socket) do
+    IO.inspect("Ingestion Saved", label: "Save Triggered")
     save_ingestion(socket)
   end
 
@@ -192,6 +232,36 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("force-cancel-edit", _, socket) do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
+  end
+
+
+  #TODO: Cleanup
+  def handle_event(event, socket) do
+    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}')
+    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}')
+
+    {:noreply, socket}
+  end
+
+  #TODO: Cleanup
+  def handle_event(event, payload, socket) do
+    IO.inspect(__MODULE__, label: "Module")
+    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}')
+    IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}')
+    IO.inspect(payload, label: 'Unhandled Socket in module #{__MODULE__}')
+
+    {:noreply, socket}
+  end
+
+  #TODO: Cleanup
+  def handle_info(
+        %{topic: topic, event: event, payload: payload}, socket) do
+    IO.inspect(topic, label: 'Unhandled Info Topic in module #{__MODULE__}')
+    IO.inspect(event, label: 'Unhandled Info Event in module #{__MODULE__}')
+    IO.inspect(payload, label: 'Unhandled Info Payload in module #{__MODULE__}')
+    IO.inspect(socket, label: 'Unhandled Info Socket in module #{__MODULE__}')
+
+    {:noreply, socket}
   end
 
   def test_url(socket) do
@@ -249,5 +319,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       error ->
         {:error, error}
     end
+  end
+
+  defp update_changeset(changeset, socket) do
+    new_changeset = Map.put(changeset, :action, :update)
+
+    {:noreply, assign(socket, :changeset, changeset)}
   end
 end
