@@ -83,7 +83,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
 
   defp validate_url(%{changes: %{url: url}} = changeset) do
     with uri <- Andi.URI.parse(url),
-         {:error, uri} <- Andi.URI.validate_uri(uri) do
+         {:error, _} <- Andi.URI.validate_uri(uri) do
       add_error(changeset, :url, "invalid url")
     else
       _ -> changeset
