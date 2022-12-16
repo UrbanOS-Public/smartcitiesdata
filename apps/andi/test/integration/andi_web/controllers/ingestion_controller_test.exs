@@ -238,7 +238,7 @@ defmodule Andi.IngestionControllerTest do
               type: "http",
               context: %{
                 action: "GET",
-                url: "example.com"
+                url: "http://example.com"
               }
             }
           ]

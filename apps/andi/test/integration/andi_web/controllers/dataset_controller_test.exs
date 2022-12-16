@@ -354,7 +354,9 @@ defmodule Andi.DatasetControllerTest do
     end
 
     test "PUT /api/ dataset passed without UUID generates UUID for dataset" do
-      new_dataset = TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}]}})
+      new_dataset =
+        TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}]}})
+
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)

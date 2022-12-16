@@ -26,7 +26,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
       id: UUID.uuid4(),
       context: %{
         action: "GET",
-        url: "example.com"
+        url: "http://example.com"
       }
     }
 
