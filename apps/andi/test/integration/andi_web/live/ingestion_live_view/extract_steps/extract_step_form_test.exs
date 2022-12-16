@@ -270,7 +270,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     render_click(extract_steps_form_view, "save")
     extract_step_id = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first() |> Map.get(:id)
 
-    form_data = %{"url" => "cam", "action" => "GET"}
+    form_data = %{"url" => "http://cam.co", "action" => "GET"}
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     render_change(es_form, %{"form_data" => form_data})
