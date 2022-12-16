@@ -66,7 +66,7 @@ defmodule RaptorService do
 
       error ->
         Logger.error("Raptor failed to authorize with error: #{inspect(error)}")
-        error
+        false
     end
   end
 
