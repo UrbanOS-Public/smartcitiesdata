@@ -115,6 +115,9 @@ defmodule AndiWeb.ErrorHelpers do
     "Please enter a valid name. Schema fields cannot contain control characters."
   end
 
+  defp interpret_error_message(_message, :url, _),
+    do: "Please enter a valid url - including http:// or https://"
+
   defp interpret_error_message(_message, :schema, _), do: "Please add a field to continue"
 
   defp interpret_error_message(message, :schema_sample, _), do: message

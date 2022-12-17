@@ -58,6 +58,16 @@ defmodule Andi.URI do
     URI.to_string(uri)
   end
 
+  def validate_uri(str) do
+    uri = URI.parse(str)
+
+    case uri do
+      %URI{scheme: nil} -> {:error, uri}
+      %URI{host: nil} -> {:error, uri}
+      uri -> {:ok, uri}
+    end
+  end
+
   def query_decoder(nil), do: {:ok, []}
 
   def query_decoder(params) do

@@ -71,7 +71,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
       es_form = element(editor, "#step-#{extract_step_id} form")
 
-      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => ""}})
+      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "http://cam.com", "body" => ""}})
 
       render_change(view, "cancel-edit", %{})
       html = render(view)

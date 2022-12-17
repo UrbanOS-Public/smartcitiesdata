@@ -118,7 +118,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
     html = render_change(es_form, %{"form_data" => form_data})
 
-    assert get_text(html, "#url-error-msg") == "Please enter a valid url."
+    assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
   end
 
   data_test "invalid #{field} displays proper error message", %{conn: conn} do

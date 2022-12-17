@@ -14,7 +14,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     name: "Name",
     targetDataset: @dataset_id,
     cadence: "never",
-    extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
+    extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}],
     schema: [
       %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
     ],
@@ -139,7 +139,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         @valid_changes
         |> Map.merge(%{
           cadence: "never",
-          extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
+          extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}],
           schema: schema,
           sourceFormat: "text/xml",
           topLevelSelector: "whatever"
@@ -264,7 +264,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
       extract_steps = [
         %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
-        %{type: "http", context: %{action: "GET", url: "example.com"}}
+        %{type: "http", context: %{action: "GET", url: "http://example.com"}}
       ]
 
       changes =
@@ -306,7 +306,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
       extract_steps = [
         %{type: "s3", context: %{url: "something"}},
-        %{type: "http", context: %{action: "GET", url: "example.com"}},
+        %{type: "http", context: %{action: "GET", url: "http://example.com"}},
         %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}}
       ]
 

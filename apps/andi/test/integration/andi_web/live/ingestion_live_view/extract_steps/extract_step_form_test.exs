@@ -26,7 +26,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
       id: UUID.uuid4(),
       context: %{
         action: "GET",
-        url: "example.com"
+        url: "http://example.com"
       }
     }
 
@@ -90,7 +90,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     es_form = element(editor, "#step-#{extract_step_id} form")
 
     eventually(fn ->
-      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "cam.com", "body" => "test"}})
+      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "http://cam.com", "body" => "test"}})
       render_click(view, "save")
       extract_step = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first()
       assert extract_step != nil
@@ -143,7 +143,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
     render_change(extract_steps_form_view, "save")
 
-    form_data = %{"action" => "GET", "url" => "bob.com"}
+    form_data = %{"action" => "GET", "url" => "http://bob.com"}
     render_change(es_form, %{"form_data" => form_data})
 
     eventually(fn ->
@@ -270,7 +270,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     render_click(extract_steps_form_view, "save")
     extract_step_id = ExtractSteps.all_for_ingestion(andi_ingestion.id) |> List.first() |> Map.get(:id)
 
-    form_data = %{"url" => "cam", "action" => "GET"}
+    form_data = %{"url" => "http://cam.co", "action" => "GET"}
     es_form = element(extract_steps_form_view, "#step-#{extract_step_id} form")
 
     render_change(es_form, %{"form_data" => form_data})
