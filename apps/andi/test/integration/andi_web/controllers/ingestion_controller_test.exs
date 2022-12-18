@@ -108,7 +108,7 @@ defmodule Andi.IngestionControllerTest do
         "id" => uuid,
         "name" => "Name",
         "extractSteps" => [
-          %{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}
+          %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
         ],
         "sourceFormat" => "application/gtfs+protobuf",
         "cadence" => "*/9000 * * * * *",
@@ -238,7 +238,7 @@ defmodule Andi.IngestionControllerTest do
               type: "http",
               context: %{
                 action: "GET",
-                url: "example.com"
+                url: "http://example.com"
               }
             }
           ]

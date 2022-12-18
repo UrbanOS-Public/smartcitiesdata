@@ -32,6 +32,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
     |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
     |> cast_embed(:queryParams, with: &ExtractQueryParam.changeset/2)
     |> validate_body_format()
+    |> validate_url()
     |> validate_required(@required_fields, message: "is required")
     |> validate_key_value_set(:headers)
     |> validate_key_value_set(:queryParams)
@@ -77,6 +78,19 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
       false -> changeset
     end
   end
+
+  defp validate_url(%{changes: %{url: url}} = changeset) when url in ["", nil], do: changeset
+
+  defp validate_url(%{changes: %{url: url}} = changeset) do
+    with uri <- Andi.URI.parse(url),
+         {:error, _} <- Andi.URI.validate_uri(uri) do
+      add_error(changeset, :url, "invalid url")
+    else
+      _ -> changeset
+    end
+  end
+
+  defp validate_url(changeset), do: changeset
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
 
