@@ -92,10 +92,21 @@ defmodule Andi.InputSchemas.Ingestions do
   def update(%Ingestion{} = from_ingestion, changes) do
     changes_as_map = StructTools.to_map(changes)
 
-    from_ingestion
+    new_ingestion = from_ingestion
+    |> IO.inspect(label: "BEFORE PRELOAD")
     |> Andi.Repo.preload([:extractSteps, :schema])
+    |> IO.inspect(label: "AFTER PRELOAD")
     |> Ingestion.changeset_for_draft(changes_as_map)
+    |> IO.inspect(label: "AFTER PRELOAD2")
+
+    [head | tail] = new_ingestion.changes.extractSteps
+
+    IO.inspect(head, label: "AFTER PRELOAD HEAD")
+    IO.inspect(head.data, label: "AFTER PRELOAD DATA")
+
+    temp = new_ingestion
     |> save()
+    |> IO.inspect(label: "SAVE REMOVES?")
   end
 
   def save(%Ecto.Changeset{} = changeset) do

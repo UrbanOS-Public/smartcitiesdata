@@ -23,7 +23,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
       <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
-          <span class="material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @callback_target %>" >close</span>
+          <span class="material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @myself %>" >close</span>
         </div>
 
         <hr class="search-modal-divider">
@@ -95,11 +95,26 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     <hr class="search-modal-divider">
 
     <div class="btn-group__standard">
-          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--primary-outline btn--large save-search" type="button" phx-click="save-dataset-search" phx-target="<%= @myself %>" phx-value-id=<%= @selected_dataset %>>  Save</button>
+          <button id="save-dataset-search-button" name="save-dataset-search-button" class="btn btn--primary-outline btn--large save-search" type="button" phx-click="save-dataset-search" phx-target="<%= @myself %>" >  Save</button>
         </div>
       </div>
     </div>
     """
+  end
+
+  def handle_event("save-dataset-search", _, socket) do
+    IO.inspect(socket, label: "save-dataset-search")
+
+    socket.assigns.close_modal_callback.()
+    send(self(), {:update_dataset, socket.assigns.selected_dataset})
+
+    {:noreply, socket}
+  end
+
+  def handle_event("cancel-dataset-search", _, socket) do
+    socket.assigns.close_modal_callback.()
+
+    {:noreply, socket}
   end
 
   def handle_event("datasets-search", %{"search-value" => search_value}, socket) do

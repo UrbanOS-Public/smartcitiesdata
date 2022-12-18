@@ -174,6 +174,8 @@ defmodule Andi.InputSchemas.Datasets do
   rescue
     _e in Ecto.StaleEntryError ->
       {:error, "attempted to remove a dataset (id: #{dataset_id}) that does not exist."}
+    _e in Ecto.ConstraintError ->
+      {:error, "attempted to remove a dataset (id: #{dataset_id}) that does not meet a constraint."}
   end
 
   def add_source_header(dataset_id) do

@@ -2,8 +2,8 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   @moduledoc false
 
   use Ecto.Schema
-  import Ecto.Changeset
 
+  alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
 
   embedded_schema do
@@ -26,14 +26,34 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     :targetDataset
   ]
 
+  def merge_to_ingestion_changeset(%Ecto.Changeset{ data: %Andi.InputSchemas.Ingestion{} } = ingestion_changeset, form_data) do
+    changeset(ingestion_changeset, form_data)
+  end
+
+
+  def extract_from_ingestion_changeset(%Ecto.Changeset{ data: %Andi.InputSchemas.Ingestion{} } = ingestion_changeset) do
+    ingestion_data = ingestion_changeset
+    |> Changeset.apply_changes
+
+    extracted_data = %{
+      name: ingestion_data.name,
+      sourceFormat: ingestion_data.sourceFormat,
+      targetDataset: ingestion_data.targetDataset,
+      topLevelSelector: ingestion_data.topLevelSelector
+    }
+
+    changeset(extracted_data)
+  end
+
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
-  def changeset(%__MODULE__{} = current, changes) do
+  def changeset(current, changes) do
     current
-    |> cast(changes, @cast_fields, empty_values: [])
-    |> validate_required(@required_fields, message: "is required")
+    |> Changeset.cast(changes, @cast_fields, empty_values: [])
+    |> Changeset.validate_required(@required_fields, message: "is required")
     |> validate_top_level_selector()
     |> target_dataset_exists()
+    |> Map.put(:action, :update)
   end
 
   def changeset_from_andi_ingestion(ingestion) do
@@ -43,7 +63,7 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   end
 
   defp target_dataset_exists(changeset) do
-    validate_change(changeset, :targetDataset, fn :targetDataset, targetDataset ->
+    Changeset.validate_change(changeset, :targetDataset, fn :targetDataset, targetDataset ->
       case Andi.InputSchemas.Datasets.get(targetDataset) do
         nil ->
           [
@@ -65,13 +85,13 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format}} = changeset)
        when source_format in ["xml", "text/xml"] do
-    validate_required(changeset, [:topLevelSelector], message: "is required")
+    Changeset.validate_required(changeset, [:topLevelSelector], message: "is required")
   end
 
   defp validate_top_level_selector(%{changes: %{sourceFormat: source_format, topLevelSelector: top_level_selector}} = changeset)
        when source_format in ["json", "application/json"] do
     case Jaxon.Path.parse(top_level_selector) do
-      {:error, error_msg} -> add_error(changeset, :topLevelSelector, error_msg.message)
+      {:error, error_msg} -> Changeset.add_error(changeset, :topLevelSelector, error_msg.message)
       _ -> changeset
     end
   end

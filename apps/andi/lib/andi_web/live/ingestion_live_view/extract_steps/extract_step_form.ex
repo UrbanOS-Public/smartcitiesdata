@@ -7,6 +7,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   require Logger
 
   alias Andi.InputSchemas.Ingestions.ExtractStep
+  alias Andi.InputSchemas.Ingestions
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
@@ -21,6 +22,10 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
   def mount(_params, %{"ingestion" => ingestion, "order" => order}, socket) do
     extract_steps = Map.get(ingestion, :extractSteps)
+    IO.inspect(extract_steps, label: "extractSteps")
+    db_ingestion = Ingestions.get(ingestion.id)
+    IO.inspect(db_ingestion, label: "ingestion from db")
+    IO.inspect(ingestion, label: "ingestion from session")
     AndiWeb.Endpoint.subscribe("form-save")
 
     extract_step_changesets =
@@ -28,6 +33,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
         Map.put(acc, extract_step.id, changeset)
       end)
+
+
 
     {:ok,
      assign(socket,
@@ -121,15 +128,19 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     ingestion_id = socket.assigns.ingestion_id
     new_step_changes = %{type: step_type, context: %{}, ingestion_id: ingestion_id}
 
-    {:ok, new_extract_step} = ExtractSteps.create(new_step_changes)
-    {:ok, _} = ExtractSteps.update(new_extract_step)
+    {:ok, new_extract_step} = ExtractSteps.create(new_step_changes) |> IO.inspect(label: "IMTired1")
+    what = ExtractSteps.get(new_extract_step.id)
+    IO.inspect(what, label: "Extract Steps from DB")
+    preloaded = Andi.Repo.preload(new_extract_step, [:ingestion])
+    IO.inspect(preloaded, label: "Preloaded steps from DB")
+    {:ok, _} = ExtractSteps.update(preloaded)
 
-    new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(new_extract_step)
+    new_extract_step_changeset = ExtractStep.form_changeset_from_andi_extract_step(preloaded)
 
     updated_changeset_map =
       Map.put(
         socket.assigns.extract_step_changesets,
-        new_extract_step.id,
+        preloaded.id,
         new_extract_step_changeset
       )
 
@@ -232,6 +243,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       changes = InputConverter.form_changes_from_changeset(changeset)
 
       id
+      |> IO.inspect(label: "IMTired2")
       |> ExtractSteps.get()
       |> Map.put(:context, changes)
       |> ExtractSteps.update()

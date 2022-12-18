@@ -4,6 +4,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   import Phoenix.HTML.Form
   import Ecto.Query, only: [from: 2]
 
+
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Ingestions
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
@@ -11,8 +12,13 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.Views.DisplayNames
+  alias Ecto.Changeset
+
+  @component_id :ingestion_metadata_form_editor
 
   def mount(socket) do
+    IO.inspect(socket, label: "Mount #{__MODULE__}}")
+
     {:ok,
      assign(socket,
        select_dataset_modal_visibility: "hidden"
@@ -25,48 +31,50 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
       |> Map.get(:targetDataset, "")
 
     ~L"""
-    <%= f = form_for @changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, phx_submit: :save, id: :ingestion_metadata_form ] %>
-      <div class="ingestion-metadata-form ingestion-metadata-form__name">
-        <%= label(f, :name, "Name", class: "label label--required") %>
-        <%= text_input(f, :name, [class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000", required: true]) %>
-        <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false) %>
-      </div>
+    <div>
+      <%= f = form_for @changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, phx_submit: :save, id: :ingestion_metadata_form ] %>
 
-      <div class="ingestion-metadata-form ingestion-metadata-form__format">
-        <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
-        <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields", required: true, disabled: @ingestion_published?]) %>
-        <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
-      </div>
+        <div class="ingestion-metadata-form ingestion-metadata-form__name">
+          <%= label(f, :name, "Name", class: "label label--required") %>
+          <%= text_input(f, :name, [class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000", required: true]) %>
+          <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false) %>
+        </div>
 
-      <div class="metadata-form__top-level-selector">
-        <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-        <%= if input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"] do %>
-          <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
-        <% else %>
-          <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
-        <% end %>
-        <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
-      </div>
+        <div class="ingestion-metadata-form ingestion-metadata-form__format">
+          <%= label(f, :sourceFormat, "Source Format", class: "label label--required") %>
+          <%= select(f, :sourceFormat, MetadataFormHelpers.get_source_format_options(), [class: "select ingestion-form-fields", required: true, disabled: @ingestion_published?]) %>
+          <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
+        </div>
 
-      <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
-        <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
-        <%= hidden_input(f, :targetDataset, value: selected_dataset) %>
-        <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(selected_dataset), disabled: true, required: true]) %>
-        <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Dataset</button>
-        <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
-      </div>
-    </form>
-    <%= live_component(@socket, AndiWeb.IngestionLiveView.SelectDatasetModal,
-          selected_dataset: selected_dataset,
-          visibility: @select_dataset_modal_visibility,
-          id: :ingestion_metadata_search,
-          callback_target: @myself
-    ) %>
+        <div class="metadata-form__top-level-selector">
+          <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+          <%= if input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"] do %>
+            <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
+          <% else %>
+            <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
+          <% end %>
+          <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
+        </div>
+
+        <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
+          <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
+          <%= hidden_input(f, :targetDataset, value: selected_dataset) %>
+          <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(selected_dataset), disabled: true, required: true]) %>
+          <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Dataset</button>
+          <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
+        </div>
+      </form>
+      <%= live_component(@socket, AndiWeb.IngestionLiveView.SelectDatasetModal,
+            selected_dataset: selected_dataset,
+            visibility: @select_dataset_modal_visibility,
+            id: :ingestion_metadata_search,
+            close_modal_callback: &close_modal/0
+      ) %>
+    </div>
     """
   end
 
   def handle_event("select-dataset", _, socket) do
-    IO.inspect("Setting to visible", label: "Select-Dataset")
     {:noreply,
      assign(socket,
        select_dataset_modal_visibility: "visible"
@@ -74,9 +82,11 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> IngestionMetadataFormSchema.changeset_from_form_data()
-    |> complete_validation(socket)
+    if(form_data["name"] == "crash") do
+      0/0
+    end
+    send(self(), {:updated_form_data, form_data})
+    {:noreply, socket}
   end
 
   def handle_event("cancel-dataset-search", _, socket) do
@@ -132,13 +142,10 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-
-  defp complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(self(), {:updated_metadata_changeset, new_changeset})
-
-    {:noreply, socket}
+  defp close_modal() do
+    send_update(AndiWeb.IngestionLiveView.MetadataForm, id: @component_id, select_dataset_modal_visibility: "hidden")
   end
+
 
   defp get_dataset_name(id) when id in ["", nil], do: ""
 
