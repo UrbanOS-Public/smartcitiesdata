@@ -63,7 +63,7 @@ defmodule Andi.InputSchemas.Ingestion do
     source_format = Map.get(changes, :sourceFormat, nil)
 
     ingestion
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [""])
     |> validate_required(@required_fields, message: "is required")
     |> cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
@@ -80,7 +80,7 @@ defmodule Andi.InputSchemas.Ingestion do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
 
     ingestion
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
+    |> cast(changes_with_id, @cast_fields, empty_values: [""])
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
@@ -88,7 +88,7 @@ defmodule Andi.InputSchemas.Ingestion do
 
   def changeset_for_draft(%Ecto.Changeset{} = changeset, changes) do
     changeset
-    |> cast(changes, @cast_fields, empty_values: [])
+    |> cast(changes, @cast_fields, empty_values: [""])
     |> cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
     |> cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)

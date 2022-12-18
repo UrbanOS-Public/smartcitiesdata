@@ -17,8 +17,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   @component_id :ingestion_metadata_form_editor
 
   def mount(socket) do
-    IO.inspect(socket, label: "Mount #{__MODULE__}}")
-
     {:ok,
      assign(socket,
        select_dataset_modal_visibility: "hidden"
@@ -26,7 +24,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def render(assigns) do
-    IO.inspect(assigns, label: "Render #{__MODULE__}}")
     selected_dataset = assigns.changeset.changes
       |> Map.get(:targetDataset, "")
 
@@ -82,9 +79,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    if(form_data["name"] == "crash") do
-      0/0
-    end
     send(self(), {:updated_form_data, form_data})
     {:noreply, socket}
   end

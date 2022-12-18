@@ -30,7 +30,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         socket
       ) do
     default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
-    IO.inspect(default_changeset, label: "Default Changeset")
 
     {:ok,
       assign(socket,
@@ -126,7 +125,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_info({:form_update, update}, socket) do
-    IO.inspect(update, label: "form_update")
     {:noreply, assign(socket, unsaved_changes: true)}
   end
 
@@ -276,15 +274,21 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # can save directly to the Repo from socket.assigns.changeset without having to retrieve
     # the ingestion ONCE MORE in the update function
 
+    safe_ingestion_data = socket.assigns.changeset
+                          |> Changeset.apply_changes
 
-    ingestion = Ingestions.get(socket.assigns.ingestion.id)
-    IO.inspect(ingestion, label: "Safe Save Ingestion")
-    [head | tail] = ingestion.extractSteps
-    what = ExtractSteps.get(head.id)
-    IO.inspect(what, label: "Safe Save Extract steps")
-    case Ingestions.update(ingestion, socket.assigns.changeset.changes) do
+    safe_extracted_data = %{
+      name: safe_ingestion_data.name,
+      sourceFormat: safe_ingestion_data.sourceFormat,
+      targetDataset: safe_ingestion_data.targetDataset,
+      topLevelSelector: safe_ingestion_data.topLevelSelector
+    }
+
+    current_ingestion = Ingestions.get(socket.assigns.ingestion.id)
+    current_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(current_ingestion)
+
+    case Ingestions.update(current_ingestion, safe_extracted_data) do
       {:ok, post_save_ingestion} ->
-        IO.inspect(post_save_ingestion, label: "Safe Save Post Save")
         post_save_ingestion
 
       {error, details} -> raise "Unable to save ingestion. Error: #{error}. Details: #{details}"
@@ -297,18 +301,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     ingestion_id = socket.assigns.ingestion.id
 
     ingestion = Ingestions.get(socket.assigns.ingestion.id)
-    IO.inspect(ingestion, label: "Before Broadcast Ingestion")
-    [head | tail] = ingestion.extractSteps
-    what = ExtractSteps.get(head.id)
-    IO.inspect(what, label: "Before broadcast Extract steps")
-
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
     # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
     # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
     Process.sleep(1_000)
 
     andi_ingestion = Ingestions.get(ingestion_id)
-    IO.inspect(andi_ingestion, label: "PostDBLoad")
     ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
 
     {:noreply, update_save_message(socket, "valid")}
@@ -323,7 +321,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
          ingestion_changeset <- InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(andi_ingestion),
          true <- ingestion_changeset.valid? do
-      IO.inspect("Is valid!", label: "PUBLISH3")
       ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 

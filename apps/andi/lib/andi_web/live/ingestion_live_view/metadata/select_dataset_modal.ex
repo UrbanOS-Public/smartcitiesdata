@@ -16,7 +16,6 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
 
   def render(assigns) do
-    IO.inspect(assigns, label: "Render #{__MODULE__}}")
 
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
@@ -103,8 +102,6 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   end
 
   def handle_event("save-dataset-search", _, socket) do
-    IO.inspect(socket, label: "save-dataset-search")
-
     socket.assigns.close_modal_callback.()
     send(self(), {:update_dataset, socket.assigns.selected_dataset})
 
