@@ -301,7 +301,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     Process.sleep(1_000)
 
     andi_ingestion = Ingestions.get(ingestion_id)
-    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion) |> IO.inspect(label: "ISTHISVALID")
+    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
     updated_socket = assign(socket, changeset: ingestion_changeset)
 
 

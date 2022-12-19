@@ -78,9 +78,11 @@ defmodule Andi.InputSchemas.Ingestion do
 
   def changeset(%Ecto.Changeset{ data: %__MODULE__{} } = changeset, changes) do
     source_format = Map.get(changes, :sourceFormat, nil)
+    full_changes = changeset.changes
+      |> Map.merge(changes)
 
-    changeset
-    |> Changeset.cast(changes, @cast_fields, empty_values: [""])
+    changeset.data
+    |> Changeset.cast(full_changes, @cast_fields, empty_values: [""])
     |> Changeset.validate_required(@required_fields, message: "is required")
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
@@ -125,6 +127,8 @@ defmodule Andi.InputSchemas.Ingestion do
       topLevelSelector: metadata.topLevelSelector,
       targetDataset: metadata.targetDataset
     }
+
+
 
     changeset(ingestion_changeset, extracted_metadata)
   end

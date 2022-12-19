@@ -92,7 +92,7 @@ defmodule Andi.InputSchemas.Ingestions do
   def update(%Ingestion{} = from_ingestion, changes) do
     changes_as_map = StructTools.to_map(changes)
 
-    new_ingestion = from_ingestion
+    from_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema])
     |> Ingestion.changeset_for_draft(changes_as_map)
     |> save()
