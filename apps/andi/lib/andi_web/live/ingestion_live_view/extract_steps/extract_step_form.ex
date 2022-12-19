@@ -7,7 +7,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   require Logger
 
   alias Andi.InputSchemas.Ingestions.ExtractStep
-  alias Andi.InputSchemas.Ingestions
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.ExtractSteps
   alias AndiWeb.ExtractSteps.ExtractDateStepForm
@@ -29,8 +28,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         changeset = ExtractStep.form_changeset_from_andi_extract_step(extract_step)
         Map.put(acc, extract_step.id, changeset)
       end)
-
-
 
     {:ok,
      assign(socket,

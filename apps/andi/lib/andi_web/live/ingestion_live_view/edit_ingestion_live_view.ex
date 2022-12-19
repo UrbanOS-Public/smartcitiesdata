@@ -53,7 +53,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       <div>
         <%= live_component(@socket, AndiWeb.IngestionLiveView.MetadataForm,
-              id: :ingestion_metadata_form_editor,
+              id: AndiWeb.IngestionLiveView.MetadataForm.component_id(),
               changeset: metadata_changeset,
               ingestion_published?: ingestion_published?
             ) %>
@@ -345,16 +345,20 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           {:ok, ingestion_changeset}
 
         error ->
+          IO.inspect("Error from brook event", label: "Publish to Brook Error")
           Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
       end
     else
       nil ->
+        IO.inspect("Ingestion not found", label: "Publish Error")
         {:not_found, nil}
 
       false ->
+        IO.inspect("Ingestion not valid", label: "Publishing Ingestion Error")
         {:error, InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(Ingestions.get(ingestion_id))}
 
       error ->
+        IO.inspect(error, label: "General error when publishing ingestion")
         {:error, error}
     end
   end

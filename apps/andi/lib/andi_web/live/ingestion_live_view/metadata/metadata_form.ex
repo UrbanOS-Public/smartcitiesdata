@@ -1,20 +1,15 @@
 defmodule AndiWeb.IngestionLiveView.MetadataForm do
   use Phoenix.LiveComponent
-  use Phoenix.HTML
   import Phoenix.HTML.Form
-  import Ecto.Query, only: [from: 2]
 
 
-  alias Andi.InputSchemas.Datasets.Dataset
-  alias Andi.InputSchemas.Ingestions
-  alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Helpers.MetadataFormHelpers
-  alias AndiWeb.IngestionLiveView.FormUpdate
   alias AndiWeb.Views.DisplayNames
-  alias Ecto.Changeset
 
-  @component_id :ingestion_metadata_form_editor
+  def component_id() do
+    :ingestion_metadata_form_editor
+  end
 
   def mount(socket) do
     {:ok,
@@ -92,14 +87,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   #TODO: Cleanup
-  def handle_event(event, socket) do
-    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
-    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
-
-    {:noreply, socket}
-  end
-
-  #TODO: Cleanup
   def handle_event(event, payload, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}}')
@@ -108,19 +95,16 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-#  TODO: Cleanup
-  def handle_info(
-        %{topic: topic, event: event, payload: payload},socket) do
-    IO.inspect(topic, label: 'Unhandled Info Topic')
-    IO.inspect(event, label: 'Unhandled Info Event')
-    IO.inspect(payload, label: 'Unhandled Info Payload')
-    IO.inspect(socket, label: 'Unhandled Info Socket')
+  #TODO: Cleanup
+  def handle_event(event, socket) do
+    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
+    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
 
     {:noreply, socket}
   end
 
   defp close_modal() do
-    send_update(AndiWeb.IngestionLiveView.MetadataForm, id: @component_id, select_dataset_modal_visibility: "hidden")
+    send_update(AndiWeb.IngestionLiveView.MetadataForm, id: component_id(), select_dataset_modal_visibility: "hidden")
   end
 
 
