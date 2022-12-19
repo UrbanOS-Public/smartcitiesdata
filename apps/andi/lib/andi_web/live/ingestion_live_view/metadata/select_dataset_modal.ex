@@ -31,6 +31,9 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
         <div class="search-modal__search_bar">
           <p class="search-modal-section-header-text">Search</p>
+
+
+
           <form phx-change="datasets-search" phx-submit="datasets-search" phx-target="<%= @myself %>">
             <div class="search-modal__search_bar-input-container">
               <label for="search-modal__search_bar-input">

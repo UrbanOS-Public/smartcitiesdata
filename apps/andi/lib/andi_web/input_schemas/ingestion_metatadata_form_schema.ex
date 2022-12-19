@@ -26,11 +26,6 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     :targetDataset
   ]
 
-  def merge_to_ingestion_changeset(%Ecto.Changeset{ data: %Andi.InputSchemas.Ingestion{} } = ingestion_changeset, form_data) do
-    changeset(ingestion_changeset, form_data)
-  end
-
-
   def extract_from_ingestion_changeset(%Ecto.Changeset{ data: %Andi.InputSchemas.Ingestion{} } = ingestion_changeset) do
     ingestion_data = ingestion_changeset
     |> Changeset.apply_changes

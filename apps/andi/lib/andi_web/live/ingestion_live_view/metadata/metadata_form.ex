@@ -79,7 +79,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    send(self(), {:updated_form_data, form_data})
+    metadata_form_changeset = AndiWeb.InputSchemas.IngestionMetadataFormSchema.changeset(socket.assigns.changeset, form_data)
+    send(self(), {:updated_metadata, metadata_form_changeset})
     {:noreply, socket}
   end
 
@@ -105,24 +106,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
 
     {:noreply, socket}
-  end
-
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{assigns: %{changeset: changeset}} = socket
-      ) do
-    original_ingestion = Ingestions.get(ingestion_id)
-    {status, _} = Ingestions.update(original_ingestion, changeset.changes)
-    valid? = if status == :ok, do: "valid", else: "invalid"
-    FormUpdate.send_value(socket.parent_pid, {:update_save_message, valid?})
-    {:noreply, socket}
-  end
-
-  def handle_info(
-        %{topic: "ingestion-published"},
-        socket
-      ) do
-    {:noreply, assign(socket, ingestion_published?: true)}
   end
 
 #  TODO: Cleanup
