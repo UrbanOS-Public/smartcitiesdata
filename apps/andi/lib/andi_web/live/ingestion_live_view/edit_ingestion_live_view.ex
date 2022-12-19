@@ -135,12 +135,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       targetDataset: id
     }
 
-    updated_changeset = Andi.InputSchemas.Ingestion.changeset_for_draft(socket.assigns.changeset, params)
+    updated_changeset = Andi.InputSchemas.Ingestion.changeset(socket.assigns.changeset, params)
 
     {:noreply, assign(socket, changeset: updated_changeset)
     }
   end
 
+  # Remove these form_updates after all children refactor to parent/child pattern
+  # Unsaved changes should be determined by comparing the current
+  # ingestion from the DB to the current changeset, allowing
+  # deterministic, non-stateful calculations
   def handle_info({:form_update, _}, socket) do
     {:noreply, assign(socket, unsaved_changes: true)}
   end
@@ -266,9 +270,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   defp save_ingestion_safe(socket) do
-    # Once all ingestion changes are routed through this parent live view, this save function
+    # Once all subforms are routed through this parent live view, this save function
     # can save directly to the Repo from socket.assigns.changeset without having to retrieve
-    # the ingestion ONCE MORE in the update function
+    # the ingestion from the database, but for now, we need to treat the database
+    # as the source of truth that can change at any time
 
     safe_ingestion_data = socket.assigns.changeset
                           |> Changeset.apply_changes
