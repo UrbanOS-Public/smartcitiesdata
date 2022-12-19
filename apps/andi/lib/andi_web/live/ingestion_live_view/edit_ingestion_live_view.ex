@@ -271,9 +271,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   defp save_ingestion_safe(socket) do
     # Once all subforms are routed through this parent live view, this save function
-    # can save directly to the Repo from socket.assigns.changeset without having to retrieve
-    # the ingestion from the database, but for now, we need to treat the database
-    # as the source of truth that can change at any time
+    # can save directly to the Repo from socket.assigns.changeset without having to extract
+    # the changes and reapply to the ingestion from the database, but for now, we need to treat
+    # the database as the source of truth that can change at any time.
 
     safe_ingestion_data = socket.assigns.changeset
                           |> Changeset.apply_changes
