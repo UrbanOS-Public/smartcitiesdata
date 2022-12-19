@@ -72,7 +72,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       render_change(view, "save")
 
       html = render(view)
-
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
     end
 
