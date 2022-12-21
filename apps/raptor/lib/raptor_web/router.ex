@@ -9,6 +9,7 @@ defmodule RaptorWeb.Router do
     pipe_through :api
     get("/authorize", AuthorizeController, :authorize)
     get("/listAccessGroups", ListAccessGroupsController, :list)
+    get("/getUserIdFromApiKey", ApiKeyController, :getUserIdFromApiKey)
     patch("/regenerateApiKey", ApiKeyController, :regenerateApiKey)
   end
 end

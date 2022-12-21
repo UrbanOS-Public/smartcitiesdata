@@ -44,7 +44,7 @@ defmodule RaptorWeb.AuthorizeController do
       1 ->
         user = user_list |> Enum.at(0)
 
-        if(user["email_verified"] and !user["blocked"]) do
+        if(Auth0Management.is_valid_user(user)) do
           check_user_association(user, dataset)
         else
           # Only users who have validated their email address and aren't blocked may make API calls

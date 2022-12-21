@@ -107,4 +107,36 @@ defmodule RaptorServiceTest do
       assert RaptorService.list_groups_by_api_key("raptor_url", "apiKey") == %{access_groups: [], organizations: []}
     end
   end
+
+  describe "get_user_id_from_api_key/2" do
+    test "returns 500 Internal Server Error when raptor returns unexpected error" do
+      allow(HTTPoison.get(any()),
+          return: {:error, %{body: "errorBody", status_code: 500}}
+        )
+
+      assert RaptorService.get_user_id_from_api_key("raptor_url", "invalidApiKey") == {:error, "Internal Server Error", 500}
+    end
+
+    test "returns given error when raptor returns 401" do
+      errorMessage = "errorMessage"
+
+      allow(HTTPoison.get(any()),
+          return: {:ok, %{body: "{\"message\":\"#{errorMessage}\"}", status_code: 401}}
+        )
+
+      assert RaptorService.get_user_id_from_api_key("raptor_url", "invalidApiKey") == {:error, errorMessage, 401}
+    end
+
+    test "returns true when raptor returns is_valid_api_key true" do
+      raptor_url = "raptor_url"
+      api_key = "validApiKey"
+      user_id = "validUserId"
+
+      allow(HTTPoison.get("#{raptor_url}/getUserIdFromApiKey?api_key=#{api_key}"),
+          return: {:ok, %{body: "{\"user_id\":\"#{user_id}\"}", status_code: 200}}
+        )
+
+      assert RaptorService.get_user_id_from_api_key(raptor_url, api_key) == {:ok, user_id}
+    end
+  end
 end
