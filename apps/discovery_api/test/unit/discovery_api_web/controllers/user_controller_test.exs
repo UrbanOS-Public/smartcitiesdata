@@ -17,9 +17,10 @@ defmodule DiscoveryApiWeb.UserControllerTest do
     test "returns 200 when no errors", %{authorized_conn: conn} do
       expect(AuthService.create_logged_in_user(any()), return: {:ok, conn})
 
-      response_body = conn
-      |> post("/api/v1/logged-in")
-      |> response(200)
+      response_body =
+        conn
+        |> post("/api/v1/logged-in")
+        |> response(200)
 
       response_body == ""
     end
@@ -27,9 +28,10 @@ defmodule DiscoveryApiWeb.UserControllerTest do
     test "returns 500 Internal Server Error create call fails", %{authorized_conn: conn} do
       expect(AuthService.create_logged_in_user(any()), return: {:error, "error"})
 
-      response_body = conn
-                      |> post("/api/v1/logged-in")
-                      |> response(500)
+      response_body =
+        conn
+        |> post("/api/v1/logged-in")
+        |> response(500)
 
       response_body == "Internal Server Error"
     end

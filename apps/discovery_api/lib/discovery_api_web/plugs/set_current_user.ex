@@ -28,9 +28,10 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and is_nil(api_key) do
     case AuthService.create_logged_in_user(conn) do
-     {:ok, new_conn} ->
-       current_user = Guardian.Plug.current_resource(new_conn)
-       assign(new_conn, :current_user, current_user)
+      {:ok, new_conn} ->
+        current_user = Guardian.Plug.current_resource(new_conn)
+        assign(new_conn, :current_user, current_user)
+
       error ->
         render_401_missing_api_key(conn)
     end

@@ -11,7 +11,9 @@ defmodule DiscoveryApiWeb.UserController do
 
   def logged_in(conn, _params) do
     case AuthService.create_logged_in_user(conn) do
-      {:ok, new_conn} -> new_conn |> send_resp(:ok, "")
+      {:ok, new_conn} ->
+        new_conn |> send_resp(:ok, "")
+
       error ->
         Logger.error("Unable to handle user logged_in: #{inspect(error)}")
         render_error(conn, 500, "Internal Server Error")
