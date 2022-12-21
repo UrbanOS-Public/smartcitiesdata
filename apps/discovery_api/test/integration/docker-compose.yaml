@@ -31,6 +31,7 @@ services:
       DATABASE_NAME: metastore
 
   postgres:
+    platform: linux/amd64
     image: postgres:14.4-alpine
     environment:
       POSTGRES_USER: hive
@@ -39,6 +40,7 @@ services:
     ports:
       - "5455:5432"
   ecto-postgres:
+    platform: linux/amd64
     image: postgres:14.4-alpine
     environment:
       POSTGRES_USER: postgres
