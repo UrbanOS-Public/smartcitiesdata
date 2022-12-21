@@ -41,6 +41,10 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
+  def is_valid_user(user) do
+    if user["email_verified"] and !user["blocked"], do: true, else: false
+  end
+
   defp client_id() do
     ueberauth_config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
 
