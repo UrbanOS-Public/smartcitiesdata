@@ -7,6 +7,9 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   getter(:raptor_url, generic: true)
   import Plug.Conn
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApiWeb.UserController
+  alias DiscoveryApi.Services.AuthService
+
   def init(default), do: default
 
   def call(conn, _) do
@@ -24,17 +27,19 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and is_nil(api_key) do
-    render_401_missing_api_key(conn)
-    #    assign(conn, :current_user, current_user)
+    case AuthService.create_logged_in_user(conn) do
+     {:ok, new_conn} ->
+       current_user = Guardian.Plug.current_resource(new_conn)
+       assign(new_conn, :current_user, current_user)
+      error ->
+        render_401_missing_api_key(conn)
+    end
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
     case RaptorService.get_user_id_from_api_key(raptor_url(), api_key) do
-      {:ok, user_id} ->
-        case Users.get_user(user_id, :subject_id) do
-          {:ok, user} -> assign(conn, :current_user, user)
-          {:error, _reason} -> render_401_invalid_api_key(conn)
-        end
+      {:ok, _user_id} ->
+        assign(conn, :current_user, current_user)
 
       {:error, reason, status_code} when status_code == 401 ->
         render_401_invalid_api_key(conn)

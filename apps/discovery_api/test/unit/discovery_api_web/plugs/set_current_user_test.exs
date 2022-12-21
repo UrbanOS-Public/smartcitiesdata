@@ -6,6 +6,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
 
   alias RaptorService
   alias DiscoveryApi.Schemas.Users
+  alias DiscoveryApi.Services.AuthService
 
   describe "call/1 REQUIRE_API_KEY true" do
     setup do
@@ -45,7 +46,6 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:error, "401 error", 401})
       allow(Guardian.Plug.current_resource(any()), return: nil)
       allow(DiscoveryApiWeb.RenderError.render_error(any(), any(), any()), exec: fn conn, _, _ -> conn end)
-      allow(Users.get_user(any(), any()), return: {:error, "reason"})
 
       conn =
         build_conn(:get, "/doesnt/matter")
@@ -72,13 +72,9 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       assert result.halted == true
     end
 
-    test "assigns valid current_user when user passes valid api_key" do
-      userId = "userId"
-      userObject = "I am a user object"
-
-      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:ok, userId})
+    test "plug completes when apiKey is valid" do
+      allow(RaptorService.get_user_id_from_api_key(any(), any()), return: {:ok, "user_id"})
       allow(Guardian.Plug.current_resource(any()), return: nil)
-      allow(Users.get_user(userId, :subject_id), return: {:ok, userObject})
 
       conn =
         build_conn(:get, "/doesnt/matter")
@@ -86,7 +82,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
 
       result = SetCurrentUser.call(conn, [])
 
-      assert result == conn |> assign(:current_user, userObject)
+      assert result.halted == false
     end
 
     test "assigns valid current_user when user passes valid current user" do
