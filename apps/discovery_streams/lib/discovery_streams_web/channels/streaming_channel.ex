@@ -21,7 +21,9 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   def join(channel, params, socket) do
     if System.get_env("REQUIRE_API_KEY") == "true" do
       case Map.get(params, "api_key") do
-        nil -> get_error_message(channel)
+        nil ->
+          get_error_message(channel)
+
         api_key ->
           case RaptorService.get_user_id_from_api_key(raptor_url(), api_key) do
             {:ok, _user_id} ->
@@ -40,7 +42,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     system_name = determine_system_name(channel)
 
     case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
-      {:ok, nil} -> get_error_message(channel)
+      {:ok, nil} ->
+        get_error_message(channel)
 
       {:ok, _dataset_id} ->
         api_key = params["api_key"]
@@ -52,13 +55,16 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
           get_error_message(channel)
         end
 
-      _ -> get_error_message(channel)
+      _ ->
+        get_error_message(channel)
     end
   end
 
-  defp get_error_message(channel), do: {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
+  defp get_error_message(channel),
+    do: {:error, %{reason: "Channel #{channel} does not exist or you do not have access"}}
 
-  def get_error_status(channel, reason, status_code), do: {:error, %{reason: "Channel #{channel} gave error code #{status_code} with reason #{reason}"}}
+  def get_error_status(channel, reason, status_code),
+    do: {:error, %{reason: "Channel #{channel} gave error code #{status_code} with reason #{reason}"}}
 
   def handle_in(@filter_event, message, socket) do
     filter_rules = create_filter_rules(message)
