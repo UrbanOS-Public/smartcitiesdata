@@ -19,7 +19,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   intercept([@update_event])
 
   def join(channel, params, socket) do
-    if String.downcase(System.get_env("REQUIRE_API_KEY")) == "true" do
+    if System.get_env("REQUIRE_API_KEY") == "true" do
       case Map.get(params, "api_key") do
         nil -> get_error_message(channel)
         api_key ->
