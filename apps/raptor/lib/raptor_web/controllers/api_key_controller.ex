@@ -29,9 +29,49 @@ defmodule RaptorWeb.ApiKeyController do
     render_error(conn, 400, "user_id is a required parameter")
   end
 
+  def getUserIdFromApiKey(conn, %{"api_key" => api_key}) do
+    case Auth0Management.get_users_by_api_key(api_key) do
+      {:ok, user_list} ->
+        case get_valid_user_id(user_list) do
+          {:ok, user_id} ->
+            render(conn, %{
+              user_id: user_id
+            })
+
+          {:error, reason} ->
+            render_error(conn, 401, reason)
+        end
+
+      {:error, _} ->
+        render_error(conn, 500, "Internal Server Error")
+    end
+  end
+
   defp randomApiKey(length) do
     :crypto.strong_rand_bytes(length)
     |> Base.url_encode64()
     |> binary_part(0, length)
+  end
+
+  defp get_valid_user_id(user_list) do
+    case length(user_list) do
+      0 ->
+        Logger.warn("No user found with given API Key.")
+        {:error, "No user found with given API Key."}
+
+      1 ->
+        user = user_list |> Enum.at(0)
+
+        if(Auth0Management.is_valid_user(user)) do
+          {:ok, user["user_id"]}
+        else
+          {:error,
+           "Only users who have validated their email address and aren't blocked may make API calls"}
+        end
+
+      _ ->
+        Logger.warn("Multiple users cannot have the same API Key.")
+        {:error, "Multiple users cannot have the same API Key."}
+    end
   end
 end
