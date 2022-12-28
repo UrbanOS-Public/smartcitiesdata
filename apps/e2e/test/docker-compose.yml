@@ -36,6 +36,7 @@ services:
       - "5455:5432"
   ecto-postgres:
     image: postgres:14.4-alpine
+    platform: linux/amd64
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
