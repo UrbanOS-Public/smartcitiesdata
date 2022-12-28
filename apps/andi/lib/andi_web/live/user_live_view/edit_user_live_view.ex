@@ -34,7 +34,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
               </div>
 
               <div class="user-form__organizations">
-                <%= label(:organization, :org_id, class: "label") %>
+                <%= label(:organization, :org_id, "Organization", class: "label") %>
                 <%= select(:organization, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
                 <button type="submit" class="btn btn--add-organization btn--primary-outline">Add Organization</button>
               </div>
