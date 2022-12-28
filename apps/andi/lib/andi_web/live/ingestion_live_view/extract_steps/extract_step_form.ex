@@ -70,7 +70,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         <div class="component-edit-section--<%= @visibility %>">
 
           <div class="add-step">
-            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select") %>
+            <%= select(:form, :step_type, get_extract_step_types(), phx_blur: "update_new_step_type", selected: @new_step_type, id: "extract_step_type", class: "extract-step-form__step-type select", aria_label: "Select New Step Type") %>
             <button class="btn btn--primary-outline" type="button" phx-click="add-extract-step">Add Step</button>
           </div>
 
@@ -143,10 +143,17 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
      |> update_validation_status()}
   end
 
-  def handle_event("move-extract-step", %{"id" => extract_step_id, "move-index" => move_index_string}, socket) do
+  def handle_event(
+        "move-extract-step",
+        %{"id" => extract_step_id, "move-index" => move_index_string},
+        socket
+      ) do
     move_index = String.to_integer(move_index_string)
 
-    extract_step_index = Enum.find_index(socket.assigns.extract_steps, fn extract_step -> extract_step.id == extract_step_id end)
+    extract_step_index =
+      Enum.find_index(socket.assigns.extract_steps, fn extract_step ->
+        extract_step.id == extract_step_id
+      end)
 
     target_index = extract_step_index + move_index
 
@@ -163,10 +170,14 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       ) do
     ExtractSteps.delete(extract_step_id)
     updated_changeset_map = Map.delete(socket.assigns.extract_step_changesets, extract_step_id)
+
     all_steps_for_ingestion = ExtractSteps.all_for_ingestion(ingestion_id) |> StructTools.sort_if_sequenced()
 
     {:noreply,
-     assign(socket, extract_steps: all_steps_for_ingestion, extract_step_changesets: updated_changeset_map)
+     assign(socket,
+       extract_steps: all_steps_for_ingestion,
+       extract_step_changesets: updated_changeset_map
+     )
      |> update_validation_status()}
   end
 
