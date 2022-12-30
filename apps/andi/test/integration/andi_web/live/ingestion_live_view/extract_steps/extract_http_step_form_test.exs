@@ -219,7 +219,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       http_step =
         create_step("http", %{
           action: "GET",
-          url: "{{secret}}.com/{{auth}}",
+          url: "http://{{secret}}.com/{{auth}}",
           queryParams: %{"date" => "{{date}}"},
           headers: %{"header" => "{{secret2}}"}
         })
