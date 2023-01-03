@@ -28,10 +28,10 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
         <%= hidden_input(f, :id) %>
         <tr class="url-form-table__row url-form-table__row--bordered">
           <td class="url-form-table__cell url-form-table__cell--bordered">
-            <%= text_input(f, :key, class: "input full-width url-form__#{@css_label}-key-input #{input_value(f, :id)}") %>
+            <%= text_input(f, :key, [aria_label: "S3 Key", class: "input full-width url-form__#{@css_label}-key-input #{input_value(f, :id)}"]) %>
           </td>
           <td class="url-form-table__cell url-form-table__cell--bordered">
-            <%= text_input(f, :value, class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}") %>
+            <%= text_input(f, :value, [aria_label: "S3 Value" ,class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}"]) %>
           </td>
           <td class="url-form-table__cell url-form-table__cell--delete">
             <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= event_handler_target %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
