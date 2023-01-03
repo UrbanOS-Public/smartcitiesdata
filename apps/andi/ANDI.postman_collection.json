@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "fc1827e8-4127-4754-99e3-ee1563da1e8c",
+		"_postman_id": "305bad49-e3c2-45d0-a4a2-cc2e59d778a7",
 		"name": "ANDI",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -8,28 +8,6 @@
 		{
 			"name": "Local Development",
 			"item": [
-				{
-					"name": "Organizations - Get All",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/organizations",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"organizations"
-							]
-						},
-						"description": "Retrieves information for all organizations that are stored in ANDI."
-					},
-					"response": []
-				},
 				{
 					"name": "Organization - Create",
 					"request": {
@@ -43,7 +21,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n        \"dataJsonUrl\": \"\",\n        \"description\": \"mmtpa\",\n        \"dn\": null,\n        \"homepage\": \"\",\n        \"id\": \"7959100d-d2a7-4157-935f-f350a0986341\",\n        \"logoUrl\": \"\",\n        \"orgName\": \"mmtpa\",\n        \"orgTitle\": \"mmtpa\",\n        \"version\": \"0.1\"\n}"
+							"raw": "{\n        \"dataJsonUrl\": \"\",\n        \"description\": \"An organization created to test from ANDI to Discovery\",\n        \"dn\": null,\n        \"homepage\": \"\",\n        \"id\": \"8189cca2-7288-11ed-a1eb-0242ac120003\",\n        \"logoUrl\": \"\",\n        \"orgName\": \"urbanos_end_to_end_testing_org\",\n        \"orgTitle\": \"UrbanOS End To End Testing Org\",\n        \"version\": \"0.1\"\n}"
 						},
 						"url": {
 							"raw": "http://localhost:4000/api/v1/organization",
@@ -70,12 +48,12 @@
 					"response": []
 				},
 				{
-					"name": "Datasets - Get All",
+					"name": "Organizations - Get All",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:4000/api/v1/datasets",
+							"raw": "http://localhost:4000/api/v1/organizations",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -84,61 +62,10 @@
 							"path": [
 								"api",
 								"v1",
-								"datasets"
+								"organizations"
 							]
 						},
-						"description": "Retrieves information for all datasets that are stored in ANDI."
-					},
-					"response": []
-				},
-				{
-					"name": "Dataset - Get",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/dataset/406a35bb-7e4b-4077-85d2-64eb4f9a9bd6",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"dataset",
-								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6"
-							]
-						},
-						"description": "Retrieves information for a given dataset that is stored in ANDI."
-					},
-					"response": []
-				},
-				{
-					"name": "Dataset - Delete",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/dataset/delete?id=2196cbaa-d387-489a-b439-0158dd37d1e8",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"dataset",
-								"delete"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "2196cbaa-d387-489a-b439-0158dd37d1e8"
-								}
-							]
-						}
+						"description": "Retrieves information for all organizations that are stored in ANDI."
 					},
 					"response": []
 				},
@@ -155,7 +82,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"loyce_waelchi@orn.com\",\n            \"contactName\": \"Christine Noodles\",\n            \"dataTitle\": \"Test\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.\",\n            \"homepage\": \"schoen.name\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [\n                \"client-server\",\n                \"bifurcated\",\n                \"web-enabled\",\n                \"bandwidth-monitored\",\n                \"dynamic\"\n            ],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"Happy_Turtles\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"Can one desire too much of a good thing?.\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"0 0 * * *\",\n            \"credentials\": false,\n            \"dataName\": \"Tawny_Green_SAXLW\",\n            \"orgId\": \"910660db-c12a-4f39-8d70-bee535910086\",\n            \"orgName\": \"Marrone_Lily\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"my_int\",\n                    \"type\": \"integer\"\n                },\n                {\n                    \"name\": \"my_string\",\n                    \"type\": \"string\"\n                },\n                {\n                    \"format\": \"{ISO:Extended:Z}\",\n                    \"name\": \"my_date\",\n                    \"type\": \"date\"\n                },\n                {\n                    \"name\": \"my_float\",\n                    \"type\": \"float\"\n                },\n                {\n                    \"name\": \"my_boolean\",\n                    \"type\": \"boolean\"\n                }\n            ],\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"zemlak.biz\",\n            \"systemName\": \"Marrone_Lily__Tawny_Green_SAXLW\"\n        },\n        \"version\": \"0.6\"\n    }"
+							"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"test@urbanos.test\",\n            \"contactName\": \"Test Name\",\n            \"dataTitle\": \"End-to-End Testing Dataset\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"A dataset created by End to End testing\",\n            \"homepage\": \"\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"UrbanOS End To End Testing Org\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"id\": \"{{dataset_id}}\",\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"never\",\n            \"credentials\": false,\n            \"dataName\": \"endtoenddata\",\n            \"orgId\": \"8189cca2-7288-11ed-a1eb-0242ac120003\",\n            \"orgName\": \"urbanos_end_to_end_testing_org\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"status\",\n                    \"type\": \"string\"\n                }\n            ],\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"\",\n            \"systemName\": \"\"\n        },\n        \"version\": \"0.6\"\n    }"
 						},
 						"url": {
 							"raw": "http://localhost:4000/api/v1/dataset",
@@ -182,6 +109,180 @@
 					"response": []
 				},
 				{
+					"name": "Dataset - Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/dataset/{{dataset_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"dataset",
+								"{{dataset_id}}"
+							]
+						},
+						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Datasets - Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/datasets",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"datasets"
+							]
+						},
+						"description": "Retrieves information for all datasets that are stored in ANDI."
+					},
+					"response": []
+				},
+				{
+					"name": "Dataset - Delete",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/dataset/delete?id={{dataset_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"dataset",
+								"delete"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{dataset_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingestion - Create",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{ingestion_id}}\",\n    \"name\": \"End To End Testing Ingestion\",\n    \"allow_duplicates\": true,\n    \"cadence\": \"0 * * * * *\",\n    \"extractSteps\": [\n        {\n            \"assigns\": {},\n            \"context\": {\n                \"action\": \"GET\",\n                \"body\": {},\n                \"headers\": {},\n                \"protocol\": null,\n                \"queryParams\": {},\n                \"url\": \"https://raw.githubusercontent.com/bmitchinson/json-endpoint/main/meters_ingestionA.json\"\n            },\n            \"ingestion_id\": \"{{ingestion_id}}\",\n            \"sequence\": 2,\n            \"type\": \"http\"\n        }\n    ],\n    \"schema\": [\n        {\n            \"biased\": \"No\",\n            \"demographic\": \"None\",\n            \"description\": \"\",\n            \"ingestion_id\": \"19a182df-c464-40cf-b7f3-d2bfe79ae29a\",\n            \"masked\": \"N/A\",\n            \"name\": \"status\",\n            \"pii\": \"None\",\n            \"sequence\": 5,\n            \"subSchema\": [],\n            \"type\": \"string\"\n        }\n    ],\n    \"sourceFormat\": \"application/json\",\n    \"targetDataset\": \"{{dataset_id}}\",\n    \"topLevelSelector\": null,\n    \"transformations\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestion",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingestion - Publish",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Ingestion Publish returns 200\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(() => {}, 2000)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{andi_url}}/api/v1/ingestion/publish?id={{ingestion_id}}",
+							"host": [
+								"{{andi_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"ingestion",
+								"publish"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{ingestion_id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ingestion - Get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:4000/api/v1/ingestion/{{ingestion_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "4000",
+							"path": [
+								"api",
+								"v1",
+								"ingestion",
+								"{{ingestion_id}}"
+							]
+						},
+						"description": "Retrieves information for a given dataset that is stored in ANDI."
+					},
+					"response": []
+				},
+				{
 					"name": "Ingestions - Get All",
 					"request": {
 						"method": "GET",
@@ -204,35 +305,12 @@
 					"response": []
 				},
 				{
-					"name": "Ingestion - Get",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:4000/api/v1/ingestion/406a35bb-7e4b-4077-85d2-64eb4f9a9bd7",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"ingestion",
-								"406a35bb-7e4b-4077-85d2-64eb4f9a9bd7"
-							]
-						},
-						"description": "Retrieves information for a given dataset that is stored in ANDI."
-					},
-					"response": []
-				},
-				{
 					"name": "Ingestion - Delete",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:4000/api/v1/ingestion/delete?id=2196cbaa-d387-489a-b439-0158dd37d1e8",
+							"raw": "http://localhost:4000/api/v1/ingestion/delete?id={{ingestion_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -247,44 +325,49 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "2196cbaa-d387-489a-b439-0158dd37d1e8"
+									"value": "{{ingestion_id}}"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Ingestion - Create",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "    {\n        \"id\": \"2196cbaa-d387-489a-b439-0158dd37d1e8\",\n        \"name\": \"new_ingestion\",\n        \"allow_duplicates\": true,\n        \"cadence\": \"0 0 * * *\",\n        \"extractSteps\": [\n            {\n                \"type\": \"http\", \n                \"context\": {\n                    \"url\": \"example.com\", \n                    \"action\": \"GET\"\n                },\n                \"assigns\": {},\n              \t\"sequence\": 1\n            }\n        ],\n        \"schema\": [\n            {\n                \"name\": \"my_int\",\n                \"type\": \"integer\"\n            },\n            {\n                \"name\": \"my_string\",\n                \"type\": \"string\"\n            },\n            {\n                \"format\": \"{ISO:Extended:Z}\",\n                \"name\": \"my_date\",\n                \"type\": \"date\"\n            },\n            {\n                \"name\": \"my_float\",\n                \"type\": \"float\"\n            },\n            {\n                \"name\": \"my_boolean\",\n                \"type\": \"boolean\"\n            }\n        ],\n        \"sourceFormat\": \"application/gtfs+protobuf\",\n        \"targetDataset\": \"406a35bb-7e4b-4077-85d2-64eb4f9a9bd6\",\n        \"topLevelSelector\": null,\n        \"transformations\": []\n    }",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:4000/api/v1/ingestion",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "4000",
-							"path": [
-								"api",
-								"v1",
-								"ingestion"
 							]
 						}
 					},
 					"response": []
 				}
 			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const uuid = require('uuid')",
+					"",
+					"if(!pm.collectionVariables.has(\"ingestion_id\")) {",
+					"    pm.collectionVariables.set(\"ingestion_id\", uuid.v4())",
+					"}",
+					"",
+					"if(!pm.collectionVariables.has(\"dataset_id\")) {",
+					"    pm.collectionVariables.set(\"dataset_id\", uuid.v4())",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "andi_url",
+			"value": "https://127.0.0.1.nip.io:4443/",
+			"type": "default"
 		}
 	]
 }
