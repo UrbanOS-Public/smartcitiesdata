@@ -188,8 +188,8 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       form_data = %{"name" => new_name}
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      html = render_change(metadata_view, "validate", %{"form_data" => form_data})
+      metadata_view = view |> element("#ingestion_metadata_form")
+      html = render_change(metadata_view, %{validate: %{"form_data" => form_data}})
 
       render_click(view, "publish")
 
