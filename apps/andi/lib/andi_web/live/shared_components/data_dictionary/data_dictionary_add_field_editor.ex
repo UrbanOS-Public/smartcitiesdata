@@ -22,7 +22,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
 
     ~L"""
     <div id=<%= @id %> class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
-    <div class="modal-form-container">
+    <div class="modal-form-container" x-trap="<%= modifier === "visible" %>">
         <h2>Add New Field</h2>
         <%= form = form_for @changeset, "#", [phx_change: :validate, phx_target: "##{id}", as: :field] %>
             <div class="form-input-container">

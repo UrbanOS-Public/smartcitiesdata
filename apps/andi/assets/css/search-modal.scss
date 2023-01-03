@@ -184,7 +184,10 @@
 }
 
 .remove-selected-result {
-  font-size: 20px;
+  color: white;
+  font-size: 15px;
+  padding-left: 0px;
+  padding-right: 0px;
   &:hover {
     cursor: pointer;
     }

@@ -4,10 +4,10 @@ defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModal do
   def render(assigns) do
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
-      <div class="modal-form-container search-modal">
+      <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
-          <span class="material-icons search-index__exit" phx-click="cancel-manage-datasets">close</span>
+          <button type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-manage-datasets">close</button>
         </div>
 
         <hr class="search-modal-divider">
@@ -69,7 +69,10 @@ defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModal do
         <p class="search-modal-section-header-text">Selected Datasets</p>
         <div class="selected-results-from-search">
           <%= for dataset <- selected_datasets(@search_results, @selected_datasets) do %>
-            <div class="selected-result-from-search"><span class="selected-result-text"><%= dataset.business.dataTitle %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</i></div>
+            <div class="selected-result-from-search">
+              <span class="selected-result-text"><%= dataset.business.dataTitle %></span>
+              <button type="button" class="btn btn--transparent material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= dataset.id %>>close</button>
+            </div>
           <% end %>
         </div>
     </div>

@@ -7,7 +7,7 @@ defmodule AndiWeb.EditLiveView.PublishSuccessModal do
   def render(assigns) do
     ~L"""
     <div class="publish-success-modal publish-success-modal--<%= @visibility %>">
-      <div class="modal-form-container">
+      <div class="modal-form-container" x-trap="<%= @visibility === "visible" %>">
         <p>Published successfully</p>
         <br>
         <div class="button-container-publish-success">

@@ -4,10 +4,10 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   def render(assigns) do
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
-      <div class="modal-form-container search-modal">
+      <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
-          <span class="material-icons search-index__exit" phx-click="cancel-dataset-search">close</span>
+          <button type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-dataset-search">close</span>
         </div>
 
         <hr class="search-modal-divider">
@@ -71,7 +71,10 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
           <%= if(selected_dataset(@search_results, @selected_dataset) == nil) do %>
             <div></div>
           <% else %>
-            <div class="selected-result-from-search"><span class="selected-result-text"><%= get_dataset_name(@selected_dataset) %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= @selected_dataset %>>close</i></div>
+            <div class="selected-result-from-search">
+              <span class="selected-result-text"><%= get_dataset_name(@selected_dataset) %></span>
+              <button type="button" class="btn btn--transparent material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-value-id=<%= @selected_dataset %>>close</button>
+            </div>
           <% end %>
         </div>
     </div>

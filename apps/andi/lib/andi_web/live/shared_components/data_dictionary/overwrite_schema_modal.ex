@@ -7,7 +7,7 @@ defmodule AndiWeb.DataDictionary.OverwriteSchemaModal do
   def render(assigns) do
     ~L"""
     <div class="overwrite-schema-modal overwrite-schema-modal--<%= @visibility %>">
-      <div class="modal-form-container">
+      <div class="modal-form-container" x-trap="<%= @visibility === "visible" %>">
         <h3>Warning!</h3>
         <p class="overwrite-schema-modal__message">
           Uploading this file will overwrite the existing schema.<br> Are you sure you would like to continue?
