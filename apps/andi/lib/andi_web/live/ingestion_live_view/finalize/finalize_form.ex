@@ -112,29 +112,28 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
 
                   <div class="finalize-form__schedule-input">
                     <div class="finalize-form__schedule-input-field">
-                      <label>Second</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" value="<%= @crontab_list[:second] %>" />
-
+                      <label for="finalize-form-schedule-input__second">Second</label>
+                      <input id="finalize-form-schedule-input__second" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" value="<%= @crontab_list[:second] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
-                      <label>Minute</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" value="<%= @crontab_list[:minute] %>" />
+                      <label for="finalize-form-schedule-input__minute">Minute</label>
+                      <input id="finalize-form-schedule-input__minute" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" value="<%= @crontab_list[:minute] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
-                      <label>Hour</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" value="<%= @crontab_list[:hour] %>" />
+                      <label for="finalize-form-schedule-input__hour">Hour</label>
+                      <input id="finalize-form-schedule-input__hour" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" value="<%= @crontab_list[:hour] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
-                      <label>Day</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" value="<%= @crontab_list[:day] %>" />
+                      <label for="finalize-form-schedule-input__day">Day</label>
+                      <input id="finalize-form-schedule-input__day" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" value="<%= @crontab_list[:day] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
-                      <label>Month</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" value="<%= @crontab_list[:month] %>" />
+                      <label for="finalize-form-schedule-input__month">Month</label>
+                      <input id="finalize-form-schedule-input__month" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" value="<%= @crontab_list[:month] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
-                      <label>Week</label>
-                      <input class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" value="<%= @crontab_list[:week] %>" />
+                      <label for="finalize-form-schedule-input__week">Week</label>
+                      <input id="finalize-form-schedule-input__week" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" value="<%= @crontab_list[:week] %>" />
                     </div>
                   </div>
                 </div>

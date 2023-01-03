@@ -250,6 +250,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
           "secret",
           %{
             destination: "secret",
+            value: "value",
             key: "secret1-key",
             sub_key: "secret1-sub-key"
           }
@@ -260,6 +261,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
           "secret",
           %{
             destination: "secret2",
+            value: "value",
             key: "secret2-key",
             sub_key: "secret2-sub-key"
           }
