@@ -56,9 +56,10 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(%__MODULE__{}, changes_as_map)
   end
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
-  def changeset(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
+  def changeset(%__MODULE__{} = changes), do: changeset(%__MODULE__{}, changes)
+
+  def changeset(%__MODULE__{} = ingestion, changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 

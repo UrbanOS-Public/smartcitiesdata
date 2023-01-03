@@ -1154,13 +1154,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
   defp select_source_format(source_format, view) do
     new_source_format = source_format
-
     form_data = %{
       "sourceFormat" => new_source_format
     }
-
-    metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-    render_change(metadata_view, "validate", %{"form_data" => form_data})
+    metadata_changeset = AndiWeb.InputSchemas.IngestionMetadataFormSchema.changeset(form_data)
+    send(view.pid, {:updated_metadata, metadata_changeset})
     render_change(view, "save")
   end
 end

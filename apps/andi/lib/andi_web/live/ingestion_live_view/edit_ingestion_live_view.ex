@@ -4,6 +4,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   use AndiWeb.FooterLiveView
   require Logger
 
+  alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
   alias Andi.Services.IngestionDelete
@@ -22,7 +23,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
         socket
       ) do
-    default_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(ingestion)
+
+    default_changeset = Ingestion.changeset(ingestion, %{})
 
     {:ok,
       assign(socket,

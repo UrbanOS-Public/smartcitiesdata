@@ -67,9 +67,9 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
         "name" => new_name
       }
 
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
-      render_change(view, "save")
+      view
+        |> form("#ingestion_metadata_form", form_data: form_data)
+        |> render_change()
 
       html = render(view)
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
