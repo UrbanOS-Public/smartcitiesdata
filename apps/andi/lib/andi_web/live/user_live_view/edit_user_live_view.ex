@@ -34,8 +34,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
               </div>
 
               <div class="user-form__organizations">
-                <%= label(:organization, :org_id, class: "label") %>
-                <%= select(:organiation, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
+                <%= label(:organization, :org_id, "Organization", class: "label") %>
+                <%= select(:organization, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
                 <button type="submit" class="btn btn--add-organization btn--primary-outline">Add Organization</button>
               </div>
           </form>
@@ -134,11 +134,11 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     end
   end
 
-  def handle_event("associate", %{"organiation" => %{"org_id" => ""}}, socket) do
+  def handle_event("associate", %{"organization" => %{"org_id" => ""}}, socket) do
     {:noreply, socket}
   end
 
-  def handle_event("associate", %{"organiation" => %{"org_id" => org_id}}, socket) do
+  def handle_event("associate", %{"organization" => %{"org_id" => org_id}}, socket) do
     user = socket.assigns.user
     send_event(org_id, user, socket.assigns.signed_in_user_id)
 
