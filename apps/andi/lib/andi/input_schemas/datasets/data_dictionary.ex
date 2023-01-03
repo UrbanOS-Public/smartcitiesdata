@@ -100,6 +100,9 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   end
 
   def changeset(dictionary, changes, source_format) do
+    # TODO: problem is that is switches over to being a changeset, instead
+    #   of a map somehow. Not sure what's causing that switch.
+    changes |> IO.inspect(label: "dd incoming changes")
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 
     dictionary

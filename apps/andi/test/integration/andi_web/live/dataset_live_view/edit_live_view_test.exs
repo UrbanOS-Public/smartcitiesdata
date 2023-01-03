@@ -348,7 +348,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data = %{"dataTitle" => "new dataset title"}
 
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      render_change(metadata_view, %{validate: %{"form_data" => form_data}})
 
       refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--hidden"))
 
@@ -369,7 +369,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
       form_data = %{"dataTitle" => "new dataset title"}
 
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      render_change(metadata_view, %{validate: %{"form_data" => form_data}})
       render_change(metadata_view, "cancel-edit", %{})
       html = render(view)
 

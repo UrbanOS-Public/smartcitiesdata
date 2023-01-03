@@ -3,7 +3,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   use Placebo
-  import Checkov
+  # import Checkov
 
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
@@ -13,7 +13,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     only: [
       find_elements: 2,
       get_attributes: 3,
-      get_text: 2,
+      # get_text: 2,
       get_value: 2,
       get_select: 2
     ]
@@ -21,9 +21,9 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions
-  alias AndiWeb.Helpers.FormTools
-  alias Andi.InputSchemas.InputConverter
-  alias AndiWeb.InputSchemas.FinalizeFormSchema
+  # alias AndiWeb.Helpers.FormTools
+  # alias Andi.InputSchemas.InputConverter
+  # alias AndiWeb.InputSchemas.FinalizeFormSchema
 
   @endpoint AndiWeb.Endpoint
   @url_path "/ingestions/"
@@ -49,7 +49,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end
 
     test "name field defaults to it's existing name", %{
-      view: view,
+      # view: view,
       html: html,
       ingestion: ingestion
     } do
@@ -57,9 +57,9 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end
 
     test "name field can be altered and saved", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
+      view: view
+      # html: html,
+      # ingestion: ingestion
     } do
       new_name = "new_name"
 
@@ -67,25 +67,27 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
         "name" => new_name
       }
 
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
-      render_change(view, "save")
+      metadata_view = view |> element("#ingestion_metadata_form")
+      # TODO: this metadata_view render change causes the issue.
+      "" |> IO.inspect(label: "STARTING RENDER CHANGE")
+      render_change(metadata_view, %{validate: %{"form_data" => form_data}})
+      # render_change(view, "save")
 
       html = render(view)
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
     end
 
     test "dataset name field defaults to it's existing association", %{
-      view: view,
+      # view: view,
       html: html,
-      ingestion: ingestion,
+      # ingestion: ingestion,
       dataset: dataset
     } do
       assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == dataset.business.dataTitle
     end
 
     test "source format field defaults to its existing value", %{
-      view: view,
+      # view: view,
       html: html,
       ingestion: ingestion
     } do
@@ -94,9 +96,10 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end
 
     test "source format field can be altered and saved", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
+      # TODO: problem test
+      view: view
+      # html: html,
+      # ingestion: ingestion
     } do
       new_source_format = "text/xml"
 
@@ -104,8 +107,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
         "sourceFormat" => new_source_format
       }
 
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
+      metadata_view = view |> element("#ingestion_metadata_form")
+      render_change(metadata_view, %{validate: %{"form_data" => form_data}})
       render_change(view, "save")
 
       html = render(view)
@@ -116,10 +119,10 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
 
     test "can close dataset modal", %{
       view: view,
-      html: html,
-      ingestion: ingestion
+      html: html
+      # ingestion: ingestion
     } do
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
+      metadata_view = view |> element("#ingestion_metadata_form")
 
       assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
 
@@ -135,9 +138,9 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     # todo: ticket #757 will fullfil this test
     @tag :skip
     test "can not edit source format for published ingestion", %{
-      view: view,
-      html: html,
-      ingestion: ingestion,
+      # view: view,
+      # html: html,
+      # ingestion: ingestion,
       conn: conn
     } do
       {:ok, dataset} =
@@ -183,9 +186,5 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
     refute Enum.empty?(get_attributes(html, ".metadata-form__top-level-selector input", "readonly"))
-  end
-
-  defp find_select_dataset_btn(view) do
-    element(view, ".btn", "Select Dataset")
   end
 end
