@@ -28,7 +28,7 @@ defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
 
     ~L"""
     <div id=<%= @id %> class="data-dictionary-remove-field-editor data-dictionary-remove-field-editor--<%= modifier %>">
-      <div class="modal-form-container">
+      <div class="modal-form-container" x-trap="<%= modifier === "visible" %>">
         <p class="data-dicitionary-remove-field-editor__message"><%= @modal_text %></p>
 
         <br>
