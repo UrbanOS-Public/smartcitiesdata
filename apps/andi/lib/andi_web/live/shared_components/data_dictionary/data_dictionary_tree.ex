@@ -36,6 +36,7 @@ defmodule AndiWeb.DataDictionary.Tree do
               "phx-value-index": field.index,
               "phx-value-name": field.name,
               "phx-value-id": field.id,
+              aria_label: input_value(field, :name) <> " checkbox",
               "phx-target": "##{@root_id}"]) %>
 
           <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>">
