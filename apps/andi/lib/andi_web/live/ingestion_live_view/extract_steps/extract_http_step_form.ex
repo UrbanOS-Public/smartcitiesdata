@@ -45,13 +45,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
               <div class="extract-http-step-form-edit-section form-grid">
 
                 <div class="extract-http-step-form__method">
-                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required") %>
+                  <%= label(f, :action, DisplayNames.get(:method), class: "label label--required", for: "step_#{@id}__http_method") %>
                   <%= select(f, :action, get_http_methods(), [id: "step_#{@id}__http_method", class: "extract-http-step-form__method select", required: true]) %>
                   <%= ErrorHelpers.error_tag(f, :action) %>
                 </div>
 
                 <div class="extract-http-step-form__url">
-                  <%= label(f, :url, DisplayNames.get(:url), class: "label label--required") %>
+                  <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "step_#{@id}__url") %>
                   <%= url_input(f, :url, [id: "step_#{@id}__url", class: "input full-width", disabled: @testing, required: true]) %>
                   <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
                 </div>
@@ -62,7 +62,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
                 <%= if input_value(f, :action) == "POST" do %>
                   <div class="extract-http-step-form__body">
-                    <%= label(f, :body, DisplayNames.get(:body),  class: "label") %>
+                    <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "step_#{@id}__body") %>
                     <%= textarea(f, :body, id: "step_#{@id}__body", class: "input full-width", phx_hook: "prettify", disabled: @testing) %>
                     <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
                   </div>

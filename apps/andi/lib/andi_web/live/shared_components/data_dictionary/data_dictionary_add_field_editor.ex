@@ -28,7 +28,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
             <div class="form-input-container">
               <div class="data-dictionary-add-field-editor__name form-block">
                 <div class="form-input">
-                  <%= label(form, :name, "Name", class: "label label--required") %>
+                  <%= label(form, :name, "Name", class: "label label--required", for: id <> "_name") %>
                   <%= text_input(form, :name, [id: id <> "_name", class: "input", required: true]) %>
                 </div>
                 <%= error_tag(form, :name) %>
@@ -36,7 +36,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
 
               <div class="data-dictionary-add-field-editor__type form-block">
                 <div class="form-input">
-                  <%= label(form, :type, "Type", class: "label label--required") %>
+                  <%= label(form, :type, "Type", class: "label label--required", for: id <> "_type") %>
                   <%= select(form, :type, get_item_types(), [id: id <> "_type", class: "select", required: true]) %>
                 </div>
                 <%= error_tag(form, :type) %>
@@ -44,7 +44,7 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
 
               <div class="data-dictionary-add-field-editor__parent-id form-block">
                 <div class="form-input">
-                  <%= label(form, :parent_id, "Child Of", class: "label") %>
+                  <%= label(form, :parent_id, "Child Of", class: "label", for: id <> "_child-of") %>
                   <%= select(form, :parent_id, @eligible_parents, selected: @selected_field_id, id: id <> "_child-of", class: "select") %>
                 </div>
               </div>

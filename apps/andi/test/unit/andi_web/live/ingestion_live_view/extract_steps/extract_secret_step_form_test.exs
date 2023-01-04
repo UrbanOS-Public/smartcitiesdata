@@ -29,6 +29,7 @@ defmodule AndiWeb.ExtractSecretFormTest do
 
       default_context = %{
         destination: "bob_field",
+        secret_value: "value",
         sub_key: "secret-key"
       }
 
