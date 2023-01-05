@@ -18,13 +18,13 @@ defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModal do
           <p class="search-modal-section-header-text">Search</p>
           <form phx-change="dataset-search" phx-submit="dataset-search">
             <div class="search-modal__search_bar-input-container">
-              <label for="search-modal__search_bar-input">
+              <label for="search-modal__search_bar-input-manage-dataset">
                 <i class="material-icons search-modal__search_bar-icon">search</i>
               </label>
               <input
                 name="search-value"
                 phx-debounce="250"
-                id="search-modal__search_bar-input"
+                id="search-modal__search_bar-input-manage-dataset"
                 class="search-modal__search_bar-input"
                 type="text"
                 value="<%= @search_text %>"
