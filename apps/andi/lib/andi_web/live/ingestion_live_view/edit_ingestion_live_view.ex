@@ -18,7 +18,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
-    <div class="edit-page" id="ingestions-edit-page">
+    <main aria-label="Edit Ingestion" class="edit-page" id="ingestions-edit-page">
       <%= f = form_for @changeset, "" %>
         <%= hidden_input(f, :sourceFormat) %>
         <div class="edit-ingestion-title">
@@ -77,7 +77,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
             <p id="snackbar" class="error-message" tabindex="0">A page error occurred</p>
           <% end %>
       </div>
-    </div>
+    </main>
     <%= footer_render(@is_curator) %>
     """
   end

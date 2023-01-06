@@ -17,7 +17,7 @@ defmodule AndiWeb.EditLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
-    <div class="edit-page" id="dataset-edit-page">
+    <main aria-label="Edit dataset" class="edit-page" id="dataset-edit-page">
       <div class="edit-dataset-title">
         <h1 class="component-title-text">Define Dataset</h1>
       </div>
@@ -89,8 +89,7 @@ defmodule AndiWeb.EditLiveView do
           <p id="snackbar" class="error-message" tabindex="0">A page error occurred</p>
         <% end %>
       </div>
-
-    </div>
+    </main>
     <%= footer_render(@is_curator) %>
     """
   end
