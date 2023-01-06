@@ -77,7 +77,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       </form>
 
       <div class="harvested-datasets-table">
-        <h3>Remote Datasets Attached To This Organization</h3>
+        <h2>Remote Datasets Attached To This Organization</h2>
 
         <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatsetsTable, datasets: @harvested_datasets, order: @order) %>
       </div>
