@@ -70,11 +70,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       <div id="edit-page-snackbar" phx-hook="showSnackbar">
         <div style="display: none;"><%= @click_id %></div>
           <%= if @save_success do %>
-            <div id="snackbar" class="success-message"><%= @success_message %></div>
+            <p id="snackbar" class="success-message" tabindex="0"><%= @success_message %></p>
           <% end %>
 
           <%= if @page_error do %>
-            <div id="snackbar" class="error-message">A page error occurred</div>
+            <p id="snackbar" class="error-message" tabindex="0">A page error occurred</p>
           <% end %>
       </div>
     </main>

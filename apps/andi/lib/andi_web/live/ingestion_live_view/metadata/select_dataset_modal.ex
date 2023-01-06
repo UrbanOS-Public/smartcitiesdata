@@ -18,13 +18,13 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
           <p class="search-modal-section-header-text">Search</p>
           <form phx-change="datasets-search" phx-submit="datasets-search">
             <div class="search-modal__search_bar-input-container">
-              <label for="search-modal__search_bar-input">
+              <label for="search-modal__search_bar-input-select-dataset">
                 <i class="material-icons search-modal__search_bar-icon">search</i>
               </label>
               <input
                 name="search-value"
                 phx-debounce="250"
-                id="search-modal__search_bar-input"
+                id="search-modal__search_bar-input-select-dataset"
                 class="search-modal__search_bar-input"
                 type="text"
                 value="<%= @search_text %>"
