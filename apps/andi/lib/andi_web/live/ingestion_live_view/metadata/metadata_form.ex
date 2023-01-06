@@ -47,7 +47,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
       </div>
 
       <div class="metadata-form__top-level-selector">
-        <%= if input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"] do %>
+        <%= if input_value(f, :sourceFormat) not in ["text/xml", "application/json", "application/geo+json"] do %>
           <%= label(f, :emptyValue, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
           <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
         <% else %>
