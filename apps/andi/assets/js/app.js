@@ -33,6 +33,7 @@ Hooks.showSnackbar = {
     updated() {
         let snackbar = document.getElementById("snackbar");
         snackbar.className += " show";
+        snackbar.focus();
         setTimeout(function() { snackbar.className = snackbar.className.replace(" show", ""); }, 3000);
     }
 }
