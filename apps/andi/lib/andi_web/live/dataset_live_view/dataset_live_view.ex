@@ -23,7 +23,7 @@ defmodule AndiWeb.DatasetLiveView do
     ~L"""
     <div class="content">
       <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
-      <div class="datasets-view">
+      <main aria-label="Add and edit datasets" class="datasets-view">
         <div class="datasets-index">
           <div class="datasets-index__header">
             <h1 class="datasets-index__title"><%= title_text(@is_curator) %></h1>
@@ -66,7 +66,7 @@ defmodule AndiWeb.DatasetLiveView do
 
           <%= live_component(@socket, Table, id: :datasets_table, datasets: @view_models, order: @order, is_curator: @is_curator) %>
         </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     </div>
     """

@@ -6,7 +6,7 @@ defmodule AndiWeb.FooterLiveView do
 
   def render(assigns) do
     ~L"""
-      <footer class="page-footer">
+      <footer class="page-footer" aria-label="Footer">
         <span class="left-side-text">
           <%= if get_left_side_link() do %>
             <a class="footer-link" href="<%= get_left_side_link() %>"><%= get_left_side_text() %></a>

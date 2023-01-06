@@ -15,7 +15,7 @@ defmodule AndiWeb.UserLiveView do
     ~L"""
     <div class="content">
       <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
-      <div class="users-view">
+      <main aria-label="Add and edit users" class="users-view">
         <div class="users-index">
           <div class="users-index__header">
             <h1 class="users-index__title">All Users</h1>
@@ -42,7 +42,7 @@ defmodule AndiWeb.UserLiveView do
           </div>
           <%= live_component(@socket, Table, id: :users_table, users: @users, order: @order) %>
         </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     </div>
     """

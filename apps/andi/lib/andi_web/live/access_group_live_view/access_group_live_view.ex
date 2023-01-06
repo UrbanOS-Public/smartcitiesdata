@@ -11,7 +11,7 @@ defmodule AndiWeb.AccessGroupLiveView do
     ~L"""
     <div class="content">
       <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_access_groups_path()) %>
-      <div class="access-groups-view">
+      <main aria-label="Create and manage access groups"class="access-groups-view">
         <div class="access-groups-index">
           <div class="access-groups-index__header">
             <h1 class="access-groups-index__title">Access Groups</h1>
@@ -22,7 +22,7 @@ defmodule AndiWeb.AccessGroupLiveView do
           <hr class="access-groups-line">
           <%= live_component(@socket, Table, id: :access_groups_table, access_groups: @view_models, is_curator: @is_curator) %>
         </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     </div>
     """
