@@ -132,6 +132,9 @@ defmodule Andi.Application do
     Application.put_env(:andi, :logo_url, get_logo_url())
     Application.put_env(:andi, :header_text, get_header_text())
     Application.put_env(:andi, :primary_color, get_primary_color())
+    Application.put_env(:andi, :secondary_color, get_secondary_color())
+    Application.put_env(:andi, :success_color, get_success_color())
+    Application.put_env(:andi, :error_color, get_error_color())
     Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
     Application.put_env(:andi, :footer_left_side_link, get_footer_left_side_link())
     Application.put_env(:andi, :andi_footer_right_links, get_footer_right_links())
@@ -147,6 +150,18 @@ defmodule Andi.Application do
 
   def get_primary_color() do
     get_env_variable("ANDI_PRIMARY_COLOR", true)
+  end
+
+  def get_secondary_color() do
+    get_env_variable("ANDI_SECONDARY_COLOR", true)
+  end
+
+  def get_success_color() do
+    get_env_variable("ANDI_SUCCESS_COLOR", true)
+  end
+
+  def get_error_color() do
+    get_env_variable("ANDI_ERROR_COLOR", true)
   end
 
   def get_footer_left_side_text() do
