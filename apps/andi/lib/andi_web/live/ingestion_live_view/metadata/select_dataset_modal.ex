@@ -6,7 +6,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
       <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
-          <h1 class="search-index__title">Dataset Search</h1>
+          <h2 class="search-index__title">Dataset Search</h2>
           <button type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-dataset-search">close</span>
         </div>
 
