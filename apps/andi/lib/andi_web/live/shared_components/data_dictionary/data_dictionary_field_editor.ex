@@ -32,16 +32,12 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
 
-        <%= if editing_ingestion? do %>
-        <div class="data-dictionary-field-editor__selector">
-          <%= if DataDictionaryHelpers.is_source_format_xml(@source_format) do %>
+        <%= if editing_ingestion? and DataDictionaryHelpers.is_source_format_xml(@source_format) do %>
+          <div class="data-dictionary-field-editor__selector">
             <%= label(@form, :selector, "Selector", class: "label label--required", for: id <> "_selector") %>
-          <% else %>
-            <%= label(@form, :selector, "Selector", class: "label", for: id <> "_selector") %>
-          <% end %>
-          <%= text_input(@form, :selector, [id: id <> "_selector", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format), required: true]) %>
-          <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
-        </div>
+            <%= text_input(@form, :selector, [id: id <> "_selector", class: "data-dictionary-field-editor__selector input", disabled: !DataDictionaryHelpers.is_source_format_xml(@source_format), required: true]) %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :selector) %>
+          </div>
         <% end %>
 
         <div class="data-dictionary-field-editor__type">
