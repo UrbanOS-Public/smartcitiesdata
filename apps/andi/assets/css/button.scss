@@ -52,8 +52,8 @@ $button-padding: 10px 50px;
     border: 2px solid $color-text-link;
 
     &:hover {
-        background-color: #1279D8;
-        border: 2px solid #1279D8;
+        background-color: $color-primary;
+        border: 2px solid $color-primary;
     }
 
     &:disabled {
@@ -156,16 +156,16 @@ $button-padding: 10px 50px;
     padding: $button-padding;
 
     &:active {
-        background-color: #0F64B3;
+        background-color: $color-primary;
     }
 
     &:hover {
-        background-color: #1279D8;
+        background-color: lighten($color-primary, 10%);
         border: none;
     }
 
     &:disabled {
-        background-color: #AAD3F8;
+        background-color: lighten($color-primary, 20%);
         border: none;
         cursor: default;
     }
@@ -183,29 +183,29 @@ $button-padding: 10px 50px;
     padding: $button-padding;
 
     &:active {
-        background-color: rgba(#6C787F, 20%);
+        background-color: $color-secondary;
         //will the boader stay the same 
     }
 
     &:hover {
         color: black;
-        background-color: rgba(#6C787F, 10%);
+        background-color: lighten($color-secondary, 10%);
     }
 
     &:disabled {
-        background-color: rgba(#6C787F, 50%);
+        background-color: ligthen($color-secondary, 20%);
         cursor: default;
     }
 }
 
 .btn--danger {
     background-color: white;
-    color: #DF1618;
-    border: 1px solid #DF1618;
+    color: $color-error;
+    border: 1px solid $color-error;
     padding: $button-padding;
 
     .material-icons {
-        color: #DF1618;
+        color: $color-error;
     }
 
     &:active {
@@ -213,7 +213,7 @@ $button-padding: 10px 50px;
             color: white;
         }
 
-        background-color: #B21212;
+        background-color: $color-error;
         //will the boader stay the same 
     }
 
@@ -223,7 +223,7 @@ $button-padding: 10px 50px;
         }
 
         color: white;
-        background-color:#CD1517;
+        background-color:lighten($color-error, 10%);
     }
 
     &:disabled {
@@ -231,7 +231,7 @@ $button-padding: 10px 50px;
             color: white;
         }
 
-        background-color: #FC7071;
+        background-color: lighten($color-error, 20%);
         cursor: default;
     }
 }

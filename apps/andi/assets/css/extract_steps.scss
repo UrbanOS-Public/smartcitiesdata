@@ -50,7 +50,7 @@
     #download_dataset_sample_link {
         margin-left: 0.5rem;
         text-decoration: underline;
-        color: blue;
+        color: $color-text-link;
 
         &:hover {
             cursor: pointer;
@@ -112,7 +112,7 @@
 }
 
 .extract-steps__error-message {
-    color: red;
+    color: $color-error;
     margin-bottom: 2rem;
 }
 

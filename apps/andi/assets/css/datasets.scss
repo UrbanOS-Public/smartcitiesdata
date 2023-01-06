@@ -135,7 +135,7 @@ $icon-width: 30px;
 }
 
 .dataset__status--success {
-  color: green;
+  color: $color-success;
 
   .status__icon {
     background-image: url('/static/images/check.svg');
@@ -150,7 +150,7 @@ $error-icon-margin: (
 
 .dataset__status--error,
 .dataset__status--rejected {
-  color: red;
+  color: $color-error;
 
   .status__icon {
     background-image: url('/static/images/X.svg'

@@ -74,7 +74,7 @@ body {
   align-items: center;
   display: flex;
   z-index: 998;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(white, 0.7);
   top: 0;
   left: 0;
   bottom: 0;
@@ -88,7 +88,7 @@ body {
 }
 
 .label {
-  color: #1D2528;
+  color: $color-text-primary;
   display: block;
   margin-bottom: 0.3rem;
   letter-spacing: 0.03rem;
@@ -123,13 +123,13 @@ body {
 
 .input--text:read-only {
   background: #f3f3f3;
-  color: $disabled-background;
+  color: #6B6B6B;
 }
 
 .input__help-text {
   margin-left: 1rem;
   font-style: italic;
-  color: #7f7676;
+  color: #756C6C;
 }
 
 .textarea {

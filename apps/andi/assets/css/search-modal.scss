@@ -27,7 +27,7 @@
 .search-modal-section-header-text {
     font-weight: normal;
     font-size: 1.1rem;
-    color: #7F7676;
+    color: #756C6C;
     margin: 1.25rem 0 0 0;
 }
 
@@ -130,7 +130,7 @@
 }
 
 .modal-action-text {
-  color: #57ACE5;
+  color: $color-text-link;
   font-size: 1.125rem;
   font-weight: normal;
   text-decoration: none;
@@ -165,7 +165,7 @@
     justify-content: center;
     align-items: center;
     padding: 5px 10px;
-    background: #45CB01;
+    background: $color-success;
     border-radius: 5px;
     color: white;
     margin: 3.5px;
