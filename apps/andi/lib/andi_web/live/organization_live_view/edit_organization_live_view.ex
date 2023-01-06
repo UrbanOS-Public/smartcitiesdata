@@ -145,8 +145,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply,
-     assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -155,8 +154,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       |> AtomicMap.convert(safe: false, underscore: false)
       |> Organization.changeset()
 
-    {:noreply,
-     assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
+    {:noreply, assign(socket, changeset: new_changeset, unsaved_changes: true, has_validation_errors: false)}
   end
 
   def handle_event("validate_unique_org_name", _, socket) do
