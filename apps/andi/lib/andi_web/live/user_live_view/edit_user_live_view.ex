@@ -48,12 +48,12 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           </div>
 
           <div class="associated-organizations-table">
-            <h3>Roles Associated With This User</h3>
+            <h2>Roles Associated With This User</h2>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles, self: @self) %>
           </div>
 
           <div class="associated-organizations-table">
-            <h3>Organizations Associated With This User</h3>
+            <h2>Organizations Associated With This User</h2>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
       </div>

@@ -255,6 +255,14 @@ $tick-height: 1rem + $field-padding - 0.44;
     color: rgb(70, 70, 70);
   }
 
+  .unsaved-changes-header,
+  .confirm-delete-header {
+    // mimic h3 values
+    font-size: 1.17em;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    font-weight: bold;
+  }
 
   .form-input-container {
     padding: 1rem;
