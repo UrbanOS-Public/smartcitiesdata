@@ -12,9 +12,9 @@
   </head>
   <body>
     <div class="root">
-      <main role="main" class="root__main">
+      <div class="root__main">
         <%= @inner_content %>
-      </main>
+      </div>
     </div>
   </body>
 </html>

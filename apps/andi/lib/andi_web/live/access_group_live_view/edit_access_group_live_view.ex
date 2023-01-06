@@ -18,7 +18,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_access_groups_path()) %>
-    <div class="edit-page" id="access-groups-edit-page">
+    <main aria-label="Edit Access Groups" class="edit-page" id="access-groups-edit-page">
       <div class="edit-access-group-title">
         <h1 class="component-title-text access-groups-component-title-text">Edit Access Group </h1>
       </div>
@@ -64,7 +64,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
       </div>
 
       <%= live_component(@socket, AndiWeb.ConfirmDeleteModal, type: "Access Group", visibility: @delete_access_group_modal_visibility, id: @access_group.id) %>
-    </div>
+    </main>
     <%= footer_render(@is_curator) %>
     """
   end
