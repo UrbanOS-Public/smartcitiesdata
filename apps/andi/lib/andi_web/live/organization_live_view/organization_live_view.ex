@@ -16,7 +16,7 @@ defmodule AndiWeb.OrganizationLiveView do
     ~L"""
     <div class="content">
       <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
-      <div class="organizations-view">
+      <main aria-label="Add and manage organizations" class="organizations-view">
         <div class="organizations-index">
           <div class="organizations-index__header">
             <h1 class="organizations-index__title">All Organizations</h1>
@@ -45,7 +45,7 @@ defmodule AndiWeb.OrganizationLiveView do
 
           <%= live_component(@socket, Table, id: :organizations_table, organizations: @organizations, order: @order) %>
         </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
       </div>
     """

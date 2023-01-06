@@ -11,7 +11,7 @@ defmodule AndiWeb.SubmitLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_datasets_path()) %>
-    <div class="edit-page" id="dataset-edit-page">
+    <main aria-label="Submit Dataset" class="edit-page" id="dataset-edit-page">
       <div class="preamble">
       <p>You are about to submit a dataset to the Smart Columbus Operating System for review. If approved, your dataset will be made available to the public for download and consumption. The Smart Columbus Operating System currently does not allow any datasets that contain:</p>
       <ul>
@@ -84,7 +84,7 @@ defmodule AndiWeb.SubmitLiveView do
           <div id="snackbar" class="error-message">A page error occurred</div>
         <% end %>
       </div>
-    </div>
+    </main>
     <%= footer_render(@is_curator) %>
     """
   end

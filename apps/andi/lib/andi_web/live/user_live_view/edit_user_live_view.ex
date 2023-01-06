@@ -17,7 +17,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
-      <div id="edit-user-live-view" class="user-edit-page edit-page">
+      <main aria-label="Edit User" id="edit-user-live-view" class="user-edit-page edit-page">
           <div class="edit-user-title">
               <h1 class="component-title-text">Edit User </h1>
           </div>
@@ -56,7 +56,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
             <h2>Organizations Associated With This User</h2>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     """
   end
