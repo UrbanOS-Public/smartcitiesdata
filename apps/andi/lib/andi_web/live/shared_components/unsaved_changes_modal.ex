@@ -8,7 +8,7 @@ defmodule AndiWeb.UnsavedChangesModal do
     ~L"""
     <div class="unsaved-changes-modal unsaved-changes-modal--<%= @visibility %>">
       <div class="modal-form-container" x-trap="<%= @visibility === "visible" %>">
-        <h3>Unsaved Changes</h3>
+        <h2 class="unsaved-changes-header">Unsaved Changes</h2>
         <p class="unsaved-changes-modal__message">
           You have unsaved changes within this<br> section. Do you wish to continue without saving?
         </p>

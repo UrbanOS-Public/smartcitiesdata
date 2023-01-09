@@ -249,12 +249,20 @@ $tick-height: 1rem + $field-padding - 0.44;
   box-shadow: 0 0 2rem gray;
   min-width: 600px;
 
-  h2 {
+  .add-new-field-header {
     font-size: 22px;
     font-weight: normal;
     color: rgb(70, 70, 70);
   }
 
+  .unsaved-changes-header,
+  .confirm-delete-header {
+    // replicate h3 sizing
+    font-size: 1.17em;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    font-weight: bold;
+  }
 
   .form-input-container {
     padding: 1rem;

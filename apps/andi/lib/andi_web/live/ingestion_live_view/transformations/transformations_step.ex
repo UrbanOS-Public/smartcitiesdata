@@ -43,7 +43,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
     <div id="transformations-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= @validation_status %>"><%= @order %></h3>
+          <div class="component-number component-number--<%= @validation_status %>"><%= @order %></div>
           <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">

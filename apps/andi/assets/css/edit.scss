@@ -99,6 +99,12 @@ $component-header-height: 7.5rem;
     border-radius: 50%;
     -moz-border-radius: 50%;
     -webkit-border-radius: 50%;
+
+    // replicate h3 sizing
+    font-size: 1.17em;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    font-weight: bold;
 }
 
 .component-number--expanded {
