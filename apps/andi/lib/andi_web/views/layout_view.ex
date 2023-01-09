@@ -63,12 +63,14 @@ defmodule AndiWeb.LayoutView do
   end
 
   defp get_color(type) do
-    CssColors.parse!(case type do
-      :primary -> get_primary_color()
-      :secondary -> get_secondary_color()
-      :success -> get_success_color()
-      :error -> get_error_color()
-      _ -> get_primary_color()
-    end)
+    CssColors.parse!(
+      case type do
+        :primary -> get_primary_color()
+        :secondary -> get_secondary_color()
+        :success -> get_success_color()
+        :error -> get_error_color()
+        _ -> get_primary_color()
+      end
+    )
   end
 end
