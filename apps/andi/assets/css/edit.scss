@@ -118,15 +118,15 @@ $component-header-height: 7.5rem;
 }
 
 .component-number--valid {
-    background-color: #27cb00;
+    background-color: $color-success;
     color: white;
-    border: 1px solid #27cb00;
+    border: 1px solid $color-success;
 }
 
 .component-number--invalid {
-    background-color: red;
+    background-color: $color-error;
     color: white;
-    border: 1px solid red;
+    border: 1px solid $color-error;
 }
 
 .component-number-status--valid {
@@ -242,7 +242,7 @@ $component-header-height: 7.5rem;
     @include modal-wrapper();
 
     p {
-        color: green;
+        color: $color-success;
     }
 
     .submit_button {
@@ -290,9 +290,9 @@ $component-header-height: 7.5rem;
 }
 
 #approve-button {
-    background-color: #02ac00;
+    background-color: $color-success;
     color: white;
-    border: 1px solid #02ac00;
+    border: 1px solid $color-success;
     float: right;
 
     .approve-icon {
@@ -303,8 +303,8 @@ $component-header-height: 7.5rem;
 
     &:hover {
         background-color: white;
-        color: #02ac00;
-        border: 1px solid #02ac00;
+        color: lighten($color-success, 10%);
+        border: 1px solid lighten($color-success, 10%);
     }
 }
 

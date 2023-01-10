@@ -41,12 +41,12 @@
     display: inline-block;
     text-decoration: none;
     cursor: pointer;
-    background-color: red;
+    background-color: $color-error;
     color: white;
     border: none;
 
     &:hover {
-        background-color: #ff2525;
+        background-color: lighten($color-error, 10%);
     }
 }
 
