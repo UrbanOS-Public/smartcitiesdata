@@ -10,7 +10,7 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
     <div class="access-group-datasets-results">
       <h2 class="component-title-text">Datasets Assigned to This Access Group</h2>
       <div class="access-groups-sub-table-container">
-        <table class="access-groups-sub-table">
+        <table class="access-groups-sub-table" title="Datasets Assigned to This Access Group">
           <thead>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Dataset</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Organization</th>

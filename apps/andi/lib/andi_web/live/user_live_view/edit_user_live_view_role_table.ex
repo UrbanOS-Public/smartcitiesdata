@@ -8,7 +8,7 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="roles-index__table">
-      <table class="roles-table">
+      <table class="roles-table" title="Roles Associated With This User">
         <thead>
           <th class="roles-table__th roles-table__cell roles-table__th--sortable roles-table__th--unsorted">Roles</th>
           <th class="roles-table__th roles-table__cell" style="width: 20%">Actions</th>

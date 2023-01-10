@@ -9,7 +9,7 @@ defmodule AndiWeb.DatasetLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="datasets-index__table">
-      <table class="datasets-table">
+      <table class="datasets-table" title="All Datasets">
         <thead>
           <th class="datasets-table__th datasets-table__cell datasets-table__status-cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "status", "unsorted") %>" phx-click="order-by" phx-value-field="status">Status</th>
           <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name </th>

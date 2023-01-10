@@ -37,7 +37,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
         <div class="user-modal-search-results">
           <p class="search-modal-section-header-text">Results</p>
           <div class="search-modal-results-table">
-            <table class="search-table">
+            <table class="search-table" title="Users Search Results">
               <thead>
                 <th class="search-table__th search-table__cell wide-column">Name</th>
                 <th class="search-table__th search-table__cell wide-column">Email</th>

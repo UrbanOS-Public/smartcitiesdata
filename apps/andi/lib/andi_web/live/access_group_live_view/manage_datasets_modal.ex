@@ -38,7 +38,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageDatasetsModal do
         <div class="dataset-modal-search-results">
           <p class="search-modal-section-header-text">Results</p>
           <div class="search-modal-results-table">
-            <table class="search-table">
+            <table class="search-table" title="Dataset Search Results">
               <thead>
                 <th class="search-table__th search-table__cell wide-column">Dataset</th>
                 <th class="search-table__th search-table__cell wide-column">Organization</th>

@@ -9,7 +9,7 @@ defmodule AndiWeb.IngestionLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>">
-      <table class="ingestions-table">
+      <table class="ingestions-table" title="All Data Ingestions">
         <thead>
           <th class="ingestions-table__th ingestions-table__cell ingestions-table__status-cell">Status</th>
           <th class="ingestions-table__th ingestions-table__cell">Ingestion Name</th>
