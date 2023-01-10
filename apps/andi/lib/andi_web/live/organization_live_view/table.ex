@@ -9,7 +9,7 @@ defmodule AndiWeb.OrganizationLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="organizations-index__table">
-      <table class="organizations-table">
+      <table class="organizations-table" title="All Organizations">
       <thead>
         <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "org_title", "unsorted") %>" phx-click="order-by" phx-value-field="org_title">Organization</th>
         <th class="organizations-table__th organizations-table__cell">Actions</th>

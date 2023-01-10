@@ -18,7 +18,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
     ~L"""
     <div id="<%= @id %>" class="url-form__<%= @css_label %> url-form-table">
       <div class="url-form-table__title"><%= DisplayNames.get(@field) %></div>
-      <table class="url-form-table__table">
+      <table class="url-form-table__table" title='<%= DisplayNames.get(@field) %>'>
       <tr class="url-form-table__row url-form-table__row--bordered">
         <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header">KEY</th>
         <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2" >VALUE</th>

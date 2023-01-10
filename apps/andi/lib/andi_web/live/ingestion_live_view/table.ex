@@ -9,16 +9,16 @@ defmodule AndiWeb.IngestionLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>">
-      <table class="ingestions-table">
+      <table class="ingestions-table" title="All Data Ingestions">
         <thead>
           <th class="ingestions-table__th ingestions-table__cell ingestions-table__status-cell">Status</th>
-          <th class="ingestions-table__th ingestions-table__cell">Ingestion Name</th>
+          <th class="ingestions-table__th ingestions-table__cell" id="ingestion-name">Ingestion Name</th>
           <th class="ingestions-table__th ingestions-table__cell">Dataset</th>
           <th class="ingestions-table__th ingestions-table__cell">Action</th>
         </thead>
 
         <%= if @ingestions == [] do %>
-          <tr><td class="ingestions-table__cell" colspan="100%">No Ingestions Found!</td></tr>
+          <tr><td class="ingestions-table__cell" colspan="100%" headers="ingestion-name">No Ingestions Found!</td></tr>
         <% else %>
           <%= for ingestion <- @ingestions do %>
           <% status_success_class = if ingestion["status"] == "Published", do: "ingestion__status--success", else: ""%>
