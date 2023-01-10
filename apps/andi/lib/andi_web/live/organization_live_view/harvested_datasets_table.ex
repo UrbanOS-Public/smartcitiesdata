@@ -11,7 +11,7 @@ defmodule AndiWeb.OrganizationLiveView.HarvestedDatasetsTable do
     <div id="<%= @id %>" class="organizations-index__table">
       <table class="organizations-table" title="Remote Datasets Attached To This Organization">
         <thead>
-          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title">Dataset Name</th>
+          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "data_title", "unsorted") %>" phx-click="order-by" phx-value-field="data_title" id="dataset-name">Dataset Name</th>
           <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "source", "unsorted") %>" phx-click="order-by" phx-value-field="source">Source</th>
           <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--<%= Map.get(@order, "modified_date", "unsorted") %>" phx-click="order-by" phx-value-field="modified_date">Modified Date</th>
           <th class="organizations-table__th organizations-table__cell" style="width: 10%">Actions</th>
@@ -19,7 +19,7 @@ defmodule AndiWeb.OrganizationLiveView.HarvestedDatasetsTable do
         </thead>
 
         <%= if @datasets == [] do %>
-          <tr><td class="organizations-table__cell" colspan="100%">No Datasets Found!</td></tr>
+          <tr><td class="organizations-table__cell" colspan="100%" headers="dataset-name">No Datasets Found!</td></tr>
         <% else %>
           <%= for dataset <- @datasets do %>
             <tr class="organizations-table__tr">
