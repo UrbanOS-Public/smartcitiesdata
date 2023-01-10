@@ -57,7 +57,8 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert_redirect(view, "/ingestions")
     end
 
-    test "clicking cancel warns of unsaved changes", %{curator_conn: conn, ingestion: ingestion} do
+    # todo: ticket #999 should alter this test to confirm the ingestion is not actually saved
+    test "clicking cancel warns of unsaved extract step changes", %{curator_conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       editor = find_live_child(view, "extract_step_form_editor")
@@ -72,6 +73,27 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       es_form = element(editor, "#step-#{extract_step_id} form")
 
       render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "http://cam.com", "body" => ""}})
+
+      render_change(view, "cancel-edit", %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, ".unsaved-changes-modal--visible"))
+
+      render_change(view, "force-cancel-edit", %{})
+
+      assert_redirect(view, "/ingestions")
+    end
+
+    # todo: ticket #999 should fulfill this test
+    @tag :skip
+    test "clicking cancel warns of unsaved metadata form changes", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      new_name = "new_name"
+      form_data = %{"name" => new_name}
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
 
       render_change(view, "cancel-edit", %{})
       html = render(view)
@@ -114,16 +136,27 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert_redirected(view, @url_path)
     end
 
-    test "success message is displayed when form data is saved", %{curator_conn: conn} do
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
-
-      {:ok, ingestion} =
-        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
-        |> Ingestions.save()
+    test "success message is displayed when form data is saved", %{curator_conn: conn, ingestion: ingestion} do
+      #      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+      #
+      #      {:ok, ingestion} =
+      #        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
+      #        |> Ingestions.save()
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       assert get_text(html, "#snackbar") == ""
+
+      new_name = "new_name"
+
+      form_data = %{
+        "name" => new_name,
+        "sourceFormat" => nil
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
 
       render_change(view, :save, %{})
       html = render(view)
@@ -183,13 +216,14 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     test "ingestion form edits are included in publish event", %{curator_conn: conn, ingestion: ingestion} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      new_name = "new_name"
-
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
+      new_name = "new_name"
       form_data = %{"name" => new_name}
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      html = render_change(metadata_view, "validate", %{"form_data" => form_data})
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
 
       render_click(view, "publish")
 

@@ -2,10 +2,10 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
 
-
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Helpers.MetadataFormHelpers
   alias AndiWeb.Views.DisplayNames
+  alias Ecto.Changeset
 
   def component_id() do
     :ingestion_metadata_form_editor
@@ -19,8 +19,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def render(assigns) do
-    selected_dataset = assigns.changeset.changes
-      |> Map.get(:targetDataset, "")
+    {_, selected_dataset} = Changeset.fetch_field(assigns.changeset, :targetDataset)
 
     ~L"""
     <div>
@@ -52,7 +51,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
           <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
           <%= hidden_input(f, :targetDataset, value: selected_dataset) %>
           <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(selected_dataset), disabled: true, required: true]) %>
-          <button class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Dataset</button>
+          <button id="open-select-dataset-modal" class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Dataset</button>
           <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
         </div>
       </form>
@@ -86,7 +85,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
      )}
   end
 
-  #TODO: Cleanup
+  # TODO: Cleanup
   def handle_event(event, payload, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}}')
@@ -95,7 +94,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-  #TODO: Cleanup
+  # TODO: Cleanup
   def handle_event(event, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
@@ -106,7 +105,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   defp close_modal() do
     send_update(AndiWeb.IngestionLiveView.MetadataForm, id: component_id(), select_dataset_modal_visibility: "hidden")
   end
-
 
   defp get_dataset_name(id) when id in ["", nil], do: ""
 

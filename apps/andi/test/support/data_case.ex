@@ -40,6 +40,8 @@ defmodule Andi.DataCase do
   setup_all do
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
+#    Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, :manual)
+    on_exit(fn -> Process.sleep(5_000) end)
   end
 
   @doc """

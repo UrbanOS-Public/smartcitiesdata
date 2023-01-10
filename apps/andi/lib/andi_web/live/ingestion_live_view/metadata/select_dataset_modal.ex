@@ -6,23 +6,22 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   alias Andi.InputSchemas.Datasets.Dataset
 
   def mount(socket) do
-    {:ok, assign(socket,
-      search_results: [],
-      selected_dataset: nil,
-      old_selected_dataset: nil,
-      search_text: ""
-    )}
+    {:ok,
+     assign(socket,
+       search_results: [],
+       selected_dataset: nil,
+       old_selected_dataset: nil,
+       search_text: ""
+     )}
   end
 
-
   def render(assigns) do
-
     ~L"""
     <div class="manage-datasets-modal manage-datasets-modal--<%= @visibility %>">
       <div class="modal-form-container search-modal">
         <div class="search-index__header">
           <h1 class="search-index__title">Dataset Search</h1>
-          <span class="material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @myself %>" >close</span>
+          <span id="close-select-dataset-modal" class="material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @myself %>" >close</span>
         </div>
 
         <hr class="search-modal-divider">
@@ -121,11 +120,11 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     search_results = query_on_dataset_search_change(search_value, socket)
 
     {:noreply,
-      assign(socket,
-        search_text: search_value,
-        search_results: search_results,
-        selected_dataset: socket.assigns.selected_dataset
-      )}
+     assign(socket,
+       search_text: search_value,
+       search_results: search_results,
+       selected_dataset: socket.assigns.selected_dataset
+     )}
   end
 
   def handle_event("remove-selected-dataset", %{"id" => id}, socket) do
@@ -140,7 +139,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     end
   end
 
-  #TODO: Cleanup
+  # TODO: Cleanup
   def handle_event(event, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
@@ -148,7 +147,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     {:noreply, socket}
   end
 
-  #TODO: Cleanup
+  # TODO: Cleanup
   def handle_event(event, payload, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}}')
@@ -184,7 +183,6 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     query
     |> Andi.Repo.all()
   end
-
 
   defp selected_dataset(datasets, selected_dataset) do
     if(selected_dataset == nil) do

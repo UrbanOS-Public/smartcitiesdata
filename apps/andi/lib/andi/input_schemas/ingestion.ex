@@ -5,7 +5,6 @@ defmodule Andi.InputSchemas.Ingestion do
   use Ecto.Schema
   use Properties, otp_app: :andi
 
-
   alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Datasets.Dataset
@@ -16,6 +15,7 @@ defmodule Andi.InputSchemas.Ingestion do
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.Ingestions.Transformation
+  alias Andi.Repo
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "ingestions" do
@@ -51,49 +51,58 @@ defmodule Andi.InputSchemas.Ingestion do
     :name
   ]
 
+  def clear_errors(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
+    changeset
+    |> Map.replace(:errors, [])
+  end
+
+  def validate(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
+    # Extract data from changeset, merging data and changes, into a map
+    data_as_changes = changeset
+                      |> Changeset.apply_changes()
+                      |> StructTools.to_map()
+
+    # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
+    validation_changeset = changeset(%__MODULE__{}, data_as_changes)
+                           |> Changeset.validate_required(@required_fields, message: "is required")
+                           |> Changeset.foreign_key_constraint(:targetDataset)
+                           |> validate_source_format()
+                           |> CadenceValidator.validate()
+                           |> validate_top_level_selector()
+                           |> validate_schema()
+                           |> validate_extract_steps()
+
+    # Copy our validation fields from the fresh changeset into the actual changeset
+    changeset
+      |> Map.replace(:errors, validation_changeset.errors)
+      |> Map.replace(:valid?, validation_changeset.valid?)
+  end
+
   def changeset(%SmartCity.Ingestion{} = changes) do
     changes_as_map = StructTools.to_map(changes)
     changeset(%__MODULE__{}, changes_as_map)
   end
 
-
-  def changeset(%__MODULE__{} = changes), do: changeset(%__MODULE__{}, changes)
-
-  def changeset(%__MODULE__{} = ingestion, changes) do
+#  def changeset(%__MODULE__{} = changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(%__MODULE__{} = ingestion, %{} = changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 
     ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [""])
-    |> Changeset.validate_required(@required_fields, message: "is required")
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
-    |> Changeset.foreign_key_constraint(:targetDataset)
-    |> validate_source_format()
-    |> CadenceValidator.validate()
-    |> validate_top_level_selector()
-    |> validate_schema()
-    |> validate_extract_steps()
   end
 
-  def changeset(%Ecto.Changeset{ data: %__MODULE__{} } = changeset, changes) do
+  def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
     source_format = Map.get(changes, :sourceFormat, nil)
-    full_changes = changeset.changes
-      |> Map.merge(changes)
 
-    changeset.data
-    |> Changeset.cast(full_changes, @cast_fields, empty_values: [""])
-    |> Changeset.validate_required(@required_fields, message: "is required")
+    changeset
+    |> Changeset.cast(changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
-    |> Changeset.foreign_key_constraint(:targetDataset)
-    |> validate_source_format()
-    |> CadenceValidator.validate()
-    |> validate_top_level_selector()
-    |> validate_schema()
-    |> validate_extract_steps()
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
@@ -106,8 +115,12 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
-  def changeset_for_draft(%Ecto.Changeset{ data: %__MODULE__{} } = changeset, changes) do
-    changeset
+  def changeset_for_draft(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
+    full_changes =
+      changeset.changes
+      |> Map.merge(changes)
+
+    changeset.data
     |> Changeset.cast(changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
@@ -115,12 +128,11 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def merge_metadata_changeset(
-        %Ecto.Changeset{ data: %Andi.InputSchemas.Ingestion{} } = ingestion_changeset,
-        %Ecto.Changeset{ data: %AndiWeb.InputSchemas.IngestionMetadataFormSchema{} } = metadata_changeset
+        %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+        %Ecto.Changeset{data: %AndiWeb.InputSchemas.IngestionMetadataFormSchema{}} = metadata_changeset
       ) do
-
     metadata = metadata_changeset
-               |> Changeset.apply_changes()
+        |> Changeset.apply_changes()
 
     extracted_metadata = %{
       name: metadata.name,
@@ -129,18 +141,10 @@ defmodule Andi.InputSchemas.Ingestion do
       targetDataset: metadata.targetDataset
     }
 
-
-
     changeset(ingestion_changeset, extracted_metadata)
   end
 
   def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
-
-  def full_validation_changeset(changes), do: full_validation_changeset(%__MODULE__{}, changes)
-
-  def full_validation_changeset(schema, changes) do
-    changeset(schema, changes)
-  end
 
   defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset) do
     format_values = Options.source_format() |> Map.new() |> Map.values()
@@ -153,6 +157,7 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   defp validate_source_format(changeset) do
+    changeset |> Changeset.fetch_field!(:sourceFormat)
     Changeset.validate_required(changeset, [:sourceFormat], message: "is required")
   end
 

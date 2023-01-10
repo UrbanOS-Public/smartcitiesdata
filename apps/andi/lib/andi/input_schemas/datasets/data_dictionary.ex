@@ -99,9 +99,10 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> validate_format()
   end
 
-  def changeset(%Ecto.Changeset{data: %__MODULE__{} } = changeset, changes) do
-    full_changes = changeset.changes
-                   |> Map.merge(changes)
+  def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
+    full_changes =
+      changeset.changes
+      |> Map.merge(changes)
 
     changeset.data
     |> cast(full_changes, @cast_fields, empty_values: [])
@@ -131,9 +132,10 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> validate_selector(source_format)
   end
 
-  def changeset(%Ecto.Changeset{data: %__MODULE__{} } = changeset, changes, source_format) do
-    full_changes = changeset.changes
-                   |> Map.merge(changes)
+  def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes, source_format) do
+    full_changes =
+      changeset.changes
+      |> Map.merge(changes)
 
     changeset.data
     |> cast(full_changes, @cast_fields, empty_values: [])

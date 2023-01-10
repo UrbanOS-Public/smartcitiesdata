@@ -23,27 +23,32 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
         socket
       ) do
-
-    default_changeset = Ingestion.changeset(ingestion, %{})
+    default_changeset =
+      Ingestion.changeset(ingestion, %{})
+      |> Ingestion.validate()
 
     {:ok,
-      assign(socket,
-        changeset: default_changeset,
-        click_id: nil,
-        delete_ingestion_modal_visibility: "hidden",
-        unsaved_changes_modal_visibility: "hidden",
-        is_curator: is_curator,
-        unsaved_changes: false,
-        page_error: false,
-        ingestion: ingestion,
-        save_success: false,
-        success_message: "",
-        user_id: user_id
-      )}
+     assign(socket,
+       changeset: default_changeset,
+       click_id: nil,
+       delete_ingestion_modal_visibility: "hidden",
+       unsaved_changes_modal_visibility: "hidden",
+       is_curator: is_curator,
+       unsaved_changes: false,
+       page_error: false,
+       ingestion: ingestion,
+       save_success: false,
+       success_message: "",
+       user_id: user_id
+     )}
   end
 
   def render(assigns) do
-    metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(assigns.changeset)
+    metadata_changeset =
+      assigns.changeset
+      |> Ingestion.validate()
+      |> IngestionMetadataFormSchema.extract_from_ingestion_changeset()
+
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
     ~L"""
@@ -114,17 +119,15 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_info(
-        {:updated_metadata,
-          %Ecto.Changeset{ data: %AndiWeb.InputSchemas.IngestionMetadataFormSchema{} } = metadata_changeset },
+        {:updated_metadata, %Ecto.Changeset{data: %AndiWeb.InputSchemas.IngestionMetadataFormSchema{}} = metadata_changeset},
         socket
       ) do
-    new_ingestion_changeset = Andi.InputSchemas.Ingestion.merge_metadata_changeset(socket.assigns.changeset, metadata_changeset)
-    ingestion_id = Changeset.fetch_field!(new_ingestion_changeset, :id)
-    new_source_format = Map.get(new_ingestion_changeset.changes, :sourceFormat, nil)
-
+    new_ingestion_changeset = Ingestion.merge_metadata_changeset(socket.assigns.changeset, metadata_changeset)
 
     # Needed to maintain behavior for pre-refactor data_dictionary_form
     # Remove after refactoring data_dictionary_form
+    ingestion_id = socket.assigns.changeset.data.id
+    new_source_format = Changeset.fetch_field(new_ingestion_changeset, :sourceFormat)
     if(new_source_format != nil) do
       AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: new_source_format, ingestion_id: ingestion_id})
     end
@@ -137,10 +140,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       targetDataset: id
     }
 
-    updated_changeset = Andi.InputSchemas.Ingestion.changeset(socket.assigns.changeset, params)
+    updated_changeset =
+      socket.assigns.changeset
+      |> Ingestion.changeset(params)
 
-    {:noreply, assign(socket, changeset: updated_changeset)
-    }
+    {:noreply, assign(socket, changeset: updated_changeset)}
   end
 
   # Remove these form_updates after all children refactor to parent/child pattern
@@ -171,7 +175,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_info(
-        %{topic: topic, event: event, payload: payload}, socket) do
+        %{topic: topic, event: event, payload: payload},
+        socket
+      ) do
     IO.inspect(topic, label: 'Unhandled Info Topic in module #{__MODULE__}')
     IO.inspect(event, label: 'Unhandled Info Event in module #{__MODULE__}')
     IO.inspect(payload, label: 'Unhandled Info Payload in module #{__MODULE__}')
@@ -222,12 +228,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     case publish_ingestion(ingestion_id, socket.assigns.user_id) do
       {:ok, ingestion_changeset} ->
         {:noreply, assign(socket, changeset: ingestion_changeset)}
+
       _ ->
         {:noreply, update_save_message(socket, "invalid")}
     end
   end
-
-
 
   def handle_event("save", _, socket) do
     new_ingestion = save_ingestion_safe(socket)
@@ -277,8 +282,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # the changes and reapply to the ingestion from the database, but for now, we need to treat
     # the database as the source of truth that can change at any time.
 
-    safe_ingestion_data = socket.assigns.changeset
-                          |> Changeset.apply_changes
+    safe_ingestion_data =
+      socket.assigns.changeset
+      |> Changeset.apply_changes()
 
     safe_extracted_data = %{
       name: safe_ingestion_data.name,
@@ -292,11 +298,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     case Ingestions.update(current_ingestion, safe_extracted_data) do
       {:ok, post_save_ingestion} ->
         post_save_ingestion
+
       {error, details} ->
         raise "Unable to save ingestion. Error: #{error}. Details: #{details}"
     end
-
-
   end
 
   defp save_ingestion(socket) do
@@ -307,10 +312,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
     Process.sleep(1_000)
 
-    andi_ingestion = Ingestions.get(ingestion_id)
-    ingestion_changeset = InputConverter.andi_ingestion_to_full_ui_changeset(andi_ingestion)
-    updated_socket = assign(socket, changeset: ingestion_changeset)
+    # This is post-save...
+    ingestion_changeset =
+      ingestion_id
+      |> Ingestions.get()
+      |> Ingestion.changeset(%{})
+      |> Ingestion.validate()
 
+    updated_socket = assign(socket, changeset: ingestion_changeset)
 
     {:noreply, update_save_message(updated_socket, "valid")}
   end
@@ -319,7 +328,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   defp save_message(false = _valid?),
     do: "Saved successfully. You may need to fix errors before publishing."
-
 
   defp update_save_message(socket, status) do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
@@ -334,9 +342,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def publish_ingestion(ingestion_id, user_id) do
     with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
-         ingestion_changeset <- InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(andi_ingestion),
+         ingestion_changeset <- andi_ingestion
+                                |> Ingestion.changeset(%{})
+                                |> Ingestion.validate(),
          true <- ingestion_changeset.valid? do
-      ingestion_for_publish = ingestion_changeset |> Ecto.Changeset.apply_changes()
+      ingestion_for_publish = ingestion_changeset.data
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
@@ -357,7 +367,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       false ->
         IO.inspect("Ingestion not valid", label: "Publishing Ingestion Error")
-        {:error, InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(Ingestions.get(ingestion_id))}
+        {:error, Ingestions.get(ingestion_id)
+                 |> Ingestion.changeset(%{})
+                 |> Ingestion.validate()}
 
       error ->
         IO.inspect(error, label: "General error when publishing ingestion")

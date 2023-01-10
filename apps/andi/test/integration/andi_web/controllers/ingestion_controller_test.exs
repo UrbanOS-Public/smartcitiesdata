@@ -68,7 +68,11 @@ defmodule Andi.IngestionControllerTest do
 
   describe "ingestion publish" do
     test "sends ingestion:update event" do
-      dataset = setup_dataset()
+      Datasets.get_all()
+      |> IO.inspect(label: "All datasets from the database")
+      Ingestions.get_all()
+      |> IO.inspect(label: "All ingestions from the database")
+      dataset = setup_dataset() |> IO.inspect(label: "RYAN - Setup Dataset")
       ingestion = TDG.create_ingestion(%{sourceType: "remote", targetDataset: dataset.id})
       {:ok, _} = create_ingestion(ingestion)
 
@@ -87,7 +91,7 @@ defmodule Andi.IngestionControllerTest do
             message.key == ingestion_update() && String.contains?(message.value, ingestion.id)
           end)
 
-        assert 2 = length(values)
+        assert 2 == length(values)
       end)
     end
 

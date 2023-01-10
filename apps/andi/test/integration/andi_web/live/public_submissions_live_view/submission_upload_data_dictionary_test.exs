@@ -28,6 +28,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "does not allow file uploads greater than 200MB", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("1", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -40,6 +41,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "does not allow file types that arent csv or json", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("2", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -52,6 +54,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "json files are uploaded to s3", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("3", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -75,6 +78,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "csv files are uploaded to s3", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("4", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -98,6 +102,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "populates data dictionary for valid json files", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("5", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -130,6 +135,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
     end
 
     test "populates data dictionary for valid csv files", %{public_conn: conn, blank_dataset: blank_dataset, public_user: public_user} do
+      IO.inspect("6", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -164,6 +170,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
       blank_dataset: blank_dataset,
       public_user: public_user
     } do
+      IO.inspect("7", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -192,6 +199,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
       blank_dataset: blank_dataset,
       public_user: public_user
     } do
+      IO.inspect("8", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 
@@ -225,6 +233,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
       blank_dataset: blank_dataset,
       public_user: public_user
     } do
+      IO.inspect("9", label: "Ryan")
       {:ok, andi_dataset} = Datasets.update(blank_dataset)
       {:ok, _} = Datasets.update(andi_dataset, %{owner_id: public_user.id})
 

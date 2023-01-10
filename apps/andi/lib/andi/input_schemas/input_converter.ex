@@ -46,7 +46,8 @@ defmodule Andi.InputSchemas.InputConverter do
   def smrt_ingestion_to_full_changeset(%Ingestion{} = andi_ingestion, smrt_ingestion) do
     changes = prepare_smrt_ingestion_for_casting(smrt_ingestion)
 
-    Ingestion.full_validation_changeset(andi_ingestion, changes)
+    Ingestion.changeset(andi_ingestion, changes)
+      |> Ingestion.validate()
   end
 
   def smrt_dataset_to_changeset(smrt_dataset) do
@@ -132,7 +133,8 @@ defmodule Andi.InputSchemas.InputConverter do
   def andi_ingestion_to_full_ui_changeset(%Ingestion{} = ingestion) do
     ingestion_as_map = StructTools.to_map(ingestion)
 
-    Ingestion.full_validation_changeset(%Ingestion{}, ingestion_as_map)
+    Ingestion.changeset(%Ingestion{}, ingestion_as_map)
+      |> Ingestion.validate()
   end
 
   def andi_dataset_to_full_ui_changeset_for_publish(%Dataset{} = dataset) do

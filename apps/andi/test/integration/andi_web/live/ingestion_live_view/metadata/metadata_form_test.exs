@@ -68,8 +68,8 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       }
 
       view
-        |> form("#ingestion_metadata_form", form_data: form_data)
-        |> render_change()
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
 
       html = render(view)
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
@@ -104,9 +104,30 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
         "sourceFormat" => new_source_format
       }
 
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-      render_change(metadata_view, "validate", %{"form_data" => form_data})
-      render_change(view, "save")
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      html = render(view)
+      current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
+
+      assert new_source_format in current_select_value
+    end
+
+    test "source format field can be set to empty", %{
+      view: view,
+      html: html,
+      ingestion: ingestion
+    } do
+      new_source_format = nil
+
+      form_data = %{
+        "sourceFormat" => new_source_format
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
 
       html = render(view)
       current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
@@ -119,15 +140,21 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       html: html,
       ingestion: ingestion
     } do
-      metadata_view = find_live_child(view, "ingestion_metadata_form_editor")
-
       assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
 
-      html = render_click(metadata_view, "select-dataset", %{})
+      html =
+        view
+        |> element("#open-select-dataset-modal")
+        |> render_click()
 
       refute Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
 
-      html = render_click(metadata_view, "cancel-dataset-search", %{})
+      html =
+        view
+        |> element("#close-select-dataset-modal")
+        |> render_click()
+
+      html = render(view)
 
       assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
     end
