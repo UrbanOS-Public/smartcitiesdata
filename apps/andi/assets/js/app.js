@@ -5,6 +5,8 @@ import 'tippy.js/dist/tippy.css';
 import normalize_css from 'normalize.css'
 import scss from "../css/app.scss"
 import tippy from 'tippy.js';
+import Alpine from 'alpinejs';
+import focus from '@alpinejs/focus';
 
 // webpack automatically bundles all modules in your
 // entry points. Those entry points can be configured
@@ -21,12 +23,17 @@ import "phoenix_html"
 import { Socket } from 'phoenix'
 import { LiveSocket } from 'phoenix_live_view'
 
+window.Alpine = Alpine
+Alpine.plugin(focus)
+Alpine.start()
+
 let Hooks = {}
 
 Hooks.showSnackbar = {
     updated() {
         let snackbar = document.getElementById("snackbar");
         snackbar.className += " show";
+        snackbar.focus();
         setTimeout(function() { snackbar.className = snackbar.className.replace(" show", ""); }, 3000);
     }
 }
@@ -117,5 +124,17 @@ const fileToText = (file) => new Promise((resolve, reject) => {
 
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-let liveSocket = new LiveSocket('/live', Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket('/live', Socket, 
+    {
+        hooks: Hooks, 
+        params: {_csrf_token: csrfToken},
+        dom: {
+            onBeforeElUpdated(from, to) {
+                if (from._x_dataStack) {
+                    window.Alpine.clone(from, to)
+                }
+            }
+        }
+    }
+)
 liveSocket.connect()

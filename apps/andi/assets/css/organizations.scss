@@ -33,6 +33,14 @@
 .harvested-datasets-table {
     margin-top: 3rem;
     width: 100%;
+
+  h2 {
+    // replicate h3 sizing
+    font-size: 1.17em;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    font-weight: bold;
+  }
 }
 
 .organizations-view {
@@ -125,7 +133,7 @@
 
 .organizations-table__ingested-cell {
   text-align: center;
-  color: green;
+  color: $color-success;
 }
 
 .organizations-table__cell--break {

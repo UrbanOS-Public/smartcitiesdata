@@ -30,7 +30,7 @@ defmodule AndiWeb.HeaderLiveView do
 
   def render(assigns) do
     ~L"""
-    <header class="page-header">
+    <header role="banner" aria-label="Navigation and logout buttons" class="page-header">
       <span class="page-header__primary" phx-click="show-datasets">
         <img id="header-logo" src=<%= get_logo() %>></img>
         <span><%= get_header_text() %></span>

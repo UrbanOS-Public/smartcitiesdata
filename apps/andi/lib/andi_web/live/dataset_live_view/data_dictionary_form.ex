@@ -62,7 +62,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
         <div class="section-number">
-          <h3 class="component-number component-number--<%= @validation_status %>"><%= @order %></h3>
+          <div class="component-number component-number--<%= @validation_status %>"><%= @order %></div>
           <div class="component-number-status--<%= @validation_status %>"></div>
         </div>
         <div class="component-title full-width">

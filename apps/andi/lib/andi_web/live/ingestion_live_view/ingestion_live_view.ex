@@ -15,7 +15,7 @@ defmodule AndiWeb.IngestionLiveView do
     ~L"""
     <div class="content">
       <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
-      <div class="ingestions-view">
+      <main aria-label="Add and Edit Ingestions" class="ingestions-view">
         <div class="ingestions-index">
           <div class="ingestions-index__header">
             <h1 class="ingestions-index__title">All Data Ingestions</h1>
@@ -26,7 +26,7 @@ defmodule AndiWeb.IngestionLiveView do
           <%= live_component(@socket, Table, id: :ingestions_table, ingestions: @view_models, is_curator: @is_curator) %>
 
         </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     </div>
     """

@@ -26,6 +26,14 @@
 .associated-organizations-table {
     margin-top: 3rem;
     width: 100%;
+
+    h2 {
+        // replicate h3 sizing
+        font-size: 1.17em;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        font-weight: bold;
+    }
 }
 
 .btn--remove-organization {
@@ -33,12 +41,12 @@
     display: inline-block;
     text-decoration: none;
     cursor: pointer;
-    background-color: red;
+    background-color: $color-error;
     color: white;
     border: none;
 
     &:hover {
-        background-color: #ff2525;
+        background-color: lighten($color-error, 10%);
     }
 }
 

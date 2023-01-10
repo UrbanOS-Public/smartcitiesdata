@@ -4,10 +4,10 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
   def render(assigns) do
     ~L"""
     <div class="manage-users-modal manage-users-modal--<%= @visibility %>">
-      <div class="modal-form-container search-modal">
+      <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
           <h1 class="search-index__title">User Search</h1>
-          <span class="material-icons search-index__exit" phx-click="cancel-manage-users">close</span>
+          <button type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-manage-users">close</button>
         </div>
 
         <hr class="search-modal-divider">
@@ -18,13 +18,13 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
           <p class="search-modal-section-header-text">Search</p>
           <form phx-change="user-search" phx-submit="user-search">
             <div class="search-modal__search_bar-input-container">
-              <label for="search-modal__search_bar-input">
+              <label for="search-modal__search_bar-input-user">
                 <i class="material-icons search-modal__search_bar-icon">search</i>
               </label>
               <input
                 name="search-value"
                 phx-debounce="250"
-                id="search-modal__search_bar-input"
+                id="search-modal__search_bar-input-user"
                 class="search-modal__search_bar-input"
                 type="text"
                 value="<%= @search_text %>"
@@ -68,7 +68,10 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
           <p class="search-modal-section-header-text">Selected Users</p>
           <div class="selected-results-from-search">
             <%= for user <- selected_users(@search_results, @selected_users) do %>
-              <div class="selected-result-from-search"><span class="selected-result-text"><%= user.name %></span><i class="material-icons remove-selected-result" phx-click="remove-selected-user" phx-value-id=<%= user.subject_id %>>close</i></div>
+              <div class="selected-result-from-search">
+                <span class="selected-result-text"><%= user.name %></span>
+                <button type="button" class="btn btn--transparent material-icons remove-selected-result" phx-click="remove-selected-user" phx-value-id=<%= user.subject_id %>>close</button>
+              </div>
             <% end %>
           </div>
         </div>

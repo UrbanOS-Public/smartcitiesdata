@@ -20,7 +20,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_organizations_path()) %>
-    <div id="edit-organization-live-view" class="organization-edit-page edit-page">
+    <main aria-label="Edit Organization" id="edit-organization-live-view" class="organization-edit-page edit-page">
       <div class="edit-organization-title">
         <h1 class="component-title-text">Edit Organization </h1>
       </div>
@@ -77,7 +77,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
       </form>
 
       <div class="harvested-datasets-table">
-        <h3>Remote Datasets Attached To This Organization</h3>
+        <h2>Remote Datasets Attached To This Organization</h2>
 
         <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatsetsTable, datasets: @harvested_datasets, order: @order) %>
       </div>
@@ -88,17 +88,20 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
       <div phx-hook="showSnackbar">
         <%= if @has_validation_errors do %>
-          <div id="snackbar" class="error-message">There were errors with the organization you tried to submit</div>
+          <p id="snackbar" class="error-message" tabindex="0">There were errors with the organization you tried to submit</p>
         <% end %>
 
       </div>
-
-    </div>
+    </main>
     <%= footer_render(@is_curator) %>
     """
   end
 
-  def mount(_params, %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id}, socket) do
+  def mount(
+        _params,
+        %{"organization" => org, "is_curator" => is_curator, "user_id" => user_id},
+        socket
+      ) do
     changeset = Organization.changeset(org, %{}) |> Map.put(:errors, [])
 
     org_exists =
@@ -164,7 +167,11 @@ defmodule AndiWeb.EditOrganizationLiveView do
   end
 
   def handle_event("cancel-edit", _, %{assigns: %{unsaved_changes: true}} = socket) do
-    {:noreply, assign(socket, unsaved_changes_modal_visibility: "visible", unsaved_changes_link: header_organizations_path())}
+    {:noreply,
+     assign(socket,
+       unsaved_changes_modal_visibility: "visible",
+       unsaved_changes_link: header_organizations_path()
+     )}
   end
 
   def handle_event("cancel-edit", _, socket) do
@@ -186,7 +193,11 @@ defmodule AndiWeb.EditOrganizationLiveView do
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_org_to_smrt_org()
 
-      Andi.Schemas.AuditEvents.log_audit_event(socket.assigns.user_id, organization_update(), smrt_org)
+      Andi.Schemas.AuditEvents.log_audit_event(
+        socket.assigns.user_id,
+        organization_update(),
+        smrt_org
+      )
 
       case Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_org) do
         :ok ->

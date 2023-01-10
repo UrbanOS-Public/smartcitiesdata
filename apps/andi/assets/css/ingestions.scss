@@ -91,7 +91,7 @@ $icon-width: 30px;
 }
 
 .ingestion__status--success {
-    color: green;
+    color: $color-success;
 
     .status__icon {
         background-image: url('/static/images/check.svg');

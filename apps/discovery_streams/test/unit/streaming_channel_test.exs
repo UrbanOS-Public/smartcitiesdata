@@ -138,4 +138,53 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
 
     assert_called(RaptorService.is_authorized("raptor.url", api_key, "shuttle-position"))
   end
+
+  describe "REQUIRED_API_KEY" do
+    setup do
+      System.put_env("REQUIRE_API_KEY", "true")
+
+      on_exit(fn ->
+        System.put_env("REQUIRE_API_KEY", "false")
+      end)
+    end
+
+    test "joining a application with no api_key returns an error" do
+      assert {:error, %{reason: "Channel streaming:shuttle-position does not exist or you do not have access"}} ==
+               subscribe_and_join(
+                 socket(DiscoveryStreamsWeb.UserSocket),
+                 DiscoveryStreamsWeb.StreamingChannel,
+                 "streaming:shuttle-position"
+               )
+    end
+
+    test "joining a application with api_key connects" do
+      allow(RaptorService.get_user_id_from_api_key(any(), any()),
+        return: {:ok, "user_id"}
+      )
+
+      {:ok, _, socket} =
+        subscribe_and_join(
+          socket(DiscoveryStreamsWeb.UserSocket),
+          DiscoveryStreamsWeb.StreamingChannel,
+          "streaming:shuttle-position",
+          %{"api_key" => "valid_api_key"}
+        )
+
+      leave(socket)
+    end
+
+    test "joining a application with invalid api_key returns an error" do
+      allow(RaptorService.get_user_id_from_api_key(any(), any()),
+        return: {:error, "reason", "500"}
+      )
+
+      assert {:error, %{reason: "Channel streaming:shuttle-position gave error code 500 with reason reason"}} ==
+               subscribe_and_join(
+                 socket(DiscoveryStreamsWeb.UserSocket),
+                 DiscoveryStreamsWeb.StreamingChannel,
+                 "streaming:shuttle-position",
+                 %{"api_key" => "valid_api_key"}
+               )
+    end
+  end
 end

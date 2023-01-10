@@ -1,5 +1,6 @@
  <%# This file is needed because it's the best way too access the styles set in the env (i.e. coolor) %>
  <style>
+  /* Primary colors */
   .root {
     accent-color: <%= get_primary_color() %>;
   }
@@ -9,6 +10,10 @@
   .component-number--expanded {
     background-color: <%= get_primary_color() %>;
     border: 1px solid <%= get_primary_color() %>;
+  }
+  .btn--action:hover {
+    color: <%= get_primary_button_text_color() %>;
+    background-color: <%= get_primary_color() %>
   }
   .btn--primary-outline {
     color:  <%= get_primary_color() %>;
@@ -20,7 +25,10 @@
     color: <%= get_primary_button_text_color() %>;
   }
   .btn--primary:hover {
-    background-color: <%= get_hover_primary_color() %>;
+    background-color: <%= get_hover_color(:primary) %>;
+  }
+  .btn--primary:disabled {
+    background-color: <%= get_disabled_color(:primary) %>;
   }
   .btn--primary:active {
     background-color: <%= get_active_primary_color() %>;
@@ -33,6 +41,10 @@
   }
   .primary-color {
     color: <%= get_primary_color() %>;
+  }
+  .finalize-form-cron-button {
+    border-color: <%= get_primary_color() %>;
+    background-color: <%= get_primary_color() %>;
   }
   .primary-color-text {
     color: <%= get_primary_text_color() %>;
@@ -61,5 +73,120 @@
   }
   .input {
     outline-color: <%= get_primary_text_color() %>;
+  }
+
+  /* Secondary colors */
+  .btn--secondary:active {
+    background-color: <%= get_secondary_color() %>;
+  }
+  .btn--secondary:hover {
+    background-color: <%= get_hover_color(:secondary) %>;
+  }
+  .btn--secondary:disabled {
+    background-color: <%= get_disabled_color(:secondary) %>;
+  }
+
+  /* Success colors */
+  .dataset__status--success {
+    color: <%= get_success_color() %>;
+  }
+  .component-number--valid {
+    background-color: <%= get_success_color() %>;
+    border: 1px solid <%= get_success_color() %>;
+  }
+  .publish-success-modal--visible.a {
+    color: <%= get_success_color() %>;
+  }
+  .approve-button {
+    background-color: <%= get_success_color() %>;
+    border: 1px solid <%= get_success_color() %>;
+  }
+  .approve-button:hover {
+    color: <%= get_hover_color(:success) %>;
+    border: 1px solid <%= get_hover_color(:success) %>;
+  }
+  #snackbar.success-message {
+    color: <%= get_success_color() %>;
+  }
+  .example-output {
+    color: <%= get_success_color() %>;
+  }
+  .secret__save-success {
+    color: <%= get_success_color() %>;
+  }
+  .ingestion__status--success {
+    color: <%= get_success_color() %>;
+  }
+  .metadata__success-message {
+    color: <%= get_success_color() %>;
+  }
+  .organizations-table__ingested-cell {
+    color: <%= get_success_color() %>;
+  }
+  .selected-result-from-search {
+    background: <%= get_success_color() %>;
+  }
+  .test-status__code--good {
+    color: <%= get_success_color() %>;
+  }
+
+  /* Error colors */
+  .error-msg {
+    color: <%= get_error_color() %>;
+  }
+  .btn--delete:hover {
+    background-color: <%= get_error_color() %>;
+    border: 1px solid <%= get_error_color() %>;
+  }
+  .btn--danger {
+    color: <%= get_error_color() %>;
+    border: 1px solid <%= get_error_color() %>;
+  }
+  .btn--danger.material-icons {
+    color: <%= get_error_color() %>;
+  }
+  .btn--danger:active {
+    background-color: <%= get_error_color() %>;
+  }
+  .btn--danger:hover {
+    background-color: <%= get_hover_color(:error) %>;
+  }
+  .btn--danger:disabled {
+    background-color: <%= get_disabled_color(:error) %>;
+  }
+  .dataset__status--rejected {
+    color: <%= get_error_color() %>;
+  }
+  .component-number--invalid {
+    background-color: <%= get_error_color() %>;
+    border: 1px solid <%= get_error_color() %>;
+  }
+  .confirm-delete-modal--visible.delete-button {
+    background-color: <%= get_error_color() %>;
+  }
+  #reject-button:hover {
+    background-color: <%= get_error_color() %>;
+    border: 1px solid <%= get_error_color() %>;
+  }
+  #snackbar.error-message {
+    color: <%= get_error_color() %>;
+  }
+  .secret__save-fail {
+    color: <%= get_error_color() %>;
+  }
+  .extract-steps__error-message {
+    color: <%= get_error_color() %>;
+  }
+  .metadata__error-message {
+    color: <%= get_error_color() %>;
+  }
+  .test-status__code--bad {
+    color: <%= get_error_color() %>;
+  }
+  .btn--remove-organization {
+    background-color: <%= get_error_color() %>;
+  }
+  .btn--remove-organization:hover {
+    background-color: <%= get_hover_color(:error) %>;
   }
 </style>

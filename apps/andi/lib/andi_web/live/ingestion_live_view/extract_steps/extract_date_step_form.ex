@@ -33,26 +33,26 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
           <div class="component-edit-section--<%= @visibility %>">
             <div class="extract-date-step-form-edit-section form-grid">
               <div class="extract-date-step-form__destination">
-                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required") %>
+                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step-#{@id}__date-destination") %>
                 <%= text_input(f, :destination, [id: "step-#{@id}__date-destination", class: "extract-date-step-form__destination input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :destination) %>
               </div>
 
               <div class="extract-date-step-form__deltaTimeUnit">
-                <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label") %>
+                <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "step_#{@id}__date_delta_time_unit") %>
                 <%= select(f, :deltaTimeUnit, get_time_units(), id: "step_#{@id}__date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
                 <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
               </div>
 
               <div class="extract-date-step-form__deltaTimeValue">
-                <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label") %>
+                <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "step_#{@id}__date_delta_time_value") %>
                 <%= text_input(f, :deltaTimeValue, id: "step_#{@id}__date_delta_time_value", class: "extract-date-step-form__delta_time_value input", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
                 <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
               </div>
 
               <div class="extract-date-step-form__format">
                 <div class="help-text-label">
-                  <%= label(f, :format, "Format", class: "label label--required") %>
+                  <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@id}__date_format") %>
                   <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
                 </div>
                 <%= text_input(f, :format, [id: "step_#{@id}__date_format", class: "extract-date-step-form__format input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>

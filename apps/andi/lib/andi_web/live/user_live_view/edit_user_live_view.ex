@@ -17,7 +17,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
   def render(assigns) do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_users_path()) %>
-      <div id="edit-user-live-view" class="user-edit-page edit-page">
+      <main aria-label="Edit User" id="edit-user-live-view" class="user-edit-page edit-page">
           <div class="edit-user-title">
               <h1 class="component-title-text">Edit User </h1>
           </div>
@@ -34,8 +34,8 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
               </div>
 
               <div class="user-form__organizations">
-                <%= label(:organization, :org_id, class: "label") %>
-                <%= select(:organiation, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
+                <%= label(:organization, :org_id, "Organization", class: "label") %>
+                <%= select(:organization, :org_id, MetadataFormHelpers.get_org_options(), [class: "select", readonly: true]) %>
                 <button type="submit" class="btn btn--add-organization btn--primary-outline">Add Organization</button>
               </div>
           </form>
@@ -48,15 +48,15 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           </div>
 
           <div class="associated-organizations-table">
-            <h3>Roles Associated With This User</h3>
+            <h2>Roles Associated With This User</h2>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewRoleTable, user_roles: @user_roles, id: :edit_user_roles, self: @self) %>
           </div>
 
           <div class="associated-organizations-table">
-            <h3>Organizations Associated With This User</h3>
+            <h2>Organizations Associated With This User</h2>
             <%= live_component(@socket, AndiWeb.EditUserLiveView.EditUserLiveViewTable, organizations: @organizations, id: :edit_user_organizations) %>
           </div>
-      </div>
+      </main>
       <%= footer_render(@is_curator) %>
     """
   end
@@ -134,11 +134,11 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
     end
   end
 
-  def handle_event("associate", %{"organiation" => %{"org_id" => ""}}, socket) do
+  def handle_event("associate", %{"organization" => %{"org_id" => ""}}, socket) do
     {:noreply, socket}
   end
 
-  def handle_event("associate", %{"organiation" => %{"org_id" => org_id}}, socket) do
+  def handle_event("associate", %{"organization" => %{"org_id" => org_id}}, socket) do
     user = socket.assigns.user
     send_event(org_id, user, socket.assigns.signed_in_user_id)
 

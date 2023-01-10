@@ -1,4 +1,5 @@
 use Mix.Config
+System.put_env("REQUIRE_API_KEY", "false")
 
 host = "127.0.0.1"
 endpoints = [{String.to_atom(host), 9092}]

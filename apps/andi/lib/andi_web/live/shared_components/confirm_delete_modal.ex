@@ -8,8 +8,8 @@ defmodule AndiWeb.ConfirmDeleteModal do
   def render(assigns) do
     ~L"""
     <div class="confirm-delete-modal confirm-delete-modal--<%= @visibility %>">
-      <div class="modal-form-container">
-        <h3><%= "Delete #{@type}" %></h3>
+      <div class="modal-form-container" x-trap="<%= @visibility === "visible" %>">
+        <h2 class="confirm-delete-header"><%= "Delete #{@type}" %></h3>
         <p><%= "Are you sure? This #{@type} will be deleted permanently." %></p>
         <br>
         <div class="button-container">

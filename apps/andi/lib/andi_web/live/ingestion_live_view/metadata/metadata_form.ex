@@ -37,15 +37,16 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
           <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
         </div>
 
-        <div class="metadata-form__top-level-selector">
+      <div class="metadata-form__top-level-selector">
+        <%= if input_value(f, :sourceFormat) not in ["text/xml", "application/json", "application/geo+json"] do %>
+          <%= label(f, :emptyValue, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+          <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
+        <% else %>
           <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-          <%= if input_value(f, :sourceFormat) not in ["xml", "json", "text/xml", "application/json"] do %>
-            <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
-          <% else %>
-            <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
-          <% end %>
-          <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
-        </div>
+          <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
+        <% end %>
+        <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
+      </div>
 
         <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
           <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
