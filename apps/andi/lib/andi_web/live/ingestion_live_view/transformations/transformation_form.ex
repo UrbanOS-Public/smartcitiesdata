@@ -45,14 +45,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
         <div class="transformation-form transformation-edit-form--<%= @visibility %>">
           <div class="transformation-form__name">
-            <%= label(f, :name, "Name", class: "label label--required") %>
-            <%= text_input(f, :name, [class: "transformation-name input transformation-form-fields", phx_debounce: "1000", required: true]) %>
+            <%= label(f, :name, "Name", class: "label label--required", for: "transformation_#{@socket.id}__name") %>
+            <%= text_input(f, :name, [id: "transformation_#{@socket.id}__name", aria_label: "transformation_#{@socket.id}__name", class: "transformation-name input transformation-form-fields", phx_debounce: "1000", required: true]) %>
             <%= ErrorHelpers.error_tag(f.source, :name, bind_to_input: false) %>
           </div>
 
           <div class="transformation-form__type">
-            <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required") %>
-            <%= select(f, :type, get_transformation_types(), [phx_click: "transformation-type-selected", class: "select transformation-type", required: true]) %>
+            <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required", for: "transformation_#{@socket.id}__type") %>
+            <%= select(f, :type, get_transformation_types(), [id: "transformation_#{@socket.id}__type", aria_label: "transformation_#{@socket.id}__type", phx_click: "transformation-type-selected", class: "select transformation-type", required: true]) %>
             <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
           </div>
           <div class="transformation-form__fields">

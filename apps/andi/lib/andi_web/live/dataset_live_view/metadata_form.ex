@@ -62,11 +62,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
           <%= hidden_input(f, :orgName) %>
-          <%= hidden_input(f, :orgTitle) %>
           <%= hidden_input(f, :orgId) %>
-          <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
-          <%= hidden_input(f, :sourceType) %>
           <%= hidden_input(f, :datasetId) %>
 
           <div class="component-edit-section--<%= @visibility %>">
@@ -165,9 +162,9 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__organization">
-                <%= label(f, :orgId, DisplayNames.get(:orgTitle), class: "label label--required") %>
-                <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: "", required: true]) %>
-                <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
+                <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
+                <%= select(f, :orgTitle, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: "", required: true]) %>
+                <%= ErrorHelpers.error_tag(f, :orgTitle, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__level-of-access">
