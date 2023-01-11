@@ -47,27 +47,13 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: ingestion_update(), data: %Ingestion{} = data, author: author}) do
-    try do
-      ingestion_update()
-      |> add_event_count(author, data.id)
+    ingestion_update()
+    |> add_event_count(author, data.id)
 
-      Ingestions.update_ingested_time(data.id, DateTime.utc_now())
+    Ingestions.update_ingested_time(data.id, DateTime.utc_now())
 
-      Ingestions.update(data)
-      IngestionStore.update(data)
-    rescue
-      e in Ecto.ConstraintError ->
-        IO.inspect(e, label: "CAUGHT CONSTRAINT ERROR")
-        :discard
-
-      uninit in Brook.Uninitialized ->
-        IO.inspect(uninit, label: "CAUGHT UNINIT ERROR")
-        :discard
-
-      _ ->
-        reraise("Failed to handle an ingestion update", __STACKTRACE__)
-    end
-
+    Ingestions.update(data)
+    IngestionStore.update(data)
   end
 
   def handle_event(%Brook.Event{

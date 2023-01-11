@@ -13,7 +13,7 @@ defmodule Andi.Repo.Migrations.CreateCodelabTables do
     create table(:address, primary_key: false) do
       add :id, :uuid, null: false, primary_key: true
       add :street, :string
-      add :person_id, references(:person, type: :uuid, on_delete: :delete_all), null: false
+      add :person_id, references(:person, type: :uuid, on_delete: :delete_all)
     end
   end
 end

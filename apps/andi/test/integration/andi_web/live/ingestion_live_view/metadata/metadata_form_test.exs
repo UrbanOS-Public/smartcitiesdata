@@ -114,27 +114,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert new_source_format in current_select_value
     end
 
-    test "source format field can be set to empty", %{
-      view: view,
-      html: html,
-      ingestion: ingestion
-    } do
-      new_source_format = nil
-
-      form_data = %{
-        "sourceFormat" => new_source_format
-      }
-
-      view
-      |> form("#ingestion_metadata_form", form_data: form_data)
-      |> render_change()
-
-      html = render(view)
-      current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
-
-      assert new_source_format in current_select_value
-    end
-
     test "can close dataset modal", %{
       view: view,
       html: html,

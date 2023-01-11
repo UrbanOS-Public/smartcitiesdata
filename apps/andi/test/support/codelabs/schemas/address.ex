@@ -20,7 +20,9 @@ defmodule Codelabs.Address do
   end
 
   @cast_fields [
-    :street
+    :street,
+    :person_id,
+    :id
   ]
 
   @required_fields [

@@ -29,7 +29,6 @@ defmodule AndiWeb.Test.PublicAccessCase do
   end
 
   def restart_andi() do
-    IO.inspect("Restarting andi", label: "Ryan")
     Application.stop(:andi)
     Application.stop(:brook)
     Application.stop(:elsa)

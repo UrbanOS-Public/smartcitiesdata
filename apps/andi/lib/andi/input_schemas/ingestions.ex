@@ -74,9 +74,7 @@ defmodule Andi.InputSchemas.Ingestions do
     changes = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
 
     andi_ingestion
-    |> Andi.Repo.preload([:extractSteps, :schema, :transformations])
-    |> Ingestion.changeset(changes)
-    |> save()
+    |> update(changes)
   end
 
   def update(%Ingestion{} = andi_ingestion) do
@@ -95,11 +93,12 @@ defmodule Andi.InputSchemas.Ingestions do
     from_ingestion
     |> Andi.Repo.preload([:extractSteps, :schema])
     |> Ingestion.changeset_for_draft(changes_as_map)
+    |> Ingestion.validate_database_safety()
     |> save()
   end
 
   def save(%Ecto.Changeset{} = changeset) do
-    Repo.insert_or_update(changeset)
+    Repo.insert_or_update!(changeset)
   end
 
   def save_form_changeset(ingestion_id, form_changeset) do

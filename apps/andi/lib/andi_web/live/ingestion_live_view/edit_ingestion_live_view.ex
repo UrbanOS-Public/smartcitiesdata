@@ -54,8 +54,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
     <main aria-label="Edit Ingestion" class="edit-page" id="ingestions-edit-page">
-      <%= f = form_for @changeset, "" %>
-        <%= hidden_input(f, :sourceFormat) %>
         <div class="edit-ingestion-title">
           <h1 class="component-title-text">Define Data Ingestion</h1>
         </div>

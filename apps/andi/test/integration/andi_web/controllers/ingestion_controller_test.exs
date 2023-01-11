@@ -68,11 +68,7 @@ defmodule Andi.IngestionControllerTest do
 
   describe "ingestion publish" do
     test "sends ingestion:update event" do
-      Datasets.get_all()
-      |> IO.inspect(label: "All datasets from the database")
-      Ingestions.get_all()
-      |> IO.inspect(label: "All ingestions from the database")
-      dataset = setup_dataset() |> IO.inspect(label: "RYAN - Setup Dataset")
+      dataset = setup_dataset()
       ingestion = TDG.create_ingestion(%{sourceType: "remote", targetDataset: dataset.id})
       {:ok, _} = create_ingestion(ingestion)
 
@@ -93,6 +89,14 @@ defmodule Andi.IngestionControllerTest do
 
         assert 2 == length(values)
       end)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id).submissionStatus == :published
+      end)
+      # TODO: Refactor the create/publish endpoints to be merged into a single "update" endpoint
+      # TODO: The create/publish split makes sense for the UI Draft/Publish, but the API cannot create a draft
+      # This sleep is a band-aid for a Repo/Event-Stream race condition
+      Process.sleep(3_000)
     end
 
     test "returns 404 when ingestion does not exist in database" do

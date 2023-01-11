@@ -20,11 +20,9 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   def render(assigns) do
     {_, selected_dataset} = Changeset.fetch_field(assigns.changeset, :targetDataset)
-
     ~L"""
     <div>
       <%= f = form_for @changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, phx_submit: :save, id: :ingestion_metadata_form ] %>
-
         <div class="ingestion-metadata-form ingestion-metadata-form__name">
           <%= label(f, :name, "Name", class: "label label--required") %>
           <%= text_input(f, :name, [class: "ingestion-name input ingestion-form-fields", phx_debounce: "1000", required: true]) %>
@@ -86,7 +84,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
      )}
   end
 
-  # TODO: Cleanup
   def handle_event(event, payload, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}}')
@@ -95,7 +92,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     {:noreply, socket}
   end
 
-  # TODO: Cleanup
   def handle_event(event, socket) do
     IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
     IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')

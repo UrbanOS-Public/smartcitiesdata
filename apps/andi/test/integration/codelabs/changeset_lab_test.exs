@@ -196,6 +196,65 @@ defmodule Codelabs.Changesets do
     end
   end
 
+  describe "Errors - Database writes" do
+    test "Saving a child with an invalid parent association throws an error" do
+      changeset = Address.changeset(%Address{}, %{person_id: Ecto.UUID.generate()})
+
+      try do
+        Repo.insert_or_update(changeset)
+        flunk("Expected a foreign key constraint error")
+      rescue
+        constraint_error in Ecto.ConstraintError ->
+          assert constraint_error.constraint == "address_person_id_fkey"
+        error -> flunk("Unexpected error: #{error}}")
+      end
+    end
+
+    test "Foreign key constraint validation are added as errors to the changeset, rather than throwing an error, but only AFTER a database operation" do
+      changeset = Address.changeset(%Address{}, %{person_id: Ecto.UUID.generate()})
+      constrained_changeset = changeset |> Changeset.foreign_key_constraint(:person_id)
+
+      assert changeset.valid? == true
+
+      assert constrained_changeset.errors == []
+      assert constrained_changeset.valid? == false
+
+      {:error, failed_changeset} = Repo.insert_or_update(constrained_changeset)
+
+
+      assert failed_changeset.errors == [person_id: {"does not exist", [constraint: :foreign, constraint_name: "address_person_id_fkey"]}]
+    end
+
+    test "However, saving a child with no parent association is fine" do
+      changeset = Address.changeset(%Address{}, %{})
+
+      {:ok, address} = Repo.insert_or_update(changeset)
+    end
+
+    test "Foreign key constraint validation allows for empty values" do
+      changeset = Address.changeset(%Address{}, %{})
+                  |> Changeset.foreign_key_constraint(:person_id)
+
+      {:ok, address } = Repo.insert_or_update(changeset)
+    end
+  end
+
+  describe "Nested errors" do
+    test "Saving a parent with a child error" do
+      child_changes = %{street: "way too long of a street name to be valid - past 40 chars"}
+      parent_changeset = Person.changeset(%Person{}, %{addresses: [child_changes]})
+
+      try do
+        Repo.insert_or_update(changeset)
+        flunk("Expected a foreign key constraint error")
+      rescue
+        constraint_error in Ecto.ConstraintError ->
+          assert constraint_error.constraint == "address_person_id_fkey"
+        error -> flunk("Unexpected error: #{error}}")
+      end
+    end
+  end
+
   describe "Inserting new data into a database" do
     # Migrations and general database management is a much larger topic.
     # Ideally, an entire codelab would be created to help understand how to use it
@@ -685,6 +744,9 @@ defmodule Codelabs.Changesets do
     end
   end
 
+
+
+
   ## ======================================= ##
   ## The recommended way to use a changeset
   ## ======================================= ##
@@ -784,4 +846,6 @@ defmodule Codelabs.Changesets do
       assert validated_changeset.errors == []
     end
   end
+
+
 end
