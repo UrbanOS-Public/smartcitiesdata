@@ -62,8 +62,11 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       <div class="form-section">
         <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :save, as: :form_data] %>
           <%= hidden_input(f, :orgName) %>
+          <%= hidden_input(f, :orgTitle) %>
           <%= hidden_input(f, :orgId) %>
+          <%= hidden_input(f, :dataName) %>
           <%= hidden_input(f, :systemName) %>
+          <%= hidden_input(f, :sourceType) %>
           <%= hidden_input(f, :datasetId) %>
 
           <div class="component-edit-section--<%= @visibility %>">
@@ -75,8 +78,8 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__data-name">
-                <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required") %>
-                <%= text_input(f, :dataName, [class: "input input--text", readonly: true, required: true]) %>
+                <%= label(f, :dataName, DisplayNames.get(:dataName), class: "label label--required", for: "metadata_#{@socket.id}__data-name") %>
+                <%= text_input(f, :dataName, [id: "metadata_#{@socket.id}__data-name", class: "input input--text", readonly: true, required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :dataName, bind_to_input: false) %>
               </div>
 
@@ -156,15 +159,15 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
               </div>
 
               <div class="metadata-form__type">
-                <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required") %>
-                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [class: "select", disabled: @dataset_published?, required: true]) %>
+                <%= label(f, :sourceType, DisplayNames.get(:sourceType), class: "label label--required", for: "metadata_#{@socket.id}__source-type") %>
+                <%= select(f, :sourceType, MetadataFormHelpers.get_source_type_options(), [id: "metadata_#{@socket.id}__source-type", class: "select", disabled: @dataset_published?, required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :sourceType, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__organization">
-                <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-                <%= select(f, :orgTitle, MetadataFormHelpers.get_org_options(), [class: "select", disabled: @dataset_published?, selected: "", required: true]) %>
-                <%= ErrorHelpers.error_tag(f, :orgTitle, bind_to_input: false) %>
+                <%= label(f, :orgId, DisplayNames.get(:orgTitle), class: "label label--required", for: "metadata_#{@socket.id}__org-title") %>
+                <%= select(f, :orgId, MetadataFormHelpers.get_org_options(), [id: "metadata_#{@socket.id}__org-title", class: "select", disabled: @dataset_published?, selected: "", required: true]) %>
+                <%= ErrorHelpers.error_tag(f, :orgId, bind_to_input: false) %>
               </div>
 
               <div class="metadata-form__level-of-access">
