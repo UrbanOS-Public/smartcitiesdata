@@ -34,13 +34,15 @@ defmodule Codelabs.Person do
 
   def validate(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
     # Extract data from changeset, including changes
-    data_as_changes = changeset
-                      |> Changeset.apply_changes()
-                      |> StructTools.to_map()
+    data_as_changes =
+      changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
 
     # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
-    validation_changeset = changeset(%__MODULE__{}, data_as_changes)
-                           |> Changeset.validate_length(:name, max: 10)
+    validation_changeset =
+      changeset(%__MODULE__{}, data_as_changes)
+      |> Changeset.validate_length(:name, max: 10)
 
     # Copy our validation fields from the fresh changeset into the actual changeset
     changeset

@@ -7,13 +7,13 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
   alias Andi.InputSchemas.Ingestion
 
-
   describe "changeset" do
     test "casts all expected fields as changes" do
       expected_name = "some_ingestion"
       expected_source_format = "csv"
       expected_target_dataset = "some_dataset"
       expected_top_level_selector = "some_top_level_selector"
+
       changes = %{
         name: expected_name,
         sourceFormat: expected_source_format,
@@ -36,14 +36,15 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
       expected_source_format = "csv"
       expected_target_dataset = "some_dataset"
       expected_top_level_selector = "some_top_level_selector"
+
       existing_ingestion = %Ingestion{
         name: expected_name,
         sourceFormat: expected_source_format,
         targetDataset: expected_target_dataset,
         topLevelSelector: expected_top_level_selector
       }
-      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
 
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
 
       result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
@@ -59,14 +60,15 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
       expected_target_dataset = "some_dataset"
       expected_top_level_selector = "some_top_level_selector"
       existing_ingestion = %Ingestion{}
+
       changes = %{
         name: expected_name,
         sourceFormat: expected_source_format,
         targetDataset: expected_target_dataset,
         topLevelSelector: expected_top_level_selector
       }
-      ingestion_changeset = Ingestion.changeset(existing_ingestion, changes)
 
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, changes)
 
       result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
@@ -83,9 +85,12 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
         targetDataset: {"is required", [validation: :required]},
         topLevelSelector: {"is required", [validation: :required]}
       ]
+
       existing_ingestion = %Ingestion{}
-      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
-                            |> Map.put(:errors, expected_errors)
+
+      ingestion_changeset =
+        Ingestion.changeset(existing_ingestion, %{})
+        |> Map.put(:errors, expected_errors)
 
       result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
@@ -100,15 +105,19 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
         topLevelSelector: {"is required", [validation: :required]},
         notAField: {"is required", [validation: :required]}
       ]
+
       expected_errors = [
         name: {"is required", [validation: :required]},
         sourceFormat: {"is required", [validation: :required]},
         targetDataset: {"is required", [validation: :required]},
-        topLevelSelector: {"is required", [validation: :required]},
+        topLevelSelector: {"is required", [validation: :required]}
       ]
+
       existing_ingestion = %Ingestion{}
-      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
-                            |> Map.put(:errors, ingestion_errors)
+
+      ingestion_changeset =
+        Ingestion.changeset(existing_ingestion, %{})
+        |> Map.put(:errors, ingestion_errors)
 
       result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 

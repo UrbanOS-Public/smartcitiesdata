@@ -81,24 +81,30 @@ defmodule Codelabs.Changesets do
       person = %Person{}
       changes = %{name: "turtle"}
       cast_fields = [:name]
-      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
-                         |> Changeset.validate_length(:name, is: 3)
+
+      invalid_person_changeset =
+        Changeset.cast(person, changes, cast_fields)
+        |> Changeset.validate_length(:name, is: 3)
 
       assert invalid_person_changeset.changes == %{name: "turtle"}
+
       assert invalid_person_changeset.errors == [
                {:name, {"should be %{count} character(s)", [count: 3, validation: :length, kind: :is, type: :string]}}
              ]
     end
 
     test "IMPORTANT! - validate_required will not be added as changes" do
-      #This causes behavior where you cannot unselect fields if using purely changesets
+      # This causes behavior where you cannot unselect fields if using purely changesets
       person = %Person{name: "turtle"}
       changes = %{name: nil}
       cast_fields = [:name]
-      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
-                                 |> Changeset.validate_required([:name])
+
+      invalid_person_changeset =
+        Changeset.cast(person, changes, cast_fields)
+        |> Changeset.validate_required([:name])
 
       assert invalid_person_changeset.changes == %{}
+
       assert invalid_person_changeset.errors == [
                name: {"can't be blank", [validation: :required]}
              ]
@@ -140,7 +146,7 @@ defmodule Codelabs.Changesets do
       assert invalid_person_changeset.errors == []
     end
 
-    #Important!
+    # Important!
     test "Unless you use the force_changes flag when casting the underlying data" do
       person = %Person{name: "turtle", age: "not a number"}
       changes = %{}
@@ -148,8 +154,10 @@ defmodule Codelabs.Changesets do
       invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
 
       changes_as_map = StructTools.to_map(invalid_person_changeset.data)
-      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields, force_changes: true)
-          |> Changeset.validate_length(:name, is: 3)
+
+      valid_person_changeset =
+        Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields, force_changes: true)
+        |> Changeset.validate_length(:name, is: 3)
 
       # Does not change existing fields
       assert valid_person_changeset.changes == %{name: "turtle"}
@@ -158,6 +166,7 @@ defmodule Codelabs.Changesets do
                {:name, {"should be %{count} character(s)", [count: 3, validation: :length, kind: :is, type: :string]}},
                {:age, {"is invalid", [type: :integer, validation: :cast]}}
              ]
+
       assert valid_person_changeset.data.age == "not a number"
     end
   end
@@ -223,8 +232,10 @@ defmodule Codelabs.Changesets do
       invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
 
       changes_as_map = StructTools.to_map(invalid_person_changeset.data)
-      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields)
-                               |> Changeset.validate_length(:name, is: 3)
+
+      valid_person_changeset =
+        Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields)
+        |> Changeset.validate_length(:name, is: 3)
 
       # Does not change existing fields
       assert valid_person_changeset.changes == %{}
@@ -244,7 +255,9 @@ defmodule Codelabs.Changesets do
       rescue
         constraint_error in Ecto.ConstraintError ->
           assert constraint_error.constraint == "address_person_id_fkey"
-        error -> flunk("Unexpected error: #{error}}")
+
+        error ->
+          flunk("Unexpected error: #{error}}")
       end
     end
 
@@ -268,28 +281,29 @@ defmodule Codelabs.Changesets do
     end
 
     test "Foreign key constraint validation allows for empty values" do
-      changeset = Address.changeset(%Address{}, %{})
-                  |> Changeset.foreign_key_constraint(:person_id)
+      changeset =
+        Address.changeset(%Address{}, %{})
+        |> Changeset.foreign_key_constraint(:person_id)
 
-      {:ok, address } = Repo.insert_or_update(changeset)
+      {:ok, address} = Repo.insert_or_update(changeset)
     end
   end
 
-#  describe "Nested errors" do
-#    test "Saving a parent with a child error" do
-#      child_changes = %{street: "way too long of a street name to be valid - past 40 chars"}
-#      parent_changeset = Person.changeset(%Person{}, %{addresses: [child_changes]})
-#
-#      try do
-#        Repo.insert_or_update(parent_changeset)
-#        flunk("Expected a foreign key constraint error")
-#      rescue
-#        constraint_error in Ecto.ConstraintError ->
-#          assert constraint_error.constraint == "address_person_id_fkey"
-#        error -> flunk("Unexpected error: #{error}}")
-#      end
-#    end
-#  end
+  #  describe "Nested errors" do
+  #    test "Saving a parent with a child error" do
+  #      child_changes = %{street: "way too long of a street name to be valid - past 40 chars"}
+  #      parent_changeset = Person.changeset(%Person{}, %{addresses: [child_changes]})
+  #
+  #      try do
+  #        Repo.insert_or_update(parent_changeset)
+  #        flunk("Expected a foreign key constraint error")
+  #      rescue
+  #        constraint_error in Ecto.ConstraintError ->
+  #          assert constraint_error.constraint == "address_person_id_fkey"
+  #        error -> flunk("Unexpected error: #{error}}")
+  #      end
+  #    end
+  #  end
 
   describe "Inserting new data into a database" do
     # Migrations and general database management is a much larger topic.
@@ -310,7 +324,7 @@ defmodule Codelabs.Changesets do
     end
 
     test "It will write the underlying data" do
-      #Todo: check
+      # Todo: check
       person = %Person{name: "turtle"}
       changes = %{}
       cast_fields = [:name]
@@ -595,6 +609,7 @@ defmodule Codelabs.Changesets do
           # It updated the first child correctly, but there is no second child now
           assert child.id == first_child_id
           assert child.street == third_expected_street
+
         _ ->
           flunk("Expected one child, which overwrote the other two!")
       end
@@ -654,6 +669,7 @@ defmodule Codelabs.Changesets do
           assert first_child.street == third_expected_street
           # The other children have been left alone!
           assert second_child.street == second_expected_street
+
         _ ->
           flunk("Expected one child, which overwrote the other two!")
       end
@@ -678,6 +694,7 @@ defmodule Codelabs.Changesets do
         case person_data.addresses do
           [first_child, second_child] -> first_child
         end
+
       second_child =
         case person_data.addresses do
           [first_child, second_child] -> second_child
@@ -691,9 +708,11 @@ defmodule Codelabs.Changesets do
       assert modified_first_child.id == first_child.id
       assert modified_first_child.street == third_expected_street
 
-      #Also, when loading the parent, the data has changed and the other child exists
-      parent = Repo.get(Person, person_data.id)
-               |> Repo.preload([:addresses])
+      # Also, when loading the parent, the data has changed and the other child exists
+      parent =
+        Repo.get(Person, person_data.id)
+        |> Repo.preload([:addresses])
+
       case parent.addresses do
         [second_preloaded_child, first_preloaded_child] ->
           # The preloaded child has been modified
@@ -732,10 +751,12 @@ defmodule Codelabs.Changesets do
         case person_data.addresses do
           [first_child, second_child] -> first_child
         end
+
       second_child =
         case person_data.addresses do
           [first_child, second_child] -> second_child
         end
+
       first_child_id = first_child.id
       assert first_child_id != nil
 
@@ -751,22 +772,28 @@ defmodule Codelabs.Changesets do
       # Again, include the id, map over existing children, and assign the entire collection
       fourth_expected_street = "Out of Digits Ct"
       child_changes = %{id: first_child_id, street: fourth_expected_street}
+
       modified_addresses =
         person_data.addresses
         |> Enum.map(fn
           %{id: id} when id == first_child_id -> child_changes
           %{id: id} -> %{id: id}
         end)
+
       # Update the parent
       parent_changes = %{addresses: modified_addresses}
-      parent_changeset = Changeset.cast(person_data, parent_changes, cast_fields)
-                         |> Changeset.cast_assoc(:addresses, with: &Address.changeset/2)
+
+      parent_changeset =
+        Changeset.cast(person_data, parent_changes, cast_fields)
+        |> Changeset.cast_assoc(:addresses, with: &Address.changeset/2)
+
       updated_parent = Repo.update(parent_changeset)
 
-
       # Show that the isolated child change have now been overwritten by the out-of-sync parent update
-      parent = Repo.get(Person, person_data.id)
-               |> Repo.preload([:addresses])
+      parent =
+        Repo.get(Person, person_data.id)
+        |> Repo.preload([:addresses])
+
       case parent.addresses do
         [second_preloaded_child, first_preloaded_child] ->
           assert first_preloaded_child.id == first_child_id
@@ -779,9 +806,6 @@ defmodule Codelabs.Changesets do
       end
     end
   end
-
-
-
 
   ## ======================================= ##
   ## The recommended way to use a changeset
@@ -840,6 +864,7 @@ defmodule Codelabs.Changesets do
         |> Person.validate()
 
       assert changeset.changes == changes
+
       assert changeset.errors == [
                {:name, {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max, type: :string]}}
              ]
@@ -855,6 +880,7 @@ defmodule Codelabs.Changesets do
         |> Person.validate()
 
       assert changeset.changes == %{}
+
       assert changeset.errors == [
                {:name, {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max, type: :string]}}
              ]
@@ -868,6 +894,7 @@ defmodule Codelabs.Changesets do
         |> Person.validate()
 
       assert changeset.changes == invalid_change
+
       assert changeset.errors == [
                {:name, {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max, type: :string]}}
              ]
@@ -882,6 +909,4 @@ defmodule Codelabs.Changesets do
       assert validated_changeset.errors == []
     end
   end
-
-
 end

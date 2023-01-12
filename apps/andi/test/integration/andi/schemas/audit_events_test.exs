@@ -138,7 +138,7 @@ defmodule Andi.Schemas.AuditEventsTest do
   end
 
   describe "get_all_by_event_id/1" do
-    #TODO: Ryan
+    # TODO: Ryan
     test "given existing audit events for the event id, it returns it" do
       audit_event_id_1 = UUID.uuid4()
       audit_event_id_2 = UUID.uuid4()

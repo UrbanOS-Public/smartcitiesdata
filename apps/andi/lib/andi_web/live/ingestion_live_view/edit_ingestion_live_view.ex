@@ -127,10 +127,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # Needed to maintain behavior for pre-refactor data_dictionary_form
     # Remove after refactoring data_dictionary_form
     ingestion_id = socket.assigns.changeset.data.id
-    {_, new_source_format } = Changeset.fetch_field(new_ingestion_changeset, :sourceFormat)
+    {_, new_source_format} = Changeset.fetch_field(new_ingestion_changeset, :sourceFormat)
     IO.inspect(new_source_format, label: "RYAN - Source format change")
+
     if(new_source_format != nil) do
       IO.inspect(new_source_format, label: "RYAN - Broadcasting")
+
       AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: new_source_format, ingestion_id: ingestion_id})
     end
 
@@ -344,9 +346,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def publish_ingestion(ingestion_id, user_id) do
     with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
-         ingestion_changeset <- andi_ingestion
-                                |> Ingestion.changeset(%{})
-                                |> Ingestion.validate(),
+         ingestion_changeset <-
+           andi_ingestion
+           |> Ingestion.changeset(%{})
+           |> Ingestion.validate(),
          true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset.data
       smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
@@ -369,9 +372,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       false ->
         IO.inspect("Ingestion not valid", label: "Publishing Ingestion Error")
-        {:error, Ingestions.get(ingestion_id)
-                 |> Ingestion.changeset(%{})
-                 |> Ingestion.validate()}
+
+        {:error,
+         Ingestions.get(ingestion_id)
+         |> Ingestion.changeset(%{})
+         |> Ingestion.validate()}
 
       error ->
         IO.inspect(error, label: "General error when publishing ingestion")

@@ -52,39 +52,43 @@ defmodule Andi.InputSchemas.Ingestion do
   ]
 
   def validate(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
-    data_as_changes = changeset
-                      |> Changeset.apply_changes()
-                      |> StructTools.to_map()
+    data_as_changes =
+      changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+
     source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
     changeset
-      |> Map.replace(:errors, [])
-      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
-      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
-      |> Changeset.validate_required(@required_fields, message: "is required")
-      |> Changeset.foreign_key_constraint(:targetDataset)
-      |> validate_source_format()
-      |> CadenceValidator.validate()
-      |> validate_top_level_selector()
-      |> validate_schema()
-      |> validate_extract_steps()
+    |> Map.replace(:errors, [])
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.validate_required(@required_fields, message: "is required")
+    |> Changeset.foreign_key_constraint(:targetDataset)
+    |> validate_source_format()
+    |> CadenceValidator.validate()
+    |> validate_top_level_selector()
+    |> validate_schema()
+    |> validate_extract_steps()
   end
 
   def validate_database_safety(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
-    data_as_changes = changeset
-                      |> Changeset.apply_changes()
-                      |> StructTools.to_map()
+    data_as_changes =
+      changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+
     source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
     changeset
-      |> Map.replace(:errors, [])
-      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
-      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
-      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
-      |> Changeset.foreign_key_constraint(:targetDataset)
+    |> Map.replace(:errors, [])
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    |> Changeset.foreign_key_constraint(:targetDataset)
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
@@ -139,8 +143,9 @@ defmodule Andi.InputSchemas.Ingestion do
         %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
         %Ecto.Changeset{data: %AndiWeb.InputSchemas.IngestionMetadataFormSchema{}} = metadata_changeset
       ) do
-    metadata = metadata_changeset
-        |> Changeset.apply_changes()
+    metadata =
+      metadata_changeset
+      |> Changeset.apply_changes()
 
     extracted_metadata = %{
       name: metadata.name,

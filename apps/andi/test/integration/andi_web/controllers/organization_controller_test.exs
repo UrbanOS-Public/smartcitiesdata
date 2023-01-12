@@ -40,6 +40,7 @@ defmodule Andi.OrganizationControllerTest do
 
       assert %Tesla.Env{status: 201} = response
       assert Andi.Schemas.AuditEvents.get_all_by_event_id(org.id) != []
+
       eventually(fn ->
         assert Organizations.get(org.id) != nil
       end)

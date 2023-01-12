@@ -56,6 +56,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       {:ok, _field} = DataDictionaryFields.add_field_to_parent(field_as_map, top_level_bread_crumb)
 
       updated_dataset = Datasets.get(dataset.id)
+
       assert [
                _,
                %{

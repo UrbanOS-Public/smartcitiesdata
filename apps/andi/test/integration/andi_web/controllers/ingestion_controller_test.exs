@@ -93,6 +93,7 @@ defmodule Andi.IngestionControllerTest do
       eventually(fn ->
         assert Ingestions.get(ingestion.id).submissionStatus == :published
       end)
+
       # TODO: Refactor the create/publish endpoints to be merged into a single "update" endpoint
       # TODO: The create/publish split makes sense for the UI Draft/Publish, but the API cannot create a draft
       # This sleep is a band-aid for a Repo/Event-Stream race condition
