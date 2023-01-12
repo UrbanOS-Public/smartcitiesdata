@@ -98,7 +98,7 @@ defmodule Andi.InputSchemas.Ingestions do
   end
 
   def save(%Ecto.Changeset{} = changeset) do
-    Repo.insert_or_update!(changeset)
+    Repo.insert_or_update(changeset)
   end
 
   def save_form_changeset(ingestion_id, form_changeset) do

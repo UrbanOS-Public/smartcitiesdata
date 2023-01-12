@@ -127,8 +127,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     # Needed to maintain behavior for pre-refactor data_dictionary_form
     # Remove after refactoring data_dictionary_form
     ingestion_id = socket.assigns.changeset.data.id
-    new_source_format = Changeset.fetch_field(new_ingestion_changeset, :sourceFormat)
+    {_, new_source_format } = Changeset.fetch_field(new_ingestion_changeset, :sourceFormat)
+    IO.inspect(new_source_format, label: "RYAN - Source format change")
     if(new_source_format != nil) do
+      IO.inspect(new_source_format, label: "RYAN - Broadcasting")
       AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: new_source_format, ingestion_id: ingestion_id})
     end
 

@@ -5,184 +5,114 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
   use Placebo
 
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
+  alias Andi.InputSchemas.Ingestion
 
-  describe "changeset_from_form_data()" do
-    test "generates a valid changeset when all data is present" do
-      form_data = %{
-        sourceFormat: "csv",
-        name: "Ingestion Name",
-        targetDataset: "dataset_id"
+
+  describe "changeset" do
+    test "casts all expected fields as changes" do
+      expected_name = "some_ingestion"
+      expected_source_format = "csv"
+      expected_target_dataset = "some_dataset"
+      expected_top_level_selector = "some_top_level_selector"
+      changes = %{
+        name: expected_name,
+        sourceFormat: expected_source_format,
+        targetDataset: expected_target_dataset,
+        topLevelSelector: expected_top_level_selector
       }
 
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
+      result = IngestionMetadataFormSchema.changeset(%IngestionMetadataFormSchema{}, changes)
 
-      assert changeset.valid?
-    end
-
-    test "generates a changeset with errors when sourceFormat is absent" do
-      form_data = %{
-        name: "Ingestion Name",
-        targetDataset: "Dataset Name"
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
-
-      refute changeset.valid?
-      assert changeset.errors == [{:sourceFormat, {"is required", [validation: :required]}}]
-    end
-
-    test "generates a changeset with errors when ingestion name is absent" do
-      form_data = %{
-        sourceFormat: "csv",
-        targetDataset: "Dataset Name"
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
-
-      refute changeset.valid?
-      assert changeset.errors == [{:name, {"is required", [validation: :required]}}]
-    end
-
-    test "displays error when topLevelSelector json Jaxon validation is invalid" do
-      badJsonPath = "$.data[x]"
-
-      form_data = %{
-        sourceFormat: "application/json",
-        targetDataset: "Dataset Name",
-        name: "ingestion123",
-        topLevelSelector: badJsonPath
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
-      refute changeset.valid?
-      assert changeset.errors == [{:topLevelSelector, {"Expected an integer at `x]`", []}}]
-    end
-
-    test "generates a changeset with errors when targetDataset is absent" do
-      form_data = %{
-        sourceFormat: "csv",
-        name: "Ingestion Name"
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
-
-      refute changeset.valid?
-      assert changeset.errors == [{:targetDataset, {"is required", [validation: :required]}}]
-    end
-
-    test "generates a changeset with errors when targetDataset id does not exist in ANDI database" do
-      form_data = %{
-        sourceFormat: "csv",
-        targetDataset: "dataset_id",
-        name: "Ingestion Name"
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
-
-      changeset = IngestionMetadataFormSchema.changeset_from_form_data(form_data)
-
-      refute changeset.valid?
-      assert changeset.errors == [targetDataset: {"Dataset with id: dataset_id does not exist. It may have been deleted.", []}]
+      assert result.changes.name == expected_name
+      assert result.changes.sourceFormat == expected_source_format
+      assert result.changes.targetDataset == expected_target_dataset
+      assert result.changes.topLevelSelector == expected_top_level_selector
     end
   end
 
-  describe "changeset_from_andi_ingestion()" do
-    test "generates a valid changeset when all data is present" do
-      ingestion = %Andi.InputSchemas.Ingestion{
-        id: "id",
-        name: "ingestion name",
-        targetDataset: "dataset_id",
-        cadence: "once",
-        sourceFormat: "csv",
-        extractSteps: [],
-        schema: []
+  describe "extract_from_ingestion_changeset" do
+    test "copies all existing ingestion values into schema" do
+      expected_name = "some_ingestion"
+      expected_source_format = "csv"
+      expected_target_dataset = "some_dataset"
+      expected_top_level_selector = "some_top_level_selector"
+      existing_ingestion = %Ingestion{
+        name: expected_name,
+        sourceFormat: expected_source_format,
+        targetDataset: expected_target_dataset,
+        topLevelSelector: expected_top_level_selector
       }
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
 
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
-      changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
 
-      assert changeset.valid?
+      result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
+
+      assert result.data.name == expected_name
+      assert result.data.sourceFormat == expected_source_format
+      assert result.data.targetDataset == expected_target_dataset
+      assert result.data.topLevelSelector == expected_top_level_selector
     end
 
-    test "generates a changeset with errors when sourceFormat is absent" do
-      ingestion = %Andi.InputSchemas.Ingestion{
-        id: "id",
-        name: "ingestion name",
-        targetDataset: "dataset_id",
-        cadence: "once",
-        extractSteps: [],
-        schema: []
+    test "copies any changes on the ingestion changeset into schema" do
+      expected_name = "some_ingestion"
+      expected_source_format = "csv"
+      expected_target_dataset = "some_dataset"
+      expected_top_level_selector = "some_top_level_selector"
+      existing_ingestion = %Ingestion{}
+      changes = %{
+        name: expected_name,
+        sourceFormat: expected_source_format,
+        targetDataset: expected_target_dataset,
+        topLevelSelector: expected_top_level_selector
       }
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, changes)
 
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
 
-      changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
+      result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
-      refute changeset.valid?
-      assert changeset.errors == [{:sourceFormat, {"is required", [validation: :required]}}]
+      assert result.data.name == expected_name
+      assert result.data.sourceFormat == expected_source_format
+      assert result.data.targetDataset == expected_target_dataset
+      assert result.data.topLevelSelector == expected_top_level_selector
     end
 
-    test "generates a changeset with errors when ingestion name is absent" do
-      ingestion = %Andi.InputSchemas.Ingestion{
-        id: "id",
-        targetDataset: "dataset_id",
-        cadence: "once",
-        sourceFormat: "csv",
-        extractSteps: [],
-        schema: []
-      }
+    test "copies any errors from ingestion changeset into schema" do
+      expected_errors = [
+        name: {"is required", [validation: :required]},
+        sourceFormat: {"is required", [validation: :required]},
+        targetDataset: {"is required", [validation: :required]},
+        topLevelSelector: {"is required", [validation: :required]}
+      ]
+      existing_ingestion = %Ingestion{}
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
+                            |> Map.put(:errors, expected_errors)
 
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{id: "dataset_id"})
+      result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
-      changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
-
-      refute changeset.valid?
-      assert changeset.errors == [{:name, {"is required", [validation: :required]}}]
+      assert result.errors == expected_errors
     end
 
-    test "generates a changeset with errors when targetDataset is absent" do
-      ingestion = %Andi.InputSchemas.Ingestion{
-        id: "id",
-        name: "ingestion name",
-        cadence: "once",
-        sourceFormat: "csv",
-        extractSteps: [],
-        schema: []
-      }
+    test "filters any errors that do not belong to this schema" do
+      ingestion_errors = [
+        name: {"is required", [validation: :required]},
+        sourceFormat: {"is required", [validation: :required]},
+        targetDataset: {"is required", [validation: :required]},
+        topLevelSelector: {"is required", [validation: :required]},
+        notAField: {"is required", [validation: :required]}
+      ]
+      expected_errors = [
+        name: {"is required", [validation: :required]},
+        sourceFormat: {"is required", [validation: :required]},
+        targetDataset: {"is required", [validation: :required]},
+        topLevelSelector: {"is required", [validation: :required]},
+      ]
+      existing_ingestion = %Ingestion{}
+      ingestion_changeset = Ingestion.changeset(existing_ingestion, %{})
+                            |> Map.put(:errors, ingestion_errors)
 
-      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
+      result = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
-      changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
-
-      refute changeset.valid?
-      assert changeset.errors == [{:targetDataset, {"is required", [validation: :required]}}]
-    end
-
-    test "generates a changeset with errors when targetDataset id does not exist in ANDI database" do
-      ingestion = %Andi.InputSchemas.Ingestion{
-        id: "id",
-        name: "ingestion name",
-        targetDataset: "dataset_id",
-        cadence: "once",
-        sourceFormat: "csv",
-        extractSteps: [],
-        schema: []
-      }
-
-      allow(Andi.InputSchemas.Datasets.get(any()), return: nil)
-
-      changeset = IngestionMetadataFormSchema.changeset_from_andi_ingestion(ingestion)
-
-      refute changeset.valid?
-      assert changeset.errors == [targetDataset: {"Dataset with id: dataset_id does not exist. It may have been deleted.", []}]
+      assert result.errors == expected_errors
     end
   end
 end

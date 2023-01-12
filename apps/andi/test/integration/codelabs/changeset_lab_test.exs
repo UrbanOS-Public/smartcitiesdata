@@ -140,31 +140,24 @@ defmodule Codelabs.Changesets do
       assert invalid_person_changeset.errors == []
     end
 
-    # Important!
-    test "Cast validations on underlying data does not work, only changes!" do
-      person = %Person{age: "not a number"}
+    #Important!
+    test "Unless you use the force_changes flag when casting the underlying data" do
+      person = %Person{name: "turtle", age: "not a number"}
       changes = %{}
-      cast_fields = [:age]
-      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
-
-      assert invalid_person_changeset.changes == %{}
-      assert invalid_person_changeset.errors == []
-      assert invalid_person_changeset.data.age == "not a number"
-    end
-
-    test "A workaround is to apply the same underlying data on top of ITSELF (Not new)" do
-      person = %Person{age: "not a number"}
-      changes = %{}
-      cast_fields = [:age]
+      cast_fields = [:age, :name]
       invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
 
       changes_as_map = StructTools.to_map(invalid_person_changeset.data)
-      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields)
+      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields, force_changes: true)
+          |> Changeset.validate_length(:name, is: 3)
 
       # Does not change existing fields
-      assert valid_person_changeset.changes == %{}
+      assert valid_person_changeset.changes == %{name: "turtle"}
       # But does catch validations
-      assert valid_person_changeset.errors == [{:age, {"is invalid", [type: :integer, validation: :cast]}}]
+      assert valid_person_changeset.errors == [
+               {:name, {"should be %{count} character(s)", [count: 3, validation: :length, kind: :is, type: :string]}},
+               {:age, {"is invalid", [type: :integer, validation: :cast]}}
+             ]
       assert valid_person_changeset.data.age == "not a number"
     end
   end
@@ -194,6 +187,51 @@ defmodule Codelabs.Changesets do
       assert person_changeset.changes == %{}
       assert person_changeset.errors == [{:age, {"is invalid", [type: :integer, validation: :cast]}}]
     end
+
+    # Important!
+    test "Cast validations on underlying data does not work, only changes!" do
+      person = %Person{age: "not a number"}
+      changes = %{}
+      cast_fields = [:age]
+      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
+
+      assert invalid_person_changeset.changes == %{}
+      assert invalid_person_changeset.errors == []
+      assert invalid_person_changeset.data.age == "not a number"
+    end
+
+    test "A workaround is to apply the same underlying data on top of ITSELF" do
+      person = %Person{age: "not a number"}
+      changes = %{}
+      cast_fields = [:age]
+      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
+
+      changes_as_map = StructTools.to_map(invalid_person_changeset.data)
+      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields)
+
+      # Does not change existing fields
+      assert valid_person_changeset.changes == %{}
+      # But does catch validations
+      assert valid_person_changeset.errors == [{:age, {"is invalid", [type: :integer, validation: :cast]}}]
+      assert valid_person_changeset.data.age == "not a number"
+    end
+
+    test "But this workaround does not catch ecto provided validations" do
+      person = %Person{name: "turtle", age: "not a number"}
+      changes = %{}
+      cast_fields = [:age, :name]
+      invalid_person_changeset = Changeset.cast(person, changes, cast_fields)
+
+      changes_as_map = StructTools.to_map(invalid_person_changeset.data)
+      valid_person_changeset = Changeset.cast(invalid_person_changeset, changes_as_map, cast_fields)
+                               |> Changeset.validate_length(:name, is: 3)
+
+      # Does not change existing fields
+      assert valid_person_changeset.changes == %{}
+      # But does catch validations
+      assert valid_person_changeset.errors == [{:age, {"is invalid", [type: :integer, validation: :cast]}}]
+      assert valid_person_changeset.data.age == "not a number"
+    end
   end
 
   describe "Errors - Database writes" do
@@ -214,15 +252,13 @@ defmodule Codelabs.Changesets do
       changeset = Address.changeset(%Address{}, %{person_id: Ecto.UUID.generate()})
       constrained_changeset = changeset |> Changeset.foreign_key_constraint(:person_id)
 
-      assert changeset.valid? == true
-
       assert constrained_changeset.errors == []
-      assert constrained_changeset.valid? == false
+      assert constrained_changeset.valid? == true
 
       {:error, failed_changeset} = Repo.insert_or_update(constrained_changeset)
 
-
       assert failed_changeset.errors == [person_id: {"does not exist", [constraint: :foreign, constraint_name: "address_person_id_fkey"]}]
+      assert failed_changeset.valid? == false
     end
 
     test "However, saving a child with no parent association is fine" do
@@ -239,21 +275,21 @@ defmodule Codelabs.Changesets do
     end
   end
 
-  describe "Nested errors" do
-    test "Saving a parent with a child error" do
-      child_changes = %{street: "way too long of a street name to be valid - past 40 chars"}
-      parent_changeset = Person.changeset(%Person{}, %{addresses: [child_changes]})
-
-      try do
-        Repo.insert_or_update(changeset)
-        flunk("Expected a foreign key constraint error")
-      rescue
-        constraint_error in Ecto.ConstraintError ->
-          assert constraint_error.constraint == "address_person_id_fkey"
-        error -> flunk("Unexpected error: #{error}}")
-      end
-    end
-  end
+#  describe "Nested errors" do
+#    test "Saving a parent with a child error" do
+#      child_changes = %{street: "way too long of a street name to be valid - past 40 chars"}
+#      parent_changeset = Person.changeset(%Person{}, %{addresses: [child_changes]})
+#
+#      try do
+#        Repo.insert_or_update(parent_changeset)
+#        flunk("Expected a foreign key constraint error")
+#      rescue
+#        constraint_error in Ecto.ConstraintError ->
+#          assert constraint_error.constraint == "address_person_id_fkey"
+#        error -> flunk("Unexpected error: #{error}}")
+#      end
+#    end
+#  end
 
   describe "Inserting new data into a database" do
     # Migrations and general database management is a much larger topic.

@@ -54,23 +54,8 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     |> Map.put(:action, :display_errors)
   end
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(current, changes) do
     current
     |> Changeset.cast(changes, @cast_fields, empty_values: [])
-  end
-
-  def changeset_from_andi_ingestion(ingestion) do
-    ingestion = StructTools.to_map(ingestion)
-
-    changeset(ingestion)
-  end
-
-  @spec changeset_from_form_data(any) :: Ecto.Changeset.t()
-  def changeset_from_form_data(form_data) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> changeset()
   end
 end

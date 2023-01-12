@@ -75,13 +75,21 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert get_value(html, "#ingestion_metadata_form_name") == new_name
     end
 
-    test "dataset name field defaults to it's existing association", %{
+    test "name field shows an error if blank", %{
       view: view,
       html: html,
-      ingestion: ingestion,
-      dataset: dataset
+      ingestion: ingestion
     } do
-      assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == dataset.business.dataTitle
+      form_data = %{
+        "name" => ""
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      html = render(view)
+      assert get_text(html, "#name-error-msg") == "Please enter a valid name."
     end
 
     test "source format field defaults to its existing value", %{
@@ -112,6 +120,34 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       current_select_value = get_select(html, "#ingestion_metadata_form_sourceFormat") |> Tuple.to_list()
 
       assert new_source_format in current_select_value
+    end
+
+    test "source format field shows an error if blank", %{
+      view: view,
+      html: html,
+      ingestion: ingestion
+    } do
+      form_data = %{
+        "sourceFormat" => ""
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      html = render(view)
+      error_message = get_text(html, "#sourceFormat-error-msg")
+
+      assert error_message == "Please enter a valid source format."
+    end
+
+    test "dataset name field defaults to it's existing association", %{
+      view: view,
+      html: html,
+      ingestion: ingestion,
+      dataset: dataset
+    } do
+      assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == dataset.business.dataTitle
     end
 
     test "can close dataset modal", %{

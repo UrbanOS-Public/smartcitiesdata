@@ -84,7 +84,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :bread_crumb
   ]
 
-  def changeset(%__MODULE__{} = dictionary, changes) do
+  def changeset(dictionary, changes) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 
     dictionary
@@ -99,46 +99,11 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> validate_format()
   end
 
-  def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
-    full_changes =
-      changeset.changes
-      |> Map.merge(changes)
-
-    changeset.data
-    |> cast(full_changes, @cast_fields, empty_values: [])
-    |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2))
-    |> foreign_key_constraint(:dataset_id)
-    |> foreign_key_constraint(:technical_id)
-    |> foreign_key_constraint(:parent_id)
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_item_type()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
-    |> validate_format()
-  end
-
-  def changeset(%__MODULE__{} = dictionary, changes, source_format) do
+  def changeset(dictionary, changes, source_format) do
     changes_with_id = StructTools.ensure_id(dictionary, changes)
 
     dictionary
     |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2, source_format))
-    |> foreign_key_constraint(:dataset_id)
-    |> foreign_key_constraint(:technical_id)
-    |> foreign_key_constraint(:parent_id)
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_item_type()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
-    |> validate_format()
-    |> validate_selector(source_format)
-  end
-
-  def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes, source_format) do
-    full_changes =
-      changeset.changes
-      |> Map.merge(changes)
-
-    changeset.data
-    |> cast(full_changes, @cast_fields, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset(&1, &2, source_format))
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)

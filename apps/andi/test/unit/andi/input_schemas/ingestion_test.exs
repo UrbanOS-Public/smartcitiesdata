@@ -49,12 +49,12 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     assert %{name: "Updated Name"} == changeset.changes
   end
 
-  describe "changeset" do
+  describe "validate" do
     data_test "requires value for #{inspect(field)}" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
       changes = Map.delete(@valid_changes, field)
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       refute changeset.valid?
 
@@ -72,13 +72,12 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "sourceFormat must be valid for source type ingest and stream" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       changes =
         @valid_changes
         |> put_in([:sourceFormat], "kml")
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       refute changeset.valid?
 
@@ -89,11 +88,10 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "topLevelSelector is required when sourceFormat is #{source_format}" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       changes = @valid_changes |> put_in([:sourceFormat], source_format)
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       refute changeset.valid?
 
@@ -105,14 +103,13 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "validates the schema appropriately when sourceType is #{source_type} and schema is #{inspect(schema)}" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: source_type}}
-
       changes =
         @valid_changes
         |> put_in([:schema], schema)
         |> put_in([:sourceType], source_type)
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       assert changeset.valid? == false
 
@@ -137,8 +134,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "xml source format requires all fields in the schema to have selectors" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       schema = [
         %{name: "field_name", type: "string"},
         %{name: "other_field", type: "string", selector: "this is the only selector"},
@@ -155,7 +150,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           topLevelSelector: "whatever"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       refute changeset.valid?
       assert length(changeset.errors) == 2
@@ -168,11 +164,10 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "given a dataset with a schema that has #{field}, format is defaulted to #{expected_format}" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       changes = @valid_changes |> put_in([:schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing"}])
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       first_schema_field = changeset.changes.schema |> hd()
 
@@ -182,13 +177,12 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "invalid formats are rejected for #{field} schema fields" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       changes =
         @valid_changes
         |> put_in([:schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: "123"}])
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       first_schema_field = changeset.changes.schema |> hd()
 
@@ -200,8 +194,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "valid formats are accepted for #{field} schema fields" do
-      allow Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}}
-
       changes =
         @valid_changes
         |> put_in([:schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: format}])
@@ -209,7 +201,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       assert changeset.valid?
 
@@ -230,7 +223,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
@@ -256,7 +250,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       refute changeset.valid?
       refute Enum.empty?(accumulate_errors(changeset))
@@ -284,7 +279,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
@@ -305,7 +301,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       assert %{} == accumulate_errors(changeset)
       assert changeset.valid?
@@ -327,7 +324,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
           sourceFormat: "text/csv"
         })
 
-      changeset = Ingestion.changeset(changes)
+      changeset = Ingestion.changeset(%Ingestion{}, changes)
+                  |> Ingestion.validate()
 
       expected_error = %{extractSteps: [extractSteps: {"cannot be empty and must end with a http or s3 step", []}]}
       assert expected_error == accumulate_errors(changeset)

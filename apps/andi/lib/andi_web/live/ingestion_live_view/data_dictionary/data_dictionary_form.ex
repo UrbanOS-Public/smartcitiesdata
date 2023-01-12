@@ -222,6 +222,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         %{topic: "source-format", payload: %{new_format: new_format, ingestion_id: ingestion_id}},
         %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
+    IO.inspect(new_format, label: "RYAN - inside data dictionary")
     {:noreply, assign(socket, sourceFormat: new_format)}
   end
 

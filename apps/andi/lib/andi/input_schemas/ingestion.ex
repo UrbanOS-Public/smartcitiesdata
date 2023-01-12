@@ -52,52 +52,39 @@ defmodule Andi.InputSchemas.Ingestion do
   ]
 
   def validate(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
-    # https://elixirforum.com/t/how-to-validate-both-form-changes-as-well-as-already-persisted-data/48269
-    # Extract data from changeset, merging data and changes, into a map
     data_as_changes = changeset
                       |> Changeset.apply_changes()
                       |> StructTools.to_map()
+    source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
-    # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
-    validation_changeset = changeset(%__MODULE__{}, data_as_changes)
-                           |> Changeset.validate_required(@required_fields, message: "is required")
-                           |> Changeset.foreign_key_constraint(:targetDataset)
-                           |> validate_source_format()
-                           |> CadenceValidator.validate()
-                           |> validate_top_level_selector()
-                           |> validate_schema()
-                           |> validate_extract_steps()
-
-    # Copy our validation fields from the fresh changeset into the actual changeset
     changeset
-      |> Map.replace(:errors, validation_changeset.errors)
-      |> Map.replace(:valid?, validation_changeset.valid?)
-      # Foreign Key constraints are only validated at database interaction time, so this is the best we can do to copy the validation
+      |> Map.replace(:errors, [])
+      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
+      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+      |> Changeset.validate_required(@required_fields, message: "is required")
       |> Changeset.foreign_key_constraint(:targetDataset)
+      |> validate_source_format()
+      |> CadenceValidator.validate()
+      |> validate_top_level_selector()
+      |> validate_schema()
+      |> validate_extract_steps()
   end
 
   def validate_database_safety(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
-    # https://elixirforum.com/t/how-to-validate-both-form-changes-as-well-as-already-persisted-data/48269
-    # Extract data from changeset, merging data and changes, into a map
     data_as_changes = changeset
                       |> Changeset.apply_changes()
                       |> StructTools.to_map()
+    source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
-    # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
-    validation_changeset = changeset(%__MODULE__{}, data_as_changes)
-                           |> IO.inspect(label: "Ryan - -1")
-                           |> Changeset.foreign_key_constraint(:targetDataset)
-                           |> IO.inspect(label: "Ryan - 0")
-
-
-    # Copy our validation fields from the fresh changeset into the actual changeset
-    changeset |> IO.inspect(label: "Ryan - 1")
-    |> Map.replace(:errors, validation_changeset.errors)
-    |> IO.inspect(label: "Ryan - 2")
-    |> Map.replace(:valid?, validation_changeset.valid?)
-    |> IO.inspect(label: "Ryan - 3")
-    # Foreign Key constraints are only validated at database interaction time, so this is the best we can do to copy the validation
-    |> Changeset.foreign_key_constraint(:targetDataset)
+    changeset
+      |> Map.replace(:errors, [])
+      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+      |> Changeset.foreign_key_constraint(:targetDataset)
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
@@ -111,9 +98,9 @@ defmodule Andi.InputSchemas.Ingestion do
 
     ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
-    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -121,9 +108,9 @@ defmodule Andi.InputSchemas.Ingestion do
 
     changeset
     |> Changeset.cast(changes, @cast_fields, empty_values: [])
-    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do

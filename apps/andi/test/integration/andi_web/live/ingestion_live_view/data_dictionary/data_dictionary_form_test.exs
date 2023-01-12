@@ -14,6 +14,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.Helpers.FormTools
+  alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
 
   import FlokiHelpers,
     only: [
@@ -1159,7 +1160,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       "sourceFormat" => new_source_format
     }
 
-    metadata_changeset = AndiWeb.InputSchemas.IngestionMetadataFormSchema.changeset(form_data)
+    metadata_changeset = IngestionMetadataFormSchema.changeset(%IngestionMetadataFormSchema{}, form_data)
     send(view.pid, {:updated_metadata, metadata_changeset})
     render_change(view, "save")
   end
