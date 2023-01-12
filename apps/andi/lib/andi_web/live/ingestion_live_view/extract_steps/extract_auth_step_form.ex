@@ -35,37 +35,37 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
           <div class="extract-auth-step-form-edit-section form-grid">
 
             <div class="extract-auth-step-form__destination">
-              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step_#{@id}__auth_destination") %>
-              <%= text_input(f, :destination, [id: "step_#{@id}__auth_destination", aria_label: "step_#{@id}__auth_destination", class: "input", required: true]) %>
+              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step_#{@extract_step.sequence}__auth_destination") %>
+              <%= text_input(f, :destination, [id: "step_#{@extract_step.sequence}__auth_destination", aria_label: "step_#{@extract_step.sequence}__auth_destination", class: "input", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false) %>
             </div>
 
             <div class="extract-auth-step-form__url">
-              <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "step_#{@id}__auth_url") %>
-              <%= text_input(f, :url, [id: "step_#{@id}__auth_url", aria_label: "step_#{@id}__auth_url", class: "input full-width", required: true]) %>
+              <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "step_#{@extract_step.sequence}__auth_url") %>
+              <%= text_input(f, :url, [id: "step_#{@extract_step.sequence}__auth_url", aria_label: "step_#{@extract_step.sequence}__auth_url", class: "input full-width", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
             </div>
 
             <%= live_component(@socket, KeyValueEditor, id: "step_#{@id}__key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
 
             <div class="extract-auth-step-form__body">
-              <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "step_#{@id}__auth_body") %>
-              <%= textarea(f, :body, id: "step_#{@id}__auth_body", aria_label: "step_#{@id}__auth_body", class: "input full-width", phx_hook: "prettify") %>
+              <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "step_#{@extract_step.sequence}__auth_body") %>
+              <%= textarea(f, :body, id: "step_#{@extract_step.sequence}__auth_body", aria_label: "step_#{@extract_step.sequence}__auth_body", class: "input full-width", phx_hook: "prettify") %>
               <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
             </div>
 
             <div class="extract-auth-step-form__path">
-              <%= label(f, :path, DisplayNames.get(:path), class: "label label--required", for: "step_#{@id}__auth_path") %>
+              <%= label(f, :path, DisplayNames.get(:path), class: "label label--required", for: "step_#{@extract_step.sequence}__auth_path") %>
               <% form_path = input_value(f, :path) %>
-              <%= text_input(f, :path, [id: "step_#{@id}__auth_path", aria_label: "step_#{@id}__auth_path", class: "input", value: path_to_string(form_path), required: true]) %>
+              <%= text_input(f, :path, [id: "step_#{@extract_step.sequence}__auth_path", aria_label: "step_#{@extract_step.sequence}__auth_path", class: "input", value: path_to_string(form_path), required: true]) %>
               <span class="input__help-text">Separate response path keys with a period (.) (e.g. 'data.token' for response {"data": {"token": "abc123"}}) </span>
               <%= ErrorHelpers.error_tag(f, :path, bind_to_input: false) %>
             </div>
 
             <div class="extract-auth-step-form__cacheTtl">
-              <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl), class: "label label--required", for: "step_#{@id}__auth_cache_ttl") %>
+              <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl), class: "label label--required", for: "step_#{@extract_step.sequence}__auth_cache_ttl") %>
               <% form_ttl = input_value(f, :cacheTtl) %>
-              <%= text_input(f, :cacheTtl, [id: "step_#{@id}__auth_cache_ttl", aria_label: "step_#{@id}__auth_cache_ttl", class: "input", value: milliseconds_to_minutes(form_ttl), required: true]) %>
+              <%= text_input(f, :cacheTtl, [id: "step_#{@extract_step.sequence}__auth_cache_ttl", aria_label: "step_#{@extract_step.sequence}__auth_cache_ttl", class: "input", value: milliseconds_to_minutes(form_ttl), required: true]) %>
               <span class="input__help-text">Time in minutes that credentials are stored (defaults to 15 minutes)</span>
               <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false) %>
             </div>

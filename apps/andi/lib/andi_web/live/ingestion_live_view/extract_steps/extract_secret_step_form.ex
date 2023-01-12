@@ -36,8 +36,8 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
             <div class="extract-secret-step-form-edit-section form-grid">
 
               <div class="extract-secret-step-form__destination">
-                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step_#{@id}__secret_destination") %>
-                <%= text_input(f, :destination, [id: "step_#{@id}__secret_destination", aria_label: "step_#{@id}__secret_destination", class: "extract-secret-step-form__destination input", phx_target: "#step-#{@id}", required: true]) %>
+                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step_#{@extract_step.sequence}__secret_destination") %>
+                <%= text_input(f, :destination, [id: "step_#{@extract_step.sequence}__secret_destination", aria_label: "step_#{@extract_step.sequence}__secret_destination", class: "extract-secret-step-form__destination input", phx_target: "#step-#{@id}", required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :destination) %>
               </div>
 
