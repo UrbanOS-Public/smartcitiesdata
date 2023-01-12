@@ -52,7 +52,7 @@ defmodule DiscoveryApi.Mixfile do
       {:checkov, "~> 1.0", only: [:test, :integration]},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:ex_json_schema, "== 0.7.3", only: [:test, :integration]},
-      {:ecto_sql, "== 3.3.3"},
+      {:ecto_sql, "== 3.6.2", override: true},
       {:elastix, "~> 0.8.0"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
