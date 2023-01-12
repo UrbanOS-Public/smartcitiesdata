@@ -9,7 +9,7 @@ defmodule AndiWeb.UserLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="users-index__table">
-      <table class="users-table">
+      <table class="users-table" title="All Users">
       <thead>
         <th class="users-table__th users-table__cell users-table__th--sortable users-table__th--<%= Map.get(@order, "email", "unsorted") %>" phx-click="order-by" phx-value-field="email">User Email</th>
         <th class="users-table__th users-table__cell">Actions</th>

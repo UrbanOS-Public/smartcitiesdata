@@ -9,14 +9,14 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewTable do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>" class="organizations-index__table">
-      <table class="organizations-table">
+      <table class="organizations-table" title="Organizations Associated With This User">
         <thead>
-          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--unsorted">Organization</th>
+          <th class="organizations-table__th organizations-table__cell organizations-table__th--sortable organizations-table__th--unsorted" id="organization">Organization</th>
           <th class="organizations-table__th organizations-table__cell" style="width: 20%">Actions</th>
         </thead>
 
         <%= if @organizations == [] do %>
-          <tr><td class="organizations-table__cell" colspan="100%">No Organizations Found!</td></tr>
+          <tr><td class="organizations-table__cell" colspan="100%" headers="organization">No Organizations Found!</td></tr>
         <% else %>
           <%= for organization <- @organizations do %>
             <tr class="organizations-table__tr">

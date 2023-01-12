@@ -52,16 +52,16 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
         <div class="dataset-modal-search-results">
           <p class="search-modal-section-header-text">Results</p>
           <div class="search-modal-results-table">
-            <table class="search-table">
+            <table class="search-table" title="Dataset Search Results">
               <thead>
-                <th class="search-table__th search-table__cell wide-column">Dataset</th>
+                <th class="search-table__th search-table__cell wide-column" id="dataset">Dataset</th>
                 <th class="search-table__th search-table__cell wide-column">Organization</th>
                 <th class="search-table__th search-table__cell wide-column">Keywords</th>
                 <th class="search-table__th search-table__cell thin-column">Action</th>
               </thead>
 
               <%= if @search_results == [] do %>
-                <tr><td class="search-table__cell" colspan="100%">No Matching Datasets</td></tr>
+                <tr><td class="search-table__cell" colspan="100%" headers="dataset">No Matching Datasets</td></tr>
               <% else %>
                 <%= for dataset <- @search_results do %>
                 <tr class="search-table__tr">

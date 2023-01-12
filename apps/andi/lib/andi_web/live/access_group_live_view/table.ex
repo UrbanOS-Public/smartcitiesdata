@@ -9,7 +9,7 @@ defmodule AndiWeb.AccessGroupLiveView.Table do
   def render(assigns) do
     ~L"""
     <div id="<%= @id %>">
-      <table class="access-groups-table">
+      <table class="access-groups-table" title="Access Groups">
         <thead>
           <th class="access-groups-table__th access-groups-table__cell">Access Group</th>
           <th class="access-groups-table__th access-groups-table__cell">Modified Date</th>

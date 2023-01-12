@@ -37,16 +37,16 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
         <div class="user-modal-search-results">
           <p class="search-modal-section-header-text">Results</p>
           <div class="search-modal-results-table">
-            <table class="search-table">
+            <table class="search-table" title="Users Search Results">
               <thead>
-                <th class="search-table__th search-table__cell wide-column">Name</th>
+                <th class="search-table__th search-table__cell wide-column" id="name">Name</th>
                 <th class="search-table__th search-table__cell wide-column">Email</th>
                 <th class="search-table__th search-table__cell wide-column">Organizations</th>
                 <th class="search-table__th search-table__cell thin-column">Action</th>
               </thead>
 
               <%= if @search_results == [] do %>
-                <tr><td class="search-table__cell" colspan="100%">No Matching Users</td></tr>
+                <tr><td class="search-table__cell" colspan="100%" headers="name">No Matching Users</td></tr>
               <% else %>
                 <%= for user <- @search_results do %>
                 <tr class="search-table__tr">
