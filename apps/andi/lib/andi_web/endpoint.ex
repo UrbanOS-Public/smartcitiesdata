@@ -1,7 +1,6 @@
 defmodule AndiWeb.Endpoint do
   @session_options [
     store: :cookie,
-    secure: true,
     key: "_andi_key",
     signing_salt: "SekoFX7T"
   ]
