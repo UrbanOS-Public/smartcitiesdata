@@ -135,7 +135,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
   defp select_type(type, view) do
     click_value = %{"value" => type}
-    element(view, "#form_data_type") |> render_click(click_value)
+    element(view, ".transformation-type") |> render_click(click_value)
   end
 
   defp build_field_id(field_name) do

@@ -34,20 +34,20 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
         <div class="organization-form-edit-section form-grid">
           <div class="organization-form__title">
-            <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required") %>
-            <%= text_input(f, :orgTitle, [class: "input", phx_blur: "validate_unique_org_name", required: true]) %>
+            <%= label(f, :orgTitle, DisplayNames.get(:orgTitle), class: "label label--required", for: "organization-form__title") %>
+            <%= text_input(f, :orgTitle, [id: "organization-form__title", class: "input", phx_blur: "validate_unique_org_name", required: true]) %>
             <%= ErrorHelpers.error_tag(f, :orgTitle, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__name">
-            <%= label(f, :orgName, DisplayNames.get(:orgName), class: "label label--required") %>
-            <%= text_input(f, :orgName, [class: "input input--text", readonly: true, required: true]) %>
+            <%= label(f, :orgName, DisplayNames.get(:orgName), class: "label label--required", for: "organization-form__name") %>
+            <%= text_input(f, :orgName, [id: "organization-form__name", class: "input input--text", readonly: true, required: true]) %>
             <%= ErrorHelpers.error_tag(f, :orgName, bind_to_input: false) %>
           </div>
 
           <div class="organization-form__description">
-            <%= label(f, :description, DisplayNames.get(:description), class: "label label--required") %>
-            <%= textarea(f, :description, class: "input textarea", required: true) %>
+            <%= label(f, :description, DisplayNames.get(:description), class: "label label--required", for: "organization-form__description") %>
+            <%= textarea(f, :description, id: "organization-form__description", class: "input textarea", required: true) %>
             <%= ErrorHelpers.error_tag(f, :description, bind_to_input: false) %>
           </div>
 

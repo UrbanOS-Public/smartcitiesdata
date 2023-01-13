@@ -12,14 +12,14 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTable do
       <div class="access-groups-sub-table-container">
         <table class="access-groups-sub-table" title="Datasets Assigned to This Access Group">
           <thead>
-            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Dataset</th>
+            <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column" id="dataset">Dataset</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Organization</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Keywords</th>
             <th class="access-groups-sub-table__th access-groups-sub-table__cell wide-column">Action</th>
           </thead>
 
           <%= if @selected_datasets == [] do %>
-            <tr><td class="access-groups-sub-table__cell" colspan="100%">No Associated Datasets</td></tr>
+            <tr><td class="access-groups-sub-table__cell" colspan="100%" headers="dataset">No Associated Datasets</td></tr>
           <% else %>
             <%= for dataset <- datasets_to_display(@selected_datasets) do %>
             <tr class="access-groups-sub-table__tr">

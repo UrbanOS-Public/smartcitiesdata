@@ -28,7 +28,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required", for: id <> "_name") %>
-          <%= text_input(@form, :name, [id: id <> "_name", aria_labelledby: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
+          <%= text_input(@form, :name, [id: id <> "_name", aria_label: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
 
@@ -83,7 +83,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__description">
           <%= label(@form, :description, "Description", class: "label", for: id <> "_description") %>
-          <%= textarea(@form, :description, id: id <> "_description", aria_labelledby: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
+          <%= textarea(@form, :description, id: id <> "_description", aria_label: id <> "_description", class: "data-dictionary-field-editor__description input textarea", "phx-debounce": "blur") %>
         </div>
         <div class="data-dictionary-field-editor__pii">
           <%= label(@form, :pii, "P.I.I.", class: "label", for: id <> "_pii") %>
