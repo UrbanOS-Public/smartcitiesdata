@@ -155,14 +155,14 @@ defmodule AndiWeb.MetadataFormTest do
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
       metadata_view = find_live_child(view, "metadata_form_editor")
 
-      assert {"", ["Please select an organization"]} == get_select_first_option(html, "#form_data_orgId")
+      assert {"", ["Please select an organization"]} == get_select_first_option(html, "#metadata_metadata_form_editor__org-title")
 
       form_data = %{"dataName" => "data_title", "orgId" => org2.id}
 
       html = render_change(metadata_view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgId"]})
 
       assert "very_readable__data_title" == get_value(html, "#form_data_systemName")
-      assert {org2.id, "Very Readable"} == get_select(html, "#form_data_orgId")
+      assert {org2.id, "Very Readable"} == get_select(html, "#metadata_metadata_form_editor__org-title")
     end
 
     test "updating data title allows common data name across different orgs", %{conn: conn} do

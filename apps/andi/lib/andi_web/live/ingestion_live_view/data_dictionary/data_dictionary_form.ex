@@ -113,7 +113,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-                  <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
+                  <button id="add-button" name="add-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
                   <button id="remove-button" name="remove-button" class="data-dictionary-form__remove-field-button material-icons" type="button" phx-click="remove_data_dictionary_field">delete_outline</button>
                 </div>
               </div>
