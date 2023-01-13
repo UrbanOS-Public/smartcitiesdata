@@ -879,7 +879,7 @@ defmodule Codelabs.Changesets do
         Person.changeset(person, %{})
         |> Person.validate()
 
-      assert changeset.changes == %{}
+      assert changeset.changes == %{name: "way too long of a name"}
 
       assert changeset.errors == [
                {:name, {"should be at most %{count} character(s)", [count: 10, validation: :length, kind: :max, type: :string]}}
