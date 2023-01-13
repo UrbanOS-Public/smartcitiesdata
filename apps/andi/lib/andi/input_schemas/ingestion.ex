@@ -165,7 +165,6 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   defp validate_source_format(changeset) do
-    changeset |> Changeset.fetch_field!(:sourceFormat)
     Changeset.validate_required(changeset, [:sourceFormat], message: "is required")
   end
 
