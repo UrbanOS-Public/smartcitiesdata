@@ -33,5 +33,4 @@ defmodule Codelabs.Address do
     current
     |> Changeset.cast(changes, @cast_fields)
   end
-
 end

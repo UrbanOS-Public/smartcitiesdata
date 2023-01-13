@@ -40,10 +40,11 @@ defmodule Codelabs.Person do
       |> StructTools.to_map()
 
     # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
-    validation_changeset = changeset
-                           |> Map.replace(:errors, [])
-                           |> Changeset.cast(data_as_changes, @cast_fields, force_changes: true)
-                           |> Changeset.cast_assoc(:addresses, with: &Codelabs.Address.changeset/2)
-                           |> Changeset.validate_length(:name, max: 10)
+    validation_changeset =
+      changeset
+      |> Map.replace(:errors, [])
+      |> Changeset.cast(data_as_changes, @cast_fields, force_changes: true)
+      |> Changeset.cast_assoc(:addresses, with: &Codelabs.Address.changeset/2)
+      |> Changeset.validate_length(:name, max: 10)
   end
 end
