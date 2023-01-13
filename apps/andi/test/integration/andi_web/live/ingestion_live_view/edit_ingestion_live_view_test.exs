@@ -137,12 +137,6 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "success message is displayed when form data is saved", %{curator_conn: conn, ingestion: ingestion} do
-      #      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
-      #
-      #      {:ok, ingestion} =
-      #        InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
-      #        |> Ingestions.save()
-
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       assert get_text(html, "#snackbar") == ""
