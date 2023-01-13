@@ -15,7 +15,6 @@ defmodule Andi.InputSchemas.Ingestion do
   alias AndiWeb.Views.Options
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.Ingestions.Transformation
-  alias Andi.Repo
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "ingestions" do
@@ -128,11 +127,7 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset_for_draft(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
-    full_changes =
-      changeset.changes
-      |> Map.merge(changes)
-
-    changeset.data
+    changeset
     |> Changeset.cast(changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
