@@ -139,19 +139,14 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     end
   end
 
-  # TODO: Cleanup
-  def handle_event(event, socket) do
-    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
-    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
+  def handle_event(event, payload, socket) do
+    IO.inspect("Event: #{event}, payload: #{payload}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
 
     {:noreply, socket}
   end
 
-  # TODO: Cleanup
-  def handle_event(event, payload, socket) do
-    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}}')
-    IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}}')
-    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}}')
+  def handle_event(event, socket) do
+    IO.inspect("Event: #{event}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
 
     {:noreply, socket}
   end

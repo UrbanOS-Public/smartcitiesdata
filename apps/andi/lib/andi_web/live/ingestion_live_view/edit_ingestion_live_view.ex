@@ -168,6 +168,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, update_save_message(socket, status)}
   end
 
+  def handle_info(
+        %{payload: payload}, socket) do
+    IO.inspect("payload: #{payload}, socket: #{socket}", label: 'Unhandled Info Message in module #{__MODULE__}}')
+
+    {:noreply, socket}
+  end
+
+
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
   # Flags should be reset here.
@@ -179,17 +187,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{topic: topic, event: event, payload: payload},
         socket
       ) do
-    IO.inspect(topic, label: 'Unhandled Info Topic in module #{__MODULE__}')
-    IO.inspect(event, label: 'Unhandled Info Event in module #{__MODULE__}')
-    IO.inspect(payload, label: 'Unhandled Info Payload in module #{__MODULE__}')
-    IO.inspect(socket, label: 'Unhandled Info Socket in module #{__MODULE__}')
-
-    {:noreply, socket}
-  end
-
-  def handle_event(event, socket) do
-    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}')
-    IO.inspect(socket, label: 'Unhandled Socket in module #{__MODULE__}')
+    IO.inspect("Topic: #{topic}, Event: #{event}, payload: #{payload}, socket: #{socket}", label: 'Unhandled Info Message in module #{__MODULE__}}')
 
     {:noreply, socket}
   end
@@ -265,10 +263,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_event(event, payload, socket) do
-    IO.inspect(__MODULE__, label: "Module")
-    IO.inspect(event, label: 'Unhandled Event in module #{__MODULE__}')
-    IO.inspect(payload, label: 'Unhandled Payload in module #{__MODULE__}')
-    IO.inspect(payload, label: 'Unhandled Socket in module #{__MODULE__}')
+    IO.inspect("Event: #{event}, payload: #{payload}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
+
+    {:noreply, socket}
+  end
+
+  def handle_event(event, socket) do
+    IO.inspect("Event: #{event}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
 
     {:noreply, socket}
   end
@@ -364,16 +365,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       end
     else
       nil ->
-        IO.inspect("Ingestion not found", label: "Publish Error")
+        IO.inspect("Ingestion not found with id: #{ingestion_id}", label: "Publishing Ingestion Error")
         {:not_found, nil}
 
       false ->
-        IO.inspect("Ingestion not valid", label: "Publishing Ingestion Error")
+        IO.inspect("Ingestion not valid in changeset with validation: #{ingestion_changeset}", label: "Publishing Ingestion Error")
 
-        {:error,
-         Ingestions.get(ingestion_id)
-         |> Ingestion.changeset(%{})
-         |> Ingestion.validate()}
+        {:error, ingestion_changeset}
 
       error ->
         IO.inspect(error, label: "General error when publishing ingestion")
