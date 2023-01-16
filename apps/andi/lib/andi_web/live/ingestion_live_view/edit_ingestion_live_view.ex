@@ -372,9 +372,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         {:not_found, nil}
 
       false ->
-        IO.inspect("Ingestion not valid in changeset with validation: #{ingestion_changeset}", label: "Publishing Ingestion Error")
+        andi_ingestion = Ingestions.get(ingestion_id)
 
-        {:error, ingestion_changeset}
+        invalid_changeset =
+          andi_ingestion
+          |> Ingestion.changeset(%{})
+          |> Ingestion.validate()
+
+        IO.inspect("Changeset validation found errors in ingestion: #{invalid_changeset}", label: "Publishing Ingestion Error")
+
+        {:error, invalid_changeset}
 
       error ->
         IO.inspect(error, label: "General error when publishing ingestion")
