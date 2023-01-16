@@ -169,12 +169,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_info(
-        %{payload: payload}, socket) do
+        %{payload: payload},
+        socket
+      ) do
     IO.inspect("payload: #{payload}, socket: #{socket}", label: 'Unhandled Info Message in module #{__MODULE__}}')
 
     {:noreply, socket}
   end
-
 
   # This handle_info takes care of all exceptions in a generic way.
   # Expected errors should be handled in specific handlers.
@@ -187,7 +188,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{topic: topic, event: event, payload: payload},
         socket
       ) do
-    IO.inspect("Topic: #{topic}, Event: #{event}, payload: #{payload}, socket: #{socket}", label: 'Unhandled Info Message in module #{__MODULE__}}')
+    IO.inspect("Topic: #{topic}, Event: #{event}, payload: #{payload}, socket: #{socket}",
+      label: 'Unhandled Info Message in module #{__MODULE__}}'
+    )
 
     {:noreply, socket}
   end
