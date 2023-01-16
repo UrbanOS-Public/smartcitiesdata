@@ -69,6 +69,10 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
     end
   end
 
+  defp validate_type(%{changes: %{}} = changeset) do
+    changeset
+  end
+
   defp validate_context(%{changes: %{context: nil}} = changeset), do: changeset
 
   defp validate_context(%{changes: %{type: type, context: context}} = changeset) do

@@ -33,7 +33,7 @@ defmodule Andi.SecretServiceTest do
       allow File.read("/var/run/secrets/kubernetes.io/serviceaccount/token"), return: {:error, :enoent}
 
       assert capture_log(fn ->
-               assert SecretService.retrieve_aws_keys() ==
+               assert SecretService.retrieve("random_keys/andi") ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
     end
@@ -49,7 +49,7 @@ defmodule Andi.SecretServiceTest do
         return: {:ok, values.credentials}
 
       assert capture_log(fn ->
-               assert SecretService.retrieve_aws_keys() ==
+               assert SecretService.retrieve("random_keys/andi") ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
     end

@@ -29,7 +29,6 @@ defmodule Andi.Application do
     set_auth0_credentials()
     set_aws_keys()
     set_other_env_variables()
-
     opts = [strategy: :one_for_one, name: Andi.Supervisor]
     Supervisor.start_link(children, opts)
   end

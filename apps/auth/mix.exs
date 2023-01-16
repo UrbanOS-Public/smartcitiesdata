@@ -4,7 +4,7 @@ defmodule Auth.MixProject do
   def project do
     [
       app: :auth,
-      version: "0.1.2",
+      version: "0.1.3",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -31,8 +31,8 @@ defmodule Auth.MixProject do
       {:guardian_db, "~> 2.0.3"},
       {:httpoison, "~> 1.5"},
       {:memoize, "~> 1.2"},
-      {:ecto, "== 3.5.4"},
-      {:ecto_sql, "== 3.3.3"},
+      {:ecto, "== 3.9.0", override: true},
+      {:ecto_sql, "== 3.6.2", override: true},
       {:plug, "~> 1.10"},
       {:postgrex, "~> 0.15.1"},
       {:ranch, "~> 1.7.1", override: true},

@@ -14,6 +14,8 @@ defmodule Andi.InputSchemas.IngestionsTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Ingestions.ExtractStep
 
+  alias Andi.Repo
+
   describe "get_all/0" do
     test "given existing ingestions, it returns them with extract steps and schema preloaded" do
       dataset_one = TDG.create_dataset(%{})

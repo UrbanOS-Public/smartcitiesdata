@@ -22,9 +22,6 @@ defmodule Andi.Harvest.HarvesterTest do
 
   describe "data json harvesting" do
     setup do
-      Ecto.Adapters.SQL.Sandbox.checkout(Andi.Repo)
-      Ecto.Adapters.SQL.Sandbox.mode(Andi.Repo, {:shared, self()})
-
       bypass = Bypass.open()
       data_json = get_schema_from_path("./test/integration/schemas/data_json.json")
 
@@ -40,8 +37,6 @@ defmodule Andi.Harvest.HarvesterTest do
     end
 
     test "datasets from data_json are added to view state", %{data_json: data_json, org: org, bypass: bypass} do
-      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
-
       Bypass.stub(bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)
@@ -56,8 +51,6 @@ defmodule Andi.Harvest.HarvesterTest do
     end
 
     test "datasets from data_json are added to ecto", %{data_json: data_json, org: org, bypass: bypass} do
-      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
-
       Bypass.stub(bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)
@@ -72,8 +65,6 @@ defmodule Andi.Harvest.HarvesterTest do
     end
 
     test "harvested datasets from data_json are added to ecto", %{data_json: data_json, org: org, bypass: bypass} do
-      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
-
       Bypass.stub(bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)
@@ -135,8 +126,6 @@ defmodule Andi.Harvest.HarvesterTest do
     end
 
     test "datasets that previously existed but no longer do are removed from the system", %{data_json: data_json, org: org, bypass: bypass} do
-      Ecto.Adapters.SQL.Sandbox.allow(Andi.Repo, self(), Andi.Harvest.Harvester)
-
       Bypass.stub(bypass, "GET", "/data.json", fn conn ->
         Plug.Conn.resp(conn, 200, data_json)
       end)

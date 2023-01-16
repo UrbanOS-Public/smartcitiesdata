@@ -28,6 +28,7 @@ defmodule AndiWeb.API.IngestionController do
 
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
+    # TODO: Merge create/publish endpoints into a single "Update" endpoint
     with message <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- trim_required_fields(message),
          :valid <- validate_changes(parsed_message),

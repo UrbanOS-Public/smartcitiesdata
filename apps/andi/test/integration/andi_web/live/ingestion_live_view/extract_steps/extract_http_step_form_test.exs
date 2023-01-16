@@ -32,7 +32,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
-          url: "test.com",
+          url: "https://test.com",
           queryParams: %{"bar" => "biz", "blah" => "dah"},
           headers: %{"barl" => "biz", "yar" => "har"}
         })
@@ -185,7 +185,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
-          url: "123.com",
+          url: "https://123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
@@ -204,7 +204,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       # This sleep is needed because this has to wait until the processes are complete in order to test if the test_url button calls the UrlTest.text
       Process.sleep(3000)
 
-      assert_called(UrlTest.test("123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
+      assert_called(UrlTest.test("https://123.com", query_params: [{"x", "y"}], headers: [{"api-key", "to-my-heart"}]))
 
       [extract_step_id: extract_step_id]
     end
@@ -300,7 +300,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     end
 
     data_test "queryParams are updated when query params are added to url", %{conn: conn} do
-      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{}) |> IngestionHelpers.save_ingestion()
+      {:ok, ingestion} = IngestionHelpers.create_with_http_extract_step(%{url: "https://default.com"}) |> IngestionHelpers.save_ingestion()
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
@@ -376,7 +376,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
-          url: "123.com",
+          url: "https://123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
@@ -384,7 +384,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-      allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test("https://123.com", any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
@@ -408,7 +408,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
-          url: "123.com",
+          url: "http://123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
@@ -416,7 +416,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
 
       extract_step_id = IngestionHelpers.get_extract_step_id(ingestion, 0)
 
-      allow(UrlTest.test("123.com", any()), return: %{time: 1_000, status: 200})
+      allow(UrlTest.test("http://123.com", any()), return: %{time: 1_000, status: 200})
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       extract_step_form_view = find_live_child(view, "extract_step_form_editor")
@@ -438,7 +438,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
           action: "GET",
-          url: "123.com",
+          url: "http://123.com",
           queryParams: %{"x" => "y"},
           headers: %{"api-key" => "to-my-heart"}
         })
@@ -468,7 +468,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "GET",
-        url: "123.com",
+        url: "http://123.com",
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
       })
@@ -491,7 +491,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "GET",
-        url: "123.com",
+        url: "http://123.com",
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
       })
@@ -514,7 +514,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "POST",
-        url: "123.com",
+        url: "http://123.com",
         body: "",
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}
@@ -553,7 +553,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     {:ok, ingestion} =
       IngestionHelpers.create_with_http_extract_step(%{
         action: "POST",
-        url: "123.com",
+        url: "http://123.com",
         body: "",
         queryParams: %{"x" => "y"},
         headers: %{"api-key" => "to-my-heart"}

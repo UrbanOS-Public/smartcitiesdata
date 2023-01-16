@@ -87,8 +87,17 @@ defmodule Andi.IngestionControllerTest do
             message.key == ingestion_update() && String.contains?(message.value, ingestion.id)
           end)
 
-        assert 2 = length(values)
+        assert 2 == length(values)
       end)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id).submissionStatus == :published
+      end)
+
+      # TODO: Refactor the create/publish endpoints to be merged into a single "update" endpoint
+      # TODO: The create/publish split makes sense for the UI Draft/Publish, but the API cannot create a draft
+      # This sleep is a band-aid for a Repo/Event-Stream race condition
+      Process.sleep(3_000)
     end
 
     test "returns 404 when ingestion does not exist in database" do

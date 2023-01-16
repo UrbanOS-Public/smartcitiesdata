@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.4.40",
+      version: "2.4.41",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -50,8 +50,8 @@ defmodule Andi.MixProject do
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:divo_postgres, "~> 0.2", only: [:dev, :integration]},
       {:divo_redis, "~> 0.1.4", only: [:dev, :integration]},
-      {:ecto, "== 3.5.4"},
-      {:ecto_sql, "== 3.3.3"},
+      {:ecto, "== 3.9.0", override: true},
+      {:ecto_sql, "== 3.6.2", override: true},
       {:elixir_uuid, "~> 1.2"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",

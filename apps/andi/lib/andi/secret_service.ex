@@ -29,10 +29,6 @@ defmodule Andi.SecretService do
     end
   end
 
-  def retrieve_aws_keys() do
-    retrieve("aws_keys/andi")
-  end
-
   def write(path, secret) do
     vault_path = "#{@root_path}ingestion/#{path}"
 
@@ -64,5 +60,6 @@ defmodule Andi.SecretService do
     |> Vault.auth(%{role: vault_role(), jwt: token})
   end
 
-  defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
+  defp set_login_ttl(time, interval),
+    do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
 end
