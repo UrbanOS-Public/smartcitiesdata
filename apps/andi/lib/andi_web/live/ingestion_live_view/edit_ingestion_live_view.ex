@@ -380,9 +380,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           |> Ingestion.validate()
           |> Map.get(:errors)
 
-        IO.inspect("Changeset validation found errors in ingestion: #{changeset_errors}", label: "Publishing Ingestion Error")
+        IO.inspect("Changeset validation found errors in ingestion: #{inspect(changeset_errors)}", label: "Publishing Ingestion Error")
 
-        {:error, invalid_changeset}
+        {:error, changeset_errors}
 
       error ->
         IO.inspect(error, label: "General error when publishing ingestion")
