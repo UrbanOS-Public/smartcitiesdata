@@ -43,7 +43,7 @@ defmodule AndiWeb.UserLiveView.EditUserLiveView do
           <div id="edit-page-snackbar" phx-hook="showSnackbar">
             <div style="display: none;"><%= @click_id %></div>
             <%= if @success do %>
-              <div id="snackbar" class="success-message"><%= @success_message %></div>
+              <p id="snackbar" class="success-message" tabindex="0"><%= @success_message %></p>
             <% end %>
           </div>
 

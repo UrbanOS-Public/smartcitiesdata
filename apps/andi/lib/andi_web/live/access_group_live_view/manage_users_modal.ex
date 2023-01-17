@@ -7,7 +7,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModal do
       <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
           <h1 class="search-index__title">User Search</h1>
-          <button type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-manage-users">close</button>
+          <button aria-label="Search User Modal Close" type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-manage-users">close</button>
         </div>
 
         <hr class="search-modal-divider">

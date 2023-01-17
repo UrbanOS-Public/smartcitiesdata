@@ -66,7 +66,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Ingestion Schema</h2>
-          <button type="button" class="btn btn--right btn--transparent component-title-button">
+          <button aria-label="Ingestion Schema <%= action %>" type="button" class="btn btn--right btn--transparent component-title-button">
             <div class="component-title-action">
               <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
               <div class="component-title-icon--<%= @visibility %>"></div>

@@ -21,7 +21,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
       <div class="modal-form-container search-modal" x-trap="<%= @visibility === "visible" %>">
         <div class="search-index__header">
           <h2 class="search-index__title">Dataset Search</h2>
-          <button id="close-select-dataset-modal" type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @myself %>" >close</span>
+          <button aria-label="Search Dataset Modal Close"  id="close-select-dataset-modal" type="button" class="btn btn--transparent material-icons search-index__exit" phx-click="cancel-dataset-search" phx-target="<%= @myself %>" >close</span>
         </div>
 
         <hr class="search-modal-divider">

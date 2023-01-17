@@ -68,7 +68,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
         </div>
         <div class="component-title full-width">
           <h2 class="component-title-text component-title-text--<%= @visibility %> ">Finalize</h2>
-          <button type="button" class="btn btn--right btn--transparent component-title-button">
+          <button aria-label="Finalize <%= action %>" type="button" class="btn btn--right btn--transparent component-title-button">
             <div class="component-title-action">
               <div class="component-title-action-text--<%= @visibility %>"><%= action %></div>
               <div class="component-title-icon--<%= @visibility %>"></div>
@@ -99,11 +99,11 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
                   <h4>Quick Schedule</h4>
 
                   <div class="finalize-form__quick-schedule">
-                    <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" >Hourly</button>
-                    <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily">Daily</button>
-                    <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly">Weekly</button>
-                    <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly">Monthly</button>
-                    <button type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly">Yearly</button>
+                    <button aria-label="Quick Schedule Hourly" type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="hourly" >Hourly</button>
+                    <button aria-label="Quick Schedule Daily" type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="daily">Daily</button>
+                    <button aria-label="Quick Schedule Weekly" type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="weekly">Weekly</button>
+                    <button aria-label="Quick Schedule Monthly" type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="monthly">Monthly</button>
+                    <button aria-label="Quick Schedule Yearly" type="button" class="finalize-form-cron-button" phx-click="quick_schedule" phx-value-schedule="yearly">Yearly</button>
                   </div>
 
                   <div class="finalize-form__help-link">
@@ -113,27 +113,27 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
                   <div class="finalize-form__schedule-input">
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__second">Second</label>
-                      <input id="finalize-form-schedule-input__second" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" value="<%= @crontab_list[:second] %>" />
+                      <input aria-label="Cron Schedule Second" id="finalize-form-schedule-input__second" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="second" value="<%= @crontab_list[:second] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__minute">Minute</label>
-                      <input id="finalize-form-schedule-input__minute" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" value="<%= @crontab_list[:minute] %>" />
+                      <input aria-label="Cron Schedule Minute" id="finalize-form-schedule-input__minute" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="minute" value="<%= @crontab_list[:minute] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__hour">Hour</label>
-                      <input id="finalize-form-schedule-input__hour" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" value="<%= @crontab_list[:hour] %>" />
+                      <input aria-label="Cron Schedule Hour" id="finalize-form-schedule-input__hour" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="hour" value="<%= @crontab_list[:hour] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__day">Day</label>
-                      <input id="finalize-form-schedule-input__day" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" value="<%= @crontab_list[:day] %>" />
+                      <input aria-label="Cron Schedule Day" id="finalize-form-schedule-input__day" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="day" value="<%= @crontab_list[:day] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__month">Month</label>
-                      <input id="finalize-form-schedule-input__month" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" value="<%= @crontab_list[:month] %>" />
+                      <input aria-label="Cron Schedule Month" id="finalize-form-schedule-input__month" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="month" value="<%= @crontab_list[:month] %>" />
                     </div>
                     <div class="finalize-form__schedule-input-field">
                       <label for="finalize-form-schedule-input__week">Week</label>
-                      <input id="finalize-form-schedule-input__week" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" value="<%= @crontab_list[:week] %>" />
+                      <input aria-label="Cron Schedule Week" id="finalize-form-schedule-input__week" class="finalize-form-schedule-input__field" phx-keyup="set_schedule" phx-value-input-field="week" value="<%= @crontab_list[:week] %>" />
                     </div>
                   </div>
                 </div>

@@ -14,7 +14,7 @@ defmodule AndiWeb.ConfirmDeleteModal do
         <br>
         <div class="button-container">
           <button id="confirm-cancel-button" type="button" class="btn btn--cancel" phx-click="delete-canceled">Cancel</button>
-          <button id="confirm-delete-button" type="button" class="btn btn--danger btn--delete" phx-click="delete-confirmed" phx-value-id=<%= @id %>>
+          <button aria-label="Delete" id="confirm-delete-button" type="button" class="btn btn--danger btn--delete" phx-click="delete-confirmed" phx-value-id=<%= @id %>>
             <span class="delete-icon material-icons">delete</span>
             Delete
           </button>
