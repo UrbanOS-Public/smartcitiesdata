@@ -361,15 +361,15 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(:submitted) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--large btn--right btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button aria-label="Delete" id="delete-dataset-button" name="delete-dataset-button" class="btn btn--large btn--right btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>
-      <button id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
+      <button aria-label="Reject" id="reject-button" name="reject-button" class="btn btn--review" type="button" phx-click="reject-dataset">
                                                                                           <span class="reject-icon material-icons">clear</span>
         REJECT
       </button>
-      <button id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
+      <button aria-label="Approve" id="approve-button" name="approve-button" class="btn btn--review" type="button" phx-click="approve-for-publish">
                                                                                             <span class="approve-icon material-icons">check</span>
         APPROVE & PUBLISH
       </button>
@@ -378,7 +378,7 @@ defmodule AndiWeb.EditLiveView do
 
   defp render_review_buttons(_) do
     ~E"""
-      <button id="delete-dataset-button" name="delete-dataset-button" class="btn btn--right btn--large btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
+      <button aria-label="Delete" id="delete-dataset-button" name="delete-dataset-button" class="btn btn--right btn--large btn--review btn--danger btn--delete" phx-click="dataset-delete" type="button">
                                                                                                           <span class="delete-icon material-icons">delete</span>
         Delete
       </button>

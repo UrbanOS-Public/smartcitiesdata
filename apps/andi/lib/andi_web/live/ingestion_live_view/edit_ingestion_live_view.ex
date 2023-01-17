@@ -91,10 +91,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         <button id="save-button" name="save-button" class="btn btn--primary-outline btn--save btn--large" type="button" phx-click="save">Save Draft Ingestion</button>
           <button type="button" class="btn btn--secondary btn--large btn--cancel" phx-click="cancel-edit">Discard Changes</button>
 
-                  <button id="ingestion-delete-button" class="btn btn--large btn--right btn--danger btn--delete" phx-click="prompt-ingestion-delete" type="button">
-                    <span class="delete-icon material-icons">delete</span>
-                    Delete
-                  </button>
+          <button aria-label="Delete" id="ingestion-delete-button" class="btn btn--large btn--right btn--danger btn--delete" phx-click="prompt-ingestion-delete" type="button">
+            <span class="delete-icon material-icons">delete</span>
+            Delete
+          </button>
         </div>
 
 

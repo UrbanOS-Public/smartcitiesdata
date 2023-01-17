@@ -56,7 +56,7 @@ defmodule AndiWeb.AccessGroupLiveView.EditAccessGroupLiveView do
         <div class="btn-group__standard">
           <button type="submit" id="save-button" name="save-button" phx-click="access-group-form_save" class="btn btn--primary btn--large save-edit">Save</button>
           <button type="button" class="btn btn--secondary btn--large cancel-edit" phx-click="cancel-edit">Discard Changes</button>
-          <button id="access-group-delete-button" class="btn btn--right btn--danger btn--delete" phx-click="prompt-access-group-delete" type="button">
+          <button aria-label="Delete" id="access-group-delete-button" class="btn btn--right btn--danger btn--delete" phx-click="prompt-access-group-delete" type="button">
             <span class="delete-icon material-icons">delete</span>
               Delete
           </button>
