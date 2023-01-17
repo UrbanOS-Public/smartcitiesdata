@@ -2,6 +2,7 @@ defmodule AndiWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_andi_key",
+    secure: String.to_atom(System.get_env("SECURE_COOKIE", "false")),
     signing_salt: "SekoFX7T"
   ]
 
