@@ -44,8 +44,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def render(assigns) do
-    metadata_changeset =
+    current_data =
       assigns.changeset
+      |> Changeset.apply_changes()
+
+    metadata_changeset =
+      Ingestion.changeset(current_data, %{})
       |> Ingestion.validate()
       |> IngestionMetadataFormSchema.extract_from_ingestion_changeset()
 
