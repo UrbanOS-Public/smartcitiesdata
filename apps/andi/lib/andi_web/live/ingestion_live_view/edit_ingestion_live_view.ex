@@ -374,7 +374,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
            |> Ingestion.validate(),
          true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset.data
-      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish) |> IO.inspect(label: "RYAN - Message")
+      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
 
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
