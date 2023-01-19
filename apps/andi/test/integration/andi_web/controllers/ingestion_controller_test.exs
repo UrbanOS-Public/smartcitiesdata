@@ -114,7 +114,6 @@ defmodule Andi.IngestionControllerTest do
       uuid = Faker.UUID.v4()
 
       request = %{
-        "id" => uuid,
         "name" => "Name",
         "extractSteps" => [
           %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
@@ -132,6 +131,7 @@ defmodule Andi.IngestionControllerTest do
         |> SmartCity.Helpers.to_atom_keys()
         |> TDG.create_ingestion()
         |> struct_to_map_with_string_keys()
+        |> Map.pop("id")
 
       assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
       response = Jason.decode!(body)

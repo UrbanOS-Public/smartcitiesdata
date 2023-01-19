@@ -29,7 +29,7 @@ defmodule AndiWeb.API.IngestionController do
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     # TODO: Merge create/publish endpoints into a single "Update" endpoint
-    with message <- add_uuid(conn.body_params),
+    with {:ok, message} <- add_uuid(conn.body_params),
          {:ok, parsed_message} <- trim_required_fields(message),
          :valid <- validate_changes(parsed_message),
          ingestion <- new_ingestion(parsed_message),
@@ -144,10 +144,26 @@ defmodule AndiWeb.API.IngestionController do
   end
 
   defp add_uuid(message) do
-    uuid = UUID.uuid4()
+    if Map.has_key?(message, "id") do
+      case IngestionStore.get(Map.get(message, "id")) do
+        {:ok, nil} ->
+          {:invalid, "Do not include id in create call"}
 
-    Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
+        {:ok, _} ->
+          uuid = UUID.uuid4()
+          {:ok, Map.merge(%{"id" => uuid}, message)}
+
+        error ->
+          Logger.error("Failed to retrieve ingestion by id: #{inspect(error)}")
+          {:error, "Unable to process request"}
+      end
+    else
+      uuid = UUID.uuid4()
+      {:ok, Map.merge(%{"id" => uuid}, message)}
+    end
   end
+
+  Map.merge(%{"id" => "base id"}, %{"id" => "new id"}, fn _k, v1, _v2 -> v1 end)
 
   defp trim_required_fields(%{"id" => _, "schema" => _, "extractSteps" => _} = map) do
     {:ok, trim_map(map)}
