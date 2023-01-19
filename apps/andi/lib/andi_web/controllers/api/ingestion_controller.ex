@@ -163,8 +163,6 @@ defmodule AndiWeb.API.IngestionController do
     end
   end
 
-  Map.merge(%{"id" => "base id"}, %{"id" => "new id"}, fn _k, v1, _v2 -> v1 end)
-
   defp trim_required_fields(%{"id" => _, "schema" => _, "extractSteps" => _} = map) do
     {:ok, trim_map(map)}
   end
