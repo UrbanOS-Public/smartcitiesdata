@@ -233,10 +233,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     case publish_ingestion(ingestion_id, socket.assigns.user_id) do
       {:ok, ingestion_changeset} ->
-        {:noreply, assign(socket, changeset: ingestion_changeset)}
+        updated_socket = assign(socket, changeset: ingestion_changeset)
+        {:noreply, update_publish_message(updated_socket, "valid")}
 
       _ ->
-        {:noreply, update_save_message(socket, "invalid")}
+        {:noreply, update_publish_message(socket, "invalid")}
     end
   end
 
@@ -349,6 +350,22 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     )
   end
 
+  defp publish_message(true = _valid?), do: "Published successfully."
+
+  defp publish_message(false = _valid?),
+       do: "Saved successfully, but could not publish. You may need to fix errors before publishing."
+
+  defp update_publish_message(socket, status) do
+    message = publish_message(status == "valid" && socket.assigns.changeset.valid?)
+
+    assign(socket,
+      click_id: UUID.uuid4(),
+      save_success: true,
+      success_message: message,
+      unsaved_changes: false
+    )
+  end
+
   def publish_ingestion(ingestion_id, user_id) do
     with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
          ingestion_changeset <-
@@ -357,7 +374,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
            |> Ingestion.validate(),
          true <- ingestion_changeset.valid? do
       ingestion_for_publish = ingestion_changeset.data
-      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
+      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish) |> IO.inspect(label: "RYAN - Message")
 
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->

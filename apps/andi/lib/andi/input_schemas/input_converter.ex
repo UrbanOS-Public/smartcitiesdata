@@ -3,6 +3,8 @@ defmodule Andi.InputSchemas.InputConverter do
   Used to convert between SmartCity.Datasets, form data (defined by Andi.InputSchemas.DatasetInput), and Ecto.Changesets.
   """
 
+  require Logger
+
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Organization
@@ -266,7 +268,17 @@ defmodule Andi.InputSchemas.InputConverter do
   defp update_context_from_smrt_step(context, _), do: context
 
   defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body not in ["", nil] do
-    Map.put(smrt_extract_step, :body, Jason.encode!(body))
+    case body do
+      _ when is_binary(body) ->
+        Map.put(smrt_extract_step, :body, Jason.decode!(body))
+
+      _ when is_map(body) ->
+        Map.put(smrt_extract_step, :body, body)
+
+      _ ->
+        Logger.error("Received an extract step body that is not a string or a map. Received body: #{body}}")
+        smrt_extract_step
+    end
   end
 
   defp encode_extract_step_body_as_json(smrt_extract_step), do: smrt_extract_step
