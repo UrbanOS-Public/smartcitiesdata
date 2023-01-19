@@ -40,4 +40,27 @@ defmodule Transformers.RegexReplace do
       {:error, "Value of field #{field_name} is not a string: #{value}"}
     end
   end
+
+  def fields() do
+    [
+      %{
+        field_name: @source_field,
+        field_type: "string",
+        field_label: "Source Field",
+        options: nil
+      },
+      %{
+        field_name: @regex,
+        field_type: "string",
+        field_label: "Regex",
+        options: nil
+      },
+      %{
+        field_name: @replacement,
+        field_type: "string",
+        field_label: "Replacement",
+        options: nil
+      },
+    ]
+  end
 end
