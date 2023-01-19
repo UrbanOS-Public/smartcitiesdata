@@ -60,7 +60,7 @@ defmodule Transformers.RegexReplace do
         field_type: "string",
         field_label: "Replacement",
         options: nil
-      },
+      }
     ]
   end
 end
