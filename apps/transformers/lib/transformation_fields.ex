@@ -29,6 +29,10 @@ defmodule Transformers.TransformationFields do
     Transformers.RegexReplace.fields()
   end
 
+  def fields_for("datetime") do
+    Transformers.DateTime.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
