@@ -34,8 +34,10 @@ defmodule Andi.Event.EventHandlerTest do
 
   test "should update the view state and the postgres entry when ingestion update event is called" do
     current_time = DateTime.utc_now()
-    ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
-                |> Map.put(:ingestedTime, DateTime.to_iso8601(current_time))
+
+    ingestion =
+      TDG.create_ingestion(%{id: Faker.UUID.v4()})
+      |> Map.put(:ingestedTime, DateTime.to_iso8601(current_time))
 
     allow(IngestionStore.update(any()), return: :ok)
     allow(Ingestions.update(ingestion), return: {:ok, "good"})
