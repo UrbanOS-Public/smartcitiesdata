@@ -65,4 +65,33 @@ defmodule Transformers.DateTime do
         {:error, "Unable to format datetime \"#{dateTime}\" in format \"#{format}\": #{reason}"}
     end
   end
+
+  def fields() do
+    [
+      %{
+        field_name: "sourceField",
+        field_type: "string",
+        field_label: "Source Field",
+        options: nil
+      },
+      %{
+        field_name: "targetField",
+        field_type: "string",
+        field_label: "Target Field",
+        options: nil
+      },
+      %{
+        field_name: "sourceFormat",
+        field_type: "string",
+        field_label: "Source Format",
+        options: nil
+      },
+      %{
+        field_name: "targetFormat",
+        field_type: "string",
+        field_label: "Target Format",
+        options: nil
+      }
+    ]
+  end
 end
