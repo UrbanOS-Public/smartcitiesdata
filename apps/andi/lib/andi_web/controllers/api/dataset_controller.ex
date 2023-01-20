@@ -27,7 +27,7 @@ defmodule AndiWeb.API.DatasetController do
   """
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
-    with message <- add_uuid(conn.body_params),
+    with {:ok, message} <- check_and_add_id(conn.body_params),
          {:ok, parsed_message} <- trim_fields(message),
          :valid <- validate_changes(parsed_message),
          {:ok, dataset} <- new_dataset(parsed_message),
@@ -134,10 +134,23 @@ defmodule AndiWeb.API.DatasetController do
     |> json(body)
   end
 
-  defp add_uuid(message) do
-    uuid = UUID.uuid4()
+  defp check_and_add_id(message) do
+    if Map.has_key?(message, "id") do
+      if dataset_exists?(Map.get(message, "id")) do
+        {:ok, message}
+      else
+        {:invalid, "Do not include id in create call"}
+      end
+    else
+      {:ok, Map.merge(%{"id" => UUID.uuid4()}, message)}
+    end
+  end
 
-    Map.merge(message, %{"id" => uuid}, fn _k, v1, _v2 -> v1 end)
+  defp dataset_exists?(id) do
+    case DatasetStore.get(id) do
+      {:ok, nil} -> false
+      _ -> true
+    end
   end
 
   defp trim_fields(%{"id" => id, "technical" => technical, "business" => business} = map) do

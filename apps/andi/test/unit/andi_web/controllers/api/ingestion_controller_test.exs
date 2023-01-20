@@ -198,7 +198,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-      allow(IngestionStore.get(any()), return: {:ok, nil})
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
 
       conn = put(conn, @route, ingestion)
       body = json_response(conn, 400)
@@ -211,7 +211,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-      allow(IngestionStore.get(any()), return: {:ok, ingestion})
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
 
       conn = put(conn, @route, ingestion)
 
