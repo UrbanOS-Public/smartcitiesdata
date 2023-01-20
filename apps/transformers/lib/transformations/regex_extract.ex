@@ -41,13 +41,13 @@ defmodule Transformers.RegexExtract do
   def fields() do
     [
       %{
-        field_name: @sourceField,
+        field_name: @source_field,
         field_type: "string",
         field_label: "Source Field",
         options: nil
       },
       %{
-        field_name: @targetField,
+        field_name: @target_field,
         field_type: "string",
         field_label: "Target Field",
         options: nil
