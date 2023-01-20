@@ -10,6 +10,90 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   use Placebo
 
+  describe "ingestion conversions" do
+    test "prepare_smrt_ingestion_for_casting/1 passes through the extract step body if it is json encoded" do
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "123.com",
+                body: "{\"foo\": 123}",
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            }
+          ]
+        })
+
+      result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+      assert result.extractSteps == [
+               %{
+                 context: %{
+                   body: "{\"foo\": 123}",
+                   headers: [%{key: "api-key", value: "to-my-heart"}],
+                   url: "123.com"
+                 },
+                 type: "s3"
+               }
+             ]
+    end
+
+    test "prepare_smrt_ingestion_for_casting json encodes the extract step body if it is a map" do
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "123.com",
+                body: %{foo: 123},
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            }
+          ]
+        })
+
+      result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+      assert result.extractSteps == [
+               %{
+                 context: %{
+                   body: "{\"foo\":123}",
+                   headers: [%{key: "api-key", value: "to-my-heart"}],
+                   url: "123.com"
+                 },
+                 type: "s3"
+               }
+             ]
+    end
+
+    test "prepare_smrt_ingestion_for_casting throws an error if a body is not valid json" do
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "123.com",
+                body: "{foo:123}",
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            }
+          ]
+        })
+
+      try do
+        result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+        flunk("Expected incorrectly formatted body to raise an error")
+      rescue
+        e in Jason.DecodeError ->
+          :ok
+      end
+    end
+  end
+
   describe "main conversions" do
     setup do
       allow(Datasets.is_unique?(any(), any(), any()), return: true)
