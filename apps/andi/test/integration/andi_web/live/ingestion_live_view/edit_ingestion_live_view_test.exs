@@ -167,7 +167,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       new_name = "new_name"
 
       form_data = %{
-        "name" => new_name,
+        "name" => new_name
       }
 
       view
@@ -190,7 +190,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
       form_data = %{
         "name" => new_name,
-        "sourceFormat" => nil,
+        "sourceFormat" => nil
       }
 
       view
@@ -212,7 +212,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       new_name = "new_name"
 
       form_data = %{
-        "name" => new_name,
+        "name" => new_name
       }
 
       view

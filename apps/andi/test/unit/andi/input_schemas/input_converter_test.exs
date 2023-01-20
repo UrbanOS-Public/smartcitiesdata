@@ -9,9 +9,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias SmartCity.TestDataGenerator, as: TDG
 
   use Placebo
-  describe "ingestion conversions" do
 
-    test "prepare_smrt_ingestion_for_casting/1 decodes the extract step body if it is json encoded" do
+  describe "ingestion conversions" do
+    test "prepare_smrt_ingestion_for_casting/1 passes through the extract step body if it is json encoded" do
       smrt_ingestion =
         TDG.create_ingestion(%{
           extractSteps: [
@@ -31,7 +31,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       assert result.extractSteps == [
                %{
                  context: %{
-                   body: %{"foo" => 123},
+                   body: "{\"foo\": 123}",
                    headers: [%{key: "api-key", value: "to-my-heart"}],
                    url: "123.com"
                  },
@@ -40,7 +40,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
              ]
     end
 
-    test "prepare_smrt_ingestion_for_casting does not transform the extract step body if already a map" do
+    test "prepare_smrt_ingestion_for_casting json encodes the extract step body if it is a map" do
       smrt_ingestion =
         TDG.create_ingestion(%{
           extractSteps: [
@@ -60,7 +60,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
       assert result.extractSteps == [
                %{
                  context: %{
-                   body: %{foo: 123},
+                   body: "{\"foo\":123}",
                    headers: [%{key: "api-key", value: "to-my-heart"}],
                    url: "123.com"
                  },
@@ -69,7 +69,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
              ]
     end
 
-    test "prepare_smrt_ingestion_for_casting throws an error if a body cannot be json decoded" do
+    test "prepare_smrt_ingestion_for_casting throws an error if a body is not valid json" do
       smrt_ingestion =
         TDG.create_ingestion(%{
           extractSteps: [
@@ -87,8 +87,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
       try do
         result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
         flunk("Expected incorrectly formatted body to raise an error")
-      rescue e in Jason.DecodeError ->
-        :ok
+      rescue
+        e in Jason.DecodeError ->
+          :ok
       end
     end
   end

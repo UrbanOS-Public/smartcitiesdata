@@ -50,9 +50,10 @@ defmodule Andi.Event.EventHandler do
     ingestion_update()
     |> add_event_count(author, data.id)
 
-    Ingestions.update_ingested_time(data.id, DateTime.utc_now())
+    data
+    |> Map.put(:ingestionTime, %{ingestionTime: DateTime.to_iso8601(DateTime.utc_now())})
+    |> Ingestions.update()
 
-    Ingestions.update(data)
     IngestionStore.update(data)
   end
 

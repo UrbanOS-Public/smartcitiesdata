@@ -353,7 +353,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   defp publish_message(true = _valid?), do: "Published successfully."
 
   defp publish_message(false = _valid?),
-       do: "Saved successfully, but could not publish. You may need to fix errors before publishing."
+    do: "Saved successfully, but could not publish. You may need to fix errors before publishing."
 
   defp update_publish_message(socket, status) do
     message = publish_message(status == "valid" && socket.assigns.changeset.valid?)
