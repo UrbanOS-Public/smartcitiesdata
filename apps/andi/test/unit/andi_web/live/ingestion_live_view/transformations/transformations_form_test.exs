@@ -100,6 +100,43 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "##{field_id}") |> has_element?()
     end
 
+    test "after selecting regex replace, regex extract fields appear" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      select_type("regex_replace", view)
+
+      source_field_id = build_field_id("sourceField")
+      replacement_field_id = build_field_id("replacement")
+      regex_field_id = build_field_id("regex")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
+      assert element(view, "label[for=#{regex_field_id}]", "Regex") |> has_element?()
+      assert element(view, "label[for=#{replacement_field_id}]", "Replacement") |> has_element?()
+      assert element(view, "##{source_field_id}") |> has_element?()
+      assert element(view, "##{replacement_field_id}") |> has_element?()
+      assert element(view, "##{regex_field_id}") |> has_element?()
+    end
+
+    test "if regex replace is selected show fields on load" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "regex_replace"})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      source_field_id = build_field_id("sourceField")
+      replacement_field_id = build_field_id("replacement")
+      regex_field_id = build_field_id("regex")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
+      assert element(view, "label[for=#{regex_field_id}]", "Regex") |> has_element?()
+      assert element(view, "label[for=#{replacement_field_id}]", "Replacement") |> has_element?()
+      assert element(view, "##{source_field_id}") |> has_element?()
+      assert element(view, "##{replacement_field_id}") |> has_element?()
+      assert element(view, "##{regex_field_id}") |> has_element?()
+    end
+
     test "shows error message if field missing" do
       transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)
