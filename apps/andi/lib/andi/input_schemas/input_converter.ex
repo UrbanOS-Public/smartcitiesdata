@@ -3,6 +3,8 @@ defmodule Andi.InputSchemas.InputConverter do
   Used to convert between SmartCity.Datasets, form data (defined by Andi.InputSchemas.DatasetInput), and Ecto.Changesets.
   """
 
+  require Logger
+
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Organization
@@ -266,7 +268,22 @@ defmodule Andi.InputSchemas.InputConverter do
   defp update_context_from_smrt_step(context, _), do: context
 
   defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body not in ["", nil] do
-    Map.put(smrt_extract_step, :body, Jason.encode!(body))
+    case body do
+      _ when is_binary(body) ->
+        raise_error_if_invalid_json(body)
+        Map.put(smrt_extract_step, :body, body)
+
+      _ when is_map(body) ->
+        Map.put(smrt_extract_step, :body, Jason.encode!(body))
+
+      _ ->
+        Logger.error("Received an extract step body that is not a string or a map. Received body: #{body}}")
+        smrt_extract_step
+    end
+  end
+
+  defp raise_error_if_invalid_json(payload) do
+    Jason.decode!(payload)
   end
 
   defp encode_extract_step_body_as_json(smrt_extract_step), do: smrt_extract_step
@@ -328,7 +345,6 @@ defmodule Andi.InputSchemas.InputConverter do
     andi_extract_steps
     |> Enum.map(fn step ->
       step
-      |> Map.delete(:id)
       |> Map.delete(:technical_id)
       |> Map.update(:context, nil, fn context -> update_context_from_andi_step(context, step.type) end)
       |> Map.put(:assigns, %{})
@@ -337,12 +353,49 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_andi_step(context, "http") do
     context
+    |> cast_keys_to_atom_in_map_recursively()
     |> decode_andi_extract_step_body()
     |> Map.put_new(:body, %{})
     |> Map.put_new(:protocol, nil)
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
     |> Map.update(:url, nil, &remove_query_params_from_url/1)
+  end
+
+  defp cast_keys_to_atom_in_map_recursively(map) do
+    map
+    |> Enum.map(fn
+      {key, value} when is_binary(key) ->
+        {String.to_atom(key), value}
+
+      {key, value} ->
+        {key, value}
+    end)
+    |> Enum.map(fn
+      {key, value} when is_map(value) ->
+        {key, cast_keys_to_atom_in_map_recursively(value)}
+
+      {key, value} when is_list(value) ->
+        {key, cast_keys_to_atoms_in_list_recursively(value)}
+
+      {key, value} ->
+        {key, value}
+    end)
+    |> Enum.into(%{})
+  end
+
+  defp cast_keys_to_atoms_in_list_recursively(list) do
+    list
+    |> Enum.map(fn
+      element when is_map(element) ->
+        cast_keys_to_atom_in_map_recursively(element)
+
+      element when is_list(element) ->
+        cast_keys_to_atoms_in_list_recursively(element)
+
+      element ->
+        element
+    end)
   end
 
   defp update_context_from_andi_step(context, "s3") do

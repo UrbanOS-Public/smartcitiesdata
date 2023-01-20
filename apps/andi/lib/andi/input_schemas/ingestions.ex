@@ -138,13 +138,6 @@ defmodule Andi.InputSchemas.Ingestions do
     Ingestion.changeset(schema, changes)
   end
 
-  def update_ingested_time(ingestion_id, ingested_time) do
-    from_ingestion = get(ingestion_id) || %Ingestion{id: ingestion_id}
-    iso_ingested_time = DateTime.to_iso8601(ingested_time)
-
-    update(from_ingestion, %{ingestedTime: iso_ingested_time})
-  end
-
   def update_submission_status(ingestion_id, status) do
     from_ingestion = get(ingestion_id)
 

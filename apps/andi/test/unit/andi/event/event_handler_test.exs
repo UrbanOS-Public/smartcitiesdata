@@ -33,18 +33,20 @@ defmodule Andi.Event.EventHandlerTest do
   end
 
   test "should update the view state and the postgres entry when ingestion update event is called" do
-    ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
-    allow(IngestionStore.update(any()), return: :ok)
-    allow(Ingestions.update(any()), return: {:ok, "good"})
-    allow(Ingestions.update_ingested_time(any(), any()), return: :ok)
     current_time = DateTime.utc_now()
+
+    ingestion =
+      TDG.create_ingestion(%{id: Faker.UUID.v4()})
+      |> Map.put(:ingestedTime, DateTime.to_iso8601(current_time))
+
+    allow(IngestionStore.update(any()), return: :ok)
+    allow(Ingestions.update(ingestion), return: {:ok, "good"})
     allow(DateTime.utc_now(), return: current_time)
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Event.new(type: ingestion_update(), data: ingestion, author: :author)
     |> EventHandler.handle_event()
 
-    assert_called Ingestions.update_ingested_time(ingestion.id, DateTime.utc_now())
     assert_called Ingestions.update(ingestion)
     assert_called IngestionStore.update(ingestion)
   end
