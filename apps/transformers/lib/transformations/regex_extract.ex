@@ -37,4 +37,27 @@ defmodule Transformers.RegexExtract do
     |> ValidRegex.check(parameters, @regex)
     |> ValidationStatus.ordered_values_or_errors([@source_field, @target_field, @regex])
   end
+
+  def fields() do
+    [
+      %{
+        field_name: @source_field,
+        field_type: "string",
+        field_label: "Source Field",
+        options: nil
+      },
+      %{
+        field_name: @target_field,
+        field_type: "string",
+        field_label: "Target Field",
+        options: nil
+      },
+      %{
+        field_name: @regex,
+        field_type: "string",
+        field_label: "Regex",
+        options: nil
+      }
+    ]
+  end
 end

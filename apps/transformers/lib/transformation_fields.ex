@@ -21,6 +21,10 @@ defmodule Transformers.TransformationFields do
     Transformers.Division.fields()
   end
 
+  def fields_for("regex_extract") do
+    Transformers.RegexExtract.fields()
+  end
+
   def fields_for("regex_replace") do
     Transformers.RegexReplace.fields()
   end
