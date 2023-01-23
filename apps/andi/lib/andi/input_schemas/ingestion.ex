@@ -13,6 +13,7 @@ defmodule Andi.InputSchemas.Ingestion do
   alias Andi.Schemas.Validation.CadenceValidator
   alias AndiWeb.Helpers.ExtractStepHelpers
   alias AndiWeb.Views.Options
+  alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.DatasetSchemaValidator
   alias Andi.InputSchemas.Ingestions.Transformation
 
@@ -66,6 +67,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> Changeset.validate_required(@required_fields, message: "is required")
     |> Changeset.foreign_key_constraint(:targetDataset)
+    |> validate_target_dataset()
     |> validate_source_format()
     |> CadenceValidator.validate()
     |> validate_top_level_selector()
@@ -205,6 +207,24 @@ defmodule Andi.InputSchemas.Ingestion do
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
       true -> Changeset.add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")
       false -> changeset
+    end
+  end
+
+  defp validate_target_dataset(changeset) do
+    dataset_id = Changeset.get_field(changeset, :targetDataset)
+
+    case dataset_exists?(dataset_id) do
+      {:ok, true} -> changeset
+      {:ok, false} -> Changeset.add_error(changeset, :targetDataset, "Target dataset does not exist")
+      {:error, _} -> Changeset.add_error(changeset, :targetDataset, "Unable to retrieve target dataset")
+    end
+  end
+
+  defp dataset_exists?(id) do
+    case DatasetStore.get(id) do
+      {:ok, nil} -> {:ok, false}
+      {:ok, dataset} -> {:ok, true}
+      {:error, error} -> {:error, error}
     end
   end
 end
