@@ -1,8 +1,10 @@
 defmodule AndiWeb.Endpoint do
+  use Properties, otp_app: :andi
+
   @session_options [
     store: :cookie,
     key: "_andi_key",
-    secure: String.to_atom(System.get_env("SECURE_COOKIE", "false")),
+    secure: Application.get_env(:andi, :secure_cookie),
     signing_salt: "SekoFX7T"
   ]
 
