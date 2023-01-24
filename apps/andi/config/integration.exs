@@ -105,7 +105,8 @@ config :andi, AndiWeb.Endpoint,
   ],
   live_view: [
     signing_salt: "SUPER VERY TOP SECRET!!!"
-  ]
+  ],
+  secure_cookie: String.to_atom(System.get_env("SECURE_COOKIE", "false"))
 
 config :ueberauth, Ueberauth,
   providers: [
