@@ -18,7 +18,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     schema: [
       %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
     ],
-    sourceFormat: "sourceFormat"
+    sourceFormat: "text/csv"
   }
 
   @test_extract_step %{type: "http", context: %{action: "GET", url: "http://example.com"}}
@@ -61,7 +61,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
       errors = accumulate_errors(changeset)
       {:ok, actual_error} = Map.fetch(errors, field)
-      assert actual_error == [{field, {"is required", [validation: :required]}}]
+      assert {field, {"is required", [validation: :required]}} in actual_error
 
       where([
         [:field],

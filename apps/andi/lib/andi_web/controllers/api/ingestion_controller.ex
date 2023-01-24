@@ -10,6 +10,7 @@ defmodule AndiWeb.API.IngestionController do
   import AndiWeb.IngestionLiveView.EditIngestionLiveView, only: [publish_ingestion: 2]
   alias SmartCity.Ingestion
   alias Andi.Services.IngestionStore
+  alias Andi.Services.DatasetStore
   alias Andi.InputSchemas.InputConverter
 
   access_levels(
@@ -48,10 +49,30 @@ defmodule AndiWeb.API.IngestionController do
   def validate_changes(ingestion) do
     changeset = InputConverter.smrt_ingestion_to_full_changeset(ingestion)
 
-    if changeset.valid? do
+    with true <- changeset.valid?,
+         :ok <- validate_target_dataset(ingestion) do
       :valid
     else
-      {:invalid, format_changeset_errors(changeset)}
+      false -> {:invalid, format_changeset_errors(changeset)}
+      {:error, error} -> {:invalid, error}
+    end
+  end
+
+  defp validate_target_dataset(ingestion) do
+    dataset_id = ingestion["targetDataset"]
+
+    case dataset_exists?(dataset_id) do
+      {:ok, true} -> :ok
+      {:ok, false} -> {:error, "Target dataset does not exist"}
+      {:error, _} -> {:error, "Unable to retrieve target dataset"}
+    end
+  end
+
+  defp dataset_exists?(id) do
+    case DatasetStore.get(id) do
+      {:ok, nil} -> {:ok, false}
+      {:ok, dataset} -> {:ok, true}
+      {:error, error} -> {:error, error}
     end
   end
 
