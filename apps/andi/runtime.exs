@@ -70,8 +70,7 @@ config :andi,
   access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public"),
   vault_role: System.get_env("VAULT_ROLE"),
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
-  hosted_region: System.get_env("HOSTED_FILE_REGION"),
-  secure_cookie: String.to_atom(System.get_env("SECURE_COOKIE", "false"))
+  hosted_region: System.get_env("HOSTED_FILE_REGION")
 
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
