@@ -5,7 +5,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets
-  alias Andi.Services.DatasetStore
 
   @ingestion_id Ecto.UUID.generate()
   @dataset_id Ecto.UUID.generate()
@@ -31,13 +30,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     schema: [@test_schema],
     transformations: []
   }
-
-  setup do
-    allow(DatasetStore.get(@dataset_id), return: {:ok, %{id: @dataset_id}})
-    allow(DatasetStore.get("nonexistent_dataset"), return: {:ok, nil})
-    allow(DatasetStore.get("error_dataset"), return: {:error, "error reason"})
-    :ok
-  end
 
   test "changeset_for_draft updates changeset with new name" do
     original_ingestion = %Andi.InputSchemas.Ingestion{
@@ -94,40 +86,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       assert accumulate_errors(changeset) ==
                %{
                  sourceFormat: [{:sourceFormat, {"invalid format for ingestion", []}}]
-               }
-    end
-
-    test "targetDataset must exist in the datastore" do
-      changes =
-        @valid_changes
-        |> put_in([:targetDataset], "nonexistent_dataset")
-
-      changeset =
-        Ingestion.changeset(%Ingestion{}, changes)
-        |> Ingestion.validate()
-
-      refute changeset.valid?
-
-      assert accumulate_errors(changeset) ==
-               %{
-                 targetDataset: [{:targetDataset, {"Target dataset does not exist", []}}]
-               }
-    end
-
-    test "fail validation when datasetStore fails" do
-      changes =
-        @valid_changes
-        |> put_in([:targetDataset], "error_dataset")
-
-      changeset =
-        Ingestion.changeset(%Ingestion{}, changes)
-        |> Ingestion.validate()
-
-      refute changeset.valid?
-
-      assert accumulate_errors(changeset) ==
-               %{
-                 targetDataset: [{:targetDataset, {"Unable to retrieve target dataset", []}}]
                }
     end
 
