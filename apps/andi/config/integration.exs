@@ -28,8 +28,7 @@ config :andi,
   kafka_endpoints: endpoint,
   hsts_enabled: false,
   access_level: :private,
-  hosted_bucket: bucket_name,
-  secure_cookie: String.to_atom(System.get_env("SECURE_COOKIE", "false"))
+  hosted_bucket: bucket_name
 
 config :andi, Andi.Repo,
   database: db_name,

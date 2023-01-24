@@ -45,6 +45,7 @@ System.put_env("ANDI_ERROR_COLOR", "#1170C8")
 System.put_env("ANDI_FOOTER_LEFT_SIDE_TEXT", "Some Left Side Text")
 System.put_env("ANDI_FOOTER_LEFT_SIDE_LINK", "https://www.example.com")
 System.put_env("AUTH0_CLIENT_SECRET", "Example Secret")
+System.put_env("SECURE_COOKIE", "false")
 
 System.put_env(
   "ANDI_FOOTER_RIGHT_LINKS",
