@@ -75,21 +75,21 @@ defmodule Transformers.DateTime do
         options: nil
       },
       %{
+        field_name: "sourceFormat",
+        field_type: "string",
+        field_label: "Source Field Format",
+        options: nil
+      },
+      %{
         field_name: "targetField",
         field_type: "string",
         field_label: "Target Field",
         options: nil
       },
       %{
-        field_name: "sourceFormat",
-        field_type: "string",
-        field_label: "Source Format",
-        options: nil
-      },
-      %{
         field_name: "targetFormat",
         field_type: "string",
-        field_label: "Target Format",
+        field_label: "Target Field Format",
         options: nil
       }
     ]

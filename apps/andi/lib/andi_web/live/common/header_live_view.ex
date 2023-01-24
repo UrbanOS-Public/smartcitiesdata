@@ -32,7 +32,7 @@ defmodule AndiWeb.HeaderLiveView do
     ~L"""
     <header role="banner" aria-label="Navigation and logout buttons" class="page-header">
       <span class="page-header__primary" phx-click="show-datasets">
-        <img id="header-logo" src=<%= get_logo() %>></img>
+        <img id="header-logo" alt="<%= get_header_text() %>" src="<%= get_logo() %>"></img>
         <span><%= get_header_text() %></span>
         <span id="log-out-link" class="log-out-link primary-color-text" phx-click="log-out" phx-keydown="log-out" tabindex="0">
           <span class="material-icons">person</span>

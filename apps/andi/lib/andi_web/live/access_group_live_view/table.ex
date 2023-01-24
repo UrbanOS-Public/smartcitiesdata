@@ -11,13 +11,13 @@ defmodule AndiWeb.AccessGroupLiveView.Table do
     <div id="<%= @id %>">
       <table class="access-groups-table" title="Access Groups">
         <thead>
-          <th class="access-groups-table__th access-groups-table__cell">Access Group</th>
+          <th class="access-groups-table__th access-groups-table__cell" id="access-group">Access Group</th>
           <th class="access-groups-table__th access-groups-table__cell">Modified Date</th>
           <th class="access-groups-table__th access-groups-table__cell">Action</th>
         </thead>
 
         <%= if @access_groups == [] do %>
-          <tr><td class="access-groups-table__cell" colspan="100%">No Access Groups Found!</td></tr>
+          <tr><td class="access-groups-table__cell" colspan="100%" headers="access-group">No Access Groups Found!</td></tr>
         <% else %>
           <%= for access_group <- @access_groups do %>
           <tr class="access-groups-table__tr">

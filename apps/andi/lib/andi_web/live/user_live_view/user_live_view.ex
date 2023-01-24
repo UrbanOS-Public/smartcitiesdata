@@ -26,7 +26,9 @@ defmodule AndiWeb.UserLiveView do
             <form phx-change="search" phx-submit="search">
               <div class="users-index__search-input-container">
                 <label for="users-index__search-input">
-                  <i class="material-icons users-index__search-icon">search</i>
+                  <button type="submit" class="btn--transparent">
+                    <i class="material-icons users-index__search-icon">search</i>
+                  </button>
                 </label>
                 <input
                   name="search-value"

@@ -36,7 +36,9 @@ defmodule AndiWeb.DatasetLiveView do
               <form phx-change="search" phx-submit="search">
                 <div class="datasets-index__search-input-container">
                   <label for="datasets-index__search-input">
-                    <i class="material-icons datasets-index__search-icon">search</i>
+                    <button type="submit" class="btn--transparent">
+                      <i class="material-icons datasets-index__search-icon">search</i>
+                    </button>
                   </label>
                   <input
                     name="search-value"

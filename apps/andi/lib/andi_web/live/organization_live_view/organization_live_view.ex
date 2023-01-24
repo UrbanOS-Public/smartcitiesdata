@@ -28,8 +28,10 @@ defmodule AndiWeb.OrganizationLiveView do
             <form phx-change="search" phx-submit="search">
               <div class="organizations-index__search-input-container">
                 <label for="organizations-index__search-input">
-                 <i class="material-icons organizations-index__search-icon">search</i>
-               </label>
+                  <button type="submit" class="btn--transparent">
+                    <i class="material-icons organizations-index__search-icon">search</i>
+                  </button>
+                </label>
                 <input
                   name="search-value"
                   phx-debounce="250"
