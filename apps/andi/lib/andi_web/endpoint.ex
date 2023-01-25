@@ -4,7 +4,7 @@ defmodule AndiWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_andi_key",
-    secure: Application.get_env(:andi, AndiWeb.Endpoint)[:secure_cookie],
+    secure: Andi.Application.get_secure_cookie(),
     signing_salt: "SekoFX7T"
   ]
 

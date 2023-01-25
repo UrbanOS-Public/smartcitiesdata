@@ -137,6 +137,7 @@ defmodule Andi.Application do
     Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
     Application.put_env(:andi, :footer_left_side_link, get_footer_left_side_link())
     Application.put_env(:andi, :andi_footer_right_links, get_footer_right_links())
+    Application.put_env(:andi, :secure_cookie, get_secure_cookie())
   end
 
   def get_logo_url() do
@@ -173,6 +174,10 @@ defmodule Andi.Application do
 
   def get_footer_right_links() do
     get_env_variable("ANDI_FOOTER_RIGHT_LINKS", true)
+  end
+
+  def get_secure_cookie() do
+    get_env_variable("SECURE_COOKIE", true)
   end
 
   defp guardian_db_sweeper do
