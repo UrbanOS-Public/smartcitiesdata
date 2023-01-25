@@ -33,6 +33,10 @@ defmodule Transformers.TransformationFields do
     Transformers.DateTime.fields()
   end
 
+  def fields_for("conversion") do
+    Transformers.TypeConversion.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
