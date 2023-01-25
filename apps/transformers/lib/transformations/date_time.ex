@@ -69,25 +69,25 @@ defmodule Transformers.DateTime do
   def fields() do
     [
       %{
-        field_name: "sourceField",
+        field_name: @source_field,
         field_type: "string",
         field_label: "Source Field",
         options: nil
       },
       %{
-        field_name: "sourceFormat",
+        field_name: @source_format,
         field_type: "string",
         field_label: "Source Field Format",
         options: nil
       },
       %{
-        field_name: "targetField",
+        field_name: @target_field,
         field_type: "string",
         field_label: "Target Field",
         options: nil
       },
       %{
-        field_name: "targetFormat",
+        field_name: @target_format,
         field_type: "string",
         field_label: "Target Field Format",
         options: nil
