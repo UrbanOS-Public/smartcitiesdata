@@ -177,7 +177,7 @@ defmodule Andi.Application do
   end
 
   def get_secure_cookie() do
-    get_env_variable("SECURE_COOKIE", true)
+    get_env_variable("SECURE_COOKIE", false)
   end
 
   defp guardian_db_sweeper do
