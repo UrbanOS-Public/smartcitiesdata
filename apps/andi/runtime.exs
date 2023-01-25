@@ -60,7 +60,8 @@ config :andi, AndiWeb.Endpoint,
   live_view: [
     signing_salt: live_view_salt
   ],
-  check_origin: [System.get_env("ALLOWED_ORIGIN")]
+  check_origin: [System.get_env("ALLOWED_ORIGIN")],
+  secure_cookie: String.to_atom(System.get_env("SECURE_COOKIE", "false"))
 
 config :andi,
   secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
@@ -70,8 +71,7 @@ config :andi,
   access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public"),
   vault_role: System.get_env("VAULT_ROLE"),
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
-  hosted_region: System.get_env("HOSTED_FILE_REGION"),
-  secure_cookie: String.to_atom(System.get_env("SECURE_COOKIE", "false"))
+  hosted_region: System.get_env("HOSTED_FILE_REGION")
 
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
