@@ -4,6 +4,7 @@ defmodule ConfigurableSession do
   """
 
   def init(opts), do: Plug.Session.init(opts)
+
   def call(conn, opts) do
     cookie_opts = Keyword.put(opts.cookie_opts, :secure, Application.get_env(:andi, AndiWeb.Endpoint)[:secure_cookie])
     runtime_opts = %{opts | cookie_opts: cookie_opts}
