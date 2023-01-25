@@ -202,7 +202,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= select(f, :benefitRating, MetadataFormHelpers.get_rating_options(), [class: "select", prompt: MetadataFormHelpers.rating_selection_prompt(), required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :benefitRating, bind_to_input: false) %>
               </div>
-
             </div>
           </div>
         </form>
