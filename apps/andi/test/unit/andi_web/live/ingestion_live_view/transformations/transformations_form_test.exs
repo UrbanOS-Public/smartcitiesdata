@@ -217,6 +217,43 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "##{target_format_id}") |> has_element?()
     end
 
+    test "after selecting conversion transformation, conversion fields appear" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      select_type("conversion", view)
+
+      target_field_id = build_field_id("field")
+      source_field_type = build_field_id("sourceType")
+      target_field_type = build_field_id("targetType")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{target_field_id}]", "Field to Convert") |> has_element?()
+      assert element(view, "label[for=#{source_field_type}]", "Source Data Type") |> has_element?()
+      assert element(view, "label[for=#{target_field_type}]", "Target Data Type") |> has_element?()
+      assert element(view, "##{target_field_id}") |> has_element?()
+      assert element(view, "##{source_field_type}") |> has_element?()
+      assert element(view, "##{target_field_type}") |> has_element?()
+    end
+
+    test "if conversion transformation is selected show fields on load" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "conversion"})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      target_field_id = build_field_id("field")
+      source_field_type = build_field_id("sourceType")
+      target_field_type = build_field_id("targetType")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{target_field_id}]", "Field to Convert") |> has_element?()
+      assert element(view, "label[for=#{source_field_type}]", "Source Data Type") |> has_element?()
+      assert element(view, "label[for=#{target_field_type}]", "Target Data Type") |> has_element?()
+      assert element(view, "##{target_field_id}") |> has_element?()
+      assert element(view, "##{source_field_type}") |> has_element?()
+      assert element(view, "##{target_field_type}") |> has_element?()
+    end
+
     test "shows error message if field missing" do
       transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)
