@@ -82,18 +82,20 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
           <div class="component-edit-section--<%= @visibility %>">
             <div class="finalize-form-edit-section form-grid">
               <div class="finalize-form__schedule">
-                <h3>Schedule Job</h3>
 
-                <div class="finalize-form__schedule-options">
-                  <div class="finalize-form__schedule-option">
-                    <%= label(f, :cadence, "Immediately", class: "finalize-form__schedule-option-label", for: "form_data_cadence_once") %>
-                    <%= radio_button(f, :cadence, "once")%>
+                <fieldset style="border:none; padding-left: 0">
+                  <legend><h3>Schedule Job</h3></legend>
+                  <div class="finalize-form__schedule-options">
+                    <div class="finalize-form__schedule-option">
+                      <%= label(f, :cadence, "Immediately", class: "finalize-form__schedule-option-label", for: "form_data_cadence_once") %>
+                      <%= radio_button(f, :cadence, "once")%>
+                    </div>
+                    <div class="finalize-form__schedule-option">
+                      <%= label(f, :cadence, "Repeat", class: "finalize-form__schedule-option-label", for: "form_data_cadence_0__________") %>
+                      <%= radio_button(f, :cadence, @crontab) %>
+                    </div>
                   </div>
-                  <div class="finalize-form__schedule-option">
-                    <%= label(f, :cadence, "Repeat", class: "finalize-form__schedule-option-label", for: "form_data_cadence_0__________") %>
-                    <%= radio_button(f, :cadence, @crontab) %>
-                  </div>
-                </div>
+                </fieldset>
 
                 <div class="finalize-form__scheduler--<%= modifier %>">
                   <h4>Quick Schedule</h4>
