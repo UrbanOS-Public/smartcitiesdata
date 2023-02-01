@@ -12,7 +12,8 @@ defmodule Transformers.Concatenation do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
-         {:ok, values} <- fetch_values(payload, String.split(source_fields, [" ", ","], trim: true)),
+         {:ok, values} <-
+           fetch_values(payload, String.split(source_fields, [" ", ","], trim: true)),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)
       transformed = Map.put(payload, target_field, joined_string)
@@ -103,7 +104,7 @@ defmodule Transformers.Concatenation do
         field_type: "string",
         field_label: "Target Field",
         options: nil
-      },
+      }
     ]
   end
 end
