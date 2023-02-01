@@ -37,6 +37,10 @@ defmodule Transformers.TransformationFields do
     Transformers.TypeConversion.fields()
   end
 
+  def fields_for("concatenation") do
+    Transformers.Concatenation.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
