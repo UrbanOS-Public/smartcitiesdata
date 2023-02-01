@@ -7,7 +7,7 @@
 
 ## Reminders:
 
-- [ ] Be mindful of impacts of changing Major/Minor/Patch versions of each elixir app
+- Be mindful of impacts of changing Major/Minor/Patch versions of each elixir app:
   - [ ] If updating patch version, are you sure there are no chart changes required to maintain functionality? If so, you should bump minor version instead.
   - [ ] If updating Major or Minor versions , did you update the sauron chart configuration?
 - [ ] If changing elixir code in an "app", did you update the relevant version
