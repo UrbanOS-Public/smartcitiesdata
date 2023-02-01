@@ -187,9 +187,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
-      assert element(view, "label[for=#{source_format_id}]", "Source Format") |> has_element?()
+      assert element(view, "label[for=#{source_format_id}]", "Source Field Format") |> has_element?()
       assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
-      assert element(view, "label[for=#{target_format_id}]", "Target Format") |> has_element?()
+      assert element(view, "label[for=#{target_format_id}]", "Target Field Format") |> has_element?()
       assert element(view, "##{source_field_id}") |> has_element?()
       assert element(view, "##{source_format_id}") |> has_element?()
       assert element(view, "##{target_field_id}") |> has_element?()
@@ -208,9 +208,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
-      assert element(view, "label[for=#{source_format_id}]", "Source Format") |> has_element?()
+      assert element(view, "label[for=#{source_format_id}]", "Source Field Format") |> has_element?()
       assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
-      assert element(view, "label[for=#{target_format_id}]", "Target Format") |> has_element?()
+      assert element(view, "label[for=#{target_format_id}]", "Target Field Format") |> has_element?()
       assert element(view, "##{source_field_id}") |> has_element?()
       assert element(view, "##{source_format_id}") |> has_element?()
       assert element(view, "##{target_field_id}") |> has_element?()
