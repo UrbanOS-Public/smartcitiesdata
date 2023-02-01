@@ -89,7 +89,7 @@ defmodule Transformers.OperationBuilderTest do
 
   test "concatenation function" do
     params = %{
-      "sourceFields" => ["greeting", "target"],
+      "sourceFields" => "greeting, target",
       "targetField" => "salutation",
       "separator" => " "
     }
