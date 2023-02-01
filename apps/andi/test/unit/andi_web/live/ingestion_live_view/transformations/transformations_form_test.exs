@@ -254,6 +254,43 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert element(view, "##{target_field_type}") |> has_element?()
     end
 
+    test "after selecting concatenation transformation, conversion fields appear" do
+      transformation_changeset = Transformation.changeset_for_draft(%{})
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      select_type("concatenation", view)
+
+      source_fields_id = build_field_id("sourceFields")
+      target_field_id = build_field_id("targetField")
+      separator_field_id = build_field_id("separator")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{source_fields_id}]", "Source Fields") |> has_element?()
+      assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
+      assert element(view, "label[for=#{separator_field_id}]", "Separator") |> has_element?()
+      assert element(view, "##{source_fields_id}") |> has_element?()
+      assert element(view, "##{target_field_id}") |> has_element?()
+      assert element(view, "##{separator_field_id}") |> has_element?()
+    end
+
+    test "if concatenation transformation is selected show fields on load" do
+      transformation_changeset = Transformation.changeset_for_draft(%{type: "concatenation"})
+
+      assert {:ok, view, html} = render_transformation_form(transformation_changeset)
+
+      source_fields_id = build_field_id("sourceFields")
+      target_field_id = build_field_id("targetField")
+      separator_field_id = build_field_id("separator")
+
+      assert has_element?(view, ".transformation-field")
+      assert element(view, "label[for=#{source_fields_id}]", "Source Fields") |> has_element?()
+      assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
+      assert element(view, "label[for=#{separator_field_id}]", "Separator") |> has_element?()
+      assert element(view, "##{source_fields_id}") |> has_element?()
+      assert element(view, "##{target_field_id}") |> has_element?()
+      assert element(view, "##{separator_field_id}") |> has_element?()
+    end
+
     test "shows error message if field missing" do
       transformation_changeset = Transformation.changeset_for_draft(%{type: "remove"})
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)

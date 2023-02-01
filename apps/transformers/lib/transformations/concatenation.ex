@@ -12,7 +12,8 @@ defmodule Transformers.Concatenation do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
-         {:ok, values} <- fetch_values(payload, source_fields),
+         {:ok, values} <-
+           fetch_values(payload, String.split(source_fields, [" ", ","], trim: true)),
          :ok <- can_convert_to_string?(values) do
       joined_string = Enum.join(values, separator)
       transformed = Map.put(payload, target_field, joined_string)
@@ -30,7 +31,7 @@ defmodule Transformers.Concatenation do
     |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])
   end
 
-  def fetch_values(payload, field_names) when is_list(field_names) do
+  def fetch_values(payload, field_names) when is_list(field_names) and length(field_names) > 1 do
     find_values_or_errors(payload, field_names)
     |> all_values_if_present_else_error()
   end
@@ -82,5 +83,28 @@ defmodule Transformers.Concatenation do
     rescue
       _ -> {:error, "Could not convert all source fields into strings"}
     end
+  end
+
+  def fields() do
+    [
+      %{
+        field_name: @source_fields,
+        field_type: "list",
+        field_label: "Source Fields",
+        options: nil
+      },
+      %{
+        field_name: @separator,
+        field_type: "string",
+        field_label: "Separator",
+        options: nil
+      },
+      %{
+        field_name: @target_field,
+        field_type: "string",
+        field_label: "Target Field",
+        options: nil
+      }
+    ]
   end
 end
