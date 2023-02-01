@@ -31,7 +31,7 @@ defmodule Transformers.Concatenation do
     |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])
   end
 
-  def fetch_values(payload, field_names) when is_list(field_names) do
+  def fetch_values(payload, field_names) when is_list(field_names) and length(field_names) > 1 do
     find_values_or_errors(payload, field_names)
     |> all_values_if_present_else_error()
   end
