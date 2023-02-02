@@ -63,6 +63,10 @@ defmodule Andi.Harvest.HarvesterTest do
       assert resp == actual
     end
 
+    test "get_data_json/1 handles non existent urls" do
+      assert {:error, _err_text} = Harvester.get_data_json("")
+    end
+
     test "map_data_json_to_dataset/2", %{data_json: data_json, org: org} do
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
