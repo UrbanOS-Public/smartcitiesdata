@@ -60,7 +60,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
       end
 
     ~L"""
-    <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %>">
+    <div id="finalize_form" class="finalize-form finalize-form--<%= @visibility %> form-end">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="finalize_form">
         <div class="section-number">
           <div class="component-number component-number--<%= @validation_status %>">4</div>
