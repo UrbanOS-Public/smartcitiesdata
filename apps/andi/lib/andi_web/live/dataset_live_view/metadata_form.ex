@@ -41,7 +41,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       end
 
     ~L"""
-    <div id="metadata-form" class="form-component">
+    <div id="metadata-form" class="form-component form-beginning">
       <div class="component-header" phx-click="toggle-component-visibility">
         <div class="section-number">
           <div class="component-number component-number--<%= @validation_status %> component-number--<%= @visibility %>">1</div>
