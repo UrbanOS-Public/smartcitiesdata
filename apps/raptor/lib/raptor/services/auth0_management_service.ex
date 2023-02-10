@@ -26,6 +26,7 @@ defmodule Raptor.Services.Auth0Management do
         |> Map.get(:body)
         |> Jason.decode!()
         |> Enum.map(&Auth0UserData.from_map/1)
+        |> IO.inspect(label: "Ryan - post map")
 
       {:ok, users}
     else
