@@ -30,15 +30,7 @@ defmodule RaptorWeb.ApiKeyController do
   end
 
   def getUserIdFromApiKey(conn, %{"api_key" => api_key}) do
-    user_list_results =
-      case Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) do
-        [] -> Auth0Management.get_users_by_api_key(api_key)
-        user_list -> {:ok, user_list}
-      end
-
-    persist_user_list(user_list_results)
-
-    case user_list_results do
+    case Auth0Management.get_users_by_api_key(api_key) do
       {:ok, user_list} ->
         case get_valid_user_id(user_list) do
           {:ok, user_id} ->
@@ -80,19 +72,6 @@ defmodule RaptorWeb.ApiKeyController do
       _ ->
         Logger.warn("Multiple users cannot have the same API Key.")
         {:error, "Multiple users cannot have the same API Key."}
-    end
-  end
-
-  defp persist_user_list(user_list_results) do
-    case user_list_results do
-      {:ok, user_list} ->
-        user_list
-        |> Enum.each(fn
-          user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
-        end)
-
-      {:error, reason} ->
-        :error
     end
   end
 end

@@ -14,6 +14,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
   alias Raptor.Schemas.UserOrgAssoc
   alias Raptor.Services.Auth0Management
   alias Raptor.Services.UserAccessGroupRelationStore
+  alias Raptor.Schemas.Auth0UserData
   alias Raptor.Schemas.UserAccessGroupRelation
   alias Raptor.Services.DatasetAccessGroupRelationStore
   alias Raptor.Schemas.DatasetAccessGroupRelation
@@ -26,7 +27,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
   describe "listAccessGroups" do
     test "returns an empty list of access groups when there are no valid access groups for the given apiKey" do
       allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
-        return: {:ok, [%{"email_verified" => true, "user_id" => "1701"}]}
+        return: {:ok, [%Auth0UserData{user_id: "1701", email_verified: true}]}
       )
 
       {:ok, %Tesla.Env{body: body}} =
@@ -39,7 +40,7 @@ defmodule Raptor.ListAccessGroupsControllerTest do
 
     test "returns a list of access groups when there are access group authorized for the given apiKey" do
       allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
-        return: {:ok, [%{"email_verified" => true, "user_id" => "1702"}]}
+        return: {:ok, [%Auth0UserData{user_id: "1702", email_verified: true}]}
       )
 
       relation = send_user_access_group_associate_event("access_group_id", "1702")

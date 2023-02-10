@@ -12,6 +12,7 @@ defmodule Raptor.AuthorizeControllerTest do
   alias Raptor.Schemas.Dataset
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Schemas.UserOrgAssoc
+  alias Raptor.Schemas.Auth0UserData
   alias Raptor.Services.Auth0Management
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Schemas.UserAccessGroupRelation
@@ -26,7 +27,7 @@ defmodule Raptor.AuthorizeControllerTest do
   describe "authorize" do
     setup do
       allow(Auth0Management.get_users_by_api_key("fakeApiKey"),
-        return: {:ok, [%{"email_verified" => true, "user_id" => "123"}]}
+        return: {:ok, [%Auth0UserData{user_id: "123", email_verified: true, blocked: false}]}
       )
 
       :ok

@@ -83,8 +83,8 @@ defmodule Raptor.ApiKeyControllerTest do
       Raptor.Services.Auth0UserDataStore.persist(auth0_user_data)
 
       # Do not allow Auth0 calls
-      allow(Auth0Management.get_users_by_api_key(any()),
-        return: {:error, "error"}
+      allow(Tesla.get(any(), any()),
+        return: {:error, nil}
       )
 
       {:ok, response} =

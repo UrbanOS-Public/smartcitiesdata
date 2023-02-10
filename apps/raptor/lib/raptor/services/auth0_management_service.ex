@@ -14,6 +14,18 @@ defmodule Raptor.Services.Auth0Management do
   @instance_name Raptor.instance_name()
 
   def get_users_by_api_key(apiKey) do
+    case Auth0UserDataStore.get_user_by_api_key(apiKey) do
+      [] ->
+        user_list_results = get_users_by_api_key_from_auth0(apiKey)
+        persist_user_list(user_list_results)
+        user_list_results
+
+      user_list ->
+        {:ok, user_list}
+    end
+  end
+
+  defp get_users_by_api_key_from_auth0(apiKey) do
     url = Keyword.fetch!(auth0(), :audience)
 
     with {:ok, access_token} <- get_token(),
@@ -26,7 +38,6 @@ defmodule Raptor.Services.Auth0Management do
         |> Map.get(:body)
         |> Jason.decode!()
         |> Enum.map(&Auth0UserData.from_map/1)
-        |> IO.inspect(label: "Ryan - post map")
 
       {:ok, users}
     else
@@ -88,6 +99,19 @@ defmodule Raptor.Services.Auth0Management do
 
       {_, error} ->
         {:error, error}
+    end
+  end
+
+  defp persist_user_list(user_list_results) do
+    case user_list_results do
+      {:ok, user_list} ->
+        user_list
+        |> Enum.each(fn
+          user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
+        end)
+
+      {:error, reason} ->
+        :error
     end
   end
 end
