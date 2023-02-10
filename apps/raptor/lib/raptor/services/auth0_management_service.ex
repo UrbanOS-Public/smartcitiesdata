@@ -21,10 +21,12 @@ defmodule Raptor.Services.Auth0Management do
            Tesla.get("#{url}users?q=app_metadata.apiKey:\"#{apiKey}\"&search_engine=v3",
              headers: [{"Authorization", "Bearer #{access_token}"}]
            ) do
-      users = response
-              |> Map.get(:body)
-              |> Jason.decode!()
-              |> Enum.map(&Auth0UserData.from_map/1)
+      users =
+        response
+        |> Map.get(:body)
+        |> Jason.decode!()
+        |> Enum.map(&Auth0UserData.from_map/1)
+
       {:ok, users}
     else
       {:error, reason} ->
@@ -76,7 +78,9 @@ defmodule Raptor.Services.Auth0Management do
         audience: audience
       })
 
-    case Tesla.post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
+    case Tesla.post(url, req_body,
+           headers: [{"content-type", "application/x-www-form-urlencoded"}]
+         ) do
       {:ok, response} ->
         access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
         {:ok, access_token}

@@ -30,10 +30,11 @@ defmodule RaptorWeb.ApiKeyController do
   end
 
   def getUserIdFromApiKey(conn, %{"api_key" => api_key}) do
-    user_list_results = case Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) do
-      [] -> Auth0Management.get_users_by_api_key(api_key)
-      user_list -> {:ok, user_list}
-    end
+    user_list_results =
+      case Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) do
+        [] -> Auth0Management.get_users_by_api_key(api_key)
+        user_list -> {:ok, user_list}
+      end
 
     persist_user_list(user_list_results)
 
@@ -86,12 +87,12 @@ defmodule RaptorWeb.ApiKeyController do
     case user_list_results do
       {:ok, user_list} ->
         user_list
-          |> Enum.each(fn
-            user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
-          end)
-      {:error, reason} -> :error
+        |> Enum.each(fn
+          user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
+        end)
+
+      {:error, reason} ->
+        :error
     end
   end
-
-
 end

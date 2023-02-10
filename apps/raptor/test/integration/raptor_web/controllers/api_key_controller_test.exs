@@ -101,12 +101,20 @@ defmodule Raptor.ApiKeyControllerTest do
       api_key = "nonCachedApiKey"
 
       Raptor.Services.Auth0UserDataStore.delete_by_api_key(api_key)
+
       allow(Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key),
         return: []
       )
 
       allow(Tesla.get(any(), any()),
-        return: {:ok, %{body: "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"}}
+        return:
+          {:ok,
+           %{
+             body:
+               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{
+                 user_id
+               }\", \"blocked\": false}]"
+           }}
       )
 
       allow(Tesla.post(any(), any(), any()),
@@ -130,8 +138,16 @@ defmodule Raptor.ApiKeyControllerTest do
       assert Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) == []
 
       allow(Tesla.get(any(), any()),
-        return: {:ok, %{body: "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"}}
+        return:
+          {:ok,
+           %{
+             body:
+               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{
+                 user_id
+               }\", \"blocked\": false}]"
+           }}
       )
+
       allow(Tesla.post(any(), any(), any()),
         return: {:ok, %{body: "{\"access_token\": \"foo\"}"}}
       )
@@ -140,14 +156,16 @@ defmodule Raptor.ApiKeyControllerTest do
         HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
 
       expected_redis_data = [
-      %Raptor.Schemas.Auth0UserData{
-        app_metadata: %{apiKey: api_key},
-        user_id: user_id,
-        email_verified: true,
-        blocked: false
-      }
+        %Raptor.Schemas.Auth0UserData{
+          app_metadata: %{apiKey: api_key},
+          user_id: user_id,
+          email_verified: true,
+          blocked: false
+        }
       ]
-      assert Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) == expected_redis_data
+
+      assert Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) ==
+               expected_redis_data
 
       body = Jason.decode!(response.body)
 
@@ -159,6 +177,7 @@ defmodule Raptor.ApiKeyControllerTest do
       allow(Auth0Management.get_users_by_api_key(any()),
         return: {:error, "error"}
       )
+
       allow(Raptor.Services.Auth0UserDataStore.get_user_by_api_key(any()),
         return: []
       )

@@ -22,8 +22,10 @@ defmodule Raptor.Schemas.Auth0UserData do
   use Accessible
 
   def from_map(%{} = map_data) do
-    normalized_data = map_data
+    normalized_data =
+      map_data
       |> AtomicMap.convert(safe: false, underscore: false)
+
     struct(%__MODULE__{}, normalized_data)
   end
 end
