@@ -28,6 +28,7 @@ defmodule Raptor.MixProject do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:brook, "== 0.4.9"},
       {:cowlib, "== 2.9.1", override: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},

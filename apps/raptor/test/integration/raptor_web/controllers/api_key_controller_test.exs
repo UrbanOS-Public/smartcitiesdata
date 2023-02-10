@@ -69,9 +69,98 @@ defmodule Raptor.ApiKeyControllerTest do
   end
 
   describe "getUserIdFromApiKey" do
+    test "returns userID from redis cache when found" do
+      user_id = "987"
+      api_key = "validApiKey"
+
+      auth0_user_data = %Raptor.Schemas.Auth0UserData{
+        user_id: user_id,
+        app_metadata: %{apiKey: api_key},
+        email_verified: true,
+        blocked: false
+      }
+
+      Raptor.Services.Auth0UserDataStore.persist(auth0_user_data)
+
+      # Do not allow Auth0 calls
+      allow(Auth0Management.get_users_by_api_key(any()),
+        return: {:error, "error"}
+      )
+
+      {:ok, response} =
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
+
+      body = Jason.decode!(response.body)
+
+      assert body == %{"user_id" => "#{user_id}"}
+      assert response.status_code == 200
+    end
+
+    test "returns userID from Auth0 when redis cache is empty" do
+      user_id = "654"
+      api_key = "nonCachedApiKey"
+
+      Raptor.Services.Auth0UserDataStore.delete_by_api_key(api_key)
+      allow(Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key),
+        return: []
+      )
+
+      allow(Tesla.get(any(), any()),
+        return: {:ok, %{body: "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"}}
+      )
+
+      allow(Tesla.post(any(), any(), any()),
+        return: {:ok, %{body: "{\"access_token\": \"foo\"}"}}
+      )
+
+      {:ok, response} =
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
+
+      body = Jason.decode!(response.body)
+
+      assert body == %{"user_id" => "#{user_id}"}
+      assert response.status_code == 200
+    end
+
+    test "caches user data to redis after Auth0 API call" do
+      user_id = "654"
+      api_key = "nonCachedApiKey"
+
+      Raptor.Services.Auth0UserDataStore.delete_by_api_key(api_key)
+      assert Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) == []
+
+      allow(Tesla.get(any(), any()),
+        return: {:ok, %{body: "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"}}
+      )
+      allow(Tesla.post(any(), any(), any()),
+        return: {:ok, %{body: "{\"access_token\": \"foo\"}"}}
+      )
+
+      {:ok, response} =
+        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
+
+      expected_redis_data = [
+      %Raptor.Schemas.Auth0UserData{
+        app_metadata: %{apiKey: api_key},
+        user_id: user_id,
+        email_verified: true,
+        blocked: false
+      }
+      ]
+      assert Raptor.Services.Auth0UserDataStore.get_user_by_api_key(api_key) == expected_redis_data
+
+      body = Jason.decode!(response.body)
+
+      assert body == %{"user_id" => "#{user_id}"}
+      assert response.status_code == 200
+    end
+
     test "returns Internal Server Error when auth0 call fails" do
       allow(Auth0Management.get_users_by_api_key(any()),
         return: {:error, "error"}
+      )
+      allow(Raptor.Services.Auth0UserDataStore.get_user_by_api_key(any()),
+        return: []
       )
 
       {:ok, response} =
@@ -95,23 +184,6 @@ defmodule Raptor.ApiKeyControllerTest do
 
       assert body == %{"message" => "No user found with given API Key."}
       assert response.status_code == 401
-    end
-
-    test "returns true when apiKey has a single matching user" do
-      user_id = "123"
-      api_key = "validApiKey"
-
-      allow(Auth0Management.get_users_by_api_key(any()),
-        return: {:ok, [%{"email_verified" => true, "user_id" => "#{user_id}"}]}
-      )
-
-      {:ok, response} =
-        HTTPoison.get("http://localhost:4002/api/getUserIdFromApiKey?api_key=#{api_key}")
-
-      body = Jason.decode!(response.body)
-
-      assert body == %{"user_id" => "#{user_id}"}
-      assert response.status_code == 200
     end
   end
 end
