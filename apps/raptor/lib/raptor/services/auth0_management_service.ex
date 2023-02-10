@@ -13,8 +13,6 @@ defmodule Raptor.Services.Auth0Management do
 
   @instance_name Raptor.instance_name()
 
-  @api_key_collection :api_keys
-
   def get_users_by_api_key(apiKey) do
     url = Keyword.fetch!(auth0(), :audience)
 
