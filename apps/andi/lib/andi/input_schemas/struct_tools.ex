@@ -1,5 +1,8 @@
 defmodule Andi.InputSchemas.StructTools do
   @moduledoc false
+
+  alias Ecto.Changeset
+
   def to_map(%_{} = struct) do
     struct
     |> struct_to_map()
@@ -71,6 +74,7 @@ defmodule Andi.InputSchemas.StructTools do
     struct(struct_type, preloaded)
   end
 
+  # TODO: Remove when preload is removed
   def sort_if_sequenced([%{sequence: _sequence} | _] = list) do
     Enum.sort_by(list, &Map.get(&1, :sequence))
   end
@@ -96,6 +100,13 @@ defmodule Andi.InputSchemas.StructTools do
 
   def safe_from_struct(%_{} = struct), do: Map.from_struct(struct)
   def safe_from_struct(map), do: map
+
+  def ensure_id(%Ecto.Changeset{} = changeset, changes) do
+    case Changeset.fetch_field(changeset, :id) do
+      {_, _id} -> changes
+      :error -> Map.put_new(changes, :id, Ecto.UUID.generate())
+    end
+  end
 
   def ensure_id(struct, changes) do
     if struct[:id] do

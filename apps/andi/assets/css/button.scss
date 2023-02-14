@@ -250,3 +250,11 @@ $button-padding: 10px 50px;
     background-color: transparent;
     color: black;
 }
+
+.btn--disabled {
+    background-color: $disabled-background;
+    border: 1px solid $disabled-background;
+    color: white;
+    cursor: default;
+    pointer-events: none;
+}

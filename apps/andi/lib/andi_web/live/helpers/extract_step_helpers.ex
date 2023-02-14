@@ -5,6 +5,8 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
   import Phoenix.LiveView
   require Logger
 
+  alias Ecto.Changeset
+
   def move_element(list, index, new_index) do
     {extract_step_to_move, remaining_list} = List.pop_at(list, index)
 
@@ -29,14 +31,6 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
       true -> "valid"
       false -> "invalid"
     end
-  end
-
-  def complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-    send(self(), {:step_update, socket.assigns.id, new_changeset})
-
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
   end
 
   def ends_with_http_or_s3_step?(steps) do

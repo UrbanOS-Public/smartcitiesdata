@@ -13,6 +13,7 @@ defmodule AndiWeb.ErrorHelpers do
   @doc """
   Generates tag for inlined form input errors.
   """
+
   def error_tag(form, field, options \\ [])
   def error_tag(form, _, _) when not is_map(form), do: []
 
@@ -124,7 +125,6 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message("is required", :targetDataset, _), do: default_error_message(:targetDataset)
   defp interpret_error_message(message, :targetDataset, _), do: message
   defp interpret_error_message(message, :datasetLink, _), do: message
-  defp interpret_error_message("is required", field, _), do: default_error_message(field)
   defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
   defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"
 

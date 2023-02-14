@@ -85,7 +85,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Map.replace(:errors, [])
     |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
     |> Changeset.foreign_key_constraint(:targetDataset)
   end
@@ -99,7 +99,7 @@ defmodule Andi.InputSchemas.Ingestion do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 
-    ingestion
+    new_ingestion = ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
@@ -152,6 +152,21 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(ingestion_changeset, extracted_metadata)
   end
 
+  def merge_extract_step_changeset(
+    %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+    extract_step_changesets
+  ) do
+    extract_step_changeset_list = Enum.reduce(extract_step_changesets, [], fn extract_step_changeset, acc ->
+      extract_step_changes = StructTools.to_map(Changeset.apply_changes(extract_step_changeset))
+      [extract_step_changes | acc]
+    end)
+
+    cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :extractSteps)
+
+    changeset(cleared_ingestion_changeset, %{extractSteps: extract_step_changeset_list})
+  end
+
+  @spec preload(nil | maybe_improper_list | struct) :: any
   def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
 
   defp validate_source_format(%{changes: %{sourceFormat: source_format}} = changeset) do
@@ -201,6 +216,7 @@ defmodule Andi.InputSchemas.Ingestion do
 
   defp validate_extract_steps(changeset) do
     extract_steps = Changeset.get_field(changeset, :extractSteps)
+      |> StructTools.sort_if_sequenced()
 
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
       true -> Changeset.add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")

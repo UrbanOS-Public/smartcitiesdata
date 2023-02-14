@@ -1,10 +1,10 @@
 defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
   @moduledoc false
   use Ecto.Schema
-  import Ecto.Changeset
 
   alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias Andi.InputSchemas.StructTools
+  alias Ecto.Changeset
 
   @primary_key false
   embedded_schema do
@@ -22,90 +22,98 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
   @cast_fields [:destination, :encode_method, :path, :cacheTtl, :url, :body]
   @required_fields [:destination, :url, :path, :cacheTtl]
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
     changes_with_id = StructTools.ensure_id(extract_step, changes)
-
-    extract_step
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_embed(:headers, with: &ExtractHeader.changeset/2)
-    |> validate_body_format()
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_format(:destination, ~r/^[[:alpha:]_]+$/)
-    |> validate_key_value_set(:headers)
-    |> validate_path()
-  end
-
-  def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
-
-    extract_step
-    |> cast(changes_with_id, @cast_fields, empty_values: [])
-    |> cast_embed(:headers, with: &ExtractHeader.changeset_for_draft/2)
-  end
-
-  def changeset_from_form_data(form_data) do
-    form_data_as_params =
-      form_data
       |> AtomicMap.convert(safe: false, underscore: false)
-      |> Map.put_new(:headers, %{})
-      |> convert_map_with_index_to_list(:headers)
+      |> format()
 
-    changeset(form_data_as_params)
+    extract_step
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+    |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
   end
 
-  def changeset_from_andi_step(nil), do: changeset(%{})
+  def validate(extract_step_changeset) do
+    data_as_changes =
+      extract_step_changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+      |> format()
 
-  def changeset_from_andi_step(dataset_extract_step) do
-    dataset_extract_step
-    |> StructTools.to_map()
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> changeset()
+    validated_extract_step_changeset = extract_step_changeset
+      |> Map.replace(:errors, [])
+      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+      |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
+      |> Changeset.validate_required(@required_fields, message: "is required")
+      |> Changeset.validate_format(:destination, ~r/^[[:alpha:]_]+$/)
+      |> validate_body_format()
+      |> validate_path()
+      |> validate_headers()
+
+    if is_nil(Map.get(validated_extract_step_changeset, :action, nil)) do
+      Map.put(validated_extract_step_changeset, :action, :display_errors)
+    else
+      validated_extract_step_changeset
+    end
   end
 
   def preload(struct), do: StructTools.preload(struct, [:headers])
 
-  defp validate_key_value_set(changeset, field) do
-    key_value_set = Ecto.Changeset.get_field(changeset, field)
+  defp format(changes) do
+    changes
+      |> format_cache_ttl()
+      |> format_path()
+  end
 
-    case key_value_has_invalid_key?(key_value_set) do
-      true -> add_error(changeset, field, "has invalid format", validation: :format)
-      false -> changeset
+  defp format_cache_ttl(%{cacheTtl: form_cache_ttl} = changes) when is_binary(form_cache_ttl) do
+    case String.match?(form_cache_ttl, ~r/^[[:digit:]]+$/) do
+      true -> Map.put(changes, :cacheTtl, String.to_integer(form_cache_ttl) * 60_000)
+      false -> changes
     end
   end
+  defp format_cache_ttl(%{cacheTtl: nil} = changes), do: changes
+  defp format_cache_ttl(changes), do: changes
+
+  defp format_path(%{path: nil} = changes), do: changes
+  defp format_path(%{path: path} = changes) when is_binary(path), do: Map.put(changes, :path, String.split(path, "."))
+  defp format_path(changes), do: changes
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) when body in ["", nil], do: changeset
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) do
     case Jason.decode(body) do
       {:ok, _} -> changeset
-      {:error, _} -> add_error(changeset, :body, "could not parse json", validation: :format)
+      {:error, _} -> Changeset.add_error(changeset, :body, "could not parse json", validation: :format)
     end
   end
 
   defp validate_body_format(changeset), do: changeset
 
-  defp validate_path(%{changes: %{path: []}} = changeset), do: add_error(changeset, :path, "is required")
+  defp validate_path(%{changes: %{path: []}} = changeset), do: Changeset.add_error(changeset, :path, "is required")
 
   defp validate_path(%{changes: %{path: path}} = changeset) do
     case Enum.any?(path, fn path_field -> path_field in ["", nil] end) do
-      true -> add_error(changeset, :path, "path fields cannot be empty")
+      true -> Changeset.add_error(changeset, :path, "path fields cannot be empty")
       false -> changeset
     end
   end
 
   defp validate_path(changeset), do: changeset
 
-  defp key_value_has_invalid_key?(nil), do: false
+  defp validate_headers(changeset) do
+    headers = case Changeset.fetch_field(changeset, :headers) do
+      {_, headers} -> headers
+      :error -> []
+    end
 
-  defp key_value_has_invalid_key?(key_value_set) do
-    Enum.any?(key_value_set, fn key_value -> key_value.key in [nil, ""] end)
-  end
+    Enum.reduce(headers, changeset, fn header, acc ->
+      validated_header_changeset = ExtractHeader.changeset(header, %{})
+        |> ExtractHeader.validate()
 
-  defp convert_map_with_index_to_list(changes, field) do
-    map_with_index = Map.get(changes, field)
-    key_value_list = Enum.map(map_with_index, fn {_, value} -> value end)
-    Map.put(changes, field, key_value_list)
+      Enum.reduce(validated_header_changeset.errors, acc, fn {_key, {message, _}}, error_acc ->
+        Changeset.add_error(error_acc, :headers, message)
+      end)
+    end)
   end
 end

@@ -4,6 +4,8 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
   alias Andi.Repo
   alias Andi.InputSchemas.StructTools
 
+  # DEPRECATED, NOT BEING USED
+
   import Ecto.Query, only: [from: 2]
 
   require Logger
