@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.5.52",
+      version: "2.5.55",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -64,7 +64,7 @@ defmodule Andi.MixProject do
       {:gettext, "~> 0.17"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
-      {:hackney, "~> 1.17"},
+      {:hackney, "~> 1.18"},
       {:httpoison, "~> 1.5"},
       {:poison, "~> 3.1", override: true},
       {:jason, "~> 1.2"},

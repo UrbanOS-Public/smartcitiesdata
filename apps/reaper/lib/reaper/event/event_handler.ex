@@ -106,7 +106,9 @@ defmodule Reaper.Event.EventHandler do
     Enum.each(
       extractions_to_delete,
       fn {_id, extraction} ->
-        IngestionDelete.handle(extraction["ingestion"])
+        if extraction["ingestion"] do
+          IngestionDelete.handle(extraction["ingestion"])
+        end
       end
     )
 

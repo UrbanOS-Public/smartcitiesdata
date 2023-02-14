@@ -1,5 +1,5 @@
 $component-number-width: 4rem;
-$component-header-height: 7.5rem;
+$component-header-height: 4.5rem;
 
 .edit-page {
     display: grid;
@@ -18,10 +18,11 @@ $component-header-height: 7.5rem;
 }
 
 .form-section {
-    padding-left: $component-number-width - 1rem;
-    margin-top: -$component-header-height + 1rem;
-    padding-top: $component-header-height;
     margin-left: 1rem;
+    margin-top: -$component-header-height;
+    padding-left: $component-number-width - 1rem;
+    padding-top: $component-header-height;
+    padding-bottom: 1rem;
     border-left: 2px solid $color-form-border;
 }
 
@@ -51,11 +52,9 @@ $component-header-height: 7.5rem;
     display: none;
 }
 
-.component-edit-section--expanded {
-    padding-bottom: 2rem;
-}
-
 .component-header {
+    position: relative;
+    z-index: 1;
     display: flex;
 }
 
@@ -63,25 +62,15 @@ $component-header-height: 7.5rem;
     cursor: pointer;
 }
 
-#metadata-form>.form-section {
+.form-beginning>.form-section {
     margin-top: -3rem;
-    padding-top: 4rem;
+    padding-top: 3rem;
 }
 
-#extract-step-form>.form-section {
-    margin-top: -3rem;
-    padding-top: 4rem;
-}
-
-.finalize-form--collapsed>.form-section {
-    margin-top: -9.5rem;
-    margin-bottom: 4rem;
-}
-
-.datasets-data-dictionary {
-    .form-section {
-        margin-top: -8.75rem;
-    }
+.form-end>.form-section {
+    margin-bottom: 3rem;
+    padding-top: 3rem;
+    padding-bottom: 0;
 }
 
 .section-number {
