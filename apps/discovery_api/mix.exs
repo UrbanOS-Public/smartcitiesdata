@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "1.3.8",
+      version: "1.3.9",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -58,7 +58,7 @@ defmodule DiscoveryApi.Mixfile do
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.0.3"},
       {:gettext, "~> 0.17"},
-      {:hackney, "~> 1.17"},
+      {:hackney, "~> 1.18"},
       {:httpoison, "~> 1.5"},
       {:faker, "~> 0.13"},
       {:jason, "~> 1.2"},

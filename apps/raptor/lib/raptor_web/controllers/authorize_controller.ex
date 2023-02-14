@@ -3,6 +3,7 @@ defmodule RaptorWeb.AuthorizeController do
 
   alias Raptor.Services.Auth0Management
   alias Raptor.Services.DatasetStore
+  alias Raptor.Schemas.Auth0UserData
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Services.DatasetAccessGroupRelationStore
@@ -28,11 +29,11 @@ defmodule RaptorWeb.AuthorizeController do
     dataset != %{}
   end
 
-  def check_user_association(user, dataset) do
+  def check_user_association(%Auth0UserData{} = user, dataset) do
     org_id_of_dataset = dataset.org_id
 
-    is_user_in_org?(user["user_id"], org_id_of_dataset) or
-      is_user_in_access_group?(user["user_id"], dataset.dataset_id)
+    is_user_in_org?(user.user_id, org_id_of_dataset) or
+      is_user_in_access_group?(user.user_id, dataset.dataset_id)
   end
 
   def validate_user_list(user_list, dataset) do

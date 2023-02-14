@@ -3,21 +3,42 @@ defmodule Raptor.Services.Auth0Management do
   Service to get a temporary access token for the auth0 managment api and interface with the api
   """
   use Properties, otp_app: :raptor
-  use Tesla
+  alias Tesla
+  alias Raptor.Services.Auth0UserDataStore
+  alias Raptor.Schemas.Auth0UserData
 
   require Logger
 
   getter(:auth0, generic: true)
 
+  @instance_name Raptor.instance_name()
+
   def get_users_by_api_key(apiKey) do
+    case Auth0UserDataStore.get_user_by_api_key(apiKey) do
+      [] ->
+        user_list_results = get_users_by_api_key_from_auth0(apiKey)
+        persist_user_list(user_list_results)
+        user_list_results
+
+      user_list ->
+        {:ok, user_list}
+    end
+  end
+
+  defp get_users_by_api_key_from_auth0(apiKey) do
     url = Keyword.fetch!(auth0(), :audience)
 
     with {:ok, access_token} <- get_token(),
          {:ok, response} <-
-           get("#{url}users?q=app_metadata.apiKey:\"#{apiKey}\"&search_engine=v3",
+           Tesla.get("#{url}users?q=app_metadata.apiKey:\"#{apiKey}\"&search_engine=v3",
              headers: [{"Authorization", "Bearer #{access_token}"}]
            ) do
-      users = response |> Map.get(:body) |> Jason.decode!()
+      users =
+        response
+        |> Map.get(:body)
+        |> Jason.decode!()
+        |> Enum.map(&Auth0UserData.from_map/1)
+
       {:ok, users}
     else
       {:error, reason} ->
@@ -41,8 +62,8 @@ defmodule Raptor.Services.Auth0Management do
     end
   end
 
-  def is_valid_user(user) do
-    if user["email_verified"] and !user["blocked"], do: true, else: false
+  def is_valid_user(%Auth0UserData{} = user) do
+    if user.email_verified and !user.blocked, do: true, else: false
   end
 
   defp client_id() do
@@ -69,13 +90,28 @@ defmodule Raptor.Services.Auth0Management do
         audience: audience
       })
 
-    case post(url, req_body, headers: [{"content-type", "application/x-www-form-urlencoded"}]) do
+    case Tesla.post(url, req_body,
+           headers: [{"content-type", "application/x-www-form-urlencoded"}]
+         ) do
       {:ok, response} ->
         access_token = response |> Map.get(:body) |> Jason.decode!() |> Map.get("access_token")
         {:ok, access_token}
 
       {_, error} ->
         {:error, error}
+    end
+  end
+
+  defp persist_user_list(user_list_results) do
+    case user_list_results do
+      {:ok, user_list} ->
+        user_list
+        |> Enum.each(fn
+          user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
+        end)
+
+      {:error, reason} ->
+        :error
     end
   end
 end

@@ -70,4 +70,27 @@ defmodule Transformers.TypeConversion do
       _ -> {:error, "Cannot parse field #{field} with value #{value} into #{target_type}"}
     end
   end
+
+  def fields() do
+    [
+      %{
+        field_name: @field,
+        field_type: "string",
+        field_label: "Field to Convert",
+        options: nil
+      },
+      %{
+        field_name: @source_type,
+        field_type: "string",
+        field_label: "Source Data Type",
+        options: ["integer", "string", "float"]
+      },
+      %{
+        field_name: @target_type,
+        field_type: "string",
+        field_label: "Target Data Type",
+        options: ["integer", "string", "float"]
+      }
+    ]
+  end
 end

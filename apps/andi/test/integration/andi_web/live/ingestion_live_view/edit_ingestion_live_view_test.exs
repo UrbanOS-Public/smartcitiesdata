@@ -136,7 +136,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert_redirected(view, @url_path)
     end
 
-    test "success message is displayed when form data is saved", %{curator_conn: conn, ingestion: ingestion} do
+    test "Partial success message is displayed when invalid form data is saved", %{curator_conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       assert get_text(html, "#snackbar") == ""
@@ -157,6 +157,73 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
       refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
       assert get_text(html, "#snackbar") == "Saved successfully. You may need to fix errors before publishing."
+    end
+
+    test "Success message is displayed when form data is saved", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      assert get_text(html, "#snackbar") == ""
+
+      new_name = "new_name"
+
+      form_data = %{
+        "name" => new_name
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      render_change(view, :save, %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
+      assert get_text(html, "#snackbar") == "Saved successfully."
+    end
+
+    test "Error message is displayed when invalid form data attempts to be published", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      assert get_text(html, "#snackbar") == ""
+
+      new_name = "new_name"
+
+      form_data = %{
+        "name" => new_name,
+        "sourceFormat" => nil
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      render_change(view, :publish, %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
+      assert get_text(html, "#snackbar") == "Saved successfully, but could not publish. You may need to fix errors before publishing."
+    end
+
+    test "Success publish message is displayed when valid form data is published", %{curator_conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      assert get_text(html, "#snackbar") == ""
+
+      new_name = "new_name"
+
+      form_data = %{
+        "name" => new_name
+      }
+
+      view
+      |> form("#ingestion_metadata_form", form_data: form_data)
+      |> render_change()
+
+      render_change(view, :publish, %{})
+      html = render(view)
+
+      refute Enum.empty?(find_elements(html, "#snackbar.success-message"))
+      assert get_text(html, "#snackbar") == "Published successfully."
     end
 
     test "saving form as draft does not send brook event", %{curator_conn: conn} do

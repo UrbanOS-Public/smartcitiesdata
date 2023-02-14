@@ -49,7 +49,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       end
 
     ~L"""
-    <div id="extract-step-form" class="form-component">
+    <div id="extract-step-form" class="form-component form-beginning">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="extract_form">
         <div class="section-number">
           <div class="component-number component-number--<%= @validation_status %>"><%= @order %></div>

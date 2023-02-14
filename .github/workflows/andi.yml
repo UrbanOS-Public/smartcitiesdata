@@ -18,9 +18,9 @@ on:
       - master
 
 jobs:
-  ci:
+  unit:
     if: github.event.pull_request.draft == false
-    name: Verify Application
+    name: Run unit tests
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -38,9 +38,39 @@ jobs:
       - name: Run unit tests
         run: |
           bash scripts/gh-action-unit-test.sh ${GITHUB_WORKFLOW}
+
+  integration:
+    if: github.event.pull_request.draft == false
+    name: Run integration tests
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 21.3.8.24
+          version-type: strict
+          elixir-version: 1.10.4
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
       - name: Run integration tests
         run: |
           bash scripts/gh-action-integration-test.sh ${GITHUB_WORKFLOW}
+
+  publish:
+    name: Publish development image
+    runs-on: ubuntu-20.04
+    needs: [unit, integration]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 21.3.8.24
+          version-type: strict
+          elixir-version: 1.10.4
+      - name: Get dependencies
+        run: |
+          bash scripts/gh-action-get-deps.sh
       - name: Publish development image
         run: |
           bash scripts/gh-action-publish.sh ${GITHUB_WORKFLOW}

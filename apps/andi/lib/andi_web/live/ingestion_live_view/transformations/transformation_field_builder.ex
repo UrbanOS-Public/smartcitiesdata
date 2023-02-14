@@ -4,7 +4,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
 
   alias AndiWeb.ErrorHelpers
 
-  def build_input(%{field_type: "string"} = field, assigns, form) do
+  def build_input(field, assigns, form) do
     name = String.to_atom(field.field_name)
     value = get_in(form.source.changes, [:parameters, name])
 

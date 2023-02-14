@@ -63,7 +63,7 @@ defmodule RaptorWeb.ApiKeyController do
         user = user_list |> Enum.at(0)
 
         if(Auth0Management.is_valid_user(user)) do
-          {:ok, user["user_id"]}
+          {:ok, user.user_id}
         else
           {:error,
            "Only users who have validated their email address and aren't blocked may make API calls"}

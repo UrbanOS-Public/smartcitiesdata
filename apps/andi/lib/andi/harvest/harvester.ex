@@ -45,6 +45,10 @@ defmodule Andi.Harvest.Harvester do
     end
   end
 
+  def get_data_json("") do
+    {:error, "Unable to fetch data json from empty dataJsonUrl"}
+  end
+
   def get_data_json(url) do
     case get(url) do
       {:ok, response} ->
@@ -54,6 +58,10 @@ defmodule Andi.Harvest.Harvester do
         Logger.error("Failed to get data json from #{url}: #{inspect(error)}")
         {:error, error}
     end
+  rescue
+    _e ->
+      Logger.error("Hackney failed to get data json from org url: \"#{url}\"")
+      {:error, "Hackney failed to get data json from org url: \"#{url}\""}
   end
 
   def map_data_json_to_dataset(data_json, org) do

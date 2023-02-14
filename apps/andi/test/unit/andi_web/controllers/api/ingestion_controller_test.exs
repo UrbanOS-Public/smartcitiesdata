@@ -6,6 +6,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
   @get_ingestions_route "/api/v1/ingestions"
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.IngestionStore
+  alias Andi.Services.DatasetStore
 
   import SmartCity.Event, only: [ingestion_delete: 0, ingestion_update: 0]
 
@@ -39,11 +40,14 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
     uuid = Faker.UUID.v4()
 
+    allow(DatasetStore.get("dataset_id"), return: {:ok, %{id: "dataset_id"}})
+
     request = %{
       "id" => uuid,
       "sourceFormat" => "gtfs",
       "cadence" => "once",
-      "schema" => [%{name: "billy", type: "writer"}]
+      "schema" => [%{name: "billy", type: "writer"}],
+      "datasetId" => "dataset_id"
     }
 
     message =
@@ -177,46 +181,10 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-
-      conn = put(conn, @route, ingestion_without_id)
-
-      {_, decoded_body} = Jason.decode(response(conn, 201))
-
-      expected_ingestion = TDG.create_ingestion(Map.put(ingestion_without_id, "id", decoded_body["id"]))
-
-      assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, expected_ingestion))
-
-      assert_called(
-        Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_update(), expected_ingestion),
-        once()
-      )
-    end
-
-    test "PUT /api/ creating a ingestion with a set id returns a 400", %{conn: conn} do
-      smrt_ingestion = TDG.create_ingestion(%{})
-      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
-
-      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
-
-      conn = put(conn, @route, ingestion)
-      body = json_response(conn, 400)
-      assert "Do not include id in create call" =~ Map.get(body, "errors")
-    end
-
-    test "PUT /api/ updating an ingestion returns a 201 when an ingestion with that ID is found in the store", %{conn: conn} do
-      smrt_ingestion = TDG.create_ingestion(%{})
-      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
-
-      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
-      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
-
-      conn = put(conn, @route, ingestion)
-
       response(conn, 201)
 
+      allow(DatasetStore.get(any()), return: {:ok, %{}})
+      put(conn, @route, ingestion)
       assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion))
 
       assert_called(
@@ -235,6 +203,32 @@ defmodule AndiWeb.API.IngestionControllerTest do
     test "PUT /api/ with improperly shaped data returns 500", %{conn: conn} do
       conn = put(conn, @route, %{"foobar" => 5, "operational" => 2})
       assert json_response(conn, 500) =~ "Unable to process your request"
+    end
+
+    test "PUT /api/ targetDataset must exist in the datastore", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: "nonexistent_dataset"})
+      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
+      allow(DatasetStore.get("nonexistent_dataset"), return: {:ok, nil})
+
+      conn = put(conn, @route, ingestion)
+      body = json_response(conn, 400)
+      assert "Target dataset does not exist" =~ Map.get(body, "errors")
+    end
+
+    test "PUT /api/ fail validation when datasetStore fails", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDataset: "error_dataset"})
+      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
+      allow(DatasetStore.get("error_dataset"), return: {:error, "error reason"})
+
+      conn = put(conn, @route, ingestion)
+      body = json_response(conn, 400)
+      assert "Unable to retrieve target dataset" =~ Map.get(body, "errors")
     end
   end
 

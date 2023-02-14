@@ -41,7 +41,7 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
       end
 
     ~L"""
-    <div id="metadata-form" class="form-component">
+    <div id="metadata-form" class="form-component form-beginning">
       <div class="component-header" phx-click="toggle-component-visibility">
         <div class="section-number">
           <div class="component-number component-number--<%= @validation_status %> component-number--<%= @visibility %>">1</div>
@@ -202,7 +202,6 @@ defmodule AndiWeb.EditLiveView.MetadataForm do
                 <%= select(f, :benefitRating, MetadataFormHelpers.get_rating_options(), [class: "select", prompt: MetadataFormHelpers.rating_selection_prompt(), required: true]) %>
                 <%= ErrorHelpers.error_tag(f, :benefitRating, bind_to_input: false) %>
               </div>
-
             </div>
           </div>
         </form>

@@ -233,10 +233,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     case publish_ingestion(ingestion_id, socket.assigns.user_id) do
       {:ok, ingestion_changeset} ->
-        {:noreply, assign(socket, changeset: ingestion_changeset)}
+        updated_socket = assign(socket, changeset: ingestion_changeset)
+        {:noreply, update_publish_message(updated_socket, "valid")}
 
       _ ->
-        {:noreply, update_save_message(socket, "invalid")}
+        {:noreply, update_publish_message(socket, "invalid")}
     end
   end
 
@@ -340,6 +341,22 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   defp update_save_message(socket, status) do
     message = save_message(status == "valid" && socket.assigns.changeset.valid?)
+
+    assign(socket,
+      click_id: UUID.uuid4(),
+      save_success: true,
+      success_message: message,
+      unsaved_changes: false
+    )
+  end
+
+  defp publish_message(true = _valid?), do: "Published successfully."
+
+  defp publish_message(false = _valid?),
+    do: "Saved successfully, but could not publish. You may need to fix errors before publishing."
+
+  defp update_publish_message(socket, status) do
+    message = publish_message(status == "valid" && socket.assigns.changeset.valid?)
 
     assign(socket,
       click_id: UUID.uuid4(),

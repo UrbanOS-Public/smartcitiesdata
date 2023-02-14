@@ -13,7 +13,7 @@ defmodule Transformers.ConcatenationTest do
 
       parameters =
         %{
-          "sourceFields" => ["name", "last_name"],
+          "sourceFields" => "name, last_name",
           "separator" => ".",
           "targetField" => "full_name"
         }
@@ -35,7 +35,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["first_name", "middle_initial", "last_name"],
+        "sourceFields" => "first_name, middle_initial, last_name",
         "separator" => ".",
         "targetField" => "full_name"
       }
@@ -70,7 +70,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["first_name", "middle_initial", "last_name"],
+        "sourceFields" => "first_name, middle_initial, last_name",
         "separator" => ".",
         "targetField" => "full_name"
       }
@@ -91,7 +91,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["name", "middle_initial", "last_name"],
+        "sourceFields" => "name, middle_initial, last_name",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -110,7 +110,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["name", "other"],
+        "sourceFields" => "name, other",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -128,7 +128,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["name", "other"],
+        "sourceFields" => "name, other",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -146,7 +146,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["other", "name"],
+        "sourceFields" => "other, name",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -163,7 +163,7 @@ defmodule Transformers.ConcatenationTest do
       }
 
       parameters = %{
-        "sourceFields" => ["other", "name"],
+        "sourceFields" => "other, name",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -177,7 +177,7 @@ defmodule Transformers.ConcatenationTest do
   describe "validate/1" do
     test "returns :ok if all parameters are present" do
       parameters = %{
-        "sourceFields" => ["other", "name"],
+        "sourceFields" => "other, name",
         "separator" => ".",
         "targetField" => "name"
       }
@@ -192,7 +192,7 @@ defmodule Transformers.ConcatenationTest do
     data_test "when missing parameter #{parameter} return error #{message}" do
       parameters =
         %{
-          "sourceFields" => ["name", "last_name"],
+          "sourceFields" => "name, last_name",
           "separator" => ".",
           "targetField" => "full_name"
         }
