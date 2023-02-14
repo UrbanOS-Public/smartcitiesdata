@@ -181,10 +181,46 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(DatasetStore.get(any()), return: {:ok, %{}})
+      conn = put(conn, @route, ingestion_without_id)
+
+      {_, decoded_body} = Jason.decode(response(conn, 201))
+
+      expected_ingestion = TDG.create_ingestion(Map.put(ingestion_without_id, "id", decoded_body["id"]))
+
+      assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, expected_ingestion))
+
+      assert_called(
+        Andi.Schemas.AuditEvents.log_audit_event(:api, ingestion_update(), expected_ingestion),
+        once()
+      )
+    end
+
+    test "PUT /api/ creating a ingestion with a set id returns a 400", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{})
+      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
+
+      conn = put(conn, @route, ingestion)
+      body = json_response(conn, 400)
+      assert "Do not include id in create call" =~ Map.get(body, "errors")
+    end
+
+    test "PUT /api/ updating an ingestion returns a 201 when an ingestion with that ID is found in the store", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{})
+      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
+
+      conn = put(conn, @route, ingestion)
+
       response(conn, 201)
 
-      allow(DatasetStore.get(any()), return: {:ok, %{}})
-      put(conn, @route, ingestion)
       assert_called(Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion))
 
       assert_called(
