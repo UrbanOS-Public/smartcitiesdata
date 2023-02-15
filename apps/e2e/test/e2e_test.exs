@@ -64,6 +64,13 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
+    resp =
+      HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset), [
+        {"Content-Type", "application/json"}
+      ])
+
+    dataset_id = Jason.decode!(resp.body)["id"]
+
     ingest_regex_transformation =
       TDG.create_transformation(%{
         name: "Ingest Transformation",
@@ -90,7 +97,7 @@ defmodule E2ETest do
 
     ingestion =
       TDG.create_ingestion(%{
-        targetDataset: dataset.id,
+        targetDataset: dataset_id,
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean"},
@@ -118,7 +125,7 @@ defmodule E2ETest do
 
     streaming_ingestion =
       TDG.create_ingestion(%{
-        targetDataset: streaming_dataset.id,
+        targetDataset: dataset_id,
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -144,8 +151,10 @@ defmodule E2ETest do
         transformations: [streaming_regex_transformation]
       })
 
+    expected_dataset = Map.put(dataset, "id", dataset_id)
+
     [
-      dataset: dataset,
+      dataset: expected_dataset,
       ingestion: ingestion,
       streaming_dataset: streaming_dataset,
       streaming_ingestion: streaming_ingestion,
@@ -178,15 +187,6 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    test "via RESTful PUT", %{dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},

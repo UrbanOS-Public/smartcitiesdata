@@ -261,6 +261,8 @@ defmodule Andi.IngestionControllerTest do
         assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
       end)
 
+      IO.puts Jason.decode!(body)
+
       uuid =
         Jason.decode!(body)
         |> get_in(["id"])
