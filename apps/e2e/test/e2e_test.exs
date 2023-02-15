@@ -229,7 +229,7 @@ defmodule E2ETest do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, {%id: dataset_id})
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
 
       target_dataset_id = %{targetDataset: dataset_id}
       ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
@@ -264,7 +264,7 @@ defmodule E2ETest do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, {%id: dataset_id})
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
 
       target_dataset_id = %{targetDataset: dataset_id}
       ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
@@ -359,7 +359,7 @@ defmodule E2ETest do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, {%id: dataset_id})
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
 
       target_dataset_id = %{targetDataset: dataset_id}
       ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
@@ -487,7 +487,7 @@ defmodule E2ETest do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, {%id: dataset_id})
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
 
       [dataset: dataset_with_id]
     end
