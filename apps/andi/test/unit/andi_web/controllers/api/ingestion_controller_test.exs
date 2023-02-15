@@ -250,7 +250,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       allow(IngestionStore.get(any()), return: {:ok, nil})
       allow(DatasetStore.get("nonexistent_dataset"), return: {:ok, nil})
 
-      conn = put(conn, @route, ingestion)
+      conn = put(conn, @route, ingestion_without_id)
       body = json_response(conn, 400)
       assert "Target dataset does not exist" =~ Map.get(body, "errors")
     end
