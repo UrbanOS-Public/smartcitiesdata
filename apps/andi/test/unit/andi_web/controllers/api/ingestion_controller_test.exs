@@ -201,7 +201,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(DatasetStore.get(any()), return: %{technical: %{sourceType: "ingest"}})
       allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
 
       conn = put(conn, @route, ingestion)
@@ -214,7 +214,8 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(Andi.InputSchemas.Datasets.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(DatasetStore.get(any()), return: %{technical: %{sourceType: "ingest"}})
+
       allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
 
       conn = put(conn, @route, ingestion)
@@ -243,10 +244,10 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
     test "PUT /api/ targetDataset must exist in the datastore", %{conn: conn} do
       smrt_ingestion = TDG.create_ingestion(%{targetDataset: "nonexistent_dataset"})
-      ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
+      {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
+      allow(IngestionStore.get(any()), return: {:ok, nil})
       allow(DatasetStore.get("nonexistent_dataset"), return: {:ok, nil})
 
       conn = put(conn, @route, ingestion)
@@ -259,7 +260,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
+      allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
       allow(DatasetStore.get("error_dataset"), return: {:error, "error reason"})
 
       conn = put(conn, @route, ingestion)
