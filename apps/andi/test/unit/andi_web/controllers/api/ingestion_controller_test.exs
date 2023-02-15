@@ -201,7 +201,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(DatasetStore.get(any()), return: %{technical: %{sourceType: "ingest"}})
+      allow(DatasetStore.get(any()), return: {:ok, %{}}))
       allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, nil})
 
       conn = put(conn, @route, ingestion)
@@ -214,8 +214,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
-      allow(DatasetStore.get(any()), return: %{technical: %{sourceType: "ingest"}})
-
+      allow(DatasetStore.get(any()), return: {:ok, %{}}))
       allow(IngestionStore.get(Map.get(ingestion, "id")), return: {:ok, ingestion})
 
       conn = put(conn, @route, ingestion)
