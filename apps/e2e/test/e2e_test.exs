@@ -225,7 +225,7 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    setup_all %{ingestion: ingestion, dataset: dataset} do
+    setup %{ingestion: ingestion, dataset: dataset} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
@@ -260,7 +260,7 @@ defmodule E2ETest do
 
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
-    setup_all %{ingestion: ingestion, dataset: dataset} do
+    setup %{ingestion: ingestion, dataset: dataset} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
@@ -355,7 +355,7 @@ defmodule E2ETest do
   end
 
   describe "streaming data" do
-    setup_all %{streaming_ingestion: ingestion, streaming_dataset: dataset} do
+    setup %{streaming_ingestion: ingestion, streaming_dataset: dataset} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
@@ -483,7 +483,7 @@ defmodule E2ETest do
   end
 
   describe "extract steps" do
-    setup_all %{dataset: dataset} do
+    setup %{dataset: dataset} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
       datasets = Jason.decode(resp.body)
       dataset_id = get_in(dataset, "id")
