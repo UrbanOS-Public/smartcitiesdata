@@ -31,7 +31,7 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion delete" do
     test "sends ingestion:delete event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{sourceType: "remote", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset.id})
       {:ok, _} = create_ingestion(ingestion)
 
       eventually(fn ->
@@ -39,9 +39,7 @@ defmodule Andi.IngestionControllerTest do
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/delete", %{id: ingestion.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/ingestion/delete", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
@@ -62,9 +60,7 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(),
-          headers: [{"content-type", "application/json"}]
-        )
+        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       assert Jason.decode!(body) == "Ingestion not found"
     end
@@ -73,7 +69,7 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion publish" do
     test "sends ingestion:update event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{sourceType: "remote", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset.id})
       {:ok, _} = create_ingestion(ingestion)
 
       eventually(fn ->
@@ -81,9 +77,7 @@ defmodule Andi.IngestionControllerTest do
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(),
-        headers: [{"content-type", "application/json"}]
-      )
+      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
@@ -108,9 +102,7 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/publish", %{id: Faker.UUID.v4()} |> Jason.encode!(),
-          headers: [{"content-type", "application/json"}]
-        )
+        post("/api/v1/ingestion/publish", %{id: Faker.UUID.v4()} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       assert Jason.decode!(body) == "Ingestion not found"
     end
@@ -137,9 +129,8 @@ defmodule Andi.IngestionControllerTest do
       message =
         request
         |> SmartCity.Helpers.to_atom_keys()
-        |> TDG.create_ingestion()
+        |> TDG.create_ingestion(%{id: nil})
         |> struct_to_map_with_string_keys()
-        |> Map.pop("id")
 
       assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
       response = Jason.decode!(body)
@@ -179,7 +170,7 @@ defmodule Andi.IngestionControllerTest do
 
       new_ingestion =
         TDG.create_ingestion(%{
-          id: uuid,
+          id: nil,
           extractSteps: [
             %{"type" => "http", "context" => %{"url" => "example.com", "action" => "GET"}}
           ],
@@ -218,6 +209,7 @@ defmodule Andi.IngestionControllerTest do
 
       new_ingestion =
         TDG.create_ingestion(%{
+          id: nil,
           sourceFormat: "application/gtfs+protobuf",
           cadence: "     */9000 * * * * *",
           schema: [%{name: "billy", type: "writer   "}],
@@ -247,6 +239,7 @@ defmodule Andi.IngestionControllerTest do
 
       new_ingestion =
         TDG.create_ingestion(%{
+          id: nil,
           name: "Name",
           targetDataset: dataset.id,
           transformations: [],
@@ -269,7 +262,11 @@ defmodule Andi.IngestionControllerTest do
         assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
       end)
 
-      uuid = Jason.decode!(body)
+      assert Jason.decode!(body) = %{}
+
+      uuid =
+        Jason.decode!(body)
+        |> get_in(["id"])
 
       assert uuid != nil
     end
@@ -279,6 +276,7 @@ defmodule Andi.IngestionControllerTest do
 
       new_ingestion =
         TDG.create_ingestion(%{
+          id: nil,
           cadence: "*/9000 * * * * * * *",
           targetDataset: dataset.id,
           topLevelSelector: "$.someValue"
@@ -290,8 +288,7 @@ defmodule Andi.IngestionControllerTest do
 
   describe "dataset get" do
     test "andi doesn't return server in response headers" do
-      {:ok, %Tesla.Env{headers: headers}} =
-        get("/api/v1/ingestions", headers: [{"content-type", "application/json"}])
+      {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/ingestions", headers: [{"content-type", "application/json"}])
 
       refute headers |> Map.new() |> Map.has_key?("server")
     end
