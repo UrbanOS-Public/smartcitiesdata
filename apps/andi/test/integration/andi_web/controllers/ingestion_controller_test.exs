@@ -39,7 +39,9 @@ defmodule Andi.IngestionControllerTest do
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/delete", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/ingestion/delete", %{id: ingestion.id} |> Jason.encode!(),
+        headers: [{"content-type", "application/json"}]
+      )
 
       eventually(fn ->
         values =
@@ -60,7 +62,9 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+        post("/api/v1/ingestion/delete", %{id: "invalid-ingestion-id"} |> Jason.encode!(),
+          headers: [{"content-type", "application/json"}]
+        )
 
       assert Jason.decode!(body) == "Ingestion not found"
     end
@@ -77,7 +81,9 @@ defmodule Andi.IngestionControllerTest do
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(),
+        headers: [{"content-type", "application/json"}]
+      )
 
       eventually(fn ->
         values =
@@ -102,7 +108,9 @@ defmodule Andi.IngestionControllerTest do
 
     test "returns 404 when ingestion does not exist in database" do
       {:ok, %{status: 404, body: body}} =
-        post("/api/v1/ingestion/publish", %{id: Faker.UUID.v4()} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+        post("/api/v1/ingestion/publish", %{id: Faker.UUID.v4()} |> Jason.encode!(),
+          headers: [{"content-type", "application/json"}]
+        )
 
       assert Jason.decode!(body) == "Ingestion not found"
     end
@@ -261,11 +269,7 @@ defmodule Andi.IngestionControllerTest do
         assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
       end)
 
-      IO.puts Jason.decode!(body)
-
-      uuid =
-        Jason.decode!(body)
-        |> get_in(["id"])
+      uuid = Jason.decode!(body)
 
       assert uuid != nil
     end
@@ -286,7 +290,8 @@ defmodule Andi.IngestionControllerTest do
 
   describe "dataset get" do
     test "andi doesn't return server in response headers" do
-      {:ok, %Tesla.Env{headers: headers}} = get("/api/v1/ingestions", headers: [{"content-type", "application/json"}])
+      {:ok, %Tesla.Env{headers: headers}} =
+        get("/api/v1/ingestions", headers: [{"content-type", "application/json"}])
 
       refute headers |> Map.new() |> Map.has_key?("server")
     end
