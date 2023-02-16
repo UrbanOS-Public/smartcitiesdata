@@ -135,14 +135,11 @@ defmodule AndiWeb.API.DatasetController do
   end
 
   defp check_and_add_id(message) do
-    if Map.has_key?(message, "id") do
-      if dataset_exists?(Map.get(message, "id")) do
-        {:ok, message}
-      else
-        {:invalid, "Do not include id in create call"}
-      end
-    else
-      {:ok, Map.merge(%{"id" => UUID.uuid4()}, message)}
+    cond do
+      Map.has_key?(message, "id") == false -> {:ok, Map.merge(message, %{"id" => UUID.uuid4()})}
+      Map.get(message, "id") == nil -> {:ok, Map.merge(message, %{"id" => UUID.uuid4()})}
+      dataset_exists?(Map.get(message, "id")) == false -> {:invalid, "Do not include id in create call"}
+      true -> {:ok, message}
     end
   end
 

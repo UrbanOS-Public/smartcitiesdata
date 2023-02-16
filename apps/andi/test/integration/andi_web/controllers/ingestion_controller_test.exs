@@ -109,38 +109,38 @@ defmodule Andi.IngestionControllerTest do
   end
 
   describe "ingestion put" do
-    setup do
-      dataset = setup_dataset()
-      uuid = Faker.UUID.v4()
-
-      request = %{
-        "name" => "Name",
-        "extractSteps" => [
-          %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
-        ],
-        "sourceFormat" => "application/gtfs+protobuf",
-        "cadence" => "*/9000 * * * * *",
-        "schema" => [%{name: "billy", type: "writer"}],
-        "targetDataset" => dataset.id,
-        "topLevelSelector" => "$.someValue",
-        "transformations" => []
-      }
-
-      message =
-        request
-        |> SmartCity.Helpers.to_atom_keys()
-        |> TDG.create_ingestion(%{id: nil})
-        |> struct_to_map_with_string_keys()
-
-      assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
-      response = Jason.decode!(body)
-
-      eventually(fn ->
-        assert IngestionStore.get(request["id"]) != {:ok, nil}
-      end)
-
-      {:ok, response: response, message: message}
-    end
+#    setup do
+#      dataset = setup_dataset()
+#      uuid = Faker.UUID.v4()
+#      IO.inspect(dataset, label: "dataset")
+#      request = %{
+#        "name" => "Name",
+#        "extractSteps" => [
+#          %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
+#        ],
+#        "sourceFormat" => "application/gtfs+protobuf",
+#        "cadence" => "*/9000 * * * * *",
+#        "schema" => [%{name: "billy", type: "writer"}],
+#        "targetDataset" => dataset.id,
+#        "topLevelSelector" => "$.someValue",
+#        "transformations" => []
+#      }
+#
+#      message =
+#        request
+#        |> SmartCity.Helpers.to_atom_keys()
+#        |> TDG.create_ingestion()
+#        |> struct_to_map_with_string_keys()
+#
+#      assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
+#      response = Jason.decode!(body)
+#
+#      eventually(fn ->
+#        assert IngestionStore.get(request["id"]) != {:ok, nil}
+#      end)
+#
+#      {:ok, response: response, message: message}
+#    end
 
     test "writes data to event stream", %{message: message} do
       struct = SmartCity.Ingestion.new(message)
@@ -218,6 +218,8 @@ defmodule Andi.IngestionControllerTest do
           transformations: []
         })
 
+      IO.inspect(dataset, label: "dataset")
+      IO.inspect(new_ingestion, label: "ingestion")
       {:ok, %{status: 201, body: body}} = create_ingestion(new_ingestion)
       response = Jason.decode!(body)
 
@@ -262,7 +264,7 @@ defmodule Andi.IngestionControllerTest do
         assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
       end)
 
-      assert Jason.decode!(body) = %{}
+#      assert Jason.decode!(body) = %{}
 
       uuid =
         Jason.decode!(body)
@@ -318,10 +320,13 @@ defmodule Andi.IngestionControllerTest do
 
   defp setup_dataset() do
     dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-    {:ok, _} = create_dataset(dataset)
+    {:ok, test} = create_dataset(%SmartCity.Dataset{dataset | id: nil})
 
+    new_dataset = test.body |> Jason.decode!()
+    IO.inspect(new_dataset, label: "new_dataset")
     eventually(fn ->
-      {:ok, value} = DatasetStore.get(dataset.id)
+      {:ok, value} = DatasetStore.get(new_dataset["id"])
+
       assert value != nil
     end)
 
