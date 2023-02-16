@@ -64,13 +64,6 @@ defmodule E2ETest do
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
-    resp =
-      HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset), [
-        {"Content-Type", "application/json"}
-      ])
-
-    dataset_id = Jason.decode!(resp.body)["id"]
-
     ingest_regex_transformation =
       TDG.create_transformation(%{
         name: "Ingest Transformation",
@@ -97,7 +90,7 @@ defmodule E2ETest do
 
     ingestion =
       TDG.create_ingestion(%{
-        targetDataset: dataset_id,
+        targetDataset: nil,
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean"},
@@ -125,7 +118,7 @@ defmodule E2ETest do
 
     streaming_ingestion =
       TDG.create_ingestion(%{
-        targetDataset: dataset_id,
+        targetDataset: nil,
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -151,10 +144,8 @@ defmodule E2ETest do
         transformations: [streaming_regex_transformation]
       })
 
-    expected_dataset = Map.put(dataset, "id", dataset_id)
-
     [
-      dataset: expected_dataset,
+      dataset: dataset,
       ingestion: ingestion,
       streaming_dataset: streaming_dataset,
       streaming_ingestion: streaming_ingestion,
@@ -187,6 +178,15 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
+    test "via RESTful PUT", %{dataset: ds} do
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+          {"Content-Type", "application/json"}
+        ])
+
+      assert resp.status_code == 201
+    end
+
     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
@@ -225,7 +225,19 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{ingestion: ingestion} do
+    setup %{ingestion: ingestion, dataset: dataset} do
+      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      datasets = Jason.decode(resp.body)
+      dataset_id = get_in(dataset, "id")
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+
+      target_dataset_id = %{targetDataset: dataset_id}
+      ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
+
+      [ingestion: ingestion_with_dataset_id, dataset: dataset_with_id]
+    end
+
+    test "via RESTful PUT", %{ingestion: ingestion, dataset_id: dataset_id} do
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
           {"Content-Type", "application/json"}
@@ -248,6 +260,18 @@ defmodule E2ETest do
 
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
+    setup %{ingestion: ingestion, dataset: dataset} do
+      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      datasets = Jason.decode(resp.body)
+      dataset_id = get_in(dataset, "id")
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+
+      target_dataset_id = %{targetDataset: dataset_id}
+      ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
+
+      [ingestion: ingestion_with_dataset_id, dataset: dataset_with_id]
+    end
+
     test "is written by reaper", %{ingestion: ingestion} do
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
 
@@ -331,6 +355,18 @@ defmodule E2ETest do
   end
 
   describe "streaming data" do
+    setup %{streaming_ingestion: ingestion, streaming_dataset: dataset} do
+      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      datasets = Jason.decode(resp.body)
+      dataset_id = get_in(dataset, "id")
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+
+      target_dataset_id = %{targetDataset: dataset_id}
+      ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
+
+      [streaming_ingestion: ingestion_with_dataset_id, streaming_dataset: dataset_with_id]
+    end
+
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
@@ -447,6 +483,15 @@ defmodule E2ETest do
   end
 
   describe "extract steps" do
+    setup %{dataset: dataset} do
+      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      datasets = Jason.decode(resp.body)
+      dataset_id = get_in(dataset, "id")
+      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+
+      [dataset: dataset_with_id]
+    end
+
     test "from andi are executable by reaper", %{bypass: bypass, dataset: ds} do
       smrt_ingestion =
         TDG.create_ingestion(%{
