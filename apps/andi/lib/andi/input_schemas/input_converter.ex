@@ -276,8 +276,11 @@ defmodule Andi.InputSchemas.InputConverter do
       _ when is_map(body) ->
         Map.put(smrt_extract_step, :body, Jason.encode!(body))
 
+      _ when is_list(body) ->
+        Map.put(smrt_extract_step, :body, Jason.encode!(body))
+
       _ ->
-        Logger.error("Received an extract step body that is not a string or a map. Received body: #{body}}")
+        Logger.error("Received an extract step body that is not a string or a map. Received body: #{inspect(body)}")
         smrt_extract_step
     end
   end
