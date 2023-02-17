@@ -69,6 +69,35 @@ defmodule Andi.InputSchemas.InputConverterTest do
              ]
     end
 
+    test "prepare_smrt_ingestion_for_casting json encodes the extract step body if it is a list" do
+      smrt_ingestion =
+        TDG.create_ingestion(%{
+          extractSteps: [
+            %{
+              type: "s3",
+              context: %{
+                url: "123.com",
+                body: [%{foo: 123}],
+                headers: %{"api-key" => "to-my-heart"}
+              }
+            }
+          ]
+        })
+
+      result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+
+      assert result.extractSteps == [
+               %{
+                 context: %{
+                   body: "[{\"foo\":123}]",
+                   headers: [%{key: "api-key", value: "to-my-heart"}],
+                   url: "123.com"
+                 },
+                 type: "s3"
+               }
+             ]
+    end
+
     test "prepare_smrt_ingestion_for_casting throws an error if a body is not valid json" do
       smrt_ingestion =
         TDG.create_ingestion(%{

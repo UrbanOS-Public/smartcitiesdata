@@ -6,6 +6,7 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
   alias Raptor.Services.DatasetAccessGroupRelationStore
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Services.Auth0Management
+  alias Raptor.Schemas.Auth0UserData
 
   describe "retrieves access groups by api_key" do
     test "returns an empty list when there are no access groups for the given apiKey", %{
@@ -15,7 +16,7 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
       user_id = "auth0_user"
 
       allow(Auth0Management.get_users_by_api_key(api_key),
-        return: {:ok, [%{"user_id" => user_id}]}
+        return: {:ok, [%Auth0UserData{user_id: user_id}]}
       )
 
       allow(UserOrgAssocStore.get_all_by_user("auth0_user"), return: [])
@@ -41,7 +42,7 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
       user_id = "auth0_user"
 
       allow(Auth0Management.get_users_by_api_key(api_key),
-        return: {:ok, [%{"user_id" => user_id}]}
+        return: {:ok, [%Auth0UserData{user_id: user_id}]}
       )
 
       allow(UserOrgAssocStore.get_all_by_user("auth0_user"), return: [])

@@ -2,6 +2,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   use RaptorWeb.ConnCase
   use Placebo
   alias Raptor.Services.Auth0Management
+  alias Raptor.Schemas.Auth0UserData
   alias Raptor.Services.DatasetStore
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.DatasetAccessGroupRelationStore
@@ -10,33 +11,35 @@ defmodule RaptorWeb.AuthorizeControllerTest do
   # these simulate "raw json" attributes of an auth0 user
   #   available in the "Raw JSON" tab of a user's page
   @authorized_call [
-    %{
-      "email_verified" => true,
-      "user_id" => "penny"
+    %Auth0UserData{
+      email_verified: true,
+      user_id: "penny",
+      app_metadata: %{apiKey: "fakeApiKey"},
+      blocked: false
     }
   ]
 
   @multiple_users_call [
-    %{
-      "email_verified" => true
+    %Auth0UserData{
+      email_verified: true
     },
-    %{
-      "email_verified" => true
+    %Auth0UserData{
+      email_verified: true
     }
   ]
 
   @unverified_email_call [
-    %{
-      "email_verified" => false
+    %Auth0UserData{
+      email_verified: false
     }
   ]
 
   @unauthorized_call []
 
   @blocked_user [
-    %{
-      "email_verified" => true,
-      "blocked" => true
+    %Auth0UserData{
+      email_verified: true,
+      blocked: true
     }
   ]
 
@@ -47,7 +50,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "system__name"
       org_id = "dog_stats"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => true}
 
       expect(DatasetStore.get(system_name),
@@ -73,7 +76,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       dataset_org_id = "dataset_org"
       dataset_id = "wags"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => true}
 
       expect(DatasetStore.get(system_name),
@@ -123,7 +126,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "system__name"
       dataset_org_id = "dataset_org"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => false}
 
       expect(DatasetStore.get(system_name),
@@ -162,7 +165,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "system__name"
       org_id = "dog_stats"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => true}
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
@@ -189,7 +192,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "system__name"
       dataset_org_id = "dataset_org"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => false}
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
@@ -229,7 +232,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       dataset_org_id = "dataset_org"
       dataset_id = "wags"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => true}
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 
@@ -269,7 +272,7 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       dataset_org_id = "dataset_org"
       dataset_id = "wags"
       user = @authorized_call |> List.first()
-      user_id = user["user_id"]
+      user_id = user.user_id
       expected = %{"is_authorized" => false}
       expect(Auth0Management.get_users_by_api_key(api_key), return: {:ok, @authorized_call})
 

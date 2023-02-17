@@ -31,11 +31,11 @@ defmodule RaptorWeb.ListAccessGroupsController do
       1 ->
         access_groups =
           List.first(users)
-          |> Map.get("user_id")
+          |> Map.get(:user_id)
           |> UserAccessGroupRelationStore.get_all_by_user()
 
         organizations =
-          List.first(users) |> Map.get("user_id") |> UserOrgAssocStore.get_all_by_user()
+          List.first(users) |> Map.get(:user_id) |> UserOrgAssocStore.get_all_by_user()
 
         render(conn, %{access_groups: access_groups, organizations: organizations})
 

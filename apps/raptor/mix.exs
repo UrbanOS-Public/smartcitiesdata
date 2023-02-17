@@ -5,7 +5,7 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "1.2.13",
+      version: "1.2.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -28,6 +28,7 @@ defmodule Raptor.MixProject do
 
   defp deps do
     [
+      {:atomic_map, "~> 0.9"},
       {:brook, "== 0.4.9"},
       {:cowlib, "== 2.9.1", override: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
