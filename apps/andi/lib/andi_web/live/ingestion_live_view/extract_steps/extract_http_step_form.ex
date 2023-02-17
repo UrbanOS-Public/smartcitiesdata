@@ -192,7 +192,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
   defp concat_steps(ingestion_id, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
-      step = AtomicMap.convert(step, understore: false)
+      step = AtomicMap.convert(step, underscore: true, safe: false)
       concat_steps(ingestion_id, step, acc)
     end)
   end
@@ -206,7 +206,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp process_extract_step(_ingestion_id, %{type: "http"} = step, bindings) do
-    {_body, headers} = evaluate_body_and_headers(step, bindings)
+    headers = evaluate_headers(step, bindings)
 
     url = UrlBuilder.decode_http_extract_step(step, bindings)
 
@@ -250,6 +250,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     Map.put(bindings, step.context.destination |> String.to_atom(), response)
   end
 
+  defp evaluate_headers(step, bindings), do: UrlBuilder.safe_evaluate_parameters(step.context.headers, bindings)
+
   defp evaluate_body_and_headers(step, bindings) do
     body =
       case Map.fetch(step.context, :body) do
@@ -261,6 +263,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
     {body, headers}
   end
+
 
   defp process_body(body, _assigns) when body in ["", nil], do: ""
 
