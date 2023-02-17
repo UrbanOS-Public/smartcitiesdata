@@ -31,29 +31,30 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion delete" do
     test "sends ingestion:delete event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset.id})
-      {:ok, _} = create_ingestion(ingestion)
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset["id"]})
+      {:ok, response} = create_ingestion(ingestion)
+      body = response.body |> Jason.decode!()
 
       eventually(fn ->
-        {:ok, value} = IngestionStore.get(ingestion.id)
+        {:ok, value} = IngestionStore.get(body["id"])
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/delete", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/ingestion/delete", %{id: body["id"]} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
-            message.key == ingestion_delete() && String.contains?(message.value, ingestion.id)
+            message.key == ingestion_delete() && String.contains?(message.value, body["id"])
           end)
 
         assert 1 = length(values)
       end)
 
       eventually(fn ->
-        {:ok, value} = IngestionStore.get(ingestion.id)
+        {:ok, value} = IngestionStore.get(body["id"])
         assert value == nil
       end)
     end
@@ -69,29 +70,30 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion publish" do
     test "sends ingestion:update event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset.id})
-      {:ok, _} = create_ingestion(ingestion)
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset["id"]})
+      {:ok, response} = create_ingestion(ingestion)
+      body = response.body |> Jason.decode!()
 
       eventually(fn ->
-        {:ok, value} = IngestionStore.get(ingestion.id)
+        {:ok, value} = IngestionStore.get(body["id"])
         assert value != nil
       end)
 
-      post("/api/v1/ingestion/publish", %{id: ingestion.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/ingestion/publish", %{id: body["id"]} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
-            message.key == ingestion_update() && String.contains?(message.value, ingestion.id)
+            message.key == ingestion_update() && String.contains?(message.value, body["id"])
           end)
 
         assert 2 == length(values)
       end)
 
       eventually(fn ->
-        assert Ingestions.get(ingestion.id).submissionStatus == :published
+        assert Ingestions.get(body["id"]).submissionStatus == :published
       end)
 
       # TODO: Refactor the create/publish endpoints to be merged into a single "update" endpoint
@@ -109,55 +111,44 @@ defmodule Andi.IngestionControllerTest do
   end
 
   describe "ingestion put" do
-#    setup do
-#      dataset = setup_dataset()
-#      uuid = Faker.UUID.v4()
-#      IO.inspect(dataset, label: "dataset")
-#      request = %{
-#        "name" => "Name",
-#        "extractSteps" => [
-#          %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
-#        ],
-#        "sourceFormat" => "application/gtfs+protobuf",
-#        "cadence" => "*/9000 * * * * *",
-#        "schema" => [%{name: "billy", type: "writer"}],
-#        "targetDataset" => dataset.id,
-#        "topLevelSelector" => "$.someValue",
-#        "transformations" => []
-#      }
-#
-#      message =
-#        request
-#        |> SmartCity.Helpers.to_atom_keys()
-#        |> TDG.create_ingestion()
-#        |> struct_to_map_with_string_keys()
-#
-#      assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
-#      response = Jason.decode!(body)
-#
-#      eventually(fn ->
-#        assert IngestionStore.get(request["id"]) != {:ok, nil}
-#      end)
-#
-#      {:ok, response: response, message: message}
-#    end
+    test "writes data to event stream" do
+      dataset = setup_dataset()
+      uuid = Faker.UUID.v4()
+      request = %{
+        "name" => "Name",
+        "extractSteps" => [
+          %{"type" => "http", "context" => %{"url" => "http://example.com", "action" => "GET"}}
+        ],
+        "sourceFormat" => "application/gtfs+protobuf",
+        "cadence" => "*/9000 * * * * *",
+        "schema" => [%{name: "billy", type: "writer"}],
+        "targetDataset" => dataset["id"],
+        "topLevelSelector" => "$.someValue",
+        "transformations" => []
+      }
 
-    test "writes data to event stream", %{message: message} do
-      struct = SmartCity.Ingestion.new(message)
+      assert {:ok, %{status: 201, body: body}} = create_ingestion(request)
+      response = Jason.decode!(body)
+
+      eventually(fn ->
+        assert IngestionStore.get(response["id"]) != {:ok, nil}
+      end)
+
+      struct = SmartCity.Ingestion.new(response)
 
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
-          |> Enum.map(fn message ->
-            {:ok, brook_message} = Brook.Deserializer.deserialize(message.value)
+          |> Enum.map(fn response ->
+            {:ok, brook_message} = Brook.Deserializer.deserialize(response.value)
             brook_message
           end)
-          |> Enum.filter(fn message ->
-            message.type == ingestion_update()
+          |> Enum.filter(fn response ->
+            response.type == ingestion_update()
           end)
-          |> Enum.map(fn message ->
-            message.data
+          |> Enum.map(fn response ->
+            response.data
           end)
 
         assert struct in values
@@ -177,7 +168,7 @@ defmodule Andi.IngestionControllerTest do
           sourceFormat: "application/gtfs+protobuf",
           cadence: "*/9000 * * * * *",
           schema: [%{name: "billy", type: "writer"}],
-          targetDataset: dataset.id,
+          targetDataset: dataset["id"],
           topLevelSelector: "$.someValue",
           transformations: []
         })
@@ -213,23 +204,21 @@ defmodule Andi.IngestionControllerTest do
           sourceFormat: "application/gtfs+protobuf",
           cadence: "     */9000 * * * * *",
           schema: [%{name: "billy", type: "writer   "}],
-          targetDataset: "#{dataset.id}   ",
+          targetDataset: "#{dataset["id"]}   ",
           topLevelSelector: "   $.someValue",
           transformations: []
         })
 
-      IO.inspect(dataset, label: "dataset")
-      IO.inspect(new_ingestion, label: "ingestion")
       {:ok, %{status: 201, body: body}} = create_ingestion(new_ingestion)
       response = Jason.decode!(body)
 
       eventually(fn ->
-        assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
+        assert IngestionStore.get(response["id"]) != {:ok, nil}
       end)
 
       assert response["cadence"] == "*/9000 * * * * *"
       assert response["topLevelSelector"] == "$.someValue"
-      assert response["targetDataset"] == dataset.id
+      assert response["targetDataset"] == dataset["id"]
       assert response["sourceFormat"] == "application/gtfs+protobuf"
       assert response["topLevelSelector"] == "$.someValue"
       assert List.first(response["schema"])["type"] == "writer"
@@ -243,7 +232,7 @@ defmodule Andi.IngestionControllerTest do
         TDG.create_ingestion(%{
           id: nil,
           name: "Name",
-          targetDataset: dataset.id,
+          targetDataset: dataset["id"],
           transformations: [],
           extractSteps: [
             %{
@@ -256,19 +245,14 @@ defmodule Andi.IngestionControllerTest do
           ]
         })
 
-      {_, new_ingestion} = pop_in(new_ingestion, ["id"])
-
       {:ok, %{status: 201, body: body}} = create_ingestion(new_ingestion)
+      response = Jason.decode!(body)
 
       eventually(fn ->
-        assert IngestionStore.get(new_ingestion.id) != {:ok, nil}
+        assert IngestionStore.get(response["id"]) != {:ok, nil}
       end)
 
-#      assert Jason.decode!(body) = %{}
-
-      uuid =
-        Jason.decode!(body)
-        |> get_in(["id"])
+      uuid = response["id"]
 
       assert uuid != nil
     end
@@ -280,7 +264,7 @@ defmodule Andi.IngestionControllerTest do
         TDG.create_ingestion(%{
           id: nil,
           cadence: "*/9000 * * * * * * *",
-          targetDataset: dataset.id,
+          targetDataset: dataset["id"],
           topLevelSelector: "$.someValue"
         })
 
@@ -320,16 +304,15 @@ defmodule Andi.IngestionControllerTest do
 
   defp setup_dataset() do
     dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-    {:ok, test} = create_dataset(%SmartCity.Dataset{dataset | id: nil})
+    {:ok, response} = create_dataset(%SmartCity.Dataset{dataset | id: nil})
 
-    new_dataset = test.body |> Jason.decode!()
-    IO.inspect(new_dataset, label: "new_dataset")
+    body = response.body |> Jason.decode!()
+
     eventually(fn ->
-      {:ok, value} = DatasetStore.get(new_dataset["id"])
-
+      {:ok, value} = DatasetStore.get(body["id"])
       assert value != nil
     end)
 
-    dataset
+    body
   end
 end

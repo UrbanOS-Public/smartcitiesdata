@@ -30,12 +30,12 @@ defmodule AndiWeb.API.IngestionController do
   @spec create(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def create(conn, _params) do
     # TODO: Merge create/publish endpoints into a single "Update" endpoint
-    with {:ok, message} <- check_and_add_id(conn.body_params) |> IO.inspect(label: "ingestion1"),
+    with {:ok, message} <- check_and_add_id(conn.body_params),
          {:ok, parsed_message} <- trim_required_fields(message),
          :valid <- validate_changes(parsed_message),
          ingestion <- new_ingestion(parsed_message),
          :ok <- write_ingestion(ingestion) do
-      respond(conn, :created, ingestion) |> IO.inspect(label: "ingestion response")
+      respond(conn, :created, ingestion)
     else
       {:invalid, errors} ->
         respond(conn, :bad_request, %{errors: errors})
@@ -61,7 +61,6 @@ defmodule AndiWeb.API.IngestionController do
   defp validate_target_dataset(ingestion) do
     dataset_id = ingestion["targetDataset"]
 
-    IO.inspect(dataset_id, label: "dataset_id")
     case dataset_exists?(dataset_id) do
       {:ok, true} -> :ok
       {:ok, false} -> {:error, "Target dataset does not exist"}
@@ -70,7 +69,7 @@ defmodule AndiWeb.API.IngestionController do
   end
 
   defp dataset_exists?(id) do
-    case DatasetStore.get(id) |> IO.inspect(label: "dataset store") do
+    case DatasetStore.get(id) do
       {:ok, nil} -> {:ok, false}
       {:ok, dataset} -> {:ok, true}
       {:error, error} -> {:error, error}
