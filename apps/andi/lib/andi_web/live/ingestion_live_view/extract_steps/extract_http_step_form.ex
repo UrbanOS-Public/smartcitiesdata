@@ -264,7 +264,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     {body, headers}
   end
 
-
   defp process_body(body, _assigns) when body in ["", nil], do: ""
 
   defp process_body(body, assigns) do
