@@ -19,21 +19,22 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset disable" do
     test "sends dataset:disable event" do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      {:ok, _} = create(dataset)
+      {:ok, response} = create(dataset)
+      body = response.body |> Jason.decode!()
 
       eventually(fn ->
-        {:ok, value} = DatasetStore.get(dataset.id)
+        {:ok, value} = DatasetStore.get(body["id"])
         assert value != nil
       end)
 
-      post("/api/v1/dataset/disable", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/dataset/disable", %{id: body["id"]} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
-            message.key == dataset_disable() && String.contains?(message.value, dataset.id)
+            message.key == dataset_disable() && String.contains?(message.value, body["id"])
           end)
 
         assert 1 == length(values)
@@ -44,29 +45,30 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset delete" do
     test "sends dataset:delete event" do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      {:ok, _} = create(dataset)
+      {:ok, response} = create(dataset)
+      body = response.body |> Jason.decode!()
 
       eventually(fn ->
-        {:ok, value} = DatasetStore.get(dataset.id)
-        assert Andi.Schemas.AuditEvents.get_all_by_event_id(dataset.id) != []
-        assert value != nil
+        {:ok, value} = DatasetStore.get(body["id"])
+        assert Andi.Schemas.AuditEvents.get_all_by_event_id(body["id"]) != []
+        assert !is_nil(value)
       end)
 
-      post("/api/v1/dataset/delete", %{id: dataset.id} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
+      post("/api/v1/dataset/delete", %{id: body["id"]} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
 
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.filter(fn message ->
-            message.key == dataset_delete() && String.contains?(message.value, dataset.id)
+            message.key == dataset_delete() && String.contains?(message.value, body["id"])
           end)
 
         assert 1 = length(values)
       end)
 
       eventually(fn ->
-        {:ok, value} = DatasetStore.get(dataset.id)
+        {:ok, value} = DatasetStore.get(body["id"])
         assert value == nil
       end)
     end
@@ -74,10 +76,7 @@ defmodule Andi.DatasetControllerTest do
 
   describe "dataset put" do
     setup do
-      uuid = Faker.UUID.v4()
-
       request = %{
-        "id" => uuid,
         "technical" => %{
           "dataName" => Faker.Person.first_name(),
           "orgId" => "org-123-456",
@@ -129,29 +128,30 @@ defmodule Andi.DatasetControllerTest do
         |> struct_to_map_with_string_keys()
 
       {_, request} = pop_in(request, ["technical", "systemName"])
+
       assert {:ok, %{status: 201, body: body}} = create(request)
       response = Jason.decode!(body)
-
+      IO.inspect(response, label: "response")
       eventually(fn ->
-        assert DatasetStore.get(request["id"]) != {:ok, nil}
+        assert DatasetStore.get(response["id"]) != {:ok, nil}
       end)
 
       {:ok, response: response, message: message}
     end
 
-    test "assigns a system name", %{message: message, response: response} do
+    test "assigns a system name", %{response: response} do
       system_name = get_in(response, ["technical", "systemName"])
-      {:ok, struct} = SmartCity.Dataset.new(message)
+      {:ok, struct} = SmartCity.Dataset.new(response)
 
       assert system_name == struct.technical.orgName <> "__" <> struct.technical.dataName
     end
 
-    test "writes an entry to the audit log", %{message: message} do
-      assert Andi.Schemas.AuditEvents.get_all_by_event_id(message["id"]) != []
+    test "writes an entry to the audit log", %{response: response} do
+      assert Andi.Schemas.AuditEvents.get_all_by_event_id(response["id"]) != []
     end
 
-    test "writes data to event stream", %{message: message} do
-      {:ok, struct} = SmartCity.Dataset.new(message)
+    test "writes data to event stream", %{response: response} do
+      {:ok, struct} = SmartCity.Dataset.new(response)
 
       struct = put_in(struct, [:technical, :systemName], struct.technical.orgName <> "__" <> struct.technical.dataName)
 
@@ -159,29 +159,28 @@ defmodule Andi.DatasetControllerTest do
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
-          |> Enum.map(fn message ->
-            {:ok, brook_message} = Brook.Deserializer.deserialize(message.value)
+          |> Enum.map(fn response ->
+            {:ok, brook_message} = Brook.Deserializer.deserialize(response.value)
             brook_message
           end)
-          |> Enum.filter(fn message ->
-            message.type == dataset_update()
+          |> Enum.filter(fn response ->
+            response.type == dataset_update()
           end)
-          |> Enum.map(fn message ->
-            message.data
+          |> Enum.map(fn response ->
+            response.data
           end)
 
         assert struct in values
       end)
     end
 
-    test "put returns 400 when systemName matches existing systemName", %{message: message} do
-      {:ok, struct} = SmartCity.Dataset.new(message)
+    test "put returns 400 when systemName matches existing systemName", %{response: response} do
+      {:ok, struct} = SmartCity.Dataset.new(response)
       org_name = struct.technical.orgName
       data_name = struct.technical.dataName
 
       existing_dataset =
         TDG.create_dataset(
-          id: "existing-ds1",
           technical: %{
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
@@ -194,7 +193,7 @@ defmodule Andi.DatasetControllerTest do
         assert Datasets.get(struct.id) != nil
       end)
 
-      {:ok, %{status: 400, body: body}} = create(existing_dataset)
+      {:ok, %{status: 400, body: body}} = create(%{existing_dataset | id: nil})
 
       errors =
         Jason.decode!(body)
@@ -210,7 +209,6 @@ defmodule Andi.DatasetControllerTest do
 
       new_dataset =
         TDG.create_dataset(
-          id: "my-new-dataset",
           technical: %{
             extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}],
             dataName: data_name,
@@ -219,7 +217,7 @@ defmodule Andi.DatasetControllerTest do
           }
         )
 
-      {:ok, %{status: 400, body: body}} = create(new_dataset)
+      {:ok, %{status: 400, body: body}} = create(%SmartCity.Dataset{new_dataset | id: nil})
 
       errors =
         Jason.decode!(body)
@@ -233,13 +231,12 @@ defmodule Andi.DatasetControllerTest do
     test "put returns 400 when modifiedDate is invalid" do
       new_dataset =
         TDG.create_dataset(
-          id: "my-new-dataset",
           technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}], dataName: "my_little_dataset"}
         )
         |> struct_to_map_with_string_keys()
         |> put_in(["business", "modifiedDate"], "badDate")
 
-      {:ok, %{status: 400, body: body}} = create(new_dataset)
+      {:ok, %{status: 400, body: body}} = create(%SmartCity.Dataset{new_dataset | id: nil})
 
       errors =
         Jason.decode!(body)
@@ -252,7 +249,6 @@ defmodule Andi.DatasetControllerTest do
     test "put returns 400 and errors when fields are invalid" do
       new_dataset =
         TDG.create_dataset(
-          id: "my-new-dataset",
           business: %{
             dataTitle: "",
             description: nil,
@@ -311,7 +307,6 @@ defmodule Andi.DatasetControllerTest do
     test "put trims fields on dataset" do
       new_dataset =
         TDG.create_dataset(
-          id: " my-new-dataset  ",
           technical: %{
             dataName: "   the_data_name ",
             orgName: " the_org_name   ",
@@ -323,14 +318,14 @@ defmodule Andi.DatasetControllerTest do
           }
         )
 
-      {:ok, %{status: 201, body: body}} = create(new_dataset)
+      {:ok, %{status: 201, body: body}} = create(%SmartCity.Dataset{new_dataset | id: nil})
       response = Jason.decode!(body)
 
       eventually(fn ->
-        assert DatasetStore.get("my-new-dataset") != {:ok, nil}
+        assert DatasetStore.get(response["id"]) != {:ok, nil}
       end)
 
-      assert response["id"] == "my-new-dataset"
+      assert response["id"] == response["id"]
       assert response["business"]["contactName"] == "some  body"
       assert response["business"]["keywords"] == ["a keyword", "another keyword", "etc"]
       assert response["technical"]["dataName"] == "the_data_name"
@@ -340,14 +335,15 @@ defmodule Andi.DatasetControllerTest do
     test "put with a system name does not reflect it back" do
       new_dataset = TDG.create_dataset(technical: %{systemName: "this_will__get_tossed", sourceType: "remote"})
 
-      {:ok, %{status: 201, body: body}} = create(new_dataset)
+      {:ok, %{status: 201, body: body}} = create(%{new_dataset | id: nil})
+      response = Jason.decode!(body)
 
       eventually(fn ->
-        assert DatasetStore.get(new_dataset.id) != {:ok, nil}
+        assert DatasetStore.get(response["id"]) != {:ok, nil}
       end)
 
       system_name =
-        Jason.decode!(body)
+        response
         |> get_in(["technical", "systemName"])
 
       assert system_name != "this_will__get_tossed"
@@ -360,13 +356,14 @@ defmodule Andi.DatasetControllerTest do
       {_, new_dataset} = pop_in(new_dataset, ["id"])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
+      response = Jason.decode!(body)
 
       eventually(fn ->
-        assert DatasetStore.get(new_dataset.id) != {:ok, nil}
+        assert DatasetStore.get(response["id"]) != {:ok, nil}
       end)
 
       uuid =
-        Jason.decode!(body)
+        response
         |> get_in(["id"])
 
       assert uuid != nil
