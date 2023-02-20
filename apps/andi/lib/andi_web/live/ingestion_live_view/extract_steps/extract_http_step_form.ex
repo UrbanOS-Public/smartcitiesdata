@@ -39,18 +39,18 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       :error -> []
     end
     ~L"""
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data] %>
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
         <div class="component-edit-section--<%= @visibility %>">
           <div class="extract-http-step-form-edit-section form-grid">
             <div class="extract-http-step-form__method">
-              <%= label(f, :action, DisplayNames.get(:method), class: "label label--required", for: "#{@id}__http_method") %>
-              <%= select(f, :action, get_http_methods(), [id: "#{@id}__http_method", class: "extract-http-step-form__method select", required: true]) %>
+              <%= label(f, :action, DisplayNames.get(:method), class: "label label--required", for: "#{@id}_http_method") %>
+              <%= select(f, :action, get_http_methods(), [id: "#{@id}_http_method", class: "extract-http-step-form__method select", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :action) %>
             </div>
 
             <div class="extract-http-step-form__url">
-              <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}__url") %>
-              <%= url_input(f, :url, [id: "#{@id}__url", class: "input full-width", disabled: @testing?, required: true]) %>
+              <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_http_url") %>
+              <%= url_input(f, :url, [id: "#{@id}_http_url", class: "input full-width", disabled: @testing?, required: true]) %>
               <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
             </div>
 
@@ -59,8 +59,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
             <%= if input_value(f, :action) == "POST" do %>
               <div class="extract-http-step-form__body">
-                <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "#{@id}__body") %>
-                <%= textarea(f, :body, id: "#{@id}__body", class: "input full-width", phx_hook: "prettify", disabled: @testing?) %>
+                <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "#{@id}_http_body") %>
+                <%= textarea(f, :body, id: "#{@id}_http_body", class: "input full-width", phx_hook: "prettify", disabled: @testing?) %>
                 <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
               </div>
             <% end %>
@@ -87,14 +87,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
       </form>
     """
   end
-
-  # <%= if @test_results do %>
-  #               <div class="test-status">
-  #               Status: <span class="test-status__code <%= status_class(@test_results) %>"><%= @test_results |> Map.get(:status) |> HttpStatusDescriptions.simple() %></span>
-  #               <%= status_tooltip(@test_results) %>
-  #               Time: <span class="test-status__time"><%= @test_results |> Map.get(:time) %></span> ms
-  #               </div>
-  #             <% end %>
 
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -182,50 +174,4 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
 
     ~E(<sup class="test-status__tooltip-wrapper"><i id="test-tooltip" phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons test-status__tooltip--<%= @modifier %>">info_outline</i></sup>)
   end
-
-
-  # def handle_info(:update, socket) do
-  #   {:noreply, socket}
-  # end
-
-  # def update(%{update: :test_url}, socket) do
-  #   ingestion_id = socket.assigns.extract_step.ingestion_id
-  #   steps = ExtractSteps.all_for_ingestion(ingestion_id)
-
-  #   {new_url, new_query_params, new_headers} = concat_steps(ingestion_id, steps)
-
-  #   test_results = Andi.Services.UrlTest.test(new_url, query_params: new_query_params, headers: new_headers)
-  #   {:ok, assign(socket, test_results: test_results)}
-  # end
-
-  # def update(assigns, socket) do
-  #   {:ok, assign(socket, assigns)}
-  # end
-
-  # defp concat_steps(ingestion_id, steps) do
-  #   Enum.reduce(steps, %{}, fn step, acc ->
-  #     step = AtomicMap.convert(step, understore: false)
-  #     concat_steps(ingestion_id, step, acc)
-  #   end)
-  # end
-
-  # defp concat_steps(ingestion_id, step, acc) do
-  #   process_extract_step(ingestion_id, step, acc)
-  # rescue
-  #   error ->
-  #     Logger.error(Exception.format(:error, error, __STACKTRACE__))
-  #     reraise "Unable to process #{step.type} step for ingestion #{ingestion_id}.", __STACKTRACE__
-  # end
-
-  # defp process_extract_step(_ingestion_id, %{type: "http"} = step, bindings) do
-  # end
-
-  # defp disabled?(true), do: "disabled"
-  # defp disabled?(_), do: ""
-
-  # defp key_values_to_keyword_list(form_data, field) do
-  #   form_data
-  #   |> Map.get(field, [])
-  #   |> Enum.map(fn %{key: key, value: value} -> {key, value} end)
-  # end
 end

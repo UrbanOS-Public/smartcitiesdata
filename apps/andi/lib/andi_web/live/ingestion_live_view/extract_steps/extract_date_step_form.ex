@@ -24,34 +24,34 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   def render(assigns) do
     example_output = get_example_output(assigns.changeset)
     ~L"""
-    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data] %>
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
 
         <div class="component-edit-section--<%= @visibility %>">
           <div class="extract-date-step-form-edit-section form-grid">
             <div class="extract-date-step-form__destination">
-              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}__date-destination") %>
-              <%= text_input(f, :destination, [id: "#{@id}__date-destination", required: true, class: "input"]) %>
+              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_date_destination") %>
+              <%= text_input(f, :destination, [id: "#{@id}_date_destination", required: true, class: "input"]) %>
               <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false) %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeUnit">
-              <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "#{@id}__date_delta_time_unit") %>
-              <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}__date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
+              <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "#{@id}_date_delta_time_unit") %>
+              <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}_date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
               <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeValue">
-              <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "#{@id}__date_delta_time_value") %>
-              <%= text_input(f, :deltaTimeValue, id: "#{@id}__date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
+              <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "#{@id}_date_delta_time_value") %>
+              <%= text_input(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
               <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
             </div>
 
             <div class="extract-date-step-form__format">
               <div class="help-text-label">
-                <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@id}__date_format") %>
+                <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@id}_date_format") %>
                 <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
               </div>
-              <%= text_input(f, :format, [id: "step_#{@id}__date_format", aria_label: "step_#{@id}__date_format", class: "extract-date-step-form__format input", required: true]) %>
+              <%= text_input(f, :format, [id: "step_#{@id}_date_format", class: "extract-date-step-form__format input", required: true]) %>
               <%= ErrorHelpers.error_tag(f, :format) %>
             </div>
 

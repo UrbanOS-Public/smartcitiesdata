@@ -74,18 +74,18 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
               ingestion_published?: ingestion_published?
             ) %>
       </div>
-      <div>
-        <%= live_component(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
-              id: AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.component_id(),
-              extract_step_changesets: extract_step_changesets,
-              ingestion_published?: ingestion_published?,
-              order: "1",
-              ingestion_id: ingestion_changeset.data.id,
-              extract_step_errors: extract_step_errors
-            ) %>
-      </div>
 
         <div>
+          <div>
+            <%= live_component(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
+                  id: AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.component_id(),
+                  extract_step_changesets: extract_step_changesets,
+                  ingestion_published?: ingestion_published?,
+                  order: "1",
+                  ingestion_id: ingestion_changeset.data.id,
+                  extract_step_errors: extract_step_errors
+                ) %>
+          </div>
           <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>

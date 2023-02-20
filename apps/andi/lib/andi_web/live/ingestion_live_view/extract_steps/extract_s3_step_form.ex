@@ -27,12 +27,12 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
       :error -> []
     end
     ~L"""
-    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data] %>
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
       <div class="component-edit-section--<%= @visibility %>">
         <div class="extract-s3-step-form-edit-section form-grid">
           <div class="extract-s3-step-form__url">
-            <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}__s3_url") %>
-            <%= text_input(f, :url, [id: "#{@id}__s3_url", class: "input full-width", required: true]) %>
+            <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_s3_url") %>
+            <%= text_input(f, :url, [id: "#{@id}_s3_url", class: "input full-width", required: true]) %>
             <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
           </div>
 

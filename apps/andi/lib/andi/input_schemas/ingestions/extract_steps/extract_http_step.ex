@@ -10,7 +10,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
   @primary_key false
   embedded_schema do
     field(:body, :string)
-    field(:action, :string)
+    field(:action, :string, default: "GET")
     field(:protocol, {:array, :string})
     field(:url, :string)
     embeds_many(:headers, ExtractHeader, on_replace: :delete)

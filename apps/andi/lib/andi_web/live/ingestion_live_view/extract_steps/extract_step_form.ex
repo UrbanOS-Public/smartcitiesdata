@@ -27,31 +27,28 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   def mount(socket) do
     {
       :ok,
-      assign(socket,
-        visible?: false,
-        validation_status: "collapsed"
-      )
+      assign(socket, visible?: false)
     }
   end
 
   def render(assigns) do
-    header_id = AndiWeb.FormCollapsibleHeader.component_id(component_step())
     visible = if assigns.visible?, do: "expanded", else: "collapsed"
+    validation_status = get_validation_status(assigns.extract_step_changesets, assigns.extract_step_errors)
 
     ~L"""
-    <div id="extract-step-form" class="form-component">
+    <div id="extract-step-form" class="form-component form-beginning">
       <%= live_component(
         @socket,
         AndiWeb.FormCollapsibleHeader,
         order: @order,
         visible?: @visible?,
-        validation_status: @validation_status,
+        validation_status: validation_status,
         step: component_step(),
-        id: header_id,
+        id: AndiWeb.FormCollapsibleHeader.component_id(component_step()),
         visibility_change_callback: &change_visibility/1)
       %>
 
-      <div id="extractstep-form-section" class="form-section">
+      <div id="extract-step-form-section" class="form-section">
         <div class="component-edit-section--<%= visible %>">
           <div class="add-step">
             <%= f = form_for :form, "#", [ as: :form_data, phx_submit: :add_extract_step, phx_target: @myself, id: :extract_addition_form ] %>
@@ -60,11 +57,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
               <div class="extract-steps__error-message"><%= @extract_step_errors %></div>
             </form>
           </div>
-        </div>
-      </div>
 
-      <div id="extract-step-form-section" class="form-section">
-        <div class="component-edit-section--<%= visible %>">
           <%= for extract_step_changeset <- sort_by_sequence(@extract_step_changesets) do %>
             <% {_, extract_step_changeset_id} = Changeset.fetch_field(extract_step_changeset, :id) %>
             <hr>
@@ -197,6 +190,13 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       step_id: step_id)
   end
 
+  def change_visibility(updated_visibility) do
+    send_update(__MODULE__,
+      id: component_id(),
+      visible?: updated_visibility
+    )
+  end
+
   def update(%{updated_extract_step_changeset: changeset, step_id: step_id}, socket) do
     changes = %{context: StructTools.to_map(Changeset.apply_changes(changeset))}
 
@@ -231,13 +231,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
   def update(assigns, socket) do
     {:ok, assign(socket, assigns)}
-  end
-
-  def change_visibility(updated_visibility) do
-    send_update(AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
-      id: component_id(),
-      visible?: updated_visibility
-    )
   end
 
   defp inspect_module({_, "http"}), do: {ExtractHttpStepForm, "HTTP"}
@@ -312,5 +305,18 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     |> UrlBuilder.safe_evaluate_parameters(assigns)
     |> Enum.into(%{})
     |> Jason.encode!()
+  end
+
+  defp get_validation_status(_extract_step_changesets, extract_step_errors) when extract_step_errors != "", do: "invalid"
+
+  defp get_validation_status(extract_step_changesets, _extract_step_errors) do
+    new_validation_status = case Enum.all?(extract_step_changesets, fn changeset ->
+      step_changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(changeset)
+      step_changeset.valid?
+    end) do
+      true -> "valid"
+      false -> "invalid"
+    end
+    new_validation_status
   end
 end

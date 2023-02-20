@@ -27,39 +27,39 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
       :error -> []
     end
     ~L"""
-    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data] %>
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
 
       <div class="component-edit-section--<%= @visibility %>">
         <div class="extract-auth-step-form-edit-section form-grid">
           <div class="extract-auth-step-form__destination">
-            <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_destination") %>
-            <%= text_input(f, :destination, [class: "input", required: true, id: "#{@id}_destination"]) %>
+            <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_auth_destination") %>
+            <%= text_input(f, :destination, [class: "input", required: true, id: "#{@id}_auth_destination"]) %>
             <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false) %>
           </div>
 
           <div class="extract-auth-step-form__url">
-            <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_url") %>
-            <%= text_input(f, :url, [class: "input full-width", required: true, id: "#{@id}_destination"]) %>
+            <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_auth_url") %>
+            <%= text_input(f, :url, [class: "input full-width", required: true, id: "#{@id}_auth_url"]) %>
             <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
           </div>
 
           <%= live_component(@socket, KeyValueEditor, id: "#{@id}__key_pvalue_editor_headers", css_label: "source-headers", form: f, field: :headers, parent_id: @id, changesets: header_changesets, parent_module: __MODULE__) %>
 
           <div class="extract-auth-step-form__body">
-            <%= label(f, :body, DisplayNames.get(:body), class: "label", for: "#{@id}_body") %>
-            <%= textarea(f, :body, [class: "input full-width", phx_hook: "prettify", id: "#{@id}_body"]) %>
+            <%= label(f, :body, DisplayNames.get(:body), class: "label", for: "#{@id}_auth_body") %>
+            <%= textarea(f, :body, [class: "input full-width", phx_hook: "prettify", id: "#{@id}_auth_body"]) %>
             <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
           </div>
 
           <div class="extract-auth-step-form__path">
-            <%= label(f, :path, DisplayNames.get(:path), class: "label", for: "#{@id}_path") %>
+            <%= label(f, :path, DisplayNames.get(:path), class: "label", for: "#{@id}_auth_path") %>
             <%= text_input(f, :path, [class: "input", value: path_to_string(input_value(f, :path)), required: true, id: "#{@id}_path"]) %>
             <span class="input__help-text">Separate response path keys with a period (.) (e.g. 'data.token' for response {"data": {"token": "abc123"}}) </span>
             <%= ErrorHelpers.error_tag(f, :path, bind_to_input: false) %>
           </div>
 
           <div class="extract-auth-step-form__cacheTtl">
-            <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl), class: "label", for: "#{@id}_cacheTtl") %>
+            <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl), class: "label", for: "#{@id}_auth_cacheTtl") %>
             <%= text_input(f, :cacheTtl, [class: "input", value: milliseconds_to_minutes(input_value(f, :cacheTtl)), required: true, id: "#{@id}_cacheTtl"]) %>
             <span class="input__help-text">Time in minutes that credentials are stored (defaults to 15 minutes)</span>
             <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false) %>
