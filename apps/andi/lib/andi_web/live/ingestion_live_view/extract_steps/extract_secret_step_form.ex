@@ -47,7 +47,8 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    updated_form_data = form_data
+    updated_form_data =
+      form_data
       |> update_key(socket.assigns.id)
       |> update_sub_key()
 
@@ -65,14 +66,17 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   end
 
   def handle_event("save_secret", %{"form_data" => %{"secret_value" => secret_value} = _form_data} = _assigns, socket) do
-    key = case Changeset.fetch_field(socket.assigns.changeset, :sub_key) do
-      {_, key} -> key
-      :error -> ""
-    end
-    path = case Changeset.fetch_field(socket.assigns.changeset, :key) do
-      {_, path} -> path
-      :error -> ""
-    end
+    key =
+      case Changeset.fetch_field(socket.assigns.changeset, :sub_key) do
+        {_, key} -> key
+        :error -> ""
+      end
+
+    path =
+      case Changeset.fetch_field(socket.assigns.changeset, :key) do
+        {_, path} -> path
+        :error -> ""
+      end
 
     case Andi.SecretService.write(path, %{key => secret_value}) do
       {:ok, _} ->

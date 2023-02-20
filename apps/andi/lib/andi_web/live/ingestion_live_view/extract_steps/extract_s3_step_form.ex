@@ -22,10 +22,12 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
   end
 
   def render(assigns) do
-    header_changesets = case Changeset.fetch_change(assigns.changeset, :headers) do
-      {_, header_changesets} -> header_changesets
-      :error -> []
-    end
+    header_changesets =
+      case Changeset.fetch_change(assigns.changeset, :headers) do
+        {_, header_changesets} -> header_changesets
+        :error -> []
+      end
+
     ~L"""
     <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
       <div class="component-edit-section--<%= @visibility %>">
@@ -62,15 +64,18 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
   end
 
   def update(%{field: field, changesets: changesets}, socket) do
-    applied_changes = Enum.map(changesets, fn changeset ->
-      Changeset.apply_changes(changeset)
+    applied_changes =
+      Enum.map(changesets, fn changeset ->
+        Changeset.apply_changes(changeset)
         |> StructTools.to_map()
-    end)
+      end)
+
     changes = %{field => applied_changes}
 
-    extract_step = socket.assigns.changeset
+    extract_step =
+      socket.assigns.changeset
       |> Changeset.delete_change(field)
-      |>  ExtractS3Step.changeset(changes)
+      |> ExtractS3Step.changeset(changes)
 
     AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
 

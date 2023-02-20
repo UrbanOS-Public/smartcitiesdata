@@ -23,6 +23,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
 
   def render(assigns) do
     example_output = get_example_output(assigns.changeset)
+
     ~L"""
     <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
 

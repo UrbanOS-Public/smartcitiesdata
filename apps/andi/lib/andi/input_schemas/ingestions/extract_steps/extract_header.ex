@@ -29,7 +29,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHeader do
       |> Changeset.apply_changes()
       |> StructTools.to_map()
 
-    validated_changeset = changeset
+    validated_changeset =
+      changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
       |> Changeset.validate_required(@required_fields, message: "is required")

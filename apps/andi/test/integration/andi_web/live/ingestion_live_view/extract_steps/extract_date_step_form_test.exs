@@ -8,6 +8,7 @@ defmodule AndiWeb.ExtractDateStepFormTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+
   import FlokiHelpers,
     only: [
       find_elements: 2,
@@ -28,7 +29,14 @@ defmodule AndiWeb.ExtractDateStepFormTest do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
-      date_step = %{context: %{destination: "foo", deltaTimeUnit: "hours", deltaTimeValue: "5", format: "format"}, id: UUID.uuid4(), type: "date", sequence: 0}
+
+      date_step = %{
+        context: %{destination: "foo", deltaTimeUnit: "hours", deltaTimeValue: "5", format: "format"},
+        id: UUID.uuid4(),
+        type: "date",
+        sequence: 0
+      }
+
       ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [date_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
@@ -119,5 +127,4 @@ defmodule AndiWeb.ExtractDateStepFormTest do
       assert get_value(html, "##{date_step.id}_date_delta_time_value") == new_delta_time_value
     end
   end
-
 end

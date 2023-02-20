@@ -19,7 +19,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractSecretStep do
   def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id =
+      StructTools.ensure_id(extract_step, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
 
     extract_step
@@ -32,7 +33,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractSecretStep do
       |> Changeset.apply_changes()
       |> StructTools.to_map()
 
-    validated_extract_step_changeset = extract_step_changeset
+    validated_extract_step_changeset =
+      extract_step_changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @fields, force_changes: true)
       |> Changeset.validate_required(@fields, message: "is required")

@@ -24,8 +24,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
         socket
       ) do
-    default_changeset =
-      Ingestion.changeset(ingestion, %{})
+    default_changeset = Ingestion.changeset(ingestion, %{})
 
     {:ok,
      assign(socket,
@@ -36,7 +35,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        is_curator: is_curator,
        unsaved_changes: false,
        page_error: false,
-       ingestion: ingestion, # DEPRECATED
+       # DEPRECATED
+       ingestion: ingestion,
        save_success: false,
        success_message: "",
        user_id: user_id
@@ -52,11 +52,14 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
-    extract_step_changesets = case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
-      {_, extract_steps} -> extract_steps
-      :error -> []
-    end
-    {_, {extract_step_errors, _}} = Enum.find(Map.get(ingestion_changeset, :errors, []), {"", {"", ""}}, fn {property, _message} -> property == :extractSteps end)
+    extract_step_changesets =
+      case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
+        {_, extract_steps} -> extract_steps
+        :error -> []
+      end
+
+    {_, {extract_step_errors, _}} =
+      Enum.find(Map.get(ingestion_changeset, :errors, []), {"", {"", ""}}, fn {property, _message} -> property == :extractSteps end)
 
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 

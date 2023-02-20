@@ -22,7 +22,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
   def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id =
+      StructTools.ensure_id(extract_step, changes)
       |> scrub_time_value()
 
     extract_step
@@ -36,7 +37,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
       |> StructTools.to_map()
       |> format()
 
-    validated_extract_step_changeset = extract_step_changeset
+    validated_extract_step_changeset =
+      extract_step_changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
       |> Changeset.validate_required(@required_fields, message: "is required")
@@ -45,11 +47,11 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
       |> Changeset.validate_format(:destination, ~r/^[[:alpha:]_]+$/)
       |> validate_timex_format()
 
-      if is_nil(Map.get(validated_extract_step_changeset, :action, nil)) do
-        Map.put(validated_extract_step_changeset, :action, :display_errors)
-      else
-        validated_extract_step_changeset
-      end
+    if is_nil(Map.get(validated_extract_step_changeset, :action, nil)) do
+      Map.put(validated_extract_step_changeset, :action, :display_errors)
+    else
+      validated_extract_step_changeset
+    end
   end
 
   def preload(struct), do: struct
@@ -59,7 +61,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
 
   defp format(changes) do
     changes
-      |> format_format()
+    |> format_format()
   end
 
   defp format_format(%{format: _format} = changes), do: changes
@@ -77,13 +79,15 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
         Changeset.add_error(changeset, :format, err)
     end
   end
+
   defp validate_timex_format(changeset), do: changeset
 
   defp validate_time_unit(%{changes: %{deltaTimeUnit: unit}} = changeset)
        when unit in ["microseconds", "milliseconds", "seconds", "minutes", "hours", "days", "weeks", "months", "years", ""],
        do: changeset
 
-  defp validate_time_unit(%{changes: %{deltaTimeUnit: _unit}} = changeset), do: Changeset.add_error(changeset, :deltaTimeUnit, "invalid time unit")
+  defp validate_time_unit(%{changes: %{deltaTimeUnit: _unit}} = changeset),
+    do: Changeset.add_error(changeset, :deltaTimeUnit, "invalid time unit")
 
   defp validate_time_unit(changeset), do: changeset
 

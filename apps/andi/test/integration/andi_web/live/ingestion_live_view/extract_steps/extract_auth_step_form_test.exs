@@ -8,6 +8,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+
   import FlokiHelpers,
     only: [
       find_elements: 2,
@@ -28,7 +29,14 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
-      auth_step = %{context: %{destination: "foo", url: "bar.com", path: ["path"], cacheTtl: 500}, id: UUID.uuid4(), type: "auth", sequence: 0}
+
+      auth_step = %{
+        context: %{destination: "foo", url: "bar.com", path: ["path"], cacheTtl: 500},
+        id: UUID.uuid4(),
+        type: "auth",
+        sequence: 0
+      }
+
       ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [auth_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)

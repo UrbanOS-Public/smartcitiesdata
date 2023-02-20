@@ -19,11 +19,12 @@ defmodule Andi.InputSchemas.Ingestions.ExtractQueryParam do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(query_param, changes) do
-    changes_with_id = StructTools.ensure_id(query_param, changes)
+    changes_with_id =
+      StructTools.ensure_id(query_param, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
 
     query_param
-      |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [], force_changes: true)
   end
 
   def validate(changeset) do
@@ -32,7 +33,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractQueryParam do
       |> Changeset.apply_changes()
       |> StructTools.to_map()
 
-    validated_changeset = changeset
+    validated_changeset =
+      changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
       |> Changeset.validate_required(@required_fields, message: "is required")

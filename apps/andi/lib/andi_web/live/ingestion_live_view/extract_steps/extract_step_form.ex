@@ -92,8 +92,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     new_changeset = ExtractStep.changeset(%ExtractStep{}, new_step_changes)
 
-    new_extract_step_changesets =
-      [new_changeset | socket.assigns.extract_step_changesets] |> StructTools.sort_if_sequenced()
+    new_extract_step_changesets = [new_changeset | socket.assigns.extract_step_changesets] |> StructTools.sort_if_sequenced()
 
     send(self(), {:update_all_extract_steps, new_extract_step_changesets})
     {:noreply, socket}
@@ -106,7 +105,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
       ) do
     move_index = String.to_integer(move_index_string)
 
-    changeset_to_update = Enum.find(socket.assigns.extract_step_changesets, fn changeset ->
+    changeset_to_update =
+      Enum.find(socket.assigns.extract_step_changesets, fn changeset ->
         changeset_id =
           case Changeset.fetch_field(changeset, :id) do
             {_, id} -> id
@@ -116,29 +116,33 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         changeset_id == extract_step_id
       end)
 
-    changeset_sequence = case Changeset.fetch_field(changeset_to_update, :sequence) do
-      {_, sequence} -> sequence
-      :error -> 0
-    end
+    changeset_sequence =
+      case Changeset.fetch_field(changeset_to_update, :sequence) do
+        {_, sequence} -> sequence
+        :error -> 0
+      end
+
     new_index = changeset_sequence + move_index
 
     if new_index >= 0 and new_index < length(socket.assigns.extract_step_changesets) do
-      sorted_changesets = socket.assigns.extract_step_changesets
+      sorted_changesets =
+        socket.assigns.extract_step_changesets
         |> sort_by_sequence()
 
       {extract_step_to_move, remaining_list} = List.pop_at(sorted_changesets, changeset_sequence)
 
-      updated_extract_step_changesets = List.insert_at(remaining_list, new_index, extract_step_to_move)
-      |> Enum.with_index()
-      |> Enum.map(fn {changeset, index} ->
-        ExtractStep.changeset(changeset, %{sequence: index})
-      end)
+      updated_extract_step_changesets =
+        List.insert_at(remaining_list, new_index, extract_step_to_move)
+        |> Enum.with_index()
+        |> Enum.map(fn {changeset, index} ->
+          ExtractStep.changeset(changeset, %{sequence: index})
+        end)
 
       send(self(), {:update_all_extract_steps, updated_extract_step_changesets})
     end
+
     {:noreply, socket}
   end
-
 
   def handle_event("remove-extract-step", %{"id" => extract_step_id}, socket) do
     element_to_delete =
@@ -152,8 +156,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         changeset_id == extract_step_id
       end)
 
-    new_extract_step_changesets =
-      List.delete(socket.assigns.extract_step_changesets, element_to_delete)
+    new_extract_step_changesets = List.delete(socket.assigns.extract_step_changesets, element_to_delete)
 
     send(self(), {:update_all_extract_steps, new_extract_step_changesets})
     {:noreply, socket}
@@ -187,7 +190,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   def update_test_url(step_id) do
     send_update(__MODULE__,
       id: component_id(),
-      step_id: step_id)
+      step_id: step_id
+    )
   end
 
   def change_visibility(updated_visibility) do
@@ -219,12 +223,14 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   end
 
   def update(%{step_id: step_id}, socket) do
-    compiled_steps = Enum.reduce(socket.assigns.extract_step_changesets, %{}, fn extract_step, acc ->
-      extract_step
+    compiled_steps =
+      Enum.reduce(socket.assigns.extract_step_changesets, %{}, fn extract_step, acc ->
+        extract_step
         |> Changeset.apply_changes()
         |> AtomicMap.convert(underscore: true)
         |> process_extract_step(socket.assigns.ingestion_id, acc)
-    end)
+      end)
+
     AndiWeb.ExtractSteps.ExtractHttpStepForm.update_test_url(compiled_steps, step_id)
     {:ok, socket}
   end
@@ -310,13 +316,15 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   defp get_validation_status(_extract_step_changesets, extract_step_errors) when extract_step_errors != "", do: "invalid"
 
   defp get_validation_status(extract_step_changesets, _extract_step_errors) do
-    new_validation_status = case Enum.all?(extract_step_changesets, fn changeset ->
-      step_changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(changeset)
-      step_changeset.valid?
-    end) do
-      true -> "valid"
-      false -> "invalid"
-    end
+    new_validation_status =
+      case Enum.all?(extract_step_changesets, fn changeset ->
+             step_changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(changeset)
+             step_changeset.valid?
+           end) do
+        true -> "valid"
+        false -> "invalid"
+      end
+
     new_validation_status
   end
 end

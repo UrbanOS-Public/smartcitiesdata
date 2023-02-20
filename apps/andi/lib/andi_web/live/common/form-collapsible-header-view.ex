@@ -12,7 +12,7 @@ defmodule AndiWeb.FormCollapsibleHeader do
   end
 
   def render(assigns) do
-    { visible, action } = if assigns.visible?, do: {"expanded", "MINIMIZE"}, else: {"collapsed", "EDIT"}
+    {visible, action} = if assigns.visible?, do: {"expanded", "MINIMIZE"}, else: {"collapsed", "EDIT"}
 
     ~L"""
     <div class="component-header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">

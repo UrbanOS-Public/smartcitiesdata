@@ -99,11 +99,12 @@ defmodule Andi.InputSchemas.Ingestion do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
     source_format = Map.get(changes, :sourceFormat, nil)
 
-    new_ingestion = ingestion
-    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
-    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    new_ingestion =
+      ingestion
+      |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -153,13 +154,14 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def merge_extract_step_changeset(
-    %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
-    extract_step_changesets
-  ) do
-    extract_step_changeset_list = Enum.reduce(extract_step_changesets, [], fn extract_step_changeset, acc ->
-      extract_step_changes = StructTools.to_map(Changeset.apply_changes(extract_step_changeset))
-      [extract_step_changes | acc]
-    end)
+        %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+        extract_step_changesets
+      ) do
+    extract_step_changeset_list =
+      Enum.reduce(extract_step_changesets, [], fn extract_step_changeset, acc ->
+        extract_step_changes = StructTools.to_map(Changeset.apply_changes(extract_step_changeset))
+        [extract_step_changes | acc]
+      end)
 
     cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :extractSteps)
 
@@ -215,7 +217,8 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   defp validate_extract_steps(changeset) do
-    extract_steps = Changeset.get_field(changeset, :extractSteps)
+    extract_steps =
+      Changeset.get_field(changeset, :extractSteps)
       |> StructTools.sort_if_sequenced()
 
     case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do

@@ -38,11 +38,11 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
       |> StructTools.to_map()
 
     extract_step_changeset
-      |> Map.replace(:errors, [])
-      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
-      |> Changeset.validate_required(@required_fields, message: "is required")
-      |> validate_type()
-      |> validate_context()
+    |> Map.replace(:errors, [])
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.validate_required(@required_fields, message: "is required")
+    |> validate_type()
+    |> validate_context()
   end
 
   def changeset_for_draft(extract_step, changes) do
@@ -79,11 +79,12 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
     step_module = step_module(type)
 
-    {:ok, changes} = Changeset.fetch_change(changeset, :context)
+    {:ok, changes} =
+      Changeset.fetch_change(changeset, :context)
       |> StructTools.to_map()
 
     step_module.changeset(step_module.get_module(), changes)
-      |> step_module.validate()
+    |> step_module.validate()
   end
 
   def preload(struct), do: StructTools.preload(struct, [])
@@ -105,8 +106,11 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
       end
 
     case step_module(type) do
-      :invalid_type -> changeset
-      nil -> changeset
+      :invalid_type ->
+        changeset
+
+      nil ->
+        changeset
 
       step_module ->
         context =
@@ -114,7 +118,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
             {_, context} -> context
             :error -> nil
           end
-        validated_changeset = step_module.changeset(step_module.get_module(), context)
+
+        validated_changeset =
+          step_module.changeset(step_module.get_module(), context)
           |> step_module.validate()
 
         Enum.reduce(validated_changeset.errors, changeset, fn {key, {message, _}}, acc ->

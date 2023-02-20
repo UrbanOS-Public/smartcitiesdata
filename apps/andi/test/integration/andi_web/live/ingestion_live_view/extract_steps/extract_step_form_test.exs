@@ -8,6 +8,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+
   import FlokiHelpers,
     only: [
       find_elements: 2,
@@ -26,6 +27,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
   setup %{conn: conn} do
     dataset = TDG.create_dataset(%{name: "sample_dataset"})
+
     http_extract_step = %{
       type: "http",
       id: UUID.uuid4(),
@@ -45,7 +47,14 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
         format: "{ISO:Extended}"
       }
     }
-    ingestion = TDG.create_ingestion(%{id: UUID.uuid4(), targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [date_extract_step, http_extract_step]})
+
+    ingestion =
+      TDG.create_ingestion(%{
+        id: UUID.uuid4(),
+        targetDataset: dataset.id,
+        name: "sample_ingestion",
+        extractSteps: [date_extract_step, http_extract_step]
+      })
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -66,8 +75,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
   test "when the add step button is pressed, a new step is rendered", %{view: view, ingestion: ingestion} do
     view
-      |> form("#extract_addition_form", form: %{"step_type" => "http"})
-      |> render_submit()
+    |> form("#extract_addition_form", form: %{"step_type" => "http"})
+    |> render_submit()
 
     html = render(view)
     assert find_elements(html, ".extract-step-container") |> Enum.count() == 3
@@ -77,9 +86,10 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     extract_step = Enum.find(ingestion.extractSteps, fn extract_step -> extract_step.type == "http" end)
 
     form_data = %{"url" => ""}
+
     view
-      |> form("##{extract_step.id}", form_data: form_data)
-      |> render_change()
+    |> form("##{extract_step.id}", form_data: form_data)
+    |> render_change()
 
     html = render(view)
     assert not Enum.empty?(find_elements(html, ".component-number--invalid"))
@@ -89,31 +99,35 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     extract_step = Enum.find(ingestion.extractSteps, fn extract_step -> extract_step.type == "date" end)
 
     form_data = %{"destination" => ""}
+
     view
-      |> form("##{extract_step.id}", form_data: form_data)
-      |> render_change()
+    |> form("##{extract_step.id}", form_data: form_data)
+    |> render_change()
 
     html = render(view)
     assert not Enum.empty?(find_elements(html, ".component-number--invalid"))
   end
 
   test "given a previously invalid extract step, and it's made valid, the section shows a valid status", %{
-    ingestion: ingestion, view: view
+    ingestion: ingestion,
+    view: view
   } do
     extract_step = Enum.find(ingestion.extractSteps, fn extract_step -> extract_step.type == "http" end)
 
     form_data = %{"url" => ""}
+
     view
-      |> form("##{extract_step.id}", form_data: form_data)
-      |> render_change()
+    |> form("##{extract_step.id}", form_data: form_data)
+    |> render_change()
 
     html = render(view)
     assert not Enum.empty?(find_elements(html, ".component-number--invalid"))
 
     form_data = %{"action" => "GET", "url" => "http://bob.com"}
+
     view
-      |> form("##{extract_step.id}", form_data: form_data)
-      |> render_change()
+    |> form("##{extract_step.id}", form_data: form_data)
+    |> render_change()
 
     html = render(view)
     assert not Enum.empty?(find_elements(html, ".component-number--valid"))
@@ -149,7 +163,9 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
         format: "{ISO:Extended}"
       }
     }
-    ingestion = TDG.create_ingestion(%{id: UUID.uuid4(), targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [date_extract_step]})
+
+    ingestion =
+      TDG.create_ingestion(%{id: UUID.uuid4(), targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [date_extract_step]})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -167,9 +183,10 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     assert not Enum.empty?(find_elements(html, ".component-number-status--valid"))
 
     form_data = %{step_type: "date"}
+
     view
-      |> form("#extract_addition_form", form: form_data)
-      |> render_submit()
+    |> form("#extract_addition_form", form: form_data)
+    |> render_submit()
 
     html = render(view)
 

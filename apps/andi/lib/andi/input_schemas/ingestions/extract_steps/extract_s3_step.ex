@@ -21,21 +21,23 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3Step do
   def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id =
+      StructTools.ensure_id(extract_step, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
 
     extract_step
-      |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
-      |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+    |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
   end
 
   def validate(extract_step_changeset) do
     data_as_changes =
       extract_step_changeset
-        |> Changeset.apply_changes()
-        |> StructTools.to_map()
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
 
-    validated_extract_step_changeset = extract_step_changeset
+    validated_extract_step_changeset =
+      extract_step_changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
       |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
@@ -60,13 +62,15 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3Step do
   def preload(struct), do: StructTools.preload(struct, [:headers])
 
   defp validate_headers(changeset) do
-    headers = case Changeset.fetch_field(changeset, :headers) do
-      {_, headers} -> headers
-      :error -> []
-    end
+    headers =
+      case Changeset.fetch_field(changeset, :headers) do
+        {_, headers} -> headers
+        :error -> []
+      end
 
     Enum.reduce(headers, changeset, fn header, acc ->
-      validated_header_changeset = ExtractHeader.changeset(header, %{})
+      validated_header_changeset =
+        ExtractHeader.changeset(header, %{})
         |> ExtractHeader.validate()
 
       Enum.reduce(validated_header_changeset.errors, acc, fn {_key, {message, _}}, error_acc ->

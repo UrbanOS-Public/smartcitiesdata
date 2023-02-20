@@ -25,7 +25,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
   def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+    changes_with_id =
+      StructTools.ensure_id(extract_step, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
       |> format()
 
@@ -41,7 +42,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
       |> StructTools.to_map()
       |> format()
 
-    validated_extract_step_changeset = extract_step_changeset
+    validated_extract_step_changeset =
+      extract_step_changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
       |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
@@ -62,8 +64,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
 
   defp format(changes) do
     changes
-      |> format_cache_ttl()
-      |> format_path()
+    |> format_cache_ttl()
+    |> format_path()
   end
 
   defp format_cache_ttl(%{cacheTtl: form_cache_ttl} = changes) when is_binary(form_cache_ttl) do
@@ -72,6 +74,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
       false -> changes
     end
   end
+
   defp format_cache_ttl(%{cacheTtl: nil} = changes), do: changes
   defp format_cache_ttl(changes), do: changes
 
@@ -102,13 +105,15 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
   defp validate_path(changeset), do: changeset
 
   defp validate_headers(changeset) do
-    headers = case Changeset.fetch_field(changeset, :headers) do
-      {_, headers} -> headers
-      :error -> []
-    end
+    headers =
+      case Changeset.fetch_field(changeset, :headers) do
+        {_, headers} -> headers
+        :error -> []
+      end
 
     Enum.reduce(headers, changeset, fn header, acc ->
-      validated_header_changeset = ExtractHeader.changeset(header, %{})
+      validated_header_changeset =
+        ExtractHeader.changeset(header, %{})
         |> ExtractHeader.validate()
 
       Enum.reduce(validated_header_changeset.errors, acc, fn {_key, {message, _}}, error_acc ->

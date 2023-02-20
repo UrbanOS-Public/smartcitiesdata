@@ -48,8 +48,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
 
     new_changeset = KeyValueFormSchema.changeset(%KeyValueFormSchema{}, new_field_changes)
 
-    new_changesets =
-      socket.assigns.changesets ++ [new_changeset]
+    new_changesets = socket.assigns.changesets ++ [new_changeset]
 
     socket.assigns.parent_module.update_key_value(socket.assigns.field, new_changesets, socket.assigns.parent_id)
 
@@ -68,8 +67,7 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
         changeset_id == id
       end)
 
-    new_changesets =
-      List.delete(socket.assigns.changesets, element_to_delete)
+    new_changesets = List.delete(socket.assigns.changesets, element_to_delete)
 
     socket.assigns.parent_module.update_key_value(socket.assigns.field, new_changesets, socket.assigns.parent_id)
 

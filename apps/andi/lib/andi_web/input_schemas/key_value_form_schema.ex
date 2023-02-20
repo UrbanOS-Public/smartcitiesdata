@@ -18,10 +18,11 @@ defmodule AndiWeb.InputSchemas.KeyValueFormSchema do
   use Accessible
 
   def changeset(changeset, changes) do
-    changes_with_id = StructTools.ensure_id(changeset, changes)
+    changes_with_id =
+      StructTools.ensure_id(changeset, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
 
     changeset
-      |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
   end
 end

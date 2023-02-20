@@ -30,14 +30,18 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def render(assigns) do
-    header_changesets = case Changeset.fetch_change(assigns.changeset, :headers) do
-      {_, header_changesets} -> header_changesets
-      :error -> []
-    end
-    query_param_changesets = case Changeset.fetch_change(assigns.changeset, :queryParams) do
-      {_, query_param_changesets} -> query_param_changesets
-      :error -> []
-    end
+    header_changesets =
+      case Changeset.fetch_change(assigns.changeset, :headers) do
+        {_, header_changesets} -> header_changesets
+        :error -> []
+      end
+
+    query_param_changesets =
+      case Changeset.fetch_change(assigns.changeset, :queryParams) do
+        {_, query_param_changesets} -> query_param_changesets
+        :error -> []
+      end
+
     ~L"""
       <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
         <div class="component-edit-section--<%= @visibility %>">
@@ -88,7 +92,6 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     """
   end
 
-
   def handle_event("validate", %{"form_data" => form_data}, socket) do
     extract_step = ExtractHttpStep.changeset(socket.assigns.changeset, form_data)
 
@@ -117,13 +120,16 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def update(%{field: field, changesets: changesets}, socket) do
-    applied_changes = Enum.map(changesets, fn changeset ->
-      Changeset.apply_changes(changeset)
+    applied_changes =
+      Enum.map(changesets, fn changeset ->
+        Changeset.apply_changes(changeset)
         |> StructTools.to_map()
-    end)
+      end)
+
     changes = %{field => applied_changes}
 
-    extract_step = socket.assigns.changeset
+    extract_step =
+      socket.assigns.changeset
       |> Changeset.delete_change(field)
       |> ExtractHttpStep.changeset(changes)
 
@@ -133,13 +139,16 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def update(%{compiled_steps: compiled_steps}, socket) do
-    headers = fetch_changeset_field(socket.assigns.changeset, :headers, [])
+    headers =
+      fetch_changeset_field(socket.assigns.changeset, :headers, [])
       |> UrlBuilder.safe_evaluate_parameters(compiled_steps)
 
-    query_params = fetch_changeset_field(socket.assigns.changeset, :queryParams, [])
+    query_params =
+      fetch_changeset_field(socket.assigns.changeset, :queryParams, [])
       |> UrlBuilder.safe_evaluate_parameters(compiled_steps)
 
-    url = fetch_changeset_field(socket.assigns.changeset, :url, "")
+    url =
+      fetch_changeset_field(socket.assigns.changeset, :url, "")
       |> String.split("?")
       |> hd()
       |> UrlBuilder.build_safe_url_path(compiled_steps)
@@ -166,6 +175,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   defp status_class(%{status: _}), do: "test-status__code--bad"
 
   defp status_tooltip(%{status: status}) when status in 200..399, do: status_tooltip(%{status: status}, "shown")
+
   defp status_tooltip(%{status: status}, modifier \\ "shown") do
     assigns = %{
       description: HttpStatusDescriptions.get(status),
