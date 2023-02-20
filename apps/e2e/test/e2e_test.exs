@@ -12,6 +12,7 @@ defmodule E2ETest do
   import SmartCity.TestHelper
   @brokers Application.get_env(:e2e, :elsa_brokers)
   @overrides %{
+    id: nil,
     technical: %{
       orgName: "end_to",
       dataName: "end",
@@ -29,8 +30,15 @@ defmodule E2ETest do
   }
 
   @streaming_overrides %{
-    id: "strimmin",
+    id: nil,
     technical: %{
+      schema: [
+        %{name: "one", type: "boolean"},
+        %{name: "two", type: "string"},
+        %{name: "three", type: "integer"},
+        %{name: "parsed", type: "string"}
+      ],
+      sourceUrl: "http://example.com",
       dataName: "strimmin",
       orgName: "usa",
       cadence: "*/10 * * * * *",
@@ -58,97 +66,7 @@ defmodule E2ETest do
       Plug.Conn.resp(conn, 200, shapefile)
     end)
 
-    dataset =
-      @overrides
-      |> TDG.create_dataset()
-
-    streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
-
-    ingest_regex_transformation =
-      TDG.create_transformation(%{
-        name: "Ingest Transformation",
-        type: "regex_extract",
-        sequence: 1,
-        parameters: %{
-          :sourceField => "two",
-          :targetField => "parsed",
-          :regex => "^f(\\w{2})bar"
-        }
-      })
-
-    streaming_regex_transformation =
-      TDG.create_transformation(%{
-        name: "Streaming Transformation",
-        type: "regex_extract",
-        sequence: 1,
-        parameters: %{
-          :sourceField => "two",
-          :targetField => "parsed",
-          :regex => "^f(\\w{2})bar"
-        }
-      })
-
-    ingestion =
-      TDG.create_ingestion(%{
-        targetDataset: nil,
-        cadence: "once",
-        schema: [
-          %{name: "one", type: "boolean"},
-          %{name: "two", type: "string"},
-          %{name: "three", type: "integer"}
-        ],
-        sourceFormat: "text/csv",
-        topLevelSelector: nil,
-        extractSteps: [
-          %{
-            type: "http",
-            context: %{
-              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
-              action: "GET",
-              queryParams: %{},
-              headers: %{},
-              protocol: nil,
-              body: %{}
-            },
-            assigns: %{}
-          }
-        ],
-        transformations: [ingest_regex_transformation]
-      })
-
-    streaming_ingestion =
-      TDG.create_ingestion(%{
-        targetDataset: nil,
-        cadence: "*/10 * * * * *",
-        schema: [
-          %{name: "one", type: "boolean"},
-          %{name: "two", type: "string"},
-          %{name: "three", type: "integer"}
-        ],
-        sourceFormat: "text/csv",
-        topLevelSelector: nil,
-        extractSteps: [
-          %{
-            type: "http",
-            context: %{
-              url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
-              action: "GET",
-              queryParams: %{},
-              headers: %{},
-              protocol: nil,
-              body: %{}
-            },
-            assigns: %{}
-          }
-        ],
-        transformations: [streaming_regex_transformation]
-      })
-
     [
-      dataset: dataset,
-      ingestion: ingestion,
-      streaming_dataset: streaming_dataset,
-      streaming_ingestion: streaming_ingestion,
       bypass: bypass
     ]
   end
@@ -178,13 +96,22 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    test "via RESTful PUT", %{dataset: ds} do
+    test "via RESTful PUT" do
+      dataset =
+        @overrides
+        |> TDG.create_dataset()
+
       resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset), [
           {"Content-Type", "application/json"}
         ])
 
+      body = resp.body |> Jason.decode!()
       assert resp.status_code == 201
+
+      dataset_with_id = Map.put(dataset, :id, body["id"])
+
+      [dataset: dataset_with_id]
     end
 
     test "creates a PrestoDB table" do
@@ -225,25 +152,57 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    setup %{ingestion: ingestion, dataset: dataset} do
-      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      datasets = Jason.decode(resp.body)
-      dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+    test "via RESTful PUT", %{dataset: dataset} do
+      ingest_regex_transformation =
+        TDG.create_transformation(%{
+          name: "Ingest Transformation",
+          type: "regex_extract",
+          sequence: 1,
+          parameters: %{
+            :sourceField => "two",
+            :targetField => "parsed",
+            :regex => "^f(\\w{2})bar"
+          }
+        })
 
-      target_dataset_id = %{targetDataset: dataset_id}
-      ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
+      ingestion =
+        TDG.create_ingestion(%{
+          targetDataset: dataset.id,
+          cadence: "once",
+          schema: [
+            %{name: "one", type: "boolean"},
+            %{name: "two", type: "string"},
+            %{name: "three", type: "integer"}
+          ],
+          sourceFormat: "text/csv",
+          topLevelSelector: nil,
+          extractSteps: [
+            %{
+              type: "http",
+              context: %{
+                url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                action: "GET",
+                queryParams: %{},
+                headers: %{},
+                protocol: nil,
+                body: %{}
+              },
+              assigns: %{}
+            }
+          ],
+          transformations: [ingest_regex_transformation]
+        })
 
-      [ingestion: ingestion_with_dataset_id, dataset: dataset_with_id]
-    end
-
-    test "via RESTful PUT", %{ingestion: ingestion, dataset_id: dataset_id} do
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
           {"Content-Type", "application/json"}
         ])
 
       assert resp.status_code == 201
+
+      ingestion_with_id = Map.put(ingestion, :id, body["id"])
+
+      [ingestion: ingestion_with_id]
     end
 
     test "stores a definition that can be retrieved", %{ingestion: expected} do
@@ -355,34 +314,79 @@ defmodule E2ETest do
   end
 
   describe "streaming data" do
-    setup %{streaming_ingestion: ingestion, streaming_dataset: dataset} do
-      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      datasets = Jason.decode(resp.body)
-      dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+    test "creating a dataset via RESTful PUT" do
+      dataset =
+        @streaming_overrides
+        |> TDG.create_dataset()
 
-      target_dataset_id = %{targetDataset: dataset_id}
-      ingestion_with_dataset_id = SmartCity.Helpers.deep_merge(ingestion, target_dataset_id)
-
-      [streaming_ingestion: ingestion_with_dataset_id, streaming_dataset: dataset_with_id]
-    end
-
-    test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
       resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset), [
           {"Content-Type", "application/json"}
         ])
 
+      body = resp.body |> Jason.decode!()
       assert resp.status_code == 201
+
+      dataset_with_id = Map.put(dataset, :id, body["id"])
+
+      [streaming_dataset: dataset_with_id]
     end
 
-    test "creating an ingestion via RESTful PUT", %{streaming_ingestion: ingestion} do
+    test "creating an ingestion via RESTful PUT", %{streaming_dataset: dataset} do
+      streaming_regex_transformation =
+        TDG.create_transformation(%{
+          name: "Streaming Transformation",
+          type: "regex_extract",
+          sequence: 1,
+          parameters: %{
+            :sourceField => "two",
+            :targetField => "parsed",
+            :regex => "^f(\\w{2})bar"
+          }
+        })
+
+      streaming_ingestion =
+        TDG.create_ingestion(%{
+          targetDataset: dataset.id,
+          cadence: "*/10 * * * * *",
+          schema: [
+            %{name: "one", type: "boolean"},
+            %{name: "two", type: "string"},
+            %{name: "three", type: "integer"}
+          ],
+          sourceFormat: "text/csv",
+          topLevelSelector: nil,
+          extractSteps: [
+            %{
+              type: "http",
+              context: %{
+                url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                action: "GET",
+                queryParams: %{},
+                headers: %{},
+                protocol: nil,
+                body: %{}
+              },
+              assigns: %{}
+            }
+          ],
+          transformations: [streaming_regex_transformation]
+        })
+
       resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-          {"Content-Type", "application/json"}
-        ])
+        HTTPoison.put!(
+          "http://localhost:4000/api/v1/ingestion",
+          Jason.encode!(streaming_ingestion),
+          [
+            {"Content-Type", "application/json"}
+          ]
+        )
 
       assert resp.status_code == 201
+
+      ingestion_with_id = Map.put(streaming_ingestion, :id, body["id"])
+
+      [streaming_ingestion: ingestion_with_id]
     end
 
     test "is written by reaper", %{streaming_ingestion: ingestion} do
@@ -484,10 +488,19 @@ defmodule E2ETest do
 
   describe "extract steps" do
     setup %{dataset: dataset} do
-      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      datasets = Jason.decode(resp.body)
-      dataset_id = get_in(dataset, "id")
-      dataset_with_id = SmartCity.Helpers.deep_merge(dataset, %{id: dataset_id})
+      dataset =
+        @overrides
+        |> TDG.create_dataset()
+
+      resp =
+        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset), [
+          {"Content-Type", "application/json"}
+        ])
+
+      body = resp.body |> Jason.decode!()
+      assert resp.status_code == 201
+
+      dataset_with_id = Map.put(dataset, :id, body["id"])
 
       [dataset: dataset_with_id]
     end
