@@ -152,7 +152,7 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{dataset: dataset} do
+    test "via RESTful PUT", %{dataset: dataset, bypass: bypass} do
       ingest_regex_transformation =
         TDG.create_transformation(%{
           name: "Ingest Transformation",
@@ -200,7 +200,7 @@ defmodule E2ETest do
 
       assert resp.status_code == 201
 
-      ingestion_with_id = Map.put(ingestion, :id, body["id"])
+      ingestion_with_id = Map.put(ingestion, :id, resp.body["id"])
 
       [ingestion: ingestion_with_id]
     end
@@ -332,7 +332,7 @@ defmodule E2ETest do
       [streaming_dataset: dataset_with_id]
     end
 
-    test "creating an ingestion via RESTful PUT", %{streaming_dataset: dataset} do
+    test "creating an ingestion via RESTful PUT", %{streaming_dataset: dataset, bypass: bypass} do
       streaming_regex_transformation =
         TDG.create_transformation(%{
           name: "Streaming Transformation",
@@ -384,7 +384,7 @@ defmodule E2ETest do
 
       assert resp.status_code == 201
 
-      ingestion_with_id = Map.put(streaming_ingestion, :id, body["id"])
+      ingestion_with_id = Map.put(streaming_ingestion, :id, resp.body["id"])
 
       [streaming_ingestion: ingestion_with_id]
     end
