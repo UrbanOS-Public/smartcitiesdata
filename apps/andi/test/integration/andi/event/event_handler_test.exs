@@ -2,6 +2,7 @@ defmodule Andi.Event.EventHandlerTest do
   use ExUnit.Case
   use Andi.DataCase
   use Placebo
+  use Properties, otp_app: :andi
 
   import SmartCity.TestHelper
   import SmartCity.Event
@@ -12,18 +13,20 @@ defmodule Andi.Event.EventHandlerTest do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Datasets
   alias Andi.DatasetCache
+  alias DeadLetter
+  alias Andi.InputSchemas.Ingestions
+  alias Andi.Services.IngestionStore
 
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
+  getter(:kafka_broker, generic: true)
 
   describe "Dataset Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
 
       id_for_invalid_dataset = UUID.uuid4()
-      dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
-      invalid_technical = dataset.technical |> Map.put(:orgId)
-      invalid_dataset = dataset |> Map.put(:technical, invalid_technical) |> IO.inspect(label: "RYAN - invalid dataset")
-      allow(DatasetCache.add_dataset_info(invalid_dataset), exec: &String.upcase/1)
+      invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
+      allow(DatasetCache.add_dataset_info(invalid_dataset), exec: fn _nh -> raise "nope" end)
 
       id = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id})
@@ -36,9 +39,85 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == valid_dataset.id
 
-        assert invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
+        invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
         assert invalid_dataset_from_ecto == nil
-      end)
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
+            actual["dataset_id"] == id_for_invalid_dataset
+          end)
+
+        assert 1 == length(failed_messages)
+        end)
+    end
+  end
+
+  describe "Ingestion Update" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      id_for_invalid_ingestion = UUID.uuid4()
+      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
+      allow(IngestionStore.create_ingestion(invalid_ingestion), exec: fn _nh -> raise "nope" end)
+
+      id = UUID.uuid4()
+      valid_ingestion = TDG.create_ingestion(%{id: id, targetDataset: dataset.id})
+
+      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
+      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
+
+      eventually(fn ->
+        valid_ingestion_from_ecto = Ingestions.get(id)
+        assert valid_ingestion_from_ecto != nil
+        assert valid_ingestion_from_ecto.id == valid_ingestion.id
+
+        invalid_ingestion_from_ecto = Ingestions.get(id_for_invalid_ingestion)
+        assert invalid_ingestion_from_ecto == nil
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
+            actual["ingestion_id"] == id_for_invalid_ingestion
+          end)
+
+        assert 1 == length(failed_messages)
+        end)
+    end
+  end
+
+  describe "Ingestion Delete" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      id_for_invalid_ingestion = UUID.uuid4()
+      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
+      allow(IngestionStore.delete(id_for_invalid_ingestion), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, ingestion_delete(), __MODULE__, invalid_ingestion)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
+            actual["ingestion_id"] == id_for_invalid_ingestion
+          end)
+
+        assert 1 == length(failed_messages)
+        end)
     end
   end
 
