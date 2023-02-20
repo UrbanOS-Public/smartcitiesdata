@@ -1,6 +1,9 @@
 defmodule Andi.Event.EventHandler do
   @moduledoc "Event Handler for event stream"
+  alias DeadLetter
+
   use Brook.Event.Handler
+
   require Logger
 
   import SmartCity.Event,
@@ -44,17 +47,27 @@ defmodule Andi.Event.EventHandler do
 
     Datasets.update(data)
     DatasetStore.update(data)
+    IO.inspect("FINISHED", label: "RYAN - FINISHED")
+    :ok
   end
 
   def handle_event(%Brook.Event{type: ingestion_update(), data: %Ingestion{} = data, author: author}) do
     ingestion_update()
     |> add_event_count(author, data.id)
 
+    0/0
+
     data
     |> Map.put(:ingestionTime, %{ingestionTime: DateTime.to_iso8601(DateTime.utc_now())})
     |> Ingestions.update()
 
     IngestionStore.update(data)
+
+  rescue
+    _e ->
+      Logger.error("Message failed to process.")
+      DeadLetter.process("DatasetIDHere", "IngestionIDHere", "ValueHere", "Andi", reason: "For Science")
+      :discard
   end
 
   def handle_event(%Brook.Event{

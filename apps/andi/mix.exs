@@ -45,6 +45,7 @@ defmodule Andi.MixProject do
       {:credo, "~> 1.0", runtime: false},
       {:crontab, "~> 1.1"},
       {:css_colors, "~> 0.2.2"},
+      {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},

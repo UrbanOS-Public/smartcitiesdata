@@ -1,17 +1,46 @@
 defmodule Andi.Event.EventHandlerTest do
   use ExUnit.Case
   use Andi.DataCase
+  use Placebo
 
   import SmartCity.TestHelper
-  import SmartCity.Event, only: [user_login: 0, user_organization_associate: 0]
+  import SmartCity.Event
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Schemas.User
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.Datasets
+  alias Andi.DatasetCache
 
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
+
+  describe "Dataset Update" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+
+      id_for_invalid_dataset = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
+      invalid_technical = dataset.technical |> Map.put(:orgId)
+      invalid_dataset = dataset |> Map.put(:technical, invalid_technical) |> IO.inspect(label: "RYAN - invalid dataset")
+      allow(DatasetCache.add_dataset_info(invalid_dataset), exec: &String.upcase/1)
+
+      id = UUID.uuid4()
+      valid_dataset = TDG.create_dataset(%{id: id})
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == valid_dataset.id
+
+        assert invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
+        assert invalid_dataset_from_ecto == nil
+      end)
+    end
+  end
 
   describe "#{user_organization_associate()}" do
     setup do
