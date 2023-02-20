@@ -19,7 +19,7 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset disable" do
     test "sends dataset:disable event" do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      {:ok, response} = create(dataset)
+      {:ok, response} = create(%{dataset | id: nil})
       body = response.body |> Jason.decode!()
 
       eventually(fn ->
@@ -45,13 +45,13 @@ defmodule Andi.DatasetControllerTest do
   describe "dataset delete" do
     test "sends dataset:delete event" do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      {:ok, response} = create(dataset)
+      {:ok, response} = create(%{dataset | id: nil})
       body = response.body |> Jason.decode!()
 
       eventually(fn ->
         {:ok, value} = DatasetStore.get(body["id"])
         assert Andi.Schemas.AuditEvents.get_all_by_event_id(body["id"]) != []
-        assert !is_nil(value)
+        assert value != nil
       end)
 
       post("/api/v1/dataset/delete", %{id: body["id"]} |> Jason.encode!(), headers: [{"content-type", "application/json"}])
@@ -131,7 +131,7 @@ defmodule Andi.DatasetControllerTest do
 
       assert {:ok, %{status: 201, body: body}} = create(request)
       response = Jason.decode!(body)
-      IO.inspect(response, label: "response")
+
       eventually(fn ->
         assert DatasetStore.get(response["id"]) != {:ok, nil}
       end)
@@ -233,8 +233,7 @@ defmodule Andi.DatasetControllerTest do
         TDG.create_dataset(
           technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "example.com"}}], dataName: "my_little_dataset"}
         )
-        |> struct_to_map_with_string_keys()
-        |> put_in(["business", "modifiedDate"], "badDate")
+        |> put_in([:business, :modifiedDate], "badDate")
 
       {:ok, %{status: 400, body: body}} = create(%SmartCity.Dataset{new_dataset | id: nil})
 
@@ -271,7 +270,7 @@ defmodule Andi.DatasetControllerTest do
           ["technical", "private"]
         ])
 
-      {:ok, %{status: 400, body: body}} = create(new_dataset)
+      {:ok, %{status: 400, body: body}} = create(%{new_dataset | "id" => nil})
 
       actual_errors =
         Jason.decode!(body)
@@ -353,7 +352,7 @@ defmodule Andi.DatasetControllerTest do
       new_dataset =
         TDG.create_dataset(%{technical: %{extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}]}})
 
-      {_, new_dataset} = pop_in(new_dataset, ["id"])
+      {_, new_dataset} = pop_in(new_dataset, [:id])
 
       {:ok, %{status: 201, body: body}} = create(new_dataset)
       response = Jason.decode!(body)
