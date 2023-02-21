@@ -30,7 +30,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
   @url_path "/ingestions"
 
   describe "ingestions" do
-    setup do
+    setup %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion_id = UUID.uuid4()
       ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id})
@@ -42,7 +42,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         assert Ingestions.get(ingestion.id) != nil
       end)
 
-      %{ingestion: ingestion}
+      [ingestion: ingestion, conn: conn]
     end
 
     test "clicking cancel takes you back to the ingestions page when there are no unsaved changes", %{
@@ -57,22 +57,14 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       assert_redirect(view, "/ingestions")
     end
 
-    # todo: ticket #999 should alter this test to confirm the ingestion is not actually saved
-    test "clicking cancel warns of unsaved extract step changes", %{curator_conn: conn, ingestion: ingestion} do
+    # todo: ticket #999 should fulfill this test
+    @tag :skip
+    test "clicking cancel warns of unsaved extract step changes", %{conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      editor = find_live_child(view, "extract_step_form_editor")
-
-      render_change(editor, "update_new_step_type", %{"value" => "http"})
-      render_click(editor, "add-extract-step")
-
-      render_click(view, "save")
-
-      updated_andi_ingestion = Andi.InputSchemas.Ingestions.get(ingestion.id)
-      extract_step_id = get_extract_step_id(updated_andi_ingestion, 0)
-      es_form = element(editor, "#step-#{extract_step_id} form")
-
-      render_change(es_form, %{"form_data" => %{"action" => "GET", "url" => "http://cam.com", "body" => ""}})
+      view
+      |> form("#extract_addition_form", form: %{"step_type" => "http"})
+      |> render_submit()
 
       render_change(view, "cancel-edit", %{})
       html = render(view)

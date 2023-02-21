@@ -151,7 +151,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: new_source_format, ingestion_id: ingestion_id})
     end
 
-    {:noreply, assign(socket, changeset: new_ingestion_changeset)}
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
   def handle_info({:update_all_extract_steps, extract_step_changesets}, socket) do
