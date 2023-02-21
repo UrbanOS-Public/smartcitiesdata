@@ -119,13 +119,17 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
             :error -> nil
           end
 
-        validated_changeset =
-          step_module.changeset(step_module.get_module(), context)
-          |> step_module.validate()
+        if context == nil do
+          Changeset.add_error(changeset, :context, "invalid context")
+        else
+          validated_changeset =
+            step_module.changeset(step_module.get_module(), context)
+            |> step_module.validate()
 
-        Enum.reduce(validated_changeset.errors, changeset, fn {key, {message, _}}, acc ->
-          Changeset.add_error(acc, key, message)
-        end)
+          Enum.reduce(validated_changeset.errors, changeset, fn {key, {message, _}}, acc ->
+            Changeset.add_error(acc, key, message)
+          end)
+        end
     end
   end
 

@@ -38,7 +38,7 @@ defmodule Andi.InputSchemas.ExtractHttpSteps do
     changes_as_map = StructTools.to_map(changes)
 
     from_extract_step
-    |> ExtractHttpStep.changeset_for_draft(changes_as_map)
+    |> ExtractHttpStep.changeset(changes_as_map)
     |> Repo.insert_or_update()
   end
 end

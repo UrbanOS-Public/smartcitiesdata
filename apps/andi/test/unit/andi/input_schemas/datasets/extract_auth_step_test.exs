@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
   alias Andi.InputSchemas.Ingestions.ExtractAuthStep
   alias Andi.InputSchemas.Ingestions.ExtractStep
+  alias Ecto.Changeset
 
   describe "body validation" do
     setup do
@@ -20,9 +21,19 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
       [changes: changes]
     end
 
+    test "changeset casts correctly", %{changes: changes} do
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+
+      {_, changeset_headers} = Changeset.fetch_field(changeset, :headers)
+      assert changeset_headers = [%{"api-key" => "to-my-heart"}]
+      {_, changeset_destination} = Changeset.fetch_field(changeset, :destination)
+      assert changeset_destination = "dest"
+    end
+
     data_test "valid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractAuthStep.changeset(changes)
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+        |> ExtractAuthStep.validate()
 
       assert changeset.errors[:body] == nil
 
@@ -38,7 +49,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
     data_test "invalid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractAuthStep.changeset(changes)
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+      |> ExtractAuthStep.validate()
 
       assert changeset.errors[:body] == {"could not parse json", [validation: :format]}
 
@@ -48,77 +60,72 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
         ["{\"so is\": this"]
       ])
     end
-  end
 
-  test "given changes with valid headers map, properly casts" do
-    changes = %{
-      headers: [%{key: "barl", value: "biz"}, %{key: "yar", value: "har"}],
-      id: "49efff5a-81e6-4735-88a0-836149d61e44",
-      technical_id: "dca31ef3-1d2e-4ae9-8587-4706097c6ebc",
-      type: "auth",
-      url: "test.com",
-      destination: "dest",
-      path: ["cam", "tim"],
-      cacheTtl: 5
-    }
-
-    changeset = ExtractAuthStep.changeset(changes)
-
-    assert changeset.errors[:headers] == nil
-    refute Enum.empty?(Ecto.Changeset.get_field(changeset, :headers))
-  end
-
-  test "given changes with invalid headers map, properly validates" do
-    changes = %{
-      headers: [%{key: "", value: "biz"}, %{key: nil, value: "har"}],
-      id: "49efff5a-81e6-4735-88a0-836149d61e44",
-      technical_id: "dca31ef3-1d2e-4ae9-8587-4706097c6ebc",
-      type: "auth",
-      url: "test.com",
-      destination: "dest",
-      path: ["cam", "tim"],
-      cacheTtl: 5
-    }
-
-    changeset = ExtractAuthStep.changeset(changes)
-
-    assert changeset.errors[:headers] != nil
-  end
-
-  test "changeset from andi extract step properly converts headers" do
-    andi_extract_step = %ExtractStep{
-      type: "auth",
-      context: %{
-        headers: [%{key: "key2", value: "value2"}]
+    test "given changes with valid headers map, properly casts" do
+      changes = %{
+        headers: [%{key: "barl", value: "biz"}, %{key: "yar", value: "har"}],
+        id: "49efff5a-81e6-4735-88a0-836149d61e44",
+        technical_id: "dca31ef3-1d2e-4ae9-8587-4706097c6ebc",
+        type: "auth",
+        url: "test.com",
+        destination: "dest",
+        path: ["cam", "tim"],
+        cacheTtl: 5
       }
-    }
 
-    changeset = ExtractAuthStep.changeset_from_andi_step(andi_extract_step.context)
-    changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
 
-    assert changeset.errors[:headers] == nil
-    assert [%{key: "key2", value: "value2"}] = changeset_headers
-  end
+      assert changeset.errors[:headers] == nil
+      refute Enum.empty?(Ecto.Changeset.get_field(changeset, :headers))
+    end
 
-  test "changeset requires path fields to not be empty" do
-    andi_extract_step1 = %ExtractStep{
-      type: "auth",
-      context: %{
-        path: ["", "ldkfjjalsdjg"]
+    test "given changes with invalid headers map, properly validates" do
+      changes = %{
+        headers: [%{key: "", value: "biz"}, %{key: nil, value: "har"}],
+        id: "49efff5a-81e6-4735-88a0-836149d61e44",
+        technical_id: "dca31ef3-1d2e-4ae9-8587-4706097c6ebc",
+        type: "auth",
+        url: "test.com",
+        destination: "dest",
+        path: ["cam", "tim"],
+        cacheTtl: 5
       }
-    }
 
-    andi_extract_step2 = %ExtractStep{
-      type: "auth",
-      context: %{
-        path: ["lsdjglsdj", nil]
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+        |> ExtractAuthStep.validate()
+
+      assert changeset.errors[:headers] != nil
+    end
+
+    test "changeset from andi extract step properly converts headers" do
+      andi_extract_step_changes = %{
+          headers: [%{key: "key2", value: "value2"}]
       }
-    }
 
-    changeset1 = ExtractAuthStep.changeset_from_andi_step(andi_extract_step1.context)
-    assert Keyword.has_key?(changeset1.errors, :path)
+      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes)
+        |> ExtractAuthStep.validate()
+      changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
 
-    changeset2 = ExtractAuthStep.changeset_from_andi_step(andi_extract_step2.context)
-    assert Keyword.has_key?(changeset2.errors, :path)
+      assert changeset.errors[:headers] == nil
+      assert [%{key: "key2", value: "value2"}] = changeset_headers
+    end
+
+    test "changeset requires path fields to not be empty" do
+      andi_extract_step_changes_1 = %{
+          path: ["", "ldkfjjalsdjg"]
+      }
+
+      andi_extract_step_changes_2 = %{
+          path: ["lsdjglsdj", nil]
+      }
+
+      changeset1 = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_1)
+        |> ExtractAuthStep.validate()
+      assert Keyword.has_key?(changeset1.errors, :path)
+
+      changeset2 = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_2)
+        |> ExtractAuthStep.validate()
+      assert Keyword.has_key?(changeset2.errors, :path)
+    end
   end
 end
