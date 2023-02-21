@@ -32,7 +32,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
     data_test "valid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+
+      changeset =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
         |> ExtractAuthStep.validate()
 
       assert changeset.errors[:body] == nil
@@ -49,8 +51,10 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
     data_test "invalid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
-      |> ExtractAuthStep.validate()
+
+      changeset =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+        |> ExtractAuthStep.validate()
 
       assert changeset.errors[:body] == {"could not parse json", [validation: :format]}
 
@@ -91,7 +95,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
         cacheTtl: 5
       }
 
-      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
+      changeset =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
         |> ExtractAuthStep.validate()
 
       assert changeset.errors[:headers] != nil
@@ -99,11 +104,13 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
     test "changeset from andi extract step properly converts headers" do
       andi_extract_step_changes = %{
-          headers: [%{key: "key2", value: "value2"}]
+        headers: [%{key: "key2", value: "value2"}]
       }
 
-      changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes)
+      changeset =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes)
         |> ExtractAuthStep.validate()
+
       changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
 
       assert changeset.errors[:headers] == nil
@@ -112,19 +119,23 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
     test "changeset requires path fields to not be empty" do
       andi_extract_step_changes_1 = %{
-          path: ["", "ldkfjjalsdjg"]
+        path: ["", "ldkfjjalsdjg"]
       }
 
       andi_extract_step_changes_2 = %{
-          path: ["lsdjglsdj", nil]
+        path: ["lsdjglsdj", nil]
       }
 
-      changeset1 = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_1)
+      changeset1 =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_1)
         |> ExtractAuthStep.validate()
+
       assert Keyword.has_key?(changeset1.errors, :path)
 
-      changeset2 = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_2)
+      changeset2 =
+        ExtractAuthStep.changeset(ExtractAuthStep.get_module(), andi_extract_step_changes_2)
         |> ExtractAuthStep.validate()
+
       assert Keyword.has_key?(changeset2.errors, :path)
     end
   end

@@ -22,7 +22,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
 
     data_test "valid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
+
+      changeset =
+        ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
         |> ExtractHttpStep.validate()
 
       assert changeset.errors[:body] == nil
@@ -39,7 +41,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
 
     data_test "invalid when body is #{inspect(value)}", %{changes: changes} do
       changes = Map.put(changes, :body, value)
-      changeset = ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
+
+      changeset =
+        ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
         |> ExtractHttpStep.validate()
 
       assert changeset.errors[:body] == {"could not parse json", [validation: :format]}
@@ -55,8 +59,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
   test "given a url with at least one invalid query param it marks the dataset as invalid" do
     form_data = %{"url" => "https://source.url.example.com?=oops&a=b"} |> FormTools.adjust_extract_query_params_for_url()
 
-    changeset = ExtractHttpStep.changeset(ExtractHttpStep.get_module(), form_data)
-    |> ExtractHttpStep.validate()
+    changeset =
+      ExtractHttpStep.changeset(ExtractHttpStep.get_module(), form_data)
+      |> ExtractHttpStep.validate()
 
     refute changeset.valid?
 
@@ -76,8 +81,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
       url: "test.com"
     }
 
-    changeset = ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
-    |> ExtractHttpStep.validate()
+    changeset =
+      ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
+      |> ExtractHttpStep.validate()
 
     assert changeset.errors[field] == nil
     refute Enum.empty?(Ecto.Changeset.get_field(changeset, field))
@@ -87,12 +93,14 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
 
   test "changeset from andi extract step properly converts queryParams and headers" do
     changes = %{
-        queryParams: [%{key: "key1", value: "value1"}],
-        headers: [%{key: "key2", value: "value2"}]
+      queryParams: [%{key: "key1", value: "value1"}],
+      headers: [%{key: "key2", value: "value2"}]
     }
 
-    changeset = ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
-    |> ExtractHttpStep.validate()
+    changeset =
+      ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
+      |> ExtractHttpStep.validate()
+
     changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
     changeset_query_params = Ecto.Changeset.get_field(changeset, :queryParams)
 

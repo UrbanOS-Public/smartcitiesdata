@@ -10,8 +10,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       context: nil
     }
 
-    changeset = ExtractStep.changeset(changes)
-    |> ExtractStep.validate()
+    changeset =
+      ExtractStep.changeset(changes)
+      |> ExtractStep.validate()
 
     assert changeset.errors[:context] != nil
   end
@@ -21,7 +22,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       type: "blarg"
     }
 
-    changeset = ExtractStep.changeset(changes)
+    changeset =
+      ExtractStep.changeset(changes)
       |> ExtractStep.validate()
 
     assert changeset.errors[:type] != nil
@@ -36,8 +38,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
-      |> ExtractStep.validate()
+      changeset =
+        ExtractStep.changeset(changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:url] != nil
       assert changeset.changes.context != nil
@@ -51,8 +54,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
-      |> ExtractStep.validate()
+      changeset =
+        ExtractStep.changeset(changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:body] != nil
     end
@@ -65,8 +69,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
-      |> ExtractStep.validate()
+      changeset =
+        ExtractStep.changeset(changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:url] == nil
       assert changeset.changes.context.url == "http://www.example.com"
@@ -82,8 +87,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
-      |> ExtractStep.validate()
+      changeset =
+        ExtractStep.changeset(changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:format] != nil
       assert changeset.changes.context != nil
