@@ -75,7 +75,8 @@ defmodule Andi.Schemas.User do
          org <- Organizations.get(organization_id) do
       user |> Repo.preload(:organizations) |> change() |> put_assoc(:organizations, [org | user.organizations]) |> Repo.update()
     else
-      error -> error
+      error ->
+        error
     end
   end
 

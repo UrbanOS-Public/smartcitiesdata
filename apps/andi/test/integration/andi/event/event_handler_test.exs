@@ -7,6 +7,7 @@ defmodule Andi.Event.EventHandlerTest do
   import SmartCity.TestHelper
   import SmartCity.Event
   alias SmartCity.UserOrganizationAssociate
+  alias SmartCity.UserOrganizationDisassociate
   alias Andi.Schemas.User
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organization
@@ -16,6 +17,9 @@ defmodule Andi.Event.EventHandlerTest do
   alias DeadLetter
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
+  alias Andi.Services.DatasetStore
+  alias Andi.Services.OrgStore
+  alias Andi.Harvest.Harvester
 
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
@@ -64,7 +68,7 @@ defmodule Andi.Event.EventHandlerTest do
 
       id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
-      allow(IngestionStore.create_ingestion(invalid_ingestion), exec: fn _nh -> raise "nope" end)
+      allow(IngestionStore.update(invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
       id = UUID.uuid4()
       valid_ingestion = TDG.create_ingestion(%{id: id, targetDataset: dataset.id})
@@ -118,6 +122,40 @@ defmodule Andi.Event.EventHandlerTest do
 
         assert 1 == length(failed_messages)
         end)
+    end
+  end
+
+  describe "Org Update" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      id_for_org = UUID.uuid4()
+      invalid_org = TDG.create_organization(%{id: id_for_org})
+      allow(OrgStore.update(invalid_org), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, invalid_org)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"id" => message_org_id} ->
+              message_org_id == id_for_org
+
+            _ -> false
+          end
+        end)
+
+        assert 1 == length(failed_messages)
+      end)
     end
   end
 
@@ -194,6 +232,256 @@ defmodule Andi.Event.EventHandlerTest do
         assert user_from_ecto.organizations |> Enum.map(fn org -> org.id end) |> Enum.any?(fn id -> id == org_id end)
       end)
     end
+
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      subject_id = UUID.uuid4()
+      org_id = UUID.uuid4()
+      invalid_org = TDG.create_organization(%{id: org_id})
+      allow(User.associate_with_organization(any(), any()), exec: fn _nh -> raise "nope" end)
+
+      association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject_id, email: "blah@blah.com"}
+
+      Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+              message_org_id == org_id && message_subject_id == subject_id
+
+            _ -> false
+          end
+        end)
+
+        assert 1 == length(failed_messages)
+      end)
+    end
+  end
+
+  describe "User org disassociate" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      subject_id = UUID.uuid4()
+      org_id = UUID.uuid4()
+      invalid_org = TDG.create_organization(%{id: org_id})
+      allow(User.disassociate_with_organization(any(), any()), exec: fn _nh -> raise "nope" end)
+
+      disassociation = %UserOrganizationDisassociate{org_id: org_id, subject_id: subject_id}
+
+      Brook.Event.send(@instance_name, user_organization_disassociate(), __MODULE__, disassociation)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+              message_org_id == org_id && message_subject_id == subject_id
+
+
+            _ -> false
+          end
+        end)
+
+        assert 1 == length(failed_messages)
+      end)
+    end
+  end
+
+  describe "Dataset Harvest Start" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      org_id = UUID.uuid4()
+      invalid_org = TDG.create_organization(%{id: org_id})
+      allow(TelemetryEvent.add_event_metrics([app: "andi", author: any(), dataset_id: any(), event_type: dataset_harvest_start()], [:events_handled]), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"id" => message_org_id} ->
+              message_org_id == org_id
+
+            _ -> false
+          end
+        end)
+
+        assert 1 == length(failed_messages)
+      end)
+    end
+  end
+
+  describe "Dataset Harvest End" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      fake_id = UUID.uuid4()
+      fake_harvested_dataset = %{fake: fake_id}
+      allow(Organizations.update_harvested_dataset(any()), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, dataset_harvest_end(), __MODULE__, fake_harvested_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"fake" => message_fake_id} ->
+              message_fake_id == fake_id
+
+            _ -> false
+          end
+        end)
+
+        assert 1 == length(failed_messages)
+      end)
+    end
+  end
+
+  describe "Modified Date Migration Start" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      existing_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+        actual = Jason.decode!(message.value)
+        case actual["original_message"] do
+          %{"type" => message_type} ->
+            message_type ==  "migration:modified_date:start"
+
+          _ -> false
+        end
+      end)
+                          |> length
+
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      allow(Andi.Migration.ModifiedDateMigration.do_migration(), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, "migration:modified_date:start", __MODULE__, %{})
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"type" => message_type} ->
+              message_type ==  "migration:modified_date:start"
+
+            _ -> false
+          end
+        end)
+
+        assert length(failed_messages) == existing_messages + 1
+      end)
+    end
+  end
+
+  describe "Data Ingest End" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      allow(TelemetryEvent.add_event_metrics([app: any(), author: any(), dataset_id: any(), event_type: data_ingest_end()], [:events_handled]), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"id" => message_dataset_id} ->
+              message_dataset_id == dataset_id
+
+            _ -> false
+          end
+        end)
+
+        assert length(failed_messages) == 1
+      end)
+    end
+  end
+
+  describe "Dataset Delete" do
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      allow(DatasetStore.delete(dataset_id), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"id" => message_dataset_id} ->
+              message_dataset_id == dataset_id
+
+            _ -> false
+          end
+        end)
+
+        assert length(failed_messages) == 1
+      end)
+    end
   end
 
   describe "#{user_login()}" do
@@ -236,6 +524,38 @@ defmodule Andi.Event.EventHandlerTest do
 
       user_from_ecto = User.get_by_subject_id(old_user_subject_id)
       assert user_from_ecto.id == user.id
+    end
+
+    test "A failing message gets placed on dead letter queue and discarded" do
+      dataset_id = UUID.uuid4()
+      dataset = TDG.create_dataset(%{id: dataset_id})
+
+      subject_id = UUID.uuid4()
+      {:ok, user} = %{subject_id: subject_id, email: "abc", name: "abc"}  |> SmartCity.User.new()
+      allow(User.get_by_subject_id(subject_id), exec: fn _nh -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+
+      eventually(fn ->
+        valid_dataset_from_ecto = Datasets.get(dataset_id)
+        assert valid_dataset_from_ecto != nil
+        assert valid_dataset_from_ecto.id == dataset.id
+
+        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+                          |> elem(2)
+                          |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
+          case actual["original_message"] do
+            %{"subject_id" => message_subject_id} ->
+              message_subject_id == subject_id
+
+            _ -> false
+          end
+        end)
+
+        assert length(failed_messages) == 1
+      end)
     end
   end
 end

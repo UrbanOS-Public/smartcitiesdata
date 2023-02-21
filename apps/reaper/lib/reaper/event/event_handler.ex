@@ -22,20 +22,17 @@ defmodule Reaper.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: ingestion_update(),
-        data: %SmartCity.Ingestion{} = ingestion
+        data: %SmartCity.Ingestion{} = data
       }) do
     ingestion_update()
-    |> add_event_count(ingestion.targetDataset)
+    |> add_event_count(data.targetDataset)
 
-    Extractions.update_ingestion(ingestion)
-    Reaper.Event.Handlers.IngestionUpdate.handle(ingestion)
+    Extractions.update_ingestion(data)
+    Reaper.Event.Handlers.IngestionUpdate.handle(data)
   rescue
-    reason ->
-      Brook.Event.send(@instance_name, error_ingestion_update(), :reaper, %{
-        "reason" => reason,
-        "ingestion" => ingestion
-      })
-
+    error ->
+      Logger.error("ingestion_update failed to process.")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
       :discard
   end
 
