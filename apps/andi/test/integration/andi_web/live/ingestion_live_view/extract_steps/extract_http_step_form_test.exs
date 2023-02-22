@@ -184,10 +184,11 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
     test "test uses provided query params and headers", %{conn: conn} do
       {:ok, ingestion} =
         IngestionHelpers.create_with_http_extract_step(%{
-          action: "GET",
+          action: "POST",
           url: "https://123.com",
           queryParams: %{"x" => "y"},
-          headers: %{"api-key" => "to-my-heart"}
+          headers: %{"api-key" => "to-my-heart"},
+          body: "{}"
         })
         |> IngestionHelpers.save_ingestion()
 
