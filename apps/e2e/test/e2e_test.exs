@@ -374,7 +374,7 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    test "is written by reaper", %{streaming_ingestion: ingestion}
+    test "is written by reaper", %{streaming_ingestion: ingestion} do
       IO.inspect(ingestion, label: "streaming label")
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
