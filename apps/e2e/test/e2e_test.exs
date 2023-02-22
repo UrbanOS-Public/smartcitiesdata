@@ -40,6 +40,7 @@ defmodule E2ETest do
   }
 
   setup_all do
+    IO.inspect("starting setup")
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
@@ -58,9 +59,30 @@ defmodule E2ETest do
       Plug.Conn.resp(conn, 200, shapefile)
     end)
 
-    dataset =
+    dataset_struct =
       @overrides
       |> TDG.create_dataset()
+
+    {_, dataset_struct} = pop_in(dataset_struct, [:id])
+
+
+    {:ok, %{status_code: 201, body: dataset_body}} =
+      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset_struct), [
+        {"Content-Type", "application/json"}
+      ])
+
+    dataset = Jason.decode!([dataset_body])
+
+    eventually(
+      fn ->
+        {:ok, resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
+        IO.inspect(resp, label: "response datasets")
+        assert resp.body != "[]"
+      end,
+      500,
+      20
+    )
+
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
@@ -88,9 +110,10 @@ defmodule E2ETest do
         }
       })
 
-    ingestion =
+    ingestion_struct =
       TDG.create_ingestion(%{
-        targetDataset: dataset.id,
+        id: nil,
+        targetDataset: dataset["id"],
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean"},
@@ -115,6 +138,13 @@ defmodule E2ETest do
         ],
         transformations: [ingest_regex_transformation]
       })
+
+    {:ok, %{status_code: 201, body: ingestion_body}} =
+      HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion_struct), [
+        {"Content-Type", "application/json"}
+      ])
+
+    ingestion = Jason.decode!([ingestion_body])
 
     streaming_ingestion =
       TDG.create_ingestion(%{
@@ -178,14 +208,14 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    test "via RESTful PUT", %{dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
+#    test "via RESTful PUT", %{dataset: ds} do
+#      resp =
+#        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+#          {"Content-Type", "application/json"}
+#        ])
+#
+#      assert resp.status_code == 201
+#    end
 
     test "creates a PrestoDB table" do
       expected = [
@@ -210,7 +240,7 @@ defmodule E2ETest do
       eventually(
         fn ->
           table = query("describe hive.default.end_to__end", true)
-
+          IO.inspect(table, label: "table")
           assert table == expected
         end,
         500,
@@ -225,14 +255,15 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{ingestion: ingestion} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
+#    test "via RESTful PUT", %{ingestion: ingestion} do
+#      IO.inspect(ingestion, label: "ingestion")
+#      resp =
+#        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
+#          {"Content-Type", "application/json"}
+#        ])
+#
+#      assert resp.status_code == 201
+#    end
 
     test "stores a definition that can be retrieved", %{ingestion: expected} do
       eventually(
