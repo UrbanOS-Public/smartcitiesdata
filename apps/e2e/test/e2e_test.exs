@@ -80,7 +80,7 @@ defmodule E2ETest do
     eventually(
       fn ->
         {:ok, resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
-        assert length(Jason.decode!(resp.body)) > 2
+        assert length(Jason.decode!(resp.body)) == 2
       end,
       500,
       20
@@ -148,7 +148,7 @@ defmodule E2ETest do
 
     streaming_ingestion =
       TDG.create_ingestion(%{
-        targetDataset: streaming_dataset.id,
+        targetDataset: Jason.decode!(streaming_dataset_body["id"]),
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -177,7 +177,7 @@ defmodule E2ETest do
     {:ok, %{status_code: 201, body: streaming_ingestion_body}} =
       HTTPoison.put!(
         "http://localhost:4000/api/v1/ingestion",
-        Jason.encode!(streaming_ingestion),
+        Jason.encode!(%{streaming_ingestion | id: nil}),
         [
           {"Content-Type", "application/json"}
         ]
