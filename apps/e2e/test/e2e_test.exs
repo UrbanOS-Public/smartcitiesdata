@@ -48,6 +48,7 @@ defmodule E2ETest do
   }
 
   setup_all do
+    IO.inspect("we're setting up a test")
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
@@ -67,7 +68,9 @@ defmodule E2ETest do
     end)
 
     [
-      bypass: bypass
+      bypass: bypass,
+      dataset: %{},
+      ingestion: %{}
     ]
   end
 
@@ -101,20 +104,19 @@ defmodule E2ETest do
         @overrides
         |> TDG.create_dataset()
 
-      resp =
+      IO.inspect(dataset, label: "dataset")
+      put_resp =
         HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset), [
           {"Content-Type", "application/json"}
         ])
 
-      body = resp.body |> Jason.decode!()
-      assert resp.status_code == 201
+      put_body = put_resp.body |> Jason.decode!()
+      assert put_resp.status_code == 201
 
-      dataset_with_id = Map.put(dataset, :id, body["id"])
+      dataset_with_id = Map.put(dataset, :id, put_body["id"])
+      IO.inspect(dataset_with_id, label: "dataset_with_id")
 
-      [dataset: dataset_with_id]
-    end
-
-    test "creates a PrestoDB table" do
+#     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
         %{"Column" => "two", "Comment" => "", "Extra" => "", "Type" => "varchar"},
@@ -143,11 +145,10 @@ defmodule E2ETest do
         500,
         20
       )
-    end
 
-    test "stores a definition that can be retrieved", %{dataset: expected} do
-      resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      assert resp.body == Jason.encode!([expected])
+#    test "stores a definition that can be retrieved", %{dataset: expected} do
+      get_resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
+      assert get_resp.body == Jason.encode!([dataset_with_id])
     end
   end
 
