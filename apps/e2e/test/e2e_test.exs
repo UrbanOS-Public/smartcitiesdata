@@ -70,16 +70,21 @@ defmodule E2ETest do
 
     dataset = Jason.decode!([dataset_body])
 
+    streaming_dataset = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
+
+    {:ok, %{status_code: 201, body: streaming_dataset_body}} =
+      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset), [
+        {"Content-Type", "application/json"}
+      ])
+
     eventually(
       fn ->
         {:ok, resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
-        assert resp.body != "[]"
+        assert length(Jason.decode!(resp.body)) > 2
       end,
       500,
       20
     )
-
-    streaming_dataset = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
 
     ingest_regex_transformation =
       TDG.create_transformation(%{
@@ -168,6 +173,11 @@ defmodule E2ETest do
         ],
         transformations: [streaming_regex_transformation]
       })
+
+    {:ok, %{status_code: 201, body: streaming_ingestion_body}} =
+      HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(streaming_ingestion), [
+        {"Content-Type", "application/json"}
+      ])
 
     [
       dataset: dataset,
@@ -357,6 +367,7 @@ defmodule E2ETest do
 
   describe "streaming data" do
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
+      IO.inspect(ds, label: "streaming_dataset")
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
           {"Content-Type", "application/json"}
