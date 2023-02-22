@@ -278,7 +278,7 @@ defmodule E2ETest do
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
     test "is written by reaper", %{ingestion: ingestion} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -290,7 +290,7 @@ defmodule E2ETest do
     end
 
     test "is transformed by alchemist", %{dataset: dataset} do
-      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset.id}"
+      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -302,7 +302,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{dataset: dataset} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -315,8 +315,8 @@ defmodule E2ETest do
 
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds, ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
-      table = ds.technical.systemName
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds["id"]}"
+      table = ds["technical"]["systemName"]
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
@@ -332,7 +332,7 @@ defmodule E2ETest do
                      "two" => "foobar",
                      "three" => 10,
                      "parsed" => "oo",
-                     "_ingestion_id" => ingestion.id,
+                     "_ingestion_id" => ingestion["id"],
                      "os_partition" => get_current_yyyy_mm(),
                      "_extraction_start_time" => get_current_yyyy_mm_dd()
                    }
@@ -379,7 +379,7 @@ defmodule E2ETest do
     end
 
     test "is written by reaper", %{streaming_ingestion: ingestion} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
@@ -391,7 +391,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{streaming_dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds["id"]}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
@@ -404,8 +404,8 @@ defmodule E2ETest do
 
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds, streaming_ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
-      table = ds.technical.systemName
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds["id"]}"
+      table = ds["technical"]["systemName"]
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
@@ -437,7 +437,7 @@ defmodule E2ETest do
                    "two" => "foobar",
                    "three" => 10,
                    "parsed" => "oo",
-                   "_ingestion_id" => ingestion.id,
+                   "_ingestion_id" => ingestion["id"],
                    "os_partition" => get_current_yyyy_mm(),
                    "_extraction_start_time" => get_current_yyyy_mm_dd()
                  } in table_contents
@@ -451,7 +451,7 @@ defmodule E2ETest do
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
         |> subscribe_and_join(
           DiscoveryStreamsWeb.StreamingChannel,
-          "streaming:#{ds.technical.systemName}",
+          "streaming:#{ds["technical"]["systemName"]}",
           %{}
         )
 
@@ -480,7 +480,7 @@ defmodule E2ETest do
       smrt_ingestion =
         TDG.create_ingestion(%{
           topLevelSelector: nil,
-          targetDataset: ds.id,
+          targetDataset: ds["id"],
           extractSteps: [
             %{
               type: "date",
