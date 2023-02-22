@@ -114,6 +114,7 @@ defmodule Andi.IngestionControllerTest do
     test "writes data to event stream" do
       dataset = setup_dataset()
       uuid = Faker.UUID.v4()
+
       request = %{
         "name" => "Name",
         "extractSteps" => [

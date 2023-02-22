@@ -65,7 +65,6 @@ defmodule E2ETest do
 
     {_, dataset_struct} = pop_in(dataset_struct, [:id])
 
-
     {:ok, %{status_code: 201, body: dataset_body}} =
       HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset_struct), [
         {"Content-Type", "application/json"}
@@ -82,7 +81,6 @@ defmodule E2ETest do
       500,
       20
     )
-
 
     streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
 
@@ -208,14 +206,14 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-#    test "via RESTful PUT", %{dataset: ds} do
-#      resp =
-#        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-#          {"Content-Type", "application/json"}
-#        ])
-#
-#      assert resp.status_code == 201
-#    end
+    #    test "via RESTful PUT", %{dataset: ds} do
+    #      resp =
+    #        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
+    #          {"Content-Type", "application/json"}
+    #        ])
+    #
+    #      assert resp.status_code == 201
+    #    end
 
     test "creates a PrestoDB table" do
       expected = [
@@ -255,15 +253,15 @@ defmodule E2ETest do
   end
 
   describe "creating an ingestion" do
-#    test "via RESTful PUT", %{ingestion: ingestion} do
-#      IO.inspect(ingestion, label: "ingestion")
-#      resp =
-#        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-#          {"Content-Type", "application/json"}
-#        ])
-#
-#      assert resp.status_code == 201
-#    end
+    #    test "via RESTful PUT", %{ingestion: ingestion} do
+    #      IO.inspect(ingestion, label: "ingestion")
+    #      resp =
+    #        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
+    #          {"Content-Type", "application/json"}
+    #        ])
+    #
+    #      assert resp.status_code == 201
+    #    end
 
     test "stores a definition that can be retrieved", %{ingestion: expected} do
       eventually(
