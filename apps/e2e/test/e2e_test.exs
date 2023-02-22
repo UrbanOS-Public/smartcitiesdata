@@ -138,7 +138,7 @@ defmodule E2ETest do
       })
 
     {:ok, %{status_code: 201, body: ingestion_body}} =
-      HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion_struct), [
+      HTTPoison.put("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion_struct), [
         {"Content-Type", "application/json"}
       ])
 
