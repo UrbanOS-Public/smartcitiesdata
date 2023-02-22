@@ -145,7 +145,9 @@ defmodule E2ETest do
       ])
 
     ingestion = Jason.decode!([ingestion_body])
-
+    IO.inspect(Jason.decode!(streaming_dataset_body), label: "streaming_dataset_body")
+    IO.inspect(Jason.encode!(streaming_dataset_body), label: "streaming_dataset_body2")
+    IO.inspect(streaming_dataset_body, label: "streaming_dataset_body3")
     streaming_ingestion =
       TDG.create_ingestion(%{
         targetDataset: Jason.decode!(streaming_dataset_body["id"]),
