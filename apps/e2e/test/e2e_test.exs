@@ -175,9 +175,13 @@ defmodule E2ETest do
       })
 
     {:ok, %{status_code: 201, body: streaming_ingestion_body}} =
-      HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(streaming_ingestion), [
-        {"Content-Type", "application/json"}
-      ])
+      HTTPoison.put!(
+        "http://localhost:4000/api/v1/ingestion",
+        Jason.encode!(streaming_ingestion),
+        [
+          {"Content-Type", "application/json"}
+        ]
+      )
 
     [
       dataset: dataset,
@@ -368,6 +372,7 @@ defmodule E2ETest do
   describe "streaming data" do
     test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
       IO.inspect(ds, label: "streaming_dataset")
+
       resp =
         HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
           {"Content-Type", "application/json"}
