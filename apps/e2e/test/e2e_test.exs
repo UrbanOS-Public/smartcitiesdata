@@ -29,7 +29,6 @@ defmodule E2ETest do
   }
 
   @streaming_overrides %{
-    id: nil,
     technical: %{
       dataName: "strimmin",
       orgName: "usa",
@@ -40,7 +39,6 @@ defmodule E2ETest do
   }
 
   setup_all do
-    IO.inspect("starting setup")
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
@@ -75,14 +73,13 @@ defmodule E2ETest do
     eventually(
       fn ->
         {:ok, resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
-        IO.inspect(resp, label: "response datasets")
         assert resp.body != "[]"
       end,
       500,
       20
     )
 
-    streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
+    streaming_dataset = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
 
     ingest_regex_transformation =
       TDG.create_transformation(%{
@@ -238,7 +235,6 @@ defmodule E2ETest do
       eventually(
         fn ->
           table = query("describe hive.default.end_to__end", true)
-          IO.inspect(table, label: "table")
           assert table == expected
         end,
         500,
@@ -378,7 +374,8 @@ defmodule E2ETest do
       assert resp.status_code == 201
     end
 
-    test "is written by reaper", %{streaming_ingestion: ingestion} do
+    test "is written by reaper", %{streaming_ingestion: ingestion}
+      IO.inspect(ingestion, label: "streaming label")
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
