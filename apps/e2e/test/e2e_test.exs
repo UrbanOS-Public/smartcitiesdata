@@ -73,9 +73,13 @@ defmodule E2ETest do
     streaming_dataset_struct = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
 
     {:ok, %{status_code: 201, body: streaming_dataset_body}} =
-      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset_struct), [
-        {"Content-Type", "application/json"}
-      ])
+      HTTPoison.put(
+        "http://localhost:4000/api/v1/dataset",
+        Jason.encode!(streaming_dataset_struct),
+        [
+          {"Content-Type", "application/json"}
+        ]
+      )
 
     streaming_dataset = Jason.decode!(streaming_dataset_body)
 
