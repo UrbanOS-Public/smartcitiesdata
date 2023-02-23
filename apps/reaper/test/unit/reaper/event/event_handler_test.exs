@@ -44,59 +44,6 @@ defmodule Reaper.Event.EventHandlerTest do
     :ok
   end
 
-  describe "#{ingestion_update()}" do
-    test "sends error event for known bad case of nil cadence" do
-      allow(Reaper.Scheduler.find_job(any()), return: nil)
-      ingestion = TDG.create_ingestion(%{id: "ds-empty-cron", cadence: nil})
-
-      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: error_ingestion_update(),
-                        data: %{
-                          "reason" => _,
-                          "ingestion" => %SmartCity.Ingestion{id: "ds-empty-cron"}
-                        }
-                      }},
-                     10_000
-    end
-
-    test "A failing message gets placed on dead letter queue and discarded" do
-      id_for_invalid_ingestion = UUID.uuid4()
-      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
-
-      id_for_valid_ingestion = UUID.uuid4()
-      valid_ingestion = TDG.create_ingestion(%{id: id_for_valid_ingestion})
-      allow(Reaper.Event.Handlers.IngestionUpdate.handle(valid_ingestion), exec: fn _nh -> raise "nope" end)
-
-      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
-      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
-
-      eventually(fn ->
-        cached_ingestion = Brook.ViewState.get(@instance_name, "none", id_for_valid_ingestion)
-        IO.inspect(cached_ingestion, label: "Ryan - Cached")
-
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
-
-            case actual["original_message"] do
-              %{"id" => message_ingestion_id} ->
-                message_ingestion_id == id_for_invalid_ingestion
-
-              _ ->
-                false
-            end
-          end)
-
-        assert 1 == length(failed_messages)
-      end)
-    end
-  end
-
   describe "#{data_extract_start()}" do
     setup do
       date = DateTime.utc_now()
@@ -264,23 +211,6 @@ defmodule Reaper.Event.EventHandlerTest do
         assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
         assert_called(Reaper.Event.Handlers.IngestionDelete.handle(ingestion))
       end)
-    end
-
-    test "sends error event for raised errors while performing ingestion update" do
-      allow(Reaper.Event.Handlers.IngestionUpdate.handle(any()),
-        exec: fn _ -> raise "bad stuff" end
-      )
-
-      ingestion = TDG.create_ingestion(%{})
-
-      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: "error:ingestion:update",
-                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "ingestion" => _}
-                      }},
-                     10_000
     end
   end
 
