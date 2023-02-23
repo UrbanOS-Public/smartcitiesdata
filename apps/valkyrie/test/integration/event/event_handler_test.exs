@@ -29,10 +29,11 @@ defmodule Valkyrie.Event.EventHandlerTest do
       eventually(fn ->
         Brook.ViewState.get_all(@instance_name, :datasets)
 
-        cached_dataset_id = case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
-          {:ok, %{id: id}} -> id
-          _ -> nil
-        end
+        cached_dataset_id =
+          case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
+            {:ok, %{id: id}} -> id
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
@@ -69,10 +70,11 @@ defmodule Valkyrie.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
 
       eventually(fn ->
-        cached_dataset_id = case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
-          {:ok, %{id: id}} -> id
-          _ -> nil
-        end
+        cached_dataset_id =
+          case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
+            {:ok, %{id: id}} -> id
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
@@ -109,10 +111,11 @@ defmodule Valkyrie.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
 
       eventually(fn ->
-        cached_dataset_id = case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
-          {:ok, %{id: id}} -> id
-          _ -> nil
-        end
+        cached_dataset_id =
+          case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
+            {:ok, %{id: id}} -> id
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
@@ -149,10 +152,11 @@ defmodule Valkyrie.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
 
       eventually(fn ->
-        cached_dataset_id = case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
-          {:ok, %{id: id}} -> id
-          _ -> nil
-        end
+        cached_dataset_id =
+          case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
+            {:ok, %{id: id}} -> id
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")

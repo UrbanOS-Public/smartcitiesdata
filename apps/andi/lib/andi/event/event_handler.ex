@@ -48,7 +48,6 @@ defmodule Andi.Event.EventHandler do
     Datasets.update(data)
     DatasetStore.update(data)
     :ok
-
   rescue
     error ->
       Logger.error("dataset_update failed to process.")
@@ -65,7 +64,6 @@ defmodule Andi.Event.EventHandler do
     |> Ingestions.update()
 
     IngestionStore.update(data)
-
   rescue
     error ->
       Logger.error("ingestion_update failed to process.")
@@ -79,12 +77,11 @@ defmodule Andi.Event.EventHandler do
 
     Ingestions.delete(data.id)
     IngestionStore.delete(data.id)
-
-    rescue
-      error ->
-        Logger.error("ingestion_delete failed to process.")
-        DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
-        :discard
+  rescue
+    error ->
+      Logger.error("ingestion_delete failed to process.")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      :discard
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
@@ -95,7 +92,6 @@ defmodule Andi.Event.EventHandler do
 
     Organizations.update(data)
     OrgStore.update(data)
-
   rescue
     error ->
       Logger.error("organization_update failed to process.")
@@ -108,7 +104,6 @@ defmodule Andi.Event.EventHandler do
         data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email} = data,
         author: author
       }) do
-
     user_organization_associate()
     |> add_event_count(author, nil)
 
@@ -121,7 +116,6 @@ defmodule Andi.Event.EventHandler do
     end
 
     :discard
-
   rescue
     error ->
       Logger.error("user_organization_associate failed to process.")
@@ -130,24 +124,20 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(
-        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = data, author: author} =
-          _event
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = data, author: author} = _event
       ) do
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
     case User.disassociate_with_organization(data.subject_id, data.org_id) do
       {:error, error} ->
-        Logger.error(
-          "Unable to disassociate user with organization #{data.org_id}: #{inspect(error)}. This event has been discarded."
-        )
+        Logger.error("Unable to disassociate user with organization #{data.org_id}: #{inspect(error)}. This event has been discarded.")
 
       _ ->
         :ok
     end
 
     :discard
-
   rescue
     error ->
       Logger.error("user_organization_disassociate failed to process.")

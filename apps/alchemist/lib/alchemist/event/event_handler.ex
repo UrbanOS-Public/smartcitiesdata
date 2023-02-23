@@ -19,6 +19,7 @@ defmodule Alchemist.Event.EventHandler do
     if Alchemist.IngestionSupervisor.is_started?(data.id) do
       Alchemist.IngestionProcessor.stop(data.id)
     end
+
     Alchemist.IngestionProcessor.start(data)
 
     merge(:ingestions, data.id, data)

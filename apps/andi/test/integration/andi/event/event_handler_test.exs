@@ -27,7 +27,6 @@ defmodule Andi.Event.EventHandlerTest do
 
   describe "Dataset Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
-
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
       allow(DatasetCache.add_dataset_info(invalid_dataset), exec: fn _nh -> raise "nope" end)
@@ -46,7 +45,8 @@ defmodule Andi.Event.EventHandlerTest do
         invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
         assert invalid_dataset_from_ecto == nil
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
@@ -54,13 +54,12 @@ defmodule Andi.Event.EventHandlerTest do
           end)
 
         assert 1 == length(failed_messages)
-        end)
+      end)
     end
   end
 
   describe "Ingestion Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
-
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
@@ -84,7 +83,8 @@ defmodule Andi.Event.EventHandlerTest do
         invalid_ingestion_from_ecto = Ingestions.get(id_for_invalid_ingestion)
         assert invalid_ingestion_from_ecto == nil
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
@@ -92,7 +92,7 @@ defmodule Andi.Event.EventHandlerTest do
           end)
 
         assert 1 == length(failed_messages)
-        end)
+      end)
     end
   end
 
@@ -113,7 +113,8 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
@@ -121,7 +122,7 @@ defmodule Andi.Event.EventHandlerTest do
           end)
 
         assert 1 == length(failed_messages)
-        end)
+      end)
     end
   end
 
@@ -142,17 +143,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"id" => message_org_id} ->
-              message_org_id == id_for_org
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"id" => message_org_id} ->
+                message_org_id == id_for_org
+
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)
@@ -252,17 +256,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
-              message_org_id == org_id && message_subject_id == subject_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+                message_org_id == org_id && message_subject_id == subject_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)
@@ -289,18 +296,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
-              message_org_id == org_id && message_subject_id == subject_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
+            case actual["original_message"] do
+              %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+                message_org_id == org_id && message_subject_id == subject_id
 
-            _ -> false
-          end
-        end)
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)
@@ -314,7 +323,13 @@ defmodule Andi.Event.EventHandlerTest do
 
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
-      allow(TelemetryEvent.add_event_metrics([app: "andi", author: any(), dataset_id: any(), event_type: dataset_harvest_start()], [:events_handled]), exec: fn _nh -> raise "nope" end)
+
+      allow(
+        TelemetryEvent.add_event_metrics([app: "andi", author: any(), dataset_id: any(), event_type: dataset_harvest_start()], [
+          :events_handled
+        ]),
+        exec: fn _nh -> raise "nope" end
+      )
 
       Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -324,17 +339,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"id" => message_org_id} ->
-              message_org_id == org_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"id" => message_org_id} ->
+                message_org_id == org_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)
@@ -358,17 +376,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"fake" => message_fake_id} ->
-              message_fake_id == fake_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"fake" => message_fake_id} ->
+                message_fake_id == fake_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)
@@ -377,18 +398,21 @@ defmodule Andi.Event.EventHandlerTest do
 
   describe "Modified Date Migration Start" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      existing_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-        actual = Jason.decode!(message.value)
-        case actual["original_message"] do
-          %{"type" => message_type} ->
-            message_type ==  "migration:modified_date:start"
+      existing_messages =
+        Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+        |> elem(2)
+        |> Enum.filter(fn message ->
+          actual = Jason.decode!(message.value)
 
-          _ -> false
-        end
-      end)
-                          |> length
+          case actual["original_message"] do
+            %{"type" => message_type} ->
+              message_type == "migration:modified_date:start"
+
+            _ ->
+              false
+          end
+        end)
+        |> length
 
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
@@ -403,17 +427,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"type" => message_type} ->
-              message_type ==  "migration:modified_date:start"
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"type" => message_type} ->
+                message_type == "migration:modified_date:start"
+
+              _ ->
+                false
+            end
+          end)
 
         assert length(failed_messages) == existing_messages + 1
       end)
@@ -425,7 +452,10 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      allow(TelemetryEvent.add_event_metrics([app: any(), author: any(), dataset_id: any(), event_type: data_ingest_end()], [:events_handled]), exec: fn _nh -> raise "nope" end)
+      allow(
+        TelemetryEvent.add_event_metrics([app: any(), author: any(), dataset_id: any(), event_type: data_ingest_end()], [:events_handled]),
+        exec: fn _nh -> raise "nope" end
+      )
 
       Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, dataset)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
@@ -435,17 +465,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"id" => message_dataset_id} ->
-              message_dataset_id == dataset_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"id" => message_dataset_id} ->
+                message_dataset_id == dataset_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert length(failed_messages) == 1
       end)
@@ -467,17 +500,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"id" => message_dataset_id} ->
-              message_dataset_id == dataset_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"id" => message_dataset_id} ->
+                message_dataset_id == dataset_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert length(failed_messages) == 1
       end)
@@ -531,7 +567,7 @@ defmodule Andi.Event.EventHandlerTest do
       dataset = TDG.create_dataset(%{id: dataset_id})
 
       subject_id = UUID.uuid4()
-      {:ok, user} = %{subject_id: subject_id, email: "abc", name: "abc"}  |> SmartCity.User.new()
+      {:ok, user} = %{subject_id: subject_id, email: "abc", name: "abc"} |> SmartCity.User.new()
       allow(User.get_by_subject_id(subject_id), exec: fn _nh -> raise "nope" end)
 
       Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
@@ -542,17 +578,20 @@ defmodule Andi.Event.EventHandlerTest do
         assert valid_dataset_from_ecto != nil
         assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"subject_id" => message_subject_id} ->
-              message_subject_id == subject_id
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"subject_id" => message_subject_id} ->
+                message_subject_id == subject_id
+
+              _ ->
+                false
+            end
+          end)
 
         assert length(failed_messages) == 1
       end)

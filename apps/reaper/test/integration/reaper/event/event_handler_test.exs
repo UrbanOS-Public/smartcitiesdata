@@ -99,16 +99,18 @@ defmodule Reaper.EventHandlerTest do
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
       eventually(fn ->
-        cached_ingestion = case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
-          {:ok, %{"ingestion" => ing}} -> ing
-          _ -> nil
-        end
+        cached_ingestion =
+          case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
+            {:ok, %{"ingestion" => ing}} -> ing
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
+
             case actual["original_message"] do
               %{"id" => message_ingestion_id} ->
                 message_ingestion_id == id_for_invalid_ingestion
@@ -147,16 +149,18 @@ defmodule Reaper.EventHandlerTest do
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
       eventually(fn ->
-        cached_ingestion = case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
-          {:ok, %{"ingestion" => ing}} -> ing
-          _ -> nil
-        end
+        cached_ingestion =
+          case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
+            {:ok, %{"ingestion" => ing}} -> ing
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
+
             case actual["original_message"] do
               %{"ingestion_id" => message_ingestion_id} ->
                 message_ingestion_id == id_for_invalid_ingestion
@@ -190,16 +194,18 @@ defmodule Reaper.EventHandlerTest do
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
       eventually(fn ->
-        cached_ingestion = case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
-          {:ok, %{"ingestion" => ing}} -> ing
-          _ -> nil
-        end
+        cached_ingestion =
+          case Brook.ViewState.get(@instance_name, :extractions, id_for_valid_ingestion) do
+            {:ok, %{"ingestion" => ing}} -> ing
+            _ -> nil
+          end
 
         failed_messages =
           Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
+
             case actual["original_message"] do
               %{"id" => message_dataset_id} ->
                 message_dataset_id == id_for_invalid_dataset

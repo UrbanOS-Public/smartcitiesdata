@@ -26,7 +26,6 @@ defmodule Valkyrie.Event.EventHandler do
     end
 
     :ok
-
   rescue
     error ->
       Logger.error("data_ingest_start failed to process.")
@@ -66,7 +65,6 @@ defmodule Valkyrie.Event.EventHandler do
     end
 
     merge(:datasets, data.id, data)
-
   rescue
     error ->
       Logger.error("dataset_update failed to process.")
