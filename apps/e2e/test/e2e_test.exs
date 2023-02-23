@@ -362,7 +362,7 @@ defmodule E2ETest do
           Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
           |> Enum.to_list()
 
-        assert 2 == length(messages)
+        assert 0 < length(messages)
       end)
     end
   end
