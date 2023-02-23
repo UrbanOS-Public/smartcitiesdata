@@ -128,8 +128,8 @@ defmodule Reaper.Event.EventHandler do
     :ok
   rescue
     error ->
-      Logger.error("data_extract_start failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_delete failed to process.")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
       :discard
   end
 
