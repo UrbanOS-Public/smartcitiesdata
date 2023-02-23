@@ -77,17 +77,20 @@ defmodule Reaper.Event.EventHandlerTest do
         cached_ingestion = Brook.ViewState.get(@instance_name, "none", id_for_valid_ingestion)
         IO.inspect(cached_ingestion, label: "Ryan - Cached")
 
-        failed_messages = Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-                          |> elem(2)
-                          |> Enum.filter(fn message ->
-          actual = Jason.decode!(message.value)
-          case actual["original_message"] do
-            %{"id" => message_ingestion_id} ->
-              message_ingestion_id == id_for_invalid_ingestion
+        failed_messages =
+          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
 
-            _ -> false
-          end
-        end)
+            case actual["original_message"] do
+              %{"id" => message_ingestion_id} ->
+                message_ingestion_id == id_for_invalid_ingestion
+
+              _ ->
+                false
+            end
+          end)
 
         assert 1 == length(failed_messages)
       end)

@@ -45,7 +45,6 @@ defmodule Reaper.Event.EventHandler do
 
     Reaper.Event.Handlers.IngestionDelete.handle(data)
     Extractions.delete_ingestion(data.id)
-
   rescue
     error ->
       Logger.error("ingestion_delete failed to process.")
@@ -71,7 +70,6 @@ defmodule Reaper.Event.EventHandler do
     end
 
     :ok
-
   rescue
     error ->
       Logger.error("data_extract_start failed to process.")
@@ -81,18 +79,18 @@ defmodule Reaper.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_extract_end(),
-        data: %{
-          "dataset_id" => dataset_id,
-          "extract_start_unix" => _extract_start,
-          "ingestion_id" => ingestion_id,
-          "msgs_extracted" => _msg_target
-        } = data
+        data:
+          %{
+            "dataset_id" => dataset_id,
+            "extract_start_unix" => _extract_start,
+            "ingestion_id" => ingestion_id,
+            "msgs_extracted" => _msg_target
+          } = data
       }) do
     data_extract_end()
     |> add_event_count(dataset_id)
 
     Extractions.update_last_fetched_timestamp(ingestion_id)
-
   rescue
     error ->
       Logger.error("data_extract_end failed to process.")
@@ -128,7 +126,6 @@ defmodule Reaper.Event.EventHandler do
     )
 
     :ok
-
   rescue
     error ->
       Logger.error("data_extract_start failed to process.")
