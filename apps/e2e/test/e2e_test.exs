@@ -70,12 +70,14 @@ defmodule E2ETest do
 
     dataset = Jason.decode!([dataset_body])
 
-    streaming_dataset = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
+    streaming_dataset_struct = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
 
     {:ok, %{status_code: 201, body: streaming_dataset_body}} =
-      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset), [
+      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(streaming_dataset_struct), [
         {"Content-Type", "application/json"}
       ])
+
+    streaming_dataset = Jason.decode!(streaming_dataset_body)
 
     eventually(
       fn ->
@@ -145,12 +147,10 @@ defmodule E2ETest do
       ])
 
     ingestion = Jason.decode!([ingestion_body])
-    IO.inspect(Jason.decode!(streaming_dataset_body), label: "streaming_dataset_body")
-    IO.inspect(Jason.encode!(streaming_dataset_body), label: "streaming_dataset_body2")
-    IO.inspect(streaming_dataset_body, label: "streaming_dataset_body3")
-    streaming_ingestion =
+
+    streaming_ingestion_struct =
       TDG.create_ingestion(%{
-        targetDataset: Jason.decode!(streaming_dataset_body["id"]),
+        targetDataset: streaming_dataset["id"],
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -177,13 +177,24 @@ defmodule E2ETest do
       })
 
     {:ok, %{status_code: 201, body: streaming_ingestion_body}} =
-      HTTPoison.put!(
+      HTTPoison.put(
         "http://localhost:4000/api/v1/ingestion",
-        Jason.encode!(%{streaming_ingestion | id: nil}),
+        Jason.encode!(%{streaming_ingestion_struct | id: nil}),
         [
           {"Content-Type", "application/json"}
         ]
       )
+
+    streaming_ingestion = Jason.decode!(streaming_ingestion_body)
+
+    eventually(
+      fn ->
+        resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
+        assert length(Jason.decode!(resp.body)) == 2
+      end,
+      500,
+      20
+    )
 
     [
       dataset: dataset,
@@ -219,15 +230,6 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    #    test "via RESTful PUT", %{dataset: ds} do
-    #      resp =
-    #        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-    #          {"Content-Type", "application/json"}
-    #        ])
-    #
-    #      assert resp.status_code == 201
-    #    end
-
     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
@@ -260,26 +262,16 @@ defmodule E2ETest do
 
     test "stores a definition that can be retrieved", %{dataset: expected} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      assert resp.body == Jason.encode!([expected])
+      assert expected in Jason.decode!(resp.body)
     end
   end
 
   describe "creating an ingestion" do
-    #    test "via RESTful PUT", %{ingestion: ingestion} do
-    #      IO.inspect(ingestion, label: "ingestion")
-    #      resp =
-    #        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-    #          {"Content-Type", "application/json"}
-    #        ])
-    #
-    #      assert resp.status_code == 201
-    #    end
-
     test "stores a definition that can be retrieved", %{ingestion: expected} do
       eventually(
         fn ->
           resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
-          assert resp.body == Jason.encode!([expected])
+          assert expected in Jason.decode!(resp.body)
         end,
         500,
         20
@@ -366,34 +358,13 @@ defmodule E2ETest do
           Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
           |> Enum.to_list()
 
-        assert 1 == length(messages)
+        assert 2 == length(messages)
       end)
     end
   end
 
   describe "streaming data" do
-    test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
-      IO.inspect(ds, label: "streaming_dataset")
-
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
-    test "creating an ingestion via RESTful PUT", %{streaming_ingestion: ingestion} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
     test "is written by reaper", %{streaming_ingestion: ingestion} do
-      IO.inspect(ingestion, label: "streaming label")
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
