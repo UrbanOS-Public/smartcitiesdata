@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.19.6",
+      version: "0.19.7",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -36,6 +36,7 @@ defmodule Forklift.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:elsa, "~> 0.12"},
+      {:elixir_uuid, "~> 1.2"},
       {:ex_doc, "~> 0.21"},
       {:hackney, "~> 1.18"},
       {:jason, "~> 1.2", override: true},
