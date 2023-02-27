@@ -6,8 +6,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
   @get_datasets_route "/api/v1/datasets"
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
+  alias Andi.InputSchemas.InputConverter
+  alias SmartCity.Dataset
 
-  import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0]
+  import SmartCity.Event, only: [dataset_disable: 0, dataset_delete: 0, dataset_update: 0]
 
   @instance_name Andi.instance_name()
 
@@ -32,7 +34,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
       meck_options: [:passthrough]
     )
 
-    allow(Brook.Event.send(@instance_name, any(), :andi, any()), return: :ok, meck_options: [:passthrough])
+    allow(Brook.Event.send(@instance_name, any(), :andi, any()),
+      return: :ok,
+      meck_options: [:passthrough]
+    )
 
     uuid = Faker.UUID.v4()
 
@@ -123,7 +128,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: {:error, "Mistakes were made"})
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()),
+        return: {:error, "Mistakes were made"}
+      )
 
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(500)
@@ -144,7 +152,11 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(200)
 
       assert_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
-      assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset), once())
+
+      assert_called(
+        Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset),
+        once()
+      )
     end
 
     @tag capture_log: true
@@ -159,13 +171,20 @@ defmodule AndiWeb.API.DatasetControllerTest do
       |> json_response(404)
 
       refute_called(Brook.Event.send(@instance_name, dataset_delete(), :andi, dataset))
-      refute_called(Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset), once())
+
+      refute_called(
+        Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_delete(), dataset),
+        once()
+      )
     end
 
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       allow(DatasetStore.get(any()), return: {:ok, dataset})
-      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: {:error, "Mistakes were made"})
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()),
+        return: {:error, "Mistakes were made"}
+      )
 
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(500)
@@ -180,8 +199,60 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
   @tag capture_log: true
   test "PUT /api/ with improperly shaped data returns 500", %{conn: conn} do
-    conn = put(conn, @route, %{"id" => 5, "operational" => 2})
+    conn = put(conn, @route, %{"foobar" => 5, "operational" => 2})
     assert json_response(conn, 500) =~ "Unable to process your request"
+  end
+
+  test "PUT /api/ with data returns a 201", %{conn: conn} do
+    dataset = TDG.create_dataset(%{}) |> struct_to_map_with_string_keys()
+
+    {_, dataset_without_id} = dataset |> Map.pop("id")
+
+    allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+    allow(InputConverter.smrt_dataset_to_full_changeset(any()), return: %{valid?: true})
+
+    conn = put(conn, @route, dataset_without_id)
+
+    {_, decoded_body} = Jason.decode(response(conn, 201))
+    expected_dataset = TDG.create_dataset(Map.put(dataset_without_id, "id", decoded_body["id"]))
+
+    assert_called(Brook.Event.send(@instance_name, dataset_update(), :andi, expected_dataset))
+
+    assert_called(
+      Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_update(), expected_dataset),
+      once()
+    )
+  end
+
+  @tag capture_log: true
+  test "PUT /api/ creating a dataset with a set id returns a 400", %{conn: conn, example_datasets: example_datasets} do
+    dataset = TDG.create_dataset(%{}) |> struct_to_map_with_string_keys()
+
+    allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+    allow(InputConverter.smrt_dataset_to_full_changeset(any()), return: %{valid?: true})
+
+    conn = put(conn, @route, dataset)
+
+    response(conn, 400)
+    assert_called(Brook.Event.send(any(), any(), :andi, any()), never())
+    assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, any(), any()), never())
+  end
+
+  @tag capture_log: true
+  test "PUT /api/ updating an ingestion returns a 201 when an ingestion with that ID is found in the store", %{conn: conn} do
+    smrt_dataset = TDG.create_dataset(%{})
+    dataset = smrt_dataset |> struct_to_map_with_string_keys()
+
+    allow(DatasetStore.get(Map.get(dataset, "id")), return: {:ok, dataset})
+    allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+    allow(InputConverter.smrt_dataset_to_full_changeset(any()), return: %{valid?: true})
+
+    conn = put(conn, @route, dataset)
+
+    response(conn, 201)
+
+    assert_called(Brook.Event.send(@instance_name, dataset_update(), :andi, smrt_dataset))
+    assert_called(Andi.Schemas.AuditEvents.log_audit_event(:api, dataset_update(), smrt_dataset), once())
   end
 
   describe "GET dataset definitions from /api/dataset/" do

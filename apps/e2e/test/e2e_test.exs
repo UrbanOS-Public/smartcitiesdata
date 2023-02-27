@@ -29,7 +29,6 @@ defmodule E2ETest do
   }
 
   @streaming_overrides %{
-    id: "strimmin",
     technical: %{
       dataName: "strimmin",
       orgName: "usa",
@@ -58,11 +57,40 @@ defmodule E2ETest do
       Plug.Conn.resp(conn, 200, shapefile)
     end)
 
-    dataset =
+    dataset_struct =
       @overrides
       |> TDG.create_dataset()
 
-    streaming_dataset = SmartCity.Helpers.deep_merge(dataset, @streaming_overrides)
+    {_, dataset_struct} = pop_in(dataset_struct, [:id])
+
+    {:ok, %{status_code: 201, body: dataset_body}} =
+      HTTPoison.put("http://localhost:4000/api/v1/dataset", Jason.encode!(dataset_struct), [
+        {"Content-Type", "application/json"}
+      ])
+
+    dataset = Jason.decode!([dataset_body])
+
+    streaming_dataset_struct = SmartCity.Helpers.deep_merge(dataset_struct, @streaming_overrides)
+
+    {:ok, %{status_code: 201, body: streaming_dataset_body}} =
+      HTTPoison.put(
+        "http://localhost:4000/api/v1/dataset",
+        Jason.encode!(streaming_dataset_struct),
+        [
+          {"Content-Type", "application/json"}
+        ]
+      )
+
+    streaming_dataset = Jason.decode!(streaming_dataset_body)
+
+    eventually(
+      fn ->
+        {:ok, resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
+        assert length(Jason.decode!(resp.body)) == 2
+      end,
+      500,
+      20
+    )
 
     ingest_regex_transformation =
       TDG.create_transformation(%{
@@ -88,9 +116,10 @@ defmodule E2ETest do
         }
       })
 
-    ingestion =
+    ingestion_struct =
       TDG.create_ingestion(%{
-        targetDataset: dataset.id,
+        id: nil,
+        targetDataset: dataset["id"],
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean"},
@@ -116,9 +145,16 @@ defmodule E2ETest do
         transformations: [ingest_regex_transformation]
       })
 
-    streaming_ingestion =
+    {:ok, %{status_code: 201, body: ingestion_body}} =
+      HTTPoison.put("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion_struct), [
+        {"Content-Type", "application/json"}
+      ])
+
+    ingestion = Jason.decode!([ingestion_body])
+
+    streaming_ingestion_struct =
       TDG.create_ingestion(%{
-        targetDataset: streaming_dataset.id,
+        targetDataset: streaming_dataset["id"],
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean"},
@@ -143,6 +179,26 @@ defmodule E2ETest do
         ],
         transformations: [streaming_regex_transformation]
       })
+
+    {:ok, %{status_code: 201, body: streaming_ingestion_body}} =
+      HTTPoison.put(
+        "http://localhost:4000/api/v1/ingestion",
+        Jason.encode!(%{streaming_ingestion_struct | id: nil}),
+        [
+          {"Content-Type", "application/json"}
+        ]
+      )
+
+    streaming_ingestion = Jason.decode!(streaming_ingestion_body)
+
+    eventually(
+      fn ->
+        resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
+        assert length(Jason.decode!(resp.body)) == 2
+      end,
+      500,
+      20
+    )
 
     [
       dataset: dataset,
@@ -178,15 +234,6 @@ defmodule E2ETest do
   end
 
   describe "creating a dataset" do
-    test "via RESTful PUT", %{dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
     test "creates a PrestoDB table" do
       expected = [
         %{"Column" => "one", "Comment" => "", "Extra" => "", "Type" => "boolean"},
@@ -210,7 +257,6 @@ defmodule E2ETest do
       eventually(
         fn ->
           table = query("describe hive.default.end_to__end", true)
-
           assert table == expected
         end,
         500,
@@ -220,25 +266,16 @@ defmodule E2ETest do
 
     test "stores a definition that can be retrieved", %{dataset: expected} do
       resp = HTTPoison.get!("http://localhost:4000/api/v1/datasets")
-      assert resp.body == Jason.encode!([expected])
+      assert expected in Jason.decode!(resp.body)
     end
   end
 
   describe "creating an ingestion" do
-    test "via RESTful PUT", %{ingestion: ingestion} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
     test "stores a definition that can be retrieved", %{ingestion: expected} do
       eventually(
         fn ->
           resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
-          assert resp.body == Jason.encode!([expected])
+          assert expected in Jason.decode!(resp.body)
         end,
         500,
         20
@@ -249,7 +286,7 @@ defmodule E2ETest do
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
     test "is written by reaper", %{ingestion: ingestion} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -261,7 +298,7 @@ defmodule E2ETest do
     end
 
     test "is transformed by alchemist", %{dataset: dataset} do
-      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset.id}"
+      topic = "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{dataset["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -273,7 +310,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{dataset: dataset} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{dataset["id"]}"
 
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
@@ -286,8 +323,8 @@ defmodule E2ETest do
 
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{dataset: ds, ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
-      table = ds.technical.systemName
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds["id"]}"
+      table = ds["technical"]["systemName"]
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
@@ -303,7 +340,7 @@ defmodule E2ETest do
                      "two" => "foobar",
                      "three" => 10,
                      "parsed" => "oo",
-                     "_ingestion_id" => ingestion.id,
+                     "_ingestion_id" => ingestion["id"],
                      "os_partition" => get_current_yyyy_mm(),
                      "_extraction_start_time" => get_current_yyyy_mm_dd()
                    }
@@ -325,32 +362,14 @@ defmodule E2ETest do
           Elsa.Fetch.search_keys(@brokers, "event-stream", "data:write:complete")
           |> Enum.to_list()
 
-        assert 1 == length(messages)
+        assert 0 < length(messages)
       end)
     end
   end
 
   describe "streaming data" do
-    test "creating a dataset via RESTful PUT", %{streaming_dataset: ds} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/dataset", Jason.encode!(ds), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
-    test "creating an ingestion via RESTful PUT", %{streaming_ingestion: ingestion} do
-      resp =
-        HTTPoison.put!("http://localhost:4000/api/v1/ingestion", Jason.encode!(ingestion), [
-          {"Content-Type", "application/json"}
-        ])
-
-      assert resp.status_code == 201
-    end
-
     test "is written by reaper", %{streaming_ingestion: ingestion} do
-      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion.id}"
+      topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
@@ -362,7 +381,7 @@ defmodule E2ETest do
     end
 
     test "is standardized by valkyrie", %{streaming_dataset: ds} do
-      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds.id}"
+      topic = "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{ds["id"]}"
 
       eventually(fn ->
         {:ok, _, [message | _]} = Elsa.fetch(@brokers, topic)
@@ -375,8 +394,8 @@ defmodule E2ETest do
 
     @tag timeout: :infinity, capture_log: true
     test "persists in PrestoDB", %{streaming_dataset: ds, streaming_ingestion: ingestion} do
-      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds.id}"
-      table = ds.technical.systemName
+      topic = "#{Application.get_env(:forklift, :input_topic_prefix)}-#{ds["id"]}"
+      table = ds["technical"]["systemName"]
 
       eventually(fn ->
         assert Elsa.topic?(@brokers, topic)
@@ -408,7 +427,7 @@ defmodule E2ETest do
                    "two" => "foobar",
                    "three" => 10,
                    "parsed" => "oo",
-                   "_ingestion_id" => ingestion.id,
+                   "_ingestion_id" => ingestion["id"],
                    "os_partition" => get_current_yyyy_mm(),
                    "_extraction_start_time" => get_current_yyyy_mm_dd()
                  } in table_contents
@@ -422,7 +441,7 @@ defmodule E2ETest do
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
         |> subscribe_and_join(
           DiscoveryStreamsWeb.StreamingChannel,
-          "streaming:#{ds.technical.systemName}",
+          "streaming:#{ds["technical"]["systemName"]}",
           %{}
         )
 
@@ -451,7 +470,7 @@ defmodule E2ETest do
       smrt_ingestion =
         TDG.create_ingestion(%{
           topLevelSelector: nil,
-          targetDataset: ds.id,
+          targetDataset: ds["id"],
           extractSteps: [
             %{
               type: "date",
