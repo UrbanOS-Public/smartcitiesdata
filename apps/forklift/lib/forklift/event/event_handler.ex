@@ -65,7 +65,7 @@ defmodule Forklift.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("dataset_update failed to process.")
+      Logger.error("dataset_update failed to process." <> inspect(error))
       DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
       :discard
   end
