@@ -18,8 +18,8 @@ defmodule Transformers.ConstantTest do
       {:ok, result} = Constant.transform(payload, parameters)
 
       assert result == %{
-        "testField" => "new value"
-      }
+               "testField" => "new value"
+             }
     end
 
     test "creates new field when target field is different" do
@@ -36,9 +36,9 @@ defmodule Transformers.ConstantTest do
       {:ok, result} = Constant.transform(payload, parameters)
 
       assert result == %{
-        "testField" => "old value",
-        "testField2" => "new value"
-      }
+               "testField" => "old value",
+               "testField2" => "new value"
+             }
     end
 
     test "converts value to integer type" do
@@ -55,8 +55,8 @@ defmodule Transformers.ConstantTest do
       {:ok, result} = Constant.transform(payload, parameters)
 
       assert result == %{
-        "testField" => 1
-      }
+               "testField" => 1
+             }
     end
 
     test "converts value to float type" do
@@ -73,8 +73,8 @@ defmodule Transformers.ConstantTest do
       {:ok, result} = Constant.transform(payload, parameters)
 
       assert result == %{
-        "testField" => 1.0
-      }
+               "testField" => 1.0
+             }
     end
   end
 

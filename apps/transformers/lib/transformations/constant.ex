@@ -28,13 +28,15 @@ defmodule Transformers.Constant do
   defp convert_value(value, value_type, payload, target_field) do
     try do
       case convert(value, value_type) do
-        :error -> raise "Error: could not convert '#{value}' to type: #{value_type}"
+        :error ->
+          raise "Error: could not convert '#{value}' to type: #{value_type}"
+
         {parsed_value, _} ->
           converted_payload = Map.put(payload, target_field, parsed_value)
           {:ok, converted_payload}
       end
     rescue
-      err -> {:error, (if is_map_key(err, :message), do: err.message, else: err)}
+      err -> {:error, if(is_map_key(err, :message), do: err.message, else: err)}
     end
   end
 
@@ -64,7 +66,7 @@ defmodule Transformers.Constant do
         field_type: "string",
         field_label: "Value data type",
         options: ["integer", "string", "float"]
-      },
+      }
     ]
   end
 end
