@@ -185,7 +185,6 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
     :ok = write_json_records(dataset, new_data_messages_count, ingestion_id, new_data_extract_time)
 
-    
     {:ok, _past_data_messages_count} =
       populate_main_table(
         dataset,
