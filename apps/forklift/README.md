@@ -14,7 +14,7 @@ An application for reading data off kafka topics, batching it up and sending it 
   * Go to the root of smartcitesdata `cd ../../` assuming in your in the root of forklift
   * `./scripts/build.sh forklift 1.0`
 
-### To run locally (from forklift directory):
+### To run locally(from forklift directory):
   * To startup external dependancies in docker:
     ```bash
     `MIX_ENV=integration mix docker.start`
