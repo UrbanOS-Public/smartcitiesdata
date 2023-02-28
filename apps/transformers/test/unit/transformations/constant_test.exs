@@ -76,24 +76,6 @@ defmodule Transformers.ConstantTest do
         "testField" => 1.0
       }
     end
-
-    # test "converts value to datetime" do
-    #   parameters = %{
-    #     "targetField" => "testField",
-    #     "newValue" => "January 3, 2023",
-    #     "valueType" => "datetime"
-    #   }
-
-    #   payload = %{
-    #     "testField" => "old value"
-    #   }
-
-    #   {:ok, result} = Constant.transform(payload, parameters)
-
-    #   assert result == %{
-    #     "testField" => 1.0
-    #   }
-    # end
   end
 
   describe "error handling" do
