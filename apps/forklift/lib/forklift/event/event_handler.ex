@@ -38,11 +38,11 @@ defmodule Forklift.Event.EventHandler do
     end
 
     :ok
-  rescue
-    error ->
-      Logger.error("data_ingest_start failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
-      :discard
+    #  rescue
+    #    error ->
+    #      Logger.error("data_ingest_start failed to process.")
+    #      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -71,12 +71,12 @@ defmodule Forklift.Event.EventHandler do
     IO.inspect("Processing 2.3", label: "Ryan")
 
     :discard
-  rescue
-    error ->
-      Logger.error("dataset_update failed to process." <> inspect(error))
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
-      Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => error, "dataset" => data})
-      :discard
+    #  rescue
+    #    error ->
+    #      Logger.error("dataset_update failed to process." <> inspect(error))
+    #      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => error, "dataset" => data})
+    #      :discard
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = data, author: author}) do
@@ -87,11 +87,11 @@ defmodule Forklift.Event.EventHandler do
 
     Forklift.DataReaderHelper.terminate(data)
     Forklift.Datasets.delete(data.id)
-  rescue
-    error ->
-      Logger.error("data_ingest_end failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
-      :discard
+    #  rescue
+    #    error ->
+    #      Logger.error("data_ingest_end failed to process.")
+    #      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      :discard
   end
 
   def handle_event(%Brook.Event{type: "migration:last_insert_date:start", author: author} = event) do
@@ -117,11 +117,11 @@ defmodule Forklift.Event.EventHandler do
     Logger.info("Completed last insert date migration")
 
     create(:migration, "last_insert_date_migration_completed", true)
-  rescue
-    error ->
-      Logger.error("migration:last_insert_date:start failed to process.")
-      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: error.__struct__)
-      :discard
+    #  rescue
+    #    error ->
+    #      Logger.error("migration:last_insert_date:start failed to process.")
+    #      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = data, author: author}) do
@@ -138,11 +138,12 @@ defmodule Forklift.Event.EventHandler do
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{data.id}, Reason: #{inspect(error)}")
     end
-  rescue
-    error ->
-      Logger.error("dataset_delete failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
-      :discard
+
+    #  rescue
+    #    error ->
+    #      Logger.error("dataset_delete failed to process.")
+    #      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -168,11 +169,11 @@ defmodule Forklift.Event.EventHandler do
     end
 
     :ok
-  rescue
-    error ->
-      Logger.error("data_extract_end failed to process.")
-      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: error.__struct__)
-      :discard
+    #  rescue
+    #    error ->
+    #      Logger.error("data_extract_end failed to process.")
+    #      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+    #      :discard
   end
 
   defp delete_dataset(dataset) do
