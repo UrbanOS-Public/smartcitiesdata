@@ -26,6 +26,8 @@ defmodule Forklift.Event.EventHandler do
         data: %Ingestion{targetDataset: dataset_id} = data,
         author: author
       }) do
+    IO.inspect("Processing 1", label: "Ryan")
+
     data_ingest_start()
     |> add_event_count(author, dataset_id)
 
@@ -49,6 +51,8 @@ defmodule Forklift.Event.EventHandler do
         author: author
       })
       when type in ["stream", "ingest"] do
+    IO.inspect("Processing 2", label: "Ryan")
+
     dataset_update()
     |> add_event_count(author, data.id)
 
@@ -71,6 +75,8 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = data, author: author}) do
+    IO.inspect("Processing 3", label: "Ryan")
+
     data_ingest_end()
     |> add_event_count(author, data.id)
 
@@ -84,6 +90,8 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: "migration:last_insert_date:start", author: author} = event) do
+    IO.inspect("Processing 4", label: "Ryan")
+
     "migration:last_insert_date:start"
     |> add_event_count(author, nil)
 
@@ -112,6 +120,7 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = data, author: author}) do
+    IO.inspect("Processing 5", label: "Ryan")
     Logger.debug("#{__MODULE__}: Deleting Dataset: #{data.id}")
 
     dataset_delete()
@@ -142,6 +151,7 @@ defmodule Forklift.Event.EventHandler do
           } = data,
         author: author
       }) do
+    IO.inspect("Processing 6", label: "Ryan")
     data_extract_end() |> add_event_count(author, dataset_id)
 
     dataset = Forklift.Datasets.get!(dataset_id)
