@@ -5,8 +5,6 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
   import Phoenix.LiveView
   require Logger
 
-  alias Ecto.Changeset
-
   def move_element(list, index, new_index) do
     {extract_step_to_move, remaining_list} = List.pop_at(list, index)
 

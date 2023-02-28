@@ -85,7 +85,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#destination-error-msg") == "Please enter a valid destination."
+      assert get_text(html, "##{auth_step.id}_auth_destination_error") == "Please enter a valid destination."
     end
 
     test "url field can be altered and saved", %{
@@ -123,7 +123,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
+      assert get_text(html, "##{auth_step.id}_auth_url_error") == "Please enter a valid url - including http:// or https://"
     end
 
     test "path field can be altered and saved", %{
@@ -161,7 +161,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#path-error-msg") == "Please enter a valid response location."
+      assert get_text(html, "##{auth_step.id}_auth_path_error") == "Please enter a valid response location."
     end
 
     test "cacheTtl field has default", %{

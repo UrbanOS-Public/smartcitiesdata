@@ -18,6 +18,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   alias AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm
   alias Andi.UrlBuilder
   alias AndiWeb.Views.HttpStatusDescriptions
+  alias AndiWeb.Helpers.FormTools
+  alias Andi.InputSchemas.Ingestions.ExtractQueryParam
 
   def mount(socket) do
     {:ok,
@@ -49,13 +51,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
             <div class="extract-http-step-form__method">
               <%= label(f, :action, DisplayNames.get(:method), class: "label label--required", for: "#{@id}_http_method") %>
               <%= select(f, :action, get_http_methods(), [id: "#{@id}_http_method", class: "extract-http-step-form__method select", required: true]) %>
-              <%= ErrorHelpers.error_tag(f, :action) %>
+              <%= ErrorHelpers.error_tag(f, :action, id: "#{@id}_http_method_error") %>
             </div>
 
             <div class="extract-http-step-form__url">
               <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_http_url") %>
               <%= url_input(f, :url, [id: "#{@id}_http_url", class: "input full-width", disabled: @testing?, required: true]) %>
-              <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
+              <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_http_url_error") %>
             </div>
 
             <%= live_component(@socket, KeyValueEditor, id: "#{@id}__key_pvalue_editor_queryParams", css_label: "source-query-params", form: f, field: :queryParams, parent_id: @id, changesets: query_param_changesets, parent_module: __MODULE__) %>
@@ -65,7 +67,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
               <div class="extract-http-step-form__body">
                 <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "#{@id}_http_body") %>
                 <%= textarea(f, :body, id: "#{@id}_http_body", class: "input full-width", phx_hook: "prettify", disabled: @testing?) %>
-                <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false) %>
+                <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false, id: "#{@id}_http_body_error") %>
               </div>
             <% end %>
 
@@ -90,6 +92,34 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
         </div>
       </form>
     """
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "url"]}, socket) do
+    updated_form_data = form_data
+      |> FormTools.adjust_extract_query_params_for_url()
+      |> map_query_params_to_changesets()
+
+    extract_step =
+      socket.assigns.changeset
+      |> Changeset.delete_change(:queryParams)
+      |> ExtractHttpStep.changeset(updated_form_data)
+    ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "queryParams" | _]}, socket) do
+    updated_form_data = form_data
+      |> FormTools.adjust_extract_url_for_query_params()
+      |> map_query_params_to_changesets()
+
+    extract_step =
+      socket.assigns.changeset
+      |> Changeset.delete_change(:queryParams)
+      |> ExtractHttpStep.changeset(updated_form_data)
+    ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
+
+    {:noreply, socket}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -120,13 +150,29 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def update(%{field: field, changesets: changesets}, socket) do
+    {_, url} = Changeset.fetch_field(socket.assigns.changeset, :url)
+    new_url = if field == :queryParams do
+      query_param_map = changesets
+        |> Enum.with_index()
+        |> Enum.reduce(%{}, fn {query_param, index}, acc ->
+          {_, key} = Changeset.fetch_field(query_param, :key)
+          {_, value} = Changeset.fetch_field(query_param, :value)
+          Map.put(acc, "#{index}", %{"key" => key, "value" => value})
+        end)
+      %{"url" => new_url} = FormTools.adjust_extract_url_for_query_params(%{"url" => url, "queryParams" => query_param_map})
+      new_url
+    else
+      url
+    end
+
+
     applied_changes =
       Enum.map(changesets, fn changeset ->
         Changeset.apply_changes(changeset)
         |> StructTools.to_map()
       end)
 
-    changes = %{field => applied_changes}
+    changes = %{field => applied_changes, url: new_url}
 
     extract_step =
       socket.assigns.changeset
@@ -183,5 +229,19 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
     }
 
     ~E(<sup class="test-status__tooltip-wrapper"><i id="test-tooltip" phx-hook="addTooltip" data-tooltip-content="<%= @description %>" class="material-icons test-status__tooltip--<%= @modifier %>">info_outline</i></sup>)
+  end
+
+  defp map_query_params_to_changesets(%{"queryParams" => query_params} = changes) when query_params == %{}, do: Map.put(changes, "queryParams", [])
+
+  defp map_query_params_to_changesets(changes) do
+    query_params = Map.get(changes, "queryParams")
+    query_param_changeset_changes = Enum.reduce(query_params, [], fn {_index, query_param}, acc ->
+        changeset = ExtractQueryParam.changeset(ExtractQueryParam.get_module(), query_param)
+          |> Changeset.apply_changes()
+          |> StructTools.to_map()
+        acc ++ [changeset]
+      end)
+
+    Map.put(changes, "queryParams", query_param_changeset_changes)
   end
 end

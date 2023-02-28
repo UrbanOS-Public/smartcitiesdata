@@ -32,19 +32,19 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
             <div class="extract-date-step-form__destination">
               <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_date_destination") %>
               <%= text_input(f, :destination, [id: "#{@id}_date_destination", required: true, class: "input"]) %>
-              <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false) %>
+              <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false, id: "#{@id}_date_destination_error") %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeUnit">
               <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "#{@id}_date_delta_time_unit") %>
               <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}_date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
-              <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
+              <%= ErrorHelpers.error_tag(f, :deltaTimeUnit, id: "#{@id}_date_delta_time_unit_error") %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeValue">
               <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "#{@id}_date_delta_time_value") %>
               <%= text_input(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
-              <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
+              <%= ErrorHelpers.error_tag(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value_error") %>
             </div>
 
             <div class="extract-date-step-form__format">
@@ -53,7 +53,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
                 <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
               </div>
               <%= text_input(f, :format, [id: "step_#{@id}_date_format", class: "extract-date-step-form__format input", required: true]) %>
-              <%= ErrorHelpers.error_tag(f, :format) %>
+              <%= ErrorHelpers.error_tag(f, :format, id: "#{@id}_date_format_error") %>
             </div>
 
             <div class="extract-date-step-form__output">

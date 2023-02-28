@@ -24,7 +24,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
   def changeset(extract_step, changes) do
     changes_with_id =
       StructTools.ensure_id(extract_step, changes)
-      |> scrub_time_value()
+      |> AtomicMap.convert(safe: false, underscore: false)
+      |> format()
 
     extract_step
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
@@ -56,13 +57,14 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStep do
 
   def preload(struct), do: struct
 
-  defp scrub_time_value(%{"deltaTimeValue" => ""} = changes), do: Map.put(changes, "deltaTimeValue", nil)
-  defp scrub_time_value(changes), do: changes
-
   defp format(changes) do
     changes
+    |> scrub_time_value()
     |> format_format()
   end
+
+  defp scrub_time_value(%{"deltaTimeValue" => ""} = changes), do: Map.put(changes, :deltaTimeValue, nil)
+  defp scrub_time_value(changes), do: changes
 
   defp format_format(%{format: _format} = changes), do: changes
   defp format_format(changes), do: Map.put(changes, :format, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}")

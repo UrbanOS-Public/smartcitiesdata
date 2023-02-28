@@ -11,7 +11,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
     }
 
     changeset =
-      ExtractStep.changeset(changes)
+      ExtractStep.changeset(ExtractStep.get_module(), changes)
       |> ExtractStep.validate()
 
     assert changeset.errors[:context] != nil
@@ -23,7 +23,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
     }
 
     changeset =
-      ExtractStep.changeset(changes)
+      ExtractStep.changeset(ExtractStep.get_module(), changes)
       |> ExtractStep.validate()
 
     assert changeset.errors[:type] != nil
@@ -39,7 +39,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       }
 
       changeset =
-        ExtractStep.changeset(changes)
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
         |> ExtractStep.validate()
 
       assert changeset.errors[:url] != nil
@@ -55,7 +55,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       }
 
       changeset =
-        ExtractStep.changeset(changes)
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
         |> ExtractStep.validate()
 
       assert changeset.errors[:body] != nil
@@ -70,7 +70,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       }
 
       changeset =
-        ExtractStep.changeset(changes)
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
         |> ExtractStep.validate()
 
       assert changeset.errors[:url] == nil
@@ -88,7 +88,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       }
 
       changeset =
-        ExtractStep.changeset(changes)
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
         |> ExtractStep.validate()
 
       assert changeset.errors[:format] != nil

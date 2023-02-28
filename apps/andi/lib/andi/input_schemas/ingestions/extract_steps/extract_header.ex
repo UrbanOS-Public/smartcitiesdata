@@ -16,11 +16,13 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHeader do
   @cast_fields [:id, :key, :value]
   @required_fields [:key]
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(header, changes) do
-    common_changeset_operations(header, changes)
-    |> Changeset.validate_required(@required_fields, message: "is required")
+    changes_with_id = StructTools.ensure_id(header, changes)
+    |> AtomicMap.convert(safe: false, underscore: false)
+
+    Changeset.cast(header, changes_with_id, @cast_fields, empty_values: [])
   end
 
   def validate(changeset) do
@@ -40,16 +42,6 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHeader do
     else
       validated_changeset
     end
-  end
-
-  def changeset_for_draft(header, changes) do
-    common_changeset_operations(header, changes)
-  end
-
-  defp common_changeset_operations(header, changes) do
-    changes_with_id = StructTools.ensure_id(header, changes)
-
-    Changeset.cast(header, changes_with_id, @cast_fields, empty_values: [])
   end
 
   def preload(struct), do: struct

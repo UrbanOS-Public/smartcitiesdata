@@ -7,10 +7,6 @@ defmodule AndiWeb.FormCollapsibleHeader do
 
   def component_id(step), do: "#{step}-collapsible-header-view"
 
-  def mount(_params, socket) do
-    {:noreply, socket}
-  end
-
   def render(assigns) do
     {visible, action} = if assigns.visible?, do: {"expanded", "MINIMIZE"}, else: {"collapsed", "EDIT"}
 

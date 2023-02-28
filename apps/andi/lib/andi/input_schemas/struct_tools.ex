@@ -74,7 +74,6 @@ defmodule Andi.InputSchemas.StructTools do
     struct(struct_type, preloaded)
   end
 
-  # TODO: Remove when preload is removed
   def sort_if_sequenced([%{sequence: _sequence} | _] = list) do
     Enum.sort_by(list, &Map.get(&1, :sequence))
   end

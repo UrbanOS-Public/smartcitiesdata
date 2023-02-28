@@ -52,14 +52,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
-    extract_step_changesets =
-      case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
-        {_, extract_steps} -> extract_steps
-        :error -> []
-      end
-
-    {_, {extract_step_errors, _}} =
-      Enum.find(Map.get(ingestion_changeset, :errors, []), {"", {"", ""}}, fn {property, _message} -> property == :extractSteps end)
+    {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
@@ -157,7 +150,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_info({:update_all_extract_steps, extract_step_changesets}, socket) do
     new_ingestion_changeset = Ingestion.merge_extract_step_changeset(socket.assigns.changeset, extract_step_changesets)
 
-    {:noreply, assign(socket, changeset: new_ingestion_changeset)}
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
   def handle_info({:update_dataset, id}, socket) do

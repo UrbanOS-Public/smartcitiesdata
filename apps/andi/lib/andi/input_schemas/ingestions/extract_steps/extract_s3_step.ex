@@ -51,14 +51,6 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3Step do
     end
   end
 
-  def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
-
-    extract_step
-    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
-    |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset_for_draft/2)
-  end
-
   def preload(struct), do: StructTools.preload(struct, [:headers])
 
   defp validate_headers(changeset) do
@@ -78,19 +70,4 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3Step do
       end)
     end)
   end
-
-  # defp validate_key_value_set(changeset, field) do
-  #   key_value_set = Ecto.Changeset.get_field(changeset, field)
-
-  #   case key_value_has_invalid_key?(key_value_set) do
-  #     true -> Changeset.add_error(changeset, field, "has invalid format", validation: :format)
-  #     false -> changeset
-  #   end
-  # end
-
-  # defp key_value_has_invalid_key?(nil), do: false
-
-  # defp key_value_has_invalid_key?(key_value_set) do
-  #   Enum.any?(key_value_set, fn key_value -> key_value.key in [nil, ""] end)
-  # end
 end

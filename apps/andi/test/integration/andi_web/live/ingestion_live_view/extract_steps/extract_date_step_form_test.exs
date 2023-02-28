@@ -85,7 +85,7 @@ defmodule AndiWeb.ExtractDateStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#destination-error-msg") == "Please enter a valid destination."
+      assert get_text(html, "##{date_step.id}_date_destination_error") == "Please enter a valid destination."
     end
 
     test "delta time unit field can be altered and saved", %{

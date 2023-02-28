@@ -30,7 +30,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
             <div class="extract-secret-step-form__destination">
               <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_secret_destination") %>
               <%= text_input(f, :destination, [id: "#{@id}_secret_destination", class: "extract-secret-step-form__destination input", required: true]) %>
-              <%= ErrorHelpers.error_tag(f, :destination) %>
+              <%= ErrorHelpers.error_tag(f, :destination, id: "#{@id}_secret_destination_error") %>
             </div>
 
             <div class="extract-secret-step-form__value">

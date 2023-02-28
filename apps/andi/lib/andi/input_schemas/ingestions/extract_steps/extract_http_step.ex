@@ -66,25 +66,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
 
   defp format(changes) do
     changes
-    |> format_url()
+    # |> format_url()
   end
-
-  defp format_url(%{url: url, queryParams: %{} = query_params} = changes) do
-    query_param_array =
-      Enum.reduce(Map.to_list(query_params), [], fn {_index, query_param}, acc ->
-        acc ++ [%{key: query_param.key, value: query_param.value}]
-      end)
-
-    new_url = Andi.URI.update_url_with_params(url, query_param_array)
-    Map.put(changes, :url, new_url)
-  end
-
-  defp format_url(%{url: url, queryParams: query_params} = changes) do
-    new_url = Andi.URI.update_url_with_params(url, query_params)
-    Map.put(changes, :url, new_url)
-  end
-
-  defp format_url(changes), do: changes
 
   defp validate_key_value_set(changeset, field) do
     key_value_set = Ecto.Changeset.get_field(changeset, field)

@@ -86,7 +86,7 @@ defmodule AndiWeb.ExtractSecretStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#destination-error-msg") == "Please enter a valid destination."
+      assert get_text(html, "##{secret_step.id}_secret_destination_error") == "Please enter a valid destination."
     end
   end
 end

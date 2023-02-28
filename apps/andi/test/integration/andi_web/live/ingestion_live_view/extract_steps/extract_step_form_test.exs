@@ -146,7 +146,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
     {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-    assert get_text(html, ".extract-steps__error-message") == "cannot be empty and must end with a http or s3 step"
+    assert get_text(html, ".extract-steps__error-message") == "Cannot be empty and must end with a http or s3 step"
     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 
@@ -175,7 +175,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     end)
 
     {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
-    assert get_text(html, ".extract-steps__error-message") == "cannot be empty and must end with a http or s3 step"
+    assert get_text(html, ".extract-steps__error-message") == "Cannot be empty and must end with a http or s3 step"
     assert not Enum.empty?(find_elements(html, ".component-number-status--invalid"))
   end
 

@@ -103,7 +103,7 @@ defmodule Andi.InputSchemas.Ingestion do
       ingestion
       |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
       |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
       |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
@@ -113,7 +113,7 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset
     |> Changeset.cast(changes, @cast_fields, empty_values: [])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
@@ -123,7 +123,7 @@ defmodule Andi.InputSchemas.Ingestion do
     ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
@@ -131,7 +131,7 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset
     |> Changeset.cast(changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
   end
 
@@ -168,6 +168,18 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(cleared_ingestion_changeset, %{extractSteps: extract_step_changeset_list})
   end
 
+  def get_extract_step_changesets_and_errors(ingestion_changeset) do
+    extract_step_changesets = case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
+      {_, extract_steps} -> extract_steps
+      :error -> []
+    end
+
+    {_, {extract_step_errors, _}} =
+      Enum.find(Map.get(ingestion_changeset, :errors, []), {"", {"", ""}}, fn {property, _message} -> property == :extractSteps end)
+
+    {extract_step_changesets, extract_step_errors}
+  end
+
   @spec preload(nil | maybe_improper_list | struct) :: any
   def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
 
@@ -200,7 +212,7 @@ defmodule Andi.InputSchemas.Ingestion do
   defp validate_top_level_selector(changeset), do: changeset
 
   defp validate_schema(changeset) do
-    case Ecto.Changeset.get_field(changeset, :schema, nil) do
+    case Changeset.get_field(changeset, :schema, nil) do
       [] -> Changeset.add_error(changeset, :schema, "cannot be empty")
       nil -> Changeset.add_error(changeset, :schema, "is required", validation: :required)
       _ -> validate_schema_internals(changeset)
@@ -221,9 +233,38 @@ defmodule Andi.InputSchemas.Ingestion do
       Changeset.get_field(changeset, :extractSteps)
       |> StructTools.sort_if_sequenced()
 
-    case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
-      true -> Changeset.add_error(changeset, :extractSteps, "cannot be empty and must end with a http or s3 step")
+    changeset = case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
+      true -> Changeset.add_error(changeset, :extractSteps, "Cannot be empty and must end with a http or s3 step")
       false -> changeset
+    end
+
+    Enum.reduce(extract_steps, changeset, fn extract_step, acc ->
+      case ExtractStep.step_module(extract_step.type) == :invalid_type do
+        true -> Changeset.add_error(acc, :extract_step_type, "invalid type")
+        false -> acc
+      end
+
+      validate_context(extract_step, acc)
+    end)
+  end
+
+  defp validate_context(extract_step, changeset) do
+    case ExtractStep.step_module(extract_step.type) do
+      :invalid_type -> changeset
+      nil -> changeset
+
+      step_module ->
+        if is_nil(extract_step.context) do
+          Changeset.add_error(changeset, :extract_step_context, "invalid context")
+        else
+          validated_changeset =
+            step_module.changeset(step_module.get_module(), extract_step.context)
+            |> step_module.validate()
+
+          Enum.reduce(validated_changeset.errors, changeset, fn {key, {message, _}}, acc ->
+            Changeset.add_error(acc, key, message)
+          end)
+        end
     end
   end
 end

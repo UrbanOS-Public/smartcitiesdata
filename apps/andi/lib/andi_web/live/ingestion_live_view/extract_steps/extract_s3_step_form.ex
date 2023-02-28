@@ -35,7 +35,7 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
           <div class="extract-s3-step-form__url">
             <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_s3_url") %>
             <%= text_input(f, :url, [id: "#{@id}_s3_url", class: "input full-width", required: true]) %>
-            <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
+            <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_s3_url_error") %>
           </div>
 
           <%= live_component(@socket, KeyValueEditor, id: "#{@id}__key_pvalue_editor_headers", css_label: "source-headers", form: f, field: :headers, parent_id: @id, changesets: header_changesets, parent_module: __MODULE__) %>

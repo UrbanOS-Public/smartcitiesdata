@@ -31,7 +31,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
       |> format()
 
     extract_step
-    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [ [] ])
     |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
   end
 
@@ -45,7 +45,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
     validated_extract_step_changeset =
       extract_step_changeset
       |> Map.replace(:errors, [])
-      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+      |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [ [] ], force_changes: true)
       |> Changeset.cast_embed(:headers, with: &ExtractHeader.changeset/2)
       |> Changeset.validate_required(@required_fields, message: "is required")
       |> Changeset.validate_format(:destination, ~r/^[[:alpha:]_]+$/)
@@ -93,7 +93,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
 
   defp validate_body_format(changeset), do: changeset
 
-  defp validate_path(%{changes: %{path: []}} = changeset), do: Changeset.add_error(changeset, :path, "is required")
+  # defp validate_path(%{changes: %{path: []}} = changeset), do: Changeset.add_error(changeset, :path, "is required")
 
   defp validate_path(%{changes: %{path: path}} = changeset) do
     case Enum.any?(path, fn path_field -> path_field in ["", nil] end) do

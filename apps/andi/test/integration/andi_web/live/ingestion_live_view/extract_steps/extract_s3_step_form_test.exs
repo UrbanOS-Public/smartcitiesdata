@@ -78,7 +78,7 @@ defmodule AndiWeb.Extracts3StepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
+      assert get_text(html, "##{s3_step.id}_s3_url_error") == "Please enter a valid url - including https://"
     end
   end
 end

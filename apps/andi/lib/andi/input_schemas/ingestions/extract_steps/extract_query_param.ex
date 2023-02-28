@@ -16,7 +16,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractQueryParam do
   @cast_fields [:id, :key, :value]
   @required_fields [:key]
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(query_param, changes) do
     changes_with_id =

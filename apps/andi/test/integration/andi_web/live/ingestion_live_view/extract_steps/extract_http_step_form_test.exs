@@ -78,7 +78,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "#url-error-msg") == "Please enter a valid url - including http:// or https://"
+      assert get_text(html, "##{http_step.id}_http_url_error") == "Please enter a valid url - including http:// or https://"
     end
   end
 end

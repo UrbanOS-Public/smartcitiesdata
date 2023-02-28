@@ -30,9 +30,14 @@ defmodule AndiWeb.ErrorHelpers do
     %{data: %form_type{}} = form
     translated = error |> interpret_error(field, form_type) |> translate_error()
 
+    id =  case Keyword.get(options, :id) do
+            nil -> "#{field}-error-msg"
+            id -> id
+          end
+
     content_tag(:span, translated,
       class: "error-msg",
-      id: "#{field}-error-msg",
+      id: id,
       data: get_additional_content_tag_data(form, field, options)
     )
   end
@@ -114,6 +119,10 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp interpret_error_message(_message, :name, DataDictionary) do
     "Please enter a valid name. Schema fields cannot contain control characters."
+  end
+
+  defp interpret_error_message(_message, :url, form) when form == Andi.InputSchemas.Ingestions.ExtractS3Step do
+    "Please enter a valid url - including https://"
   end
 
   defp interpret_error_message(_message, :url, _),

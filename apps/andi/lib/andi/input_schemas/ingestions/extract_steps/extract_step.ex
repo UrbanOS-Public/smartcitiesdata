@@ -22,7 +22,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
   use Accessible
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
     changes_with_id = StructTools.ensure_id(extract_step, changes)
@@ -45,42 +45,14 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
     |> validate_context()
   end
 
-  def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
-
-    extract_step
-    |> Changeset.cast(changes_with_id, @cast_fields, force_changes: true)
-  end
-
-  def changeset_from_form_data(form_data) do
-    form_data_as_params =
-      form_data
-      |> AtomicMap.convert(safe: false, underscore: false)
-      |> wrap_context()
-
-    changeset(form_data_as_params)
-  end
-
-  def form_changeset_from_andi_extract_step(%{type: "sftp", context: context}), do: context
-
-  def form_changeset_from_andi_extract_step(extract_step) do
-    step_module = step_module(extract_step.type)
-
-    changes =
-      extract_step
-      |> StructTools.to_map()
-      |> Map.get(:context)
-
-    step_module.changeset(step_module.get_module(), changes)
-  end
-
   def create_step_changeset_from_generic_step_changeset(changeset) do
     {_, type} = Changeset.fetch_field(changeset, :type)
 
     step_module = step_module(type)
 
-    {:ok, changes} =
-      Changeset.fetch_change(changeset, :context)
+    changes = changeset
+      |> Changeset.apply_changes()
+      |> Map.get(:context)
       |> StructTools.to_map()
 
     step_module.changeset(step_module.get_module(), changes)
