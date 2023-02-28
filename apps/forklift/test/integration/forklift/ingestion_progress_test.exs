@@ -9,7 +9,9 @@ defmodule Forklift.IngestionProgressTest do
   end
 
   setup do
-    {:ok, _} = Redix.command(:redix, ["flushall"])
+    on_exit(fn ->
+      {:ok, _} = Redix.command(:redix, ["flushall"])
+    end)
     [ingestion_id: Faker.UUID.v4(), extract_time: Timex.now() |> Timex.to_unix(), dataset: %{}]
   end
 
