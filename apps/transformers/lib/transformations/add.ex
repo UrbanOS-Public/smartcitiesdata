@@ -1,4 +1,4 @@
-defmodule Transformers.ArithmeticAdd do
+defmodule Transformers.Add do
   @behaviour Transformation
 
   alias Transformers.Validations.NotBlank

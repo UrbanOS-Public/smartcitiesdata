@@ -1,7 +1,7 @@
-defmodule Transformers.ArithmeticSubtractTest do
+defmodule Transformers.SubtractTest do
   use ExUnit.Case
 
-  alias Transformers.ArithmeticSubtract
+  alias Transformers.Subtract
 
   describe "transform/2" do
     test "subtracts combination of several fields and numbers from minuend" do
@@ -17,7 +17,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "secondField" => 4
       }
 
-      {:ok, result} = ArithmeticSubtract.transform(payload, parameters)
+      {:ok, result} = Subtract.transform(payload, parameters)
 
       assert result == %{
                "firstTotal" => 20,
@@ -39,7 +39,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "secondField" => 4
       }
 
-      {:ok, result} = ArithmeticSubtract.transform(payload, parameters)
+      {:ok, result} = Subtract.transform(payload, parameters)
 
       assert result == %{
                "firstField" => 3,
@@ -58,7 +58,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "subtrahends" => [1]
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == %{"minuend" => "Missing field"}
     end
@@ -73,7 +73,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "minuend" => 1
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == %{"subtrahends" => "Missing or empty field"}
     end
@@ -89,7 +89,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "minuend" => 1
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == %{"subtrahends" => "Missing or empty field"}
     end
@@ -104,7 +104,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "minuend" => 1
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == %{"targetField" => "Missing or empty field"}
     end
@@ -120,9 +120,9 @@ defmodule Transformers.ArithmeticSubtractTest do
         "targetField" => "some_field"
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == "Missing field in payload: target"
+      assert reason == "A value cannot be parsed to integer or float: target"
     end
 
     test "if specified minuend is not on payload, return error" do
@@ -136,7 +136,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         "targetField" => "target"
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == "Missing field in payload: minuend"
     end
@@ -153,9 +153,9 @@ defmodule Transformers.ArithmeticSubtractTest do
         "targetField" => "some_field"
       }
 
-      {:error, reason} = ArithmeticSubtract.transform(payload, parameters)
+      {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == "A value is not a number: target"
+      assert reason == "A value cannot be parsed to integer or float: target"
     end
   end
 
@@ -182,7 +182,7 @@ defmodule Transformers.ArithmeticSubtractTest do
         }
       ]
 
-      assert ArithmeticSubtract.fields() == expected_fields
+      assert Subtract.fields() == expected_fields
     end
   end
 end

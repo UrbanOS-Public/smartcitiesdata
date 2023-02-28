@@ -1,4 +1,4 @@
-defmodule Transformers.ArithmeticSubtract do
+defmodule Transformers.Subtract do
   @behaviour Transformation
 
   alias Transformers.Validations.IsPresent

@@ -159,8 +159,8 @@ defmodule AndiWeb.Views.Options do
       "concatenation" => "Concatenation",
       "datetime" => "DateTime",
       "remove" => "Remove",
-      "arithmetic_add" => "Add",
-      "arithmetic_subtract" => "Subtract",
+      "add" => "Add",
+      "subtract" => "Subtract",
       "multiplication" => "Multiply",
       "division" => "Divide"
     }

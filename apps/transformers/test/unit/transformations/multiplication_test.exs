@@ -117,7 +117,7 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: bar"
+      assert reason == "A value cannot be parsed to integer or float: bar"
     end
 
     test "ignores additional payload fields that are not in the multiplicands" do
@@ -144,7 +144,7 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "multiplicand field not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
     end
   end
 

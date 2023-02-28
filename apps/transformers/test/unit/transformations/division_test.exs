@@ -125,7 +125,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: not_valid"
+      assert reason == "A value cannot be parsed to integer or float: not_valid"
     end
 
     test "returns an error if a field in the divisor doesnt exist" do
@@ -139,7 +139,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: not_valid"
+      assert reason == "A value cannot be parsed to integer or float: not_valid"
     end
 
     test "returns an error if a field in the dividend is not a number" do
@@ -153,7 +153,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "payload field is not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
     end
 
     test "returns an error if a field in the divisor is not a number" do
@@ -167,7 +167,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "payload field is not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
     end
 
     test "returns an error if the divisor is 0" do
