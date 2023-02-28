@@ -30,10 +30,11 @@ defmodule AndiWeb.ErrorHelpers do
     %{data: %form_type{}} = form
     translated = error |> interpret_error(field, form_type) |> translate_error()
 
-    id =  case Keyword.get(options, :id) do
-            nil -> "#{field}-error-msg"
-            id -> id
-          end
+    id =
+      case Keyword.get(options, :id) do
+        nil -> "#{field}-error-msg"
+        id -> id
+      end
 
     content_tag(:span, translated,
       class: "error-msg",

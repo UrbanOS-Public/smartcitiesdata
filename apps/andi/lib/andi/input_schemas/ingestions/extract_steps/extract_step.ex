@@ -50,7 +50,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
     step_module = step_module(type)
 
-    changes = changeset
+    changes =
+      changeset
       |> Changeset.apply_changes()
       |> Map.get(:context)
       |> StructTools.to_map()

@@ -156,7 +156,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
         changeset_id == extract_step_id
       end)
 
-    new_extract_step_changesets = List.delete(socket.assigns.extract_step_changesets, element_to_delete)
+    new_extract_step_changesets =
+      List.delete(socket.assigns.extract_step_changesets, element_to_delete)
       |> Enum.with_index()
       |> Enum.map(fn {changeset, index} ->
         Changeset.put_change(changeset, :sequence, index)

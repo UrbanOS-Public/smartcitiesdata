@@ -19,8 +19,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHeader do
   def get_module(), do: %__MODULE__{}
 
   def changeset(header, changes) do
-    changes_with_id = StructTools.ensure_id(header, changes)
-    |> AtomicMap.convert(safe: false, underscore: false)
+    changes_with_id =
+      StructTools.ensure_id(header, changes)
+      |> AtomicMap.convert(safe: false, underscore: false)
 
     Changeset.cast(header, changes_with_id, @cast_fields, empty_values: [])
   end

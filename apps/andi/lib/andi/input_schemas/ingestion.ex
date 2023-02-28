@@ -169,10 +169,11 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def get_extract_step_changesets_and_errors(ingestion_changeset) do
-    extract_step_changesets = case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
-      {_, extract_steps} -> extract_steps
-      :error -> []
-    end
+    extract_step_changesets =
+      case Changeset.fetch_change(ingestion_changeset, :extractSteps) do
+        {_, extract_steps} -> extract_steps
+        :error -> []
+      end
 
     {_, {extract_step_errors, _}} =
       Enum.find(Map.get(ingestion_changeset, :errors, []), {"", {"", ""}}, fn {property, _message} -> property == :extractSteps end)
@@ -233,10 +234,11 @@ defmodule Andi.InputSchemas.Ingestion do
       Changeset.get_field(changeset, :extractSteps)
       |> StructTools.sort_if_sequenced()
 
-    changeset = case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
-      true -> Changeset.add_error(changeset, :extractSteps, "Cannot be empty and must end with a http or s3 step")
-      false -> changeset
-    end
+    changeset =
+      case extract_steps in [nil, []] or not ExtractStepHelpers.ends_with_http_or_s3_step?(extract_steps) do
+        true -> Changeset.add_error(changeset, :extractSteps, "Cannot be empty and must end with a http or s3 step")
+        false -> changeset
+      end
 
     Enum.reduce(extract_steps, changeset, fn extract_step, acc ->
       case ExtractStep.step_module(extract_step.type) == :invalid_type do
@@ -250,8 +252,11 @@ defmodule Andi.InputSchemas.Ingestion do
 
   defp validate_context(extract_step, changeset) do
     case ExtractStep.step_module(extract_step.type) do
-      :invalid_type -> changeset
-      nil -> changeset
+      :invalid_type ->
+        changeset
+
+      nil ->
+        changeset
 
       step_module ->
         if is_nil(extract_step.context) do
