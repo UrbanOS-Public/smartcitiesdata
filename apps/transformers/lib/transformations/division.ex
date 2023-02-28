@@ -4,6 +4,7 @@ defmodule Transformers.Division do
   alias Transformers.FieldFetcher
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.ParseUtils
   alias Decimal, as: D
 
   @dividend "dividend"
@@ -13,9 +14,11 @@ defmodule Transformers.Division do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [dividend, divisor, target_field_name]} <- validate(parameters),
-         {:ok, dividend} <- resolve_payload_field(payload, dividend),
-         {:ok, divisor} <- resolve_divisor(payload, divisor),
-         {:ok, quotient} <- {:ok, D.div(D.new(dividend), D.new(divisor))} do
+         {:ok, numeric_dividend} <- ParseUtils.parseValue(dividend, payload),
+         {:ok, numeric_divisor} <- ParseUtils.parseValue(divisor, payload),
+         {:ok, dividend} <- resolve_payload_field(payload, numeric_dividend),
+         {:ok, divisor} <- resolve_divisor(payload, numeric_divisor),
+         {:ok, quotient} <- {:ok, D.div(D.new(numeric_dividend), D.new(numeric_divisor))} do
       {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
       {:error, reason} -> {:error, reason}

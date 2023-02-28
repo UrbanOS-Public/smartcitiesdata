@@ -5,12 +5,12 @@ defmodule Transformers.TransformationFields do
     Transformers.Remove.fields()
   end
 
-  def fields_for("arithmetic_add") do
-    Transformers.ArithmeticAdd.fields()
+  def fields_for("add") do
+    Transformers.Add.fields()
   end
 
-  def fields_for("arithmetic_subtract") do
-    Transformers.ArithmeticSubtract.fields()
+  def fields_for("subtract") do
+    Transformers.Subtract.fields()
   end
 
   def fields_for("multiplication") do
