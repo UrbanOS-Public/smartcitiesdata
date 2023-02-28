@@ -56,7 +56,9 @@ defmodule Forklift.Event.EventHandler do
     dataset_update()
     |> add_event_count(author, data.id)
 
+    IO.inspect("Processing 2.1", label: "Ryan")
     Forklift.Datasets.update(data)
+    IO.inspect("Processing 2.2", label: "Ryan")
 
     [
       table: data.technical.systemName,
@@ -65,6 +67,8 @@ defmodule Forklift.Event.EventHandler do
       main_partitions: ["_ingestion_id"]
     ]
     |> Forklift.DataWriter.init()
+
+    IO.inspect("Processing 2.3", label: "Ryan")
 
     :discard
   rescue
