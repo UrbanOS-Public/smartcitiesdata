@@ -75,6 +75,7 @@ defmodule Forklift.Event.EventHandler do
     error ->
       Logger.error("dataset_update failed to process." <> inspect(error))
       DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => reason, "dataset" => dataset})
       :discard
   end
 
