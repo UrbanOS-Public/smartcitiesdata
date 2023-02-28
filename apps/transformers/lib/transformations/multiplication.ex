@@ -14,7 +14,7 @@ defmodule Transformers.Multiplication do
   def transform(payload, parameters) do
     with {:ok, [multiplicands, target_field_name]} <- validate(parameters),
          {:ok, numeric_multiplicands} <- ParseUtils.operandsToNumbers(multiplicands, payload),
-         {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, multiplicands),
+         {:ok, resolved_multiplicands} <- resolve_multiplicand_fields(payload, numeric_multiplicands),
          product <- multiply_multiplicands(resolved_multiplicands) do
       {:ok, payload |> Map.put(target_field_name, D.to_float(product))}
     else

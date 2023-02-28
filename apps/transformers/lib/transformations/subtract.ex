@@ -14,7 +14,7 @@ defmodule Transformers.Subtract do
   def transform(payload, parameters) do
     with {:ok, [minuend, subtrahends, target_field]} <- validate(parameters),
          {:ok, numeric_subtrahends} <- ParseUtils.operandsToNumbers(subtrahends, payload),
-         {:ok, difference} <- subtractValues(minuend, subtrahends, payload) do
+         {:ok, difference} <- subtractValues(minuend, numeric_subtrahends, payload) do
       {:ok, payload |> Map.put(target_field, difference)}
     else
       {:error, reason} -> {:error, reason}
