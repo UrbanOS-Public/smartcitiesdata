@@ -57,6 +57,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       assert options == [
                {"", ""},
                {"Concatenation", "concatenation"},
+               {"Constant", "constant"},
                {"Conversion", "conversion"},
                {"DateTime", "datetime"},
                {"Regex Extract", "regex_extract"},

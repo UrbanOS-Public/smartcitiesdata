@@ -41,6 +41,10 @@ defmodule Transformers.TransformationFields do
     Transformers.Concatenation.fields()
   end
 
+  def fields_for("constant") do
+    Transformers.Constant.fields()
+  end
+
   def fields_for(_unsupported) do
     []
   end
