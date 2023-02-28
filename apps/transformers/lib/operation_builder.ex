@@ -23,12 +23,12 @@ defmodule Transformers.OperationBuilder do
     fn payload -> Transformers.Remove.transform(payload, parameters) end
   end
 
-  def build("arithmetic_add", parameters) do
-    fn payload -> Transformers.ArithmeticAdd.transform(payload, parameters) end
+  def build("add", parameters) do
+    fn payload -> Transformers.Add.transform(payload, parameters) end
   end
 
-  def build("arithmetic_subtract", parameters) do
-    fn payload -> Transformers.ArithmeticSubtract.transform(payload, parameters) end
+  def build("subtract", parameters) do
+    fn payload -> Transformers.Subtract.transform(payload, parameters) end
   end
 
   def build("multiplication", parameters) do
@@ -71,12 +71,12 @@ defmodule Transformers.OperationBuilder do
     Transformers.Remove.validate(parameters)
   end
 
-  def validate("arithmetic_add", parameters) do
-    Transformers.ArithmeticAdd.validate(parameters)
+  def validate("add", parameters) do
+    Transformers.Add.validate(parameters)
   end
 
-  def validate("arithmetic_subtract", parameters) do
-    Transformers.ArithmeticSubtract.validate(parameters)
+  def validate("subtract", parameters) do
+    Transformers.Subtract.validate(parameters)
   end
 
   def validate("multiplication", parameters) do

@@ -130,11 +130,11 @@ defmodule Transformers.OperationBuilderTest do
       "two" => 2
     }
 
-    function = OperationBuilder.build("arithmetic_add", params)
-    validation = OperationBuilder.validate("arithmetic_add", params)
+    function = OperationBuilder.build("add", params)
+    validation = OperationBuilder.validate("add", params)
 
-    assert function.(payload) == Transformers.ArithmeticAdd.transform(payload, params)
-    assert validation == Transformers.ArithmeticAdd.validate(params)
+    assert function.(payload) == Transformers.Add.transform(payload, params)
+    assert validation == Transformers.Add.validate(params)
   end
 
   test "arithmetic subtract function" do
@@ -149,11 +149,11 @@ defmodule Transformers.OperationBuilderTest do
       "two" => 2
     }
 
-    function = OperationBuilder.build("arithmetic_subtract", params)
-    validation = OperationBuilder.validate("arithmetic_subtract", params)
+    function = OperationBuilder.build("subtract", params)
+    validation = OperationBuilder.validate("subtract", params)
 
-    assert function.(payload) == Transformers.ArithmeticSubtract.transform(payload, params)
-    assert validation == Transformers.ArithmeticSubtract.validate(params)
+    assert function.(payload) == Transformers.Subtract.transform(payload, params)
+    assert validation == Transformers.Subtract.validate(params)
   end
 
   test "multiplication function" do

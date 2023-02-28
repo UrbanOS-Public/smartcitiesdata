@@ -160,6 +160,10 @@ defmodule AndiWeb.Views.Options do
       "datetime" => "DateTime",
       "remove" => "Remove",
       "constant" => "Constant",
+      "add" => "Add",
+      "subtract" => "Subtract",
+      "multiplication" => "Multiply",
+      "division" => "Divide"
     }
   end
 

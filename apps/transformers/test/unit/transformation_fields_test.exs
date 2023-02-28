@@ -7,14 +7,14 @@ defmodule Transformers.TransformationFieldsTest do
     assert TransformationFields.fields_for("remove") == Transformers.Remove.fields()
   end
 
-  test "return fields for arithmetic_add transform" do
-    assert TransformationFields.fields_for("arithmetic_add") ==
-             Transformers.ArithmeticAdd.fields()
+  test "return fields for add transform" do
+    assert TransformationFields.fields_for("add") ==
+             Transformers.Add.fields()
   end
 
-  test "return fields for arithmetic_subtract transform" do
-    assert TransformationFields.fields_for("arithmetic_subtract") ==
-             Transformers.ArithmeticSubtract.fields()
+  test "return fields for subtract transform" do
+    assert TransformationFields.fields_for("subtract") ==
+             Transformers.Subtract.fields()
   end
 
   test "return fields for multiplication transform" do
