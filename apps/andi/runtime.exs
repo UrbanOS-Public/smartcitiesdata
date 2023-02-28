@@ -101,7 +101,7 @@ config :andi, :auth0,
   audience: "https://#{System.get_env("AUTH0_DOMAIN")}/api/v2/"
 
 config :telemetry_event,
-  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
+  metrics_port: 9090,
   add_poller: true,
   add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count],
   metrics_options: [
