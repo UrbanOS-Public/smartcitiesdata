@@ -64,6 +64,8 @@ defmodule Forklift.Event.EventHandlingTest do
         :ok
       end)
 
+      expect(MockTable, :init, fn args -> send(test, args) end)
+
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
