@@ -353,9 +353,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
   end
 
   defp render_transformation_form(transformation_changeset) do
-    live_isolated(build_conn(), TransformationForm,
-      session: %{"transformation_changeset" => transformation_changeset}
-    )
+    live_isolated(build_conn(), TransformationForm, session: %{"transformation_changeset" => transformation_changeset})
   end
 
   defp select_type(type, view) do
