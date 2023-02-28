@@ -1,4 +1,4 @@
-#defmodule Forklift.Event.EventHandlerTest do
+# defmodule Forklift.Event.EventHandlerTest do
 #  use ExUnit.Case
 #  use Divo
 #  use Placebo
@@ -239,4 +239,4 @@
 #      end)
 #    end
 #  end
-#end
+# end
