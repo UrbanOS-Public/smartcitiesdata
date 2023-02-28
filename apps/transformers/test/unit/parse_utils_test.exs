@@ -32,6 +32,7 @@ defmodule Transformers.ParseUtilsTest do
 
     test "when value is part of the payload, return ok tuple with payload value" do
       value = "key"
+
       payload = %{
         "key" => 1.0
       }
@@ -70,9 +71,11 @@ defmodule Transformers.ParseUtilsTest do
 
     test "when given list contains payload parseable strings, returns ok tuple with numeric list" do
       list = [1, "key", 3]
+
       payload = %{
         "key" => 2.0
       }
+
       numericList = [1, 2.0, 3]
 
       result = ParseUtils.parseValues(list, payload)
@@ -92,9 +95,11 @@ defmodule Transformers.ParseUtilsTest do
   describe "operandsToNumbers/2" do
     test "when called with list, returns ok tuple with numeric list" do
       list = [1, "2", "key"]
+
       payload = %{
         "key" => 3.0
       }
+
       numericList = [1, 2, 3.0]
 
       result = ParseUtils.operandsToNumbers(list, payload)
@@ -104,9 +109,11 @@ defmodule Transformers.ParseUtilsTest do
 
     test "when called with string representation of list, returns ok tuple with numeric list" do
       list = "1, 2.0, key"
+
       payload = %{
         "key" => 3.0
       }
+
       numericList = [1, 2.0, 3.0]
 
       result = ParseUtils.operandsToNumbers(list, payload)
@@ -125,7 +132,9 @@ defmodule Transformers.ParseUtilsTest do
     test "when called with non-binary and non-list operands, returns error tuple with reason" do
       result = ParseUtils.operandsToNumbers(1, %{})
 
-      assert result == {:error, "Operands must be a list of values or a string representation of a list of values"}
+      assert result ==
+               {:error,
+                "Operands must be a list of values or a string representation of a list of values"}
     end
   end
 end

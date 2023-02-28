@@ -5,7 +5,7 @@ defmodule Transformers.ParseUtils do
 
   def operandsToNumbers(operands, payload) when is_binary(operands) do
     String.split(operands, [" ", ","], trim: true)
-      |> parseValues(payload)
+    |> parseValues(payload)
   end
 
   def operandsToNumbers(_, _) do
@@ -13,12 +13,13 @@ defmodule Transformers.ParseUtils do
   end
 
   def parseValues(operands, payload) do
-    result = Enum.reduce_while(operands, [], fn operand, acc ->
-      case parseValue(operand, payload) do
-        {:ok, number} -> {:cont, [number | acc]}
-        {:error, reason} -> {:halt, {:error, reason}}
-      end
-    end)
+    result =
+      Enum.reduce_while(operands, [], fn operand, acc ->
+        case parseValue(operand, payload) do
+          {:ok, number} -> {:cont, [number | acc]}
+          {:error, reason} -> {:halt, {:error, reason}}
+        end
+      end)
 
     case result do
       {:error, reason} -> {:error, reason}
