@@ -19,7 +19,7 @@ defmodule Forklift.Event.EventHandlerTest do
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDataset: id_for_invalid_dataset})
 
       id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
       allow(Forklift.Datasets.get!(id_for_invalid_dataset), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_ingest_start(), __MODULE__, invalid_ingestion)
@@ -93,7 +93,7 @@ defmodule Forklift.Event.EventHandlerTest do
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
       id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
       allow(Forklift.DataReaderHelper.terminate(invalid_dataset), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, invalid_dataset)
@@ -130,7 +130,7 @@ defmodule Forklift.Event.EventHandlerTest do
       id_for_fake_event = UUID.uuid4()
 
       id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
       allow(Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"]), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, "migration:last_insert_date:start", __MODULE__, %{fake_event: id_for_fake_event})
@@ -167,7 +167,7 @@ defmodule Forklift.Event.EventHandlerTest do
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
       id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
       allow(Forklift.DataReaderHelper.terminate(invalid_dataset), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, invalid_dataset)

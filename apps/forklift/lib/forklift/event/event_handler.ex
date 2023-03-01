@@ -179,6 +179,19 @@ defmodule Forklift.Event.EventHandler do
       :discard
   end
 
+  def handle_event(%Brook.Event{type: type, data: data, author: author}) do
+    IO.inspect("Unknown", label: "Ryan")
+
+    Logger.error(
+      "Event Handler received an unknown message with type: #{inspect(type)}, data: #{inspect(data)}, author: #{
+        inspect(author)
+      }"
+    )
+
+    DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: "Unknown message receieved")
+    :discard
+  end
+
   defp delete_dataset(dataset) do
     Forklift.DataReaderHelper.terminate(dataset)
     Forklift.DataWriter.delete(dataset)
