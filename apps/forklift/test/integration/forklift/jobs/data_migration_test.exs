@@ -23,7 +23,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
 
     dataset = TDG.create_dataset(%{technical: %{cadence: "once"}})
     Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
-    Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
+    #    Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
 
     wait_for_tables_to_be_created([dataset])
 

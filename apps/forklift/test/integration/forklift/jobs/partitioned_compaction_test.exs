@@ -24,7 +24,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
       |> Enum.map(fn _ -> TDG.create_dataset(%{technical: %{cadence: "once"}}) end)
       |> Enum.map(fn dataset ->
         Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
-        Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
+        #        Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
         dataset
       end)
 
