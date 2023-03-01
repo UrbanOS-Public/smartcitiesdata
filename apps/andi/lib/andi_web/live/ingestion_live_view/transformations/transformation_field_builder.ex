@@ -7,11 +7,16 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
   def build_input(field, assigns, form) do
     name = String.to_atom(field.field_name)
     value = get_in(form.source.changes, [:parameters, name])
+    options = Map.get(field, :options)
 
     ~L"""
     <div class="transformation-field">
       <%= label(form, name, field.field_label, class: "transformation-field-label label label--required") %>
-      <%= text_input(form, name, [value: value, class: "input transformation-form-fields", phx_debounce: "1000", required: true]) %>
+      <%= if not is_nil(options) do %>
+        <%= select(form, name, options, [class: "select", prompt: "", required: true]) %>
+      <% else %>
+        <%= text_input(form, name, [value: value, class: "input transformation-form-fields", phx_debounce: "1000", required: true]) %>
+      <% end %>
       <%= ErrorHelpers.error_tag_with_label(form.source, name, field.field_label, bind_to_input: false) %>
     </div>
     """

@@ -56,12 +56,17 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert options == [
                {"", ""},
+               {"Add", "add"},
                {"Concatenation", "concatenation"},
+               {"Constant", "constant"},
                {"Conversion", "conversion"},
                {"DateTime", "datetime"},
+               {"Divide", "division"},
+               {"Multiply", "multiplication"},
                {"Regex Extract", "regex_extract"},
                {"Regex Replace", "regex_replace"},
-               {"Remove", "remove"}
+               {"Remove", "remove"},
+               {"Subtract", "subtract"}
              ]
     end
 
@@ -187,9 +192,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
-      assert element(view, "label[for=#{source_format_id}]", "Source Field Format") |> has_element?()
+
+      assert element(view, "label[for=#{source_format_id}]", "Source Field Format")
+             |> has_element?()
+
       assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
-      assert element(view, "label[for=#{target_format_id}]", "Target Field Format") |> has_element?()
+
+      assert element(view, "label[for=#{target_format_id}]", "Target Field Format")
+             |> has_element?()
+
       assert element(view, "##{source_field_id}") |> has_element?()
       assert element(view, "##{source_format_id}") |> has_element?()
       assert element(view, "##{target_field_id}") |> has_element?()
@@ -208,9 +219,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{source_field_id}]", "Source Field") |> has_element?()
-      assert element(view, "label[for=#{source_format_id}]", "Source Field Format") |> has_element?()
+
+      assert element(view, "label[for=#{source_format_id}]", "Source Field Format")
+             |> has_element?()
+
       assert element(view, "label[for=#{target_field_id}]", "Target Field") |> has_element?()
-      assert element(view, "label[for=#{target_format_id}]", "Target Field Format") |> has_element?()
+
+      assert element(view, "label[for=#{target_format_id}]", "Target Field Format")
+             |> has_element?()
+
       assert element(view, "##{source_field_id}") |> has_element?()
       assert element(view, "##{source_format_id}") |> has_element?()
       assert element(view, "##{target_field_id}") |> has_element?()
@@ -229,8 +246,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{target_field_id}]", "Field to Convert") |> has_element?()
-      assert element(view, "label[for=#{source_field_type}]", "Source Data Type") |> has_element?()
-      assert element(view, "label[for=#{target_field_type}]", "Target Data Type") |> has_element?()
+
+      assert element(view, "label[for=#{source_field_type}]", "Source Data Type")
+             |> has_element?()
+
+      assert element(view, "label[for=#{target_field_type}]", "Target Data Type")
+             |> has_element?()
+
       assert element(view, "##{target_field_id}") |> has_element?()
       assert element(view, "##{source_field_type}") |> has_element?()
       assert element(view, "##{target_field_type}") |> has_element?()
@@ -247,8 +269,13 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       assert has_element?(view, ".transformation-field")
       assert element(view, "label[for=#{target_field_id}]", "Field to Convert") |> has_element?()
-      assert element(view, "label[for=#{source_field_type}]", "Source Data Type") |> has_element?()
-      assert element(view, "label[for=#{target_field_type}]", "Target Data Type") |> has_element?()
+
+      assert element(view, "label[for=#{source_field_type}]", "Source Data Type")
+             |> has_element?()
+
+      assert element(view, "label[for=#{target_field_type}]", "Target Data Type")
+             |> has_element?()
+
       assert element(view, "##{target_field_id}") |> has_element?()
       assert element(view, "##{source_field_type}") |> has_element?()
       assert element(view, "##{target_field_type}") |> has_element?()
@@ -301,12 +328,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
       element(view, ".transformation-item") |> render_change(form_update)
 
-      assert element(view, "#sourceField-error-msg", "Please enter a valid field to remove") |> has_element?()
+      assert element(view, "#sourceField-error-msg", "Please enter a valid field to remove")
+             |> has_element?()
     end
 
     test "shows parameter field value on load" do
       parameter_value = "something"
-      transformation_changeset = Transformation.changeset_for_draft(%{type: "remove", parameters: %{sourceField: parameter_value}})
+
+      transformation_changeset =
+        Transformation.changeset_for_draft(%{
+          type: "remove",
+          parameters: %{sourceField: parameter_value}
+        })
 
       assert {:ok, view, html} = render_transformation_form(transformation_changeset)
 
