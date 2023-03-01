@@ -53,10 +53,10 @@ defmodule Forklift.Event.EventHandlerTest do
   describe "Dataset Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_dataset = UUID.uuid4()
-      invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
+      invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset, technical: %{sourceType: "ingest"}})
 
       id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
       allow(Forklift.Datasets.update(invalid_dataset), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
