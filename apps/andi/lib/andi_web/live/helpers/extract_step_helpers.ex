@@ -31,14 +31,6 @@ defmodule AndiWeb.Helpers.ExtractStepHelpers do
     end
   end
 
-  def complete_validation(changeset, socket) do
-    new_changeset = Map.put(changeset, :action, :update)
-    send(socket.parent_pid, :form_update)
-    send(self(), {:step_update, socket.assigns.id, new_changeset})
-
-    {:noreply, assign(socket, changeset: new_changeset) |> update_validation_status()}
-  end
-
   def ends_with_http_or_s3_step?(steps) do
     last_step_type = List.last(steps) |> Map.get(:type)
     last_step_type in ["http", "s3"]

@@ -11,78 +11,70 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.Options
   alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.ExtractSteps.ExtractStepHeader
+  alias Ecto.Changeset
 
   def mount(socket) do
     {:ok,
      assign(socket,
        visibility: "expanded",
-       validation_status: "collapsed",
-       example_output: nil
+       validation_status: "collapsed"
      )}
   end
 
   def render(assigns) do
+    example_output = get_example_output(assigns.changeset)
+
     ~L"""
-    <div id="step-<%= @id %>" class="extract-step-container extract-date-step-form">
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
 
-        <%= live_component(@socket, ExtractStepHeader, step_name: "Date", step_id: @id) %>
-
-        <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-
-          <div class="component-edit-section--<%= @visibility %>">
-            <div class="extract-date-step-form-edit-section form-grid">
-              <div class="extract-date-step-form__destination">
-                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step-#{@extract_step.sequence}__date-destination") %>
-                <%= text_input(f, :destination, [id: "step-#{@extract_step.sequence}__date-destination", aria_label: "step_#{@extract_step.sequence}__date-destination", class: "extract-date-step-form__destination input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>
-                <%= ErrorHelpers.error_tag(f, :destination) %>
-              </div>
-
-              <div class="extract-date-step-form__deltaTimeUnit">
-                <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "step_#{@extract_step.sequence}__date_delta_time_unit") %>
-                <%= select(f, :deltaTimeUnit, get_time_units(), id: "step_#{@extract_step.sequence}__date_delta_time_unit", aria_label: "step_#{@extract_step.sequence}__date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
-                <%= ErrorHelpers.error_tag(f, :deltaTimeUnit) %>
-              </div>
-
-              <div class="extract-date-step-form__deltaTimeValue">
-                <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "step_#{@extract_step.sequence}__date_delta_time_value") %>
-                <%= text_input(f, :deltaTimeValue, id: "step_#{@extract_step.sequence}__date_delta_time_value", aria_label: "step_#{@extract_step.sequence}__date_delta_time_value", class: "extract-date-step-form__delta_time_value input", phx_focus: :get_example_output, phx_target: "#step-#{@id}") %>
-                <%= ErrorHelpers.error_tag(f, :deltaTimeValue) %>
-              </div>
-
-              <div class="extract-date-step-form__format">
-                <div class="help-text-label">
-                  <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@extract_step.sequence}__date_format") %>
-                  <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
-                </div>
-                <%= text_input(f, :format, [id: "step_#{@extract_step.sequence}__date_format", aria_label: "step_#{@extract_step.sequence}__date_format", class: "extract-date-step-form__format input", phx_focus: :get_example_output, phx_target: "#step-#{@id}", required: true]) %>
-                <%= ErrorHelpers.error_tag(f, :format) %>
-              </div>
-
-              <div class="extract-date-step-form__output">
-                <div class="label">Output <span class="label__subtext">All times are in UTC</span></div>
-                <%= if @example_output != nil do %>
-                  <div class="example-output">
-                    <%= @example_output %>
-                  </div>
-                <% end %>
-              </div>
-
+        <div class="component-edit-section--<%= @visibility %>">
+          <div class="extract-date-step-form-edit-section form-grid">
+            <div class="extract-date-step-form__destination">
+              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_date_destination") %>
+              <%= text_input(f, :destination, [id: "#{@id}_date_destination", required: true, class: "input"]) %>
+              <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false, id: "#{@id}_date_destination_error") %>
             </div>
+
+            <div class="extract-date-step-form__deltaTimeUnit">
+              <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "#{@id}_date_delta_time_unit") %>
+              <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}_date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
+              <%= ErrorHelpers.error_tag(f, :deltaTimeUnit, id: "#{@id}_date_delta_time_unit_error") %>
+            </div>
+
+            <div class="extract-date-step-form__deltaTimeValue">
+              <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "#{@id}_date_delta_time_value") %>
+              <%= text_input(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
+              <%= ErrorHelpers.error_tag(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value_error") %>
+            </div>
+
+            <div class="extract-date-step-form__format">
+              <div class="help-text-label">
+                <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@id}_date_format") %>
+                <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
+              </div>
+              <%= text_input(f, :format, [id: "step_#{@id}_date_format", class: "extract-date-step-form__format input", required: true]) %>
+              <%= ErrorHelpers.error_tag(f, :format, id: "#{@id}_date_format_error") %>
+            </div>
+
+            <div class="extract-date-step-form__output">
+              <div class="label">Output <span class="label__subtext">All times are in UTC</span></div>
+              <div class="example-output">
+                <%= example_output %>
+              </div>
+            </div>
+
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     """
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    {updated_changeset, updated_socket} =
-      form_data
-      |> AtomicMap.convert(safe: false, underscore: false)
-      |> ExtractDateStep.changeset()
-      |> update_example_output(socket)
+    extract_step = ExtractDateStep.changeset(socket.assigns.changeset, form_data)
 
-    complete_validation(updated_changeset, updated_socket)
+    AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
+
+    {:noreply, socket}
   end
 
   def handle_event("validate", _, socket) do
@@ -91,29 +83,25 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("get_example_output", _, socket) do
-    {:noreply, assign(socket, example_output: get_example_output(socket.assigns.changeset))}
-  end
-
   defp get_time_units(), do: map_to_dropdown_options(Options.time_units())
 
   defp update_example_output(changeset, socket) do
     {changeset, assign(socket, example_output: get_example_output(changeset))}
   end
 
-  defp get_example_output(%{valid?: false}), do: nil
+  defp get_example_output(%{valid?: false}), do: "Please clear errors before output can be shown"
 
   defp get_example_output(%{changes: %{deltaTimeUnit: ""}} = changeset) do
-    format = Ecto.Changeset.get_field(changeset, :format)
+    format = Changeset.get_field(changeset, :format)
 
     Timex.now()
     |> Timex.format!(format)
   end
 
   defp get_example_output(changeset) do
-    delta_time_unit = Ecto.Changeset.get_change(changeset, :deltaTimeUnit, "days") |> String.to_atom()
-    delta_time_value = Ecto.Changeset.get_change(changeset, :deltaTimeValue, 0)
-    format = Ecto.Changeset.get_field(changeset, :format)
+    delta_time_unit = Changeset.get_change(changeset, :deltaTimeUnit, "days") |> String.to_atom()
+    delta_time_value = Changeset.get_change(changeset, :deltaTimeValue, 0)
+    format = Changeset.get_field(changeset, :format)
 
     Timex.now()
     |> Timex.shift([{delta_time_unit, delta_time_value}])
