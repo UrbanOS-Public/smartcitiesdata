@@ -58,6 +58,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
                {"", ""},
                {"Add", "add"},
                {"Concatenation", "concatenation"},
+               {"Constant", "constant"},
                {"Conversion", "conversion"},
                {"DateTime", "datetime"},
                {"Divide", "division"},
