@@ -1,6 +1,5 @@
 defmodule Forklift.Event.EventHandlerTest do
   use ExUnit.Case
-  use Divo
   use Placebo
   use Properties, otp_app: :forklift
 
@@ -11,6 +10,12 @@ defmodule Forklift.Event.EventHandlerTest do
 
   @instance_name Forklift.instance_name()
   getter(:elsa_brokers, generic: true)
+
+  setup_all do
+    on_exit(fn ->
+      {:ok, _} = Redix.command(:redix, ["flushall"])
+    end)
+  end
 
   describe "Ingestion Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
