@@ -69,6 +69,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     IO.inspect("2", label: "Ryan")
+
     {:ok, _} =
       "insert into #{dataset.technical.systemName} values (1, 'Bob', cast(now() as date), 1.5, true, 1662175490, '1234-abc-zyx')"
       |> PrestigeHelper.execute_query()
@@ -144,6 +145,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     extract_start: extract_start
   } do
     IO.inspect("Expected Error 3", label: "Ryan")
+
     "drop table #{dataset.technical.systemName}"
     |> PrestigeHelper.execute_query()
 
