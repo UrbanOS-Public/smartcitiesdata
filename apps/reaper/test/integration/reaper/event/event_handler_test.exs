@@ -1,7 +1,7 @@
 defmodule Reaper.EventHandlerTest do
   use ExUnit.Case
   use Placebo
-  use Divo, auto_start: false
+  use Divo
   use Properties, otp_app: :reaper
 
   import SmartCity.TestHelper

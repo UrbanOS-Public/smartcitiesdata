@@ -1,7 +1,6 @@
 defmodule Forklift.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
-  use Divo, auto_start: false
   use Properties, otp_app: :forklift
 
   import SmartCity.TestHelper
