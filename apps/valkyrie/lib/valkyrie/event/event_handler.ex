@@ -28,8 +28,8 @@ defmodule Valkyrie.Event.EventHandler do
     :ok
   rescue
     error ->
-      Logger.error("data_ingest_start failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("data_ingest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -46,8 +46,8 @@ defmodule Valkyrie.Event.EventHandler do
     delete(:datasets, dataset_id)
   rescue
     error ->
-      Logger.error("data_standardization_end failed to process.")
-      DeadLetter.process(dataset_id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("data_standardization_end failed to process: #{inspect(error)}")
+      DeadLetter.process(dataset_id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -67,8 +67,8 @@ defmodule Valkyrie.Event.EventHandler do
     merge(:datasets, data.id, data)
   rescue
     error ->
-      Logger.error("dataset_update failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -91,8 +91,8 @@ defmodule Valkyrie.Event.EventHandler do
     delete(:datasets, data.id)
   rescue
     error ->
-      Logger.error("dataset_delete failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

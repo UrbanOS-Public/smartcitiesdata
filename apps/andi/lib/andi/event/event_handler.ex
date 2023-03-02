@@ -50,8 +50,8 @@ defmodule Andi.Event.EventHandler do
     :ok
   rescue
     error ->
-      Logger.error("dataset_update failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -66,8 +66,8 @@ defmodule Andi.Event.EventHandler do
     IngestionStore.update(data)
   rescue
     error ->
-      Logger.error("ingestion_update failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("ingestion_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -79,8 +79,8 @@ defmodule Andi.Event.EventHandler do
     IngestionStore.delete(data.id)
   rescue
     error ->
-      Logger.error("ingestion_delete failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("ingestion_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -94,8 +94,8 @@ defmodule Andi.Event.EventHandler do
     OrgStore.update(data)
   rescue
     error ->
-      Logger.error("organization_update failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("organization_update failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -118,8 +118,8 @@ defmodule Andi.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("user_organization_associate failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("user_organization_associate failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -140,8 +140,8 @@ defmodule Andi.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("user_organization_disassociate failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -154,8 +154,8 @@ defmodule Andi.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("dataset_harvest_start failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_harvest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -164,8 +164,8 @@ defmodule Andi.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("dataset_harvest_end failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_harvest_end failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -177,8 +177,8 @@ defmodule Andi.Event.EventHandler do
     {:create, :migration, "modified_date_migration_completed", true}
   rescue
     error ->
-      Logger.error("migration_modified_date_start failed to process.")
-      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("migration_modified_date_start failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -189,8 +189,8 @@ defmodule Andi.Event.EventHandler do
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
   rescue
     error ->
-      Logger.error("data_ingest_end failed to process.")
-      DeadLetter.process(id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("data_ingest_end failed to process: #{inspect(error)}")
+      DeadLetter.process(id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -207,8 +207,8 @@ defmodule Andi.Event.EventHandler do
     DatasetStore.delete(data.id)
   rescue
     error ->
-      Logger.error("dataset_delete failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -219,8 +219,8 @@ defmodule Andi.Event.EventHandler do
     create_user_if_not_exists(subject_id, email, name)
   rescue
     error ->
-      Logger.error("user_login failed to process.")
-      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("user_login failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

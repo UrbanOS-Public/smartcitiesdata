@@ -40,7 +40,7 @@ defmodule Forklift.Event.EventHandler do
     error ->
       Logger.error("data_ingest_start failed to process. #{inspect(error)}")
 
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
 
       :discard
   end
@@ -68,7 +68,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process. #{inspect(error)}")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => error, "dataset" => data})
       :discard
   end
@@ -82,7 +82,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_end failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -110,7 +110,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("migration:last_insert_date:start failed to process.")
-      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -130,7 +130,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_delete failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -159,7 +159,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_extract_end failed to process.")
-      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -170,7 +170,11 @@ defmodule Forklift.Event.EventHandler do
       }"
     )
 
-    DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: "Unknown message receieved")
+    DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name),
+      reason:
+        "Unknown message receieved with type: #{inspect(type)}, data: #{inspect(data)}, author: #{inspect(author)}"
+    )
+
     :discard
   end
 

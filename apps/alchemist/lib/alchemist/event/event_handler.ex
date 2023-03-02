@@ -25,8 +25,8 @@ defmodule Alchemist.Event.EventHandler do
     merge(:ingestions, data.id, data)
   rescue
     error ->
-      Logger.error("ingestion_update failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("ingestion_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -45,8 +45,8 @@ defmodule Alchemist.Event.EventHandler do
     delete(:ingestions, data.id)
   rescue
     error ->
-      Logger.error("ingestion_delete failed to process.")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: error.__struct__)
+      Logger.error("ingestion_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
