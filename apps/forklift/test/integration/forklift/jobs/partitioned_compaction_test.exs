@@ -44,7 +44,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     datasets: datasets,
     current_partition: current_partition
   } do
-    IO.inspect("partitioned compaction results in error if invalid_ids are in the viewstate", label: "Ryan")
     ok_dataset_one = Enum.at(datasets, 0)
     ok_dataset_two = Enum.at(datasets, 1)
     abort_dataset = %{id: "invalid_id", technical: %{systemName: "invalid_sys_name"}}
@@ -72,10 +71,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     datasets: datasets,
     current_partition: current_partition
   } do
-    IO.inspect("abort compaction without loss if the compacted table for the partition exists at the start",
-      label: "Ryan"
-    )
-
     partitions = ["2018_01", current_partition]
     expected_record_count = write_test_data(datasets, partitions, @batch_size)
 
@@ -97,7 +92,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   end
 
   test "abort compaction if the main table does not exist", %{datasets: datasets, current_partition: current_partition} do
-    IO.inspect("abort compaction if the main table does not exist", label: "Ryan")
     partitions = ["2018_01", current_partition]
     write_test_data(datasets, partitions, @batch_size)
 
@@ -121,7 +115,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     datasets: datasets,
     current_partition: current_partition
   } do
-    IO.inspect("fail compaction without loss if the compacted table does not have the appropriate count", label: "Ryan")
     error_dataset = Enum.at(datasets, 0)
     ok_dataset = Enum.at(datasets, 1)
 
@@ -147,11 +140,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     datasets: datasets,
     current_partition: current_partition
   } do
-    IO.inspect(
-      "fail compaction, preserving the compacted table, if the final table does not have the appropriate count",
-      label: "Ryan"
-    )
-
     partitions = ["2018_01", current_partition]
 
     write_test_data(datasets, partitions, @batch_size)
@@ -181,7 +169,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   end
 
   test "abort compaction if no data for the current partition is found", %{datasets: datasets} do
-    IO.inspect("abort compaction if no data for the current partition is found", label: "Ryan")
     write_test_data(datasets, ["2018_01"], @batch_size)
 
     compaction_results = PartitionedCompaction.run()

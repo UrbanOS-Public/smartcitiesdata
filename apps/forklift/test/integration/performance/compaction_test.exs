@@ -28,7 +28,6 @@ defmodule Forklift.Performance.CompactionTest do
 
   @tag timeout: :infinity
   test "large compactions don't intermittently fail", %{large_source: source} do
-    IO.inspect("large compactions don't intermittently fail", label: "Ryan")
     Logger.configure(level: :info)
     scale = 2
 
@@ -65,7 +64,6 @@ defmodule Forklift.Performance.CompactionTest do
 
   @tag timeout: :infinity
   test "large compactions don't wipe data if they are stopped after dropping orc table", %{large_source: source} do
-    IO.inspect("large compactions don't wipe data if they are stopped after dropping orc table", label: "Ryan")
     Logger.configure(level: :info)
     scale = 1
 

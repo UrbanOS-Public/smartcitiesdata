@@ -26,8 +26,6 @@ defmodule Forklift.Event.EventHandler do
         data: %Ingestion{targetDataset: dataset_id} = _ingestion,
         author: author
       }) do
-    IO.inspect("Processing 1", label: "Ryan")
-
     data_ingest_start()
     |> add_event_count(author, dataset_id)
 
@@ -55,14 +53,10 @@ defmodule Forklift.Event.EventHandler do
         author: author
       })
       when type in ["stream", "ingest"] do
-    IO.inspect("Processing 2", label: "Ryan")
-
     dataset_update()
     |> add_event_count(author, dataset.id)
 
-    IO.inspect("Processing 2.1", label: "Ryan")
     Forklift.Datasets.update(dataset)
-    IO.inspect("Processing 2.2", label: "Ryan")
 
     [
       table: dataset.technical.systemName,
@@ -71,8 +65,6 @@ defmodule Forklift.Event.EventHandler do
       main_partitions: ["_ingestion_id"]
     ]
     |> Forklift.DataWriter.init()
-
-    IO.inspect("Processing 2.3", label: "Ryan")
 
     :discard
   rescue
@@ -84,8 +76,6 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = dataset, author: author}) do
-    IO.inspect("Processing 3", label: "Ryan")
-
     data_ingest_end()
     |> add_event_count(author, dataset.id)
 
@@ -99,8 +89,6 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: "migration:last_insert_date:start", author: author} = event) do
-    IO.inspect("Processing 4", label: "Ryan")
-
     "migration:last_insert_date:start"
     |> add_event_count(author, nil)
 
@@ -129,7 +117,6 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = dataset, author: author}) do
-    IO.inspect("Processing 5", label: "Ryan")
     Logger.debug("#{__MODULE__}: Deleting Dataset: #{dataset.id}")
 
     dataset_delete()
@@ -160,7 +147,6 @@ defmodule Forklift.Event.EventHandler do
           } = data,
         author: author
       }) do
-    IO.inspect("Processing 6", label: "Ryan")
     data_extract_end() |> add_event_count(author, dataset_id)
 
     dataset = Forklift.Datasets.get!(dataset_id)
@@ -180,8 +166,6 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: type, data: data, author: author}) do
-    IO.inspect("Unknown", label: "Ryan")
-
     Logger.error(
       "Event Handler received an unknown message with type: #{inspect(type)}, data: #{inspect(data)}, author: #{
         inspect(author)

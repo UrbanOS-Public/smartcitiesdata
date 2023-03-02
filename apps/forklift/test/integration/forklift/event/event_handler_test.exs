@@ -19,7 +19,6 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Ingestion Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("A failing message gets placed on dead letter queue and discarded", label: "Ryan")
       id_for_invalid_ingestion = UUID.uuid4()
       id_for_invalid_dataset = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDataset: id_for_invalid_dataset})
@@ -58,7 +57,6 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Dataset Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("Dataset Update - A failing message gets placed on dead letter queue and discarded", label: "Ryan")
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset, technical: %{sourceType: "ingest"}})
 
@@ -96,7 +94,6 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Dataset Ingest End" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("Dataset Ingest End - A failing message gets placed on dead letter queue and discarded", label: "Ryan")
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
@@ -135,10 +132,6 @@ defmodule Forklift.Event.EventHandlerTest do
   #
   describe "Migration Last Insert Date Start" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("Migration Last Insert Date Start - A failing message gets placed on dead letter queue and discarded",
-        label: "Ryan"
-      )
-
       id_for_fake_event = UUID.uuid4()
 
       id_for_valid_dataset = UUID.uuid4()
@@ -175,10 +168,6 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Dataset Delete Start" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("Dataset Delete Start - A failing message gets placed on dead letter queue and discarded",
-        label: "Ryan"
-      )
-
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
@@ -216,7 +205,6 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Data Extract End" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      IO.inspect("Data Extract End - A failing message gets placed on dead letter queue and discarded", label: "Ryan")
       id_for_invalid_dataset = UUID.uuid4()
 
       invalid_data = %{
