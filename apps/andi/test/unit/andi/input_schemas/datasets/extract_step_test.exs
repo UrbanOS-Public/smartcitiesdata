@@ -10,7 +10,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       context: nil
     }
 
-    changeset = ExtractStep.changeset(changes)
+    changeset =
+      ExtractStep.changeset(ExtractStep.get_module(), changes)
+      |> ExtractStep.validate()
 
     assert changeset.errors[:context] != nil
   end
@@ -20,7 +22,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
       type: "blarg"
     }
 
-    changeset = ExtractStep.changeset(changes)
+    changeset =
+      ExtractStep.changeset(ExtractStep.get_module(), changes)
+      |> ExtractStep.validate()
 
     assert changeset.errors[:type] != nil
   end
@@ -34,7 +38,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
+      changeset =
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:url] != nil
       assert changeset.changes.context != nil
@@ -48,7 +54,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
+      changeset =
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:body] != nil
     end
@@ -61,7 +69,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
+      changeset =
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:url] == nil
       assert changeset.changes.context.url == "http://www.example.com"
@@ -77,23 +87,11 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStepTest do
         }
       }
 
-      changeset = ExtractStep.changeset(changes)
+      changeset =
+        ExtractStep.changeset(ExtractStep.get_module(), changes)
+        |> ExtractStep.validate()
 
       assert changeset.errors[:format] != nil
-      assert changeset.changes.context != nil
-    end
-
-    test "valid date step field" do
-      changes = %{
-        type: "date",
-        context: %{
-          deltaTimeValue: "bob"
-        }
-      }
-
-      changeset = ExtractStep.changeset(changes)
-
-      assert changeset.errors[:deltaTimeValue] != nil
       assert changeset.changes.context != nil
     end
   end

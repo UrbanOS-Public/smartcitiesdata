@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
+  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Ecto.Changeset
 
   import SmartCity.Event, only: [ingestion_update: 0]
@@ -23,9 +24,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{"is_curator" => is_curator, "ingestion" => ingestion, "user_id" => user_id} = _session,
         socket
       ) do
-    default_changeset =
-      Ingestion.changeset(ingestion, %{})
-      |> Ingestion.validate()
+    default_changeset = Ingestion.changeset(ingestion, %{})
 
     {:ok,
      assign(socket,
@@ -36,6 +35,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
        is_curator: is_curator,
        unsaved_changes: false,
        page_error: false,
+       # DEPRECATED
        ingestion: ingestion,
        save_success: false,
        success_message: "",
@@ -44,23 +44,24 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def render(assigns) do
-    current_data =
+    ingestion_changeset =
       assigns.changeset
       |> Changeset.apply_changes()
-
-    metadata_changeset =
-      Ingestion.changeset(current_data, %{})
+      |> Ingestion.changeset(%{})
       |> Ingestion.validate()
-      |> IngestionMetadataFormSchema.extract_from_ingestion_changeset()
+
+    metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
+
+    {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
     ~L"""
     <%= header_render(@is_curator, AndiWeb.HeaderLiveView.header_ingestions_path()) %>
     <main aria-label="Edit Ingestion" class="edit-page" id="ingestions-edit-page">
-        <div class="edit-ingestion-title">
-          <h1 class="component-title-text">Define Data Ingestion</h1>
-        </div>
+      <div class="edit-ingestion-title">
+        <h1 class="component-title-text">Define Data Ingestion</h1>
+      </div>
 
       <div>
         <%= live_component(@socket, AndiWeb.IngestionLiveView.MetadataForm,
@@ -72,9 +73,15 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
         <div>
           <div>
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm, id: :extract_step_form_editor, session: %{"ingestion" => @ingestion, "order" => "1"}) %>
+            <%= live_component(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
+                  id: AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.component_id(),
+                  extract_step_changesets: extract_step_changesets,
+                  ingestion_published?: ingestion_published?,
+                  order: "1",
+                  ingestion_id: ingestion_changeset.data.id,
+                  extract_step_errors: extract_step_errors
+                ) %>
           </div>
-
           <div>
             <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>
@@ -137,7 +144,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       AndiWeb.Endpoint.broadcast_from(self(), "source-format", "format-update", %{new_format: new_source_format, ingestion_id: ingestion_id})
     end
 
-    {:noreply, assign(socket, changeset: new_ingestion_changeset)}
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
+  end
+
+  def handle_info({:update_all_extract_steps, extract_step_changesets}, socket) do
+    new_ingestion_changeset = Ingestion.merge_extract_step_changeset(socket.assigns.changeset, extract_step_changesets)
+
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
   def handle_info({:update_dataset, id}, socket) do
@@ -271,7 +284,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_event(event, payload, socket) do
-    IO.inspect("Event: #{event}, payload: #{payload}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
+    IO.inspect("Unhandled Event in module #{__MODULE__}")
+    IO.inspect(event, label: "Event")
+    IO.inspect(payload, label: "Payload")
+    IO.inspect(socket, label: "Socket")
 
     {:noreply, socket}
   end
@@ -300,7 +316,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       name: safe_ingestion_data.name,
       sourceFormat: safe_ingestion_data.sourceFormat,
       targetDataset: safe_ingestion_data.targetDataset,
-      topLevelSelector: safe_ingestion_data.topLevelSelector
+      topLevelSelector: safe_ingestion_data.topLevelSelector,
+      extractSteps: safe_ingestion_data.extractSteps
     }
 
     current_ingestion = Ingestions.get(socket.assigns.ingestion.id)

@@ -340,7 +340,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         Ingestion.changeset(%Ingestion{}, changes)
         |> Ingestion.validate()
 
-      expected_error = %{extractSteps: [extractSteps: {"cannot be empty and must end with a http or s3 step", []}]}
+      expected_error = %{extractSteps: [extractSteps: {"Cannot be empty and must end with a http or s3 step", []}]}
       assert expected_error == accumulate_errors(changeset)
       refute changeset.valid?
     end

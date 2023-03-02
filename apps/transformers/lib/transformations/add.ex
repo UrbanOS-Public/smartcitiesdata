@@ -1,8 +1,9 @@
-defmodule Transformers.ArithmeticAdd do
+defmodule Transformers.Add do
   @behaviour Transformation
 
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.ParseUtils
 
   @addends "addends"
   @target_field "targetField"
@@ -10,22 +11,20 @@ defmodule Transformers.ArithmeticAdd do
   @impl Transformation
   def transform(payload, parameters) do
     with {:ok, [addends, target_field]} <- validate(parameters),
-         {:ok, sum} <- sumValues(addends, payload) do
+         {:ok, numeric_addends} <- ParseUtils.operandsToNumbers(addends, payload),
+         {:ok, sum} <- sumValues(numeric_addends) do
       {:ok, payload |> Map.put(target_field, sum)}
     else
       {:error, reason} -> {:error, reason}
     end
   end
 
-  defp sumValues(addends, payload) do
+  defp sumValues(addends) do
     Enum.reduce_while(addends, {:ok, 0}, fn addend, {:ok, acc} ->
-      payloadValue = Map.get(payload, addend)
-
-      cond do
-        is_number(addend) -> {:cont, {:ok, acc + addend}}
-        is_number(payloadValue) -> {:cont, {:ok, acc + payloadValue}}
-        is_nil(payloadValue) -> {:halt, {:error, "Missing field in payload: #{addend}"}}
-        true -> {:halt, {:error, "A value is not a number: #{addend}"}}
+      if is_number(addend) do
+        {:cont, {:ok, acc + addend}}
+      else
+        {:halt, {:error, "A value is not a number: #{addend}"}}
       end
     end)
   end

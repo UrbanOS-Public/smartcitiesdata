@@ -1,7 +1,7 @@
-defmodule Transformers.ArithmeticAddTest do
+defmodule Transformers.AddTest do
   use ExUnit.Case
 
-  alias Transformers.ArithmeticAdd
+  alias Transformers.Add
 
   describe "transform/2" do
     test "sums combination of several fields and numbers" do
@@ -15,7 +15,7 @@ defmodule Transformers.ArithmeticAddTest do
         "secondField" => 4
       }
 
-      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
+      {:ok, result} = Add.transform(payload, parameters)
 
       assert result == %{
                "firstField" => 3,
@@ -33,7 +33,7 @@ defmodule Transformers.ArithmeticAddTest do
         "targetField" => "target"
       }
 
-      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = Add.transform(payload, parameters)
 
       assert reason == %{"addends" => "Missing or empty field"}
     end
@@ -48,7 +48,7 @@ defmodule Transformers.ArithmeticAddTest do
         "addends" => []
       }
 
-      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = Add.transform(payload, parameters)
 
       assert reason == %{"addends" => "Missing or empty field"}
     end
@@ -62,7 +62,7 @@ defmodule Transformers.ArithmeticAddTest do
         "addends" => [1]
       }
 
-      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = Add.transform(payload, parameters)
 
       assert reason == %{"targetField" => "Missing or empty field"}
     end
@@ -77,9 +77,9 @@ defmodule Transformers.ArithmeticAddTest do
         "targetField" => "some_field"
       }
 
-      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == "Missing field in payload: target"
+      assert reason == "A value cannot be parsed to integer or float: target"
     end
 
     test "if specified addend is not a number, return error" do
@@ -93,9 +93,9 @@ defmodule Transformers.ArithmeticAddTest do
         "targetField" => "some_field"
       }
 
-      {:error, reason} = ArithmeticAdd.transform(payload, parameters)
+      {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == "A value is not a number: target"
+      assert reason == "A value cannot be parsed to integer or float: target"
     end
 
     test "sets target field to addend when given single addend" do
@@ -108,7 +108,7 @@ defmodule Transformers.ArithmeticAddTest do
         "target" => 0
       }
 
-      {:ok, result} = ArithmeticAdd.transform(payload, parameters)
+      {:ok, result} = Add.transform(payload, parameters)
 
       assert result == %{"target" => 1}
     end
@@ -131,7 +131,7 @@ defmodule Transformers.ArithmeticAddTest do
         }
       ]
 
-      assert ArithmeticAdd.fields() == expected_fields
+      assert Add.fields() == expected_fields
     end
   end
 end

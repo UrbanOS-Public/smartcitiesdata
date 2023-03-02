@@ -13,7 +13,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3StepTest do
       url: "test.com"
     }
 
-    changeset = ExtractS3Step.changeset(changes)
+    changeset =
+      ExtractS3Step.changeset(ExtractS3Step.get_module(), changes)
+      |> ExtractS3Step.validate()
 
     assert changeset.errors[:headers] == nil
     refute Enum.empty?(Ecto.Changeset.get_field(changeset, :headers))
@@ -28,20 +30,22 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3StepTest do
       url: "test.com"
     }
 
-    changeset = ExtractS3Step.changeset(changes)
+    changeset =
+      ExtractS3Step.changeset(ExtractS3Step.get_module(), changes)
+      |> ExtractS3Step.validate()
 
     assert changeset.errors[:headers] != nil
   end
 
   test "changeset from andi extract step properly converts headers" do
-    andi_extract_step = %ExtractStep{
-      type: "s3",
-      context: %{
-        headers: [%{key: "key2", value: "value2"}]
-      }
+    changes = %{
+      headers: [%{key: "key2", value: "value2"}]
     }
 
-    changeset = ExtractS3Step.changeset_from_andi_step(andi_extract_step.context)
+    changeset =
+      ExtractS3Step.changeset(ExtractS3Step.get_module(), changes)
+      |> ExtractS3Step.validate()
+
     changeset_headers = Ecto.Changeset.get_field(changeset, :headers)
 
     assert changeset.errors[:headers] == nil

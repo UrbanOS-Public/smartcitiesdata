@@ -4,14 +4,12 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
   """
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
-  import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.ExtractSteps.ExtractStepHeader
+  alias Ecto.Changeset
   alias Andi.InputSchemas.Ingestions.ExtractSecretStep
-  alias Phoenix.HTML.FormData
 
   def mount(socket) do
     {:ok,
@@ -25,45 +23,40 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
 
   def render(assigns) do
     ~L"""
-    <div id="step-<%= @id %>" class="extract-step-container extract-secret-step-form">
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, phx_submit: :save_secret, id: @id] %>
 
-        <%= live_component(@socket, ExtractStepHeader, step_name: "Secret", step_id: @id) %>
+        <div class="component-edit-section--<%= @visibility %>">
+          <div class="extract-secret-step-form-edit-section form-grid">
+            <div class="extract-secret-step-form__destination">
+              <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_secret_destination") %>
+              <%= text_input(f, :destination, [id: "#{@id}_secret_destination", class: "extract-secret-step-form__destination input", required: true]) %>
+              <%= ErrorHelpers.error_tag(f, :destination, id: "#{@id}_secret_destination_error") %>
+            </div>
 
-        <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-          <%= hidden_input(f, :key) %>
-
-          <div class="component-edit-section--<%= @visibility %>">
-            <div class="extract-secret-step-form-edit-section form-grid">
-
-              <div class="extract-secret-step-form__destination">
-                <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "step_#{@extract_step.sequence}__secret_destination") %>
-                <%= text_input(f, :destination, [id: "step_#{@extract_step.sequence}__secret_destination", aria_label: "step_#{@extract_step.sequence}__secret_destination", class: "extract-secret-step-form__destination input", phx_target: "#step-#{@id}", required: true]) %>
-                <%= ErrorHelpers.error_tag(f, :destination) %>
-              </div>
-
-              <div class="extract-secret-step-form__value">
-                <%= label(f, :secret_value, DisplayNames.get(:secret_value), class: "label label--required", for: "step_#{@extract_step.sequence}__secret_value") %>
-                <div class="secret_value_add">
-                  <%= text_input(f, :secret_value, [id: "step_#{@extract_step.sequence}__secret_value", type: "password", class: "extract-secret-step-form__secret-value input", phx_target: "#step-#{@id}", placeholder: "Secrets are not displayed after being saved", required: true]) %>
-                  <% secret_value = FormData.input_value(nil, f, :secret_value) %>
-                  <button type="button" class="btn btn--action" phx-click="save_secret" <%= disable_add_button(@changeset, secret_value) %> phx-target='<%="#step-#{@id}"%>' phx-value-secret="<%= secret_value %>">Add</button>
-                  <span class="secret__status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
-                </div>
-              </div>
+            <div class="extract-secret-step-form__value">
+              <%= label(f, :secret_value, DisplayNames.get(:secret_value), class: "label label--required", for: "#{@id}_secret_value") %>
+              <%= text_input(f, :secret_value, [id: "#{@id}_secret_value", type: "password", class: "extract-secret-step-form__secret-value input", placeholder: "Secrets are not displayed after being saved", required: true]) %>
+              <% class = get_add_button_class(@changeset) %>
+              <button type="submit" class="btn btn--action <%= class %>">Add</button>
+              <span class="secret__status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     """
   end
 
-  def handle_event("validate", %{"form_data" => %{"destination" => destination} = form_data}, socket) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> Map.put(:sub_key, destination)
-    |> Map.put(:key, "#{socket.assigns.extract_step.id}___#{destination}")
-    |> ExtractSecretStep.changeset()
-    |> complete_validation(socket)
+  def handle_event("validate", %{"form_data" => form_data}, socket) do
+    updated_form_data =
+      form_data
+      |> update_key(socket.assigns.id)
+      |> update_sub_key()
+
+    extract_step = ExtractSecretStep.changeset(socket.assigns.changeset, updated_form_data)
+
+    AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
+
+    {:noreply, socket}
   end
 
   def handle_event("validate", _, socket) do
@@ -72,11 +65,20 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
     {:noreply, socket}
   end
 
-  def handle_event("save_secret", %{"secret" => secret}, socket) do
-    key = socket.assigns.changeset.changes.sub_key
-    path = socket.assigns.changeset.changes.key
+  def handle_event("save_secret", %{"form_data" => %{"secret_value" => secret_value} = _form_data} = _assigns, socket) do
+    key =
+      case Changeset.fetch_field(socket.assigns.changeset, :sub_key) do
+        {_, key} -> key
+        :error -> ""
+      end
 
-    case Andi.SecretService.write(path, %{key => secret}) do
+    path =
+      case Changeset.fetch_field(socket.assigns.changeset, :key) do
+        {_, path} -> path
+        :error -> ""
+      end
+
+    case Andi.SecretService.write(path, %{key => secret_value}) do
       {:ok, _} ->
         {:noreply, assign(socket, save_success: true, save_secret_message: "Secret saved successfully!")}
 
@@ -85,10 +87,17 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
     end
   end
 
+  defp update_key(%{"destination" => destination} = form_data, id), do: Map.put(form_data, "key", "#{id}___#{destination}")
+
+  defp update_sub_key(%{"destination" => destination} = form_data), do: Map.put(form_data, "sub_key", destination)
+
   defp save_success_class(true), do: "secret__save-success"
   defp save_success_class(false), do: "secret__save-fail"
 
-  defp disable_add_button(_, secret_value) when secret_value in [nil, ""], do: "disabled"
-  defp disable_add_button(%{valid?: false}, _), do: "disabled"
-  defp disable_add_button(_, _), do: ""
+  defp get_add_button_class(changeset) do
+    case changeset.valid? do
+      true -> "btn--action"
+      false -> "btn--disabled"
+    end
+  end
 end

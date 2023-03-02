@@ -1,4 +1,4 @@
-defmodule AndiWeb.ExtractHttpStepFormTest do
+defmodule AndiWeb.ExtractSecretStepFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
@@ -25,12 +25,20 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
   @moduletag shared_data_connection: true
   @instance_name Andi.instance_name()
 
-  describe "http step form edit" do
+  describe "secret step form edit" do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
-      http_step = %{context: %{destination: "foo", url: "bar.com", action: "POST", body: "{}"}, id: UUID.uuid4(), type: "http", sequence: 0}
-      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [http_step]})
+
+      secret_step = %{
+        context: %{destination: "foo", url: "bar.com", path: ["path"], cacheTtl: 500},
+        id: UUID.uuid4(),
+        type: "secret",
+        sequence: 0
+      }
+
+      ingestion =
+        TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [secret_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -40,45 +48,45 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       end)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
-      [view: view, html: html, http_step: http_step]
+      [view: view, html: html, secret_step: secret_step]
     end
 
-    test "url field can be altered and saved", %{
+    test "destination field can be altered and saved", %{
       view: view,
       html: html,
-      http_step: http_step
+      secret_step: secret_step
     } do
-      new_url = "new_url"
+      new_destination = "new_destination"
 
       form_data = %{
-        "url" => new_url
+        "destination" => new_destination
       }
 
       view
-      |> form("##{http_step.id}", form_data: form_data)
+      |> form("##{secret_step.id}", form_data: form_data)
       |> render_change()
 
       html = render(view)
-      assert get_value(html, "##{http_step.id}_http_url") == new_url
+      assert get_value(html, "##{secret_step.id}_secret_destination") == new_destination
     end
 
-    test "url field shows an error if blank", %{
+    test "destination field shows an error if blank", %{
       view: view,
       html: html,
-      http_step: http_step
+      secret_step: secret_step
     } do
-      new_url = ""
+      new_destination = ""
 
       form_data = %{
-        "url" => new_url
+        "destination" => new_destination
       }
 
       view
-      |> form("##{http_step.id}", form_data: form_data)
+      |> form("##{secret_step.id}", form_data: form_data)
       |> render_change()
 
       html = render(view)
-      assert get_text(html, "##{http_step.id}_http_url_error") == "Please enter a valid url - including http:// or https://"
+      assert get_text(html, "##{secret_step.id}_secret_destination_error") == "Please enter a valid destination."
     end
   end
 end
