@@ -39,7 +39,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("1", label: "Ryan")
+    IO.inspect("should insert partitioned data for only the specified extraction", label: "Ryan")
     expected_records = 10
     other_ingestion_records = 2
     other_extraction_records = 3
@@ -68,7 +68,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("2", label: "Ryan")
+    IO.inspect("Should refit tables before migration if they do not have an os_partition field", label: "Ryan")
 
     {:ok, _} =
       "insert into #{dataset.technical.systemName} values (1, 'Bob', cast(now() as date), 1.5, true, 1662175490, '1234-abc-zyx')"
@@ -96,7 +96,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("Expected Error 1", label: "Ryan")
+    IO.inspect("should error if the json data does not make it into the main table", label: "Ryan")
     expected_records = 10
     write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
@@ -120,7 +120,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("Expected Error 2", label: "Ryan")
+    IO.inspect("should error if the json table's data is not deleted", label: "Ryan")
     expected_records = 10
     write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
@@ -144,7 +144,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("Expected Error 3", label: "Ryan")
+    IO.inspect("should error if the main table is missing", label: "Ryan")
 
     "drop table #{dataset.technical.systemName}"
     |> PrestigeHelper.execute_query()
@@ -158,7 +158,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("Expected Error 4", label: "Ryan")
+    IO.inspect("should error if the json table is missing", label: "Ryan")
     expected_records = 10
     write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
@@ -174,7 +174,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     ingestion_id: ingestion_id,
     extract_start: extract_start
   } do
-    IO.inspect("Expected Abort 5", label: "Ryan")
+    IO.inspect("should abort `no data was found to migrate` per specified extraction", label: "Ryan")
     :ok = write_json_records(dataset, 8, Faker.UUID.v4(), 456_771)
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
     assert result == {:abort, dataset.id}
@@ -184,7 +184,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     dataset: dataset,
     ingestion_id: ingestion_id
   } do
-    IO.inspect("8", label: "Ryan")
+    IO.inspect("in overwrite mode, past extraction data should be deleted", label: "Ryan")
     main_table = dataset.technical.systemName
     json_table = dataset.technical.systemName <> "__json"
     past_data_extract_time = 000_001
@@ -253,7 +253,11 @@ defmodule Forklift.Jobs.DataMigrationTest do
          dataset: dataset,
          ingestion_id: ingestion_id
        } do
-    IO.inspect("Unsure 1", label: "Ryan")
+    IO.inspect(
+      "in overwrite mode, newer extraction data should not be deleted if present from already completed extractions",
+      label: "Ryan"
+    )
+
     main_table = dataset.technical.systemName
     json_table = dataset.technical.systemName <> "__json"
     past_data_extract_time = 000_001

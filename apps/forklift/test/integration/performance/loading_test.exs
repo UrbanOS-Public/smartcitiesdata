@@ -15,6 +15,7 @@ defmodule Forklift.Performance.LoadingTest do
 
   @tag timeout: :infinity
   test "run performance test" do
+    IO.inspect("run performance test", label: "Ryan")
     small_messages = Performance.generate_messages(10, 1_000)
     huge_messages = Performance.generate_messages(10, 1_000_000)
 
