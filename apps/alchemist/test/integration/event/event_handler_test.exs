@@ -1,6 +1,7 @@
 defmodule Alchemist.Event.EventHandlerTest do
   use ExUnit.Case
   use Placebo
+  use Divo, auto_start: false
   use Properties, otp_app: :alchemist
 
   import SmartCity.TestHelper

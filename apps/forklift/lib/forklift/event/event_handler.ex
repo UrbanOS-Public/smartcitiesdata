@@ -1,6 +1,7 @@
 defmodule Forklift.Event.EventHandler do
   @moduledoc false
   use Brook.Event.Handler
+  use Divo, auto_start: false
 
   alias SmartCity.Dataset
   alias SmartCity.Ingestion
