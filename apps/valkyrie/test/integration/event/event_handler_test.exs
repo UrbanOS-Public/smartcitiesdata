@@ -1,6 +1,5 @@
 defmodule Valkyrie.Event.EventHandlerTest do
   use ExUnit.Case
-  use Divo
   use Placebo
   use Properties, otp_app: :valkyrie
 
