@@ -181,6 +181,13 @@ defmodule Andi.InputSchemas.Ingestion do
     {extract_step_changesets, extract_step_errors}
   end
 
+  def get_transformation_changesets(ingestion_changeset) do
+    case Changeset.fetch_change(ingestion_changeset, :transformations) do
+      {_, extract_steps} -> extract_steps
+      :error -> []
+    end
+  end
+
   @spec preload(nil | maybe_improper_list | struct) :: any
   def preload(struct), do: StructTools.preload(struct, [:schema, :extractSteps, :transformations])
 

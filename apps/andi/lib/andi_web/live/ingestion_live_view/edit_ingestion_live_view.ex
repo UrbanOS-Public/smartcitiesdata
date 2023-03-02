@@ -54,6 +54,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
+    transformation_changesets = Ingestion.get_transformation_changeset(ingestion_changeset)
+
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
     ~L"""
@@ -76,7 +78,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
             <%= live_component(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
                   id: AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.component_id(),
                   extract_step_changesets: extract_step_changesets,
-                  ingestion_published?: ingestion_published?,
                   order: "1",
                   ingestion_id: ingestion_changeset.data.id,
                   extract_step_errors: extract_step_errors
@@ -87,7 +88,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           </div>
 
           <div>
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
+            <%= live_component(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep,
+                  id: AndiWeb.IngestionLiveView.Transformations.TransformationsStep.component_id(),
+                  transformation_Changesets: transformation_changesets,
+                  order: "3",
+                  ingestion_id: ingestion_changeset.data.id
+                ) %>
           </div>
 
           <div>
