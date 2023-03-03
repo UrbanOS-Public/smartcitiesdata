@@ -224,12 +224,6 @@ defmodule Andi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: type, data: data, author: author}) do
-    Logger.error("Unknown message failed to process with type: #{type}, author: #{inspect(author)}, data: #{inspect(data)}")
-    DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: "Unknown event type in Andi")
-    :discard
-  end
-
   defp create_user_if_not_exists(subject_id, email, name) do
     case User.get_by_subject_id(subject_id) do
       nil ->
