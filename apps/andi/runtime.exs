@@ -148,3 +148,12 @@ if System.get_env("S3_HOST_NAME") do
     },
     port: System.get_env("S3_PORT") |> String.to_integer()
 end
+
+config :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoint,
+      topic: "streaming-dead-letters"
+    ]
+  ]
