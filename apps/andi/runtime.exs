@@ -151,9 +151,9 @@ end
 
 config :dead_letter,
   driver: [
-   module: DeadLetter.Carrier.Kafka,
-   init_args: [
-     endpoints: endpoint,
-     topic: "streaming-dead-letters"
-   ]
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoint,
+      topic: "streaming-dead-letters"
+    ]
   ]
