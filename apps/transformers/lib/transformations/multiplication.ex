@@ -25,7 +25,7 @@ defmodule Transformers.Multiplication do
 
   defp multiply_multiplicands(resolved_multiplicands) do
     Enum.reduce(resolved_multiplicands, 1, fn multiplicand, acc ->
-      D.mult(D.new(multiplicand), D.new(acc))
+      D.mult(D.cast(multiplicand), D.cast(acc))
     end)
   end
 

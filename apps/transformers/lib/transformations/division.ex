@@ -18,7 +18,7 @@ defmodule Transformers.Division do
          {:ok, numeric_divisor} <- ParseUtils.parseValue(divisor, payload),
          {:ok, dividend} <- resolve_payload_field(payload, numeric_dividend),
          {:ok, divisor} <- resolve_divisor(payload, numeric_divisor),
-         {:ok, quotient} <- {:ok, D.div(D.new(numeric_dividend), D.new(numeric_divisor))} do
+         {:ok, quotient} <- {:ok, D.div(D.cast(numeric_dividend), D.cast(numeric_divisor))} do
       {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
       {:error, reason} -> {:error, reason}

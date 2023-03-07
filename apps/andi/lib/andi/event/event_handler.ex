@@ -1,6 +1,9 @@
 defmodule Andi.Event.EventHandler do
   @moduledoc "Event Handler for event stream"
+  alias DeadLetter
+
   use Brook.Event.Handler
+
   require Logger
 
   import SmartCity.Event,
@@ -44,6 +47,12 @@ defmodule Andi.Event.EventHandler do
 
     Datasets.update(data)
     DatasetStore.update(data)
+    :ok
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: ingestion_update(), data: %Ingestion{} = data, author: author}) do
@@ -55,18 +64,24 @@ defmodule Andi.Event.EventHandler do
     |> Ingestions.update()
 
     IngestionStore.update(data)
+  rescue
+    error ->
+      Logger.error("ingestion_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{
-        type: ingestion_delete(),
-        data: %Ingestion{} = ingestion,
-        author: author
-      }) do
+  def handle_event(%Brook.Event{type: ingestion_delete(), data: %Ingestion{} = data, author: author}) do
     ingestion_delete()
-    |> add_event_count(author, ingestion.id)
+    |> add_event_count(author, data.id)
 
-    Ingestions.delete(ingestion.id)
-    IngestionStore.delete(ingestion.id)
+    Ingestions.delete(data.id)
+    IngestionStore.delete(data.id)
+  rescue
+    error ->
+      Logger.error("ingestion_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
@@ -77,11 +92,16 @@ defmodule Andi.Event.EventHandler do
 
     Organizations.update(data)
     OrgStore.update(data)
+  rescue
+    error ->
+      Logger.error("organization_update failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email},
+        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email} = data,
         author: author
       }) do
     user_organization_associate()
@@ -96,26 +116,33 @@ defmodule Andi.Event.EventHandler do
     end
 
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_associate failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(
-        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} =
-          _event
+        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = data, author: author} = _event
       ) do
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
-    case User.disassociate_with_organization(disassociation.subject_id, disassociation.org_id) do
+    case User.disassociate_with_organization(data.subject_id, data.org_id) do
       {:error, error} ->
-        Logger.error(
-          "Unable to disassociate user with organization #{disassociation.org_id}: #{inspect(error)}. This event has been discarded."
-        )
+        Logger.error("Unable to disassociate user with organization #{data.org_id}: #{inspect(error)}. This event has been discarded.")
 
       _ ->
         :ok
     end
 
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data, author: author}) do
@@ -125,46 +152,76 @@ defmodule Andi.Event.EventHandler do
     Task.start_link(Harvester, :start_harvesting, [data])
 
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_harvest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_end(), data: data}) do
     Organizations.update_harvested_dataset(data)
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_harvest_end failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{type: "migration:modified_date:start", author: author}) do
+  def handle_event(%Brook.Event{type: "migration:modified_date:start", author: author} = event) do
     "migration:modified_date:start"
     |> add_event_count(author, nil)
 
     Andi.Migration.ModifiedDateMigration.do_migration()
     {:create, :migration, "modified_date_migration_completed", true}
+  rescue
+    error ->
+      Logger.error("migration_modified_date_start failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id}, create_ts: create_ts, author: author}) do
+  def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id} = data, create_ts: create_ts, author: author}) do
     data_ingest_end()
     |> add_event_count(author, id)
 
     {:create, :ingested_time, id, %{"id" => id, "ingested_time" => create_ts}}
+  rescue
+    error ->
+      Logger.error("data_ingest_end failed to process: #{inspect(error)}")
+      DeadLetter.process(id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
         type: dataset_delete(),
-        data: %Dataset{} = dataset,
+        data: %Dataset{id: id} = data,
         author: author
       }) do
     dataset_delete()
-    |> add_event_count(author, dataset.id)
+    |> add_event_count(author, data.id)
 
     Task.start(fn -> add_dataset_count() end)
-    Datasets.delete(dataset.id)
-    DatasetStore.delete(dataset.id)
+    Datasets.delete(data.id)
+    DatasetStore.delete(data.id)
+  rescue
+    error ->
+      Logger.error("dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name}, author: author}) do
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name} = data, author: author}) do
     user_login()
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+  rescue
+    error ->
+      Logger.error("user_login failed to process: #{inspect(error)}")
+      DeadLetter.process(nil, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   defp create_user_if_not_exists(subject_id, email, name) do
