@@ -92,7 +92,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     new_changeset = ExtractStep.changeset(%ExtractStep{}, new_step_changes)
 
-    new_extract_step_changesets = [new_changeset | socket.assigns.extract_step_changesets] |> StructTools.sort_if_sequenced()
+    new_extract_step_changesets = [new_changeset | socket.assigns.extract_step_changesets] |> sort_by_sequence()
 
     send(self(), {:update_all_extract_steps, new_extract_step_changesets})
     {:noreply, socket}

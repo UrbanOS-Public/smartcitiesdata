@@ -10,7 +10,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
-  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Ecto.Changeset
 
   import SmartCity.Event, only: [ingestion_update: 0]
@@ -54,7 +53,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
-    transformation_changesets = Ingestion.get_transformation_changeset(ingestion_changeset)
+    transformation_changesets = Ingestion.get_transformation_changesets(ingestion_changeset)
+      |> IO.inspect(label: "Nicholas - transformation_changesets")
 
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
@@ -90,7 +90,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           <div>
             <%= live_component(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep,
                   id: AndiWeb.IngestionLiveView.Transformations.TransformationsStep.component_id(),
-                  transformation_Changesets: transformation_changesets,
+                  transformation_changesets: transformation_changesets,
                   order: "3",
                   ingestion_id: ingestion_changeset.data.id
                 ) %>
@@ -155,6 +155,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_info({:update_all_extract_steps, extract_step_changesets}, socket) do
     new_ingestion_changeset = Ingestion.merge_extract_step_changeset(socket.assigns.changeset, extract_step_changesets)
+
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
+  end
+
+  def handle_info({:update_all_transformations, transformation_changesets}, socket) do
+    new_ingestion_changeset = Ingestion.merge_transformation_changeset(socket.assigns.changeset, transformation_changesets)
 
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end

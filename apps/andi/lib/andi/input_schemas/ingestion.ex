@@ -86,7 +86,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> Changeset.foreign_key_constraint(:targetDataset)
   end
 
@@ -104,7 +104,7 @@ defmodule Andi.InputSchemas.Ingestion do
       |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
       |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
       |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -114,7 +114,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast(changes, @cast_fields, empty_values: [])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
@@ -124,7 +124,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset_for_draft(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -132,7 +132,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast(changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset_for_draft/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def merge_metadata_changeset(
@@ -181,11 +181,28 @@ defmodule Andi.InputSchemas.Ingestion do
     {extract_step_changesets, extract_step_errors}
   end
 
+  @spec merge_transformation_changeset(Ecto.Changeset.t(), any) :: map
+  def merge_transformation_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset, transformation_changesets) do
+    transformation_changeset_list =
+      Enum.reduce(transformation_changesets, [], fn transformation_changeset, acc ->
+        transformation_changes = StructTools.to_map(Changeset.apply_changes(transformation_changeset))
+        [transformation_changes | acc]
+      end)
+
+    cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :transformations)
+
+    changeset(cleared_ingestion_changeset, %{transformations: transformation_changeset_list})
+  end
+
   def get_transformation_changesets(ingestion_changeset) do
-    case Changeset.fetch_change(ingestion_changeset, :transformations) do
-      {_, extract_steps} -> extract_steps
+    transformations = case Changeset.fetch_change(ingestion_changeset, :transformations) do
+      {_, transformations} -> transformations
       :error -> []
     end
+
+    Enum.reduce(transformations, [], fn transformation, acc ->
+      acc ++ [Transformation.validate(transformation)]
+    end)
   end
 
   @spec preload(nil | maybe_improper_list | struct) :: any
