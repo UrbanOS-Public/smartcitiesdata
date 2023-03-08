@@ -123,6 +123,47 @@ defmodule Transformers.DateTimeTest do
       assert reason ==
                "Unable to parse datetime from \"date1\" in format \"{YYYY}-{0M}-{D} {h24}:{m}\": Expected `2 digit month` at line 1, column 4."
     end
+
+    test "performs transform as normal when condition evaluates to true" do
+      params = %{
+        "sourceField" => "date1",
+        "targetField" => "date2",
+        "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
+        "condition" => %{
+          "sourceConditionField" => "date1",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "2022-02-28 16:53"
+        }
+      }
+
+      message_payload = %{"date1" => "2022-02-28 16:53"}
+
+      {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+      {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+      assert actual_transformed_field == "February 28, 2022 4:53 PM"
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "sourceField" => "date1",
+        "targetField" => "date2",
+        "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
+        "condition" => %{
+          "sourceConditionField" => "date1",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "other"
+        }
+      }
+
+      message_payload = %{"date1" => "2022-02-28 16:53"}
+
+      result = Transformers.DateTime.transform(message_payload, params)
+
+      assert result == {:ok, %{"date1" => "2022-02-28 16:53"}}
+    end
   end
 
   describe "validate/1" do

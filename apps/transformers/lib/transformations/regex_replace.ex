@@ -5,6 +5,7 @@ defmodule Transformers.RegexReplace do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidRegex
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @source_field "sourceField"
   @replacement "replacement"
@@ -12,7 +13,8 @@ defmodule Transformers.RegexReplace do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field, replacement, regex]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [source_field, replacement, regex]} <- validate(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field),
          :ok <- abort_if_not_string(value, source_field),
          :ok <- abort_if_not_string(replacement, @replacement) do
@@ -20,6 +22,7 @@ defmodule Transformers.RegexReplace do
       transformed_payload = Map.put(payload, source_field, transformed_value)
       {:ok, transformed_payload}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end

@@ -76,6 +76,52 @@ defmodule Transformers.ConstantTest do
                "testField" => 1.0
              }
     end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "1",
+        "valueType" => "float",
+        "condition" => %{
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "old value"
+        }
+      }
+
+      payload = %{
+        "testField" => "old value"
+      }
+
+      {:ok, result} = Constant.transform(payload, parameters)
+
+      assert result == %{
+               "testField" => 1.0
+             }
+    end
+
+    test "does nothing when condition evaluates to false" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "1",
+        "valueType" => "float",
+        "condition" => %{
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "different value"
+        }
+      }
+
+      payload = %{
+        "testField" => "old value"
+      }
+
+      {:ok, result} = Constant.transform(payload, parameters)
+
+      assert result == %{
+               "testField" => "old value"
+             }
+    end
   end
 
   describe "error handling" do

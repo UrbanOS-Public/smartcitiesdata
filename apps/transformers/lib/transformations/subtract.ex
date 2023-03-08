@@ -5,6 +5,7 @@ defmodule Transformers.Subtract do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
   alias Transformers.ParseUtils
+  alias Transformers.Conditions
 
   @minuend "minuend"
   @subtrahends "subtrahends"
@@ -12,11 +13,13 @@ defmodule Transformers.Subtract do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [minuend, subtrahends, target_field]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [minuend, subtrahends, target_field]} <- validate(parameters),
          {:ok, numeric_subtrahends} <- ParseUtils.operandsToNumbers(subtrahends, payload),
          {:ok, difference} <- subtractValues(minuend, numeric_subtrahends, payload) do
       {:ok, payload |> Map.put(target_field, difference)}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end

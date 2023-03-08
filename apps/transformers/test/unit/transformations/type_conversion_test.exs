@@ -196,6 +196,44 @@ defmodule Transformers.TypeConversionTest do
     assert {:error, "Cannot parse field thing with value 1/4 into float"} == result
   end
 
+  test "performs transformation as normal when condition returns true" do
+    payload = %{"thing" => 300}
+
+    parameters = %{
+      "field" => "thing",
+      "sourceType" => "integer",
+      "targetType" => "string",
+      "condition" => %{
+        "sourceConditionField" => "thing",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "300"
+      }
+    }
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:ok, %{"thing" => "300"}} == result
+  end
+
+  test "does nothing when condition returns false" do
+    payload = %{"thing" => 300}
+
+    parameters = %{
+      "field" => "thing",
+      "sourceType" => "integer",
+      "targetType" => "string",
+      "condition" => %{
+        "sourceConditionField" => "thing",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "30"
+      }
+    }
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:ok, %{"thing" => 300}} == result
+  end
+
   describe "validate/1" do
     test "returns :ok if all parameters are present and the type conversion is valid" do
       parameters = %{

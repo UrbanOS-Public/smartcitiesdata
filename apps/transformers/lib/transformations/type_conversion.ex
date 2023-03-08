@@ -5,6 +5,7 @@ defmodule Transformers.TypeConversion do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidTypeConversion
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @field "field"
   @source_type "sourceType"
@@ -13,12 +14,14 @@ defmodule Transformers.TypeConversion do
 
   @impl Transformation
   def transform(payload, params) do
-    with {:ok, [field, source_type, target_type, conversion_function]} <- validate(params),
+    with {:ok, true} <- Conditions.check(payload, params),
+         {:ok, [field, source_type, target_type, conversion_function]} <- validate(params),
          {:ok, value} <- FieldFetcher.fetch_value(payload, field),
          :ok <- abort_if_missing_value(payload, field, value),
          :ok <- check_field_is_of_sourcetype(field, value, source_type) do
       parse_or_error(conversion_function, payload, field, value, target_type)
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
       nil_payload -> {:ok, nil_payload}
     end

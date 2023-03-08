@@ -1,4 +1,4 @@
-defmodule Transformers.ConstantTest do
+defmodule Transformers.ConditionsTest do
   use ExUnit.Case
 
   alias Transformers.Conditions
@@ -28,10 +28,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
-          "targetField" => nil,
-          "targetValue" => "value"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "value"
         }
       }
 
@@ -49,10 +49,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
-          "targetField" => nil,
-          "targetValue" => "differentValue"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "differentValue"
         }
       }
 
@@ -70,10 +70,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -92,10 +92,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -116,10 +116,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "!=",
-          "targetField" => nil,
-          "targetValue" => "othervalue"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "!=",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "othervalue"
         }
       }
 
@@ -137,10 +137,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "!=",
-          "targetField" => nil,
-          "targetValue" => "value"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "!=",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "value"
         }
       }
 
@@ -158,10 +158,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "!=",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "!=",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -180,10 +180,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "!=",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "!=",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -196,6 +196,7 @@ defmodule Transformers.ConstantTest do
       assert result == {:ok, false}
     end
   end
+
   describe "greater than" do
     test "returns true when source field value is greater than static target value " do
       parameters = %{
@@ -203,15 +204,15 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => ">",
-          "targetField" => nil,
-          "targetValue" => "1"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => ">",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "1"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
@@ -224,15 +225,15 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => ">",
-          "targetField" => nil,
-          "targetValue" => "3"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => ">",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "3"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
@@ -245,10 +246,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => ">",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => ">",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -267,10 +268,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => ">",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => ">",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -291,15 +292,15 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "<",
-          "targetField" => nil,
-          "targetValue" => "3"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "<",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "3"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
@@ -312,15 +313,15 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "<",
-          "targetField" => nil,
-          "targetValue" => "1"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "<",
+          "targetConditionField" => nil,
+          "targetConditionValue" => "1"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
@@ -333,10 +334,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "<",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "<",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -355,10 +356,10 @@ defmodule Transformers.ConstantTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "<",
-          "targetField" => "compareField",
-          "targetValue" => nil
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "<",
+          "targetConditionField" => "compareField",
+          "targetConditionValue" => nil
         }
       }
 
@@ -376,79 +377,85 @@ defmodule Transformers.ConstantTest do
     test "returns error when the comparison fields are missing from the parameters" do
       parameters = %{
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "="
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
-      assert result == {:error, %{"targetField" => "Missing or empty field"}}
+      assert result == {:error, %{"targetConditionField" => "Missing or empty field"}}
     end
+
     test "returns error when the source field is missing from the parameters" do
       parameters = %{
         "condition" => %{
-          "operation" => "=",
-          "targetValue" => "2"
+          "conditionOperation" => "=",
+          "targetConditionValue" => "2"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
-      assert result == {:error, %{"sourceField" => "Missing or empty field"}}
+      assert result == {:error, %{"sourceConditionField" => "Missing or empty field"}}
     end
+
     test "returns error when the operation field is missing from the parameters" do
       parameters = %{
         "condition" => %{
-          "sourceField" => "testField",
-          "targetValue" => "2"
+          "sourceConditionField" => "testField",
+          "targetConditionValue" => "2"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
-      assert result == {:error, %{"operation" => "Missing or empty field"}}
+      assert result == {:error, %{"conditionOperation" => "Missing or empty field"}}
     end
+
     test "returns error when given an unsupported operation" do
       parameters = %{
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "!",
-          "targetValue" => "2"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "!",
+          "targetConditionValue" => "2"
         }
       }
 
       payload = %{
-        "testField" => 2,
+        "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
       assert result == {:error, "unsupported condition operation"}
     end
+
     test "returns error when source field is not present in payload" do
       parameters = %{
         "condition" => %{
-          "sourceField" => "testField",
-          "operation" => "=",
-          "targetValue" => "2"
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "2"
         }
       }
 
       payload = %{
-        "notTestField" => 2,
+        "notTestField" => 2
       }
 
       result = Conditions.check(payload, parameters)
-      assert result == {:error, %KeyError{key: "testField", message: nil, term: %{"notTestField" => 2}}}
+
+      assert result ==
+               {:error, %KeyError{key: "testField", message: nil, term: %{"notTestField" => 2}}}
     end
   end
 end

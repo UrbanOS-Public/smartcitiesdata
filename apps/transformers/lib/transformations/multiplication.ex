@@ -6,19 +6,22 @@ defmodule Transformers.Multiplication do
   alias Transformers.Validations.ValidationStatus
   alias Transformers.ParseUtils
   alias Decimal, as: D
+  alias Transformers.Conditions
 
   @multiplicands "multiplicands"
   @target_field "targetField"
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [multiplicands, target_field_name]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [multiplicands, target_field_name]} <- validate(parameters),
          {:ok, numeric_multiplicands} <- ParseUtils.operandsToNumbers(multiplicands, payload),
          {:ok, resolved_multiplicands} <-
            resolve_multiplicand_fields(payload, numeric_multiplicands),
          product <- multiply_multiplicands(resolved_multiplicands) do
       {:ok, payload |> Map.put(target_field_name, D.to_float(product))}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end
