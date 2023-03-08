@@ -12,15 +12,13 @@ defmodule Transformers.Conditions do
   @operation_field "conditionOperation"
 
   def check(payload, parameters) do
-    if Map.has_key?(parameters, "condition") do
-      with {:ok, [operation, source_field, target_field, target_value]} <- validate(parameters),
-           {:ok, result} <- eval(operation, source_field, target_field, target_value, payload) do
-        {:ok, result}
-      else
-        {:error, reason} -> {:error, reason}
-      end
+    with true <- Map.has_key?(parameters, "condition"),
+          {:ok, [operation, source_field, target_field, target_value]} <- validate(parameters),
+          {:ok, result} <- eval(operation, source_field, target_field, target_value, payload) do
+            {:ok, result}
     else
-      {:ok, true}
+      false -> {:ok, true}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -54,16 +52,16 @@ defmodule Transformers.Conditions do
 
   defp eval(operation, source_field, target_field, target_value, payload) do
     try do
-      left_value = Map.fetch!(payload, source_field)
+      left_value = try_parse(Map.fetch!(payload, source_field))
 
       right_value =
-        if is_nil(target_value), do: Map.fetch!(payload, target_field), else: target_value
+        if is_nil(target_value), do: try_parse(Map.fetch!(payload, target_field)), else: try_parse(target_value)
 
       case operation do
-        "=" -> {:ok, try_parse(left_value) == try_parse(right_value)}
-        "!=" -> {:ok, try_parse(left_value) != try_parse(right_value)}
-        ">" -> {:ok, try_parse(left_value) > try_parse(right_value)}
-        "<" -> {:ok, try_parse(left_value) < try_parse(right_value)}
+        "=" -> {:ok, left_value == right_value}
+        "!=" -> {:ok, left_value != right_value}
+        ">" -> {:ok, left_value > right_value}
+        "<" -> {:ok, left_value < right_value}
         _ -> {:error, "unsupported condition operation"}
       end
     rescue
