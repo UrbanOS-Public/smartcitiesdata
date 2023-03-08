@@ -13,9 +13,9 @@ defmodule Transformers.Conditions do
 
   def check(payload, parameters) do
     with true <- Map.has_key?(parameters, "condition"),
-          {:ok, [operation, source_field, target_field, target_value]} <- validate(parameters),
-          {:ok, result} <- eval(operation, source_field, target_field, target_value, payload) do
-            {:ok, result}
+         {:ok, [operation, source_field, target_field, target_value]} <- validate(parameters),
+         {:ok, result} <- eval(operation, source_field, target_field, target_value, payload) do
+      {:ok, result}
     else
       false -> {:ok, true}
       {:error, reason} -> {:error, reason}
@@ -55,7 +55,9 @@ defmodule Transformers.Conditions do
       left_value = try_parse(Map.fetch!(payload, source_field))
 
       right_value =
-        if is_nil(target_value), do: try_parse(Map.fetch!(payload, target_field)), else: try_parse(target_value)
+        if is_nil(target_value),
+          do: try_parse(Map.fetch!(payload, target_field)),
+          else: try_parse(target_value)
 
       case operation do
         "=" -> {:ok, left_value == right_value}
