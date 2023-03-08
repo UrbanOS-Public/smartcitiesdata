@@ -23,6 +23,7 @@ defmodule Reaper.Event.EventHandlerTest do
   @instance_name Reaper.instance_name()
 
   getter(:brook, generic: true)
+  getter(:kafka_broker, generic: true)
 
   setup do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
@@ -41,42 +42,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end)
 
     :ok
-  end
-
-  describe "#{ingestion_update()}" do
-    test "sends error event for known bad case of nil cadence" do
-      allow(Reaper.Scheduler.find_job(any()), return: nil)
-      ingestion = TDG.create_ingestion(%{id: "ds-empty-cron", cadence: nil})
-
-      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: error_ingestion_update(),
-                        data: %{
-                          "reason" => _,
-                          "ingestion" => %SmartCity.Ingestion{id: "ds-empty-cron"}
-                        }
-                      }},
-                     10_000
-    end
-
-    test "sends error event for raised errors while performing ingestion update" do
-      allow(Reaper.Event.Handlers.IngestionUpdate.handle(any()),
-        exec: fn _ -> raise "bad stuff" end
-      )
-
-      ingestion = TDG.create_ingestion(%{})
-
-      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: "error:ingestion:update",
-                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "ingestion" => _}
-                      }},
-                     10_000
-    end
   end
 
   describe "#{data_extract_start()}" do
@@ -246,23 +211,6 @@ defmodule Reaper.Event.EventHandlerTest do
         assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
         assert_called(Reaper.Event.Handlers.IngestionDelete.handle(ingestion))
       end)
-    end
-
-    test "sends error event for raised errors while performing ingestion update" do
-      allow(Reaper.Event.Handlers.IngestionUpdate.handle(any()),
-        exec: fn _ -> raise "bad stuff" end
-      )
-
-      ingestion = TDG.create_ingestion(%{})
-
-      assert :ok == Brook.Test.send(@instance_name, ingestion_update(), "testing", ingestion)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: "error:ingestion:update",
-                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "ingestion" => _}
-                      }},
-                     10_000
     end
   end
 

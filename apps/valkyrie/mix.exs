@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "1.7.23",
+      version: "1.7.24",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -43,6 +43,7 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 0.1", only: [:integration]},
       {:divo_redis, "~> 0.1", only: [:integration]},
+      {:elixir_uuid, "~> 1.2"},
       {:excoveralls, "~> 0.11.1", only: :test},
       {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.2", override: true},
