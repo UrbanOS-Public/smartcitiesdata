@@ -135,6 +135,32 @@ $button-padding: 10px 50px;
     }
 }
 
+.btn--download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: $color-primary;
+    color: white;
+    border: none;
+    padding: $button-padding;
+
+    min-width: 10rem;
+    min-height: 2rem;
+    line-height: 2rem;
+    font-size: 1.2rem;
+
+    .download-icon {
+        margin-right: .3em;
+        vertical-align: sub;
+    }
+
+
+    &:hover {
+        background-color: lighten($color-primary, 10%);
+        border: none;
+    }
+}
+
 .btn--test {
     font-size: 1rem;
 
