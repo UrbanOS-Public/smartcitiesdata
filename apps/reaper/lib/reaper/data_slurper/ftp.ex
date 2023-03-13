@@ -24,7 +24,7 @@ defmodule Reaper.DataSlurper.Ftp do
     %{host: host, path: path, port: port} = URI.parse(url)
 
     with {:ok, pid} <- connect(host, port, ingestion_id),
-      {:file, filename} <- stream_file(pid, path, filename) do
+         {:file, filename} <- stream_file(pid, path, filename) do
       {:file, filename}
     else
       {:error, reason} ->
@@ -34,7 +34,9 @@ defmodule Reaper.DataSlurper.Ftp do
 
   defp stream_file(pid, path, filename) do
     case :ftp.recv(pid, ~c(#{path}), filename) do
-      :ok -> {:file, filename}
+      :ok ->
+        {:file, filename}
+
       {:error, reason} ->
         {:error, map_ftp_errors(reason)}
     end
@@ -51,7 +53,8 @@ defmodule Reaper.DataSlurper.Ftp do
             {:error, "Unable to establish FTP connection: #{map_ftp_errors(reason)}"}
         end
 
-      {:ok, _} -> {:error, "Ingestion credentials are not of the correct type"}
+      {:ok, _} ->
+        {:error, "Ingestion credentials are not of the correct type"}
 
       error ->
         error

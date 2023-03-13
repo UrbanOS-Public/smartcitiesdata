@@ -19,7 +19,7 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles incorrectly configured ingestion credentials", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{api_key: "q4587435o43759o47597"}}
+        return: {:ok, %{api_key: "q4587435o43759o47597"}}
 
       message = "Ingestion credentials are not of the correct type"
 
@@ -32,11 +32,13 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles invalid ingestion credentials", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+
       allow :ftp.open(any()),
-            return: {:ok, "pid"}
+        return: {:ok, "pid"}
+
       allow :ftp.user(any(), any(), any()),
-            return: {:error, :euser}
+        return: {:error, :euser}
 
       message = "Unable to establish FTP connection: Invalid username or password"
 
@@ -49,9 +51,10 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles closed session", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+
       allow :ftp.open(any()),
-            return: {:error, :eclosed}
+        return: {:error, :eclosed}
 
       message = "Unable to establish FTP connection: The session is closed"
 
@@ -64,11 +67,13 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles bad connection", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+
       allow :ftp.open(any()),
-            return: {:ok, "pid"}
+        return: {:ok, "pid"}
+
       allow :ftp.user(any(), any(), any()),
-            return: {:error, :econn}
+        return: {:error, :econn}
 
       message = "Unable to establish FTP connection: Connection to the remote server is prematurely closed"
 
@@ -81,11 +86,13 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles bad host", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-      allow :ftp.open(any()),
-            return: {:error, :ehost}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
 
-      message = "Unable to establish FTP connection: Host is not found, FTP server is not found, or connection is rejected by FTP server"
+      allow :ftp.open(any()),
+        return: {:error, :ehost}
+
+      message =
+        "Unable to establish FTP connection: Host is not found, FTP server is not found, or connection is rejected by FTP server"
 
       assert_raise RuntimeError,
                    ~s|Failed calling '#{map.source_url}': "#{message}"|,
@@ -96,13 +103,16 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles bad file path", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+
       allow :ftp.open(any()),
-            return: {:ok, "pid"}
+        return: {:ok, "pid"}
+
       allow :ftp.user(any(), any(), any()),
-            return: :ok
+        return: :ok
+
       allow :ftp.recv(any(), any(), any()),
-            return: {:error, :epath}
+        return: {:error, :epath}
 
       message = "No such file or directory, or directory already exists, or permission denied"
 
@@ -115,13 +125,16 @@ defmodule Reaper.DataSlurper.FtpTest do
 
     test "handles successful file retrieval", map do
       allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-            return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
+
       allow :ftp.open(any()),
-            return: {:ok, "pid"}
+        return: {:ok, "pid"}
+
       allow :ftp.user(any(), any(), any()),
-            return: :ok
+        return: :ok
+
       allow :ftp.recv(any(), any(), map.ingestion_id),
-            return: :ok
+        return: :ok
 
       message = "No such file or directory, or directory already exists, or permission denied"
 
