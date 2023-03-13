@@ -14,7 +14,9 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       }
     }
 
-    changeset = Transformation.changeset(changes)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), changes)
+      |> Transformation.validate()
 
     assert changeset.errors == []
     assert changeset.valid?
@@ -30,7 +32,9 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       }
     }
 
-    changeset = Transformation.changeset(changes)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), changes)
+      |> Transformation.validate()
 
     assert changeset.errors == [{:separator, {"Missing field", []}}]
     assert not changeset.valid?
@@ -42,10 +46,17 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       parameters: nil
     }
 
-    changeset = Transformation.changeset(changes)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), changes)
+      |> Transformation.validate()
+
     assert not changeset.valid?
-    assert changeset.errors[:parameters] != nil
-    assert {"is required", [validation: :required]} == changeset.errors[:parameters]
+    assert changeset.errors[:targetField] != nil
+    assert {"Missing or empty field", []} == changeset.errors[:targetField]
+    assert changeset.errors[:sourceFields] != nil
+    assert {"Missing or empty field", []} == changeset.errors[:sourceFields]
+    assert changeset.errors[:separator] != nil
+    assert {"Missing field", []} == changeset.errors[:separator]
   end
 
   test "fails for invalid type" do
@@ -54,21 +65,13 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       parameters: %{}
     }
 
-    changeset = Transformation.changeset(changes)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), changes)
+      |> Transformation.validate()
 
     assert not changeset.valid?
     assert changeset.errors[:type] != nil
-    assert changeset.errors[:type] == {"invalid type: invalid", []}
-  end
-
-  test "sucessfully converts a transformation to a changeset" do
-    id = UUID.uuid4()
-    ingestion_id = UUID.uuid4()
-    transformation = %Transformation{id: id, name: "turtle", ingestion_id: ingestion_id}
-
-    changeset = Transformation.convert_andi_transformation_to_changeset(transformation)
-
-    assert %Ecto.Changeset{changes: %{id: ^id, name: "turtle", ingestion_id: ^ingestion_id}} = changeset
+    assert changeset.errors[:type] == {"Unsupported transformation validation type: invalid", []}
   end
 
   test "sucessfully creates an invalid changeset from form data when there is no transformation type selected" do
@@ -80,11 +83,17 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       type: ""
     }
 
-    changeset = Transformation.changeset_from_form_data(form_data)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), form_data)
+      |> Transformation.validate()
 
     assert %Ecto.Changeset{changes: %{id: ^id, name: "Transformation Name", parameters: %{}}} = changeset
     refute changeset.valid?
-    assert changeset.errors == [type: {"is required", [validation: :required]}]
+
+    assert changeset.errors == [
+             {:type, {"Unsupported transformation validation type: ", []}},
+             {:type, {"is required", [validation: :required]}}
+           ]
   end
 
   test "sucessfully creates a valid changeset from form data when there is a transformation type selected" do
@@ -99,7 +108,9 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       targetField: "name"
     }
 
-    changeset = Transformation.changeset_from_form_data(form_data)
+    changeset =
+      Transformation.changeset(Transformation.get_module(), form_data)
+      |> Transformation.validate()
 
     assert %Ecto.Changeset{
              changes: %{

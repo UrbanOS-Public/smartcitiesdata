@@ -26,7 +26,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   def get_module(), do: %__MODULE__{}
 
   def changeset(transformation, changes) do
-    changes_with_id = StructTools.ensure_id(transformation, changes)
+    changes_with_id =
+      StructTools.ensure_id(transformation, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
       |> format_parameters()
 
@@ -40,7 +41,8 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
       |> Changeset.apply_changes()
       |> StructTools.to_map()
 
-    validated_transformation_changeset = transformation_changeset
+    validated_transformation_changeset =
+      transformation_changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, force_changes: true)
       |> Changeset.validate_required(@required_fields, message: "is required")
@@ -57,24 +59,26 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   def preload(struct), do: StructTools.preload(struct, [])
 
   defp format_parameters(changes) do
-    new_changes = if is_nil(Map.get(changes, :parameters)) do
-      Map.put(changes, :parameters, %{})
-    else
-      changes
-    end
-
-    new_parameters = Enum.reduce(Map.keys(new_changes), Map.new(), fn key, acc ->
-      if not Enum.member?(@cast_fields, key) do
-        Map.put(acc, key, changes[key])
+    new_changes =
+      if is_nil(Map.get(changes, :parameters)) do
+        Map.put(changes, :parameters, %{})
       else
-        acc
+        changes
       end
-    end)
+
+    new_parameters =
+      Enum.reduce(Map.keys(new_changes), Map.new(), fn key, acc ->
+        if not Enum.member?(@cast_fields, key) do
+          Map.put(acc, key, new_changes[key])
+        else
+          acc
+        end
+      end)
 
     if new_parameters == %{} do
-      changes
+      new_changes
     else
-      Map.put(changes, :parameters, new_parameters)
+      Map.put(new_changes, :parameters, new_parameters)
     end
   end
 
@@ -90,14 +94,18 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
   defp validate_type(changeset), do: changeset
 
   defp validate_parameters(changeset) do
-    type = case Changeset.fetch_field(changeset, :type) do
-      {_, type} -> type
-      :error -> "invalid"
-    end
-    parameters = case Changeset.fetch_field(changeset, :parameters) do
-      {_, parameters} -> convert_parameters_from_atom_to_string(parameters)
-      :error -> %{}
-    end
+    type =
+      case Changeset.fetch_field(changeset, :type) do
+        {_, ""} -> "invalid"
+        {_, type} -> type
+        :error -> "invalid"
+      end
+
+    parameters =
+      case Changeset.fetch_field(changeset, :parameters) do
+        {_, parameters} -> convert_parameters_from_atom_to_string(parameters)
+        :error -> %{}
+      end
 
     case Transformers.OperationBuilder.validate(type, parameters) do
       {:ok, _} ->

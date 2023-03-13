@@ -181,7 +181,6 @@ defmodule Andi.InputSchemas.Ingestion do
     {extract_step_changesets, extract_step_errors}
   end
 
-  @spec merge_transformation_changeset(Ecto.Changeset.t(), any) :: map
   def merge_transformation_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset, transformation_changesets) do
     transformation_changeset_list =
       Enum.reduce(transformation_changesets, [], fn transformation_changeset, acc ->
@@ -195,10 +194,11 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def get_transformation_changesets(ingestion_changeset) do
-    transformations = case Changeset.fetch_change(ingestion_changeset, :transformations) do
-      {_, transformations} -> transformations
-      :error -> []
-    end
+    transformations =
+      case Changeset.fetch_change(ingestion_changeset, :transformations) do
+        {_, transformations} -> transformations
+        :error -> []
+      end
 
     Enum.reduce(transformations, [], fn transformation, acc ->
       acc ++ [Transformation.validate(transformation)]

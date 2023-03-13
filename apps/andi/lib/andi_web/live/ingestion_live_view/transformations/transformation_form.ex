@@ -12,12 +12,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   alias AndiWeb.Views.DisplayNames
   alias Ecto.Changeset
   alias Andi.InputSchemas.Ingestions.Transformation
-  # alias Andi.InputSchemas.Ingestions.Transformations
   alias AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder
   alias Transformers.TransformationFields
 
   def mount(socket) do
-
     {:ok,
      assign(socket,
        visible?: false
@@ -29,7 +27,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
     ~L"""
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, id: @id, class: "transformation-item"] %>
-      <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
+      <div class="transformation-header full-width" id="transformation_<%= @id %>__header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-actions">
           <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id="<%= @transformation_changeset.changes.id %>" phx-target="<%= @myself %>">delete_outline</button>
@@ -53,7 +51,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         </div>
         <div class="transformation-form__fields">
           <%= for field <- get_fields(input_value(f, :type)) do %>
-            <%= TransformationFieldBuilder.build_input(field, assigns, f, "transformation_#{@id}_#{field.field_name}") %>
+            <%= TransformationFieldBuilder.build_input(field, assigns, f, "transformation_#{@id}__#{field.field_name}") %>
           <% end %>
         </div>
       </div>
@@ -67,6 +65,24 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     Enum.map(options, fn {actual_value, description} ->
       [key: description, value: actual_value]
     end)
+  end
+
+  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "type"]}, socket) do
+    non_parameter_form_data =
+      Enum.reduce(form_data, %{}, fn {key, value}, acc ->
+        if key in ["name", "type"] do
+          Map.put(acc, key, value)
+        else
+          acc
+        end
+      end)
+      |> Map.put(:parameters, %{})
+
+    transformation = Transformation.changeset(socket.assigns.transformation_changeset, non_parameter_form_data)
+
+    AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
+
+    {:noreply, socket}
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
@@ -114,14 +130,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   end
 
   defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
-
-  # defp get_validation_status(new_changeset) do
-  #   if new_changeset.valid? do
-  #     "valid"
-  #   else
-  #     "invalid"
-  #   end
-  # end
 
   defp get_fields(transformation_type) do
     TransformationFields.fields_for(transformation_type)

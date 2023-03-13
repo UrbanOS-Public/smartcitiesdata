@@ -37,16 +37,18 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
 
     ~L"""
     <div id="extract-step-form" class="form-component form-beginning">
-      <%= live_component(
-        @socket,
-        AndiWeb.FormCollapsibleHeader,
-        order: @order,
-        visible?: @visible?,
-        validation_status: validation_status,
-        step: component_step(),
-        id: AndiWeb.FormCollapsibleHeader.component_id(component_step()),
-        visibility_change_callback: &change_visibility/1)
-      %>
+      <div>
+        <%= live_component(
+          @socket,
+          AndiWeb.FormCollapsibleHeader,
+          order: @order,
+          visible?: @visible?,
+          validation_status: validation_status,
+          step: component_step(),
+          id: AndiWeb.FormCollapsibleHeader.component_id(component_step()),
+          visibility_change_callback: &change_visibility/1)
+        %>
+      </div>
 
       <div id="extract-step-form-section" class="form-section">
         <div class="component-edit-section--<%= visible %>">
@@ -322,15 +324,12 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   defp get_validation_status(_extract_step_changesets, extract_step_errors) when extract_step_errors != "", do: "invalid"
 
   defp get_validation_status(extract_step_changesets, _extract_step_errors) do
-    new_validation_status =
-      case Enum.all?(extract_step_changesets, fn changeset ->
-             step_changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(changeset)
-             step_changeset.valid?
-           end) do
-        true -> "valid"
-        false -> "invalid"
-      end
-
-    new_validation_status
+    case Enum.all?(extract_step_changesets, fn changeset ->
+           step_changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(changeset)
+           step_changeset.valid?
+         end) do
+      true -> "valid"
+      false -> "invalid"
+    end
   end
 end

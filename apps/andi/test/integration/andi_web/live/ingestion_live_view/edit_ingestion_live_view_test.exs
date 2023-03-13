@@ -308,7 +308,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      find_live_child(view, "transformations_form_editor")
+      view
       |> element("#add-transformation")
       |> render_click()
 
