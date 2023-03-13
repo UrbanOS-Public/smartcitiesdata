@@ -204,6 +204,7 @@ defmodule Transformers.TypeConversionTest do
       "sourceType" => "integer",
       "targetType" => "string",
       "condition" => %{
+        "conditionDataType" => "number",
         "sourceConditionField" => "thing",
         "conditionOperation" => "=",
         "targetConditionValue" => "300"
@@ -223,6 +224,7 @@ defmodule Transformers.TypeConversionTest do
       "sourceType" => "integer",
       "targetType" => "string",
       "condition" => %{
+        "conditionDataType" => "number",
         "sourceConditionField" => "thing",
         "conditionOperation" => "=",
         "targetConditionValue" => "30"

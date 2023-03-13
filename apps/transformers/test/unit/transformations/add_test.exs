@@ -118,6 +118,7 @@ defmodule Transformers.AddTest do
         "addends" => [1],
         "targetField" => "target",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "target",
           "conditionOperation" => "=",
           "targetConditionValue" => "0"
@@ -138,9 +139,10 @@ defmodule Transformers.AddTest do
         "addends" => [1],
         "targetField" => "target",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "target",
           "conditionOperation" => "=",
-          "targetConditionValue" => "test"
+          "targetConditionValue" => "5"
         }
       }
 

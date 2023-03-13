@@ -164,6 +164,7 @@ defmodule Transformers.SubtractTest do
         "subtrahends" => [1, 2, "firstField", "secondField"],
         "targetField" => "lastTotal",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "firstTotal",
           "conditionOperation" => "=",
           "targetConditionValue" => "20"
@@ -192,9 +193,10 @@ defmodule Transformers.SubtractTest do
         "subtrahends" => [1, 2, "firstField", "secondField"],
         "targetField" => "lastTotal",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "firstTotal",
           "conditionOperation" => "=",
-          "targetConditionValue" => "value"
+          "targetConditionValue" => "7"
         }
       }
 

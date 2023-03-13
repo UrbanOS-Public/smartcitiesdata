@@ -185,6 +185,7 @@ defmodule Transformers.ConcatenationTest do
         "separator" => ".",
         "targetField" => "full_name",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "first_name",
           "conditionOperation" => "=",
           "targetConditionValue" => "Sam"
@@ -211,6 +212,7 @@ defmodule Transformers.ConcatenationTest do
         "separator" => ".",
         "targetField" => "full_name",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "first_name",
           "conditionOperation" => "=",
           "targetConditionValue" => "test"

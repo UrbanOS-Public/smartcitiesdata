@@ -28,6 +28,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionField" => nil,
@@ -49,6 +50,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionField" => nil,
@@ -70,6 +72,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionField" => "compareField",
@@ -92,6 +95,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionField" => "compareField",
@@ -116,6 +120,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "!=",
           "targetConditionField" => nil,
@@ -137,6 +142,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "!=",
           "targetConditionField" => nil,
@@ -158,6 +164,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "!=",
           "targetConditionField" => "compareField",
@@ -180,6 +187,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "!=",
           "targetConditionField" => "compareField",
@@ -204,6 +212,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => ">",
           "targetConditionField" => nil,
@@ -225,6 +234,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => ">",
           "targetConditionField" => nil,
@@ -246,6 +256,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => ">",
           "targetConditionField" => "compareField",
@@ -268,6 +279,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => ">",
           "targetConditionField" => "compareField",
@@ -292,6 +304,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "<",
           "targetConditionField" => nil,
@@ -313,6 +326,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "<",
           "targetConditionField" => nil,
@@ -334,6 +348,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "<",
           "targetConditionField" => "compareField",
@@ -356,6 +371,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "valueType" => "string",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "<",
           "targetConditionField" => "compareField",
@@ -373,10 +389,37 @@ defmodule Transformers.ConditionsTest do
     end
   end
 
+  describe "datetime" do
+    test "converts inputted datetimes to their respective formats and performs the comparison" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => %{
+          "conditionDataType" => "datetime",
+          "sourceConditionField" => "testField",
+          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+          "conditionOperation" => "=",
+          "targetConditionField" => "compareField",
+          "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+      }
+
+      payload = %{
+        "testField" => "2022-02-28 16:53",
+        "compareField" => "February 28, 2022 4:53 PM"
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+  end
+
   describe "error handling" do
     test "returns error when the comparison fields are missing from the parameters" do
       parameters = %{
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "="
         }
@@ -393,6 +436,7 @@ defmodule Transformers.ConditionsTest do
     test "returns error when the source field is missing from the parameters" do
       parameters = %{
         "condition" => %{
+          "conditionDataType" => "number",
           "conditionOperation" => "=",
           "targetConditionValue" => "2"
         }
@@ -409,6 +453,7 @@ defmodule Transformers.ConditionsTest do
     test "returns error when the operation field is missing from the parameters" do
       parameters = %{
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "targetConditionValue" => "2"
         }
@@ -425,6 +470,7 @@ defmodule Transformers.ConditionsTest do
     test "returns error when given an unsupported operation" do
       parameters = %{
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "!",
           "targetConditionValue" => "2"
@@ -442,6 +488,7 @@ defmodule Transformers.ConditionsTest do
     test "returns error when source field is not present in payload" do
       parameters = %{
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionValue" => "2"
@@ -457,5 +504,99 @@ defmodule Transformers.ConditionsTest do
       assert result ==
                {:error, %KeyError{key: "testField", message: nil, term: %{"notTestField" => 2}}}
     end
+
+    test "returns error when data type field is not present in payload" do
+      parameters = %{
+        "condition" => %{
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "2"
+        }
+      }
+
+      payload = %{
+        "testField" => 2
+      }
+
+      result = Conditions.check(payload, parameters)
+
+      assert result == {:error, %{"conditionDataType" => "Missing or empty field"}}
+    end
+
+    test "returns error when data type is datetime and source format field is missing" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => %{
+          "conditionDataType" => "datetime",
+          "sourceConditionField" => "testField",
+          "conditionOperation" => "=",
+          "targetConditionField" => "compareField",
+          "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+        }
+      }
+
+      payload = %{
+        "testField" => "2022-02-28 16:53",
+        "compareField" => "February 28, 2022 4:53 PM"
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:error, %{"conditionSourceDateFormat" => "Missing or empty field"}}
+    end
+  end
+
+  test "returns error when data type is datetime and target format field is missing" do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "valueType" => "string",
+      "condition" => %{
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "testField",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField"
+      }
+    }
+
+    payload = %{
+      "testField" => "2022-02-28 16:53",
+      "compareField" => "February 28, 2022 4:53 PM"
+    }
+
+    result = Conditions.check(payload, parameters)
+    assert result == {:error, %{"conditionTargetDateFormat" => "Missing or empty field"}}
+  end
+
+  test "returns error when invalid datetime format provided" do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "valueType" => "string",
+      "condition" => %{
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "testField",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "conditionTargetDateFormat" => "totallyADateFormat"
+      }
+    }
+
+    payload = %{
+      "testField" => "2022-02-28 16:53",
+      "compareField" => "February 28, 2022 4:53 PM"
+    }
+
+    result = Conditions.check(payload, parameters)
+
+    assert result ==
+             {:error,
+              %{
+                "conditionTargetDateFormat" =>
+                  "DateTime format \"totallyADateFormat\" is invalid: Invalid format string, must contain at least one directive."
+              }}
   end
 end

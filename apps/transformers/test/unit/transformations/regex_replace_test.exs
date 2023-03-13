@@ -146,6 +146,7 @@ defmodule Transformers.RegexReplaceTest do
       "regex" => "abc",
       "replacement" => "123",
       "condition" => %{
+        "conditionDataType" => "string",
         "sourceConditionField" => "something",
         "conditionOperation" => "=",
         "targetConditionValue" => "abcabcdefabc"
@@ -167,6 +168,7 @@ defmodule Transformers.RegexReplaceTest do
       "regex" => "abc",
       "replacement" => "123",
       "condition" => %{
+        "conditionDataType" => "string",
         "sourceConditionField" => "something",
         "conditionOperation" => "=",
         "targetConditionValue" => "other"

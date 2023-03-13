@@ -54,6 +54,7 @@ defmodule Transformers.RemoveTest do
       parameters = %{
         "sourceField" => "dead_field",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "good_field",
           "conditionOperation" => "=",
           "targetConditionValue" => "hello"
@@ -74,6 +75,7 @@ defmodule Transformers.RemoveTest do
       parameters = %{
         "sourceField" => "dead_field",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "good_field",
           "conditionOperation" => "=",
           "targetConditionValue" => "other"

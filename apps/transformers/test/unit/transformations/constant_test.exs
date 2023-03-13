@@ -83,6 +83,7 @@ defmodule Transformers.ConstantTest do
         "newValue" => "1",
         "valueType" => "float",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionValue" => "old value"
@@ -106,6 +107,7 @@ defmodule Transformers.ConstantTest do
         "newValue" => "1",
         "valueType" => "float",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "testField",
           "conditionOperation" => "=",
           "targetConditionValue" => "different value"

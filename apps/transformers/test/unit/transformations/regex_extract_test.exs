@@ -98,6 +98,7 @@ defmodule Transformers.RegexExtractTest do
         "targetField" => "area_code",
         "regex" => "^\\((\\d{3})\\)",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "phone_number",
           "conditionOperation" => "=",
           "targetConditionValue" => "(555) 123-4567"
@@ -118,6 +119,7 @@ defmodule Transformers.RegexExtractTest do
         "targetField" => "area_code",
         "regex" => "^\\((\\d{3})\\)",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "phone_number",
           "conditionOperation" => "=",
           "targetConditionValue" => "value"

@@ -190,6 +190,7 @@ defmodule Transformers.DivisionTest do
         "divisor" => 2,
         "targetField" => "output_number",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "target",
           "conditionOperation" => "=",
           "targetConditionValue" => "test"
@@ -210,6 +211,7 @@ defmodule Transformers.DivisionTest do
         "divisor" => 2,
         "targetField" => "output_number",
         "condition" => %{
+          "conditionDataType" => "string",
           "sourceConditionField" => "target",
           "conditionOperation" => "=",
           "targetConditionValue" => "other"

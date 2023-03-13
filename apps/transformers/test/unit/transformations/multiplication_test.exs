@@ -152,6 +152,7 @@ defmodule Transformers.MultiplicationTest do
         "multiplicands" => ["input_number"],
         "targetField" => "output_number",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "input_number",
           "conditionOperation" => "=",
           "targetConditionValue" => "8"
@@ -171,6 +172,7 @@ defmodule Transformers.MultiplicationTest do
         "multiplicands" => ["input_number"],
         "targetField" => "output_number",
         "condition" => %{
+          "conditionDataType" => "number",
           "sourceConditionField" => "input_number",
           "conditionOperation" => "=",
           "targetConditionValue" => "10"
