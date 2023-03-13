@@ -24,6 +24,10 @@ defmodule AndiWeb.HeaderLiveView do
     "/users"
   end
 
+  defmacro header_reports_path() do
+    "/reports"
+  end
+
   defmacro header_log_out_path() do
     "/auth/auth0/logout"
   end
@@ -60,6 +64,10 @@ defmodule AndiWeb.HeaderLiveView do
           <span id="users-link" class="link <%= show_selected_if_active(header_users_path(), assigns.path) %>" phx-click="show-users" phx-keydown="show-users" tabindex="0">
             <span class="material-icons">people</span>
             <span>Users</span>
+          </span>
+          <span id="reports-link" class="link <%= show_selected_if_active(header_reports_path(), assigns.path) %>" phx-click="show-reports" phx-keydown="show-reports" tabindex="0">
+            <span class="material-icons">description</span>
+            <span>Reports</span>
           </span>
         <% end %>
       </span>
@@ -112,6 +120,14 @@ defmodule AndiWeb.HeaderLiveView do
       end
 
       def handle_event("show-ingestions", _, socket) do
+        {:noreply, socket}
+      end
+
+      def handle_event("show-reports", key, socket) when key in [@click, @enter, @space] do
+        AndiWeb.HeaderLiveView.__redirect__(socket, header_reports_path())
+      end
+
+      def handle_event("show-reports", _, socket) do
         {:noreply, socket}
       end
 

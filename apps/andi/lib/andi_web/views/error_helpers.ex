@@ -129,7 +129,7 @@ defmodule AndiWeb.ErrorHelpers do
   end
 
   defp interpret_error_message(_message, :url, form) when form == Andi.InputSchemas.Ingestions.ExtractS3Step do
-    "Please enter a valid url - including https://"
+    "Please enter a valid url"
   end
 
   defp interpret_error_message(_message, :url, _),
