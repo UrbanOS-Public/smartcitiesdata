@@ -1,0 +1,29 @@
+.report-view {
+  flex: 1;
+  background: $color-content-background;
+  box-shadow: $box-shadow;
+  height: max-content;
+  margin: 1em;
+}
+
+.report-line {
+  margin-bottom: 1rem;
+  margin-top: -.25rem;
+}
+
+.report-index {
+  padding: 1rem 3rem;
+}
+
+.report-index__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.report-index__title {
+  font-size: 1.5rem;
+}
+
+.download_icon {
+  color: white;
+}
