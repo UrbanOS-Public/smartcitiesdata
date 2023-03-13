@@ -2,7 +2,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   @moduledoc false
 
   use Ecto.Schema
-  import Ecto.Changeset
+  alias Ecto.Changeset
 
   alias Andi.InputSchemas.StructTools
   alias Andi.Schemas.Validation.CadenceValidator
@@ -11,32 +11,51 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
     field(:cadence, :string)
   end
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(%__MODULE__{} = current, %{"cadence" => cadence}), do: changeset(current, %{cadence: cadence})
-
-  def changeset(%__MODULE__{} = current, changes) do
+  def changeset(current, changes) do
     current
-    |> cast(changes, [:cadence])
-    |> validate_required(:cadence, message: "is required")
-    |> CadenceValidator.validate()
+    |> Changeset.cast(changes, [:cadence])
+
+    # |> Changeset.validate_required(:cadence, message: "is required")
   end
 
-  def changeset_from_andi_dataset(dataset) do
-    dataset = StructTools.to_map(dataset)
-    technical_changes = dataset.technical
+  # def changeset_from_andi_dataset(dataset) do
+  #   dataset = StructTools.to_map(dataset)
+  #   technical_changes = dataset.technical
 
-    changeset(technical_changes)
-  end
+  #   changeset(technical_changes)
+  # end
 
-  def changeset_from_andi_ingestion(ingestion) do
-    ingestion = StructTools.to_map(ingestion)
+  # def changeset_from_andi_ingestion(ingestion) do
+  #   ingestion = StructTools.to_map(ingestion)
 
-    changeset(ingestion)
-  end
+  #   changeset(ingestion)
+  # end
 
-  def changeset_from_form_data(form_data) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> changeset()
+  # def changeset_from_form_data(form_data) do
+  #   form_data
+  #   |> AtomicMap.convert(safe: false, underscore: false)
+  #   |> changeset()
+  # end
+
+  def extract_from_ingestion_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset) do
+    ingestion_data =
+      ingestion_changeset
+      |> Changeset.apply_changes()
+
+    extracted_data = %__MODULE__{
+      cadence: ingestion_data.cadence
+    }
+
+    mapped_errors =
+      ingestion_changeset.errors
+      |> Enum.map(fn
+        {:cadence, {msg, opts}} -> {:cadence, {msg, opts}}
+        _other_errors -> nil
+      end)
+      |> Enum.reject(&is_nil/1)
+
+    changeset(extracted_data, %{})
+    |> Map.put(:errors, mapped_errors)
+    |> Map.put(:action, :display_errors)
   end
 end
