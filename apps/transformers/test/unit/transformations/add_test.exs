@@ -112,6 +112,48 @@ defmodule Transformers.AddTest do
 
       assert result == %{"target" => 1}
     end
+
+    test "performs transformation as normal when condition returns true" do
+      parameters = %{
+        "addends" => [1],
+        "targetField" => "target",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "target",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "0"
+        }
+      }
+
+      payload = %{
+        "target" => 0
+      }
+
+      {:ok, result} = Add.transform(payload, parameters)
+
+      assert result == %{"target" => 1}
+    end
+
+    test "does not perform transformation when condition fails" do
+      parameters = %{
+        "addends" => [1],
+        "targetField" => "target",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "target",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "5"
+        }
+      }
+
+      payload = %{
+        "target" => 0
+      }
+
+      {:ok, result} = Add.transform(payload, parameters)
+
+      assert result == %{"target" => 0}
+    end
   end
 
   describe "fields/0" do

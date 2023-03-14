@@ -136,6 +136,50 @@ defmodule Transformers.RegexReplaceTest do
     assert result == %{"something" => "123123def123"}
   end
 
+  test "performs transform as normal when condition evaluates to true" do
+    payload = %{
+      "something" => "abcabcdefabc"
+    }
+
+    parameters = %{
+      "sourceField" => "something",
+      "regex" => "abc",
+      "replacement" => "123",
+      "condition" => %{
+        "conditionDataType" => "string",
+        "sourceConditionField" => "something",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "abcabcdefabc"
+      }
+    }
+
+    {:ok, result} = RegexReplace.transform(payload, parameters)
+
+    assert result == %{"something" => "123123def123"}
+  end
+
+  test "does nothing when condition evaluates to false" do
+    payload = %{
+      "something" => "abcabcdefabc"
+    }
+
+    parameters = %{
+      "sourceField" => "something",
+      "regex" => "abc",
+      "replacement" => "123",
+      "condition" => %{
+        "conditionDataType" => "string",
+        "sourceConditionField" => "something",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "other"
+      }
+    }
+
+    {:ok, result} = RegexReplace.transform(payload, parameters)
+
+    assert result == %{"something" => "abcabcdefabc"}
+  end
+
   describe "validate/1" do
     test "returns :ok if all parameters are present and valid" do
       parameters = %{
