@@ -5,6 +5,7 @@ defmodule Transformers.DateTime do
   alias Transformers.Validations.DateTimeFormat
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @source_field "sourceField"
   @source_format "sourceFormat"
@@ -13,7 +14,8 @@ defmodule Transformers.DateTime do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field, source_format, target_field, target_format]} <-
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [source_field, source_format, target_field, target_format]} <-
            validate(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
@@ -21,6 +23,9 @@ defmodule Transformers.DateTime do
          {:ok, transformed_datetime} <- format_datetime(source_datetime, target_format) do
       {:ok, payload |> Map.put(target_field, transformed_datetime)}
     else
+      {:ok, false} ->
+        {:ok, payload}
+
       {:error, reason} ->
         {:error, reason}
 
