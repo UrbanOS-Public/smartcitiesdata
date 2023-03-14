@@ -14,28 +14,7 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   def changeset(current, changes) do
     current
     |> Changeset.cast(changes, [:cadence])
-
-    # |> Changeset.validate_required(:cadence, message: "is required")
   end
-
-  # def changeset_from_andi_dataset(dataset) do
-  #   dataset = StructTools.to_map(dataset)
-  #   technical_changes = dataset.technical
-
-  #   changeset(technical_changes)
-  # end
-
-  # def changeset_from_andi_ingestion(ingestion) do
-  #   ingestion = StructTools.to_map(ingestion)
-
-  #   changeset(ingestion)
-  # end
-
-  # def changeset_from_form_data(form_data) do
-  #   form_data
-  #   |> AtomicMap.convert(safe: false, underscore: false)
-  #   |> changeset()
-  # end
 
   def extract_from_ingestion_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset) do
     ingestion_data =
@@ -57,5 +36,6 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
     changeset(extracted_data, %{})
     |> Map.put(:errors, mapped_errors)
     |> Map.put(:action, :display_errors)
+    |> Map.put(:valid?, not Enum.any?(mapped_errors))
   end
 end

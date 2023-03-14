@@ -328,7 +328,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       sourceFormat: safe_ingestion_data.sourceFormat,
       targetDataset: safe_ingestion_data.targetDataset,
       topLevelSelector: safe_ingestion_data.topLevelSelector,
-      extractSteps: safe_ingestion_data.extractSteps
+      extractSteps: safe_ingestion_data.extractSteps,
+      cadence: safe_ingestion_data.cadence
     }
 
     current_ingestion = Ingestions.get(socket.assigns.ingestion.id)
