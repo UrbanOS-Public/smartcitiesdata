@@ -299,11 +299,11 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   defp validate_transformations(changeset) do
-    transformations =
-      Changeset.get_field(changeset, :transformations)
+    transformations = Changeset.get_field(changeset, :transformations)
 
     Enum.reduce(transformations, changeset, fn transformation, acc ->
-      validated_changeset = Transformation.changeset(Transformation.get_module(), StructTools.to_map(transformation))
+      validated_changeset =
+        Transformation.changeset(Transformation.get_module(), StructTools.to_map(transformation))
         |> Transformation.validate()
 
       Enum.reduce(validated_changeset.errors, acc, fn {key, {message, _}}, acc_error ->
