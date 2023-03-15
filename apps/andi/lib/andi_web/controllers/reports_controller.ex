@@ -1,9 +1,7 @@
 defmodule AndiWeb.ReportsController do
   use AndiWeb, :controller
 
-  access_levels(
-    download_report: [:private]
-  )
+  access_levels(download_report: [:private])
 
   def download_report(conn, _params) do
     csv = CSV.encode([["test", "csv"]]) |> Enum.to_list() |> to_string()
