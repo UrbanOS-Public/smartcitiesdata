@@ -16,11 +16,12 @@ defmodule Transformers.Validations.DateTimeFormat do
   end
 
   defp check_if_valid(status, field, value) do
-    result = try do
-      Timex.Format.DateTime.Formatter.validate(value)
-    rescue
-      _ -> {:error, "Please select a valid datetime format"}
-    end
+    result =
+      try do
+        Timex.Format.DateTime.Formatter.validate(value)
+      rescue
+        _ -> {:error, "Please select a valid datetime format"}
+      end
 
     case result do
       :ok -> ValidationStatus.update_value(status, field, value)
