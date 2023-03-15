@@ -21,9 +21,10 @@ defmodule Reaper.DataSlurper.Ftp do
   @impl DataSlurper
   def slurp(url, ingestion_id, _headers \\ [], _protocol \\ nil, _action \\ nil, _body \\ "") do
     filename = DataSlurper.determine_filename(ingestion_id)
-    %{host: host, path: path, port: port} = URI.parse(url)
+    %{host: host, path: path, port: port, userinfo: userinfo} = URI.parse(url)
 
-    with {:ok, pid} <- connect(host, port, ingestion_id),
+    with [username, password] <- get_ftp_credentials(userinfo),
+         {:ok, pid} <- connect(host, username, password, port, ingestion_id),
          {:file, filename} <- stream_file(pid, path, filename) do
       {:file, filename}
     else
@@ -42,26 +43,24 @@ defmodule Reaper.DataSlurper.Ftp do
     end
   end
 
-  defp connect(host, port, ingestion_id) do
-    case Reaper.SecretRetriever.retrieve_ingestion_credentials(ingestion_id) do
-      {:ok, %{"username" => username, "password" => password}} ->
-        with {:ok, pid} <- :ftp.open(to_charlist(host)),
-             :ok <- :ftp.user(pid, to_charlist(username), to_charlist(password)) do
-          {:ok, pid}
-        else
-          {:error, reason} ->
-            {:error, "Unable to establish FTP connection: #{map_ftp_errors(reason)}"}
-        end
-
-      {:ok, _} ->
-        {:error, "Ingestion credentials are not of the correct type"}
-
-      error ->
-        error
+  defp connect(host, username, password, port, ingestion_id) do
+    with {:ok, pid} <- :ftp.open(to_charlist(host)),
+         :ok <- :ftp.user(pid, to_charlist(username), to_charlist(password)) do
+      {:ok, pid}
+    else
+      {:error, reason} ->
+        {:error, "Unable to establish FTP connection: #{map_ftp_errors(reason)}"}
     end
   end
 
   defp map_ftp_errors(reason) do
     Map.get(@ftp_errors, reason, reason)
+  end
+
+  defp get_ftp_credentials(userinfo) do
+    case userinfo |> String.split(":") do
+      [username, password] -> [username, password]
+      _ -> {:error, "Ingestion credentials are not in username:password format"}
+    end
   end
 end
