@@ -183,6 +183,47 @@ defmodule Transformers.DivisionTest do
 
       assert reason == "divisor cannot be equal to 0"
     end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      params = %{
+        "dividend" => 10,
+        "divisor" => 2,
+        "targetField" => "output_number",
+        "condition" => %{
+          "conditionDataType" => "string",
+          "sourceConditionField" => "target",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "test"
+        }
+      }
+
+      message_payload = %{"target" => "test"}
+
+      {:ok, transformed_payload} = Division.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 5
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "dividend" => 10,
+        "divisor" => 2,
+        "targetField" => "output_number",
+        "condition" => %{
+          "conditionDataType" => "string",
+          "sourceConditionField" => "target",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "other"
+        }
+      }
+
+      message_payload = %{"target" => "test"}
+
+      result = Division.transform(message_payload, params)
+
+      assert result == {:ok, %{"target" => "test"}}
+    end
   end
 
   describe "validate/1" do

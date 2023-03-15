@@ -5,6 +5,7 @@ defmodule Transformers.RegexExtract do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidRegex
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @source_field "sourceField"
   @target_field "targetField"
@@ -12,7 +13,8 @@ defmodule Transformers.RegexExtract do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field, target_field, regex]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [source_field, target_field, regex]} <- validate(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field) do
       case Regex.run(regex, value, capture: :all_but_first) do
         nil ->
@@ -24,6 +26,9 @@ defmodule Transformers.RegexExtract do
           {:ok, transformed_payload}
       end
     else
+      {:ok, false} ->
+        {:ok, payload}
+
       {:error, reason} ->
         {:error, reason}
     end

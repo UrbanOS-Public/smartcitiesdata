@@ -4,16 +4,19 @@ defmodule Transformers.Remove do
   alias Transformers.FieldFetcher
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @source_field "sourceField"
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_field]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [source_field]} <- validate(parameters),
          {:ok, _} <- FieldFetcher.fetch_value(payload, source_field) do
       transformed_payload = Map.delete(payload, source_field)
       {:ok, transformed_payload}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end
