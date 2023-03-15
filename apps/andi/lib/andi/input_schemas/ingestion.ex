@@ -71,6 +71,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> validate_top_level_selector()
     |> validate_schema()
     |> validate_extract_steps()
+    |> validate_transformations()
   end
 
   def validate_database_safety(%Ecto.Changeset{data: %__MODULE__{}} = changeset) do
@@ -295,5 +296,19 @@ defmodule Andi.InputSchemas.Ingestion do
           end)
         end
     end
+  end
+
+  defp validate_transformations(changeset) do
+    transformations =
+      Changeset.get_field(changeset, :transformations)
+
+    Enum.reduce(transformations, changeset, fn transformation, acc ->
+      validated_changeset = Transformation.changeset(Transformation.get_module(), StructTools.to_map(transformation))
+        |> Transformation.validate()
+
+      Enum.reduce(validated_changeset.errors, acc, fn {key, {message, _}}, acc_error ->
+        Changeset.add_error(acc_error, key, message)
+      end)
+    end)
   end
 end

@@ -36,7 +36,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
       Transformation.changeset(Transformation.get_module(), changes)
       |> Transformation.validate()
 
-    assert changeset.errors == [{:separator, {"Missing field", []}}]
+    assert changeset.errors == [{:separator, {"Missing or empty field", []}}]
     assert not changeset.valid?
   end
 
@@ -56,7 +56,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationTest do
     assert changeset.errors[:sourceFields] != nil
     assert {"Missing or empty field", []} == changeset.errors[:sourceFields]
     assert changeset.errors[:separator] != nil
-    assert {"Missing field", []} == changeset.errors[:separator]
+    assert {"Missing or empty field", []} == changeset.errors[:separator]
   end
 
   test "fails for invalid type" do

@@ -25,7 +25,7 @@ defmodule Transformers.ConcatenationTest do
 
       where(
         parameter: ["sourceFields", "separator", "targetField"],
-        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+        message: ["Missing or empty field", "Missing or empty field", "Missing or empty field"]
       )
     end
 
@@ -258,7 +258,7 @@ defmodule Transformers.ConcatenationTest do
 
       where(
         parameter: ["sourceFields", "separator", "targetField"],
-        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+        message: ["Missing or empty field", "Missing or empty field", "Missing or empty field"]
       )
     end
 
@@ -267,7 +267,7 @@ defmodule Transformers.ConcatenationTest do
 
       assert reason == %{
                "sourceFields" => "Missing or empty field",
-               "separator" => "Missing field",
+               "separator" => "Missing or empty field",
                "targetField" => "Missing or empty field"
              }
     end
