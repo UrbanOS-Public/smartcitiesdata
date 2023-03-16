@@ -1,7 +1,6 @@
 defmodule Transformers.Subtract do
   @behaviour Transformation
 
-  alias Transformers.Validations.IsPresent
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
   alias Transformers.ParseUtils
