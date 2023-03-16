@@ -45,7 +45,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
         [nil],
         ["[]"],
         ["[{}]"],
-        ["[{\"bob\": 1}]"]
+        ["[{\"bob\": 1}]"],
+        ["<note><to>bob</to><heading>Reminder</heading></note>"]
       ])
     end
 

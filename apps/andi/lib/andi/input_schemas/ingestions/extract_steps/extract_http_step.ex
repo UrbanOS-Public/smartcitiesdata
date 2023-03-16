@@ -6,6 +6,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
   alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias Andi.InputSchemas.StructTools
   alias Ecto.Changeset
+  alias SweetXml
 
   @primary_key false
   embedded_schema do
@@ -95,8 +96,17 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) do
     case Jason.decode(body) do
-      {:ok, _} -> changeset
-      {:error, _} -> Changeset.add_error(changeset, :body, "could not parse json", validation: :format)
+      {:ok, _} ->
+        changeset
+
+      {:error, _} ->
+        try do
+          SweetXml.parse(body)
+          changeset
+        catch
+          :exit, _ ->
+            Changeset.add_error(changeset, :body, "could not parse json", validation: :format)
+        end
     end
   end
 
