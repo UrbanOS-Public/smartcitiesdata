@@ -34,7 +34,7 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
         <div class="extract-s3-step-form-edit-section form-grid">
           <div class="extract-s3-step-form__url">
             <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_s3_url") %>
-            <%= text_input(f, :url, [id: "#{@id}_s3_url", class: "input full-width", required: true]) %>
+            <%= text_input(f, :url, [id: "#{@id}_s3_url", class: "input full-width", required: true, aria_label: "S3 #{DisplayNames.get(:url)}"]) %>
             <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_s3_url_error") %>
           </div>
 
