@@ -188,7 +188,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_value(html, "##{auth_step.id}_cacheTtl") == new_cacheTtl
+      assert get_value(html, "##{auth_step.id}_auth_cacheTtl") == new_cacheTtl
     end
   end
 end
