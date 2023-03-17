@@ -10,11 +10,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
-<<<<<<< HEAD
-=======
   alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias Andi.InputSchemas.Ingestions.ExtractStep
->>>>>>> master
   alias Ecto.Changeset
 
   import SmartCity.Event, only: [ingestion_update: 0]
@@ -55,13 +52,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       |> Ingestion.validate()
 
     metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
+
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
-<<<<<<< HEAD
     transformation_changesets = Ingestion.get_transformation_changesets(ingestion_changeset)
-=======
+
     finalize_changeset = FinalizeFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
->>>>>>> master
 
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
@@ -339,11 +335,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       targetDataset: safe_ingestion_data.targetDataset,
       topLevelSelector: safe_ingestion_data.topLevelSelector,
       extractSteps: safe_ingestion_data.extractSteps,
-<<<<<<< HEAD
-      transformations: safe_ingestion_data.transformations
-=======
+      transformations: safe_ingestion_data.transformations,
       cadence: safe_ingestion_data.cadence
->>>>>>> master
     }
 
     current_ingestion = Ingestions.get(socket.assigns.ingestion.id)
