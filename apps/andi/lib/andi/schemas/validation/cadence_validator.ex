@@ -12,7 +12,7 @@ defmodule Andi.Schemas.Validation.CadenceValidator do
   def validate(%{changes: %{cadence: crontab}} = changeset) do
     case validate_cron(crontab) do
       {:ok, _} -> changeset
-      {:error, error_msg} -> Ecto.Changeset.add_error(changeset, :cadence, "#{error_msg}")
+      {:error, error_msg} -> Ecto.Changeset.add_error(changeset, :cadence, error_msg)
     end
   end
 
