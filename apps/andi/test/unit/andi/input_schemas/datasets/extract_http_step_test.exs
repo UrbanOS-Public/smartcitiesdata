@@ -35,7 +35,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
         [nil],
         ["[]"],
         ["[{}]"],
-        ["[{\"bob\": 1}]"]
+        ["[{\"bob\": 1}]"],
+        ["<note><to>bob</to><heading>Reminder</heading></note>"]
       ])
     end
 
@@ -46,7 +47,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
         ExtractHttpStep.changeset(ExtractHttpStep.get_module(), changes)
         |> ExtractHttpStep.validate()
 
-      assert changeset.errors[:body] == {"could not parse json", [validation: :format]}
+      assert changeset.errors[:body] == {"could not parse json or xml", [validation: :format]}
 
       where([
         [:value],

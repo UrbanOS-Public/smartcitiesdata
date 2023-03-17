@@ -137,7 +137,7 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message(message, :datasetLink, _), do: message
   defp interpret_error_message("is required", field, _), do: default_error_message(field)
   defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
-  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"
+  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON or XML"
 
   defp interpret_error_message(message, field, _) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName],
     do: "Error: #{message}"
