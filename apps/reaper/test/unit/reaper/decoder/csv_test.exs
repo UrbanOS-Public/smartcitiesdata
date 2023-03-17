@@ -73,7 +73,7 @@ defmodule Reaper.Decoder.CsvTest do
         %{"iD" => "id", "name" => "name"}
       ]
 
-      File.write!(@filename, ~s| extra,ID,name\nextra,id,name\n|)
+      File.write!(@filename, ~s| extra, ID, name\nextra, id, name\n|)
 
       {:ok, actual} =
         {:file, @filename}
