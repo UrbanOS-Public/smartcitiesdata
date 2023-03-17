@@ -60,27 +60,6 @@ defmodule Reaper.Decoder.TsvTest do
       assert Enum.into(actual, []) == expected
     end
 
-    test "handles extra tsv headers" do
-      ingestion =
-        TDG.create_ingestion(%{
-          id: "with-headers",
-          sourceFormat: "tsv",
-          schema: [%{name: "iD"}, %{name: "name"}]
-        })
-
-      expected = [
-        %{"iD" => "idvalue", "name" => "namevalue"}
-      ]
-
-      File.write!(@filename, ~s| extra\tID\tname\nextravalue\tidvalue\tnamevalue\n|)
-
-      {:ok, actual} =
-        {:file, @filename}
-        |> Decoder.Tsv.decode(ingestion)
-
-      assert Enum.into(actual, []) == expected
-    end
-
     test "converts TSV to map" do
       ingestion =
         TDG.create_ingestion(%{

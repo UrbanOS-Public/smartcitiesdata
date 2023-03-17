@@ -61,7 +61,7 @@ defmodule Reaper.Decoder.CsvTest do
       assert Enum.into(actual, []) == expected
     end
 
-    test "handles extra csv headers" do
+    test "handles different sorting for CSV headers" do
       ingestion =
         TDG.create_ingestion(%{
           id: "with-headers",
@@ -70,10 +70,10 @@ defmodule Reaper.Decoder.CsvTest do
         })
 
       expected = [
-        %{"iD" => "id", "name" => "name"}
+        %{"iD" => "1", "name" => "Buzz"}
       ]
 
-      File.write!(@filename, ~s| extra, ID, name\nextra, id, name\n|)
+      File.write!(@filename, ~s| name, id\n Buzz, 1\n|)
 
       {:ok, actual} =
         {:file, @filename}
