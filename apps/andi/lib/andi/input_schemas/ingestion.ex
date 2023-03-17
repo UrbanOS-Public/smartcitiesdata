@@ -168,6 +168,21 @@ defmodule Andi.InputSchemas.Ingestion do
     changeset(cleared_ingestion_changeset, %{extractSteps: extract_step_changeset_list})
   end
 
+  def merge_finalize_changeset(
+        %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+        %Ecto.Changeset{data: %AndiWeb.InputSchemas.FinalizeFormSchema{}} = finalize_changeset
+      ) do
+    finalize =
+      finalize_changeset
+      |> Changeset.apply_changes()
+
+    extracted_finalize = %{
+      cadence: finalize.cadence
+    }
+
+    changeset(ingestion_changeset, extracted_finalize)
+  end
+
   def get_extract_step_changesets_and_errors(ingestion_changeset) do
     extract_step_changesets =
       case Changeset.fetch_change(ingestion_changeset, :extractSteps) do

@@ -41,7 +41,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
     end
 
     test "shows the Immediate ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_cadence_once", "checked"))
+      refute Enum.empty?(get_attributes(html, "#finalize_form_cadence_once", "checked"))
     end
 
     test "does not show cron scheduler", %{html: html} do
@@ -62,7 +62,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
     end
 
     test "shows the repeat ingestion button selected", %{html: html} do
-      refute Enum.empty?(get_attributes(html, "#form_data_cadence_0__________", "checked"))
+      refute Enum.empty?(get_attributes(html, "#finalize_form_cadence_0__________", "checked"))
     end
 
     test "shows cron scheduler", %{html: html} do
@@ -74,11 +74,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
 
     data_test "does not allow schedules more frequent than every 2 seconds", %{conn: conn} do
       ingestion = create_ingestion_with_cadence("#{second_value} * * * * *")
-      assert {:ok, view, _} = live(conn, @url_path <> ingestion.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-
-      form_data = %{cadence: ingestion.cadence}
-      html = render_change(finalize_view, :validate, %{"form_data" => form_data})
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
 
@@ -86,13 +82,9 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
     end
 
     data_test "marks #{cronstring} as invalid", %{conn: conn} do
-      ingestion = create_ingestion_with_cadence("0 0 * * *")
+      ingestion = create_ingestion_with_cadence(cronstring)
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-
-      form_data = %{"cadence" => cronstring}
-      html = render_change(finalize_view, :validate, %{"form_data" => form_data})
 
       refute Enum.empty?(find_elements(html, "#cadence-error-msg"))
 
@@ -113,10 +105,11 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
 
     data_test "quick schedule #{schedule}", %{conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
 
-      render_click(finalize_view, "quick_schedule", %{"schedule" => schedule})
-      html = render(finalize_view)
+      button = element(view, "#quick_schedule_#{schedule}")
+
+      render_click(button)
+      html = render(view)
 
       assert expected_crontab == get_crontab_from_html(html)
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -132,11 +125,15 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
     end
 
     test "set schedule manually", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
+      assert {:ok, view, _} = live(conn, @url_path <> ingestion.id)
 
       form_data = %{"cadence" => ingestion.cadence}
-      html = render_change(finalize_view, :validate, %{"form_data" => form_data})
+
+      view
+      |> form("#finalize_form", form_data: form_data)
+      |> render_change()
+
+      html = render(view)
 
       assert ingestion.cadence == get_crontab_from_html(html)
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -146,11 +143,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
       ingestion = create_ingestion_with_cadence("4 2 7 * *")
 
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      finalize_view = find_live_child(view, "finalize_form_editor")
-
-      form_data = %{"cadence" => ingestion.cadence}
-      render_change(finalize_view, :validate, %{"form_data" => form_data})
-      html = render(view)
 
       assert ingestion.cadence == get_crontab_from_html(html) |> String.trim_leading()
       assert Enum.empty?(find_elements(html, "#cadence-error-msg"))
@@ -165,13 +157,9 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
   end
 
   test "required cadence field displays proper error message", %{conn: conn} do
-    ingestion = create_ingestion_with_cadence("0 0 * * *")
+    ingestion = create_ingestion_with_cadence("")
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-    finalize_view = find_live_child(view, "finalize_form_editor")
-
-    form_data = %{"cadence" => ""}
-    html = render_change(finalize_view, :validate, %{"form_data" => form_data})
 
     assert get_text(html, "#cadence-error-msg") == "Please enter a valid cadence."
   end
