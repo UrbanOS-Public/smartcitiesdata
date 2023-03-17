@@ -95,7 +95,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
           changeset
         catch
           :exit, _ ->
-            Changeset.add_error(changeset, :body, "could not parse json", validation: :format)
+            Changeset.add_error(changeset, :body, "could not parse json or xml", validation: :format)
         end
     end
   end

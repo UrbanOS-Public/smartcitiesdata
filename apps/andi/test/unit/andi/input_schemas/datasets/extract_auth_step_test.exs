@@ -57,7 +57,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
         ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
         |> ExtractAuthStep.validate()
 
-      assert changeset.errors[:body] == {"could not parse json", [validation: :format]}
+      assert changeset.errors[:body] == {"could not parse json or xml", [validation: :format]}
 
       where([
         [:value],
