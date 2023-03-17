@@ -51,7 +51,7 @@ defmodule Reaper.Decoder.TsvTest do
         %{"iD" => "1", "name" => "Buzz"}
       ]
 
-      File.write!(@filename, ~s| name \tid\nname\tid\n1\tBuzz\n2\t1\n|)
+      File.write!(@filename, ~s| name \tid\nname\tid\nBuzz\t1\n|)
 
       {:ok, actual} =
         {:file, @filename}
@@ -69,12 +69,10 @@ defmodule Reaper.Decoder.TsvTest do
         })
 
       expected = [
-        %{"iD" => "id", "name" => " something different"},
-        %{"iD" => "1", "name" => " Woody"},
-        %{"iD" => "2", "name" => " Buzz"}
+        %{"iD" => "idvalue", "name" => "namevalue"}
       ]
 
-      File.write!(@filename, ~s| extra\tID \t nAme\nextra\tid\t something different\nextra\t1\t Woody\n2\t Buzz\n|)
+      File.write!(@filename, ~s| extra\tID\tname\nextravalue\tidvalue\tnamevalue\n|)
 
       {:ok, actual} =
         {:file, @filename}

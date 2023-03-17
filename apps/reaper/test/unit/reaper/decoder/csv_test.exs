@@ -60,5 +60,26 @@ defmodule Reaper.Decoder.CsvTest do
 
       assert Enum.into(actual, []) == expected
     end
+
+    test "handles extra csv headers" do
+      ingestion =
+        TDG.create_ingestion(%{
+          id: "with-headers",
+          sourceFormat: "csv",
+          schema: [%{name: "iD"}, %{name: "name"}]
+        })
+
+      expected = [
+        %{"iD" => "id", "name" => "name"}
+      ]
+
+      File.write!(@filename, ~s| extra,ID,name\nextra,id,name\n|)
+
+      {:ok, actual} =
+        {:file, @filename}
+        |> Decoder.Tsv.decode(ingestion)
+
+      assert Enum.into(actual, []) == expected
+    end
   end
 end
