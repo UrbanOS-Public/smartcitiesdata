@@ -217,8 +217,9 @@ defmodule Andi.InputSchemas.Ingestion do
       end
 
     Enum.reduce(transformations, [], fn transformation, acc ->
-      acc ++ [Transformation.validate(transformation)]
+      [Transformation.validate(transformation) | acc]
     end)
+      |> Enum.reverse()
   end
 
   @spec preload(nil | maybe_improper_list | struct) :: any
