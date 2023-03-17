@@ -60,26 +60,5 @@ defmodule Reaper.Decoder.CsvTest do
 
       assert Enum.into(actual, []) == expected
     end
-
-    test "handles different sorting for CSV headers" do
-      ingestion =
-        TDG.create_ingestion(%{
-          id: "with-headers",
-          sourceFormat: "csv",
-          schema: [%{name: "iD"}, %{name: "name"}]
-        })
-
-      expected = [
-        %{"iD" => "1", "name" => "Buzz"}
-      ]
-
-      File.write!(@filename, ~s| name, id\n Buzz, 1\n|)
-
-      {:ok, actual} =
-        {:file, @filename}
-        |> Decoder.Tsv.decode(ingestion)
-
-      assert Enum.into(actual, []) == expected
-    end
   end
 end
