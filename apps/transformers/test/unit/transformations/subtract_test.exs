@@ -60,7 +60,7 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"minuend" => "Missing field"}
+      assert reason == %{"minuend" => "Missing or empty field"}
     end
 
     test "if subtrahends is not specified, return error" do

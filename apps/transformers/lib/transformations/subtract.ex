@@ -1,7 +1,6 @@
 defmodule Transformers.Subtract do
   @behaviour Transformation
 
-  alias Transformers.Validations.IsPresent
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
   alias Transformers.ParseUtils
@@ -45,7 +44,7 @@ defmodule Transformers.Subtract do
 
   def validate(parameters) do
     %ValidationStatus{}
-    |> IsPresent.check(parameters, @minuend)
+    |> NotBlank.check_nil(parameters, @minuend)
     |> NotBlank.check(parameters, @target_field)
     |> NotBlank.check(parameters, @subtrahends)
     |> ValidationStatus.ordered_values_or_errors([@minuend, @subtrahends, @target_field])
