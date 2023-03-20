@@ -360,6 +360,16 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
   end
 
+  defp parse_tsv(file_string) do
+    file_string
+    |> String.split("\n")
+    |> Enum.take(2)
+    |> List.update_at(0, &String.replace(&1, ~r/[^[:alnum:] _\t]/, "", global: true))
+    |> Enum.map(fn row -> String.split(row, "\t") end)
+    |> Enum.zip()
+    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
+  end
+
   defp convert_value(nil), do: nil
 
   defp convert_value(string) do
@@ -399,6 +409,22 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         new_changeset =
           file
           |> parse_csv()
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
+
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(socket.assigns.changeset, socket)
+    end
+  end
+
+  defp generate_new_schema(socket, file, "text/plain") do
+    case validate_empty_csv(file) do
+      {:ok, file} ->
+        new_changeset =
+          file
+          |> parse_tsv()
           |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
           |> send_data_dictionary_status(socket)
 
