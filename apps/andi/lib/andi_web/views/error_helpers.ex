@@ -63,9 +63,15 @@ defmodule AndiWeb.ErrorHelpers do
       |> interpret_error_with_label(field, form_type, label)
       |> translate_error()
 
+    id =
+      case Keyword.get(options, :id) do
+        nil -> "#{field}-error-msg"
+        id -> id
+      end
+
     content_tag(:span, translated,
       class: "error-msg",
-      id: "#{field}-error-msg",
+      id: id,
       data: get_additional_content_tag_data(form, field, options)
     )
   end
@@ -137,7 +143,7 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message(message, :datasetLink, _), do: message
   defp interpret_error_message("is required", field, _), do: default_error_message(field)
   defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
-  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"
+  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON or XML"
 
   defp interpret_error_message(message, field, _) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName],
     do: "Error: #{message}"

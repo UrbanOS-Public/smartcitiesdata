@@ -50,13 +50,13 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
           <div class="extract-http-step-form-edit-section form-grid">
             <div class="extract-http-step-form__method">
               <%= label(f, :action, DisplayNames.get(:method), class: "label label--required", for: "#{@id}_http_method") %>
-              <%= select(f, :action, get_http_methods(), [id: "#{@id}_http_method", class: "extract-http-step-form__method select", required: true]) %>
+              <%= select(f, :action, get_http_methods(), [id: "#{@id}_http_method", class: "extract-http-step-form__method select", required: true, aria_label: "Http #{DisplayNames.get(:method)}"]) %>
               <%= ErrorHelpers.error_tag(f, :action, id: "#{@id}_http_method_error") %>
             </div>
 
             <div class="extract-http-step-form__url">
               <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_http_url") %>
-              <%= url_input(f, :url, [id: "#{@id}_http_url", class: "input full-width", disabled: @testing?, required: true]) %>
+              <%= url_input(f, :url, [id: "#{@id}_http_url", class: "input full-width", disabled: @testing?, required: true, aria_label: "Http #{DisplayNames.get(:url)}"]) %>
               <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_http_url_error") %>
             </div>
 
@@ -66,7 +66,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
             <%= if input_value(f, :action) == "POST" do %>
               <div class="extract-http-step-form__body">
                 <%= label(f, :body, DisplayNames.get(:body),  class: "label", for: "#{@id}_http_body") %>
-                <%= textarea(f, :body, id: "#{@id}_http_body", class: "input full-width", phx_hook: "prettify", disabled: @testing?) %>
+                <%= textarea(f, :body, id: "#{@id}_http_body", class: "input full-width", phx_hook: "prettify", disabled: @testing?, aria_label: "Http #{DisplayNames.get(:body)}") %>
                 <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false, id: "#{@id}_http_body_error") %>
               </div>
             <% end %>
@@ -76,6 +76,7 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
                 type="button"
                 class="extract_step__test-btn btn--primary btn--test btn btn--large btn--action"
                 phx-click="test_url" phx-target="<%= @myself %>"
+                aria-label= "Test Http URL button"
                 <%= if @testing?, do: "disabled", else: "" %>
               >
                 Test

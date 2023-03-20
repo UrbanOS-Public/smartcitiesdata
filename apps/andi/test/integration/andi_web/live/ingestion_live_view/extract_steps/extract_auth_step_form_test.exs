@@ -142,7 +142,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_value(html, "##{auth_step.id}_path") == new_path
+      assert get_value(html, "##{auth_step.id}_auth_path") == new_path
     end
 
     test "path field shows an error if blank", %{
@@ -169,7 +169,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       html: html,
       auth_step: auth_step
     } do
-      assert get_value(html, "##{auth_step.id}_cacheTtl") == "0"
+      assert get_value(html, "##{auth_step.id}_auth_cacheTtl") == "0"
     end
 
     test "cacheTtl field can be altered and saved", %{
@@ -188,7 +188,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       |> render_change()
 
       html = render(view)
-      assert get_value(html, "##{auth_step.id}_cacheTtl") == new_cacheTtl
+      assert get_value(html, "##{auth_step.id}_auth_cacheTtl") == new_cacheTtl
     end
   end
 end

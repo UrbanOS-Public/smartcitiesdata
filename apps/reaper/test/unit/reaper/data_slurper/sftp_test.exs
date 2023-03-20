@@ -7,27 +7,15 @@ defmodule Reaper.DataSlurper.SftpTest do
       %{source_url: "sftp://localhost:222/does/not/matter.csv", ingestion_id: "12345-6789"}
     end
 
-    test "handles failure to retrieve any ingestino credentials", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()), return: {:error, :retrieve_credential_failed}
-      allow SftpEx.connect(any())
-
-      assert_raise RuntimeError,
-                   ~s|Failed calling '#{map.source_url}': :retrieve_credential_failed|,
-                   fn ->
-                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.ingestion_id)
-                   end
-    end
-
     test "handles incorrectly configured ingestion credentials", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{api_key: "q4587435o43759o47597"}}
+      ftp_url = "sftp://badUserbadPassword@localhost:222/does/not/matter.csv"
 
-      message = "Ingestion credentials are not of the correct type"
+      message = "Ingestion credentials are not in username:password format"
 
       assert_raise RuntimeError,
-                   ~s|Failed calling '#{map.source_url}': "#{message}"|,
+                   ~s|Failed calling '#{ftp_url}': "#{message}"|,
                    fn ->
-                     Reaper.DataSlurper.Sftp.slurp(map.source_url, map.ingestion_id)
+                     Reaper.DataSlurper.Sftp.slurp(ftp_url, map.ingestion_id)
                    end
     end
   end

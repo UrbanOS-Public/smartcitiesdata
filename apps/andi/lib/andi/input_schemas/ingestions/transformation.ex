@@ -1,10 +1,10 @@
 defmodule Andi.InputSchemas.Ingestions.Transformation do
   @moduledoc """
   Generic schema for all types of transformations.
-
   """
   use Ecto.Schema
-  import Ecto.Changeset
+
+  alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Ingestion
   alias AndiWeb.Views.Options
@@ -23,61 +23,101 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
 
   use Accessible
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(transformation, changes) do
-    changes_with_id = StructTools.ensure_id(transformation, changes)
-
-    transformation
-    |> cast(changes_with_id, @cast_fields)
-    |> validate_required(@required_fields, message: "is required")
-    |> validate_type()
-    |> validate_parameters()
-  end
-
-  def changeset_for_draft(changes), do: changeset_for_draft(%__MODULE__{}, changes)
-
-  def changeset_for_draft(transformation, changes) do
-    changes_with_id = StructTools.ensure_id(transformation, changes)
-
-    transformation
-    |> cast(changes_with_id, @cast_fields)
-  end
-
-  def changeset_from_form_data(form_data) do
-    form_data_as_params =
-      form_data
+    changes_with_id =
+      StructTools.ensure_id(transformation, changes)
       |> AtomicMap.convert(safe: false, underscore: false)
-      |> wrap_parameters()
+      |> format_parameters()
 
-    changeset(form_data_as_params)
+    transformation
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [], force_changes: true)
+  end
+
+  def validate(transformation_changeset) do
+    data_as_changes =
+      transformation_changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+
+    validated_transformation_changeset =
+      transformation_changeset
+      |> Map.replace(:errors, [])
+      |> Changeset.cast(data_as_changes, @cast_fields, force_changes: true)
+      |> Changeset.validate_required(@required_fields, message: "is required")
+      |> validate_type()
+      |> validate_parameters()
+
+    if is_nil(Map.get(validated_transformation_changeset, :action, nil)) do
+      Map.put(validated_transformation_changeset, :action, :display_errors)
+    else
+      validated_transformation_changeset
+    end
+  end
+
+  def preload(struct), do: StructTools.preload(struct, [])
+
+  defp format_parameters(changes) do
+    new_changes =
+      if is_nil(Map.get(changes, :parameters)) do
+        Map.put(changes, :parameters, %{})
+      else
+        changes
+      end
+
+    new_parameters =
+      Enum.reduce(Map.keys(new_changes), Map.new(), fn key, acc ->
+        if not Enum.member?(@cast_fields, key) do
+          Map.put(acc, key, new_changes[key])
+        else
+          acc
+        end
+      end)
+
+    if new_parameters == %{} do
+      new_changes
+    else
+      Map.put(new_changes, :parameters, new_parameters)
+    end
   end
 
   defp validate_type(%{changes: %{type: type}} = changeset) do
     transformation_types = Options.transformations() |> Map.new() |> Map.keys()
 
     case type not in transformation_types do
-      true -> add_error(changeset, :type, "invalid type: #{type}")
+      true -> Changeset.add_error(changeset, :type, "invalid type: #{type}")
       false -> changeset
     end
   end
 
   defp validate_type(changeset), do: changeset
 
-  defp validate_parameters(%{changes: %{type: type, parameters: parameters}} = changeset) do
-    converted_parameters = convert_parameters_from_atom_to_string(parameters)
+  defp validate_parameters(changeset) do
+    type =
+      case Changeset.fetch_field(changeset, :type) do
+        {_, ""} -> "invalid"
+        {_, type} -> type
+        :error -> "invalid"
+      end
 
-    case Transformers.OperationBuilder.validate(type, converted_parameters) do
+    parameters =
+      case Changeset.fetch_field(changeset, :parameters) do
+        {_, parameters} -> convert_parameters_from_atom_to_string(parameters)
+        :error -> %{}
+      end
+
+    case Transformers.OperationBuilder.validate(type, parameters) do
       {:ok, _} ->
         changeset
 
       {:error, reason} when is_binary(reason) ->
-        changeset
+        Changeset.add_error(changeset, :type, reason)
 
       {:error, reasons} ->
         Enum.reduce(reasons, changeset, fn {key, value}, changeset ->
           atom_key = String.to_atom(key)
-          add_error(changeset, atom_key, value)
+          Changeset.add_error(changeset, atom_key, value)
         end)
     end
   end
@@ -92,24 +132,5 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
     transformation
     |> Andi.InputSchemas.StructTools.to_map()
     |> Map.get(:parameters)
-  end
-
-  def preload(struct), do: StructTools.preload(struct, [])
-
-  defp wrap_parameters(form_data) do
-    parameters =
-      form_data
-      |> Map.delete(:name)
-      |> Map.delete(:id)
-      |> Map.delete(:type)
-
-    %{id: form_data.id, name: form_data.name, type: form_data.type, parameters: parameters}
-  end
-
-  def convert_andi_transformation_to_changeset(transformation) do
-    transformation
-    |> StructTools.to_map()
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> changeset_for_draft()
   end
 end

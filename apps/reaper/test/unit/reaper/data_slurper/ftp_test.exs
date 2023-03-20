@@ -4,36 +4,22 @@ defmodule Reaper.DataSlurper.FtpTest do
 
   describe "DataSlurper.Ftp.slurp/2" do
     setup do
-      %{source_url: "ftp://localhost:222/does/not/matter.csv", ingestion_id: "12345-6789"}
-    end
-
-    test "handles failure to retrieve any ingestion credentials", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()), return: {:error, :retrieve_credential_failed}
-
-      assert_raise RuntimeError,
-                   ~s|Failed calling '#{map.source_url}': :retrieve_credential_failed|,
-                   fn ->
-                     Reaper.DataSlurper.Ftp.slurp(map.source_url, map.ingestion_id)
-                   end
+      %{source_url: "ftp://validUser:validPassword@localhost:222/does/not/matter.csv", ingestion_id: "12345-6789"}
     end
 
     test "handles incorrectly configured ingestion credentials", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{api_key: "q4587435o43759o47597"}}
+      ftp_url = "ftp://badUserbadPassword@localhost:222/does/not/matter.csv"
 
-      message = "Ingestion credentials are not of the correct type"
+      message = "Ingestion credentials are not in username:password format"
 
       assert_raise RuntimeError,
-                   ~s|Failed calling '#{map.source_url}': "#{message}"|,
+                   ~s|Failed calling '#{ftp_url}': "#{message}"|,
                    fn ->
-                     Reaper.DataSlurper.Ftp.slurp(map.source_url, map.ingestion_id)
+                     Reaper.DataSlurper.Ftp.slurp(ftp_url, map.ingestion_id)
                    end
     end
 
     test "handles invalid ingestion credentials", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:ok, "pid"}
 
@@ -50,9 +36,6 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles closed session", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:error, :eclosed}
 
@@ -66,9 +49,6 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad connection", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:ok, "pid"}
 
@@ -85,9 +65,6 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad host", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:error, :ehost}
 
@@ -102,9 +79,6 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad file path", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:ok, "pid"}
 
@@ -124,9 +98,6 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles successful file retrieval", map do
-      allow Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => "validUser", "password" => "validPassword"}}
-
       allow :ftp.open(any()),
         return: {:ok, "pid"}
 
