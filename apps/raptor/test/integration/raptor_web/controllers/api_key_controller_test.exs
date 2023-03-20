@@ -323,13 +323,13 @@ defmodule Raptor.ApiKeyControllerTest do
         }
       ]
 
-      assert Raptor.Services.Auth0UserRoleStore.get_roles_by_user_id(user_id) ==
-               expected_redis_data
-
       body = Jason.decode!(response.body)
 
       assert body == %{"has_role" => true}
       assert response.status_code == 200
+
+      assert Raptor.Services.Auth0UserRoleStore.get_roles_by_user_id(user_id) ==
+               expected_redis_data
     end
 
     test "returns false when role is not associated to user" do
