@@ -1,9 +1,8 @@
 defmodule AndiWeb.ReportsController do
   use AndiWeb, :controller
   import Ecto.Query, only: [from: 2]
-  alias Andi.Schemas.User
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Organization
 
   access_levels(download_report: [:private])
 
@@ -17,40 +16,54 @@ defmodule AndiWeb.ReportsController do
   end
 
   defp build_csv() do
-    values = get_dataset_ids()
-    |> Enum.map(fn dataset_id -> [dataset_id, get_users_with_dataset_id(dataset_id)] end)
+    values = get_datasets()
+    |> Enum.map(fn dataset -> [dataset.id, get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)] end)
     [["Dataset ID", "Users"] | values]
   end
 
-  defp get_users_with_dataset_id(id) do
-    get_users()
-    |> Enum.filter(fn user -> Enum.any?(user.userdatasetids, fn user_dataset_id -> user_dataset_id == id end) end)
-    |> Enum.map(fn user -> user.email end)
-    |> Enum.join(", ")
+  defp get_users_for_dataset(is_public, access_groups, org_id) do
+    if is_public do
+      "All (public)"
+    else
+      [get_users_in_org(org_id), get_users_in_access_groups(access_groups)]
+      |> Enum.concat()
+      |> Enum.dedup()
+      |> Enum.join(", ")
+    end
   end
 
-  defp get_dataset_ids() do
+  defp get_datasets() do
     query =
       from(dataset in Dataset,
-      select: dataset
+        where: dataset.submission_status != :draft,
+        preload: [:technical, access_groups: [:users]]
       )
 
       Andi.Repo.all(query)
-      |> get_dataset_ids()
+      |> IO.inspect(label: "datasets")
+      |> Enum.map(fn dataset -> %{id: dataset.id, is_public: not dataset.technical.private, access_groups: dataset.access_groups, org_id: dataset.technical.orgId} end)
   end
 
-  defp get_dataset_ids(datasets) do
-    datasets |> Enum.map(fn dataset -> dataset.id end)
+  defp get_users_in_access_groups(access_groups) do
+    access_groups
+    |> Enum.map(fn access_group -> access_group.users end)
+    |> Enum.concat()
+    |> Enum.map(fn user -> user.email end)
+    |> IO.inspect(label: "access group user emails")
   end
 
-  defp get_users() do
+  defp get_users_in_org(id) do
     query =
-      from(user in User,
-        join: d in assoc(user, :datasets),
-        preload: [datasets: d]
+      from(org in Organization,
+        select: org,
+        where: org.id == ^id,
+        preload: [:users]
       )
 
     Andi.Repo.all(query)
-    |> Enum.map(fn user -> %{email: user.email, userdatasetids: get_dataset_ids(user.datasets)} end)
+    |> Enum.map(fn org -> org.users end)
+    |> Enum.at(0)
+    |> Enum.map(fn user -> user.email end)
+    |> IO.inspect(label: "org users")
   end
 end
