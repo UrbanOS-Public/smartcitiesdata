@@ -30,6 +30,7 @@ defmodule AndiWeb.ReportsController do
       [get_users_in_org(org_id), get_users_in_access_groups(access_groups)]
       |> Enum.concat()
       |> Enum.dedup()
+      |> Enum.sort()
       |> Enum.join(", ")
     end
   end

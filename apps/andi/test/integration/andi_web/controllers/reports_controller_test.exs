@@ -73,7 +73,7 @@ defmodule Andi.ReportsControllerTest do
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Users\r\n12345,\"user3@fakemail.com, user1@fakemail.com, user2@fakemail.com\"\r\n6789,All (public)\r\n"
+               "Dataset ID,Users\r\n12345,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\"\r\n6789,All (public)\r\n"
     end
 
     test "filters duplicates", %{curator_conn: conn} do
