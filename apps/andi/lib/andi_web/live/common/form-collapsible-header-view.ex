@@ -11,7 +11,7 @@ defmodule AndiWeb.FormCollapsibleHeader do
     {visible, action} = if assigns.visible?, do: {"expanded", "MINIMIZE"}, else: {"collapsed", "EDIT"}
 
     ~L"""
-    <div class="component-header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
+    <div id="<%= @id %>" class="component-header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
       <div class="section-number">
         <div class="component-number component-number--<%= @validation_status %>"><%= @order %></div>
         <div class="component-number-status--<%= @validation_status %>"></div>

@@ -17,8 +17,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   def mount(socket) do
     {:ok,
      assign(socket,
-       visibility: "expanded",
-       validation_status: "collapsed"
+       visibility: "expanded"
      )}
   end
 
