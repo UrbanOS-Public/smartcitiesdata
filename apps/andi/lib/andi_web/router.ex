@@ -26,6 +26,10 @@ defmodule AndiWeb.Router do
     plug Guardian.Plug.EnsureAuthenticated, claims: %{"https://andi.smartcolumbusos.com/roles" => ["Curator"]}
   end
 
+  pipeline :api_curator do
+    plug AndiWeb.Plugs.APIRequireCurator
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug Plug.Logger
@@ -74,7 +78,7 @@ defmodule AndiWeb.Router do
   end
 
   scope "/api", AndiWeb.API do
-    pipe_through :api
+    pipe_through [:api, :api_curator]
 
     get "/v1/datasets", DatasetController, :get_all
     get "/v1/dataset/:dataset_id", DatasetController, :get

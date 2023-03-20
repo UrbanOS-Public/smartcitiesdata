@@ -1,5 +1,7 @@
 use Mix.Config
 
+System.put_env("REQUIRE_API_KEY", "false")
+
 config :andi, AndiWeb.Endpoint,
   http: [port: 4002],
   server: false,
