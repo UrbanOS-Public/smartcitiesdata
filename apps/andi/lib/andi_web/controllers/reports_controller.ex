@@ -9,6 +9,7 @@ defmodule AndiWeb.ReportsController do
   def download_report(conn, _params) do
     # Note: Each list is a different row
     csv = CSV.encode(build_csv()) |> Enum.to_list() |> to_string()
+
     conn
     |> put_resp_content_type("text/csv")
     |> put_resp_header("content-disposition", "attachment; filename=\"record.csv\"")
@@ -16,8 +17,10 @@ defmodule AndiWeb.ReportsController do
   end
 
   defp build_csv() do
-    values = get_datasets()
-    |> Enum.map(fn dataset -> [dataset.id, get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)] end)
+    values =
+      get_datasets()
+      |> Enum.map(fn dataset -> [dataset.id, get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)] end)
+
     [["Dataset ID", "Users"] | values]
   end
 
@@ -39,9 +42,11 @@ defmodule AndiWeb.ReportsController do
         preload: [:technical, access_groups: [:users]]
       )
 
-      Andi.Repo.all(query)
-      |> IO.inspect(label: "datasets")
-      |> Enum.map(fn dataset -> %{id: dataset.id, is_public: not dataset.technical.private, access_groups: dataset.access_groups, org_id: dataset.technical.orgId} end)
+    Andi.Repo.all(query)
+    |> IO.inspect(label: "datasets")
+    |> Enum.map(fn dataset ->
+      %{id: dataset.id, is_public: not dataset.technical.private, access_groups: dataset.access_groups, org_id: dataset.technical.orgId}
+    end)
   end
 
   defp get_users_in_access_groups(access_groups) do
