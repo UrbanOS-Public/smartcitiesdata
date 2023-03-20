@@ -12,7 +12,6 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
   alias Andi.InputSchemas.StructTools
-  alias Phoenix.HTML
 
   def mount(socket) do
     {:ok,
@@ -35,13 +34,13 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
         <div class="extract-auth-step-form-edit-section form-grid">
           <div class="extract-auth-step-form__destination">
             <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_auth_destination") %>
-            <%= text_input(f, :destination, [class: "input", required: true, id: "#{@id}_auth_destination"]) %>
+            <%= text_input(f, :destination, [class: "input", required: true, id: "#{@id}_auth_destination", aria_label: "Auth #{DisplayNames.get(:destination)}"]) %>
             <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false, id: "#{@id}_auth_destination_error") %>
           </div>
 
           <div class="extract-auth-step-form__url">
             <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_auth_url") %>
-            <%= text_input(f, :url, [class: "input full-width", required: true, id: "#{@id}_auth_url"]) %>
+            <%= text_input(f, :url, [class: "input full-width", required: true, id: "#{@id}_auth_url", aria_label: "Auth #{DisplayNames.get(:url)}"]) %>
             <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_auth_url_error") %>
           </div>
 
@@ -49,20 +48,20 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
 
           <div class="extract-auth-step-form__body">
             <%= label(f, :body, DisplayNames.get(:body), class: "label", for: "#{@id}_auth_body") %>
-            <%= textarea(f, :body, [class: "input full-width", phx_hook: "prettify", id: "#{@id}_auth_body"]) %>
+            <%= textarea(f, :body, [class: "input full-width", phx_hook: "prettify", id: "#{@id}_auth_body", aria_label: "Auth #{DisplayNames.get(:body)}"]) %>
             <%= ErrorHelpers.error_tag(f, :body, bind_to_input: false, id: "#{@id}_auth_body_error") %>
           </div>
 
           <div class="extract-auth-step-form__path">
             <%= label(f, :path, DisplayNames.get(:path), class: "label", for: "#{@id}_auth_path") %>
-            <%= text_input(f, :path, [class: "input", value: path_to_string(input_value(f, :path)), required: true, id: "#{@id}_path"]) %>
+            <%= text_input(f, :path, [class: "input", value: path_to_string(input_value(f, :path)), required: true, id: "#{@id}_auth_path", aria_label: "Auth #{DisplayNames.get(:path)}"]) %>
             <span class="input__help-text">Separate response path keys with a period (.) (e.g. 'data.token' for response {"data": {"token": "abc123"}}) </span>
             <%= ErrorHelpers.error_tag(f, :path, bind_to_input: false, id: "#{@id}_auth_path_error") %>
           </div>
 
           <div class="extract-auth-step-form__cacheTtl">
             <%= label(f, :cacheTtl, DisplayNames.get(:cacheTtl), class: "label", for: "#{@id}_auth_cacheTtl") %>
-            <%= text_input(f, :cacheTtl, [class: "input", value: milliseconds_to_minutes(input_value(f, :cacheTtl)), required: true, id: "#{@id}_cacheTtl"]) %>
+            <%= text_input(f, :cacheTtl, [class: "input", value: milliseconds_to_minutes(input_value(f, :cacheTtl)), required: true, id: "#{@id}_auth_cacheTtl", aria_label: "Auth #{DisplayNames.get(:cacheTtl)}"]) %>
             <span class="input__help-text">Time in minutes that credentials are stored (defaults to 15 minutes)</span>
             <%= ErrorHelpers.error_tag(f, :cacheTtl, bind_to_input: false, id: "#{@id}_auth_cacheTtl_error") %>
           </div>

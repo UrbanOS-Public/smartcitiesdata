@@ -30,18 +30,18 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       <div class="transformation-header full-width" id="transformation_<%= @id %>__header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
         <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
         <div class="transformation-actions">
-          <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id="<%= @transformation_changeset.changes.id %>" phx-target="<%= @myself %>">delete_outline</button>
-          <button class="material-icons transformation-action" type="button">edit</button>
+          <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id="<%= @transformation_changeset.changes.id %>" phx-target="<%= @myself %>" aria-label="Delete Transformation">delete_outline</button>
+          <button class="material-icons transformation-action" type="button" aria-label="Edit Transformation">edit</button>
           <% {_, transformation_changeset_id} = Changeset.fetch_field(@transformation_changeset, :id) %>
-          <button class="material-icons transformation-action move-button move-up" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="-1" phx-target="<%= @myself %>">arrow_upward</button>
-          <button class="material-icons transformation-action move-button move-down" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="1" phx-target="<%= @myself %>">arrow_downward</button>
+          <button class="material-icons transformation-action move-button move-up" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="-1" phx-target="<%= @myself %>" aria-label="Move Transformation up">arrow_upward</button>
+          <button class="material-icons transformation-action move-button move-down" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="1" phx-target="<%= @myself %>" aria-label="Move Transformation down">arrow_downward</button>
         </div>
       </div>
 
       <div class="transformation-form transformation-edit-form--<%= visible %>">
         <div class="transformation-form__name">
           <%= label(f, :name, "Name", class: "label label--required", for: "transformation_#{@id}__name") %>
-          <%= text_input(f, :name, [id: "transformation_#{@id}__name", class: "transformation-name input transformation-form-fields", required: true]) %>
+          <%= text_input(f, :name, [id: "transformation_#{@id}__name", class: "transformation-name input transformation-form-fields", required: true, aria_label: "Transformation Name"]) %>
           <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false, id: "#{@id}_transformation_name_error") %>
         </div>
         <div class="transformation-form__type">

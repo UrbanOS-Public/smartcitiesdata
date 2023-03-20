@@ -16,7 +16,7 @@ defmodule AndiWeb.ReportsLiveView do
           </div>
           <p>This page will let you download a CSV with all current users and the datasets they have access to.</p>
           <hr class="report-line">
-          <button type="button" class="btn btn--download" data-method="get" data-to="/report">
+          <button type="button" class="btn btn--download" data-method="get" data-to="/report" aria-label="Download Report">
             <span class="download-icon material-icons">file_download</span>
             Download Report
           </button>

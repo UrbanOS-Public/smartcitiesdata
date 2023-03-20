@@ -47,7 +47,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
             <% end %>
           </div>
 
-          <button id="add-transformation" class="btn btn--primary-outline btn--save btn--large" type="button" phx-click="add-transformation" phx-target="<%= @myself %>">+ Add New Transformation</button>
+          <button id="add-transformation" class="btn btn--primary-outline btn--save btn--large" type="button" phx-click="add-transformation" phx-target="<%= @myself %>" aria-label="Add New Transformation">+ Add New Transformation</button>
         </div>
       </div>
     </div>

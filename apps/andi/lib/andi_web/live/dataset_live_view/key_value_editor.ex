@@ -16,26 +16,26 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
       <div class="url-form-table__title"><%= DisplayNames.get(@field) %></div>
       <table class="url-form-table__table" title='<%= DisplayNames.get(@field) %>' aria-label="<%= @id %>">
         <tr class="url-form-table__row url-form-table__row--bordered">
-          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header">KEY</th>
-          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2">VALUE</th>
+          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" id="key">KEY</th>
+          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2" id="value">VALUE</th>
         </tr>
         <%= inputs_for @form, @field, fn f -> %>
           <tr class="url-form-table__row url-form-table__row--bordered">
-            <td class="url-form-table__cell url-form-table__cell--bordered">
-              <%= text_input(f, :key, [class: "input full-width url-form__#{@css_label}-key-input"]) %>
+            <td class="url-form-table__cell url-form-table__cell--bordered" headers="key">
+              <%= text_input(f, :key, [class: "input full-width url-form__#{@css_label}-key-input", aria_label: "#{DisplayNames.get(@field)} Key"]) %>
             </td>
-            <td class="url-form-table__cell url-form-table__cell--bordered">
-              <%= text_input(f, :value, [class: "input full-width url-form__#{@css_label}-value-input"]) %>
+            <td class="url-form-table__cell url-form-table__cell--bordered" headers="value">
+              <%= text_input(f, :value, [class: "input full-width url-form__#{@css_label}-value-input", aria_label: "#{DisplayNames.get(@field)} Value"]) %>
             </td>
-            <td class="url-form-table__cell url-form-table__cell--delete">
-              <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= @myself %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
+            <td class="url-form-table__cell url-form-table__cell--delete" headers="value">
+              <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= @myself %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>" aria-label="Remove <%= DisplayNames.get(@field) %>">
                 <img src="/images/remove.svg" alt="Remove"/>
               </button>
             </td>
           </tr>
         <% end %>
       </table>
-      <button type="button" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="add" phx-target="<%= @myself %>" phx-value-field="<%= @field %>">
+      <button type="button" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="add" phx-target="<%= @myself %>" phx-value-field="<%= @field %>" aria-label="Add <%= DisplayNames.get(@field) %>">
         <img src="/images/add.svg" alt="Add"/>
       </button>
       <%= ErrorHelpers.error_tag(@form, @field, bind_to_input: false, id: "#{@parent_id}_#{@field}_error") %>
