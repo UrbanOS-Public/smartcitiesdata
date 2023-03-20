@@ -10,6 +10,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.Services.IngestionDelete
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
+  alias AndiWeb.InputSchemas.FinalizeFormSchema
   alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Ecto.Changeset
 
@@ -54,6 +55,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 
+    transformation_changesets = Ingestion.get_transformation_changesets(ingestion_changeset)
+
+    finalize_changeset = FinalizeFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
+
     ingestion_published? = assigns.ingestion.submissionStatus == :published
 
     ~L"""
@@ -64,7 +69,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       </div>
 
       <div>
-        <%= live_component(@socket, AndiWeb.IngestionLiveView.MetadataForm,
+        <%= live_component(AndiWeb.IngestionLiveView.MetadataForm,
               id: AndiWeb.IngestionLiveView.MetadataForm.component_id(),
               changeset: metadata_changeset,
               ingestion_published?: ingestion_published?
@@ -73,12 +78,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
         <div>
           <div>
-            <%= live_component(@socket, AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
+            <%= live_component(AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm,
                   id: AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.component_id(),
                   extract_step_changesets: extract_step_changesets,
-                  ingestion_published?: ingestion_published?,
                   order: "1",
                   ingestion_id: ingestion_changeset.data.id,
+                  ingestion_published?: ingestion_published?,
                   extract_step_errors: extract_step_errors
                 ) %>
           </div>
@@ -87,11 +92,16 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           </div>
 
           <div>
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep, id: :transformations_form_editor, session: %{"ingestion" => @ingestion, "order" => "3"}) %>
+            <%= live_component(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep,
+                  id: AndiWeb.IngestionLiveView.Transformations.TransformationsStep.component_id(),
+                  transformation_changesets: transformation_changesets,
+                  order: "3",
+                  ingestion_id: ingestion_changeset.data.id
+                ) %>
           </div>
 
           <div>
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, session: %{"ingestion" => @ingestion, "order" => "4"}) %>
+            <%= live_component(AndiWeb.IngestionLiveView.FinalizeForm, id: :finalize_form_editor, changeset: finalize_changeset, order: "4") %>
           </div>
         </div>
 
@@ -153,6 +163,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
+  def handle_info({:update_all_transformations, transformation_changesets}, socket) do
+    new_ingestion_changeset = Ingestion.merge_transformation_changeset(socket.assigns.changeset, transformation_changesets)
+
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
+  end
+
   def handle_info({:update_dataset, id}, socket) do
     params = %{
       targetDataset: id
@@ -165,6 +181,15 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: updated_changeset)}
   end
 
+  def handle_info(
+        {:updated_finalize, %Ecto.Changeset{data: %AndiWeb.InputSchemas.FinalizeFormSchema{}} = finalize_changeset},
+        socket
+      ) do
+    new_ingestion_changeset = Ingestion.merge_finalize_changeset(socket.assigns.changeset, finalize_changeset)
+
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
+  end
+
   # Remove these form_updates after all children refactor to parent/child pattern
   # Unsaved changes should be determined by comparing the current
   # ingestion from the DB to the current changeset, allowing
@@ -175,10 +200,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_info(:form_update, socket) do
     {:noreply, assign(socket, unsaved_changes: true)}
-  end
-
-  def handle_info(:test_url, socket) do
-    test_url(socket)
   end
 
   def handle_info({:update_save_message, status}, socket) do
@@ -298,10 +319,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, socket}
   end
 
-  def test_url(socket) do
-    save_ingestion(socket)
-  end
-
   defp save_ingestion_safe(socket) do
     # Once all subforms are routed through this parent live view, this save function
     # can save directly to the Repo from socket.assigns.changeset without having to extract
@@ -317,7 +334,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       sourceFormat: safe_ingestion_data.sourceFormat,
       targetDataset: safe_ingestion_data.targetDataset,
       topLevelSelector: safe_ingestion_data.topLevelSelector,
-      extractSteps: safe_ingestion_data.extractSteps
+      extractSteps: safe_ingestion_data.extractSteps,
+      transformations: safe_ingestion_data.transformations,
+      cadence: safe_ingestion_data.cadence
     }
 
     current_ingestion = Ingestions.get(socket.assigns.ingestion.id)

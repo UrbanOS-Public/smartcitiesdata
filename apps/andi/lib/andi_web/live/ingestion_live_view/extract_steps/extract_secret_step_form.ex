@@ -29,7 +29,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
           <div class="extract-secret-step-form-edit-section form-grid">
             <div class="extract-secret-step-form__destination">
               <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_secret_destination") %>
-              <%= text_input(f, :destination, [id: "#{@id}_secret_destination", class: "extract-secret-step-form__destination input", required: true]) %>
+              <%= text_input(f, :destination, [id: "#{@id}_secret_destination", class: "extract-secret-step-form__destination input", required: true, aria_label: "Secret #{DisplayNames.get(:destination)}"]) %>
               <%= ErrorHelpers.error_tag(f, :destination, id: "#{@id}_secret_destination_error") %>
             </div>
 
@@ -37,7 +37,7 @@ defmodule AndiWeb.ExtractSteps.ExtractSecretStepForm do
               <%= label(f, :secret_value, DisplayNames.get(:secret_value), class: "label label--required", for: "#{@id}_secret_value") %>
               <%= text_input(f, :secret_value, [id: "#{@id}_secret_value", type: "password", class: "extract-secret-step-form__secret-value input", placeholder: "Secrets are not displayed after being saved", required: true]) %>
               <% class = get_add_button_class(@changeset) %>
-              <button type="submit" class="btn btn--action <%= class %>">Add</button>
+              <button type="submit" class="btn btn--action <%= class %>" aria-label="Add Secret Value">Add</button>
               <span class="secret__status-msg <%= save_success_class(@save_success) %>"><%= @save_secret_message %></span>
             </div>
           </div>

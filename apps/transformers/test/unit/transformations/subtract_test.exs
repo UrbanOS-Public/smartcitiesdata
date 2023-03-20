@@ -60,7 +60,7 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"minuend" => "Missing field"}
+      assert reason == %{"minuend" => "Missing or empty field"}
     end
 
     test "if subtrahends is not specified, return error" do
@@ -156,6 +156,63 @@ defmodule Transformers.SubtractTest do
       {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason == "A value cannot be parsed to integer or float: target"
+    end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      parameters = %{
+        "minuend" => "firstTotal",
+        "subtrahends" => [1, 2, "firstField", "secondField"],
+        "targetField" => "lastTotal",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "firstTotal",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "20"
+        }
+      }
+
+      payload = %{
+        "firstTotal" => 20,
+        "firstField" => 3,
+        "secondField" => 4
+      }
+
+      {:ok, result} = Subtract.transform(payload, parameters)
+
+      assert result == %{
+               "firstTotal" => 20,
+               "firstField" => 3,
+               "secondField" => 4,
+               "lastTotal" => 10
+             }
+    end
+
+    test "does nothing when condition evaluates to false" do
+      parameters = %{
+        "minuend" => "firstTotal",
+        "subtrahends" => [1, 2, "firstField", "secondField"],
+        "targetField" => "lastTotal",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "firstTotal",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "7"
+        }
+      }
+
+      payload = %{
+        "firstTotal" => 20,
+        "firstField" => 3,
+        "secondField" => 4
+      }
+
+      {:ok, result} = Subtract.transform(payload, parameters)
+
+      assert result == %{
+               "firstTotal" => 20,
+               "firstField" => 3,
+               "secondField" => 4
+             }
     end
   end
 

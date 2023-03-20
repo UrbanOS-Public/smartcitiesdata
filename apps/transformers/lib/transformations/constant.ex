@@ -3,6 +3,7 @@ defmodule Transformers.Constant do
 
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @target_field "targetField"
   @new_value "newValue"
@@ -10,9 +11,11 @@ defmodule Transformers.Constant do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [target_field, new_value, value_type]} <- validate(parameters) do
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [target_field, new_value, value_type]} <- validate(parameters) do
       convert_value(new_value, value_type, payload, target_field)
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end

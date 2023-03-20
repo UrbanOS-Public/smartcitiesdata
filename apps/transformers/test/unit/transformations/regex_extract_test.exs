@@ -91,6 +91,47 @@ defmodule Transformers.RegexExtractTest do
 
       assert transformed_payload == %{"name" => "Emily"}
     end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      params = %{
+        "sourceField" => "phone_number",
+        "targetField" => "area_code",
+        "regex" => "^\\((\\d{3})\\)",
+        "condition" => %{
+          "conditionDataType" => "string",
+          "sourceConditionField" => "phone_number",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "(555) 123-4567"
+        }
+      }
+
+      message_payload = %{"phone_number" => "(555) 123-4567"}
+
+      {:ok, transformed_payload} = Transformers.RegexExtract.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "area_code")
+      assert actual_target_field == "555"
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "sourceField" => "phone_number",
+        "targetField" => "area_code",
+        "regex" => "^\\((\\d{3})\\)",
+        "condition" => %{
+          "conditionDataType" => "string",
+          "sourceConditionField" => "phone_number",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "value"
+        }
+      }
+
+      message_payload = %{"phone_number" => "(555) 123-4567"}
+
+      result = Transformers.RegexExtract.transform(message_payload, params)
+
+      assert result == {:ok, %{"phone_number" => "(555) 123-4567"}}
+    end
   end
 
   describe "validate/1" do

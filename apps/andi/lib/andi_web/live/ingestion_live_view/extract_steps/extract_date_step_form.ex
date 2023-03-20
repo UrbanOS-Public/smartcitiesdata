@@ -31,19 +31,19 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
           <div class="extract-date-step-form-edit-section form-grid">
             <div class="extract-date-step-form__destination">
               <%= label(f, :destination, DisplayNames.get(:destination), class: "label label--required", for: "#{@id}_date_destination") %>
-              <%= text_input(f, :destination, [id: "#{@id}_date_destination", required: true, class: "input"]) %>
+              <%= text_input(f, :destination, [id: "#{@id}_date_destination", required: true, class: "input", aria_label: "Date #{DisplayNames.get(:destination)}"]) %>
               <%= ErrorHelpers.error_tag(f, :destination, bind_to_input: false, id: "#{@id}_date_destination_error") %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeUnit">
               <%= label(f, :deltaTimeUnit, DisplayNames.get(:deltaTimeUnit), class: "label", for: "#{@id}_date_delta_time_unit") %>
-              <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}_date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select") %>
+              <%= select(f, :deltaTimeUnit, get_time_units(), id: "#{@id}_date_delta_time_unit", class: "extract-date-step-form__delta_time_unit select", aria_label: "Date #{DisplayNames.get(:deltaTimeUnit)}") %>
               <%= ErrorHelpers.error_tag(f, :deltaTimeUnit, id: "#{@id}_date_delta_time_unit_error") %>
             </div>
 
             <div class="extract-date-step-form__deltaTimeValue">
               <%= label(f, :deltaTimeValue, DisplayNames.get(:deltaTimeValue), class: "label", for: "#{@id}_date_delta_time_value") %>
-              <%= text_input(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value", class: "extract-date-step-form__delta_time_value input") %>
+              <%= text_input(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value", class: "extract-date-step-form__delta_time_value input", aria_label: "Date #{DisplayNames.get(:deltaTimeValue)}") %>
               <%= ErrorHelpers.error_tag(f, :deltaTimeValue, id: "#{@id}_date_delta_time_value_error") %>
             </div>
 
@@ -52,7 +52,7 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
                 <%= label(f, :format, "Format", class: "label label--required", for: "step_#{@id}_date_format") %>
                 <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
               </div>
-              <%= text_input(f, :format, [id: "step_#{@id}_date_format", class: "extract-date-step-form__format input", required: true]) %>
+              <%= text_input(f, :format, [id: "step_#{@id}_date_format", class: "extract-date-step-form__format input", required: true, aria_label: "Date Format"]) %>
               <%= ErrorHelpers.error_tag(f, :format, id: "#{@id}_date_format_error") %>
             </div>
 

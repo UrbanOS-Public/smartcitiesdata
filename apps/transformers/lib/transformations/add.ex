@@ -4,17 +4,20 @@ defmodule Transformers.Add do
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
   alias Transformers.ParseUtils
+  alias Transformers.Conditions
 
   @addends "addends"
   @target_field "targetField"
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [addends, target_field]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [addends, target_field]} <- validate(parameters),
          {:ok, numeric_addends} <- ParseUtils.operandsToNumbers(addends, payload),
          {:ok, sum} <- sumValues(numeric_addends) do
       {:ok, payload |> Map.put(target_field, sum)}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end

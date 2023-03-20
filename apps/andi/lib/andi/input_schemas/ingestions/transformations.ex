@@ -16,7 +16,7 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
 
   def create() do
     changeset =
-      Transformation.changeset_for_draft(%{
+      Transformation.changeset(Transformation.get_module(), %{
         id: UUID.uuid4()
       })
 
@@ -44,7 +44,7 @@ defmodule Andi.InputSchemas.Ingestions.Transformations do
   def update(%Transformation{} = from_transformation, changes) do
     changes_as_map = StructTools.to_map(changes)
 
-    Transformation.changeset_for_draft(from_transformation, changes_as_map)
+    Transformation.changeset(from_transformation, changes_as_map)
     |> save()
   end
 

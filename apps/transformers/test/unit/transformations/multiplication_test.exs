@@ -146,6 +146,45 @@ defmodule Transformers.MultiplicationTest do
 
       assert reason == "A value cannot be parsed to integer or float: invalid"
     end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      params = %{
+        "multiplicands" => ["input_number"],
+        "targetField" => "output_number",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "input_number",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "8"
+        }
+      }
+
+      message_payload = %{"input_number" => 8}
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 8
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "multiplicands" => ["input_number"],
+        "targetField" => "output_number",
+        "condition" => %{
+          "conditionDataType" => "number",
+          "sourceConditionField" => "input_number",
+          "conditionOperation" => "=",
+          "targetConditionValue" => "10"
+        }
+      }
+
+      message_payload = %{"input_number" => 8}
+
+      result = Transformers.Multiplication.transform(message_payload, params)
+
+      assert result == {:ok, %{"input_number" => 8}}
+    end
   end
 
   describe "validate/1" do

@@ -86,8 +86,17 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStep do
 
   defp validate_body_format(%{changes: %{body: body}} = changeset) do
     case Jason.decode(body) do
-      {:ok, _} -> changeset
-      {:error, _} -> Changeset.add_error(changeset, :body, "could not parse json", validation: :format)
+      {:ok, _} ->
+        changeset
+
+      {:error, _} ->
+        try do
+          SweetXml.parse(body)
+          changeset
+        catch
+          :exit, _ ->
+            Changeset.add_error(changeset, :body, "could not parse json or xml", validation: :format)
+        end
     end
   end
 

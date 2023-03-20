@@ -27,8 +27,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
         }
       }
 
-      changes
-      |> Transformation.changeset()
+      Transformation.changeset(Transformation.get_module(), changes)
       |> Transformations.save()
 
       assert %{
@@ -68,38 +67,6 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
 
       eventually(fn ->
         assert nil == Transformations.get(id)
-      end)
-    end
-  end
-
-  describe "update" do
-    test "given a transformation, it's attributes can be updated" do
-      transformation_id = UUID.uuid4()
-
-      changes = %{
-        id: transformation_id,
-        name: "sample transformation"
-      }
-
-      changes
-      |> Transformation.changeset_for_draft()
-      |> Transformations.save()
-
-      new_name = "new transformation name"
-
-      transformation = Transformations.get(transformation_id)
-
-      updated_changes =
-        %{
-          id: transformation_id,
-          name: new_name
-        }
-        |> Transformation.changeset_for_draft()
-
-      Transformations.update(transformation, updated_changes)
-
-      eventually(fn ->
-        assert %{name: new_name} = Transformations.get(transformation_id)
       end)
     end
   end
