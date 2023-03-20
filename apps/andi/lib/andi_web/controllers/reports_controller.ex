@@ -7,7 +7,6 @@ defmodule AndiWeb.ReportsController do
   access_levels(download_report: [:private])
 
   def download_report(conn, _params) do
-    # Note: Each list is a different row
     csv = CSV.encode(build_csv()) |> Enum.to_list() |> to_string()
 
     conn
@@ -43,7 +42,6 @@ defmodule AndiWeb.ReportsController do
       )
 
     Andi.Repo.all(query)
-    |> IO.inspect(label: "datasets")
     |> Enum.map(fn dataset ->
       %{id: dataset.id, is_public: not dataset.technical.private, access_groups: dataset.access_groups, org_id: dataset.technical.orgId}
     end)
@@ -54,7 +52,6 @@ defmodule AndiWeb.ReportsController do
     |> Enum.map(fn access_group -> access_group.users end)
     |> Enum.concat()
     |> Enum.map(fn user -> user.email end)
-    |> IO.inspect(label: "access group user emails")
   end
 
   defp get_users_in_org(id) do
@@ -69,6 +66,5 @@ defmodule AndiWeb.ReportsController do
     |> Enum.map(fn org -> org.users end)
     |> Enum.at(0)
     |> Enum.map(fn user -> user.email end)
-    |> IO.inspect(label: "org users")
   end
 end
