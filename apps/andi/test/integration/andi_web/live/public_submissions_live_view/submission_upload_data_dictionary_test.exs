@@ -108,7 +108,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
         render_change(upload_data_dictionary_view, :file_upload, %{
           "fileType" => "text/plain",
           "fileName" => "sample.tsv",
-          "file" => "name \t last \t addr \t cityt \t state \t zip\nJohn \t Doe \t 120 jefferson st.t \t Riverside \t NJ \t 8075"
+          "file" => "first_name \t last_name \t age\nJohn \t Doe \t 34"
         })
 
       eventually(fn ->
@@ -116,7 +116,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
                  ExAws.S3.get_object("trino-hive-storage", "samples/#{andi_dataset.id}/sample.tsv")
                  |> ExAws.request()
 
-        assert "sample.csv" == get_text(html, ".sample-file-display")
+        assert "sample.tsv" == get_text(html, ".sample-file-display")
       end)
     end
 
