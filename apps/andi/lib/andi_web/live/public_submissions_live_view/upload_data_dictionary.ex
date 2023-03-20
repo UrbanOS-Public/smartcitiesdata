@@ -77,7 +77,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
               <div class="upload-data-dictionary-form__file-upload">
                 <div class="file-input-button">
                   <%= label(f, :sample_dataset, "Select File", class: "file-upload-label") %>
-                  <%= file_input(f, :sample_dataset, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                  <%= file_input(f, :sample_dataset, phx_hook: "readFile", accept: "text/csv, application/json, .tsv") %>
                 </div>
                 <div class="sample-file-display">
                   <%= hidden_input(f, :datasetLink) %>

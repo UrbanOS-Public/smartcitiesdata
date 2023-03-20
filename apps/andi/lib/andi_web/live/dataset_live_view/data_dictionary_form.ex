@@ -94,7 +94,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                   <div class="file-input-button--<%= loader_visibility %>">
                     <div class="file-input-button">
                       <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
                       <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                     </div>
                   </div>
@@ -156,7 +156,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
