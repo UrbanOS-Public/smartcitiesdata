@@ -150,7 +150,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV, TSV, or JSON")
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
