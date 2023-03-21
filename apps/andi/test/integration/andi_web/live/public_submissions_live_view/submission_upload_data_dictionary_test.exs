@@ -108,7 +108,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
         render_change(upload_data_dictionary_view, :file_upload, %{
           "fileType" => "text/plain",
           "fileName" => "sample.tsv",
-          "file" => "first_name \t last_name \t age\nJohn \t Doe \t 34"
+          "file" => "first_name\tlast_name \tage\nJohn \t Doe \t 34"
         })
 
       eventually(fn ->
@@ -192,7 +192,7 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
       render_change(upload_data_dictionary_view, :file_upload, %{
         "fileType" => "text/plain",
         "fileName" => "sample.tsv",
-        "file" => "first_name \t last_name \t age\nJohn \t Doe \t 34"
+        "file" => "first_name\tlast_name\tage\nJohn \t Doe \t 34"
       })
 
       expected_schema = [
