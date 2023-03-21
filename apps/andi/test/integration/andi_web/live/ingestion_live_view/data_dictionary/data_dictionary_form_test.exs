@@ -911,7 +911,20 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
 
-    test "is hidden when sourceFormat is not CSV nor JSON", %{conn: conn} do
+    test "is shown when sourceFormat is TSV", %{conn: conn} do
+      dataset = TDG.create_dataset(%{})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/plain", targetDataset: dataset.id})
+
+      {:ok, _} = Datasets.update(dataset)
+      {:ok, _} = Ingestions.update(ingestion)
+      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
+      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      html = render(data_dictionary_view)
+
+      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "is hidden when sourceFormat is not CSV, TSV, nor JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "application/geo+json", targetDataset: dataset.id})
 

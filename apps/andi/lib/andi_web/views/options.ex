@@ -81,6 +81,7 @@ defmodule AndiWeb.Views.Options do
     [
       {"", ""},
       {"CSV", "text/csv"},
+      {"TSV", "text/plain"},
       {"JSON", "application/json"},
       {"XML", "text/xml"},
       {"GeoJSON", "application/geo+json"},

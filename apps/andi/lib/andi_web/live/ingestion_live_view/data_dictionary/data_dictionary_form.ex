@@ -84,12 +84,12 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             <div class="data-dictionary-form-edit-section form-grid">
 
               <div class="upload-section">
-                <%= if @sourceFormat in ["text/csv", "application/json"] and @is_curator do %>
+                <%= if @sourceFormat in ["text/csv", "application/json", "text/plain"] and @is_curator do %>
                   <div class="data-dictionary-form__file-upload">
                     <div class="file-input-button--<%= loader_visibility %>">
                       <div class="file-input-button">
                         <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
                         <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                       </div>
                     </div>
@@ -146,11 +146,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel"] do
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV or JSON")
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV, TSV, or JSON")
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
@@ -323,6 +323,16 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
   end
 
+  defp parse_tsv(file_string) do
+    file_string
+    |> String.split("\n")
+    |> Enum.take(2)
+    |> List.update_at(0, &String.replace(&1, ~r/[^[:alnum:] _\t]/, "", global: true))
+    |> Enum.map(fn row -> String.split(row, "\t") end)
+    |> Enum.zip()
+    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
+  end
+
   defp convert_value(nil), do: nil
 
   defp convert_value(string) do
@@ -361,6 +371,21 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         new_changeset =
           file
           |> parse_csv()
+          |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
+
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(socket.assigns.changeset, socket)
+    end
+  end
+
+  defp generate_new_schema(socket, file, "text/plain") do
+    case validate_empty_csv(file) do
+      {:ok, file} ->
+        new_changeset =
+          file
+          |> parse_tsv()
           |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
 
         assign_new_schema(socket, new_changeset)
