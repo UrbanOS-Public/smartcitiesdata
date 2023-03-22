@@ -83,7 +83,7 @@ defmodule DiscoveryApiWeb.Router do
   end
 
   scope "/api/v1", DiscoveryApiWeb do
-    pipe_through([:reject_cookies_from_ajax, :add_user_details, :global_headers, :telemetry])
+    pipe_through([:reject_cookies_from_ajax, :global_headers, :telemetry])
     get("/organization/:org_name/dataset/:dataset_name/download", DataDownloadController, :fetch_file)
     get("/dataset/:dataset_id/download", DataDownloadController, :fetch_file)
   end
