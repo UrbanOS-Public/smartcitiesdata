@@ -54,13 +54,20 @@ defmodule RaptorWeb.ApiKeyController do
           {:ok, user_id} ->
             case Auth0Management.get_roles_by_user_id(user_id) do
               {:ok, roles} ->
-                case Enum.find(roles, fn found_role -> String.downcase(role) == String.downcase(found_role.name) end) do
+                case Enum.find(roles, fn found_role ->
+                       String.downcase(role) == String.downcase(found_role.name)
+                     end) do
                   nil -> render(conn, %{has_role: false})
                   role -> render(conn, %{has_role: true})
                 end
 
               {:error, reason} ->
-                Logger.error("Raptor could not obtain roles for user: #{user_id} with reason: #{inspect(reason)}")
+                Logger.error(
+                  "Raptor could not obtain roles for user: #{user_id} with reason: #{
+                    inspect(reason)
+                  }"
+                )
+
                 render_error(conn, 500, "Internal Server Error")
             end
 

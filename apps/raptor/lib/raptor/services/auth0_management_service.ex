@@ -70,7 +70,6 @@ defmodule Raptor.Services.Auth0Management do
            Tesla.get(full_url,
              headers: [{"Authorization", "Bearer #{access_token}"}]
            ) do
-
       users =
         response
         |> Map.get(:body)

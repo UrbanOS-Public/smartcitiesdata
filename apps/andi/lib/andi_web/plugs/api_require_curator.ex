@@ -19,14 +19,19 @@ defmodule AndiWeb.Plugs.APIRequireCurator do
         render_401_missing_api_key(conn)
       else
         url = raptor_url()
+
         case RaptorService.check_auth0_role(url, get_api_key_from_header(conn), "Curator") do
-          {:ok, true} -> conn
+          {:ok, true} ->
+            conn
+
           {:ok, false} ->
             Logger.error("Rejected api endpoint request due to missing role for api key: #{api_key}")
             render_401_missing_role(conn)
+
           {:error, error_reason, status_code} when status_code == 401 ->
             Logger.error("Raptor reported unauthorized api_key with reason: #{inspect(error_reason)}")
             render_401_missing_api_key(conn)
+
           {:error, error_reason, status_code} ->
             Logger.error("Error when checking auth0 role via raptor: #{inspect(error_reason)}")
             render_500_internal_server_error(conn)
