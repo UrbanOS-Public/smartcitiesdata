@@ -63,12 +63,14 @@ defmodule Raptor.Services.Auth0Management do
 
   defp get_roles_by_user_id_from_auth0(user_id) do
     url = Keyword.fetch!(auth0(), :audience)
+    full_url = "#{url}users/#{user_id}/roles"
 
     with {:ok, access_token} <- get_token(),
          {:ok, response} <-
-           Tesla.get("#{url}users?#{user_id}/roles",
+           Tesla.get(full_url,
              headers: [{"Authorization", "Bearer #{access_token}"}]
            ) do
+
       users =
         response
         |> Map.get(:body)

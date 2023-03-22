@@ -1,6 +1,6 @@
 use Mix.Config
 
-System.put_env("REQUIRE_API_KEY", "false")
+System.put_env("REQUIRE_ADMIN_API_KEY", "false")
 
 config :andi, AndiWeb.Endpoint,
   http: [port: 4002],

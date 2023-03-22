@@ -7,9 +7,9 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
 
   alias AndiWeb.Plugs.APIRequireCurator
 
-  describe "call/1 REQUIRE_API_KEY false" do
-    test "Passes the connection through when REQUIRE_API_KEY is not required" do
-      System.put_env("REQUIRE_API_KEY", "false")
+  describe "call/1 REQUIRE_ADMIN_API_KEY false" do
+    test "Passes the connection through when REQUIRE_ADMIN_API_KEY is not required" do
+      System.put_env("REQUIRE_ADMIN_API_KEY", "false")
       conn = build_conn(:get, "/doesnt/matter")
       result = APIRequireCurator.call(conn, [])
 
@@ -17,10 +17,10 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
     end
   end
 
-  describe "call/1 REQUIRE_API_KEY true" do
+  describe "call/1 REQUIRE_ADMIN_API_KEY true" do
     setup do
-      on_exit(fn -> System.put_env("REQUIRE_API_KEY", "false") end)
-      System.put_env("REQUIRE_API_KEY", "true")
+      on_exit(fn -> System.put_env("REQUIRE_ADMIN_API_KEY", "false") end)
+      System.put_env("REQUIRE_ADMIN_API_KEY", "true")
 
       :ok
     end

@@ -102,17 +102,17 @@ defmodule RaptorService do
   end
 
   def check_auth0_role(raptor_url, api_key, role) do
-    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role)) do
+    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role) |> IO.inspect(label: "RYAN - URL")) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, Jason.decode!(body)["has_role"]}
 
-      {:ok, %{body: body, status_code: status_code}} when status_code == 401 ->
+      {:ok, %{body: body, status_code: status_code}} ->
         error_reason = Jason.decode!(body)["message"]
         Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
         {:error, error_reason, status_code}
 
       _error ->
-        Logger.error("Raptor encountered an unknown error while attempting to validate api key")
+        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(_error)}")
         {:error, "Internal Server Error", 500}
     end
   end
@@ -126,7 +126,7 @@ defmodule RaptorService do
   end
 
   defp url_for_checking_role(raptor_url, api_key, role) do
-    "#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}"
+    "#{raptor_url}/api/checkRole?api_key=#{api_key}&role=#{role}"
   end
 
   defp list_url_with_api_key_params(raptor_url, nil) do
