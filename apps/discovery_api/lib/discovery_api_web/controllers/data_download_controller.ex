@@ -10,7 +10,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
   plug(GetModel)
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
   plug(RecordMetrics, fetch_file: "downloads")
-  
+
   @not_found_error_message "File not found or you do not have access to the data"
 
   defp conditional_accepts(conn, formats) do
