@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.5.72",
+      version: "2.6.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -86,6 +86,7 @@ defmodule Andi.MixProject do
       {:properties, in_umbrella: true},
       {:quantum, "~> 2.4"},
       {:ranch, "~> 1.7.1", override: true},
+      {:raptor_service, in_umbrella: true},
       {:simply_validate, ">= 0.2.0"},
       {:smart_city, "~> 5.2.8"},
       {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
