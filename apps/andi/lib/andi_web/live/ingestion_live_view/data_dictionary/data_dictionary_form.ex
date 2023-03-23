@@ -222,8 +222,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   def handle_event("remove_data_dictionary_field", _, socket) do
     should_show_remove_field_modal = socket.assigns.selected_field_id != :no_dictionary
 
-    {:noreply,
-     assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
+    {:noreply, assign(socket, remove_data_dictionary_field_visible: should_show_remove_field_modal)}
   end
 
   def handle_info(
@@ -322,8 +321,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
-    current_data_dictionary_item =
-      DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
+    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
 
     {:noreply,
      assign(socket,
