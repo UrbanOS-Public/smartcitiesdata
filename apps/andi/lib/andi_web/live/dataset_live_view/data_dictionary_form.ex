@@ -94,7 +94,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                   <div class="file-input-button--<%= loader_visibility %>">
                     <div class="file-input-button">
                       <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
+                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
                       <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                     </div>
                   </div>
@@ -156,7 +156,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
+    IO.inspect(file_type)
+    IO.puts(file_type)
+
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -404,7 +407,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   defp generate_new_schema(socket, file, "text/csv") do
-    case validate_empty_csv(file) do
+    case check_empty(file) do
       {:ok, file} ->
         new_changeset =
           file
@@ -419,8 +422,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     end
   end
 
-  defp generate_new_schema(socket, file, "text/plain") do
-    case validate_empty_csv(file) do
+  defp generate_new_schema(socket, file, file_type) when file_type in ["text/plain", "text/tab-separated-values"] do
+    case check_empty(file) do
       {:ok, file} ->
         new_changeset =
           file
@@ -569,7 +572,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     DataDictionaryFields.get_parent_ids(dataset)
   end
 
-  defp validate_empty_csv(file) do
+  defp check_empty(file) do
     case file == "" or file == "\n" do
       true -> :error
       _ -> {:ok, file}
