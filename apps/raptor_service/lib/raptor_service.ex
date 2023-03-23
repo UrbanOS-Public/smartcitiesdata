@@ -126,7 +126,7 @@ defmodule RaptorService do
   end
 
   defp url_for_checking_role(raptor_url, api_key, role) do
-    "#{raptor_url}/api/checkRole?api_key=#{api_key}&role=#{role}"
+    "#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}"
   end
 
   defp list_url_with_api_key_params(raptor_url, nil) do
