@@ -29,6 +29,22 @@ defmodule Reaper.UrlBuilder do
     end)
   end
 
+  def safe_evaluate_body(body, bindings) when is_binary(body) do
+    regex = ~r"{{(.+?)}}"
+    replacements = Regex.scan(regex, body)
+
+    value =
+      Enum.reduce(replacements, body, fn replacement, new_body ->
+        Regex.replace(
+          ~r"#{List.first(replacement)}",
+          new_body,
+          bindings[String.to_atom(List.last(replacement))]
+        )
+      end)
+
+    value
+  end
+
   def safe_evaluate_parameters(parameters, bindings) do
     Enum.map(
       parameters,

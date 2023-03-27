@@ -211,10 +211,22 @@ defmodule Reaper.Http.Downloader do
     {to_string(key), EEx.eval_string(value, [])}
   end
 
-  # Right now we assume any body sent in a request will be json encoded.  We may change this in the future but
-  # at this time we dont have any use cases to do otherwise
   defp add_content_type(headers, ""), do: headers
-  defp add_content_type(headers, _body), do: [{"Content-Type", "application/json"} | headers]
+  defp add_content_type(headers, body) do
+    case Jason.decode(body) do
+      {:ok, _} ->
+        [{"Content-Type", "application/json"} | headers]
+
+      {:error, _} ->
+        try do
+          SweetXml.parse(body)
+          [{"Content-Type", "text/xml"} | headers]
+        catch
+          :exit, _ ->
+            raise ArgumentError, message: "body is not in json or xml format: #{inspect(body)}"
+        end
+    end
+  end
 
   defp handle_compression(headers, file_name) do
     content_type = Util.get_header_value(headers, "content-encoding") || Util.get_header_value(headers, "content-type")
