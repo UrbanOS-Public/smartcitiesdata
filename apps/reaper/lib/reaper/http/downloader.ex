@@ -212,6 +212,7 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp add_content_type(headers, ""), do: headers
+
   defp add_content_type(headers, body) do
     case Jason.decode(body) do
       {:ok, _} ->

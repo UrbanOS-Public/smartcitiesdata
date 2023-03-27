@@ -102,13 +102,11 @@ defmodule Reaper.UrlBuilderTest do
   end
 
   test "safe evaluate body without bindings returns existing body with no changes" do
-    body =
-      "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
+    body = "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
 
     bindings = %{}
 
-    expected =
-      "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
+    expected = "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
 
     assert UrlBuilder.safe_evaluate_body(body, bindings) == expected
   end
