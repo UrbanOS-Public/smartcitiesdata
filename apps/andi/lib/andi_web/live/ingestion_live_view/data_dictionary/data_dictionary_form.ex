@@ -89,7 +89,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
                     <div class="file-input-button--<%= loader_visibility %>">
                       <div class="file-input-button">
                         <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
                         <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                       </div>
                     </div>
@@ -146,7 +146,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
+      when file_type not in [
+             "text/csv",
+             "application/json",
+             "application/vnd.ms-excel",
+             "text/plain",
+             "text/tab-separated-values"
+           ] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -155,7 +161,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
 
-  def handle_event("file_upload", %{"fileSize" => file_size}, socket) when file_size > 200_000_000 do
+  def handle_event("file_upload", %{"fileSize" => file_size}, socket)
+      when file_size > 200_000_000 do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
@@ -232,7 +239,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   def handle_info(
         %{
           topic: "populate_data_dictionary",
-          payload: %{"ingestion_sample" => %{"file" => file, "fileType" => file_type}, "ingestion_id" => ingestion_id}
+          payload: %{
+            "ingestion_sample" => %{"file" => file, "fileType" => file_type},
+            "ingestion_id" => ingestion_id
+          }
         },
         %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
@@ -241,7 +251,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_info(
-        %{topic: "toggle-visibility", payload: %{expand: "data_dictionary_form", ingestion_id: ingestion_id}},
+        %{
+          topic: "toggle-visibility",
+          payload: %{expand: "data_dictionary_form", ingestion_id: ingestion_id}
+        },
         %{assigns: %{ingestion_id: ingestion_id}} = socket
       ) do
     {:noreply, assign(socket, visibility: "expanded") |> update_validation_status()}
@@ -265,10 +278,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
      |> update_validation_status()}
   end
 
-  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index}, socket) do
+  def handle_info(
+        {:remove_data_dictionary_field_succeeded, deleted_field_parent_id, deleted_field_index},
+        socket
+      ) do
     new_selected_field =
       socket.assigns.changeset
-      |> get_new_selected_field(deleted_field_parent_id, deleted_field_index, socket.assigns.ingestion_id)
+      |> get_new_selected_field(
+        deleted_field_parent_id,
+        deleted_field_index,
+        socket.assigns.ingestion_id
+      )
 
     new_selected_field_id =
       case new_selected_field do
@@ -303,7 +323,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   def handle_info({:assign_editable_dictionary_field, :no_dictionary, _, _, _}, socket) do
     current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil)
 
-    {:noreply, assign(socket, current_data_dictionary_item: current_data_dictionary_item, selected_field_id: :no_dictionary)}
+    {:noreply,
+     assign(socket,
+       current_data_dictionary_item: current_data_dictionary_item,
+       selected_field_id: :no_dictionary
+     )}
   end
 
   def handle_info({:assign_editable_dictionary_field, field_id, index, name, id}, socket) do
@@ -366,7 +390,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   defp generate_new_schema(socket, file, "text/csv") do
-    case validate_empty_csv(file) do
+    case check_file_empty(file) do
       {:ok, file} ->
         new_changeset =
           file
@@ -380,8 +404,9 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     end
   end
 
-  defp generate_new_schema(socket, file, "text/plain") do
-    case validate_empty_csv(file) do
+  defp generate_new_schema(socket, file, file_type)
+       when file_type in ["text/plain", "text/tab-separated-values"] do
+    case check_file_empty(file) do
       {:ok, file} ->
         new_changeset =
           file
@@ -399,7 +424,9 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     send_error_interpreting_file(socket.assigns.changeset, socket)
   end
 
-  defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
+  defp get_file_type_for_upload(file_type)
+       when file_type in ["text/csv", "application/vnd.ms-excel"],
+       do: "text/csv"
 
   defp get_file_type_for_upload(file_type), do: file_type
 
@@ -415,10 +442,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         form_changes = InputConverter.form_changes_from_changeset(new_changeset)
         {:ok, _} = Ingestions.update_from_form(socket.assigns.ingestion_id, form_changes)
 
-        {:noreply, assign(socket, loading_schema: false, changeset: new_changeset) |> assign(get_default_dictionary_field(new_changeset))}
+        {:noreply,
+         assign(socket, loading_schema: false, changeset: new_changeset)
+         |> assign(get_default_dictionary_field(new_changeset))}
 
       false ->
-        {:noreply, assign(socket, loading_schema: false, pending_changeset: new_changeset, overwrite_schema_visibility: "visible")}
+        {:noreply,
+         assign(socket,
+           loading_schema: false,
+           pending_changeset: new_changeset,
+           overwrite_schema_visibility: "visible"
+         )}
     end
   end
 
@@ -459,13 +493,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
           :no_dictionary
 
         _ ->
-          new_form_template = find_field_in_changeset(new_changeset, current_form.source.changes.id) |> form_for(nil)
+          new_form_template =
+            find_field_in_changeset(new_changeset, current_form.source.changes.id)
+            |> form_for(nil)
+
           %{current_form | source: new_form_template.source, params: new_form_template.params}
       end
 
     send(socket.parent_pid, :form_update)
 
-    {:noreply, assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field) |> update_validation_status()}
+    {:noreply,
+     assign(socket, changeset: new_changeset, current_data_dictionary_item: updated_current_field)
+     |> update_validation_status()}
   end
 
   defp find_field_in_changeset(changeset, field_id) do
@@ -488,10 +527,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     end)
   end
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+  defp handle_field_not_found(nil),
+    do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+
   defp handle_field_not_found(found_field), do: found_field
 
-  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset) when schema != [] do
+  defp get_default_dictionary_field(%{changes: %{schema: schema}} = changeset)
+       when schema != [] do
     first_data_dictionary_item =
       form_for(changeset, "#")
       |> inputs_for(:schema)
@@ -516,7 +558,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     DataDictionaryFields.get_parent_ids_from_ingestion(ingestion)
   end
 
-  defp validate_empty_csv(file) do
+  defp check_file_empty(file) do
     case file == "" or file == "\n" do
       true -> :error
       _ -> {:ok, file}

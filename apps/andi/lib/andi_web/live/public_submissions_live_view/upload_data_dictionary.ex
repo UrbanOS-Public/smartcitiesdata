@@ -77,7 +77,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
               <div class="upload-data-dictionary-form__file-upload">
                 <div class="file-input-button">
                   <%= label(f, :sample_dataset, "Select File", class: "file-upload-label") %>
-                  <%= file_input(f, :sample_dataset, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
+                  <%= file_input(f, :sample_dataset, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
                 </div>
                 <div class="sample-file-display">
                   <%= hidden_input(f, :datasetLink) %>
@@ -123,7 +123,7 @@ defmodule AndiWeb.SubmitLiveView.UploadDataDictionary do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()

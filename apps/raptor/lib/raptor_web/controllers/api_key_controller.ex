@@ -47,6 +47,41 @@ defmodule RaptorWeb.ApiKeyController do
     end
   end
 
+  def checkRole(conn, %{"api_key" => api_key, "role" => role}) do
+    case Auth0Management.get_users_by_api_key(api_key) do
+      {:ok, user_list} ->
+        case get_valid_user_id(user_list) do
+          {:ok, user_id} ->
+            case Auth0Management.get_roles_by_user_id(user_id) do
+              {:ok, roles} ->
+                case Enum.find(roles, fn found_role ->
+                       String.downcase(role) == String.downcase(found_role.name)
+                     end) do
+                  nil -> render(conn, %{has_role: false})
+                  role -> render(conn, %{has_role: true})
+                end
+
+              {:error, reason} ->
+                Logger.error(
+                  "Raptor could not obtain roles for user: #{user_id} with reason: #{
+                    inspect(reason)
+                  }"
+                )
+
+                render_error(conn, 500, "Internal Server Error")
+            end
+
+          {:error, reason} ->
+            Logger.error("Raptor could not obtain a valid user ID from user list: #{user_list}")
+            render_error(conn, 401, "Invalid api_key provided")
+        end
+
+      {:error, e} ->
+        Logger.error("Raptor could not obtain a valid user list from api key: #{api_key}")
+        render_error(conn, 500, "Internal Server Error")
+    end
+  end
+
   defp randomApiKey(length) do
     :crypto.strong_rand_bytes(length)
     |> Base.url_encode64()
