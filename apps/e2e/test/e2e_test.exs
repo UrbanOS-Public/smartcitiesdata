@@ -505,7 +505,7 @@ defmodule E2ETest do
         })
 
       {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.update(smrt_ingestion)
-      IO.inspect(andi_ingestion, label: "ingestion_test")
+
       ingestion_changeset =
         Andi.InputSchemas.InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(
           andi_ingestion
