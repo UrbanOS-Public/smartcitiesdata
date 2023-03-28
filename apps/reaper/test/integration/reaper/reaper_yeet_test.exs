@@ -46,7 +46,7 @@ defmodule Reaper.YeetTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],

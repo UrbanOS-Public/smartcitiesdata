@@ -137,7 +137,7 @@ defmodule E2ETest do
               queryParams: %{},
               headers: %{},
               protocol: nil,
-              body: %{}
+              body: ""
             },
             assigns: %{}
           }
@@ -172,7 +172,7 @@ defmodule E2ETest do
               queryParams: %{},
               headers: %{},
               protocol: nil,
-              body: %{}
+              body: ""
             },
             assigns: %{}
           }
