@@ -484,6 +484,7 @@ defmodule E2ETest do
               type: "auth",
               context: %{
                 destination: "dest",
+                body: "",
                 url: "http://localhost:#{bypass.port()}/path/to/the/auth.json",
                 path: ["token"],
                 cacheTtl: 15_000
@@ -493,6 +494,7 @@ defmodule E2ETest do
               type: "http",
               context: %{
                 url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                body: "",
                 action: "GET",
                 headers: %{},
                 queryParams: %{}
@@ -503,7 +505,7 @@ defmodule E2ETest do
         })
 
       {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.update(smrt_ingestion)
-
+      IO.inspect(andi_ingestion, label: "ingestion_test")
       ingestion_changeset =
         Andi.InputSchemas.InputConverter.andi_ingestion_to_full_ui_changeset_for_publish(
           andi_ingestion

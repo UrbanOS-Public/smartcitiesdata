@@ -66,7 +66,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:redix, "~> 0.10.2"},
       {:sweet_xml, "~> 0.6"},
       {:smart_city, "~> 5.2.8"},
-      {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
       {:streaming_metrics, "~>2.1"},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},

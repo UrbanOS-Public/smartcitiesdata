@@ -79,7 +79,7 @@ defmodule DiscoveryApi.Mixfile do
       {:redix, "~> 0.10"},
       {:streaming_metrics, "~> 2.2"},
       {:smart_city, "~> 5.2.8"},
-      {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: :test, runtime: false},
       {:timex, "~> 3.0"},
