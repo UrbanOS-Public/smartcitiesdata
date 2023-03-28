@@ -363,7 +363,7 @@ defmodule Andi.InputSchemas.InputConverter do
   defp update_context_from_andi_step(context, "http") do
     context
     |> cast_keys_to_atom_in_map_recursively()
-    |> Map.put_new(:body, %{})
+    |> Map.put_new(:body, "")
     |> Map.put_new(:protocol, nil)
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
@@ -419,7 +419,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_andi_step(context, "auth") do
     context
-    |> Map.put_new(:body, %{})
+    |> Map.put_new(:body, "")
     |> Map.put_new(:encodeMethod, "json")
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
