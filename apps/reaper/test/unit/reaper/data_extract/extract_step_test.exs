@@ -76,7 +76,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
-            body: %{Key: "AuthToken"},
+            body: "{\"Key\": \"AuthToken\"}",
             headers: %{},
             cacheTtl: nil
           },
@@ -113,7 +113,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
-            body: %{Key: "AuthToken"},
+            body: "{\"Key\": \"AuthToken\"}",
             headers: %{},
             cacheTtl: nil
           },
@@ -150,7 +150,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
-            body: %{Key: "AuthToken"},
+            body: "{\"Key\": \"AuthToken\"}",
             headers: %{},
             cacheTtl: nil
           },
@@ -182,7 +182,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
-            body: %{Key: "{{key}}"},
+            body: "{\"Key\": \"{{key}}\"}",
             headers: %{},
             cacheTtl: nil
           },
@@ -247,7 +247,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}/headers",
             encodeMethod: "json",
-            body: %{},
+            body: "",
             headers: %{Header: "{{header}}"},
             cacheTtl: nil
           },
@@ -275,7 +275,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}/{{path}}",
             encodeMethod: "json",
-            body: %{},
+            body: "",
             headers: %{},
             cacheTtl: nil
           },
@@ -303,7 +303,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
             destination: "token",
             url: "http://localhost:#{bypass.port}",
             encodeMethod: "json",
-            body: %{Key: "AuthToken"},
+            body: "{\"Key\": \"AuthToken\"}",
             headers: %{},
             cacheTtl: nil
           },
@@ -424,7 +424,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "GET",
             protocol: nil,
-            body: %{},
+            body: "",
             url: "#{sourceUrl}",
             queryParams: %{},
             headers: %{}
@@ -460,7 +460,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "GET",
             protocol: nil,
-            body: %{},
+            body: "",
             url: "#{sourceUrl}/query",
             queryParams: %{
               token: "{{token}}"
@@ -492,7 +492,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "GET",
             protocol: nil,
-            body: %{},
+            body: "",
             url: "#{sourceUrl}/headers",
             queryParams: %{},
             headers: %{Bearer: "{{token}}"}
@@ -518,7 +518,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "GET",
             protocol: nil,
-            body: %{},
+            body: "",
             url: "#{sourceUrl}/{{path}}",
             queryParams: %{},
             headers: %{}
@@ -550,11 +550,11 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "POST",
             protocol: nil,
-            body: %{
-              soap_request: %{
-                date: "{{date}}"
+            body: "{
+              \"soap_request\": {
+                \"date\": \"{{date}}\"
               }
-            },
+            }",
             url: "#{sourceUrl}/post",
             queryParams: %{},
             headers: %{}
@@ -582,7 +582,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
           context: %{
             action: "GET",
             protocol: ["http1"],
-            body: %{},
+            body: "",
             url: "#{sourceUrl}",
             queryParams: %{},
             headers: %{}

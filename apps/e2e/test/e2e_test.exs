@@ -137,7 +137,7 @@ defmodule E2ETest do
               queryParams: %{},
               headers: %{},
               protocol: nil,
-              body: %{}
+              body: ""
             },
             assigns: %{}
           }
@@ -172,7 +172,7 @@ defmodule E2ETest do
               queryParams: %{},
               headers: %{},
               protocol: nil,
-              body: %{}
+              body: ""
             },
             assigns: %{}
           }
@@ -484,6 +484,7 @@ defmodule E2ETest do
               type: "auth",
               context: %{
                 destination: "dest",
+                body: "",
                 url: "http://localhost:#{bypass.port()}/path/to/the/auth.json",
                 path: ["token"],
                 cacheTtl: 15_000
@@ -493,6 +494,7 @@ defmodule E2ETest do
               type: "http",
               context: %{
                 url: "http://localhost:#{bypass.port()}/path/to/the/data.csv",
+                body: "",
                 action: "GET",
                 headers: %{},
                 queryParams: %{}

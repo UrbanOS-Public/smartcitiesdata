@@ -100,9 +100,6 @@ defmodule Reaper.DataExtract.ExtractStep do
   defp process_body(body, _assigns) when body in ["", nil], do: ""
 
   defp process_body(body, assigns) do
-    body
-    |> UrlBuilder.safe_evaluate_parameters(assigns)
-    |> Enum.into(%{})
-    |> Jason.encode!()
+    body |> UrlBuilder.safe_evaluate_body(assigns)
   end
 end

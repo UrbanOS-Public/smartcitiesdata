@@ -72,4 +72,42 @@ defmodule Reaper.UrlBuilderTest do
       ]
     ])
   end
+
+  test "safe evaluate xml body with bindings replaces bindings successfully" do
+    body =
+      "<soap12:Envelope>\n  <soap12:Body>\n    <{{date}} xmlns=\"{{key}}\">\n    </{{date}}>\n  </soap12:Body>\n</soap12:Envelope>"
+
+    bindings = %{
+      date: "19700101",
+      key: "SECRET"
+    }
+
+    expected =
+      "<soap12:Envelope>\n  <soap12:Body>\n    <19700101 xmlns=\"SECRET\">\n    </19700101>\n  </soap12:Body>\n</soap12:Envelope>"
+
+    assert UrlBuilder.safe_evaluate_body(body, bindings) == expected
+  end
+
+  test "safe evaluate json body with bindings replaces bindings successfully" do
+    body = "{\"{{date}}\": \"{{key}}\"}"
+
+    bindings = %{
+      date: "19700101",
+      key: "SECRET"
+    }
+
+    expected = "{\"19700101\": \"SECRET\"}"
+
+    assert UrlBuilder.safe_evaluate_body(body, bindings) == expected
+  end
+
+  test "safe evaluate body without bindings returns existing body with no changes" do
+    body = "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
+
+    bindings = %{}
+
+    expected = "<soap12:Envelope>\n  <soap12:Body>\n    <Test>\n    </Test>\n  </soap12:Body>\n</soap12:Envelope>"
+
+    assert UrlBuilder.safe_evaluate_body(body, bindings) == expected
+  end
 end

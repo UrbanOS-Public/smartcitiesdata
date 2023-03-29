@@ -254,42 +254,48 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_smrt_step(context, "http") do
     context
-    |> encode_extract_step_body_as_json()
+    |> validate_extract_step_body()
     |> Map.update(:queryParams, [], &to_key_value_list/1)
     |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
   defp update_context_from_smrt_step(context, type) when type in ["s3", "auth"] do
     context
-    |> encode_extract_step_body_as_json()
+    |> validate_extract_step_body()
     |> Map.update(:headers, [], &to_key_value_list/1)
   end
 
   defp update_context_from_smrt_step(context, _), do: context
 
-  defp encode_extract_step_body_as_json(%{body: body} = smrt_extract_step) when body not in ["", nil] do
+  defp validate_extract_step_body(%{body: body} = smrt_extract_step) when body not in ["", nil] do
     case body do
       _ when is_binary(body) ->
-        raise_error_if_invalid_json(body)
+        raise_error_if_invalid_body(body)
         Map.put(smrt_extract_step, :body, body)
 
-      _ when is_map(body) ->
-        Map.put(smrt_extract_step, :body, Jason.encode!(body))
-
-      _ when is_list(body) ->
-        Map.put(smrt_extract_step, :body, Jason.encode!(body))
-
       _ ->
-        Logger.error("Received an extract step body that is not a string or a map. Received body: #{inspect(body)}")
+        Logger.error("Received an extract step body that is not able to be encoded as json or xml. Received body: #{inspect(body)}")
         smrt_extract_step
     end
   end
 
-  defp raise_error_if_invalid_json(payload) do
-    Jason.decode!(payload)
+  defp raise_error_if_invalid_body(body) do
+    case Jason.decode(body) do
+      {:ok, _} ->
+        body
+
+      {:error, _} ->
+        try do
+          SweetXml.parse(body)
+          body
+        catch
+          :exit, _ ->
+            raise ArgumentError, message: "could not parse json or xml: #{inspect(body)}"
+        end
+    end
   end
 
-  defp encode_extract_step_body_as_json(smrt_extract_step), do: smrt_extract_step
+  defp validate_extract_step_body(smrt_extract_step), do: smrt_extract_step
 
   defp add_dataset_id(schema, dataset_id, parent_bread_crumb \\ "") do
     bread_crumb = parent_bread_crumb <> schema.name
@@ -357,8 +363,7 @@ defmodule Andi.InputSchemas.InputConverter do
   defp update_context_from_andi_step(context, "http") do
     context
     |> cast_keys_to_atom_in_map_recursively()
-    |> decode_andi_extract_step_body()
-    |> Map.put_new(:body, %{})
+    |> Map.put_new(:body, "")
     |> Map.put_new(:protocol, nil)
     |> Map.update(:queryParams, nil, &convert_key_value_to_map/1)
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
@@ -403,7 +408,6 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_andi_step(context, "s3") do
     context
-    |> decode_andi_extract_step_body()
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
 
@@ -415,8 +419,7 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp update_context_from_andi_step(context, "auth") do
     context
-    |> decode_andi_extract_step_body()
-    |> Map.put_new(:body, %{})
+    |> Map.put_new(:body, "")
     |> Map.put_new(:encodeMethod, "json")
     |> Map.update(:headers, nil, &convert_key_value_to_map/1)
   end
@@ -425,12 +428,6 @@ defmodule Andi.InputSchemas.InputConverter do
 
   defp ensure_nil_unit(""), do: nil
   defp ensure_nil_unit(unit), do: unit
-
-  defp decode_andi_extract_step_body(%{body: body} = http_extract_step) when body not in ["", nil] do
-    Map.put(http_extract_step, :body, Jason.decode!(body))
-  end
-
-  defp decode_andi_extract_step_body(andi_extract_step), do: andi_extract_step
 
   defp populate_schema_field_default(field) do
     {use_default, updated_field} = Map.pop(field, :use_default)
