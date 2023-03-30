@@ -97,7 +97,7 @@ defmodule Reaper.DataExtract.ExtractStep do
     {body, headers}
   end
 
-  defp process_body(body, _assigns) when body in ["", nil, %{}], do: ""
+  defp process_body(body, _assigns) when body in ["", nil, %{}, []], do: ""
 
   defp process_body(body, assigns) do
     body |> UrlBuilder.safe_evaluate_body(assigns)
