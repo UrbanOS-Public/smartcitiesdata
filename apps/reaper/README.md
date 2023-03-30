@@ -88,7 +88,7 @@ ingestion = %SmartCity.Ingestion{
       assigns: %{},
       context: %{
         action: "GET",
-        body: %{},
+        body: "",
         headers: [],
         protocol: nil,
         queryParams: [],

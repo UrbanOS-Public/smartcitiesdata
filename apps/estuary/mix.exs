@@ -48,7 +48,7 @@ defmodule Estuary.MixProject do
       {:plug_heartbeat, "~> 0.2.0"},
       {:prestige, "~> 2.0.0"},
       {:properties, in_umbrella: true},
-      {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.4"},
       {:timex, "~> 3.6"}

@@ -11,6 +11,8 @@ defmodule DiscoveryApiWeb.DataDownloadController do
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
   plug(RecordMetrics, fetch_file: "downloads")
 
+  @not_found_error_message "File not found or you do not have access to the data"
+
   defp conditional_accepts(conn, formats) do
     if conn.assigns.model.sourceType == "host" do
       DiscoveryApiWeb.Plugs.Acceptor.call(conn, [])
@@ -29,7 +31,11 @@ defmodule DiscoveryApiWeb.DataDownloadController do
     path = "#{model.organizationDetails.orgName}/#{model.name}"
 
     authorized =
-      model.private == false || HmacToken.valid_hmac_token(params["key"], params["dataset_id"], String.to_integer(params["expires"]))
+      if System.get_env("REQUIRE_API_KEY") == "true" do
+        validate_hmac_token(params)
+      else
+        model.private == false || validate_hmac_token(params)
+      end
 
     if authorized do
       case ObjectStorageService.download_file_as_stream(path, possible_extensions) do
@@ -40,7 +46,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
           render_error(conn, 406, "File not available in the specified format")
       end
     else
-      render_error(conn, 404, "File not found or you do not have access to the data")
+      render_error(conn, 404, @not_found_error_message)
     end
   end
 
@@ -71,32 +77,51 @@ defmodule DiscoveryApiWeb.DataDownloadController do
 
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
-      render_error(conn, 404, "File not found or you do not have access to the data")
+      render_error(conn, 404, @not_found_error_message)
     end
   end
 
   def fetch_file(%{assigns: %{model: %{private: true}}} = conn, _, _),
-    do: render_error(conn, 404, "File not found or you do not have access to the data")
+    do: render_error(conn, 404, @not_found_error_message)
 
-  def fetch_file(conn, _, format) do
+  def fetch_file(conn, params, format) do
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
     schema = conn.assigns.model.schema
 
-    data_stream =
-      DiscoveryApi.prestige_opts()
-      |> Prestige.new_session()
-      |> Prestige.stream!("select * from #{dataset_name}")
-      |> Stream.flat_map(&Prestige.Result.as_maps/1)
+    authorized =
+      if System.get_env("REQUIRE_API_KEY") == "true" do
+        validate_hmac_token(params)
+      else
+        true
+      end
 
-    rendered_data_stream =
-      DataView.render_as_stream(:data, format, %{
-        stream: data_stream,
-        columns: [],
-        dataset_name: dataset_name,
-        schema: schema
-      })
+    if authorized do
+      data_stream =
+        DiscoveryApi.prestige_opts()
+        |> Prestige.new_session()
+        |> Prestige.stream!("select * from #{dataset_name}")
+        |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
-    resp_as_stream(conn, rendered_data_stream, format, dataset_id)
+      rendered_data_stream =
+        DataView.render_as_stream(:data, format, %{
+          stream: data_stream,
+          columns: [],
+          dataset_name: dataset_name,
+          schema: schema
+        })
+
+      resp_as_stream(conn, rendered_data_stream, format, dataset_id)
+    else
+      render_error(conn, 404, @not_found_error_message)
+    end
+  end
+
+  def validate_hmac_token(params) do
+    key = params["key"]
+    dataset_id = params["dataset_id"]
+    expires = params["expires"] || "0"
+    integer_expires = String.to_integer(expires)
+    HmacToken.valid_hmac_token(key, dataset_id, integer_expires)
   end
 end

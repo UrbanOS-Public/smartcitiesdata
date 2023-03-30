@@ -139,4 +139,37 @@ defmodule RaptorServiceTest do
       assert RaptorService.get_user_id_from_api_key(raptor_url, api_key) == {:ok, user_id}
     end
   end
+
+  describe "check_auth0_role/2" do
+    test "returns 500 Internal Server Error when raptor returns unexpected error" do
+      allow(HTTPoison.get(any()),
+        return: {:error, %{body: "errorBody", status_code: 500}}
+      )
+
+      assert RaptorService.check_auth0_role("raptor_url", "invalidApiKey", "notARole") == {:error, "Internal Server Error", 500}
+    end
+
+    test "returns given error when raptor returns 401" do
+      errorMessage = "errorMessage"
+
+      allow(HTTPoison.get(any()),
+        return: {:ok, %{body: "{\"message\":\"#{errorMessage}\"}", status_code: 401}}
+      )
+
+      assert RaptorService.check_auth0_role("raptor_url", "invalidApiKey", "notARole") == {:error, errorMessage, 401}
+    end
+
+    test "returns true in has_role when raptor finds matching role" do
+      raptor_url = "raptor_url"
+      api_key = "validApiKey"
+      user_id = "validUserId"
+      role = "validRole"
+
+      allow(HTTPoison.get("#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}"),
+        return: {:ok, %{body: "{\"has_role\":true}", status_code: 200}}
+      )
+
+      assert RaptorService.check_auth0_role(raptor_url, api_key, role) == {:ok, true}
+    end
+  end
 end

@@ -53,7 +53,7 @@ defmodule Reaper.SftpExtractorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],
@@ -99,7 +99,7 @@ defmodule Reaper.SftpExtractorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],

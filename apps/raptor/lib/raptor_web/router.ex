@@ -11,5 +11,6 @@ defmodule RaptorWeb.Router do
     get("/listAccessGroups", ListAccessGroupsController, :list)
     get("/getUserIdFromApiKey", ApiKeyController, :getUserIdFromApiKey)
     patch("/regenerateApiKey", ApiKeyController, :regenerateApiKey)
+    get("/checkRole", ApiKeyController, :checkRole)
   end
 end
