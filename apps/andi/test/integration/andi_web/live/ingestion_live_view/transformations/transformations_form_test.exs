@@ -32,7 +32,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       TDG.create_transformation(%{
         name: "sample",
         type: "concatenation",
-        parameters: %{},
+        parameters: %{"condition" => "false"},
         sequence: 1
       })
 
@@ -40,8 +40,16 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
       TDG.create_transformation(%{
         name: "sample2",
         type: "add",
-        parameters: %{},
+        parameters: %{"condition" => "false"},
         sequence: 2
+      })
+
+    transformation3 =
+      TDG.create_transformation(%{
+        name: "sample3",
+        type: "constant",
+        parameters: %{"condition" => "true"},
+        sequence: 3
       })
 
     ingestion =
@@ -49,7 +57,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
         id: UUID.uuid4(),
         targetDataset: dataset.id,
         name: "sample_ingestion",
-        transformations: [transformation1, transformation2]
+        transformations: [transformation1, transformation2, transformation3]
       })
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
@@ -87,6 +95,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
   test "Shows errors for missing type field", %{view: view, html: html, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
     form_data = %{"type" => ""}
 
     view
@@ -95,33 +107,33 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
     html = render(view)
 
-    assert get_text(html, "##{transformation.id}_transformation_type_error") == "Please enter a valid type."
+    assert get_text(html, "##{transformation.id}_transformation_type_error") == "Please select a valid type."
   end
 
   test "can be expanded and collapsed when clicking the header", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
-    assert has_element?(view, ".transformation-edit-form--collapsed")
+    assert has_element?(view, ".transformation-form__section--collapsed")
 
     view
     |> element("#transformation_#{transformation.id}__header")
     |> render_click()
 
-    assert has_element?(view, ".transformation-edit-form--expanded")
+    assert has_element?(view, ".transformation-form__section--expanded")
 
     view
     |> element("#transformation_#{transformation.id}__header")
     |> render_click()
 
-    assert has_element?(view, ".transformation-edit-form--collapsed")
+    assert has_element?(view, ".transformation-form__section--collapsed")
   end
 
   test "after selecting type, fields appears", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
-    assert has_element?(view, "#transformation_#{transformation.id}__sourceFields")
-    assert has_element?(view, "#transformation_#{transformation.id}__separator")
-    assert has_element?(view, "#transformation_#{transformation.id}__targetField")
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
 
     form_data = %{"type" => "add"}
 
@@ -131,16 +143,86 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
 
     html = render(view)
 
-    assert has_element?(view, "#transformation_#{transformation.id}__targetField")
-    assert has_element?(view, "#transformation_#{transformation.id}__addends")
+    assert has_element?(view, "#transformation_#{transformation.id}__addends_default")
+    assert has_element?(view, "#transformation_#{transformation.id}__targetField_default")
+  end
+
+  test "selecting 'under a specific condition' shows the conditional form", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    html = render(view)
+
+    assert has_element?(view, ".transformation-form__condition-fields")
+  end
+
+  test "in the condition form, selecting 'static value' will show the static value input field", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Static Value"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    assert has_element?(view, "#transformation_condition_#{transformation.id}__targetValue")
+  end
+
+  test "in the condition form, selecting 'target field' will show the target field input field", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Target Field"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    assert has_element?(view, "#transformation_condition_#{transformation.id}__targetField")
+  end
+
+  test "in the condition form, selecting 'DateTime' as the comparison type will show the date format input fields", %{
+    view: view,
+    ingestion: ingestion
+  } do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Static Value", "conditionDataType" => "DateTime"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    assert has_element?(view, "#transformation_condition_#{transformation.id}__sourceDateFormat")
+    assert has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
   end
 
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
-    assert has_element?(view, "#transformation_#{transformation.id}__sourceFields")
-    assert has_element?(view, "#transformation_#{transformation.id}__separator")
-    assert has_element?(view, "#transformation_#{transformation.id}__targetField")
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
 
     form_data = %{"type" => type}
 
@@ -151,7 +233,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     html = render(view)
 
     for field <- fields do
-      assert has_element?(view, "#transformation_#{transformation.id}__#{field}")
+      assert has_element?(view, "#transformation_#{transformation.id}__#{field}_default")
     end
 
     where([
