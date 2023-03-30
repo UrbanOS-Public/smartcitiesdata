@@ -97,7 +97,10 @@ defmodule Transformers.Conditions do
   end
 
   defp check_datetime(status, parameters) do
-    if Map.get(parameters, @data_type) == "DateTime" do
+    type = Map.get(parameters, @data_type)
+    type = if not is_nil(type), do: String.downcase(type)
+
+    if type == "datetime" do
       NotBlank.check(status, parameters, @source_date_format)
       |> NotBlank.check(parameters, @target_date_format)
       |> DateTimeFormat.check(parameters, @source_date_format)
