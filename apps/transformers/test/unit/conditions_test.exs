@@ -145,6 +145,29 @@ defmodule Transformers.ConditionsTest do
       result = Conditions.check(payload, parameters)
       assert result == {:ok, false}
     end
+
+    test "maps operation string 'Is Equal To'" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "Is Equal To",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
+      }
+
+      payload = %{
+        "testField" => "value",
+        "compareField" => "value"
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
   end
 
   describe "not equals" do
@@ -236,6 +259,28 @@ defmodule Transformers.ConditionsTest do
 
       result = Conditions.check(payload, parameters)
       assert result == {:ok, false}
+    end
+
+    test "maps operation string 'Is Not Equal To'" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "Is Not Equal To",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "othervalue"
+      }
+
+      payload = %{
+        "testField" => "value"
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
     end
   end
 
@@ -329,6 +374,28 @@ defmodule Transformers.ConditionsTest do
       result = Conditions.check(payload, parameters)
       assert result == {:ok, false}
     end
+
+    test "maps operation string 'Is Greater Than'" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "Is Greater Than",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "1"
+      }
+
+      payload = %{
+        "testField" => 2
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
   end
 
   describe "less than" do
@@ -420,6 +487,28 @@ defmodule Transformers.ConditionsTest do
 
       result = Conditions.check(payload, parameters)
       assert result == {:ok, false}
+    end
+
+    test "maps operation string 'Is Less Than'" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "Is Less Than",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "3"
+      }
+
+      payload = %{
+        "testField" => 2
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
     end
   end
 

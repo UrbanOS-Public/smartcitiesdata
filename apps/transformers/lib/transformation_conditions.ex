@@ -128,7 +128,7 @@ defmodule Transformers.Conditions do
           do: try_parse(Map.fetch!(payload, target_field), data_type, target_format),
           else: try_parse(target_value, data_type, target_format)
 
-      case operation do
+      case map_operation(operation) do
         "=" -> {:ok, left_value == right_value}
         "!=" -> {:ok, left_value != right_value}
         ">" -> {:ok, left_value > right_value}
@@ -158,6 +158,16 @@ defmodule Transformers.Conditions do
 
       _ ->
         raise "unsupported parse type"
+    end
+  end
+
+  def map_operation(value) do
+    case value do
+      "Is Equal To" -> "="
+      "Is Not Equal To" -> "!="
+      "Is Greater Than" -> ">"
+      "Is Less Than" -> "<"
+      _ -> value
     end
   end
 end
