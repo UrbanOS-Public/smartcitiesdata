@@ -27,7 +27,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
       </div>
       <div>
         <%= label(form, :conditionOperation, "Comparison", class: "label label--required", for: "transformation_condition_#{@id}__comparison") %>
-        <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Greater Than", "Is Less Than"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
+        <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Not Equal To", "Is Greater Than", "Is Less Than"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
         <%= ErrorHelpers.error_tag(form.source, :conditionOperation, bind_to_input: false, id: "#{@id}_transformation_condition_comparison_error") %>
       </div>
       <div>
