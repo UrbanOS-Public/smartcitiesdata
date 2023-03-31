@@ -82,12 +82,12 @@ defmodule Transformers.ConstantTest do
         "targetField" => "testField",
         "newValue" => "1",
         "valueType" => "float",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "old value"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "old value"
       }
 
       payload = %{
@@ -106,12 +106,12 @@ defmodule Transformers.ConstantTest do
         "targetField" => "testField",
         "newValue" => "1",
         "valueType" => "float",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "different value"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "different value"
       }
 
       payload = %{

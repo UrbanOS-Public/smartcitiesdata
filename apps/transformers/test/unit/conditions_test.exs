@@ -19,6 +19,40 @@ defmodule Transformers.ConditionsTest do
       assert type == :ok
       assert result == true
     end
+
+    test "returns true if condition is present and is false" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "false"
+      }
+
+      payload = %{
+        "testField" => "value"
+      }
+
+      {type, result} = Conditions.check(payload, parameters)
+      assert type == :ok
+      assert result == true
+    end
+
+    test "returns true if condition is present and is nil" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => nil
+      }
+
+      payload = %{
+        "testField" => "value"
+      }
+
+      {type, result} = Conditions.check(payload, parameters)
+      assert type == :ok
+      assert result == true
+    end
   end
 
   describe "equals" do
@@ -27,13 +61,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "value"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "value"
       }
 
       payload = %{
@@ -49,13 +83,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "differentValue"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "differentValue"
       }
 
       payload = %{
@@ -71,13 +105,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -94,13 +128,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -119,13 +153,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "!=",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "othervalue"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "!=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "othervalue"
       }
 
       payload = %{
@@ -141,13 +175,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "!=",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "value"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "!=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "value"
       }
 
       payload = %{
@@ -163,13 +197,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "!=",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "!=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -186,13 +220,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "!=",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "!=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -211,13 +245,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => ">",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "1"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => ">",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "1"
       }
 
       payload = %{
@@ -233,13 +267,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => ">",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "3"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => ">",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "3"
       }
 
       payload = %{
@@ -255,13 +289,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => ">",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => ">",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -278,13 +312,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => ">",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => ">",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -303,13 +337,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "<",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "3"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "3"
       }
 
       payload = %{
@@ -325,13 +359,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "<",
-          "targetConditionField" => nil,
-          "targetConditionValue" => "1"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "1"
       }
 
       payload = %{
@@ -347,13 +381,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "<",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -370,13 +404,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "<",
-          "targetConditionField" => "compareField",
-          "targetConditionValue" => nil
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
       }
 
       payload = %{
@@ -395,14 +429,14 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "testField",
-          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-          "conditionOperation" => "=",
-          "targetConditionField" => "compareField",
-          "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "testField",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 
       payload = %{
@@ -418,11 +452,11 @@ defmodule Transformers.ConditionsTest do
   describe "error handling" do
     test "returns error when the comparison fields are missing from the parameters" do
       parameters = %{
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "="
-        }
+        "conditionCompareTo" => "Target Field",
+        "condition" => "true",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "="
       }
 
       payload = %{
@@ -435,11 +469,11 @@ defmodule Transformers.ConditionsTest do
 
     test "returns error when the source field is missing from the parameters" do
       parameters = %{
-        "condition" => %{
-          "conditionDataType" => "number",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2"
-        }
+        "condition" => "true",
+        "conditionDataType" => "number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2",
+        "conditionCompareTo" => "Static Value"
       }
 
       payload = %{
@@ -452,11 +486,11 @@ defmodule Transformers.ConditionsTest do
 
     test "returns error when the operation field is missing from the parameters" do
       parameters = %{
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "targetConditionValue" => "2"
-        }
+        "condition" => "true",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "targetConditionValue" => "2",
+        "conditionCompareTo" => "Static Value"
       }
 
       payload = %{
@@ -469,12 +503,12 @@ defmodule Transformers.ConditionsTest do
 
     test "returns error when given an unsupported operation" do
       parameters = %{
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "!",
-          "targetConditionValue" => "2"
-        }
+        "condition" => "true",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "!",
+        "targetConditionValue" => "2",
+        "conditionCompareTo" => "Static Value"
       }
 
       payload = %{
@@ -487,12 +521,12 @@ defmodule Transformers.ConditionsTest do
 
     test "returns error when source field is not present in payload" do
       parameters = %{
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2"
-        }
+        "condition" => "true",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2",
+        "conditionCompareTo" => "Static Value"
       }
 
       payload = %{
@@ -507,11 +541,11 @@ defmodule Transformers.ConditionsTest do
 
     test "returns error when data type field is not present in payload" do
       parameters = %{
-        "condition" => %{
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2"
-        }
+        "condition" => "true",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2",
+        "conditionCompareTo" => "Static Value"
       }
 
       payload = %{
@@ -528,13 +562,13 @@ defmodule Transformers.ConditionsTest do
         "targetField" => "testField",
         "newValue" => "new value",
         "valueType" => "string",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "testField",
-          "conditionOperation" => "=",
-          "targetConditionField" => "compareField",
-          "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "conditionTargetDateFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 
       payload = %{
@@ -552,13 +586,13 @@ defmodule Transformers.ConditionsTest do
       "targetField" => "testField",
       "newValue" => "new value",
       "valueType" => "string",
-      "condition" => %{
-        "conditionDataType" => "datetime",
-        "sourceConditionField" => "testField",
-        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-        "conditionOperation" => "=",
-        "targetConditionField" => "compareField"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Target Field",
+      "conditionDataType" => "datetime",
+      "sourceConditionField" => "testField",
+      "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+      "conditionOperation" => "=",
+      "targetConditionField" => "compareField"
     }
 
     payload = %{
@@ -575,14 +609,14 @@ defmodule Transformers.ConditionsTest do
       "targetField" => "testField",
       "newValue" => "new value",
       "valueType" => "string",
-      "condition" => %{
-        "conditionDataType" => "datetime",
-        "sourceConditionField" => "testField",
-        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-        "conditionOperation" => "=",
-        "targetConditionField" => "compareField",
-        "conditionTargetDateFormat" => "totallyADateFormat"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Target Field",
+      "conditionDataType" => "datetime",
+      "sourceConditionField" => "testField",
+      "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+      "conditionOperation" => "=",
+      "targetConditionField" => "compareField",
+      "conditionTargetDateFormat" => "totallyADateFormat"
     }
 
     payload = %{

@@ -163,12 +163,12 @@ defmodule Transformers.SubtractTest do
         "minuend" => "firstTotal",
         "subtrahends" => [1, 2, "firstField", "secondField"],
         "targetField" => "lastTotal",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "firstTotal",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "20"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "firstTotal",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "20"
       }
 
       payload = %{
@@ -192,12 +192,12 @@ defmodule Transformers.SubtractTest do
         "minuend" => "firstTotal",
         "subtrahends" => [1, 2, "firstField", "secondField"],
         "targetField" => "lastTotal",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "firstTotal",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "7"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "firstTotal",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "7"
       }
 
       payload = %{
