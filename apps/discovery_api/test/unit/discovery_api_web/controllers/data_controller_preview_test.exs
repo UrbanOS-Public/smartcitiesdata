@@ -52,9 +52,28 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
     test "preview controller does not return any metadata columns", %{conn: conn, model: model} do
       list_of_maps = [
-        %{"id" => Faker.UUID.v4(), "_ingestion_id" => "will", "_extraction_id" => "be", "os_partition" => "removed", "json_encoded" => "{\"json_encoded\": \"tony\"}", "other" => "foo"},
-        %{"id" => Faker.UUID.v4(), "_ingestion_id" => "will", "_extraction_id" => "be", "os_partition" => "removed", "json_encoded" => "{\"json_encoded\": \"andy\"}"},
-        %{"id" => Faker.UUID.v4(), "_ingestion_id" => "will", "_extraction_id" => "be", "os_partition" => "removed", "json_encoded" => "{\"json_encoded\": \"smith\"}"}
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"tony\"}",
+          "other" => "foo"
+        },
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"andy\"}"
+        },
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"smith\"}"
+        }
       ]
 
       schema = model.schema

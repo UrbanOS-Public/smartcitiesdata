@@ -130,7 +130,10 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, where: "id=1", orderBy: "name", limit: "200", groupBy: "name")
       |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"), once())
+      assert_called(
+        Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"),
+        once()
+      )
 
       where(
         url: [

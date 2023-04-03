@@ -51,7 +51,12 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     unprocessed_columns = %Prestige.Result{
       columns: :doesnt_matter,
       presto_headers: :doesnt_matter,
-      rows: [["col_a", "varchar", "", ""], ["_extraction_start_time", "varchar", "", ""], ["_ingestion_id", "varchar", "", ""], ["os_partition", "varchar", "", ""]]
+      rows: [
+        ["col_a", "varchar", "", ""],
+        ["_extraction_start_time", "varchar", "", ""],
+        ["_ingestion_id", "varchar", "", ""],
+        ["os_partition", "varchar", "", ""]
+      ]
     }
 
     allow(Prestige.query!(:connection, "show columns from #{dataset}"), return: unprocessed_columns)
