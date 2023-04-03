@@ -62,7 +62,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       conn |> put_req_header("accept", "text/csv") |> get(url) |> response(200)
 
       assert_called(Prestige.query!(:connection, "describe #{@system_name}"), once())
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name}"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name}"), once())
 
       where(
         url: [
@@ -75,7 +75,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the where clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, where: "name='Robby'") |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name} WHERE name='Robby'"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} WHERE name='Robby'"), once())
 
       where(
         url: [
@@ -88,7 +88,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the order by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, orderBy: "id") |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name} ORDER BY id"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} ORDER BY id"), once())
 
       where(
         url: [
@@ -101,7 +101,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the limit clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, limit: "200") |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name} LIMIT 200"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} LIMIT 200"), once())
 
       where(
         url: [
@@ -114,7 +114,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     data_test "selects using the group by clause provided", %{conn: conn} do
       conn |> put_req_header("accept", "text/csv") |> get(url, groupBy: "one") |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name} GROUP BY one"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} GROUP BY one"), once())
 
       where(
         url: [
@@ -130,7 +130,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, where: "id=1", orderBy: "name", limit: "200", groupBy: "name")
       |> response(200)
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM #{@system_name} WHERE id=1 GROUP BY name ORDER BY name LIMIT 200"), once())
 
       where(
         url: [
@@ -198,11 +198,11 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     test "json queries cannot contain semicolons", %{conn: conn} do
       conn
       |> put_req_header("accept", "application/json")
-      |> get("/api/v1/organization/org1/dataset/data1/query", columns: "id,one; select * from system; two")
+      |> get("/api/v1/organization/org1/dataset/data1/query", columns: "id,one; select id, name from system; two")
       |> response(400)
 
       assert_called(
-        Prestige.stream!(:connection, "SELECT id, one; select * from system; two FROM coda__test_dataset"),
+        Prestige.stream!(:connection, "SELECT id, one; select id, name from system; two FROM coda__test_dataset"),
         times(0)
       )
     end
@@ -210,17 +210,17 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     test "csv queries cannot contain semicolons", %{conn: conn} do
       conn
       |> put_req_header("accept", "text/csv")
-      |> get("/api/v1/organization/org1/dataset/data1/query", columns: "id,one; select * from system; two")
+      |> get("/api/v1/organization/org1/dataset/data1/query", columns: "id,one; select id, name from system; two")
       |> response(400)
 
       assert_called(
-        Prestige.stream!(:connection, "SELECT id, one; select * from system; two FROM coda__test_dataset"),
+        Prestige.stream!(:connection, "SELECT id, one; select id, name from system; two FROM coda__test_dataset"),
         times(0)
       )
     end
 
     test "queries cannot contain block comments", %{conn: conn} do
-      query_string = "SELECT * FROM coda__test_dataset ORDER BY /* This is a comment */"
+      query_string = "SELECT id, name FROM coda__test_dataset ORDER BY /* This is a comment */"
 
       conn
       |> put_req_header("accept", "text/csv")
@@ -231,7 +231,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     end
 
     test "queries cannot contain single-line comments", %{conn: conn} do
-      query_string = "SELECT * FROM coda__test_dataset ORDER BY -- This is a comment"
+      query_string = "SELECT id, name FROM coda__test_dataset ORDER BY -- This is a comment"
 
       conn
       |> put_req_header("accept", "text/csv")
@@ -260,14 +260,14 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       allow(Model.get(any()), return: model)
       allow(Model.get_all(), return: [model])
 
-      allow(Prestige.stream!(:connection, "SELECT * FROM geojson"),
+      allow(Prestige.stream!(:connection, "SELECT id, name FROM geojson"),
         return: [:any]
       )
 
       allow(Redix.command!(any(), any()), return: :doesnt_matter)
 
       allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
-      allow(PrestoService.build_query(any(), any()), return: {:ok, "SELECT * FROM geojson"})
+      allow(PrestoService.build_query(any(), any(), any()), return: {:ok, "SELECT id, name FROM geojson"})
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, ["geojson__geojson"]})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
@@ -307,7 +307,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
                "type" => @feature_type
              }
 
-      assert_called(Prestige.stream!(:connection, "SELECT * FROM geojson"), once())
+      assert_called(Prestige.stream!(:connection, "SELECT id, name FROM geojson"), once())
 
       where(
         url: [
