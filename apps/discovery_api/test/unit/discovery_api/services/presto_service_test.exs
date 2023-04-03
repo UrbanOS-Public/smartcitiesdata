@@ -43,6 +43,28 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     assert list_of_columns == result
   end
 
+  test "preview_columns should filter out any metadata columns" do
+    dataset = "things_in_the_fire"
+
+    list_of_columns = ["col_a"]
+
+    unprocessed_columns = %Prestige.Result{
+      columns: :doesnt_matter,
+      presto_headers: :doesnt_matter,
+      rows: [
+        ["col_a", "varchar", "", ""],
+        ["_extraction_start_time", "varchar", "", ""],
+        ["_ingestion_id", "varchar", "", ""],
+        ["os_partition", "varchar", "", ""]
+      ]
+    }
+
+    allow(Prestige.query!(:connection, "show columns from #{dataset}"), return: unprocessed_columns)
+
+    result = PrestoService.preview_columns(:connection, dataset)
+    assert list_of_columns == result
+  end
+
   describe "get_affected_tables/1" do
     setup do
       public_one_model =
