@@ -17,6 +17,7 @@ defmodule DiscoveryApi.Services.PrestoService do
     |> Prestige.query!("show columns from #{dataset_system_name}")
     |> Map.get(:rows)
     |> Enum.map(fn [column_name | _tail] -> column_name end)
+    |> remove_metadata_columns()
   end
 
   def is_select_statement?(statement) do
@@ -131,10 +132,11 @@ defmodule DiscoveryApi.Services.PrestoService do
       [] -> {:error, "Table #{system_name} not found"}
       names -> {:ok, names}
     end
+    |> remove_metadata_columns()
   end
 
-  def build_query(params, system_name) do
-    column_string = Map.get(params, "columns", "*")
+  def build_query(params, system_name, columns) do
+    column_string = Map.get(params, "columns", Enum.join(columns, ", ")) |> IO.inspect(label: "Column String")
 
     ["SELECT"]
     |> build_columns(column_string)
@@ -170,7 +172,7 @@ defmodule DiscoveryApi.Services.PrestoService do
   defp build_clause("groupBy", value), do: "GROUP BY #{value}"
 
   defp build_columns(clauses, column_string) do
-    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ")
+    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ") |> IO.inspect(label: "Before")
     clauses ++ [cleaned_columns]
   end
 
@@ -178,5 +180,19 @@ defmodule DiscoveryApi.Services.PrestoService do
     column_string
     |> String.split(",", trim: true)
     |> Enum.map(&String.trim/1)
+  end
+
+  defp remove_metadata_columns({:error, _reason} = error) do
+    error
+  end
+
+  defp remove_metadata_columns({:ok, columns}) do
+    {:ok, remove_metadata_columns(columns)}
+  end
+
+  defp remove_metadata_columns(columns) do
+    metadata_columns = ["_extraction_start_time", "_ingestion_id", "os_partition"]
+
+    columns |> Enum.reject(fn column -> column in metadata_columns end)
   end
 end
