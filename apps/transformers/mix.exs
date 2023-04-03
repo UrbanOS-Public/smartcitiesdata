@@ -4,7 +4,7 @@ defmodule Transformers.MixProject do
   def project do
     [
       app: :transformers,
-      version: "1.0.20",
+      version: "1.0.21",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
