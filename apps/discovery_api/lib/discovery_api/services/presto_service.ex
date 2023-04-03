@@ -136,7 +136,7 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   def build_query(params, system_name, columns) do
-    column_string = Map.get(params, "columns", Enum.join(columns, ", ")) |> IO.inspect(label: "Column String")
+    column_string = Map.get(params, "columns", Enum.join(columns, ", "))
 
     ["SELECT"]
     |> build_columns(column_string)
@@ -172,7 +172,7 @@ defmodule DiscoveryApi.Services.PrestoService do
   defp build_clause("groupBy", value), do: "GROUP BY #{value}"
 
   defp build_columns(clauses, column_string) do
-    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ") |> IO.inspect(label: "Before")
+    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ")
     clauses ++ [cleaned_columns]
   end
 

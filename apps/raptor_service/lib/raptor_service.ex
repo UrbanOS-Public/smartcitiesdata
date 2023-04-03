@@ -102,7 +102,7 @@ defmodule RaptorService do
   end
 
   def check_auth0_role(raptor_url, api_key, role) do
-    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role) |> IO.inspect(label: "RYAN - URL")) do
+    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role)) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, Jason.decode!(body)["has_role"]}
 
