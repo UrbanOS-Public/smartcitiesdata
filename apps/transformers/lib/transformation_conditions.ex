@@ -141,7 +141,7 @@ defmodule Transformers.Conditions do
   end
 
   defp try_parse(value, type, format) do
-    case type do
+    case String.downcase(type) do
       "string" ->
         value
 

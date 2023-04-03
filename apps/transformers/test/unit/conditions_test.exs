@@ -168,6 +168,29 @@ defmodule Transformers.ConditionsTest do
       result = Conditions.check(payload, parameters)
       assert result == {:ok, true}
     end
+
+    test "parses condition data type string with capital letter" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "String",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "Is Equal To",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
+      }
+
+      payload = %{
+        "testField" => "value",
+        "compareField" => "value"
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
   end
 
   describe "not equals" do
