@@ -9,6 +9,7 @@ defmodule AndiWeb.ErrorHelpers do
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
   alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.Views.InputTypes
 
   @doc """
   Generates tag for inlined form input errors.
@@ -157,10 +158,12 @@ defmodule AndiWeb.ErrorHelpers do
     do: {interpret_error_message_with_label(label, form_type), opts}
 
   defp interpret_error_message_with_label(label, Transformation) do
-    "Please enter a valid #{String.downcase(label)}"
+    "Please #{get_input_type(String.to_atom(label))} a valid #{String.downcase(label)}"
   end
 
-  defp default_error_message(field), do: "Please enter a valid #{get_downcased_display_name(field)}."
+  defp default_error_message(field) do
+    "Please #{get_input_type(field)} a valid #{get_downcased_display_name(field)}."
+  end
 
   def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 
@@ -174,4 +177,6 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp get_format_error_message("Expected at least one parser to succeed" <> _), do: "failed to parse"
   defp get_format_error_message(message), do: message
+
+  defp get_input_type(field_key), do: InputTypes.get(field_key)
 end

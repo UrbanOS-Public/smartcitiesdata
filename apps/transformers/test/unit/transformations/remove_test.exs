@@ -53,12 +53,12 @@ defmodule Transformers.RemoveTest do
 
       parameters = %{
         "sourceField" => "dead_field",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "good_field",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "hello"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "good_field",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "hello"
       }
 
       {:ok, result} = Remove.transform(payload, parameters)
@@ -74,12 +74,12 @@ defmodule Transformers.RemoveTest do
 
       parameters = %{
         "sourceField" => "dead_field",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "good_field",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "other"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "good_field",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "other"
       }
 
       {:ok, result} = Remove.transform(payload, parameters)

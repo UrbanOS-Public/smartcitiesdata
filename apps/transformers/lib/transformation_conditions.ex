@@ -23,8 +23,12 @@ defmodule Transformers.Conditions do
   @source_date_format "conditionSourceDateFormat"
   @target_date_format "conditionTargetDateFormat"
 
+  # used with condition input form. Can be "Static Value" or "Target Field"
+  @condition_compare_to "conditionCompareTo"
+
   def check(payload, parameters) do
     with true <- Map.has_key?(parameters, "condition"),
+         "true" <- Map.get(parameters, "condition"),
          {:ok,
           [
             operation,
@@ -33,7 +37,8 @@ defmodule Transformers.Conditions do
             target_value,
             source_format,
             target_format,
-            data_type
+            data_type,
+            compare_to
           ]} <- validate(parameters),
          {:ok, result} <-
            eval(
@@ -49,54 +54,57 @@ defmodule Transformers.Conditions do
       {:ok, result}
     else
       false -> {:ok, true}
+      "false" -> {:ok, true}
+      nil -> {:ok, true}
       {:error, reason} -> {:error, reason}
     end
   end
 
-  defp validate(parameters) do
-    condition_params = Map.get(parameters, "condition")
+  def validate(parameters) do
+    valid_status =
+      %ValidationStatus{}
+      |> NotBlank.check(parameters, @condition_compare_to)
+      |> NotBlank.check(parameters, @data_type)
+      |> check_datetime(parameters)
+      |> NotBlank.check(parameters, @operation_field)
+      |> NotBlank.check(parameters, @source_field)
 
-    if is_nil(Map.get(condition_params, @target_value)) do
-      %ValidationStatus{}
-      |> NotBlank.check(condition_params, @data_type)
-      |> check_datetime(condition_params)
-      |> NotBlank.check(condition_params, @operation_field)
-      |> NotBlank.check(condition_params, @source_field)
-      |> NotBlank.check(condition_params, @target_field)
-      |> ValidationStatus.ordered_values_or_errors([
-        @operation_field,
-        @source_field,
-        @target_field,
-        @target_value,
-        @source_date_format,
-        @target_date_format,
-        @data_type
-      ])
-    else
-      %ValidationStatus{}
-      |> NotBlank.check(condition_params, @data_type)
-      |> check_datetime(condition_params)
-      |> NotBlank.check(condition_params, @operation_field)
-      |> NotBlank.check(condition_params, @source_field)
-      |> NotBlank.check(condition_params, @target_value)
-      |> ValidationStatus.ordered_values_or_errors([
-        @operation_field,
-        @source_field,
-        @target_field,
-        @target_value,
-        @source_date_format,
-        @target_date_format,
-        @data_type
-      ])
-    end
+    comp_val = Map.get(parameters, @condition_compare_to)
+
+    valid_status =
+      case comp_val do
+        "Static Value" ->
+          valid_status |> NotBlank.check(parameters, @target_value)
+
+        "Target Field" ->
+          valid_status |> NotBlank.check(parameters, @target_field)
+
+        _ ->
+          valid_status
+      end
+
+    valid_status
+    |> ValidationStatus.ordered_values_or_errors([
+      @operation_field,
+      @source_field,
+      @target_field,
+      @target_value,
+      @source_date_format,
+      @target_date_format,
+      @data_type,
+      @condition_compare_to
+    ])
   end
 
-  defp check_datetime(status, condition_params) do
-    if Map.get(condition_params, @data_type) == "datetime" do
-      NotBlank.check(status, condition_params, @source_date_format)
-      |> NotBlank.check(condition_params, @target_date_format)
-      |> DateTimeFormat.check(condition_params, @source_date_format)
-      |> DateTimeFormat.check(condition_params, @target_date_format)
+  defp check_datetime(status, parameters) do
+    type = Map.get(parameters, @data_type)
+    type = if not is_nil(type), do: String.downcase(type)
+
+    if type == "datetime" do
+      NotBlank.check(status, parameters, @source_date_format)
+      |> NotBlank.check(parameters, @target_date_format)
+      |> DateTimeFormat.check(parameters, @source_date_format)
+      |> DateTimeFormat.check(parameters, @target_date_format)
     else
       status
     end
@@ -120,7 +128,7 @@ defmodule Transformers.Conditions do
           do: try_parse(Map.fetch!(payload, target_field), data_type, target_format),
           else: try_parse(target_value, data_type, target_format)
 
-      case operation do
+      case map_operation(operation) do
         "=" -> {:ok, left_value == right_value}
         "!=" -> {:ok, left_value != right_value}
         ">" -> {:ok, left_value > right_value}
@@ -150,6 +158,16 @@ defmodule Transformers.Conditions do
 
       _ ->
         raise "unsupported parse type"
+    end
+  end
+
+  def map_operation(value) do
+    case value do
+      "Is Equal To" -> "="
+      "Is Not Equal To" -> "!="
+      "Is Greater Than" -> ">"
+      "Is Less Than" -> "<"
+      _ -> value
     end
   end
 end

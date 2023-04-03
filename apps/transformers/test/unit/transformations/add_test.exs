@@ -117,12 +117,12 @@ defmodule Transformers.AddTest do
       parameters = %{
         "addends" => [1],
         "targetField" => "target",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "target",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "0"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "0"
       }
 
       payload = %{
@@ -138,12 +138,12 @@ defmodule Transformers.AddTest do
       parameters = %{
         "addends" => [1],
         "targetField" => "target",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "target",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "5"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "5"
       }
 
       payload = %{

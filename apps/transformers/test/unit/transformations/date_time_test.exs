@@ -130,14 +130,14 @@ defmodule Transformers.DateTimeTest do
         "targetField" => "date2",
         "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "date1",
-          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2022-02-28 16:53",
-          "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "date1",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2022-02-28 16:53",
+        "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
       }
 
       message_payload = %{"date1" => "2022-02-28 16:53"}
@@ -154,14 +154,14 @@ defmodule Transformers.DateTimeTest do
         "targetField" => "date2",
         "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "date1",
-          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2022-02-25 16:52",
-          "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "date1",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2022-02-25 16:52",
+        "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
       }
 
       message_payload = %{"date1" => "2022-02-28 16:53"}

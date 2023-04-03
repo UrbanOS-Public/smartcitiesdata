@@ -203,12 +203,12 @@ defmodule Transformers.TypeConversionTest do
       "field" => "thing",
       "sourceType" => "integer",
       "targetType" => "string",
-      "condition" => %{
-        "conditionDataType" => "number",
-        "sourceConditionField" => "thing",
-        "conditionOperation" => "=",
-        "targetConditionValue" => "300"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "thing",
+      "conditionOperation" => "=",
+      "targetConditionValue" => "300"
     }
 
     result = Transformers.TypeConversion.transform(payload, parameters)
@@ -223,12 +223,12 @@ defmodule Transformers.TypeConversionTest do
       "field" => "thing",
       "sourceType" => "integer",
       "targetType" => "string",
-      "condition" => %{
-        "conditionDataType" => "number",
-        "sourceConditionField" => "thing",
-        "conditionOperation" => "=",
-        "targetConditionValue" => "30"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "thing",
+      "conditionOperation" => "=",
+      "targetConditionValue" => "30"
     }
 
     result = Transformers.TypeConversion.transform(payload, parameters)
