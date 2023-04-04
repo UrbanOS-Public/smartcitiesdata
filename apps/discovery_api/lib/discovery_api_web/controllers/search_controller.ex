@@ -17,7 +17,7 @@ defmodule DiscoveryApiWeb.SearchController do
 
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
-         {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit) |> IO.inspect,
+         {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit) |> IO.inspect(),
          {:ok, models, facets, total} <- Search.search(search_opts) |> IO.inspect(label: "TEST RESPONSE") do
       render(
         conn,
