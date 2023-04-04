@@ -38,6 +38,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Search do
          )
          |> handle_response_with_body() do
       {:ok, body} ->
+        IO.inspect(label: "SEARCH BODY")
         Logger.debug("#{__MODULE__}: ElasticSearch Response: #{inspect(body)}")
         total = get_in(body, [:hits, :total, :value])
         documents = get_in(body, [:hits, :hits, Access.all(), :_source])
