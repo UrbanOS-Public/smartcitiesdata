@@ -57,7 +57,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
         "prefix_length" => 2,
         "query" => term,
         "type" => "most_fields",
-        "rewrite": "scoring_boolean"
+        rewrite: "scoring_boolean"
       }
     }
   end
