@@ -49,12 +49,12 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         <fieldset style="border:none; padding-left: 0;">
           <legend class="label" style="margin-top: 1em;">When should this transformation apply?</legend>
             <div class="transformation-form__condition-radio">
-              <%= radio_button(f, :condition, false, id: "transformation_#{@id}__condition_always", for: "transformation_#{@id}__condition", checked: show_regular_fields) %>
-              <%= label(f, :condition, "Always", for: "transformation_#{@id}__condition") %>
+              <%= radio_button(f, :condition, false, id: "transformation_#{@id}__condition_always", checked: show_regular_fields) %>
+              <%= label(f, :condition, "Always", for: "transformation_#{@id}__condition_always") %>
             </div>
             <div class="transformation-form__condition-radio">
-              <%= radio_button(f, :condition, true, id: "transformation_#{@id}__condition_specific", for: "transformation_#{@id}__condition", checked: show_condition_fields) %>
-              <%= label(f, :condition, "Under a specific condition",  for: "transformation_#{@id}__condition") %>
+              <%= radio_button(f, :condition, true, id: "transformation_#{@id}__condition_specific", checked: show_condition_fields) %>
+              <%= label(f, :condition, "Under a specific condition",  for: "transformation_#{@id}__condition_specific") %>
             </div>
         </fieldset>
         <%= if show_condition_fields do %>
