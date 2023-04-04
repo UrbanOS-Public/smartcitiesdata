@@ -127,7 +127,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
       "name_asc" -> %{"titleKeyword" => %{"order" => "asc"}}
       "name_desc" -> %{"titleKeyword" => %{"order" => "desc"}}
       "last_mod" -> %{"sortDate" => %{"order" => "desc"}}
-      "relevance" -> %{}
+      "relevance" -> %{"_score" => %{"order" => "desc"}}
     end
   end
 end
