@@ -903,7 +903,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     test "sort should allow for relevance" do
       create_dataset(%{id: "0", business: %{dataTitle: "Unrelated to the others"}})
       create_dataset(%{id: "1", business: %{dataTitle: "Traffic Signals"}})
-      create_dataset(%{id: "2", business: %{dataTitle: ""}})
+      create_dataset(%{id: "2", business: %{dataTitle: "Traffic"}})
       create_dataset(%{id: "3", business: %{dataTitle: "Traffic Signal Locations"}})
       params = %{sort: "relevance", query: "traffic"}
 
