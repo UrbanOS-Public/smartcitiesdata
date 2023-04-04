@@ -51,13 +51,10 @@ defmodule DiscoveryApi.Search.Elasticsearch.QueryBuilder do
 
   defp match_terms(term) do
     %{
-      "multi_match" => %{
-        "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
-        "fuzziness" => "AUTO",
-        "prefix_length" => 2,
-        "query" => term,
-        "type" => "most_fields",
-        rewrite: "scoring_boolean"
+      "query_string" => %{
+      "query" => "*" <> term <> "*",
+      "fields" => ["title", "description", "organizationDetails.orgTitle", "keywords"],
+      "rewrite" => "scoring_boolean"
       }
     }
   end
