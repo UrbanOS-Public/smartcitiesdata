@@ -16,6 +16,7 @@ defmodule DiscoveryApiWeb.SearchController do
     api_key = Plug.Conn.get_req_header(conn, "api_key")
     IO.inspect(params, label: "TEST PARAMS")
     IO.inspect(sort, label: "TEST SORT")
+
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
          {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit) |> IO.inspect(label: "TEST OPTS"),
