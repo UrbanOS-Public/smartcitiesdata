@@ -254,6 +254,52 @@ defmodule Reaper.Http.DownloaderTest do
     assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers, any()), once())
   end
 
+  test "adds json header when body is in json format", %{bypass: bypass} do
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok)
+
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
+    body = "{\"testKey\": \"testValue\"}"
+
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
+
+    headers = %{
+      "testKey" => "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>",
+      :testB => "valB"
+    }
+
+    evaluated_headers = [{"Content-Type", "application/json"}, {"testB", "valB"}, {"testKey", "19700102"}]
+
+    {:ok, _} = Downloader.download(url, headers, to: "test.output", body: body)
+
+    assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers, any()), once())
+  end
+
+  test "adds xml header when body is in json format", %{bypass: bypass} do
+    allow(Mint.HTTP.request(:connection, any(), any(), any(), any()), return: :ok)
+
+    path = "/some.url"
+    url = "http://localhost:#{bypass.port}#{path}"
+    body = "<testKey>testValue</testKey>"
+
+    Bypass.stub(bypass, "GET", path, fn conn ->
+      Plug.Conn.resp(conn, 200, "data")
+    end)
+
+    headers = %{
+      "testKey" => "<%= Date.to_iso8601(~D[1970-01-02], :basic) %>",
+      :testB => "valB"
+    }
+
+    evaluated_headers = [{"Content-Type", "text/xml"}, {"testB", "valB"}, {"testKey", "19700102"}]
+
+    {:ok, _} = Downloader.download(url, headers, to: "test.output", body: body)
+
+    assert_called(Mint.HTTP.request(any(), any(), any(), evaluated_headers, any()), once())
+  end
+
   test "protocol is used for connection", %{bypass: bypass} do
     allow(Mint.HTTP.connect(:connection, any(), any(), any()), return: :ok, meck_options: [:passthrough])
     path = "/some.url"

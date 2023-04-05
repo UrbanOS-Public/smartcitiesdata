@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "2.0.19",
+      version: "2.0.27",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -28,7 +28,7 @@ defmodule Reaper.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex],
+      extra_applications: [:logger, :eex, :ftp],
       mod: {Reaper.Application, []}
     ]
   end
@@ -53,6 +53,7 @@ defmodule Reaper.MixProject do
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
+      {:elixir_uuid, "~> 1.2"},
       {:gen_stage, "~> 1.0", override: true},
       {:hackney, "~> 1.18"},
       {:horde, "~> 0.7.0"},
@@ -94,7 +95,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
       {:performance, in_umbrella: true, only: :integration},
       {:unzip, "~> 0.6.0"}

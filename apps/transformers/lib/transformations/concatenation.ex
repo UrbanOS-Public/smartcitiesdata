@@ -4,6 +4,7 @@ defmodule Transformers.Concatenation do
   alias Transformers.Validations.IsPresent
   alias Transformers.Validations.NotBlank
   alias Transformers.Validations.ValidationStatus
+  alias Transformers.Conditions
 
   @source_fields "sourceFields"
   @target_field "targetField"
@@ -11,7 +12,8 @@ defmodule Transformers.Concatenation do
 
   @impl Transformation
   def transform(payload, parameters) do
-    with {:ok, [source_fields, separator, target_field]} <- validate(parameters),
+    with {:ok, true} <- Conditions.check(payload, parameters),
+         {:ok, [source_fields, separator, target_field]} <- validate(parameters),
          {:ok, values} <-
            fetch_values(payload, String.split(source_fields, [" ", ","], trim: true)),
          :ok <- can_convert_to_string?(values) do
@@ -19,6 +21,7 @@ defmodule Transformers.Concatenation do
       transformed = Map.put(payload, target_field, joined_string)
       {:ok, transformed}
     else
+      {:ok, false} -> {:ok, payload}
       {:error, reason} -> {:error, reason}
     end
   end
@@ -26,6 +29,7 @@ defmodule Transformers.Concatenation do
   def validate(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @source_fields)
+    |> NotBlank.check(parameters, @separator)
     |> NotBlank.check(parameters, @target_field)
     |> IsPresent.check(parameters, @separator)
     |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])

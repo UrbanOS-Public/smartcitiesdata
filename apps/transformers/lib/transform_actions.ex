@@ -8,7 +8,9 @@ defmodule Transformers do
            parameters <- SmartCity.Helpers.to_string_keys(raw_parameters) do
         Transformers.OperationBuilder.build(type, parameters)
       else
-        :error -> {:error, "Map provided is not a valid transformation"}
+        :error ->
+          IO.inspect(transformation, label: "Error occurred constructing this transformation")
+          {:error, "Map provided is not a valid transformation"}
       end
     end)
   end
@@ -23,7 +25,9 @@ defmodule Transformers do
           {:error, reasons} -> {:error, reasons}
         end
       else
-        :error -> {:error, "Map provided is not a valid transformation"}
+        :error ->
+          IO.inspect(transformation, label: "Error occurred validating this transformation")
+          {:error, "Map provided is not a valid transformation"}
       end
     end)
   end
@@ -44,6 +48,7 @@ defmodule Transformers do
     if(OperationUtils.allOperationsItemsAreFunctions(operations)) do
       executeOperations(operations, initial_payload)
     else
+      IO.inspect(operations, label: "Error occurred executing these ops")
       {:error, "Invalid list of functions passed to performTransformations"}
     end
   end

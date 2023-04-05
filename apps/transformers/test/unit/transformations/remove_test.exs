@@ -44,6 +44,51 @@ defmodule Transformers.RemoveTest do
 
       assert result == %{"good_field" => "hello"}
     end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      payload = %{
+        "good_field" => "hello",
+        "dead_field" => "goodbye"
+      }
+
+      parameters = %{
+        "sourceField" => "dead_field",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "good_field",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "hello"
+      }
+
+      {:ok, result} = Remove.transform(payload, parameters)
+
+      assert result == %{"good_field" => "hello"}
+    end
+
+    test "does nothing when condition evaluates to false" do
+      payload = %{
+        "good_field" => "hello",
+        "dead_field" => "goodbye"
+      }
+
+      parameters = %{
+        "sourceField" => "dead_field",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "good_field",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "other"
+      }
+
+      {:ok, result} = Remove.transform(payload, parameters)
+
+      assert result == %{
+               "good_field" => "hello",
+               "dead_field" => "goodbye"
+             }
+    end
   end
 
   describe "validate/1" do

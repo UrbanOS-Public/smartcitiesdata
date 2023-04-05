@@ -43,22 +43,6 @@ defmodule Forklift.Event.EventHandlingTest do
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
       Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
     end
-
-    test "sends error event for raised errors while performing dataset update" do
-      stub(MockTable, :init, fn _ -> raise "bad stuff" end)
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-      dataset = TDG.create_dataset(%{})
-
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
-
-      assert_receive {:brook_event,
-                      %Brook.Event{
-                        type: "error:dataset:update",
-                        data: %{"reason" => %RuntimeError{message: "bad stuff"}, "dataset" => _}
-                      }},
-                     10_000
-    end
   end
 
   describe "on data:ingest:start event" do
@@ -79,6 +63,8 @@ defmodule Forklift.Event.EventHandlingTest do
         send(test, Keyword.get(args, :dataset))
         :ok
       end)
+
+      expect(MockTable, :init, fn args -> send(test, args) end)
 
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 

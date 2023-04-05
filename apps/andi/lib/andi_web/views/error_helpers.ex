@@ -9,10 +9,12 @@ defmodule AndiWeb.ErrorHelpers do
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.InputSchemas.SubmissionMetadataFormSchema
   alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.Views.InputTypes
 
   @doc """
   Generates tag for inlined form input errors.
   """
+
   def error_tag(form, field, options \\ [])
   def error_tag(form, _, _) when not is_map(form), do: []
 
@@ -29,9 +31,15 @@ defmodule AndiWeb.ErrorHelpers do
     %{data: %form_type{}} = form
     translated = error |> interpret_error(field, form_type) |> translate_error()
 
+    id =
+      case Keyword.get(options, :id) do
+        nil -> "#{field}-error-msg"
+        id -> id
+      end
+
     content_tag(:span, translated,
       class: "error-msg",
-      id: "#{field}-error-msg",
+      id: id,
       data: get_additional_content_tag_data(form, field, options)
     )
   end
@@ -56,9 +64,15 @@ defmodule AndiWeb.ErrorHelpers do
       |> interpret_error_with_label(field, form_type, label)
       |> translate_error()
 
+    id =
+      case Keyword.get(options, :id) do
+        nil -> "#{field}-error-msg"
+        id -> id
+      end
+
     content_tag(:span, translated,
       class: "error-msg",
-      id: "#{field}-error-msg",
+      id: id,
       data: get_additional_content_tag_data(form, field, options)
     )
   end
@@ -115,6 +129,10 @@ defmodule AndiWeb.ErrorHelpers do
     "Please enter a valid name. Schema fields cannot contain control characters."
   end
 
+  defp interpret_error_message(_message, :url, form) when form == Andi.InputSchemas.Ingestions.ExtractS3Step do
+    "Please enter a valid url"
+  end
+
   defp interpret_error_message(_message, :url, _),
     do: "Please enter a valid url - including http:// or https://"
 
@@ -126,7 +144,7 @@ defmodule AndiWeb.ErrorHelpers do
   defp interpret_error_message(message, :datasetLink, _), do: message
   defp interpret_error_message("is required", field, _), do: default_error_message(field)
   defp interpret_error_message(message, :format, _), do: "Error: " <> get_format_error_message(message)
-  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON"
+  defp interpret_error_message(_message, :body, _), do: "Please enter valid JSON or XML"
 
   defp interpret_error_message(message, field, _) when field in [:topLevelSelector, :cadence, :dataName, :license, :orgName],
     do: "Error: #{message}"
@@ -140,10 +158,12 @@ defmodule AndiWeb.ErrorHelpers do
     do: {interpret_error_message_with_label(label, form_type), opts}
 
   defp interpret_error_message_with_label(label, Transformation) do
-    "Please enter a valid #{String.downcase(label)}"
+    "Please #{get_input_type(String.to_atom(label))} a valid #{String.downcase(label)}"
   end
 
-  defp default_error_message(field), do: "Please enter a valid #{get_downcased_display_name(field)}."
+  defp default_error_message(field) do
+    "Please #{get_input_type(field)} a valid #{get_downcased_display_name(field)}."
+  end
 
   def get_downcased_display_name(field_key), do: field_key |> DisplayNames.get() |> String.downcase()
 
@@ -157,4 +177,6 @@ defmodule AndiWeb.ErrorHelpers do
 
   defp get_format_error_message("Expected at least one parser to succeed" <> _), do: "failed to parse"
   defp get_format_error_message(message), do: message
+
+  defp get_input_type(field_key), do: InputTypes.get(field_key)
 end

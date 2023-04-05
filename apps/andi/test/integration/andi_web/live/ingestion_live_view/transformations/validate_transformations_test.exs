@@ -2,95 +2,94 @@ defmodule AndiWeb.IngestionLiveView.Transformations.ValidateTransformationsTest 
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Checkov
-  use Properties, otp_app: :andi
+  use Placebo
 
-  @moduletag shared_data_connection: true
-
+  import Checkov
   import Phoenix.LiveViewTest
+  import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
+  import FlokiHelpers,
+    only: [
+      find_elements: 2,
+      get_attributes: 3,
+      get_text: 2,
+      get_value: 2,
+      get_select: 2
+    ]
+
+  alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Ingestions
 
   @url_path "/ingestions/"
+  @moduletag shared_data_connection: true
+  @instance_name Andi.instance_name()
 
   setup %{conn: conn} do
-    ingestion = Ingestions.create()
+    dataset = TDG.create_dataset(%{name: "sample_dataset"})
 
-    {:ok, view, html} = navigate_to_edit_page(conn, ingestion)
-    %{conn: conn, view: view, html: html, ingestion: ingestion}
-  end
+    transformation1 =
+      TDG.create_transformation(%{
+        name: "sample",
+        type: "concatenation",
+        parameters: %{},
+        sequence: 1
+      })
 
-  test "shows invalid status when field is invalid", %{conn: conn, view: view, ingestion: ingestion} do
-    expand_transformation_editor(view)
-    transformation_id = add_transformation(view)
-    data = %{"name" => "", "id" => transformation_id, "type" => "", "sourceField" => ""}
-    edit_transformation(view, transformation_id, data)
-    minimize_transformation_editor(view)
+    transformation2 =
+      TDG.create_transformation(%{
+        name: "sample2",
+        type: "add",
+        parameters: %{},
+        sequence: 2
+      })
+
+    ingestion =
+      TDG.create_ingestion(%{
+        id: UUID.uuid4(),
+        targetDataset: dataset.id,
+        name: "sample_ingestion",
+        transformations: [transformation1, transformation2]
+      })
+
+    Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+    Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
     eventually(fn ->
-      assert element(view, ".component-number--invalid") |> has_element?
-      assert element(view, ".component-number-status--invalid") |> has_element?
+      assert Ingestions.get(ingestion.id) != nil
     end)
+
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+    [view: view, html: html, ingestion: ingestion, conn: conn]
   end
 
-  test "shows valid status when all fields are valid", %{conn: conn, view: view, ingestion: ingestion, html: html} do
-    expand_transformation_editor(view)
-    transformation_id = add_transformation(view)
-    data = %{"name" => "test", "id" => transformation_id, "type" => "remove", "sourceField" => "sourcey"}
-    edit_transformation(view, transformation_id, data)
-    minimize_transformation_editor(view)
+  test "shows invalid status when field is invalid", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
-    eventually(fn ->
-      assert element(view, ".component-number--valid") |> has_element?
-      assert element(view, ".component-number-status--valid") |> has_element?
-    end)
+    form_data = %{"name" => ""}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+    assert element(view, ".component-number--invalid") |> has_element?
+    assert element(view, ".component-number-status--invalid") |> has_element?
+
+    # expand_transformation_editor(view)
+    # transformation_id = add_transformation(view)
+    # data = %{"name" => "", "id" => transformation_id, "type" => "", "sourceField" => ""}
+    # edit_transformation(view, transformation_id, data)
+    # minimize_transformation_editor(view)
+
+    # eventually(fn ->
+    #
+    # end)
   end
 
-  defp navigate_to_edit_page(conn, ingestion) do
-    live(conn, @url_path <> ingestion.id)
-  end
-
-  defp save(view) do
-    element(view, ".btn--save", "Save Draft Ingestion")
-    |> render_click()
-  end
-
-  defp add_transformation(view) do
-    find_live_child(view, "transformations_form_editor")
-    |> element("#add-transformation")
-    |> render_click()
-    |> find_transformation_id()
-  end
-
-  defp minimize_transformation_editor(view) do
-    find_live_child(view, "transformations_form_editor")
-    |> element("#transformations-form .component-header")
-    |> render_click()
-  end
-
-  defp expand_transformation_editor(view) do
-    find_live_child(view, "transformations_form_editor")
-    |> element("#transformations-form .component-header")
-    |> render_click()
-  end
-
-  defp find_transformation_id(html) do
-    {:ok, document} = Floki.parse_document(html)
-
-    Floki.find(document, "#transformation-forms")
-    |> Floki.find("[data-phx-view=\"IngestionLiveView.Transformations.TransformationForm\"]")
-    |> Floki.attribute("id")
-    |> List.first()
-    |> String.replace_prefix("transform-", "")
-  end
-
-  defp edit_transformation(view, transformation_id, data) do
-    data = %{"form_data" => data}
-
-    find_live_child(view, "transformations_form_editor")
-    |> find_live_child("transform-#{transformation_id}")
-    |> element(".transformation-item")
-    |> render_change(data)
+  test "shows valid status when all fields are valid", %{view: view} do
+    assert element(view, ".component-number--valid") |> has_element?
+    assert element(view, ".component-number-status--valid") |> has_element?
   end
 end

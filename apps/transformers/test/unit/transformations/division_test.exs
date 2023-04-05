@@ -125,7 +125,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: not_valid"
+      assert reason == "A value cannot be parsed to integer or float: not_valid"
     end
 
     test "returns an error if a field in the divisor doesnt exist" do
@@ -139,7 +139,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: not_valid"
+      assert reason == "A value cannot be parsed to integer or float: not_valid"
     end
 
     test "returns an error if a field in the dividend is not a number" do
@@ -153,7 +153,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "payload field is not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
     end
 
     test "returns an error if a field in the divisor is not a number" do
@@ -167,7 +167,7 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == "payload field is not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
     end
 
     test "returns an error if the divisor is 0" do
@@ -182,6 +182,47 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Transformers.Division.transform(message_payload, params)
 
       assert reason == "divisor cannot be equal to 0"
+    end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      params = %{
+        "dividend" => 10,
+        "divisor" => 2,
+        "targetField" => "output_number",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "test"
+      }
+
+      message_payload = %{"target" => "test"}
+
+      {:ok, transformed_payload} = Division.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 5
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "dividend" => 10,
+        "divisor" => 2,
+        "targetField" => "output_number",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "other"
+      }
+
+      message_payload = %{"target" => "test"}
+
+      result = Division.transform(message_payload, params)
+
+      assert result == {:ok, %{"target" => "test"}}
     end
   end
 

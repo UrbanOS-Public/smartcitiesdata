@@ -4,7 +4,8 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
   """
   use Ecto.Schema
-  import Ecto.Changeset
+
+  alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
   alias Andi.InputSchemas.Ingestion
 
@@ -21,61 +22,62 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
 
   use Accessible
 
-  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def get_module(), do: %__MODULE__{}
 
   def changeset(extract_step, changes) do
     changes_with_id = StructTools.ensure_id(extract_step, changes)
 
     extract_step
-    |> cast(changes_with_id, @cast_fields)
-    |> validate_required(@required_fields, message: "is required")
+    |> Changeset.cast(changes_with_id, @cast_fields, force_changes: true)
+  end
+
+  def validate(extract_step_changeset) do
+    data_as_changes =
+      extract_step_changeset
+      |> Changeset.apply_changes()
+      |> StructTools.to_map()
+
+    extract_step_changeset
+    |> Map.replace(:errors, [])
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.validate_required(@required_fields, message: "is required")
     |> validate_type()
     |> validate_context()
   end
 
-  def changeset_for_draft(extract_step, changes) do
-    changes_with_id = StructTools.ensure_id(extract_step, changes)
+  def create_step_changeset_from_generic_step_changeset(changeset) do
+    {_, type} = Changeset.fetch_field(changeset, :type)
 
-    extract_step
-    |> cast(changes_with_id, @cast_fields)
-  end
+    step_module = step_module(type)
 
-  def changeset_from_form_data(form_data) do
-    form_data_as_params =
-      form_data
-      |> AtomicMap.convert(safe: false, underscore: false)
-      |> wrap_context()
+    changes =
+      changeset
+      |> Changeset.apply_changes()
+      |> Map.get(:context)
+      |> StructTools.to_map()
 
-    changeset(form_data_as_params)
-  end
-
-  def form_changeset_from_andi_extract_step(%{type: "sftp", context: context}), do: context
-
-  def form_changeset_from_andi_extract_step(extract_step) do
-    step_module = step_module(extract_step.type)
-
-    extract_step
-    |> Andi.InputSchemas.StructTools.to_map()
-    |> Map.get(:context)
-    |> step_module.changeset_from_andi_step()
+    step_module.changeset(step_module.get_module(), changes)
+    |> step_module.validate()
   end
 
   def preload(struct), do: StructTools.preload(struct, [])
 
   defp validate_type(%{changes: %{type: type}} = changeset) do
     case step_module(type) == :invalid_type do
-      true -> add_error(changeset, :type, "invalid type")
+      true -> Changeset.add_error(changeset, :type, "invalid type")
       false -> changeset
     end
   end
 
-  defp validate_type(%{changes: %{}} = changeset) do
-    changeset
-  end
+  defp validate_type(changeset), do: changeset
 
-  defp validate_context(%{changes: %{context: nil}} = changeset), do: changeset
+  defp validate_context(changeset) do
+    type =
+      case Changeset.fetch_field(changeset, :type) do
+        {_, type} -> type
+        :error -> nil
+      end
 
-  defp validate_context(%{changes: %{type: type, context: context}} = changeset) do
     case step_module(type) do
       :invalid_type ->
         changeset
@@ -84,26 +86,33 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
         changeset
 
       step_module ->
-        validated_context = step_module.changeset(context)
+        context =
+          case Changeset.fetch_field(changeset, :context) do
+            {_, context} -> context
+            :error -> nil
+          end
 
-        updated_changeset =
-          Enum.reduce(validated_context.errors, changeset, fn {key, {message, _}}, acc ->
-            Ecto.Changeset.add_error(acc, key, message)
+        if context == nil do
+          Changeset.add_error(changeset, :context, "invalid context")
+        else
+          validated_changeset =
+            step_module.changeset(step_module.get_module(), context)
+            |> step_module.validate()
+
+          Enum.reduce(validated_changeset.errors, changeset, fn {key, {message, _}}, acc ->
+            Changeset.add_error(acc, key, message)
           end)
-
-        updated_changeset
+        end
     end
   end
 
-  defp validate_context(changeset), do: changeset
-
-  defp step_module("http"), do: Andi.InputSchemas.Ingestions.ExtractHttpStep
-  defp step_module("date"), do: Andi.InputSchemas.Ingestions.ExtractDateStep
-  defp step_module("secret"), do: Andi.InputSchemas.Ingestions.ExtractSecretStep
-  defp step_module("auth"), do: Andi.InputSchemas.Ingestions.ExtractAuthStep
-  defp step_module("s3"), do: Andi.InputSchemas.Ingestions.ExtractS3Step
-  defp step_module("sftp"), do: nil
-  defp step_module(_invalid_type), do: :invalid_type
+  def step_module("http"), do: Andi.InputSchemas.Ingestions.ExtractHttpStep
+  def step_module("date"), do: Andi.InputSchemas.Ingestions.ExtractDateStep
+  def step_module("secret"), do: Andi.InputSchemas.Ingestions.ExtractSecretStep
+  def step_module("auth"), do: Andi.InputSchemas.Ingestions.ExtractAuthStep
+  def step_module("s3"), do: Andi.InputSchemas.Ingestions.ExtractS3Step
+  def step_module("sftp"), do: nil
+  def step_module(_invalid_type), do: :invalid_type
 
   defp wrap_context(form_data) do
     context =

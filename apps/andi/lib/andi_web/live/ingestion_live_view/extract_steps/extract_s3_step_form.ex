@@ -4,15 +4,14 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
   """
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
-  import AndiWeb.Helpers.ExtractStepHelpers
   require Logger
 
   alias Andi.InputSchemas.Ingestions.ExtractS3Step
-  alias Andi.InputSchemas.Ingestions.ExtractHeader
   alias AndiWeb.EditLiveView.KeyValueEditor
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.ExtractSteps.ExtractStepHeader
+  alias Ecto.Changeset
+  alias Andi.InputSchemas.StructTools
 
   def mount(socket) do
     {:ok,
@@ -23,35 +22,35 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
   end
 
   def render(assigns) do
+    header_changesets =
+      case Changeset.fetch_change(assigns.changeset, :headers) do
+        {_, header_changesets} -> header_changesets
+        :error -> []
+      end
+
     ~L"""
-    <div id="step-<%= @id %>" class="extract-step-container extract-s3-step-form">
-
-      <%= live_component(@socket, ExtractStepHeader, step_name: "S3", step_id: @id) %>
-
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: "#step-#{@id}", as: :form_data] %>
-        <div class="component-edit-section--<%= @visibility %>">
-          <div class="extract-s3-step-form-edit-section form-grid">
-
-            <div class="extract-s3-step-form__url">
-              <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "step_#{@extract_step.sequence}__s3_url") %>
-              <%= text_input(f, :url, [id: "step_#{@extract_step.sequence}__s3_url", aria_label: "step_#{@extract_step.sequence}__s3_url", class: "input full-width", required: true]) %>
-              <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false) %>
-            </div>
-
-            <%= live_component(@socket, KeyValueEditor, id: "step_#{@id}__key_value_editor_headers" <> @extract_step.id, css_label: "source-headers", form: f, field: :headers, target: "step-" <> @id) %>
-
+    <%= f = form_for @changeset, "#", [phx_change: :validate, phx_target: @myself, as: :form_data, id: @id] %>
+      <div class="component-edit-section--<%= @visibility %>">
+        <div class="extract-s3-step-form-edit-section form-grid">
+          <div class="extract-s3-step-form__url">
+            <%= label(f, :url, DisplayNames.get(:url), class: "label label--required", for: "#{@id}_s3_url") %>
+            <%= text_input(f, :url, [id: "#{@id}_s3_url", class: "input full-width", required: true, aria_label: "S3 #{DisplayNames.get(:url)}"]) %>
+            <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_s3_url_error") %>
           </div>
+
+          <%= live_component(@socket, KeyValueEditor, id: "#{@id}__key_pvalue_editor_headers", css_label: "source-headers", form: f, field: :headers, parent_id: @id, changesets: header_changesets, parent_module: __MODULE__) %>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
     """
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data
-    |> AtomicMap.convert(safe: false, underscore: false)
-    |> ExtractS3Step.changeset()
-    |> complete_validation(socket)
+    extract_step = ExtractS3Step.changeset(socket.assigns.changeset, form_data)
+
+    AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
+
+    {:noreply, socket}
   end
 
   def handle_event("validate", _, socket) do
@@ -60,25 +59,30 @@ defmodule AndiWeb.ExtractSteps.ExtractS3StepForm do
     {:noreply, socket}
   end
 
-  def handle_event("add", %{"field" => "headers"}, %{assigns: %{changeset: changeset}} = socket) do
-    headers = Ecto.Changeset.get_field(changeset, :headers, [])
-    new_header = ExtractHeader.changeset(%{})
-
-    new_changes =
-      changeset
-      |> Ecto.Changeset.put_embed(:headers, headers ++ [new_header])
-
-    {:noreply, assign(socket, changeset: new_changes)}
+  def update_key_value(field, changesets, id) do
+    send_update(__MODULE__, id: id, field: field, changesets: changesets)
   end
 
-  def handle_event("remove", %{"id" => header_id, "field" => "headers"}, socket) do
-    updated_headers =
+  def update(%{field: field, changesets: changesets}, socket) do
+    applied_changes =
+      Enum.map(changesets, fn changeset ->
+        Changeset.apply_changes(changeset)
+        |> StructTools.to_map()
+      end)
+
+    changes = %{field => applied_changes}
+
+    extract_step =
       socket.assigns.changeset
-      |> Ecto.Changeset.get_field(:headers)
-      |> remove_key_value(header_id)
+      |> Changeset.delete_change(field)
+      |> ExtractS3Step.changeset(changes)
 
-    new_changset = Ecto.Changeset.put_embed(socket.assigns.changeset, :headers, updated_headers)
+    AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
 
-    {:noreply, assign(socket, changeset: new_changset)}
+    {:ok, socket}
+  end
+
+  def update(assigns, socket) do
+    {:ok, assign(socket, assigns)}
   end
 end

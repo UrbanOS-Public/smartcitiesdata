@@ -38,10 +38,6 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{output_topic_prefix()}-#{ingestion_id}"
     Elsa.create_topic(elsa_brokers(), topic)
 
-    allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-      return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
-    )
-
     ingestion =
       TDG.create_ingestion(%{
         id: ingestion_id,
@@ -57,11 +53,11 @@ defmodule Reaper.SftpExtractorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],
-              url: "sftp://#{@host}:#{@sftp.port}/upload/file.json"
+              url: "sftp://#{@sftp.user}:#{@sftp.password}@#{@host}:#{@sftp.port}/upload/file.json"
             },
             type: "sftp"
           }
@@ -88,10 +84,6 @@ defmodule Reaper.SftpExtractorTest do
     topic = "#{output_topic_prefix()}-#{ingestion_id}"
     Elsa.create_topic(elsa_brokers(), topic)
 
-    allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-      return: {:ok, %{"username" => "sftp_user", "password" => "sftp_password"}}
-    )
-
     ingestion =
       TDG.create_ingestion(%{
         id: ingestion_id,
@@ -107,11 +99,11 @@ defmodule Reaper.SftpExtractorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],
-              url: "sftp://#{@host}:#{@sftp.port}/upload/file.csv"
+              url: "sftp://#{@sftp.user}:#{@sftp.password}@#{@host}:#{@sftp.port}/upload/file.csv"
             },
             type: "sftp"
           }

@@ -4,58 +4,73 @@ defmodule AndiWeb.EditLiveView.KeyValueEditor do
   """
   use Phoenix.LiveComponent
   import Phoenix.HTML.Form
-  import AndiWeb.ErrorHelpers
 
   alias AndiWeb.Views.DisplayNames
+  alias AndiWeb.InputSchemas.KeyValueFormSchema
+  alias Ecto.Changeset
+  alias AndiWeb.ErrorHelpers
 
   def render(assigns) do
-    event_handler_target =
-      case assigns[:target] do
-        nil -> "#url-form"
-        extract_target -> "##{extract_target}"
-      end
-
     ~L"""
     <div id="<%= @id %>" class="url-form__<%= @css_label %> url-form-table">
       <div class="url-form-table__title"><%= DisplayNames.get(@field) %></div>
       <table class="url-form-table__table" title='<%= DisplayNames.get(@field) %>' aria-label="<%= @id %>">
-      <tr class="url-form-table__row url-form-table__row--bordered">
-        <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header">KEY</th>
-        <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2" >VALUE</th>
-      </tr>
-      <%= if is_set?(@form, @field) do %>
-        <%= inputs_for @form, @field, fn f -> %>
-        <%= hidden_input(f, :id) %>
         <tr class="url-form-table__row url-form-table__row--bordered">
-          <td class="url-form-table__cell url-form-table__cell--bordered">
-            <%= text_input(f, :key, [aria_label: "S3 Key", class: "input full-width url-form__#{@css_label}-key-input #{input_value(f, :id)}"]) %>
-          </td>
-          <td class="url-form-table__cell url-form-table__cell--bordered">
-            <%= text_input(f, :value, [aria_label: "S3 Value" ,class: "input full-width url-form__#{@css_label}-value-input #{input_value(f, :id)}"]) %>
-          </td>
-          <td class="url-form-table__cell url-form-table__cell--delete">
-            <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= event_handler_target %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>">
-              <img src="/images/remove.svg" alt="Remove"/>
-            </button>
-          </td>
+          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" id="key">KEY</th>
+          <th class="url-form-table__cell url-form-table__cell--bordered url-form-table__cell--header" colspan="2" id="value">VALUE</th>
         </tr>
+        <%= inputs_for @form, @field, fn f -> %>
+          <tr class="url-form-table__row url-form-table__row--bordered">
+            <td class="url-form-table__cell url-form-table__cell--bordered" headers="key">
+              <%= text_input(f, :key, [class: "input full-width url-form__#{@css_label}-key-input", aria_label: "#{DisplayNames.get(@field)} Key"]) %>
+            </td>
+            <td class="url-form-table__cell url-form-table__cell--bordered" headers="value">
+              <%= text_input(f, :value, [class: "input full-width url-form__#{@css_label}-value-input", aria_label: "#{DisplayNames.get(@field)} Value"]) %>
+            </td>
+            <td class="url-form-table__cell url-form-table__cell--delete" headers="value">
+              <button type="button" class="url-form__<%= @css_label %>-delete-btn url-form-table__btn" phx-click="remove" phx-target="<%= @myself %>" phx-value-id="<%= input_value(f, :id) %>" phx-value-field="<%= @field %>" aria-label="Remove <%= DisplayNames.get(@field) %>">
+                <img src="/images/remove.svg" alt="Remove"/>
+              </button>
+            </td>
+          </tr>
         <% end %>
-      <% end %>
       </table>
-      <button type="button" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="add" phx-target="<%= event_handler_target %>" phx-value-field="<%= @field %>">
+      <button type="button" class="url-form__<%= @css_label %>-add-btn url-form-table__btn" phx-click="add" phx-target="<%= @myself %>" phx-value-field="<%= @field %>" aria-label="Add <%= DisplayNames.get(@field) %>">
         <img src="/images/add.svg" alt="Add"/>
       </button>
-      <%= error_tag(@form, @field, bind_to_input: false) %>
+      <%= ErrorHelpers.error_tag(@form, @field, bind_to_input: false, id: "#{@parent_id}_#{@field}_error") %>
     </div>
     """
   end
 
-  defp is_set?(%{source: changeset}, field) do
-    case Ecto.Changeset.fetch_field(changeset, field) do
-      :error -> false
-      {:data, []} -> false
-      {:changes, []} -> false
-      _ -> true
-    end
+  def handle_event("add", _, socket) do
+    new_field_changes = %{key: "", value: ""}
+
+    new_changeset = KeyValueFormSchema.changeset(%KeyValueFormSchema{}, new_field_changes)
+
+    new_changesets = socket.assigns.changesets ++ [new_changeset]
+
+    socket.assigns.parent_module.update_key_value(socket.assigns.field, new_changesets, socket.assigns.parent_id)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("remove", %{"id" => id}, socket) do
+    element_to_delete =
+      Enum.find(socket.assigns.changesets, fn changeset ->
+        changeset_id =
+          case Changeset.fetch_field(changeset, :id) do
+            {_, id} -> id
+            :error -> nil
+          end
+
+        changeset_id == id
+      end)
+
+    new_changesets = List.delete(socket.assigns.changesets, element_to_delete)
+
+    socket.assigns.parent_module.update_key_value(socket.assigns.field, new_changesets, socket.assigns.parent_id)
+
+    {:noreply, socket}
   end
 end

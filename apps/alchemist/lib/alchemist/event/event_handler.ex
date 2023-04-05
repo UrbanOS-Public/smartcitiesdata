@@ -12,32 +12,42 @@ defmodule Alchemist.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: ingestion_update(),
-        data: %Ingestion{} = ingestion
+        data: %Ingestion{} = data
       }) do
-    Logger.debug("#{__MODULE__}: Begin transformation processor for ingestion: #{ingestion.id}")
+    Logger.debug("#{__MODULE__}: Begin transformation processor for ingestion: #{data.id}")
 
-    if Alchemist.IngestionSupervisor.is_started?(ingestion.id) do
-      Alchemist.IngestionProcessor.stop(ingestion.id)
+    if Alchemist.IngestionSupervisor.is_started?(data.id) do
+      Alchemist.IngestionProcessor.stop(data.id)
     end
 
-    Alchemist.IngestionProcessor.start(ingestion)
+    Alchemist.IngestionProcessor.start(data)
 
-    merge(:ingestions, ingestion.id, ingestion)
+    merge(:ingestions, data.id, data)
+  rescue
+    error ->
+      Logger.error("ingestion_update failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
         type: ingestion_delete(),
-        data: %Ingestion{} = ingestion
+        data: %Ingestion{} = data
       }) do
-    case Alchemist.IngestionProcessor.delete(ingestion) do
+    case Alchemist.IngestionProcessor.delete(data) do
       :ok ->
-        Logger.debug("#{__MODULE__}: Deleted ingestion for #{ingestion.id}")
+        Logger.debug("#{__MODULE__}: Deleted ingestion for #{data.id}")
 
       {:error, error} ->
-        Logger.error("#{__MODULE__}: Failed to delete ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
+        Logger.error("#{__MODULE__}: Failed to delete ingestion: #{data.id}, Reason: #{inspect(error)}")
     end
 
-    delete(:ingestions, ingestion.id)
+    delete(:ingestions, data.id)
+  rescue
+    error ->
+      Logger.error("ingestion_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   # defp add_event_count(event_type, author, dataset_id) do

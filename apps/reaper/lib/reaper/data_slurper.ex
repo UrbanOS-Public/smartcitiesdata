@@ -16,7 +16,8 @@ defmodule Reaper.DataSlurper do
   @implementations [
     Reaper.DataSlurper.Http,
     Reaper.DataSlurper.Sftp,
-    Reaper.DataSlurper.S3
+    Reaper.DataSlurper.S3,
+    Reaper.DataSlurper.Ftp
   ]
 
   getter(:download_dir, generic: true, default: "")

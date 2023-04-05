@@ -117,7 +117,7 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: bar"
+      assert reason == "A value cannot be parsed to integer or float: bar"
     end
 
     test "ignores additional payload fields that are not in the multiplicands" do
@@ -144,7 +144,46 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "multiplicand field not a number: invalid"
+      assert reason == "A value cannot be parsed to integer or float: invalid"
+    end
+
+    test "performs transformation as normal when condition evaluates to true" do
+      params = %{
+        "multiplicands" => ["input_number"],
+        "targetField" => "output_number",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "input_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "8"
+      }
+
+      message_payload = %{"input_number" => 8}
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 8
+    end
+
+    test "does nothing when condition evaluates to false" do
+      params = %{
+        "multiplicands" => ["input_number"],
+        "targetField" => "output_number",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "input_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "10"
+      }
+
+      message_payload = %{"input_number" => 8}
+
+      result = Transformers.Multiplication.transform(message_payload, params)
+
+      assert result == {:ok, %{"input_number" => 8}}
     end
   end
 

@@ -10,7 +10,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
         format: "invalid format goes here"
       }
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert changeset.errors[:format] != nil
     end
@@ -20,19 +22,25 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
         format: "{YYYY}"
       }
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert changeset.errors[:format] == nil
     end
 
-    test "requires an positive or negative integer for deltaTimeValue" do
+    test "deltaTimeValue gets casted to integer" do
       changes = %{
         deltaTimeValue: 53.6
       }
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
-      assert changeset.errors[:deltaTimeValue] != nil
+      deltaTimeValue = Ecto.Changeset.get_field(changeset, :deltaTimeValue)
+      assert deltaTimeValue == nil
+      assert changeset.errors[:deltaTimeValue] == nil
     end
 
     test "accepts empty string as nil for deltaTimeValue" do
@@ -40,7 +48,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
         deltaTimeValue: ""
       }
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert changeset.errors[:deltaTimeValue] == nil
       assert changeset.changes[:deltaTimeValue] == nil
@@ -49,7 +59,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
     data_test "allowing \"#{time_unit}\" as deltaTimeUnit makes its validity #{invalid_time_unit?}" do
       changes = %{deltaTimeUnit: time_unit}
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert Keyword.has_key?(changeset.errors, :deltaTimeUnit) == invalid_time_unit?
 
@@ -73,7 +85,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
     data_test "destination \"#{destination}\" is #{if invalid?, do: "invalid", else: "valid"}" do
       changes = %{destination: destination}
 
-      changeset = ExtractDateStep.changeset(changes)
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert Keyword.has_key?(changeset.errors, :destination) == invalid?
 
@@ -92,21 +106,30 @@ defmodule Andi.InputSchemas.Ingestions.ExtractDateStepTest do
 
     test "if deltaTimeUnit is set, then deltaTimeValue must be set" do
       changes = %{deltaTimeUnit: "days", deltaTimeValue: nil}
-      changeset = ExtractDateStep.changeset(changes)
+
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert Keyword.has_key?(changeset.errors, :deltaTimeValue)
     end
 
     test "if deltaTimeValue is set, then deltaTimeUnit must be set" do
       changes = %{deltaTimeValue: 1, deltaTimeUnit: ""}
-      changeset = ExtractDateStep.changeset(changes)
+
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       assert Keyword.has_key?(changeset.errors, :deltaTimeUnit)
     end
 
     test "does not add error if neither deltaTimeValue nor deltaTimeUnit are set" do
       changes = %{deltaTimeValue: "", deltaTimeUnit: nil}
-      changeset = ExtractDateStep.changeset(changes)
+
+      changeset =
+        ExtractDateStep.changeset(ExtractDateStep.get_module(), changes)
+        |> ExtractDateStep.validate()
 
       refute Keyword.has_key?(changeset.errors, :deltaTimeUnit)
       refute Keyword.has_key?(changeset.errors, :deltaTimeValue)

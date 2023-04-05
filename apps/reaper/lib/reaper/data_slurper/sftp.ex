@@ -13,12 +13,13 @@ defmodule Reaper.DataSlurper.Sftp do
   @impl DataSlurper
   def slurp(url, ingestion_id, _headers \\ [], _protocol \\ nil, _action \\ nil, _body \\ "") do
     filename = DataSlurper.determine_filename(ingestion_id)
-    %{host: host, path: path, port: port} = URI.parse(url)
+    %{host: host, path: path, port: port, userinfo: userinfo} = URI.parse(url)
 
-    case connect(host, port, ingestion_id) do
-      {:ok, connection} ->
-        stream_file(connection, path, filename)
-
+    with [username, password] <- get_sftp_credentials(userinfo),
+         {:ok, pid} <- connect(host, username, password, port, ingestion_id),
+         {:file, filename} <- stream_file(pid, path, filename) do
+      {:file, filename}
+    else
       {:error, reason} ->
         raise "Failed calling '" <> url <> "': " <> inspect(reason)
     end
@@ -33,21 +34,19 @@ defmodule Reaper.DataSlurper.Sftp do
     {:file, filename}
   end
 
-  defp connect(host, port, ingestion_id) do
-    case Reaper.SecretRetriever.retrieve_ingestion_credentials(ingestion_id) do
-      {:ok, %{"username" => username, "password" => password}} ->
-        SftpEx.connect(
-          host: to_charlist(host),
-          port: port,
-          user: to_charlist(username),
-          password: to_charlist(password)
-        )
+  defp connect(host, username, password, port, ingestion_id) do
+    SftpEx.connect(
+      host: to_charlist(host),
+      port: port,
+      user: to_charlist(username),
+      password: to_charlist(password)
+    )
+  end
 
-      {:ok, _} ->
-        {:error, "Ingestion credentials are not of the correct type"}
-
-      error ->
-        error
+  defp get_sftp_credentials(userinfo) do
+    case userinfo |> String.split(":") do
+      [username, password] -> [username, password]
+      _ -> {:error, "Ingestion credentials are not in username:password format"}
     end
   end
 end

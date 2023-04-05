@@ -25,7 +25,7 @@ defmodule Transformers.ConcatenationTest do
 
       where(
         parameter: ["sourceFields", "separator", "targetField"],
-        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+        message: ["Missing or empty field", "Missing or empty field", "Missing or empty field"]
       )
     end
 
@@ -172,6 +172,60 @@ defmodule Transformers.ConcatenationTest do
 
       assert result == "Could not convert all source fields into strings"
     end
+
+    test "performs transform as normal when condition evaluates to true" do
+      payload = %{
+        "first_name" => "Sam",
+        "middle_initial" => "I",
+        "last_name" => "Am"
+      }
+
+      parameters = %{
+        "sourceFields" => "first_name, middle_initial, last_name",
+        "separator" => ".",
+        "targetField" => "full_name",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "first_name",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "Sam"
+      }
+
+      {:ok, result} = Concatenation.transform(payload, parameters)
+
+      assert "Sam.I.Am" == Map.get(result, "full_name")
+      assert "Sam" == Map.get(result, "first_name")
+      assert "I" == Map.get(result, "middle_initial")
+      assert "Am" == Map.get(result, "last_name")
+    end
+
+    test "does nothing when condition evaluates to false" do
+      payload = %{
+        "first_name" => "Sam",
+        "middle_initial" => "I",
+        "last_name" => "Am"
+      }
+
+      parameters = %{
+        "sourceFields" => "first_name, middle_initial, last_name",
+        "separator" => ".",
+        "targetField" => "full_name",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "first_name",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "test"
+      }
+
+      {:ok, result} = Concatenation.transform(payload, parameters)
+
+      assert nil == Map.get(result, "full_name")
+      assert "Sam" == Map.get(result, "first_name")
+      assert "I" == Map.get(result, "middle_initial")
+      assert "Am" == Map.get(result, "last_name")
+    end
   end
 
   describe "validate/1" do
@@ -204,7 +258,7 @@ defmodule Transformers.ConcatenationTest do
 
       where(
         parameter: ["sourceFields", "separator", "targetField"],
-        message: ["Missing or empty field", "Missing field", "Missing or empty field"]
+        message: ["Missing or empty field", "Missing or empty field", "Missing or empty field"]
       )
     end
 
@@ -213,7 +267,7 @@ defmodule Transformers.ConcatenationTest do
 
       assert reason == %{
                "sourceFields" => "Missing or empty field",
-               "separator" => "Missing field",
+               "separator" => "Missing or empty field",
                "targetField" => "Missing or empty field"
              }
     end

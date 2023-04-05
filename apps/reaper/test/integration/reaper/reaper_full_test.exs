@@ -97,7 +97,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -177,7 +177,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -226,7 +226,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -261,7 +261,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -296,7 +296,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -330,7 +330,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -371,7 +371,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -433,7 +433,7 @@ defmodule Reaper.FullTest do
               context: %{
                 url: "http://localhost:#{bypass.port}/{{currentDate}}",
                 action: "GET",
-                body: %{},
+                body: "",
                 protocol: nil,
                 queryParams: %{},
                 headers: %{}
@@ -506,10 +506,6 @@ defmodule Reaper.FullTest do
       ingestion_id = "only-once-extract-steps-sftp"
       topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
-      allow(Reaper.SecretRetriever.retrieve_ingestion_credentials(any()),
-        return: {:ok, %{"username" => @sftp.user, "password" => @sftp.password}}
-      )
-
       {:ok, connection} =
         SftpEx.connect(
           host: @sftp.host,
@@ -530,7 +526,7 @@ defmodule Reaper.FullTest do
             %{
               type: "sftp",
               context: %{
-                url: "sftp://{{host}}:{{port}}{{path}}"
+                url: "sftp://#{@sftp.user}:#{@sftp.password}@{{host}}:{{port}}{{path}}"
               },
               assigns: %{
                 path: "/upload/random_stuff.csv",
@@ -573,7 +569,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -642,7 +638,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -691,7 +687,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -722,7 +718,7 @@ defmodule Reaper.FullTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],

@@ -2,113 +2,138 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   @moduledoc """
   LiveComponent for editing an individual transformation
   """
-  use Phoenix.LiveView
   use Phoenix.LiveComponent
 
   require Logger
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
-  alias Andi.InputSchemas.InputConverter
+  alias Ecto.Changeset
   alias Andi.InputSchemas.Ingestions.Transformation
-  alias Andi.InputSchemas.Ingestions.Transformations
   alias AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder
-  alias AndiWeb.Views.DisplayNames
-  alias AndiWeb.Helpers.MetadataFormHelpers
-  alias Transformers.TransformationFields
 
-  def mount(_params, %{"transformation_changeset" => transformation_changeset}, socket) do
-    AndiWeb.Endpoint.subscribe("form-save")
-
-    transformation_type = Map.get(transformation_changeset.changes, :type)
-
+  def mount(socket) do
     {:ok,
      assign(socket,
-       transformation_changeset: transformation_changeset,
-       visibility: "collapsed",
-       transformation_type: transformation_type
+       visible?: false,
+       condition?: nil,
+       static?: nil,
+       date?: false
      )}
   end
 
   def render(assigns) do
-    ~L"""
-    <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, class: "transformation-item"] %>
-        <div class="transformation-header full-width" phx-click="toggle-component-visibility" phx-value-component="transformations_form">
-          <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
-          <div class="transformation-actions">
-            <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-target="#transformations-form">delete_outline</button>
-            <button class="material-icons transformation-action" type="button">edit</button>
-            <button class="material-icons transformation-action move-button move-up move-up-<%= @transformation_changeset.changes.id %>" type="button" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="-1" phx-target="#transformations-form">arrow_upward</button>
-            <button class="material-icons transformation-action move-button move-down move-down-<%= @transformation_changeset.changes.id %>" type="button" phx-click="move-transformation" phx-value-id=<%= @transformation_changeset.changes.id %> phx-value-move-index="1" phx-target="#transformations-form">arrow_downward</button>
-          </div>
-        </div>
-        <%= hidden_input(f, :id, value: @transformation_changeset.changes.id) %>
-        <div class="transformation-form transformation-edit-form--<%= @visibility %>">
-          <div class="transformation-form__name">
-            <%= label(f, :name, "Name", class: "label label--required", for: "transformation_#{@socket.id}__name") %>
-            <%= text_input(f, :name, [id: "transformation_#{@socket.id}__name", aria_label: "transformation_#{@socket.id}__name", class: "transformation-name input transformation-form-fields", phx_debounce: "1000", required: true]) %>
-            <%= ErrorHelpers.error_tag(f.source, :name, bind_to_input: false) %>
-          </div>
+    visible = if assigns.visible?, do: "expanded", else: "collapsed"
+    show_condition_fields = not is_nil(assigns.condition?) and assigns.condition?
+    show_regular_fields = not is_nil(assigns.condition?) and not assigns.condition?
 
-          <div class="transformation-form__type">
-            <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required", for: "transformation_#{@socket.id}__type") %>
-            <%= select(f, :type, get_transformation_types(), [id: "transformation_#{@socket.id}__type", aria_label: "transformation_#{@socket.id}__type", phx_click: "transformation-type-selected", class: "select transformation-type", required: true]) %>
-            <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false) %>
-          </div>
-          <div class="transformation-form__fields">
-            <%= for field <- get_fields(@transformation_type) do %>
-              <%= TransformationFieldBuilder.build_input(field, assigns, f) %>
-            <% end %>
-          </div>
+    ~L"""
+    <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, id: @id, class: "transformation-item"] %>
+      <div class="transformation-header full-width" id="transformation_<%= @id %>__header" phx-click="toggle-component-visibility" phx-target="<%= @myself %>">
+        <h3 class="transformation-header-name"> <%= transformation_name(f) %> </h3>
+        <div class="transformation-actions">
+          <button class="material-icons transformation-action delete-transformation-button delete-<%= @transformation_changeset.changes.id %>" type="button" phx-click="delete-transformation" phx-value-id="<%= @transformation_changeset.changes.id %>" phx-target="<%= @myself %>" aria-label="Delete Transformation">delete_outline</button>
+          <button class="material-icons transformation-action" type="button" aria-label="Edit Transformation">edit</button>
+          <% {_, transformation_changeset_id} = Changeset.fetch_field(@transformation_changeset, :id) %>
+          <button class="material-icons transformation-action move-button move-up" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="-1" phx-target="<%= @myself %>" aria-label="Move Transformation up">arrow_upward</button>
+          <button class="material-icons transformation-action move-button move-down" type="button" phx-click="move-transformation" phx-value-id="<%= transformation_changeset_id %>" phx-value-move-index="1" phx-target="<%= @myself %>" aria-label="Move Transformation down">arrow_downward</button>
         </div>
+      </div>
+
+      <div class="transformation-form transformation-form__section--<%= visible %>">
+        <div class="transformation-form__name">
+          <%= label(f, :name, "Name", class: "label label--required", for: "transformation_#{@id}__name") %>
+          <%= text_input(f, :name, [id: "transformation_#{@id}__name", class: "transformation-name input transformation-form-fields", required: true, aria_label: "Transformation Name"]) %>
+          <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false, id: "#{@id}_transformation_name_error") %>
+        </div>
+        <fieldset style="border:none; padding-left: 0;">
+          <legend class="label" style="margin-top: 1em;">When should this transformation apply?</legend>
+            <div class="transformation-form__condition-radio">
+              <%= radio_button(f, :condition, false, id: "transformation_#{@id}__condition_always", checked: show_regular_fields) %>
+              <%= label(f, :condition, "Always", for: "transformation_#{@id}__condition_always") %>
+            </div>
+            <div class="transformation-form__condition-radio">
+              <%= radio_button(f, :condition, true, id: "transformation_#{@id}__condition_specific", checked: show_condition_fields) %>
+              <%= label(f, :condition, "Under a specific condition",  for: "transformation_#{@id}__condition_specific") %>
+            </div>
+        </fieldset>
+        <%= if show_condition_fields do %>
+          <div>
+            <%= TransformationFieldBuilder.build_condition_form(assigns, f) %>
+          </div>
+        <% end %>
+        <%= if show_regular_fields do %>
+          <div>
+            <%= TransformationFieldBuilder.build_transformation_form(assigns, f, false) %>
+          </div>
+        <% end %>
+      </div>
     </form>
     """
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    new_changeset = Transformation.changeset_from_form_data(form_data)
-    AndiWeb.Endpoint.broadcast_from(self(), "transformation", "changed", %{transformation_changeset: new_changeset})
+    show_condition? = check_form_data(form_data, "condition", "true")
+    show_static_value? = check_form_data(form_data, "conditionCompareTo", "Static Value")
+    show_date_fields? = check_form_data(form_data, "conditionDataType", "DateTime")
 
-    {:noreply,
-     assign(socket, transformation_changeset: new_changeset, transformation_type: form_data["type"], transformation_name: form_data["name"])}
+    transformation = Transformation.changeset(socket.assigns.transformation_changeset, form_data)
+
+    AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
+
+    {:noreply, assign(socket, condition?: show_condition?, static?: show_static_value?, date?: show_date_fields?)}
+  end
+
+  def handle_event("validate", _, socket) do
+    send(socket.parent_pid, :page_error)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("move-transformation", %{"id" => transformation_id, "move-index" => move_index_string}, socket) do
+    move_index = String.to_integer(move_index_string)
+
+    AndiWeb.IngestionLiveView.Transformations.TransformationsStep.move_transformation(transformation_id, move_index)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("delete-transformation", %{"id" => transformation_id}, socket) do
+    AndiWeb.IngestionLiveView.Transformations.TransformationsStep.delete_transformation(transformation_id)
+
+    {:noreply, socket}
   end
 
   def handle_event("toggle-component-visibility", _, socket) do
-    current_visibility = Map.get(socket.assigns, :visibility)
+    current_visibility = Map.get(socket.assigns, :visible?)
 
-    new_visibility =
-      case current_visibility do
-        "expanded" -> "collapsed"
-        "collapsed" -> "expanded"
+    parameters =
+      case Changeset.fetch_field(socket.assigns.transformation_changeset, :parameters) do
+        {_, parameters} -> parameters
+        :error -> %{}
       end
 
-    {:noreply, assign(socket, visibility: new_visibility)}
-  end
+    condition_select =
+      case Map.get(parameters, :condition) do
+        nil -> nil
+        "true" -> true
+        "false" -> false
+      end
 
-  def handle_event("transformation-type-selected", %{"value" => value}, socket) do
-    {:noreply, assign(socket, transformation_type: value)}
-  end
+    static =
+      case Map.get(parameters, :conditionCompareTo) do
+        nil -> nil
+        "Static Value" -> true
+        "Target Field" -> false
+      end
 
-  def handle_info(
-        %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-        %{
-          assigns: %{
-            transformation_changeset: transformation_changeset
-          }
-        } = socket
-      ) do
-    changes =
-      InputConverter.form_changes_from_changeset(transformation_changeset)
-      |> Map.put(:ingestion_id, ingestion_id)
+    show_date =
+      case Map.get(parameters, :conditionDataType) do
+        nil -> false
+        "DateTime" -> true
+      end
 
-    transformation_changeset.changes.id
-    |> Transformations.get()
-    |> Transformations.update(changes)
-
-    {:noreply,
-     assign(socket,
-       validation_status: "valid"
-     )}
+    {:noreply, assign(socket, visible?: not current_visibility, condition?: condition_select, static?: static, date?: show_date)}
   end
 
   defp transformation_name(form) do
@@ -123,23 +148,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
 
-  defp get_validation_status(new_changeset) do
-    if new_changeset.valid? do
-      "valid"
-    else
-      "invalid"
-    end
-  end
-
-  defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} ->
-      [key: description, value: actual_value]
-    end)
-  end
-
-  defp get_fields(transformation_type) do
-    TransformationFields.fields_for(transformation_type)
+  defp check_form_data(data, param, compare_val) do
+    value = Map.get(data, param)
+    if is_nil(value), do: nil, else: if(value == "", do: nil, else: value == compare_val)
   end
 end
