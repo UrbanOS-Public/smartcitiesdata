@@ -7,6 +7,8 @@ defmodule Transformers.ConversionFunctions do
       {"integer", "string"} -> {:ok, fn value -> to_string(value) end}
       {"string", "integer"} -> {:ok, fn value -> String.to_integer(value) end}
       {"string", "float"} -> {:ok, fn value -> String.to_float(value) end}
+      {"string", "datetime"} -> {:ok, fn [value, format] -> Timex.parse(value, format) end}
+      {"datetime", "string"} -> {:ok, fn [value, format] -> Timex.format(value, format) end}
       _ -> {:error, "Conversion from #{source_type} to #{target_type} is not supported"}
     end
   end

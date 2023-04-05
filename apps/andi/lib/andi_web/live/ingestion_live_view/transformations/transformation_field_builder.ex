@@ -96,17 +96,46 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
 
     options = Map.get(field, :options)
 
+    show_field =
+      if name != :conversionDateFormat or (name == :conversionDateFormat and conversion_type_has_datetime?(assigns)),
+        do: "expanded",
+        else: "collapsed"
+
     ~L"""
-    <div class="transformation-field">
+    <div class="transformation-field transformation-form__section--<%= show_field %>">
       <%= label(form, name, field.field_label, for: id, class: "transformation-field-label label label--required") %>
       <%= if not is_nil(options) do %>
         <%= select(form, name, options, [value: value, id: id, class: "select", prompt: "", required: true]) %>
       <% else %>
         <%= text_input(form, name, [value: value, id: id, class: "input transformation-form-fields", required: true]) %>
-      <% end %>
-      <%= ErrorHelpers.error_tag_with_label(form.source, name, field.field_label, bind_to_input: false, id: "#{id}_error") %>
+        <% end %>
+      <%= generate_validation_message(form, name, field, assigns, id) %>
     </div>
     """
+  end
+
+  defp generate_validation_message(form, name, field, assigns, id) do
+    ~L"""
+      <div>
+      <%= ErrorHelpers.error_tag_with_label(form.source, name, field.field_label, bind_to_input: false, id: "#{id}_error") %>
+      <%= if conversion_type_has_datetime?(assigns) do %>
+        <%= show_datetime_type_warning_message(assigns, form, name, field, id) %>
+      <% end %>
+      </div>
+    """
+  end
+
+  defp show_datetime_type_warning_message(assigns, form, name, field, id) do
+    [source_type, target_type] = get_source_and_target_types(assigns)
+
+    if (name == :sourceType and target_type == "datetime" and source_type != "string") or
+         (name == :targetType and source_type == "datetime" and target_type != "string") do
+      ~L"""
+        <span class="error-msg" id="<%= id %>_typeError">
+          *datetimes can only be converted to strings
+        </span>
+      """
+    end
   end
 
   defp map_to_dropdown_options(options) do
@@ -119,5 +148,21 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
 
   defp get_fields(transformation_type) do
     TransformationFields.fields_for(transformation_type)
+  end
+
+  defp conversion_type_has_datetime?(assigns) do
+    get_source_and_target_types(assigns) |> Enum.any?(fn type -> type == "datetime" end)
+  end
+
+  defp get_source_and_target_types(assigns) do
+    params = Map.get(assigns.transformation_changeset.changes, :parameters)
+
+    if not is_nil(params) do
+      source_type = Map.get(params, :sourceType)
+      target_type = Map.get(params, :targetType)
+      [source_type, target_type]
+    else
+      [nil, nil]
+    end
   end
 end

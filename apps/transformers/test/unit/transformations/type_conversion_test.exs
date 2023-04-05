@@ -196,6 +196,61 @@ defmodule Transformers.TypeConversionTest do
     assert {:error, "Cannot parse field thing with value 1/4 into float"} == result
   end
 
+  test "converts datetime to string" do
+    time = Timex.now()
+
+    payload = %{"thing" => time}
+
+    parameters = %{
+      "field" => "thing",
+      "sourceType" => "datetime",
+      "targetType" => "string",
+      "conversionDateFormat" => "{ISOdate}"
+    }
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    {:ok, expected} = Timex.format(time, "{ISOdate}")
+    assert result == {:ok, %{"thing" => expected}}
+  end
+
+  test "converts string to datetime" do
+    time = Timex.now()
+    {:ok, string_time} = Timex.format(time, "{ISOdate}")
+
+    payload = %{"thing" => string_time}
+
+    parameters = %{
+      "field" => "thing",
+      "sourceType" => "string",
+      "targetType" => "datetime",
+      "conversionDateFormat" => "{ISOdate}"
+    }
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+    {:ok, expected} = Timex.parse(string_time, "{ISOdate}")
+    assert result == {:ok, %{"thing" => expected}}
+  end
+
+  test "errors if date format does not match provided string" do
+    time = Timex.now()
+    {:ok, string_time} = Timex.format(time, "{ISOdate}")
+
+    payload = %{"thing" => string_time}
+
+    parameters = %{
+      "field" => "thing",
+      "sourceType" => "string",
+      "targetType" => "datetime",
+      "conversionDateFormat" => "{ISO:Extended}"
+    }
+
+    result =
+      Transformers.TypeConversion.transform(payload, parameters) |> IO.inspect(label: "result")
+
+    assert result == {:error, "Cannot parse field thing with value 2023-04-05 into datetime"}
+  end
+
   test "performs transformation as normal when condition returns true" do
     payload = %{"thing" => 300}
 
@@ -244,13 +299,59 @@ defmodule Transformers.TypeConversionTest do
         "targetType" => "string"
       }
 
-      {:ok, [field, source_type, target_type, conversion_function]} =
+      {:ok, [field, source_type, target_type, conversion_function, date_format]} =
         TypeConversion.validate(parameters)
 
       assert field == parameters["field"]
       assert source_type == parameters["sourceType"]
       assert target_type == parameters["targetType"]
       assert is_function(conversion_function)
+    end
+
+    test "returns :ok if all parameters are present, one of the types is datetime, and has valid date format" do
+      parameters = %{
+        "field" => "some_datetime",
+        "sourceType" => "datetime",
+        "targetType" => "string",
+        "conversionDateFormat" => "{ISOdate}"
+      }
+
+      {:ok, [field, source_type, target_type, conversion_function, date_format]} =
+        TypeConversion.validate(parameters)
+
+      assert field == parameters["field"]
+      assert source_type == parameters["sourceType"]
+      assert target_type == parameters["targetType"]
+      assert is_function(conversion_function)
+      assert date_format == parameters["conversionDateFormat"]
+    end
+
+    test "returns error if one of the types is datetime and does not have date_format" do
+      parameters = %{
+        "field" => "some_datetime",
+        "sourceType" => "datetime",
+        "targetType" => "string"
+      }
+
+      {:error, reason} = TypeConversion.validate(parameters)
+
+      assert reason == %{"conversionDateFormat" => "Missing or empty field"}
+    end
+
+    test "returns error if one of the types is datetime date_format is invalid" do
+      parameters = %{
+        "field" => "some_datetime",
+        "sourceType" => "datetime",
+        "targetType" => "string",
+        "conversionDateFormat" => "totallyADateFormat"
+      }
+
+      {:error, reason} = TypeConversion.validate(parameters)
+
+      assert reason == %{
+               "conversionDateFormat" =>
+                 "DateTime format \"totallyADateFormat\" is invalid: Invalid format string, must contain at least one directive."
+             }
     end
 
     data_test "when missing parameter #{parameter} return error" do
