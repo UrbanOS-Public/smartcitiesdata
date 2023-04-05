@@ -14,13 +14,11 @@ defmodule DiscoveryApiWeb.SearchController do
     sort = Map.get(params, "sort", "name_asc")
     current_user = conn.assigns.current_user
     api_key = Plug.Conn.get_req_header(conn, "api_key")
-    IO.inspect(params, label: "TEST PARAMS")
-    IO.inspect(sort, label: "TEST SORT")
 
     with {:ok, offset} <- extract_int_from_params(params, "offset", 0),
          {:ok, limit} <- extract_int_from_params(params, "limit", 10),
-         {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit) |> IO.inspect(label: "TEST OPTS"),
-         {:ok, models, facets, total} <- Search.search(search_opts) |> IO.inspect(label: "TEST RESPONSE") do
+         {:ok, search_opts} <- build_search_opts(params, current_user, api_key, sort, offset, limit),
+         {:ok, models, facets, total} <- Search.search(search_opts) do
       render(
         conn,
         :search_view,
