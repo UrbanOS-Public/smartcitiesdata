@@ -20,7 +20,7 @@ defmodule AndiWeb.EditUserLiveView.EditUserLiveViewTable do
         <% else %>
           <%= for organization <- @organizations do %>
             <tr class="organizations-table__tr">
-              <td class="organizations-table__cell organizations-table__cell--break"><%= Map.get(organization, :orgName, "") %></td>
+              <td class="organizations-table__cell organizations-table__cell--break"><%= Map.get(organization, :orgTitle, "") %></td>
               <td class="organizations-table__cell organizations-table__cell primary-color-link" style="width: 10%;">
                 <%= Link.link("Edit", to: "/organizations/#{Map.get(organization, :id)}", class: "btn") %>
                 <button phx-click="remove_org" phx-value-org-id="<%= organization.id %>" phx-target="<%= @myself %>" class="btn btn--remove-organization">Remove</button>
