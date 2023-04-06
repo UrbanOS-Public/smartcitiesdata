@@ -48,6 +48,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     ingestion =
       assigns.changeset
       |> Changeset.apply_changes()
+
     ingestion_changeset =
       ingestion
       |> Ingestion.changeset(%{})
@@ -59,10 +60,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
     data_dictionary_changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(ingestion)
 
-    source_format = case Changeset.fetch_field(ingestion_changeset, :sourceFormat) do
-      {_, source_format} -> source_format
-      :error -> ""
-    end
+    source_format =
+      case Changeset.fetch_field(ingestion_changeset, :sourceFormat) do
+        {_, source_format} -> source_format
+        :error -> ""
+      end
 
     transformation_changesets = Ingestion.get_transformation_changesets(ingestion_changeset)
 
@@ -330,8 +332,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("save", _, socket) do
     new_ingestion_changeset = save_ingestion(socket)
-    new_socket = assign(socket, changeset: new_ingestion_changeset)
+
+    new_socket =
+      assign(socket, changeset: new_ingestion_changeset)
       |> update_save_message("valid")
+
     {:noreply, new_socket}
   end
 
@@ -428,8 +433,8 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     case Ingestions.update(current_ingestion, safe_extracted_data) do
       {:ok, post_save_ingestion} ->
         post_save_ingestion
-          |> Ingestion.changeset(%{})
-          |> Ingestion.validate()
+        |> Ingestion.changeset(%{})
+        |> Ingestion.validate()
 
       {error, details} ->
         raise "Unable to save ingestion. Error: #{error}. Details: #{details}"

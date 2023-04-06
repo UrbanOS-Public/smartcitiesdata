@@ -36,7 +36,6 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   describe "data_dictionary_tree_view" do
     test "given a schema with no nesting it displays the three fields in a well-known (BEM) way",
          %{conn: conn} do
-
       schema = [
         %{
           name: "one",
@@ -162,9 +161,9 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(find_elements(html,"input[type='hidden']#data_dictionary_form_schema_schema_0_description"))
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_0_description"))
 
-      assert Enum.empty?(find_elements(html,"input[type='hidden']#data_dictionary_form_schema_schema_1_description"))
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_1_description"))
     end
 
     test "displays help for ingestions with empty schema fields", %{conn: conn} do
@@ -229,7 +228,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_add-button")
         |> render_click()
 
@@ -258,19 +258,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       }
 
       view
-        |> form("#add_data_dictionary_form", form_data)
-        |> render_change()
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
       render_click(element(view, "#add_data_dictionary_submit_button"))
 
       eventually(fn ->
         html = render(view)
 
-        assert "Natty" in
-                 get_texts(
-                   html,
-                   "#data_dictionary_tree_one .data-dictionary-tree-field__name"
-                 )
+        assert "Natty" in get_texts(
+                 html,
+                 "#data_dictionary_tree_one .data-dictionary-tree-field__name"
+               )
       end)
 
       assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
@@ -281,7 +280,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_add-button")
         |> render_click()
 
@@ -310,19 +310,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       }
 
       view
-        |> form("#add_data_dictionary_form", form_data)
-        |> render_change()
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
       render_click(element(view, "#add_data_dictionary_submit_button"))
 
       eventually(fn ->
         html = render(view)
 
-        assert "Steeeeeeez" in
-                 get_texts(
-                   html,
-                   ".data-dictionary-tree-field__name"
-                 )
+        assert "Steeeeeeez" in get_texts(
+                 html,
+                 ".data-dictionary-tree-field__name"
+               )
       end)
 
       assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
@@ -334,33 +333,34 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     } do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_add-button")
         |> render_click()
 
       select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       expected_options = [
-          "Top Level",
-          "one",
-          "two"
-        ]
+        "Top Level",
+        "one",
+        "two"
+      ]
 
       Enum.each(select_options, fn {option_name, _} ->
         assert option_name in expected_options
       end)
 
       form_data = %{
-          "field" => %{
-            "name" => "Jared",
-            "type" => "integer",
-            "parent_id" => ingestion.id
-          }
+        "field" => %{
+          "name" => "Jared",
+          "type" => "integer",
+          "parent_id" => ingestion.id
         }
+      }
 
       view
-        |> form("#add_data_dictionary_form", form_data)
-        |> render_change()
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
       render_click(element(view, "#add_data_dictionary_submit_button"))
 
@@ -372,23 +372,23 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       end)
 
       form_data = %{
-          "field" => %{
-            "name" => "Newer Jared",
-            "type" => "list",
-            "parent_id" => ingestion.id
-          }
+        "field" => %{
+          "name" => "Newer Jared",
+          "type" => "list",
+          "parent_id" => ingestion.id
         }
+      }
 
       view
-        |> form("#add_data_dictionary_form", form_data)
-        |> render_change()
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
       render_click(element(view, "#add_data_dictionary_submit_button"))
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_add-button")
         |> render_click()
-
 
       eventually(fn ->
         html = render(view)
@@ -401,7 +401,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     test "cancels back to modal not being visible", %{conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_add-button")
         |> render_click()
 
@@ -409,7 +410,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         assert find_elements(html, ".data-dictionary-add-field-editor--visible")
       end)
 
-      html = view
+      html =
+        view
         |> element("#add_data_dictionary_cancel_button")
         |> render_click()
 
@@ -449,10 +451,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
       view
-        |> element(".data-dictionary-tree-field__text", "one")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "one")
+      |> render_click()
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_remove-button")
         |> render_click()
 
@@ -460,18 +463,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         assert find_elements(html, ".data-dictionary-remove-field-editor--visible")
       end)
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_remove_submit_button")
         |> render_click()
 
       eventually(fn ->
         html = render(view)
 
-        assert "one" not in
-                 get_texts(
-                   html,
-                   "#data_dictionary_tree_one .data-dictionary-tree-field__name"
-                 )
+        assert "one" not in get_texts(
+                 html,
+                 "#data_dictionary_tree_one .data-dictionary-tree-field__name"
+               )
       end)
     end
 
@@ -481,46 +484,48 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
       view
-        |> element(".data-dictionary-tree-field__text", "two")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "two")
+      |> render_click()
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_remove-button")
         |> render_click()
 
       assert find_elements(html, ".data-dictionary-remove-field-editor--visible")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_remove_submit_button")
         |> render_click()
 
-      assert "WARNING! Removing this field will also remove its children. Would you like to continue?" == get_text(html, ".data-dicitionary-remove-field-editor__message")
+      assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
+               get_text(html, ".data-dicitionary-remove-field-editor__message")
 
       view
-        |> element("#data_dictionary_remove_submit_button")
-        |> render_click()
+      |> element("#data_dictionary_remove_submit_button")
+      |> render_click()
 
       eventually(fn ->
         html = render(view)
 
-        assert "two" not in
-                 get_texts(
-                   html,
-                   ".data-dictionary-tree-field__name"
-                 )
+        assert "two" not in get_texts(
+                 html,
+                 ".data-dictionary-tree-field__name"
+               )
 
-        assert "child" not in
-                get_texts(
-                  html,
-                  ".data-dictionary-tree-field__name"
-                )
+        assert "child" not in get_texts(
+                 html,
+                 ".data-dictionary-tree-field__name"
+               )
       end)
     end
 
     test "cannot remove field when none is selected", %{conn: conn, ingestion: ingestion} do
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      html = view
+      html =
+        view
         |> element("#data_dictionary_remove-button")
         |> render_click()
 
@@ -538,7 +543,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
   describe "default timestamp/date" do
     setup do
-      timestamp_schema = [%{name: "timestamp_field", type: "timestamp", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}]
+      timestamp_schema = [
+        %{name: "timestamp_field", type: "timestamp", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}
+      ]
+
       date_schema = [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_seconds: -1}}}]
       andi_ingestion_with_timestamp = create_ingestion_with_schema(timestamp_schema)
       andi_ingestion_with_date = create_ingestion_with_schema(date_schema)
@@ -565,8 +573,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
       view
-        |> element(".data-dictionary-tree-field__text", "date_field")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
       eventually(fn ->
         html = render(view)
@@ -589,7 +597,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      html = view
+      html =
+        view
         |> form("#data_dictionary_form", form_data: form_schema)
         |> render_change()
 
@@ -610,8 +619,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
       view
-        |> element(".data-dictionary-tree-field__text", "date_field")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
       eventually(fn ->
         html = render(view)
@@ -634,7 +643,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      html = view
+      html =
+        view
         |> form("#data_dictionary_form", form_data: form_schema)
         |> render_change()
 
@@ -655,8 +665,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_timestamp.id}")
 
       view
-        |> element(".data-dictionary-tree-field__text", "timestamp_field")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "timestamp_field")
+      |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
       offset_in_seconds = -1 * 60 * 60 * 24
@@ -676,7 +686,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      html = view
+      html =
+        view
         |> form("#data_dictionary_form", form_data: form_schema)
         |> render_change()
 
@@ -697,8 +708,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_date.id}")
 
       view
-        |> element(".data-dictionary-tree-field__text", "date_field")
-        |> render_click()
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
       offset_in_days = -1
@@ -718,7 +729,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      html = view
+      html =
+        view
         |> form("#data_dictionary_form", form_data: form_schema)
         |> render_change()
 
@@ -1010,7 +1022,6 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
         assert "Json file is empty" == get_text(html, ".data_dictionary__error-message")
       end)
-
     end
   end
 

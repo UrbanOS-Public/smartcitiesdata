@@ -71,10 +71,12 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
 
   def ingestion_get_parent_ids(changeset, ingestion_id) do
     top_level_parent = [{@top_level_bread_crumb, ingestion_id}]
-    schema = case Changeset.fetch_field(changeset, :schema) do
-      {_, schema} -> schema
-      :error -> []
-    end
+
+    schema =
+      case Changeset.fetch_field(changeset, :schema) do
+        {_, schema} -> schema
+        :error -> []
+      end
 
     get_parent_ids_from_ingestion(schema, top_level_parent) |> Enum.reverse()
   end

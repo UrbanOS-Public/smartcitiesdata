@@ -71,7 +71,8 @@ defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
 
     send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_id})
 
-    {:noreply, assign(socket, visible: false, error_msg: "", requires_warning: true, modal_text: "Are you sure you want to remove this field?")}
+    {:noreply,
+     assign(socket, visible: false, error_msg: "", requires_warning: true, modal_text: "Are you sure you want to remove this field?")}
   end
 
   def handle_event("remove_field", %{"parent" => "false"}, socket) do

@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.6.54",
+      version: "2.6.55",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",

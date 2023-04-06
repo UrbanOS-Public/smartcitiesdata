@@ -30,7 +30,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         new_field_initial_render: false,
         add_data_dictionary_field_visible: false,
         overwrite_schema_visible?: false,
-        remove_data_dictionary_field_visible: false)
+        remove_data_dictionary_field_visible: false
+      )
     }
   end
 
@@ -112,10 +113,12 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   defp sort_data_dictionary_by_name(changeset) do
-    schema = case Changeset.fetch_field(changeset, :schema) do
-      {_, schema} -> schema
-      :error -> []
-    end
+    schema =
+      case Changeset.fetch_field(changeset, :schema) do
+        {_, schema} -> schema
+        :error -> []
+      end
+
     sorted_schema = Enum.sort_by(schema, &Map.get(&1, :name))
 
     Changeset.put_change(changeset, :schema, sorted_schema)
@@ -124,36 +127,41 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   defp get_schema_sample_error(schema_sample_errors, changeset) do
     case schema_sample_errors do
       "" ->
-        schema = case Changeset.fetch_field(changeset, :schema) do
-          {_, schema} -> schema
-          :error -> []
-        end
+        schema =
+          case Changeset.fetch_field(changeset, :schema) do
+            {_, schema} -> schema
+            :error -> []
+          end
 
         if Enum.empty?(schema) do
           "Please add a field to continue"
         else
           schema_sample_errors
         end
-      _ -> schema_sample_errors
+
+      _ ->
+        schema_sample_errors
     end
   end
 
   defp update_current_data_dictionary_item(socket, changeset) do
     current_form = socket.assigns.current_data_dictionary_item
+
     case current_form do
       :no_dictionary ->
         :no_dictionary
 
       _ ->
-        new_form_template = find_field_in_changeset(changeset, current_form.source.changes.id) |> form_for(nil, [id: :selected_schema_form])
+        new_form_template = find_field_in_changeset(changeset, current_form.source.changes.id) |> form_for(nil, id: :selected_schema_form)
         %{current_form | source: new_form_template.source, params: new_form_template.params}
     end
-
   end
 
   def handle_event("validate", %{"form_data" => form_data, "_target" => target}, socket) do
-    changeset = form_data
+    changeset =
+      form_data
       |> DataDictionaryFormSchema.changeset_from_form_data()
+
     send(self(), {:update_data_dictionary, changeset})
 
     if Enum.any?(target, fn t -> t == "selected_modifier" end) do
@@ -165,8 +173,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    changeset = form_data
+    changeset =
+      form_data
       |> DataDictionaryFormSchema.changeset_from_form_data()
+
     updated_current_form = update_current_data_dictionary_item(socket, changeset)
 
     send(self(), {:update_data_dictionary, changeset})
@@ -187,12 +197,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   @spec assign_editable_dictionary_field({:assign_editable_dictionary_field, any, any, any, any}) ::
           any
   def assign_editable_dictionary_field({:assign_editable_dictionary_field, :no_dictionary, _, _, _}) do
-    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil, [id: :selected_schema_form])
+    current_data_dictionary_item = DataDictionary.changeset_for_draft(%DataDictionary{}, %{}) |> form_for(nil, id: :selected_schema_form)
 
     send_update(__MODULE__,
       id: component_id(),
       current_data_dictionary_item: current_data_dictionary_item,
-      selected_field_id: :no_dictionary)
+      selected_field_id: :no_dictionary
+    )
   end
 
   def assign_editable_dictionary_field({:assign_editable_dictionary_field, field_id, index, name, id}) do
@@ -201,13 +212,15 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       field_id: field_id,
       index: index,
       name: name,
-      d_id: id)
+      d_id: id
+    )
   end
 
   def add_data_dictionary_field() do
     send_update(__MODULE__,
       id: component_id(),
-      add_data_dictionary_field_visible: true)
+      add_data_dictionary_field_visible: true
+    )
   end
 
   def add_data_dictionary_field_succeeded(field_as_atomic_map, parent_bread_crumb) do
@@ -216,13 +229,15 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       action: :add_data_dictionary_field_succeeded,
       field_as_atomic_map: field_as_atomic_map,
       parent_bread_crumb: parent_bread_crumb,
-      add_data_dictionary_field_visible: false)
+      add_data_dictionary_field_visible: false
+    )
   end
 
   def add_data_dictionary_field_cancelled() do
     send_update(__MODULE__,
       id: component_id(),
-      add_data_dictionary_field_visible: false)
+      add_data_dictionary_field_visible: false
+    )
   end
 
   def remove_data_dictionary_field_succeeded(deleted_field_parent_id, selected_field_id) do
@@ -230,25 +245,29 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       id: component_id(),
       action: :remove_data_dictionary_field,
       deleted_field_parent_id: deleted_field_parent_id,
-      selected_field_id: selected_field_id)
+      selected_field_id: selected_field_id
+    )
   end
 
   def remove_data_dictionary_field_cancelled() do
     send_update(__MODULE__,
       id: component_id(),
-      remove_data_dictionary_field_visible: false)
+      remove_data_dictionary_field_visible: false
+    )
   end
 
   def overwrite_schema() do
     send_update(__MODULE__,
       id: component_id(),
-      action: :overwrite_schema)
+      action: :overwrite_schema
+    )
   end
 
   def overwrite_schema_cancelled() do
     send_update(__MODULE__,
       id: component_id(),
-      action: :overwrite_schema_cancelled)
+      action: :overwrite_schema_cancelled
+    )
   end
 
   def change_visibility(updated_visibility) do
@@ -265,7 +284,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     )
   end
 
-  def file_upload(%{"fileType" => file_type}) when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
+  def file_upload(%{"fileType" => file_type})
+      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
     send_update(__MODULE__,
       id: component_id(),
       schema_sample_errors: "File type must be CSV, TSV, or JSON",
@@ -283,11 +303,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
   def file_upload(%{"file" => file, "fileType" => file_type}) do
     file_type_for_upload = get_file_type_for_upload(file_type)
+
     send_update(__MODULE__,
       id: component_id(),
       action: :generate_new_schema,
       file: file,
-      file_type: file_type_for_upload)
+      file_type: file_type_for_upload
+    )
   end
 
   defp get_file_type_for_upload(file_type)
@@ -303,48 +325,61 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
       {:ok, []} ->
         {:ok, assign(socket, schema_sample_errors: "Json file is empty")}
+
       {:ok, decoded_json} ->
-        is_schema_empty? = case Changeset.fetch_field(socket.assigns.changeset, :schema) do
-          {_, schema} -> schema
-          :error -> []
-        end
+        is_schema_empty? =
+          case Changeset.fetch_field(socket.assigns.changeset, :schema) do
+            {_, schema} -> schema
+            :error -> []
+          end
           |> Enum.empty?()
 
         case is_schema_empty? do
           true ->
-            changeset = decoded_json
+            changeset =
+              decoded_json
               |> List.wrap()
               |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id)
+
             send(self(), {:update_data_dictionary, changeset})
 
             {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
-          false -> {:ok, assign(socket, loading_schema: false, pending_schema: decoded_json, overwrite_schema_visible?: true)}
+
+          false ->
+            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_json, overwrite_schema_visible?: true)}
         end
     end
   end
 
-  def update(%{action: :generate_new_schema, file: file, file_type: file_type}, socket) when file_type in ["text/csv", "text/plain", "text/tab-separated-values"] do
+  def update(%{action: :generate_new_schema, file: file, file_type: file_type}, socket)
+      when file_type in ["text/csv", "text/plain", "text/tab-separated-values"] do
     case validate_empty_csv(file) do
       :error ->
         {:ok, assign(socket, schema_sample_errors: "There was a problem interpreting this file")}
 
       {:ok, csv_file} ->
         decoded_csv = parse_sv_file(csv_file, file_type)
-        is_schema_empty? = case Changeset.fetch_field(socket.assigns.changeset, :schema) do
-          {_, schema} -> schema
-          :error -> []
-        end
+
+        is_schema_empty? =
+          case Changeset.fetch_field(socket.assigns.changeset, :schema) do
+            {_, schema} -> schema
+            :error -> []
+          end
           |> Enum.empty?()
 
         case is_schema_empty? do
-            true ->
-              changeset = decoded_csv
-                |> List.wrap()
-                |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
-              send(self(), {:update_data_dictionary, changeset})
+          true ->
+            changeset =
+              decoded_csv
+              |> List.wrap()
+              |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
 
-              {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
-            false -> {:ok, assign(socket, loading_schema: false, pending_schema: decoded_csv, overwrite_schema_visible?: true)}
+            send(self(), {:update_data_dictionary, changeset})
+
+            {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
+
+          false ->
+            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_csv, overwrite_schema_visible?: true)}
         end
     end
   end
@@ -358,9 +393,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def update(%{action: :overwrite_schema}, socket) do
-    schema_changesets = socket.assigns.pending_schema
+    schema_changesets =
+      socket.assigns.pending_schema
       |> List.wrap()
       |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id)
+
     send(self(), {:update_data_dictionary, schema_changesets})
 
     {:ok, assign(socket, pending_schema: nil, overwrite_schema_visible?: false)}
@@ -370,13 +407,23 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     {:ok, assign(socket, pending_schema: nil, overwrite_schema_visible?: false)}
   end
 
-  def update(%{action: :add_data_dictionary_field_succeeded, field_as_atomic_map: field_as_atomic_map, parent_bread_crumb: parent_bread_crumb, add_data_dictionary_field_visible: add_data_dictionary_field_visible}, socket) do
-    schema = case Changeset.fetch_field(socket.assigns.changeset, :schema) do
-      {_, schema} -> schema
-      :error -> []
-    end
+  def update(
+        %{
+          action: :add_data_dictionary_field_succeeded,
+          field_as_atomic_map: field_as_atomic_map,
+          parent_bread_crumb: parent_bread_crumb,
+          add_data_dictionary_field_visible: add_data_dictionary_field_visible
+        },
+        socket
+      ) do
+    schema =
+      case Changeset.fetch_field(socket.assigns.changeset, :schema) do
+        {_, schema} -> schema
+        :error -> []
+      end
 
-    updated_field = add_parent_details(field_as_atomic_map, parent_bread_crumb)
+    updated_field =
+      add_parent_details(field_as_atomic_map, parent_bread_crumb)
       |> Map.put(:sequence, length(schema))
       |> Map.put(:subSchema, [])
 
@@ -387,8 +434,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         Enum.reduce_while(schema, [], fn individual_schema, acc ->
           parent_id = Map.get(updated_field, :parent_id)
           schema_id = Map.get(individual_schema, :id)
+
           case parent_id do
-            parent_id when is_nil(parent_id) -> {:halt, schema ++ [updated_field]}
+            parent_id when is_nil(parent_id) ->
+              {:halt, schema ++ [updated_field]}
 
             parent_id when schema_id === parent_id ->
               sub_schema = Map.get(individual_schema, :subSchema, [])
@@ -400,7 +449,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
               {:cont, acc ++ [individual_schema]}
           end
         end)
-    end
+      end
 
     updated_data_dictionary_changeset = Changeset.put_change(socket.assigns.changeset, :schema, updated_schema)
 
@@ -409,18 +458,23 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     {:ok, assign(socket, add_data_dictionary_field_visible: add_data_dictionary_field_visible)}
   end
 
-  def update(%{action: :remove_data_dictionary_field, deleted_field_parent_id: _deleted_field_parent_id, selected_field_id: selected_field_id}, socket) do
-    schema = case Changeset.fetch_field(socket.assigns.changeset, :schema) do
-      {_, schema} -> schema
-      :error -> []
-    end
+  def update(
+        %{action: :remove_data_dictionary_field, deleted_field_parent_id: _deleted_field_parent_id, selected_field_id: selected_field_id},
+        socket
+      ) do
+    schema =
+      case Changeset.fetch_field(socket.assigns.changeset, :schema) do
+        {_, schema} -> schema
+        :error -> []
+      end
 
     element_to_remove =
       Enum.find(schema, fn data_dictionary ->
         Map.get(data_dictionary, :id) == selected_field_id
       end)
 
-    updated_schema = List.delete(schema, element_to_remove)
+    updated_schema =
+      List.delete(schema, element_to_remove)
       |> sort_by_sequence()
 
     updated_data_dictionary_changeset = Changeset.put_change(socket.assigns.changeset, :schema, updated_schema)
@@ -483,10 +537,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   defp parse_sv_file(file_string, file_type) do
-    regex = case file_type do
-      "text/csv" -> ~r/[^[:alnum:] _,]/
-      "text/plain" -> ~r/[^[:alnum:] _\t]/
-    end
+    regex =
+      case file_type do
+        "text/csv" -> ~r/[^[:alnum:] _,]/
+        "text/plain" -> ~r/[^[:alnum:] _\t]/
+      end
 
     file_string
     |> String.split("\n")

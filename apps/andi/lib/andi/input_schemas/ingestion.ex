@@ -108,12 +108,12 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
-
-    new_changeset = changeset
-    |> Changeset.cast(changes, @cast_fields, empty_values: [])
-    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    new_changeset =
+      changeset
+      |> Changeset.cast(changes, @cast_fields, empty_values: [])
+      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
@@ -168,15 +168,17 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def merge_data_dictionary(
-    %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
-    schema_changeset
-  ) do
-    schema = case Changeset.fetch_field(schema_changeset, :schema) do
-      {_, schema} -> schema
-      :error -> []
-    end
+        %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+        schema_changeset
+      ) do
+    schema =
+      case Changeset.fetch_field(schema_changeset, :schema) do
+        {_, schema} -> schema
+        :error -> []
+      end
       |> Enum.reduce([], fn schema, acc ->
-        data_dictionary_schema = StructTools.to_map(schema)
+        data_dictionary_schema =
+          StructTools.to_map(schema)
           |> Map.put_new(:name, "")
 
         [data_dictionary_schema | acc]
