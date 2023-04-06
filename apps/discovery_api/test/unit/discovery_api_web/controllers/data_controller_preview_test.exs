@@ -50,6 +50,47 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       assert expected == actual
     end
 
+    test "preview controller does not return any metadata columns", %{conn: conn, model: model} do
+      list_of_maps = [
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"tony\"}",
+          "other" => "foo"
+        },
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"andy\"}"
+        },
+        %{
+          "id" => Faker.UUID.v4(),
+          "_ingestion_id" => "will",
+          "_extraction_id" => "be",
+          "os_partition" => "removed",
+          "json_encoded" => "{\"json_encoded\": \"smith\"}"
+        }
+      ]
+
+      schema = model.schema
+      encoded_maps = Enum.map(list_of_maps, &JsonFieldDecoder.decode_one_datum(schema, &1))
+
+      list_of_columns = ["id", "json_encoded", "other"]
+
+      expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
+
+      expect(PrestoService.preview(any(), @system_name), return: list_of_maps)
+      expect(PrestoService.preview_columns(any(), @system_name), return: list_of_columns)
+
+      actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
+
+      assert expected == actual
+    end
+
     test "preview controller returns an empty list for an existing dataset with no data", %{conn: conn} do
       list_of_columns = ["id", "json_encoded"]
       expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}

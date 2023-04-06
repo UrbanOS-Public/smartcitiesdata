@@ -47,7 +47,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],
@@ -162,7 +162,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],
@@ -202,7 +202,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         context: %{
           action: "GET",
           protocol: nil,
-          body: %{},
+          body: "",
           url: sourceUrl,
           queryParams: %{},
           headers: %{}
@@ -256,7 +256,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
           context: %{
             action: "GET",
             protocol: nil,
-            body: %{},
+            body: "",
             url: "#{sourceUrl}/{{currentYear}}-{{currentMonth}}",
             queryParams: %{},
             headers: %{}
@@ -356,7 +356,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],

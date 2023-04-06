@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "2.0.24",
+      version: "2.0.27",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -95,7 +95,7 @@ defmodule Reaper.MixProject do
       {:patiently, "~> 0.2", only: [:dev, :test, :integration], override: true},
       {:phoenix, "~> 1.4", only: :test},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 2.2.7", only: [:test, :integration]},
+      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
       {:temp, "~> 0.4", only: [:test, :integration]},
       {:performance, in_umbrella: true, only: :integration},
       {:unzip, "~> 0.6.0"}

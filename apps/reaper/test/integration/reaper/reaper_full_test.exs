@@ -97,7 +97,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -177,7 +177,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -226,7 +226,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -261,7 +261,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -296,7 +296,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -330,7 +330,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -371,7 +371,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -433,7 +433,7 @@ defmodule Reaper.FullTest do
               context: %{
                 url: "http://localhost:#{bypass.port}/{{currentDate}}",
                 action: "GET",
-                body: %{},
+                body: "",
                 protocol: nil,
                 queryParams: %{},
                 headers: %{}
@@ -569,7 +569,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -638,7 +638,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -687,7 +687,7 @@ defmodule Reaper.FullTest do
               assigns: %{},
               context: %{
                 action: "GET",
-                body: %{},
+                body: "",
                 headers: [],
                 protocol: nil,
                 queryParams: [],
@@ -718,7 +718,7 @@ defmodule Reaper.FullTest do
             assigns: %{},
             context: %{
               action: "GET",
-              body: %{},
+              body: "",
               headers: [],
               protocol: nil,
               queryParams: [],

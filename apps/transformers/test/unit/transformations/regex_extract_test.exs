@@ -97,12 +97,12 @@ defmodule Transformers.RegexExtractTest do
         "sourceField" => "phone_number",
         "targetField" => "area_code",
         "regex" => "^\\((\\d{3})\\)",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "phone_number",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "(555) 123-4567"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "phone_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "(555) 123-4567"
       }
 
       message_payload = %{"phone_number" => "(555) 123-4567"}
@@ -118,12 +118,12 @@ defmodule Transformers.RegexExtractTest do
         "sourceField" => "phone_number",
         "targetField" => "area_code",
         "regex" => "^\\((\\d{3})\\)",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "phone_number",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "value"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "phone_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "value"
       }
 
       message_payload = %{"phone_number" => "(555) 123-4567"}

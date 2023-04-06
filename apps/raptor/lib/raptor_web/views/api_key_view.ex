@@ -12,4 +12,10 @@ defmodule RaptorWeb.ApiKeyView do
       user_id: user_id
     }
   end
+
+  def render("checkRole.json", %{has_role: has_role}) do
+    %{
+      has_role: has_role
+    }
+  end
 end

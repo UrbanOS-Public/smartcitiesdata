@@ -138,7 +138,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       html = render(view)
       error_message = get_text(html, "#sourceFormat-error-msg")
 
-      assert error_message == "Please enter a valid source format."
+      assert error_message == "Please select a valid source format."
     end
 
     test "dataset name field defaults to it's existing association", %{

@@ -5,7 +5,9 @@ defmodule Raptor.Services.Auth0Management do
   use Properties, otp_app: :raptor
   alias Tesla
   alias Raptor.Services.Auth0UserDataStore
+  alias Raptor.Services.Auth0UserRoleStore
   alias Raptor.Schemas.Auth0UserData
+  alias Raptor.Schemas.Auth0UserRole
 
   require Logger
 
@@ -22,6 +24,18 @@ defmodule Raptor.Services.Auth0Management do
 
       user_list ->
         {:ok, user_list}
+    end
+  end
+
+  def get_roles_by_user_id(user_id) do
+    case Auth0UserRoleStore.get_roles_by_user_id(user_id) do
+      [] ->
+        roles_response = get_roles_by_user_id_from_auth0(user_id)
+        persist_roles(user_id, roles_response)
+        roles_response
+
+      roles ->
+        {:ok, roles}
     end
   end
 
@@ -44,6 +58,29 @@ defmodule Raptor.Services.Auth0Management do
       {:error, reason} ->
         Logger.error("Unable to retrieve auth0 users with the provided api key: #{reason}")
         {:error, :retrieve_auth0_users_by_api_key_failed}
+    end
+  end
+
+  defp get_roles_by_user_id_from_auth0(user_id) do
+    url = Keyword.fetch!(auth0(), :audience)
+    full_url = "#{url}users/#{user_id}/roles"
+
+    with {:ok, access_token} <- get_token(),
+         {:ok, response} <-
+           Tesla.get(full_url,
+             headers: [{"Authorization", "Bearer #{access_token}"}]
+           ) do
+      users =
+        response
+        |> Map.get(:body)
+        |> Jason.decode!()
+        |> Enum.map(&Auth0UserRole.from_map/1)
+
+      {:ok, users}
+    else
+      {:error, reason} ->
+        Logger.error("Unable to retrieve auth0 user roles with the provided api key: #{reason}")
+        {:error, :retrieve_auth0_user_roles_by_api_key_failed}
     end
   end
 
@@ -109,6 +146,16 @@ defmodule Raptor.Services.Auth0Management do
         |> Enum.each(fn
           user_data -> Raptor.Services.Auth0UserDataStore.persist(user_data)
         end)
+
+      {:error, reason} ->
+        :error
+    end
+  end
+
+  defp persist_roles(user_id, roles_results) do
+    case roles_results do
+      {:ok, roles} ->
+        Raptor.Services.Auth0UserRoleStore.persist(user_id, roles)
 
       {:error, reason} ->
         :error

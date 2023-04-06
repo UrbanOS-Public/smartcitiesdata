@@ -145,12 +145,12 @@ defmodule Transformers.RegexReplaceTest do
       "sourceField" => "something",
       "regex" => "abc",
       "replacement" => "123",
-      "condition" => %{
-        "conditionDataType" => "string",
-        "sourceConditionField" => "something",
-        "conditionOperation" => "=",
-        "targetConditionValue" => "abcabcdefabc"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "string",
+      "sourceConditionField" => "something",
+      "conditionOperation" => "=",
+      "targetConditionValue" => "abcabcdefabc"
     }
 
     {:ok, result} = RegexReplace.transform(payload, parameters)
@@ -167,12 +167,12 @@ defmodule Transformers.RegexReplaceTest do
       "sourceField" => "something",
       "regex" => "abc",
       "replacement" => "123",
-      "condition" => %{
-        "conditionDataType" => "string",
-        "sourceConditionField" => "something",
-        "conditionOperation" => "=",
-        "targetConditionValue" => "other"
-      }
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "string",
+      "sourceConditionField" => "something",
+      "conditionOperation" => "=",
+      "targetConditionValue" => "other"
     }
 
     {:ok, result} = RegexReplace.transform(payload, parameters)

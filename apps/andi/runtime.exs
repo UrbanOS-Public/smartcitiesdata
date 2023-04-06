@@ -71,7 +71,8 @@ config :andi,
   access_level: String.to_atom(System.get_env("ACCESS_LEVEL") || "public"),
   vault_role: System.get_env("VAULT_ROLE"),
   hosted_bucket: System.get_env("HOSTED_FILE_BUCKET"),
-  hosted_region: System.get_env("HOSTED_FILE_REGION")
+  hosted_region: System.get_env("HOSTED_FILE_REGION"),
+  raptor_url: System.get_env("RAPTOR_URL")
 
 config :andi, Andi.Repo,
   database: System.get_env("POSTGRES_DBNAME"),
@@ -101,7 +102,7 @@ config :andi, :auth0,
   audience: "https://#{System.get_env("AUTH0_DOMAIN")}/api/v2/"
 
 config :telemetry_event,
-  metrics_port: 9090,
+  metrics_port: System.get_env("METRICS_PORT") |> String.to_integer(),
   add_poller: true,
   add_metrics: [:phoenix_endpoint_stop_duration, :dataset_total_count],
   metrics_options: [

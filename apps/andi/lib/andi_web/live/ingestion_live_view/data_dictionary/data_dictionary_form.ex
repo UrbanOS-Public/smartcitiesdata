@@ -67,7 +67,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
                     <div class="file-input-button">
                       <%= upload_form = form_for :form, "#", [ as: :form_data, multipart: true ] %>
                         <%= label(upload_form, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(upload_form, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain") %>
+                        <%= file_input(upload_form, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
                         <div class="data_dictionary__error-message"><%= get_schema_sample_error(@schema_sample_errors, sorted_changeset) %></div>
                       </form>
                     </div>
@@ -265,7 +265,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     )
   end
 
-  def file_upload(%{"fileType" => file_type}) when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain"] do
+  def file_upload(%{"fileType" => file_type}) when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
     send_update(__MODULE__,
       id: component_id(),
       schema_sample_errors: "File type must be CSV, TSV, or JSON",
@@ -290,7 +290,9 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       file_type: file_type_for_upload)
   end
 
-  defp get_file_type_for_upload(file_type) when file_type in ["text/csv", "application/vnd.ms-excel"], do: "text/csv"
+  defp get_file_type_for_upload(file_type)
+       when file_type in ["text/csv", "application/vnd.ms-excel"],
+       do: "text/csv"
 
   defp get_file_type_for_upload(file_type), do: file_type
 
@@ -321,7 +323,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     end
   end
 
-  def update(%{action: :generate_new_schema, file: file, file_type: file_type}, socket) when file_type in ["text/csv", "text/plain"] do
+  def update(%{action: :generate_new_schema, file: file, file_type: file_type}, socket) when file_type in ["text/csv", "text/plain", "text/tab-separated-values"] do
     case validate_empty_csv(file) do
       :error ->
         {:ok, assign(socket, schema_sample_errors: "There was a problem interpreting this file")}
@@ -464,14 +466,16 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     end)
   end
 
-  defp handle_field_not_found(nil), do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+  defp handle_field_not_found(nil),
+    do: DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
+
   defp handle_field_not_found(found_field), do: found_field
 
   defp sort_by_sequence(list) do
     Enum.sort_by(list, &Map.get(&1, :sequence))
   end
 
-  defp validate_empty_csv(file) do
+  defp check_file_empty(file) do
     case file == "" or file == "\n" do
       true -> :error
       _ -> {:ok, file}

@@ -151,12 +151,12 @@ defmodule Transformers.MultiplicationTest do
       params = %{
         "multiplicands" => ["input_number"],
         "targetField" => "output_number",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "input_number",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "8"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "input_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "8"
       }
 
       message_payload = %{"input_number" => 8}
@@ -171,12 +171,12 @@ defmodule Transformers.MultiplicationTest do
       params = %{
         "multiplicands" => ["input_number"],
         "targetField" => "output_number",
-        "condition" => %{
-          "conditionDataType" => "number",
-          "sourceConditionField" => "input_number",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "10"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "input_number",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "10"
       }
 
       message_payload = %{"input_number" => 8}
