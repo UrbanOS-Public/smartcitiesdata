@@ -98,7 +98,6 @@ defmodule Andi.InputSchemas.Ingestion do
 
   def changeset(%__MODULE__{} = ingestion, %{} = changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
-    source_format = Map.get(changes, :sourceFormat, nil)
 
     new_ingestion =
       ingestion
@@ -109,9 +108,8 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
-    source_format = Map.get(changes, :sourceFormat, nil)
 
-    changeset
+    new_changeset = changeset
     |> Changeset.cast(changes, @cast_fields, empty_values: [])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
@@ -167,6 +165,26 @@ defmodule Andi.InputSchemas.Ingestion do
     cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :extractSteps)
 
     changeset(cleared_ingestion_changeset, %{extractSteps: extract_step_changeset_list})
+  end
+
+  def merge_data_dictionary(
+    %Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset,
+    schema_changeset
+  ) do
+    schema = case Changeset.fetch_field(schema_changeset, :schema) do
+      {_, schema} -> schema
+      :error -> []
+    end
+      |> Enum.reduce([], fn schema, acc ->
+        data_dictionary_schema = StructTools.to_map(schema)
+          |> Map.put_new(:name, "")
+
+        [data_dictionary_schema | acc]
+      end)
+
+    cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :schema)
+
+    changeset(cleared_ingestion_changeset, %{schema: schema})
   end
 
   def merge_finalize_changeset(
@@ -253,7 +271,7 @@ defmodule Andi.InputSchemas.Ingestion do
 
   defp validate_top_level_selector(changeset), do: changeset
 
-  defp validate_schema(changeset) do
+  def validate_schema(changeset) do
     case Changeset.get_field(changeset, :schema, nil) do
       [] -> Changeset.add_error(changeset, :schema, "cannot be empty")
       nil -> Changeset.add_error(changeset, :schema, "is required", validation: :required)

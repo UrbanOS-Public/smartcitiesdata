@@ -11,7 +11,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   alias Andi.InputSchemas.InputConverter
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
   alias AndiWeb.InputSchemas.FinalizeFormSchema
-  alias Andi.InputSchemas.Ingestions.ExtractStep
+  alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Ecto.Changeset
 
   import SmartCity.Event, only: [ingestion_update: 0]
@@ -45,15 +45,24 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def render(assigns) do
-    ingestion_changeset =
+    ingestion =
       assigns.changeset
       |> Changeset.apply_changes()
+    ingestion_changeset =
+      ingestion
       |> Ingestion.changeset(%{})
       |> Ingestion.validate()
 
     metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
 
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
+
+    data_dictionary_changeset = DataDictionaryFormSchema.changeset_from_andi_ingestion(ingestion)
+
+    source_format = case Changeset.fetch_field(ingestion_changeset, :sourceFormat) do
+      {_, source_format} -> source_format
+      :error -> ""
+    end
 
     transformation_changesets = Ingestion.get_transformation_changesets(ingestion_changeset)
 
@@ -88,11 +97,19 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
                 ) %>
           </div>
           <div>
-            <%= live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
+            <%= live_component(AndiWeb.IngestionLiveView.DataDictionaryForm,
+              id: AndiWeb.IngestionLiveView.DataDictionaryForm.component_id(),
+              changeset: data_dictionary_changeset,
+              order: "2",
+              sourceFormat: source_format,
+              is_curator: @is_curator,
+              ingestion_id: ingestion_changeset.data.id
+              ) %>
+            <%= #live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>
 
           <div>
-            <%= live_component(@socket, AndiWeb.IngestionLiveView.Transformations.TransformationsStep,
+            <%= live_component(AndiWeb.IngestionLiveView.Transformations.TransformationsStep,
                   id: AndiWeb.IngestionLiveView.Transformations.TransformationsStep.component_id(),
                   transformation_changesets: transformation_changesets,
                   order: "3",
@@ -163,6 +180,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
+  def handle_info({:update_data_dictionary, schema_changeset}, socket) do
+    new_ingestion_changeset = Ingestion.merge_data_dictionary(socket.assigns.changeset, schema_changeset)
+
+    {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
+  end
+
   def handle_info({:update_all_transformations, transformation_changesets}, socket) do
     new_ingestion_changeset = Ingestion.merge_transformation_changeset(socket.assigns.changeset, transformation_changesets)
 
@@ -204,6 +227,36 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_info({:update_save_message, status}, socket) do
     {:noreply, update_save_message(socket, status)}
+  end
+
+  def handle_info({:assign_editable_dictionary_field, _field_id, _index, _name, _id} = assigns, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.assign_editable_dictionary_field(assigns)
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:add_data_dictionary_field_succeeded, field_as_atomic_map, parent_bread_crumb}, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.add_data_dictionary_field_succeeded(field_as_atomic_map, parent_bread_crumb)
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:add_data_dictionary_field_cancelled}, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.add_data_dictionary_field_cancelled()
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:remove_data_dictionary_field_succeeded, deleted_field_parent_id, selected_field_id}, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.remove_data_dictionary_field_succeeded(deleted_field_parent_id, selected_field_id)
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:remove_data_dictionary_field_cancelled}, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.remove_data_dictionary_field_cancelled()
+
+    {:noreply, socket}
   end
 
   def handle_info(
@@ -259,11 +312,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_event("publish", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
 
-    save_ingestion_safe(socket)
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
-    # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-    # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
-    Process.sleep(1_000)
+    save_ingestion(socket)
+    # AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
+    # # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
+    # # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
+    # Process.sleep(1_000)
 
     case publish_ingestion(ingestion_id, socket.assigns.user_id) do
       {:ok, ingestion_changeset} ->
@@ -276,9 +329,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_event("save", _, socket) do
-    new_ingestion = save_ingestion_safe(socket)
-    {:noreply, socket} = save_ingestion(socket)
-    new_socket = assign(socket, ingestion: new_ingestion)
+    new_ingestion_changeset = save_ingestion(socket)
+    new_socket = assign(socket, changeset: new_ingestion_changeset)
+      |> update_save_message("valid")
     {:noreply, new_socket}
   end
 
@@ -304,6 +357,36 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, redirect(socket, to: socket.assigns.unsaved_changes_link)}
   end
 
+  def handle_event("file_upload_started", _, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.file_upload_start()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("file_upload", file_info, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.file_upload(file_info)
+
+    {:noreply, socket}
+  end
+
+  def handle_event("add_data_dictionary_field", _, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.add_data_dictionary_field()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("overwrite-schema", _, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.overwrite_schema()
+
+    {:noreply, socket}
+  end
+
+  def handle_event("overwrite-schema-cancelled", _, socket) do
+    AndiWeb.IngestionLiveView.DataDictionaryForm.overwrite_schema_cancelled()
+
+    {:noreply, socket}
+  end
+
   def handle_event(event, payload, socket) do
     IO.inspect("Unhandled Event in module #{__MODULE__}")
     IO.inspect(event, label: "Event")
@@ -319,7 +402,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, socket}
   end
 
-  defp save_ingestion_safe(socket) do
+  defp save_ingestion(socket) do
     # Once all subforms are routed through this parent live view, this save function
     # can save directly to the Repo from socket.assigns.changeset without having to extract
     # the changes and reapply to the ingestion from the database, but for now, we need to treat
@@ -335,6 +418,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       targetDataset: safe_ingestion_data.targetDataset,
       topLevelSelector: safe_ingestion_data.topLevelSelector,
       extractSteps: safe_ingestion_data.extractSteps,
+      schema: safe_ingestion_data.schema,
       transformations: safe_ingestion_data.transformations,
       cadence: safe_ingestion_data.cadence
     }
@@ -344,30 +428,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     case Ingestions.update(current_ingestion, safe_extracted_data) do
       {:ok, post_save_ingestion} ->
         post_save_ingestion
+          |> Ingestion.changeset(%{})
+          |> Ingestion.validate()
 
       {error, details} ->
         raise "Unable to save ingestion. Error: #{error}. Details: #{details}"
     end
-  end
-
-  defp save_ingestion(socket) do
-    ingestion_id = socket.assigns.ingestion.id
-
-    AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
-    # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-    # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
-    Process.sleep(1_000)
-
-    # This is post-save...
-    ingestion_changeset =
-      ingestion_id
-      |> Ingestions.get()
-      |> Ingestion.changeset(%{})
-      |> Ingestion.validate()
-
-    updated_socket = assign(socket, changeset: ingestion_changeset)
-
-    {:noreply, update_save_message(updated_socket, "valid")}
   end
 
   defp save_message(true = _valid?), do: "Saved successfully."
@@ -403,6 +469,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def publish_ingestion(ingestion_id, user_id) do
+    # TODO: clean up using the socket ingestion changeset, as it is the same as below
     with andi_ingestion when not is_nil(andi_ingestion) <- Ingestions.get(ingestion_id),
          ingestion_changeset <-
            andi_ingestion

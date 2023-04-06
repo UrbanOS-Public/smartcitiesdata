@@ -21,38 +21,38 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
       end
 
     ~L"""
-    <div id=<%= @id %> class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
+    <div id="<%= @id %>" class="data-dictionary-add-field-editor data-dictionary-add-field-editor--<%= modifier %>">
     <div class="modal-form-container" x-trap="<%= modifier === "visible" %>">
         <h2 class="add-new-field-header">Add New Field</h2>
-        <%= form = form_for @changeset, "#", [phx_change: :validate, phx_target: "##{id}", as: :field] %>
+        <%= form = form_for @changeset, "#", [phx_change: :validate, phx_target: "##{id}", as: :field, id: :add_data_dictionary_form] %>
             <div class="form-input-container">
               <div class="data-dictionary-add-field-editor__name form-block">
                 <div class="form-input">
-                  <%= label(form, :name, "Name", class: "label label--required", for: id <> "_name") %>
-                  <%= text_input(form, :name, [id: id <> "_name", aria_label: id <> "_name", class: "input", required: true]) %>
+                  <%= label(form, :name, "Name", class: "label label--required", for: "#{id}_name") %>
+                  <%= text_input(form, :name, [id: "#{id}_name", aria_label: "#{id}_name", class: "input", required: true]) %>
                 </div>
                 <%= error_tag(form, :name) %>
               </div>
 
               <div class="data-dictionary-add-field-editor__type form-block">
                 <div class="form-input">
-                  <%= label(form, :type, "Type", class: "label label--required", for: id <> "_type") %>
-                  <%= select(form, :type, get_item_types(), [id: id <> "_type", aria_label: id <> "_type", class: "select", required: true]) %>
+                  <%= label(form, :type, "Type", class: "label label--required", for: "#{id}_type") %>
+                  <%= select(form, :type, get_item_types(), [id: "#{id}_type", aria_label: "#{id}_type", class: "select", required: true]) %>
                 </div>
                 <%= error_tag(form, :type) %>
               </div>
 
               <div class="data-dictionary-add-field-editor__parent-id form-block">
                 <div class="form-input">
-                  <%= label(form, :parent_id, "Child Of", class: "label", for: id <> "_child-of") %>
-                  <%= select(form, :parent_id, @eligible_parents, selected: @selected_field_id, id: id <> "_child-of", class: "select") %>
+                  <%= label(form, :parent_id, "Child Of", class: "label", for: "#{id}_child-of") %>
+                  <%= select(form, :parent_id, @eligible_parents, selected: @selected_field_id, id: "#{id}_child-of", class: "select") %>
                 </div>
               </div>
             </div>
 
             <div class="button-container">
-              <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
-              <button class="btn submit_button btn--primary" type="button" phx-click="add_field" phx-target="<%= @myself %>" >ADD FIELD</button>
+              <%= reset("CANCEL", id: "add_data_dictionary_cancel_button", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
+              <button id="add_data_dictionary_submit_button" class="btn submit_button btn--primary" type="button" phx-click="add_field" phx-target="<%= @myself %>" >ADD FIELD</button>
             </div>
           </form>
         </div>
@@ -77,10 +77,10 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
     {:noreply, assign(socket, changeset: blank_changeset(socket), visible: false)}
   end
 
-  def handle_event("add_field", _, %{assigns: %{dataset_id: _dataset_id}} = socket) do
+  def handle_event("add_field", _, %{assigns: %{dataset_id: dataset_id}} = socket) do
     field_as_atomic_map =
       socket.assigns.changeset.changes
-      |> Map.put(:dataset_id, socket.assigns.dataset_id)
+      |> Map.put(:dataset_id, dataset_id)
 
     parent_bread_crumb =
       Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
@@ -114,24 +114,15 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
       |> Map.new()
       |> Map.get(field_as_atomic_map.parent_id)
 
-    new_changeset =
-      case DataDictionaryFields.add_field_to_parent_for_ingestion(field_as_atomic_map, parent_bread_crumb) do
-        {:ok, field} ->
-          send(self(), {:add_data_dictionary_field_succeeded, field.id})
-          blank_changeset(socket)
-
-        {:error, changeset} ->
-          Map.put(changeset, :action, :update)
-      end
-
-    {:noreply, assign(socket, changeset: new_changeset)}
+    send(self(), {:add_data_dictionary_field_succeeded, field_as_atomic_map, parent_bread_crumb})
+    {:noreply, socket}
   end
 
   defp blank_changeset(%{view: AndiWeb.EditLiveView.DataDictionaryForm} = _socket) do
     DataDictionary.changeset_for_new_field(%DataDictionary{}, %{})
   end
 
-  defp blank_changeset(%{view: AndiWeb.IngestionLiveView.DataDictionaryForm} = _socket) do
+  defp blank_changeset(%{view: AndiWeb.IngestionLiveView.EditIngestionLiveView} = _socket) do
     DataDictionary.ingestion_changeset_for_new_field(%DataDictionary{}, %{})
   end
 

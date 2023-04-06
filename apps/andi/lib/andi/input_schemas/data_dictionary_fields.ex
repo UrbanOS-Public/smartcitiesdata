@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.Repo
+  alias Ecto.Changeset
 
   import Ecto.Query
 
@@ -66,6 +67,16 @@ defmodule Andi.InputSchemas.DataDictionaryFields do
     data_dictionary_results = Repo.all(data_dictionary_query)
 
     top_level_parent ++ data_dictionary_results
+  end
+
+  def ingestion_get_parent_ids(changeset, ingestion_id) do
+    top_level_parent = [{@top_level_bread_crumb, ingestion_id}]
+    schema = case Changeset.fetch_field(changeset, :schema) do
+      {_, schema} -> schema
+      :error -> []
+    end
+
+    get_parent_ids_from_ingestion(schema, top_level_parent) |> Enum.reverse()
   end
 
   def get_parent_ids_from_ingestion(ingestion) do

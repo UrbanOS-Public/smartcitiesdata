@@ -3,7 +3,6 @@ defmodule AndiWeb.IngestionLiveView.FinalizeForm do
   LiveComponent for scheduling dataset ingestion
   """
   use Phoenix.LiveComponent
-  use AndiWeb.FormSection, schema_module: AndiWeb.InputSchemas.FinalizeFormSchema
   import Phoenix.HTML.Form
   require Logger
 
