@@ -107,7 +107,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
               is_curator: @is_curator,
               ingestion_id: ingestion_changeset.data.id
               ) %>
-            <%= #live_render(@socket, AndiWeb.IngestionLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"ingestion" => @ingestion, "is_curator" => @is_curator, "order" => "2"}) %>
           </div>
 
           <div>
@@ -215,18 +214,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
-  # Remove these form_updates after all children refactor to parent/child pattern
-  # Unsaved changes should be determined by comparing the current
-  # ingestion from the DB to the current changeset, allowing
-  # deterministic, non-stateful calculations
-  def handle_info({:form_update, _}, socket) do
-    {:noreply, assign(socket, unsaved_changes: true)}
-  end
-
-  def handle_info(:form_update, socket) do
-    {:noreply, assign(socket, unsaved_changes: true)}
-  end
-
   def handle_info({:update_save_message, status}, socket) do
     {:noreply, update_save_message(socket, status)}
   end
@@ -315,10 +302,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     ingestion_id = socket.assigns.ingestion.id
 
     save_ingestion(socket)
-    # AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{ingestion_id: ingestion_id})
-    # # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-    # # This sleep is needed because other save events are executing. publish_ingestion will load the ingestion from the database.
-    # Process.sleep(1_000)
 
     case publish_ingestion(ingestion_id, socket.assigns.user_id) do
       {:ok, ingestion_changeset} ->
@@ -408,10 +391,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   defp save_ingestion(socket) do
-    # Once all subforms are routed through this parent live view, this save function
-    # can save directly to the Repo from socket.assigns.changeset without having to extract
-    # the changes and reapply to the ingestion from the database, but for now, we need to treat
-    # the database as the source of truth that can change at any time.
 
     safe_ingestion_data =
       socket.assigns.changeset
