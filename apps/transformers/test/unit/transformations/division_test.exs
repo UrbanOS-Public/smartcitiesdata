@@ -278,7 +278,7 @@ defmodule Transformers.DivisionTest do
         %{
           field_name: "targetField",
           field_type: "string",
-          field_label: "Field to populate with product",
+          field_label: "Field to populate with quotient",
           options: nil
         },
         %{
