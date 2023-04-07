@@ -115,7 +115,8 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
       |> Map.get(field_as_atomic_map.parent_id)
 
     send(self(), {:add_data_dictionary_field_succeeded, field_as_atomic_map, parent_bread_crumb})
-    {:noreply, socket}
+
+    {:noreply, assign(socket, changeset: blank_changeset(socket))}
   end
 
   defp blank_changeset(%{view: AndiWeb.EditLiveView.DataDictionaryForm} = _socket) do

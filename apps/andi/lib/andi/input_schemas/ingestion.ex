@@ -177,9 +177,7 @@ defmodule Andi.InputSchemas.Ingestion do
         :error -> []
       end
       |> Enum.reduce([], fn schema, acc ->
-        data_dictionary_schema =
-          StructTools.to_map(schema)
-          |> Map.put_new(:name, "")
+        data_dictionary_schema = map_schema(schema)
 
         [data_dictionary_schema | acc]
       end)
@@ -187,6 +185,19 @@ defmodule Andi.InputSchemas.Ingestion do
     cleared_ingestion_changeset = Changeset.delete_change(ingestion_changeset, :schema)
 
     changeset(cleared_ingestion_changeset, %{schema: schema})
+  end
+
+  defp map_schema(schema) do
+    updated_schema = StructTools.to_map(schema)
+    |> Map.put_new(:name, "")
+    |> Map.put_new(:type, "")
+    |> Map.put_new(:subSchema, [])
+
+    updated_sub_schema = updated_schema
+      |> Map.get(:subSchema, [])
+      |> Enum.map(fn subSchema -> map_schema(subSchema) end)
+
+    Map.put(updated_schema, :subSchema, updated_sub_schema)
   end
 
   def merge_finalize_changeset(
