@@ -353,7 +353,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
   def update(%{action: :generate_new_schema, file: file, file_type: file_type}, socket)
       when file_type in ["text/csv", "text/plain", "text/tab-separated-values"] do
-    case validate_empty_csv(file) do
+    case check_file_empty(file) do
       :error ->
         {:ok, assign(socket, schema_sample_errors: "There was a problem interpreting this file")}
 
