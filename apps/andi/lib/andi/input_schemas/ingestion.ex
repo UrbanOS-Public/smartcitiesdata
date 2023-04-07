@@ -100,18 +100,18 @@ defmodule Andi.InputSchemas.Ingestion do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
 
     ingestion
-      |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
-      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
     changeset
-      |> Changeset.cast(changes, @cast_fields, empty_values: [])
-      |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
-      |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
-      |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast(changes, @cast_fields, empty_values: [])
+    |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
+    |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
+    |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do

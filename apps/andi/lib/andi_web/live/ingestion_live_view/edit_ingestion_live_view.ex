@@ -391,7 +391,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   defp save_ingestion(socket) do
-
     safe_ingestion_data =
       socket.assigns.changeset
       |> Changeset.apply_changes()
