@@ -99,8 +99,7 @@ defmodule Andi.InputSchemas.Ingestion do
   def changeset(%__MODULE__{} = ingestion, %{} = changes) do
     changes_with_id = StructTools.ensure_id(ingestion, changes)
 
-    new_ingestion =
-      ingestion
+    ingestion
       |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
       |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
       |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
@@ -108,8 +107,7 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
-    new_changeset =
-      changeset
+    changeset
       |> Changeset.cast(changes, @cast_fields, empty_values: [])
       |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
       |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
