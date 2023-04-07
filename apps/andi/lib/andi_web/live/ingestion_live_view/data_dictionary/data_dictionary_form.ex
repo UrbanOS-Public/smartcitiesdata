@@ -195,7 +195,8 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def assign_editable_dictionary_field({:assign_editable_dictionary_field, :no_dictionary, _, _, _}) do
-    current_data_dictionary_item = DataDictionary.changeset_for_draft_ingestion(%DataDictionary{}, %{}) |> form_for("selected_item", id: :selected_schema_form)
+    current_data_dictionary_item =
+      DataDictionary.changeset_for_draft_ingestion(%DataDictionary{}, %{}) |> form_for("selected_item", id: :selected_schema_form)
 
     send_update(__MODULE__,
       id: component_id(),
@@ -471,24 +472,26 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         Map.get(data_dictionary, :id) == selected_field_id
       end)
 
-    updated_schema = if is_nil(element_to_remove) do
-      Enum.reduce(schema, [], fn individual_schema, acc ->
-        sub_schema = Map.get(individual_schema, :subSchema)
+    updated_schema =
+      if is_nil(element_to_remove) do
+        Enum.reduce(schema, [], fn individual_schema, acc ->
+          sub_schema = Map.get(individual_schema, :subSchema)
 
-        element_to_remove = Enum.find(sub_schema, fn s -> Map.get(s, :id) == selected_field_id end)
+          element_to_remove = Enum.find(sub_schema, fn s -> Map.get(s, :id) == selected_field_id end)
 
-        updated_sub_schema = if is_nil(element_to_remove) do
-          sub_schema
-        else
-          List.delete(sub_schema, element_to_remove) |> sort_by_sequence()
-        end
+          updated_sub_schema =
+            if is_nil(element_to_remove) do
+              sub_schema
+            else
+              List.delete(sub_schema, element_to_remove) |> sort_by_sequence()
+            end
 
-        acc ++ [Map.put(individual_schema, :subSchema, updated_sub_schema)]
-      end)
-    else
-      List.delete(schema, element_to_remove)
+          acc ++ [Map.put(individual_schema, :subSchema, updated_sub_schema)]
+        end)
+      else
+        List.delete(schema, element_to_remove)
         |> sort_by_sequence()
-    end
+      end
 
     updated_data_dictionary_changeset = Changeset.put_change(socket.assigns.changeset, :schema, updated_schema)
 

@@ -188,12 +188,14 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   defp map_schema(schema) do
-    updated_schema = StructTools.to_map(schema)
-    |> Map.put_new(:name, "")
-    |> Map.put_new(:type, "")
-    |> Map.put_new(:subSchema, [])
+    updated_schema =
+      StructTools.to_map(schema)
+      |> Map.put_new(:name, "")
+      |> Map.put_new(:type, "")
+      |> Map.put_new(:subSchema, [])
 
-    updated_sub_schema = updated_schema
+    updated_sub_schema =
+      updated_schema
       |> Map.get(:subSchema, [])
       |> Enum.map(fn subSchema -> map_schema(subSchema) end)
 
