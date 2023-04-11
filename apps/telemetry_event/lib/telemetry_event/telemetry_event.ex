@@ -9,6 +9,7 @@ defmodule TelemetryEvent do
   end
 
   def add_event_metrics(event_tags_and_values, event_name, measurement \\ []) do
+    IO.inspect(TelemetryEventHelper.tags_and_values(event_tags_and_values), label: "telemetry_event: ")
     :telemetry.execute(
       event_name,
       Keyword.get(measurement, :value, %{}),
