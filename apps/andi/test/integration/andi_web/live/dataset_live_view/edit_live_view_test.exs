@@ -516,4 +516,34 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, "#approve-button"))
     end
   end
+
+  describe "Disable Schema After Publish" do
+    setup do
+      published_dataset = TDG.create_dataset(%{}) |> Map.put(:submission_status, :published)
+      {:ok, _} = Datasets.update(published_dataset)
+
+      unpublished_dataset =
+        TDG.create_dataset(%{})
+
+      {:ok, _} = Datasets.update(unpublished_dataset)
+
+      [published_dataset: published_dataset, unpublished_dataset: unpublished_dataset]
+    end
+
+    test "Upload section conditionally does not exist", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+    end
+
+    test "Read-Only warning conditionally does exist", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(find_elements(html, ".data-dictionary-disabled-warning"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(find_elements(html, ".data-dictionary-disabled-warning"))
+    end
+  end
 end

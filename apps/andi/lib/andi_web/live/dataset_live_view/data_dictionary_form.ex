@@ -58,6 +58,10 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         false -> "hidden"
       end
 
+    is_published = assigns.dataset.submission_status == :published
+    IO.inspect(is_published, label: "RYAN - IS PUBLISHED")
+    IO.inspect(assigns.dataset.submission_status, label: "RYAN - Status")
+
     ~L"""
     <div id="data-dictionary-form" class="form-component form-end">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
@@ -90,6 +94,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             <div class="data-dictionary-form-edit-section form-grid">
 
               <div class="upload-section">
+                <%= if not is_published do %>
                 <div class="data-dictionary-form__file-upload">
                   <div class="file-input-button--<%= loader_visibility %>">
                     <div class="file-input-button">
@@ -104,6 +109,11 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                 </div>
 
                 <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
+                <% else %>
+                  <div class="data-dictionary-disabled-warning">
+                    The dataset schema is read-only after publishing. Please create a new dataset if you wish to modify the schema.
+                  </div>
+                <% end %>
               </div>
 
 
