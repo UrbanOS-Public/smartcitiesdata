@@ -81,28 +81,6 @@ defmodule AndiWeb.FormSection do
         {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
       end
 
-      def handle_info(
-            %{topic: "form-save", event: "save-all", payload: %{ingestion_id: ingestion_id}},
-            %{assigns: %{ingestion_id: ingestion_id}} = socket
-          ) do
-        new_validation_status =
-          case socket.assigns.changeset.valid? do
-            true -> "valid"
-            false -> "invalid"
-          end
-
-        # Todo: Rearchitect how concurrent events are handled and remove these sleeps from draft-save and publish of datasets and ingestions
-        # This sleep is needed because other save events are executing. save_form_changeset will load the ingestion from the database.
-        Process.sleep(1_000)
-        {:ok, andi_ingestion} = Andi.InputSchemas.Ingestions.save_form_changeset(socket.assigns.ingestion_id, socket.assigns.changeset)
-
-        new_changeset =
-          apply(unquote(schema_module), :changeset_from_andi_ingestion, [andi_ingestion])
-          |> Map.put(:action, :update)
-
-        {:noreply, assign(socket, changeset: new_changeset, validation_status: new_validation_status)}
-      end
-
       def handle_info(%{topic: "form-save"}, socket) do
         {:noreply, socket}
       end

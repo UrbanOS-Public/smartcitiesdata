@@ -358,6 +358,11 @@ $tick-height: 1rem + $field-padding - 0.44;
   }
 }
 
+.data_dictionary__error-message {
+    color: $color-error;
+    margin-bottom: 1rem;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

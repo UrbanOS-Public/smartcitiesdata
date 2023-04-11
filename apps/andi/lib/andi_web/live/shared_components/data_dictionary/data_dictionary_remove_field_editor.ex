@@ -35,7 +35,7 @@ defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
 
         <div class="button-container">
           <%= reset("CANCEL", phx_click: "cancel", phx_target: "##{id}", class: "btn") %>
-          <button class="btn submit_button" type="button" phx-click="remove_field" phx-target="<%= @myself %>" phx-value-parent="<%= show_warning_message? %>">DELETE</button>
+          <button id="data_dictionary_remove_submit_button" class="btn submit_button" type="button" phx-click="remove_field" phx-target="<%= @myself %>" phx-value-parent="<%= show_warning_message? %>" phx-value-is-ingestion="<%= @ingestion? %>">DELETE</button>
 
         </div>
 
@@ -51,6 +51,7 @@ defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
        visible: false,
        error_msg: "",
        requires_warning: true,
+       ingestion?: false,
        modal_text: "Are you sure you want to remove this field?"
      )}
   end
@@ -61,6 +62,17 @@ defmodule AndiWeb.DataDictionary.RemoveFieldEditor do
        modal_text: "WARNING! Removing this field will also remove its children. Would you like to continue?",
        requires_warning: false
      )}
+  end
+
+  def handle_event("remove_field", %{"parent" => "false", "is-ingestion" => "true"}, socket) do
+    selected_field = socket.assigns.selected_field
+    selected_field_id = Ecto.Changeset.get_field(selected_field.source, :id)
+    selected_field_parent_id = get_parent_of_field(selected_field.source.changes)
+
+    send(self(), {:remove_data_dictionary_field_succeeded, selected_field_parent_id, selected_field_id})
+
+    {:noreply,
+     assign(socket, visible: false, error_msg: "", requires_warning: true, modal_text: "Are you sure you want to remove this field?")}
   end
 
   def handle_event("remove_field", %{"parent" => "false"}, socket) do
