@@ -217,6 +217,19 @@ defmodule Transformers.MultiplicationTest do
 
       where(parameter: ["multiplicands", "targetField"])
     end
+
+    test "returns error when fields end in ." do
+      params = %{
+        "multiplicands" => ["input_number."],
+        "targetField" => "output_number."
+      }
+
+      message_payload = %{"input_number" => 8}
+
+      {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
+
+      assert reason == %{"multiplicands" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+    end
   end
 
   describe "fields/0" do

@@ -214,6 +214,23 @@ defmodule Transformers.SubtractTest do
                "secondField" => 4
              }
     end
+
+    test "if parameters ends in ., return error" do
+      payload = %{
+        "some_field" => 0,
+        "target" => "target"
+      }
+
+      parameters = %{
+        "subtrahends" => ["target."],
+        "minuend" => 1,
+        "targetField" => "some_field.some_child.some_field"
+      }
+
+      {:error, reason} = Subtract.transform(payload, parameters)
+
+      assert reason == %{"subtrahends" => "Missing or empty child field"}
+    end
   end
 
   describe "fields/0" do

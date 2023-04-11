@@ -306,5 +306,19 @@ defmodule Transformers.DateTimeTest do
 
       assert reason == %{"sourceFormat" => "Missing or empty field"}
     end
+
+    test "returns errors when fields ends with ." do
+      parameters = %{
+        "sourceField" => "date1.",
+        "targetField" => "date2.",
+        "sourceFormat" => "{s-epoch}",
+        "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+      }
+
+      {:error, reason} =
+        DateTime.validate(parameters)
+
+      assert reason == %{"sourceField" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+    end
   end
 end

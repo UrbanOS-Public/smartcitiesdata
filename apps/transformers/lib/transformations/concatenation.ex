@@ -31,6 +31,8 @@ defmodule Transformers.Concatenation do
     |> NotBlank.check(parameters, @source_fields)
     |> NotBlank.check(parameters, @separator)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @source_fields)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> IsPresent.check(parameters, @separator)
     |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])
   end

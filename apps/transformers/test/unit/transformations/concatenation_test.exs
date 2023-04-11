@@ -226,6 +226,41 @@ defmodule Transformers.ConcatenationTest do
       assert "I" == Map.get(result, "middle_initial")
       assert "Am" == Map.get(result, "last_name")
     end
+
+    test "if any addends end with a period, return error" do
+
+      payload = %{
+        "string1" => "one",
+        "string2" => "two"
+      }
+
+      parameters = %{
+        "sourceFields" => "name, last_name.",
+        "separator" => ".",
+        "targetField" => "full_name"
+      }
+
+      {:error, reason} = Concatenation.transform(payload, parameters)
+
+      assert reason == %{"sourceFields" => "Missing or empty child field"}
+    end
+
+    test "if target end with a period, return error" do
+      payload = %{
+        "string1" => "one",
+        "string2" => "two"
+      }
+
+      parameters = %{
+        "sourceFields" => "name, last_name.",
+        "separator" => ".",
+        "targetField" => "full_name."
+      }
+
+      {:error, reason} = Concatenation.transform(payload, parameters)
+
+      assert reason == %{"sourceFields" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+    end
   end
 
   describe "validate/1" do

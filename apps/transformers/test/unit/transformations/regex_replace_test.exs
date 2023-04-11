@@ -24,6 +24,28 @@ defmodule Transformers.RegexReplaceTest do
     where(parameter: ["sourceField", "regex", "replacement"])
   end
 
+  data_test "returns error when #{parameter} ends in ." do
+    payload = %{
+      "something" => "abc"
+    }
+
+    parameters =
+      %{
+        "sourceField" => "something",
+        "regex" => "a",
+        "replacement" => "123"
+      }
+
+    invalid_parameter = Map.get(parameters, parameter)
+    parameters = Map.put(parameters, parameter, "#{invalid_parameter}.")
+
+    {:error, reason} = RegexReplace.transform(payload, parameters)
+
+    assert reason == %{"#{parameter}" => "Missing or empty child field"}
+
+    where(parameter: ["sourceField", "replacement"])
+  end
+
   test "when source field not on message, return error" do
     payload = %{
       "something_unexpected" => "123"

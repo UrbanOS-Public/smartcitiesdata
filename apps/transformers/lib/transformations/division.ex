@@ -56,6 +56,9 @@ defmodule Transformers.Division do
     |> NotBlank.check_nil(parameters, @dividend)
     |> NotBlank.check_nil(parameters, @divisor)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @dividend)
+    |> NotBlank.check_nested(parameters, @divisor)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> ValidationStatus.ordered_values_or_errors([@dividend, @divisor, @target_field])
   end
 

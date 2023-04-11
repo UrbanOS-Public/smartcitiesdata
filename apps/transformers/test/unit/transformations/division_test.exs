@@ -270,6 +270,23 @@ defmodule Transformers.DivisionTest do
 
       assert reason == %{"targetField" => "Missing or empty field"}
     end
+
+    test "returns error if fields end in ." do
+      params = %{
+        "dividend" => "dividend.",
+        "divisor" => "divisor.",
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{
+        "dividend" => 4,
+        "divisor" => 4
+      }
+
+      {:error, reason} = Division.transform(message_payload, params)
+
+      assert reason == %{"dividend" => "Missing or empty child field", "divisor" => "Missing or empty child field"}
+    end
   end
 
   describe "fields/0" do
