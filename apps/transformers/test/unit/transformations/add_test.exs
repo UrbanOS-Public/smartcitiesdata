@@ -186,7 +186,10 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{"addends" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+      assert reason == %{
+               "addends" => "Missing or empty child field",
+               "targetField" => "Missing or empty child field"
+             }
     end
   end
 

@@ -228,7 +228,6 @@ defmodule Transformers.ConcatenationTest do
     end
 
     test "if any addends end with a period, return error" do
-
       payload = %{
         "string1" => "one",
         "string2" => "two"
@@ -259,7 +258,10 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == %{"sourceFields" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+      assert reason == %{
+               "sourceFields" => "Missing or empty child field",
+               "targetField" => "Missing or empty child field"
+             }
     end
   end
 

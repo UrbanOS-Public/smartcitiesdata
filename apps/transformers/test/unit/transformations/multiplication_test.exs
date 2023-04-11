@@ -228,7 +228,10 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == %{"multiplicands" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+      assert reason == %{
+               "multiplicands" => "Missing or empty child field",
+               "targetField" => "Missing or empty child field"
+             }
     end
   end
 

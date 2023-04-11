@@ -25,13 +25,14 @@ defmodule Transformers.Validations.NotBlank do
     else
       value = Map.get(parameters, field)
 
-      invalid? = case value do
-        nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
-        value when is_binary(value) -> check_if_nested_binary_invalid(value)
-        value when is_list(value) -> check_if_nested_list_invalid(value)
-        value when is_number(value) -> false
-        _ -> true
-      end
+      invalid? =
+        case value do
+          nil -> ValidationStatus.add_error(status, field, "Missing or empty field")
+          value when is_binary(value) -> check_if_nested_binary_invalid(value)
+          value when is_list(value) -> check_if_nested_list_invalid(value)
+          value when is_number(value) -> false
+          _ -> true
+        end
 
       case invalid? do
         true -> ValidationStatus.add_error(status, field, "Missing or empty child field")
@@ -44,6 +45,7 @@ defmodule Transformers.Validations.NotBlank do
     case String.split(value, ", ") do
       split when length(split) == 1 ->
         String.ends_with?(value, ".")
+
       split ->
         check_if_nested_list_invalid(split)
     end

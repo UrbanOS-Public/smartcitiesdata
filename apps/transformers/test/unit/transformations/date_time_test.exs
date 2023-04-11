@@ -315,10 +315,12 @@ defmodule Transformers.DateTimeTest do
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 
-      {:error, reason} =
-        DateTime.validate(parameters)
+      {:error, reason} = DateTime.validate(parameters)
 
-      assert reason == %{"sourceField" => "Missing or empty child field", "targetField" => "Missing or empty child field"}
+      assert reason == %{
+               "sourceField" => "Missing or empty child field",
+               "targetField" => "Missing or empty child field"
+             }
     end
   end
 end

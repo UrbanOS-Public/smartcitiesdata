@@ -285,7 +285,10 @@ defmodule Transformers.DivisionTest do
 
       {:error, reason} = Division.transform(message_payload, params)
 
-      assert reason == %{"dividend" => "Missing or empty child field", "divisor" => "Missing or empty child field"}
+      assert reason == %{
+               "dividend" => "Missing or empty child field",
+               "divisor" => "Missing or empty child field"
+             }
     end
   end
 

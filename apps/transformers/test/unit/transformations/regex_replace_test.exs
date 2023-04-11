@@ -29,12 +29,11 @@ defmodule Transformers.RegexReplaceTest do
       "something" => "abc"
     }
 
-    parameters =
-      %{
-        "sourceField" => "something",
-        "regex" => "a",
-        "replacement" => "123"
-      }
+    parameters = %{
+      "sourceField" => "something",
+      "regex" => "a",
+      "replacement" => "123"
+    }
 
     invalid_parameter = Map.get(parameters, parameter)
     parameters = Map.put(parameters, parameter, "#{invalid_parameter}.")
