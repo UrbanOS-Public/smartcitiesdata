@@ -1,6 +1,8 @@
 defmodule Transformers.DateTime do
   @behaviour Transformation
 
+  use Timex
+
   alias Transformers.FieldFetcher
   alias Transformers.Validations.DateTimeFormat
   alias Transformers.Validations.NotBlank
@@ -51,7 +53,7 @@ defmodule Transformers.DateTime do
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do
-    with {:ok, result} <- Timex.parse(date_string, date_format) do
+    with {:ok, result} <- parse_format(date_string, date_format) do
       {:ok, result}
     else
       {:error, timexReason} ->
@@ -59,6 +61,23 @@ defmodule Transformers.DateTime do
          "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
            timexReason
          }"}
+    end
+  end
+
+  defp parse_format(string, format) do
+    if format == "{s-epoch}" do
+      try do
+        seconds =
+          if String.contains?(string, "."),
+            do: trunc(String.to_float(string)),
+            else: String.to_integer(string)
+
+        {:ok, Timex.from_unix(seconds)}
+      rescue
+        err -> {:error, err.message}
+      end
+    else
+      Timex.parse(string, format)
     end
   end
 
