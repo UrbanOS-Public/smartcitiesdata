@@ -69,8 +69,13 @@ defmodule Transformers do
           Map.merge(acc, child_payload)
 
         value when is_list(value) ->
-          IO.inspect("Nicholas - list")
-          acc
+          value
+            |> Enum.with_index
+            |> Enum.reduce(acc, fn({value, index}), enum_acc ->
+              parent_key = "#{concat_key(key, parent_key)}[#{index}]"
+              child_payload = flatten_payload(value, parent_key)
+              Map.merge(enum_acc, child_payload)
+            end)
 
         value ->
           Map.put(acc, concat_key(key, parent_key), value)
@@ -93,15 +98,37 @@ defmodule Transformers do
 
         hierarchy ->
           {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
-          parent_map = Map.get(acc, parent_key, %{})
+            |> IO.inspect(label: "Nicholas - {parent_key, child_hierarchy}")
 
-          updated_parent_map =
-            create_child_map(child_hierarchy, value)
-            |> Map.merge(parent_map)
+          if Regex.match?(~r/\[.\]/, parent_key) do
+            index = Regex.scan(~r/\[.\]/, parent_key)
+              |> hd() |> hd()
+              |> String.replace("[", "")
+              |> String.replace("]", "")
 
-          Map.put(acc, parent_key, updated_parent_map)
+            case index do
+              index when index == "*" ->
+                IO.inspect("Nicholas - wild card")
+              index ->
+                numeric_index = String.to_integer(index)
+                  |> IO.inspect(label: "Nicholas - numeric_index")
+            end
+
+          else
+            map_child(parent_key, child_hierarchy, value, acc)
+          end
       end
     end)
+  end
+
+  defp map_child(parent_key, child_hierarchy, value, acc) do
+    parent_map = Map.get(acc, parent_key, %{})
+
+    updated_parent_map =
+      create_child_map(child_hierarchy, value)
+      |> Map.merge(parent_map)
+
+    Map.put(acc, parent_key, updated_parent_map)
   end
 
   defp create_child_map(hierarchy, value) do

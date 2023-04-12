@@ -191,6 +191,38 @@ defmodule Transformers.AddTest do
                "targetField" => "Missing or empty child field"
              }
     end
+
+    test "should get into list values" do
+      payload = %{
+        "parent_list" => [
+          %{"one" => 4}
+        ],
+        "parent_list2" => [
+          %{"two" => 5},
+          %{"two" => 2},
+          %{"two" => 6}
+        ]
+      }
+
+      parameters = %{
+        "addends" => ["parent_list[0].one", "parent_list[*].two"],
+        "targetField" => "target"
+      }
+
+      {:okay, resulting_payload} = Add.transform(payload, parameters)
+
+      assert resulting_payload == %{
+        "parent_list" => [
+          %{"one" => 4}
+        ],
+        "parent_list2" => [
+          %{"two" => 5},
+          %{"two" => 2},
+          %{"two" => 6}
+        ],
+        "target" => 17
+      }
+    end
   end
 
   describe "fields/0" do

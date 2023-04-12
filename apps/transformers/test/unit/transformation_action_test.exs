@@ -181,5 +181,64 @@ defmodule TransformationActionTest do
 
       assert reason == "Missing field in payload: [INVALID]"
     end
+
+    test "should perform operations with lists" do
+      transformation1 =
+        TDG.create_transformation(%{
+          name: "sample",
+          type: "add",
+          parameters: %{
+            "condition" => "false",
+            "addends" => "5, parent_list[0].child",
+            "targetField" => "parent.add"
+          },
+          sequence: 0
+        })
+
+      transformation2 =
+        TDG.create_transformation(%{
+          name: "sample",
+          type: "concatenation",
+          parameters: %{
+            "condition" => "false",
+            "sourceFields" => "one, parent.child.two",
+            "separator" => ", ",
+            "targetField" => "concat"
+          },
+          sequence: 1
+        })
+
+      operations =
+        [transformation1, transformation2]
+        |> Transformers.construct()
+
+      initial_payload = %{
+        "one" => "something",
+        "parent" => %{
+          "child" => %{
+            "two" => "else"
+          }
+        },
+        "parent_list" => [
+          %{"child" => 9}
+        ]
+      }
+
+      {:ok, resulting_payload} = Transformers.perform(operations, initial_payload)
+
+      assert resulting_payload == %{
+               "one" => "something",
+               "parent" => %{
+                 "add" => 14,
+                 "child" => %{
+                   "two" => "else"
+                 }
+               },
+               "parent_list" => [
+                %{"child" => 9}
+               ],
+               "concat" => "something, else"
+             }
+    end
   end
 end
