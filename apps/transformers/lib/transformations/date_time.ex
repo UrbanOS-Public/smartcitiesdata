@@ -67,6 +67,7 @@ defmodule Transformers.DateTime do
   defp parse_format(string, format) do
     if format == "{s-epoch}" do
       normalized_value = "#{string}"
+
       try do
         seconds =
           if String.contains?(normalized_value, ".") do
@@ -75,6 +76,7 @@ defmodule Transformers.DateTime do
             case Float.parse(normalized_value) do
               {value, _} ->
                 trunc(value)
+
               :error ->
                 raise "Could not parse given value: #{normalized_value} into a float"
             end
@@ -85,7 +87,6 @@ defmodule Transformers.DateTime do
         else
           {:ok, Timex.from_unix(seconds, :milliseconds)}
         end
-
       rescue
         err -> {:error, inspect(err)}
       end

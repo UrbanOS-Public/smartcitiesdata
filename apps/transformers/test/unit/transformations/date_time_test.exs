@@ -44,7 +44,7 @@ defmodule Transformers.DateTimeTest do
       "targetFormat" => "{ISOdate}"
     }
 
-    message_payload = %{"date1" => 1681232228}
+    message_payload = %{"date1" => 1_681_232_228}
 
     {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
 
@@ -60,7 +60,7 @@ defmodule Transformers.DateTimeTest do
       "targetFormat" => "{ISOdate}"
     }
 
-    message_payload = %{"date1" => 1681297363534}
+    message_payload = %{"date1" => 1_681_297_363_534}
 
     {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
 
