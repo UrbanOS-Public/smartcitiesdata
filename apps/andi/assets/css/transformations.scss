@@ -40,13 +40,31 @@
   margin-top: 1rem;
 }
 
+.transformation-form__section--collapsed {
+  display: none;
+}
+
 .transformation-item {
   animation: open 300ms;
   margin-bottom: 1.6rem;
 }
 
-.transformation-edit-form--collapsed {
-  display: none;
+.transformation-form__condition-radio {
+  font-size: 1.1rem;
+  margin-bottom: 0.2rem;
+}
+
+.transformation-form__condition-fields {
+  border: none; 
+  border-left: 1px solid lightgray; 
+  margin-left: 1.2rem;
+  div {
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+  }
+  .transformation-field {
+    margin-left: 0;
+  }
 }
 
 .transformation-field {

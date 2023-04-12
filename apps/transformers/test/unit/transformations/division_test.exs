@@ -189,12 +189,12 @@ defmodule Transformers.DivisionTest do
         "dividend" => 10,
         "divisor" => 2,
         "targetField" => "output_number",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "target",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "test"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "test"
       }
 
       message_payload = %{"target" => "test"}
@@ -210,12 +210,12 @@ defmodule Transformers.DivisionTest do
         "dividend" => 10,
         "divisor" => 2,
         "targetField" => "output_number",
-        "condition" => %{
-          "conditionDataType" => "string",
-          "sourceConditionField" => "target",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "other"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "target",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "other"
       }
 
       message_payload = %{"target" => "test"}
@@ -278,7 +278,7 @@ defmodule Transformers.DivisionTest do
         %{
           field_name: "targetField",
           field_type: "string",
-          field_label: "Field to populate with product",
+          field_label: "Field to populate with quotient",
           options: nil
         },
         %{

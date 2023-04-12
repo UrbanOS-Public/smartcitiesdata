@@ -8,22 +8,24 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
-  alias AndiWeb.Helpers.MetadataFormHelpers
-  alias AndiWeb.Views.DisplayNames
   alias Ecto.Changeset
   alias Andi.InputSchemas.Ingestions.Transformation
   alias AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder
-  alias Transformers.TransformationFields
 
   def mount(socket) do
     {:ok,
      assign(socket,
-       visible?: false
+       visible?: false,
+       condition?: nil,
+       static?: nil,
+       date?: false
      )}
   end
 
   def render(assigns) do
     visible = if assigns.visible?, do: "expanded", else: "collapsed"
+    show_condition_fields = not is_nil(assigns.condition?) and assigns.condition?
+    show_regular_fields = not is_nil(assigns.condition?) and not assigns.condition?
 
     ~L"""
     <%= f = form_for @transformation_changeset, "#", [ as: :form_data, phx_change: :validate, phx_target: @myself, id: @id, class: "transformation-item"] %>
@@ -38,59 +40,48 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         </div>
       </div>
 
-      <div class="transformation-form transformation-edit-form--<%= visible %>">
+      <div class="transformation-form transformation-form__section--<%= visible %>">
         <div class="transformation-form__name">
           <%= label(f, :name, "Name", class: "label label--required", for: "transformation_#{@id}__name") %>
           <%= text_input(f, :name, [id: "transformation_#{@id}__name", class: "transformation-name input transformation-form-fields", required: true, aria_label: "Transformation Name"]) %>
           <%= ErrorHelpers.error_tag(f, :name, bind_to_input: false, id: "#{@id}_transformation_name_error") %>
         </div>
-        <div class="transformation-form__type">
-          <%= label(f, :type, DisplayNames.get(:transformationType), class: "label label--required", for: "transformation_#{@id}__type") %>
-          <%= select(f, :type, get_transformation_types(), [id: "transformation_#{@id}__type", class: "select transformation-type", required: true]) %>
-          <%= ErrorHelpers.error_tag(f.source, :type, bind_to_input: false, id: "#{@id}_transformation_type_error") %>
-        </div>
-        <div class="transformation-form__fields">
-          <%= for field <- get_fields(input_value(f, :type)) do %>
-            <%= TransformationFieldBuilder.build_input(field, assigns, f, "transformation_#{@id}__#{field.field_name}") %>
-          <% end %>
-        </div>
+        <fieldset style="border:none; padding-left: 0;">
+          <legend class="label" style="margin-top: 1em;">When should this transformation apply?</legend>
+            <div class="transformation-form__condition-radio">
+              <%= radio_button(f, :condition, false, id: "transformation_#{@id}__condition_always", checked: show_regular_fields) %>
+              <%= label(f, :condition, "Always", for: "transformation_#{@id}__condition_always") %>
+            </div>
+            <div class="transformation-form__condition-radio">
+              <%= radio_button(f, :condition, true, id: "transformation_#{@id}__condition_specific", checked: show_condition_fields) %>
+              <%= label(f, :condition, "Under a specific condition",  for: "transformation_#{@id}__condition_specific") %>
+            </div>
+        </fieldset>
+        <%= if show_condition_fields do %>
+          <div>
+            <%= TransformationFieldBuilder.build_condition_form(assigns, f) %>
+          </div>
+        <% end %>
+        <%= if show_regular_fields do %>
+          <div>
+            <%= TransformationFieldBuilder.build_transformation_form(assigns, f, false) %>
+          </div>
+        <% end %>
       </div>
     </form>
     """
   end
 
-  defp get_transformation_types(), do: map_to_dropdown_options(MetadataFormHelpers.get_transformation_type_options())
-
-  defp map_to_dropdown_options(options) do
-    Enum.map(options, fn {actual_value, description} ->
-      [key: description, value: actual_value]
-    end)
-  end
-
-  def handle_event("validate", %{"form_data" => form_data, "_target" => ["form_data", "type"]}, socket) do
-    non_parameter_form_data =
-      Enum.reduce(form_data, %{}, fn {key, value}, acc ->
-        if key in ["name", "type"] do
-          Map.put(acc, key, value)
-        else
-          acc
-        end
-      end)
-      |> Map.put(:parameters, %{})
-
-    transformation = Transformation.changeset(socket.assigns.transformation_changeset, non_parameter_form_data)
-
-    AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
-
-    {:noreply, socket}
-  end
-
   def handle_event("validate", %{"form_data" => form_data}, socket) do
+    show_condition? = check_form_data(form_data, "condition", "true")
+    show_static_value? = check_form_data(form_data, "conditionCompareTo", "Static Value")
+    show_date_fields? = check_form_data(form_data, "conditionDataType", "DateTime")
+
     transformation = Transformation.changeset(socket.assigns.transformation_changeset, form_data)
 
     AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
 
-    {:noreply, socket}
+    {:noreply, assign(socket, condition?: show_condition?, static?: show_static_value?, date?: show_date_fields?)}
   end
 
   def handle_event("validate", _, socket) do
@@ -116,7 +107,33 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
   def handle_event("toggle-component-visibility", _, socket) do
     current_visibility = Map.get(socket.assigns, :visible?)
 
-    {:noreply, assign(socket, visible?: not current_visibility)}
+    parameters =
+      case Changeset.fetch_field(socket.assigns.transformation_changeset, :parameters) do
+        {_, parameters} -> parameters
+        :error -> %{}
+      end
+
+    condition_select =
+      case Map.get(parameters, :condition) do
+        nil -> nil
+        "true" -> true
+        "false" -> false
+      end
+
+    static =
+      case Map.get(parameters, :conditionCompareTo) do
+        nil -> nil
+        "Static Value" -> true
+        "Target Field" -> false
+      end
+
+    show_date =
+      case Map.get(parameters, :conditionDataType) do
+        nil -> false
+        "DateTime" -> true
+      end
+
+    {:noreply, assign(socket, visible?: not current_visibility, condition?: condition_select, static?: static, date?: show_date)}
   end
 
   defp transformation_name(form) do
@@ -131,7 +148,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
 
   defp blank?(str_or_nil), do: "" == str_or_nil |> to_string() |> String.trim()
 
-  defp get_fields(transformation_type) do
-    TransformationFields.fields_for(transformation_type)
+  defp check_form_data(data, param, compare_val) do
+    value = Map.get(data, param)
+    if is_nil(value), do: nil, else: if(value == "", do: nil, else: value == compare_val)
   end
 end

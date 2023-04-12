@@ -67,7 +67,7 @@ defmodule Transformers.Constant do
       %{
         field_name: @value_type,
         field_type: "string",
-        field_label: "Value data type",
+        field_label: "Data type",
         options: ["integer", "string", "float"]
       }
     ]

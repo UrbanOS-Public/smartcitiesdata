@@ -181,15 +181,19 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   defp validate_selector(changeset, _), do: changeset
 
   defp validate_format(%{changes: %{type: type, format: format}} = changeset) when type in ["date", "timestamp"] do
-    case Formatter.validate(format) do
-      :ok ->
-        changeset
+    try do
+      case Formatter.validate(format) do
+        :ok ->
+          changeset
 
-      {:error, %RuntimeError{message: error_msg}} ->
-        add_error(changeset, :format, error_msg)
+        {:error, %RuntimeError{message: error_msg}} ->
+          add_error(changeset, :format, error_msg)
 
-      {:error, err} ->
-        add_error(changeset, :format, err)
+        {:error, err} ->
+          add_error(changeset, :format, err)
+      end
+    rescue
+      _ -> add_error(changeset, :format, "failed to parse")
     end
   end
 

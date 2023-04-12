@@ -20,6 +20,86 @@ defmodule Transformers.DateTimeTest do
     assert actual_transformed_field == "February 28, 2022 4:53 PM"
   end
 
+  test "parses time since epoch" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{ISOdate}"
+    }
+
+    message_payload = %{"date1" => "1681232228"}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "2023-04-11"
+  end
+
+  test "parses seconds since epoch when source is a float" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{ISOdate}"
+    }
+
+    message_payload = %{"date1" => 1_681_232_228}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "2023-04-11"
+  end
+
+  test "parses milliseconds since epoch when source is a float" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{ISOdate}"
+    }
+
+    message_payload = %{"date1" => 1_681_297_363_534}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "2023-04-12"
+  end
+
+  test "parses epoch time and truncates decimal values" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+    }
+
+    message_payload = %{"date1" => "1681232228.33823"}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "April 11, 2023 4:57 PM"
+  end
+
+  test "converts to epoch" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+      "targetFormat" => "{s-epoch}"
+    }
+
+    message_payload = %{"date1" => "2022-02-28 16:53"}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "1646067180"
+  end
+
   test "when source and target are the same field, source is overwritten" do
     params = %{
       "sourceField" => "date1",
@@ -124,20 +204,36 @@ defmodule Transformers.DateTimeTest do
                "Unable to parse datetime from \"date1\" in format \"{YYYY}-{0M}-{D} {h24}:{m}\": Expected `2 digit month` at line 1, column 4."
     end
 
+    test "returns error when epoch is incorrect" do
+      params = %{
+        "sourceField" => "date1",
+        "targetField" => "date2",
+        "sourceFormat" => "{s-epoch}",
+        "targetFormat" => "{ISOdate}"
+      }
+
+      message_payload = %{"date1" => "epoch"}
+
+      {:error, reason} = Transformers.DateTime.transform(message_payload, params)
+
+      assert reason ==
+               "Unable to parse datetime from \"date1\" in format \"{s-epoch}\": %RuntimeError{message: \"Could not parse given value: epoch into a float\"}"
+    end
+
     test "performs transform as normal when condition evaluates to true" do
       params = %{
         "sourceField" => "date1",
         "targetField" => "date2",
         "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "date1",
-          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2022-02-28 16:53",
-          "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "date1",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2022-02-28 16:53",
+        "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
       }
 
       message_payload = %{"date1" => "2022-02-28 16:53"}
@@ -154,14 +250,14 @@ defmodule Transformers.DateTimeTest do
         "targetField" => "date2",
         "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}",
-        "condition" => %{
-          "conditionDataType" => "datetime",
-          "sourceConditionField" => "date1",
-          "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
-          "conditionOperation" => "=",
-          "targetConditionValue" => "2022-02-25 16:52",
-          "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
-        }
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "datetime",
+        "sourceConditionField" => "date1",
+        "conditionSourceDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "conditionOperation" => "=",
+        "targetConditionValue" => "2022-02-25 16:52",
+        "conditionTargetDateFormat" => "{YYYY}-{0M}-{D} {h24}:{m}"
       }
 
       message_payload = %{"date1" => "2022-02-28 16:53"}
@@ -177,7 +273,7 @@ defmodule Transformers.DateTimeTest do
       parameters = %{
         "sourceField" => "date1",
         "targetField" => "date2",
-        "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+        "sourceFormat" => "{s-epoch}",
         "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
       }
 

@@ -47,51 +47,80 @@ defmodule Transformers.OperationBuilder do
     {:error, "Unsupported transformation type: #{unsupported}"}
   end
 
-  def validate("regex_extract", parameters) do
+  def validate(type, parameters) do
+    {validateStatus, validateReason} = validate_transform(type, parameters)
+    {conditionStatus, conditionReason} = validate_condition(parameters)
+
+    case {validateStatus, conditionStatus} do
+      {:ok, :ok} ->
+        {:ok, validateReason}
+
+      {:ok, :error} ->
+        {:error, conditionReason}
+
+      {:error, :ok} ->
+        {:error, validateReason}
+
+      {:error, :error} ->
+        if is_binary(validateReason),
+          do: {:error, conditionReason},
+          else: {:error, Map.merge(conditionReason, validateReason)}
+    end
+  end
+
+  defp validate_condition(parameters) do
+    if Map.get(parameters, "condition") == "true" do
+      Transformers.Conditions.validate(parameters)
+    else
+      {:ok, true}
+    end
+  end
+
+  defp validate_transform("regex_extract", parameters) do
     Transformers.RegexExtract.validate(parameters)
   end
 
-  def validate("regex_replace", parameters) do
+  defp validate_transform("regex_replace", parameters) do
     Transformers.RegexReplace.validate(parameters)
   end
 
-  def validate("conversion", parameters) do
+  defp validate_transform("conversion", parameters) do
     Transformers.TypeConversion.validate(parameters)
   end
 
-  def validate("concatenation", parameters) do
+  defp validate_transform("concatenation", parameters) do
     Transformers.Concatenation.validate(parameters)
   end
 
-  def validate("datetime", parameters) do
+  defp validate_transform("datetime", parameters) do
     Transformers.DateTime.validate(parameters)
   end
 
-  def validate("remove", parameters) do
+  defp validate_transform("remove", parameters) do
     Transformers.Remove.validate(parameters)
   end
 
-  def validate("add", parameters) do
+  defp validate_transform("add", parameters) do
     Transformers.Add.validate(parameters)
   end
 
-  def validate("subtract", parameters) do
+  defp validate_transform("subtract", parameters) do
     Transformers.Subtract.validate(parameters)
   end
 
-  def validate("multiplication", parameters) do
+  defp validate_transform("multiplication", parameters) do
     Transformers.Multiplication.validate(parameters)
   end
 
-  def validate("division", parameters) do
+  defp validate_transform("division", parameters) do
     Transformers.Division.validate(parameters)
   end
 
-  def validate("constant", parameters) do
+  defp validate_transform("constant", parameters) do
     Transformers.Constant.validate(parameters)
   end
 
-  def validate(unsupported, _) do
+  defp validate_transform(unsupported, _) do
     {:error, "Unsupported transformation validation type: #{unsupported}"}
   end
 end
