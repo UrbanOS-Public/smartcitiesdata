@@ -345,7 +345,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
 
           false ->
-            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_json, overwrite_schema_visible?: true)}
+            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_json, pending_file_type: "application/json", overwrite_schema_visible?: true)}
         end
     end
   end
@@ -357,7 +357,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         {:ok, assign(socket, schema_sample_errors: "There was a problem interpreting this file")}
 
       {:ok, csv_file} ->
-        decoded_csv = parse_sv_file(csv_file, file_type)
+        decoded_file = parse_sv_file(csv_file, file_type)
 
         is_schema_empty? =
           case Changeset.fetch_field(socket.assigns.changeset, :schema) do
@@ -369,7 +369,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         case is_schema_empty? do
           true ->
             changeset =
-              decoded_csv
+              decoded_file
               |> List.wrap()
               |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.ingestion_id)
 
@@ -378,7 +378,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
 
           false ->
-            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_csv, overwrite_schema_visible?: true)}
+            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_file, pending_file_type: file_type, overwrite_schema_visible?: true)}
         end
     end
   end
@@ -392,10 +392,14 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def update(%{action: :overwrite_schema}, socket) do
-    schema_changesets =
+    schema_list =
       socket.assigns.pending_schema
       |> List.wrap()
-      |> DataDictionaryFormSchema.changeset_from_file(socket.assigns.ingestion_id)
+
+    schema_changesets = case socket.assigns.pending_file_type do
+      "application/json" -> DataDictionaryFormSchema.changeset_from_file(schema_list, socket.assigns.ingestion_id)
+      _ -> DataDictionaryFormSchema.changeset_from_tuple_list(schema_list, socket.assigns.ingestion_id)
+    end
 
     send(self(), {:update_data_dictionary, schema_changesets})
 
@@ -553,17 +557,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   defp parse_sv_file(file_string, file_type) do
-    regex =
+    {regex, split_text} =
       case file_type do
-        "text/csv" -> ~r/[^[:alnum:] _,]/
-        "text/plain" -> ~r/[^[:alnum:] _\t]/
+        "text/csv" -> {~r/[^[:alnum:] _,]/, ","}
+        _ -> {~r/[^[:alnum:] _\t]/, "\t"}
       end
 
     file_string
     |> String.split("\n")
     |> Enum.take(2)
     |> List.update_at(0, &String.replace(&1, regex, "", global: true))
-    |> Enum.map(fn row -> String.split(row, "\t") end)
+    |> Enum.map(fn row -> String.split(row, split_text) end)
     |> Enum.zip()
     |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
   end
