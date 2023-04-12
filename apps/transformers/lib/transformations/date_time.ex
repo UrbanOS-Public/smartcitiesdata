@@ -21,7 +21,7 @@ defmodule Transformers.DateTime do
            validate(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
-           string_to_datetime(payload_source_value, source_format, source_field),
+           string_to_datetime("#{payload_source_value}", source_format, source_field),
          {:ok, transformed_datetime} <- format_datetime(source_datetime, target_format) do
       {:ok, payload |> Map.put(target_field, transformed_datetime)}
     else
@@ -66,15 +66,29 @@ defmodule Transformers.DateTime do
 
   defp parse_format(string, format) do
     if format == "{s-epoch}" do
+      normalized_value = "#{string}"
+
       try do
         seconds =
-          if String.contains?(string, "."),
-            do: trunc(String.to_float(string)),
-            else: String.to_integer(string)
+          if String.contains?(normalized_value, ".") do
+            trunc(String.to_float(normalized_value))
+          else
+            case Float.parse(normalized_value) do
+              {value, _} ->
+                trunc(value)
 
-        {:ok, Timex.from_unix(seconds)}
+              :error ->
+                raise "Could not parse given value: #{normalized_value} into a float"
+            end
+          end
+
+        if String.length("#{seconds}") < 13 do
+          {:ok, Timex.from_unix(seconds)}
+        else
+          {:ok, Timex.from_unix(seconds, :milliseconds)}
+        end
       rescue
-        err -> {:error, err.message}
+        err -> {:error, inspect(err)}
       end
     else
       Timex.parse(string, format)
