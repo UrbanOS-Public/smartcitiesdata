@@ -345,7 +345,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
 
           false ->
-            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_json, pending_file_type: "application/json", overwrite_schema_visible?: true)}
+            {:ok,
+             assign(socket,
+               loading_schema: false,
+               pending_schema: decoded_json,
+               pending_file_type: "application/json",
+               overwrite_schema_visible?: true
+             )}
         end
     end
   end
@@ -378,7 +384,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
             {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
 
           false ->
-            {:ok, assign(socket, loading_schema: false, pending_schema: decoded_file, pending_file_type: file_type, overwrite_schema_visible?: true)}
+            {:ok,
+             assign(socket,
+               loading_schema: false,
+               pending_schema: decoded_file,
+               pending_file_type: file_type,
+               overwrite_schema_visible?: true
+             )}
         end
     end
   end
@@ -396,10 +408,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       socket.assigns.pending_schema
       |> List.wrap()
 
-    schema_changesets = case socket.assigns.pending_file_type do
-      "application/json" -> DataDictionaryFormSchema.changeset_from_file(schema_list, socket.assigns.ingestion_id)
-      _ -> DataDictionaryFormSchema.changeset_from_tuple_list(schema_list, socket.assigns.ingestion_id)
-    end
+    schema_changesets =
+      case socket.assigns.pending_file_type do
+        "application/json" -> DataDictionaryFormSchema.changeset_from_file(schema_list, socket.assigns.ingestion_id)
+        _ -> DataDictionaryFormSchema.changeset_from_tuple_list(schema_list, socket.assigns.ingestion_id)
+      end
 
     send(self(), {:update_data_dictionary, schema_changesets})
 
