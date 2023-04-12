@@ -18,13 +18,15 @@ defmodule AndiWeb.ReportsController do
   defp build_csv() do
     values =
       get_datasets()
-      |> Enum.map(fn dataset -> [
-                                  dataset.id,
-                                  dataset.dataTitle,
-                                  dataset.orgTitle,
-                                  dataset.systemName,
-                                  get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)
-                                ] end)
+      |> Enum.map(fn dataset ->
+        [
+          dataset.id,
+          dataset.dataTitle,
+          dataset.orgTitle,
+          dataset.systemName,
+          get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)
+        ]
+      end)
 
     [["Dataset ID", "Dataset Title", "Organization", "System Name", "Users"] | values]
   end
