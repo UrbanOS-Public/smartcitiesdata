@@ -36,6 +36,38 @@ defmodule Transformers.DateTimeTest do
     assert actual_transformed_field == "2023-04-11"
   end
 
+  test "parses seconds since epoch when source is a float" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{ISOdate}"
+    }
+
+    message_payload = %{"date1" => 1681232228}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "2023-04-11"
+  end
+
+  test "parses milliseconds since epoch when source is a float" do
+    params = %{
+      "sourceField" => "date1",
+      "targetField" => "date2",
+      "sourceFormat" => "{s-epoch}",
+      "targetFormat" => "{ISOdate}"
+    }
+
+    message_payload = %{"date1" => 1681297363534}
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    {:ok, actual_transformed_field} = Map.fetch(transformed_payload, params["targetField"])
+    assert actual_transformed_field == "2023-04-12"
+  end
+
   test "parses epoch time and truncates decimal values" do
     params = %{
       "sourceField" => "date1",
@@ -185,7 +217,7 @@ defmodule Transformers.DateTimeTest do
       {:error, reason} = Transformers.DateTime.transform(message_payload, params)
 
       assert reason ==
-               "Unable to parse datetime from \"date1\" in format \"{s-epoch}\": argument error"
+               "Unable to parse datetime from \"date1\" in format \"{s-epoch}\": %RuntimeError{message: \"Could not parse given value: epoch into a float\"}"
     end
 
     test "performs transform as normal when condition evaluates to true" do
