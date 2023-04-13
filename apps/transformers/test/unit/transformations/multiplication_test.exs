@@ -185,6 +185,34 @@ defmodule Transformers.MultiplicationTest do
 
       assert result == {:ok, %{"input_number" => 8}}
     end
+
+    test "should get all values from a list to multiply" do
+      params = %{
+        "multiplicands" => ["parent_list[*].input_number", "parent2_list[0].input_number"],
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{
+        "parent_list[0].input_number" => 2,
+        "parent_list[1].input_number" => 2,
+        "parent_list[2].input_number" => 2,
+        "parent_list[3].input_number" => 2,
+        "parent_list[4].input_number" => 2,
+        "parent_list[5].input_number" => 2,
+        "parent2_list[0].input_number" => 2,
+        "parent2_list[1].input_number" => 2,
+        "parent2_list[2].input_number" => 2,
+        "parent2_list[3].input_number" => 2,
+        "parent2_list[4].input_number" => 2,
+        "parent2_list[5].input_number" => 2,
+        "parent2_list[6].input_number" => 2
+      }
+
+      {:ok, transformed_payload} = Transformers.Multiplication.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 128.0
+    end
   end
 
   describe "validate/1" do

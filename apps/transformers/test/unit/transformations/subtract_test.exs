@@ -231,6 +231,39 @@ defmodule Transformers.SubtractTest do
 
       assert reason == %{"subtrahends" => "Missing or empty child field"}
     end
+
+    test "subtracts from all values in list" do
+      parameters = %{
+        "minuend" => "firstTotal",
+        "subtrahends" => ["parent_list[*].subtrahends"],
+        "targetField" => "lastTotal"
+      }
+
+      payload = %{
+        "firstTotal" => 20,
+        "parent_list[0].subtrahends" => 1,
+        "parent_list[2].subtrahends" => 1,
+        "parent_list[3].subtrahends" => 1,
+        "parent_list[4].subtrahends" => 1,
+        "parent_list[5].subtrahends" => 1,
+        "parent_list[6].subtrahends" => 1,
+        "secondField" => 4
+      }
+
+      {:ok, result} = Subtract.transform(payload, parameters)
+
+      assert result == %{
+               "firstTotal" => 20,
+               "parent_list[0].subtrahends" => 1,
+               "parent_list[2].subtrahends" => 1,
+               "parent_list[3].subtrahends" => 1,
+               "parent_list[4].subtrahends" => 1,
+               "parent_list[5].subtrahends" => 1,
+               "parent_list[6].subtrahends" => 1,
+               "secondField" => 4,
+               "lastTotal" => 14
+             }
+    end
   end
 
   describe "fields/0" do

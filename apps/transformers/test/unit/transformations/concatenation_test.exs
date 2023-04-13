@@ -83,6 +83,29 @@ defmodule Transformers.ConcatenationTest do
       assert "Am" == Map.get(result, "last_name")
     end
 
+    test "concatenate string works with lists" do
+      payload = %{
+        "parent_list[0].one" => "Sam",
+        "parent_list2[0].two" => "I",
+        "parent_list2[1].two" => "Am",
+        "parent_list2[2].two" => "Here"
+      }
+
+      parameters = %{
+        "sourceFields" => "parent_list[0].one, parent_list2[*].two",
+        "separator" => ".",
+        "targetField" => "full_name"
+      }
+
+      {:ok, result} = Concatenation.transform(payload, parameters)
+
+      assert "Sam.I.Am.Here" == Map.get(result, "full_name")
+      assert "Sam" == Map.get(result, "parent_list[0].one")
+      assert "I" == Map.get(result, "parent_list2[0].two")
+      assert "Am" == Map.get(result, "parent_list2[1].two")
+      assert "Here" == Map.get(result, "parent_list2[2].two")
+    end
+
     test "concatenate string fields into existing field" do
       payload = %{
         "name" => "Sam",
@@ -227,7 +250,7 @@ defmodule Transformers.ConcatenationTest do
       assert "Am" == Map.get(result, "last_name")
     end
 
-    test "if any addends end with a period, return error" do
+    test "if any parameters end with a period, return error" do
       payload = %{
         "string1" => "one",
         "string2" => "two"

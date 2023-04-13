@@ -224,6 +224,25 @@ defmodule Transformers.DivisionTest do
 
       assert result == {:ok, %{"target" => "test"}}
     end
+
+    test "should parse from list" do
+      params = %{
+        "dividend" => "parent_list[0].dividend",
+        "divisor" => "parent_list[1].divisor",
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{
+        "parent_list[0].dividend" => 10,
+        "parent_list[0].divisor" => 2,
+        "parent_list[1].divisor" => 2
+      }
+
+      {:ok, transformed_payload} = Division.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 5
+    end
   end
 
   describe "validate/1" do

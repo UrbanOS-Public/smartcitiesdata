@@ -98,22 +98,23 @@ defmodule Transformers do
 
         hierarchy ->
           {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
-            |> IO.inspect(label: "Nicholas - {parent_key, child_hierarchy}")
 
           if Regex.match?(~r/\[.\]/, parent_key) do
+            base_parent_key = Regex.replace(~r/\[.\]/, parent_key, "")
             index = Regex.scan(~r/\[.\]/, parent_key)
               |> hd() |> hd()
               |> String.replace("[", "")
               |> String.replace("]", "")
+              |> String.to_integer()
+              |> IO.inspect(label: "index")
 
-            case index do
-              index when index == "*" ->
-                IO.inspect("Nicholas - wild card")
-              index ->
-                numeric_index = String.to_integer(index)
-                  |> IO.inspect(label: "Nicholas - numeric_index")
-            end
+            current_acc = Map.get(acc, base_parent_key, [])
 
+            updated_map = create_child_map(child_hierarchy, value)
+
+            updated_acc = List.insert_at(current_acc, index, updated_map)
+
+            Map.put(acc, base_parent_key, updated_acc)
           else
             map_child(parent_key, child_hierarchy, value, acc)
           end

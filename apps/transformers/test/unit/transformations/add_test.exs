@@ -194,14 +194,10 @@ defmodule Transformers.AddTest do
 
     test "should get into list values" do
       payload = %{
-        "parent_list" => [
-          %{"one" => 4}
-        ],
-        "parent_list2" => [
-          %{"two" => 5},
-          %{"two" => 2},
-          %{"two" => 6}
-        ]
+        "parent_list[0].one" => 4,
+        "parent_list2[0].two" => 5,
+        "parent_list2[1].two" => 2,
+        "parent_list2[2].two" => 6
       }
 
       parameters = %{
@@ -209,17 +205,13 @@ defmodule Transformers.AddTest do
         "targetField" => "target"
       }
 
-      {:okay, resulting_payload} = Add.transform(payload, parameters)
+      {:ok, resulting_payload} = Add.transform(payload, parameters)
 
       assert resulting_payload == %{
-        "parent_list" => [
-          %{"one" => 4}
-        ],
-        "parent_list2" => [
-          %{"two" => 5},
-          %{"two" => 2},
-          %{"two" => 6}
-        ],
+        "parent_list[0].one" => 4,
+        "parent_list2[0].two" => 5,
+        "parent_list2[1].two" => 2,
+        "parent_list2[2].two" => 6,
         "target" => 17
       }
     end

@@ -102,6 +102,28 @@ defmodule Transformers.DateTimeTest do
            }
   end
 
+  test "should parse from a list" do
+    params = %{
+      "sourceField" => "parent_list[0].date1",
+      "targetField" => "date1",
+      "sourceFormat" => "{YYYY}-{0M}-{D} {h24}:{m}",
+      "targetFormat" => "{Mfull} {D}, {YYYY} {h12}:{m} {AM}"
+    }
+
+    message_payload = %{
+      "parent_list[0].date1" => "2022-02-28 16:53",
+      "other_field" => "other_data"
+    }
+
+    {:ok, transformed_payload} = Transformers.DateTime.transform(message_payload, params)
+
+    assert transformed_payload == %{
+             "date1" => "February 28, 2022 4:53 PM",
+             "other_field" => "other_data",
+             "parent_list[0].date1" => "2022-02-28 16:53"
+           }
+  end
+
   describe "error handling" do
     data_test "returns error when #{parameter} not there" do
       params =
