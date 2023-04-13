@@ -260,7 +260,6 @@ defmodule TransformationActionTest do
           sequence: 0
         })
 
-
       operations =
         [transformation1]
         |> Transformers.construct()
@@ -276,12 +275,12 @@ defmodule TransformationActionTest do
       {:ok, resulting_payload} = Transformers.perform(operations, initial_payload)
 
       assert resulting_payload == %{
-        "sourceTestField" => %{"inner" => "knownValue"},
-        "targetTestField" => %{"inner" => "knownValue"},
-        "parent" => %{
-          "child" => 14
-        },
-      }
+               "sourceTestField" => %{"inner" => "knownValue"},
+               "targetTestField" => %{"inner" => "knownValue"},
+               "parent" => %{
+                 "child" => 14
+               }
+             }
     end
 
     test "should access listed source values when specified in conditionals" do
@@ -303,7 +302,6 @@ defmodule TransformationActionTest do
           sequence: 0
         })
 
-
       operations =
         [transformation1]
         |> Transformers.construct()
@@ -319,12 +317,12 @@ defmodule TransformationActionTest do
       {:ok, resulting_payload} = Transformers.perform(operations, initial_payload)
 
       assert resulting_payload == %{
-        "sourceTestField" => [%{"inner" => "knownValue"}],
-        "targetTestField" => %{"inner" => "knownValue"},
-        "parent" => %{
-          "child" => 14
-        },
-      }
+               "sourceTestField" => [%{"inner" => "knownValue"}],
+               "targetTestField" => %{"inner" => "knownValue"},
+               "parent" => %{
+                 "child" => 14
+               }
+             }
     end
   end
 end

@@ -79,8 +79,8 @@ defmodule Transformers.Conditions do
 
         "Target Field" ->
           valid_status
-            |> NotBlank.check(parameters, @target_field)
-            |> NotBlank.check_nested(parameters, @target_field)
+          |> NotBlank.check(parameters, @target_field)
+          |> NotBlank.check_nested(parameters, @target_field)
 
         _ ->
           valid_status
