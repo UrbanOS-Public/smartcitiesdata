@@ -40,7 +40,7 @@ defmodule Reaper.DecoderTest do
         assert dlqd_message.app == "reaper"
         assert dlqd_message.original_message == "this is the data part"
         assert dlqd_message.dataset_id == "ds1"
-        assert dlqd_message.error == "bad Csv"
+        assert dlqd_message.error == "\"bad Csv\""
       end)
     end
 
@@ -61,7 +61,7 @@ defmodule Reaper.DecoderTest do
         assert dlqd_message.dataset_id == "ds1"
 
         assert dlqd_message.error ==
-                 "** (RuntimeError) application/octet-stream is an invalid format"
+                 "%RuntimeError{message: \"application/octet-stream is an invalid format\"}"
 
         assert dlqd_message.original_message == ""
       end)

@@ -152,7 +152,7 @@ defmodule Alchemist.BroadwayTest do
         assert dead_message.app == "Alchemist"
         assert dead_message.dataset_id == @dataset_id
         assert dead_message.original_message == Jason.encode!(badData)
-        assert dead_message.reason == "Invalid data message: %{\"bad_field\" => \"junk\"}"
+        assert dead_message.reason == inspect("Invalid data message: %{\"bad_field\" => \"junk\"}")
       end)
     end
 

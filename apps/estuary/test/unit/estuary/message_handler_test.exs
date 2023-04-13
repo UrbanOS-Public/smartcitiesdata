@@ -25,7 +25,7 @@ defmodule Estuary.MessageHandlerTest do
       app: "estuary",
       dataset_id: "Unknown",
       original_message: [payload],
-      reason: "Required field missing"
+      reason: inspect("Required field missing")
     }
 
     MessageHandler.handle_messages([event])
@@ -60,7 +60,7 @@ defmodule Estuary.MessageHandlerTest do
       app: "estuary",
       dataset_id: "Unknown",
       original_message: [payload],
-      reason: "Presto Error"
+      reason: inspect("Presto Error")
     }
 
     MessageHandler.handle_messages([event])
