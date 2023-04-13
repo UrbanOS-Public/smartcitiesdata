@@ -268,8 +268,6 @@ defmodule ValkyrieTest do
 
       response = HTTPoison.get!("http://localhost:#{metrics_port}/metrics")
 
-      IO.inspect(response.body, label: "Ryan - RESPONSE")
-
       assert true ==
                String.contains?(
                  response.body,
