@@ -84,16 +84,16 @@ defmodule Valkyrie.Broadway do
         DeadLetter.process(
           dataset.id,
           "Unknown",
-          message_data.value,
+          inspect(message_data.value),
           @app_name,
           error: :failed_schema_validation,
-          reason: reason
+          reason: inspect(reason)
         )
 
         Message.failed(message, reason)
 
       {:error, reason} ->
-        DeadLetter.process(dataset.id, "Unknown", message_data.value, @app_name, reason: reason)
+        DeadLetter.process(dataset.id, "Unknown", inspect(message_data.value), @app_name, reason: inspect(reason))
 
         Message.failed(message, reason)
     end
