@@ -16,6 +16,20 @@ defmodule Transformers.RemoveTest do
       assert reason == %{"sourceField" => "Missing or empty field"}
     end
 
+    test "if source field ends in ., return error" do
+      payload = %{
+        "dead_field" => "goodbye"
+      }
+
+      parameters = %{
+        "sourceField" => "dead_field."
+      }
+
+      {:error, reason} = Remove.transform(payload, parameters)
+
+      assert reason == %{"sourceField" => "Missing or empty child field"}
+    end
+
     test "if source field not on payload, return error" do
       payload = %{
         "undead_field" => "goodbye"

@@ -31,6 +31,8 @@ defmodule Transformers.Concatenation do
     |> NotBlank.check(parameters, @source_fields)
     |> NotBlank.check(parameters, @separator)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @source_fields)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> IsPresent.check(parameters, @separator)
     |> ValidationStatus.ordered_values_or_errors([@source_fields, @separator, @target_field])
   end
@@ -45,9 +47,21 @@ defmodule Transformers.Concatenation do
 
   def find_values_or_errors(payload, field_names) do
     Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->
-      case Map.fetch(payload, field_name) do
-        {:ok, value} -> update_list_in_map(accumulator, :values, value)
-        :error -> update_list_in_map(accumulator, :errors, field_name)
+      if Regex.match?(~r/\[\*\]/, field_name) do
+        [base_parent_key, child_key] = String.split(field_name, "[*].")
+
+        Enum.reduce(payload, accumulator, fn {key, value}, acc ->
+          if String.starts_with?(key, base_parent_key) and String.ends_with?(key, child_key) do
+            update_list_in_map(acc, :values, value)
+          else
+            acc
+          end
+        end)
+      else
+        case Map.fetch(payload, field_name) do
+          {:ok, value} -> update_list_in_map(accumulator, :values, value)
+          :error -> update_list_in_map(accumulator, :errors, field_name)
+        end
       end
     end)
     |> reverse_list(:values)

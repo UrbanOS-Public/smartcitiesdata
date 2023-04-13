@@ -85,6 +85,15 @@ defmodule Transformers.TypeConversionTest do
     assert {:error, "Field some_string not of expected type: string"} == result
   end
 
+  test "if field ends with ., return error" do
+    payload = %{"some_string" => 1}
+    parameters = %{"field" => "some_string.", "sourceType" => "string", "targetType" => "float"}
+
+    result = Transformers.TypeConversion.transform(payload, parameters)
+
+    assert {:error, %{"field" => "Missing or empty child field"}} == result
+  end
+
   test "convert from integer to string" do
     payload = %{"thing" => 300}
     parameters = %{"field" => "thing", "sourceType" => "integer", "targetType" => "string"}
