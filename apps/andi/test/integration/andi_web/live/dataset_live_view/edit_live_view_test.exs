@@ -519,18 +519,47 @@ defmodule AndiWeb.EditLiveViewTest do
 
   describe "Disable Schema After Publish" do
     setup do
-      published_dataset = TDG.create_dataset(%{}) |> Map.put(:submission_status, :published)
+      published_dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{name: "my_list", type: "list", itemType: "boolean"},
+              %{name: "my_int", type: "integer"},
+              %{name: "my_string", type: "string"},
+              %{format: "{ISO:Extended:Z}", name: "my_date", type: "date"},
+              %{name: "my_float", type: "float"},
+              %{name: "my_boolean", type: "boolean"}
+            ]
+          }
+        })
+        |> Map.put(:submission_status, :published)
+
       {:ok, _} = Datasets.update(published_dataset)
 
       unpublished_dataset =
-        TDG.create_dataset(%{})
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{name: "my_list", type: "list", itemType: "boolean"},
+              %{name: "my_int", type: "integer"},
+              %{name: "my_string", type: "string"},
+              %{format: "{ISO:Extended:Z}", name: "my_date", type: "date"},
+              %{name: "my_float", type: "float"},
+              %{name: "my_boolean", type: "boolean"}
+            ]
+          }
+        })
 
       {:ok, _} = Datasets.update(unpublished_dataset)
 
       [published_dataset: published_dataset, unpublished_dataset: unpublished_dataset]
     end
 
-    test "Upload section conditionally does not exist", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+    test "Upload section conditionally does not exist", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
 
@@ -538,7 +567,11 @@ defmodule AndiWeb.EditLiveViewTest do
       refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
 
-    test "Read-Only warning conditionally does exist", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+    test "Read-Only warning conditionally does exist", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       refute Enum.empty?(find_elements(html, ".data-dictionary-disabled-warning"))
 
@@ -546,7 +579,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(find_elements(html, ".data-dictionary-disabled-warning"))
     end
 
-    test "Add/Remove Schema Field buttons are conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+    test "Add/Remove Schema Field buttons are conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       refute Enum.empty?(get_attributes(html, "#add-button", "disabled"))
       refute Enum.empty?(get_attributes(html, "#remove-button", "disabled"))
@@ -556,7 +593,11 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(get_attributes(html, "#remove-button", "disabled"))
     end
 
-    test "Editor Fields Name is conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+    test "Editor Fields Name is conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__name input", "disabled"))
 
@@ -564,12 +605,52 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__name input", "disabled"))
     end
 
-    test "Editor Fields Type is conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+    test "Editor Fields Type is conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__type select", "disabled"))
 
       assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
       assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__type select", "disabled"))
+    end
+
+    test "Editor Fields List Type is conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, "#data_dictionary_field_editor_item_type", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor_item_type", "disabled"))
+    end
+
+    test "Editor Fields Datetime Format is conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__format input", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__format input", "disabled"))
+    end
+
+    test "Editor Fields Default Date is conditionally disabled", %{
+      conn: conn,
+      published_dataset: published_dataset,
+      unpublished_dataset: unpublished_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "disabled"))
     end
   end
 end
