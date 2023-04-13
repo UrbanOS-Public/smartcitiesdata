@@ -152,8 +152,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStep do
         List.insert_at(remaining_list, new_index, transformation_to_move)
         |> Enum.with_index()
         |> Enum.map(fn {changeset, index} ->
-          changes = Map.get(changeset, :changes) |> Map.put(:sequence, index)
-          Transformation.changeset(changeset, changes)
+          Changeset.put_change(changeset, :sequence, index)
         end)
 
       send(self(), {:update_all_transformations, updated_transformation_changesets})
