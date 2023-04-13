@@ -176,5 +176,22 @@ defmodule Transformers.RegexExtractTest do
 
       assert reason == %{"regex" => "Invalid regular expression: missing ) at index 8"}
     end
+
+    data_test "returns error if #{parameter} ends in ." do
+      parameters = %{
+        "sourceField" => "phone_number",
+        "targetField" => "area_code",
+        "regex" => "^\\((\\d{3})\\)"
+      }
+
+      invalid_parameter = Map.get(parameters, parameter)
+      parameters = Map.put(parameters, parameter, "#{invalid_parameter}.")
+
+      {:error, reason} = RegexExtract.validate(parameters)
+
+      assert reason == %{parameter => "Missing or empty child field"}
+
+      where(parameter: ["sourceField", "targetField"])
+    end
   end
 end

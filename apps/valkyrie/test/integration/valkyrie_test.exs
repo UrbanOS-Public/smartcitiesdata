@@ -274,10 +274,13 @@ defmodule ValkyrieTest do
                  "dead_letters_handled_count{dataset_id=\"dataset_id\",reason=\"reason\"}"
                )
 
+      expected =
+        "dead_letters_handled_count{dataset_id=\"#{dataset.id}\",reason=\"\\\"%{\\\\\\\\\"alignment\\\\\\\\\" => :invalid_string}\\\"\"}"
+
       assert true ==
                String.contains?(
                  response.body,
-                 "dead_letters_handled_count{dataset_id=\"#{dataset.id}\",reason=\"%{\\\"alignment\\\" => :invalid_string}\"}"
+                 expected
                )
 
       assert Enum.any?(messages, fn %{original_message: message} -> message == encoded_og_message end)

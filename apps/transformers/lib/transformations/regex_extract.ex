@@ -38,6 +38,8 @@ defmodule Transformers.RegexExtract do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @source_field)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @source_field)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> NotBlank.check(parameters, @regex)
     |> ValidRegex.check(parameters, @regex)
     |> ValidationStatus.ordered_values_or_errors([@source_field, @target_field, @regex])

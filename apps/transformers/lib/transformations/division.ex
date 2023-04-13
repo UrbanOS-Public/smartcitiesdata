@@ -18,8 +18,8 @@ defmodule Transformers.Division do
          {:ok, [dividend, divisor, target_field_name]} <- validate(parameters),
          {:ok, numeric_dividend} <- ParseUtils.parseValue(dividend, payload),
          {:ok, numeric_divisor} <- ParseUtils.parseValue(divisor, payload),
-         {:ok, dividend} <- resolve_payload_field(payload, numeric_dividend),
-         {:ok, divisor} <- resolve_divisor(payload, numeric_divisor),
+         {:ok, _dividend} <- resolve_payload_field(payload, numeric_dividend),
+         {:ok, _divisor} <- resolve_divisor(payload, numeric_divisor),
          {:ok, quotient} <- {:ok, D.div(D.cast(numeric_dividend), D.cast(numeric_divisor))} do
       {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
@@ -56,6 +56,9 @@ defmodule Transformers.Division do
     |> NotBlank.check_nil(parameters, @dividend)
     |> NotBlank.check_nil(parameters, @divisor)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @dividend)
+    |> NotBlank.check_nested(parameters, @divisor)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> ValidationStatus.ordered_values_or_errors([@dividend, @divisor, @target_field])
   end
 

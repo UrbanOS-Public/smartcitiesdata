@@ -36,6 +36,8 @@ defmodule Transformers.Add do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @addends)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @addends)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> ValidationStatus.ordered_values_or_errors([@addends, @target_field])
   end
 
