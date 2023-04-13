@@ -30,6 +30,7 @@ defmodule Transformers.TypeConversion do
   def validate(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @field)
+    |> NotBlank.check_nested(parameters, @field)
     |> NotBlank.check(parameters, @source_type)
     |> NotBlank.check(parameters, @target_type)
     |> ValidTypeConversion.check(parameters, @source_type, @target_type, @conversion_function)

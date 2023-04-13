@@ -154,6 +154,67 @@ defmodule Transformers.AddTest do
 
       assert result == %{"target" => 0}
     end
+
+    test "if any addends end with a period, return error" do
+      payload = %{
+        "one" => 3,
+        "two" => 4,
+        "target" => 0
+      }
+
+      parameters = %{
+        "addends" => ["one.", "two"],
+        "targetField" => "target"
+      }
+
+      {:error, reason} = Add.transform(payload, parameters)
+
+      assert reason == %{"addends" => "Missing or empty child field"}
+    end
+
+    test "if target end with a period, return error" do
+      payload = %{
+        "one" => 3,
+        "two" => 4,
+        "target" => 0
+      }
+
+      parameters = %{
+        "addends" => ["one", "two."],
+        "targetField" => "target."
+      }
+
+      {:error, reason} = Add.transform(payload, parameters)
+
+      assert reason == %{
+               "addends" => "Missing or empty child field",
+               "targetField" => "Missing or empty child field"
+             }
+    end
+
+    test "should get into list values" do
+      payload = %{
+        "parent_list[0].one" => 4,
+        "parent_list2[0].two" => 5,
+        "parent_list2[1].two" => 2,
+        "parent_list2[2].two" => 6
+      }
+
+      parameters = %{
+        "addends" => ["parent_list[0].one", "parent_list[*].two"],
+        "targetField" => "target"
+      }
+
+      {:ok, resulting_payload} = Add.transform(payload, parameters)
+
+      assert resulting_payload == %{
+               "parent_list[0].one" => 4,
+               "parent_list2[0].two" => 5,
+               "parent_list2[1].two" => 2,
+               "parent_list2[2].two" => 6,
+               "target" => 17
+             }
+    end
   end
 
   describe "fields/0" do

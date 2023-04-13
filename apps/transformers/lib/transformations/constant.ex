@@ -20,9 +20,11 @@ defmodule Transformers.Constant do
     end
   end
 
+  @spec validate(any) :: {:error, any} | {:ok, list}
   def validate(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> NotBlank.check(parameters, @new_value)
     |> NotBlank.check(parameters, @value_type)
     |> ValidationStatus.ordered_values_or_errors([@target_field, @new_value, @value_type])

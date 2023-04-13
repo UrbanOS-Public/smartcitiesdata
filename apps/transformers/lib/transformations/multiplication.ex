@@ -67,6 +67,8 @@ defmodule Transformers.Multiplication do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @multiplicands)
     |> NotBlank.check(parameters, @target_field)
+    |> NotBlank.check_nested(parameters, @multiplicands)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> ValidationStatus.ordered_values_or_errors([@multiplicands, @target_field])
   end
 
