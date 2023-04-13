@@ -84,7 +84,7 @@ defmodule Valkyrie.Broadway do
         DeadLetter.process(
           dataset.id,
           "Unknown",
-          inspect(message_data.value),
+          message_data.value,
           @app_name,
           error: :failed_schema_validation,
           reason: inspect(reason)
