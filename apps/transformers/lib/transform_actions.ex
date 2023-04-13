@@ -109,7 +109,6 @@ defmodule Transformers do
               |> String.replace("[", "")
               |> String.replace("]", "")
               |> String.to_integer()
-              |> IO.inspect(label: "index")
 
             current_acc = Map.get(acc, base_parent_key, [])
 

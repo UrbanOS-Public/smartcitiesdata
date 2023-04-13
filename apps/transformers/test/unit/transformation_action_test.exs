@@ -240,5 +240,91 @@ defmodule TransformationActionTest do
                "concat" => "something, else"
              }
     end
+
+    test "should access nested source values when specified in conditionals" do
+      transformation1 =
+        TDG.create_transformation(%{
+          name: "sample",
+          type: "add",
+          parameters: %{
+            "condition" => "true",
+            "conditionCompareTo" => "Target Field",
+            "conditionDataType" => "string",
+            "sourceConditionField" => "sourceTestField.inner",
+            "conditionOperation" => "=",
+            "targetConditionField" => "targetTestField.inner",
+            "targetConditionValue" => nil,
+            "addends" => "5, parent.child",
+            "targetField" => "parent.child"
+          },
+          sequence: 0
+        })
+
+
+      operations =
+        [transformation1]
+        |> Transformers.construct()
+
+      initial_payload = %{
+        "sourceTestField" => %{"inner" => "knownValue"},
+        "targetTestField" => %{"inner" => "knownValue"},
+        "parent" => %{
+          "child" => 9
+        }
+      }
+
+      {:ok, resulting_payload} = Transformers.perform(operations, initial_payload)
+
+      assert resulting_payload == %{
+        "sourceTestField" => %{"inner" => "knownValue"},
+        "targetTestField" => %{"inner" => "knownValue"},
+        "parent" => %{
+          "child" => 14
+        },
+      }
+    end
+
+    test "should access listed source values when specified in conditionals" do
+      transformation1 =
+        TDG.create_transformation(%{
+          name: "sample",
+          type: "add",
+          parameters: %{
+            "condition" => "true",
+            "conditionCompareTo" => "Target Field",
+            "conditionDataType" => "string",
+            "sourceConditionField" => "sourceTestField[0].inner",
+            "conditionOperation" => "=",
+            "targetConditionField" => "targetTestField.inner",
+            "targetConditionValue" => nil,
+            "addends" => [5, "parent.child"],
+            "targetField" => "parent.child"
+          },
+          sequence: 0
+        })
+
+
+      operations =
+        [transformation1]
+        |> Transformers.construct()
+
+      initial_payload = %{
+        "sourceTestField" => [%{"inner" => "knownValue"}],
+        "targetTestField" => %{"inner" => "knownValue"},
+        "parent" => %{
+          "child" => 9
+        }
+      }
+
+      {:ok, resulting_payload} = Transformers.perform(operations, initial_payload)
+
+      assert resulting_payload == %{
+        "sourceTestField" => [%{"inner" => "knownValue"}],
+        "targetTestField" => %{"inner" => "knownValue"},
+        "parent" => %{
+          "child" => 14
+        },
+      }
+    end
   end
 end

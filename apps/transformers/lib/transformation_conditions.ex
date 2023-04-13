@@ -68,6 +68,7 @@ defmodule Transformers.Conditions do
       |> check_datetime(parameters)
       |> NotBlank.check(parameters, @operation_field)
       |> NotBlank.check(parameters, @source_field)
+      |> NotBlank.check_nested(parameters, @source_field)
 
     comp_val = Map.get(parameters, @condition_compare_to)
 
@@ -77,7 +78,9 @@ defmodule Transformers.Conditions do
           valid_status |> NotBlank.check(parameters, @target_value)
 
         "Target Field" ->
-          valid_status |> NotBlank.check(parameters, @target_field)
+          valid_status
+            |> NotBlank.check(parameters, @target_field)
+            |> NotBlank.check_nested(parameters, @target_field)
 
         _ ->
           valid_status
