@@ -18,6 +18,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
     form_with_errors = DataDictionaryHelpers.add_errors_to_form(assigns.form)
     field_type = input_value(assigns.form, :type)
     editing_ingestion? = assigns.dataset_or_ingestion == :ingestion
+    read_only? = (not editing_ingestion?) and Map.get(assigns, :published?, false)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -28,7 +29,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required", for: id <> "_name") %>
-          <%= text_input(@form, :name, [id: id <> "_name", aria_label: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
+          <%= text_input(@form, :name, [disabled: read_only?, id: id <> "_name", aria_label: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
 
@@ -42,7 +43,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required", for: id <> "_type") %>
-          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>
+          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [disabled: read_only?, id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
 

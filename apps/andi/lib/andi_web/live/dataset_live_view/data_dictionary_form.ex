@@ -58,8 +58,8 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
         false -> "hidden"
       end
 
-    is_published = assigns.dataset.submission_status == :published
-    IO.inspect(is_published, label: "RYAN - IS PUBLISHED")
+    published? = assigns.dataset.submission_status == :published
+    IO.inspect(published?, label: "RYAN - IS PUBLISHED")
     IO.inspect(assigns.dataset.submission_status, label: "RYAN - Status")
 
     ~L"""
@@ -94,21 +94,21 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
             <div class="data-dictionary-form-edit-section form-grid">
 
               <div class="upload-section">
-                <%= if not is_published do %>
-                <div class="data-dictionary-form__file-upload">
-                  <div class="file-input-button--<%= loader_visibility %>">
-                    <div class="file-input-button">
-                      <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                      <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
-                      <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                <%= if not published? do %>
+                  <div class="data-dictionary-form__file-upload">
+                    <div class="file-input-button--<%= loader_visibility %>">
+                      <div class="file-input-button">
+                        <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
+                        <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
+                      </div>
                     </div>
+
+                    <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
+                    <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
                   </div>
 
-                  <button type="button" id="reader-cancel" class="file-upload-cancel-button file-upload-cancel-button--<%= loader_visibility %> btn">Cancel</button>
-                  <div class="loader data-dictionary-form__loader data-dictionary-form__loader--<%= loader_visibility %>"></div>
-                </div>
-
-                <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
+                  <%= ErrorHelpers.error_tag(f, :schema, bind_to_input: false, class: "full-width") %>
                 <% else %>
                   <div class="data-dictionary-disabled-warning">
                     The dataset schema is read-only after publishing. Please create a new dataset if you wish to modify the schema.
@@ -128,14 +128,14 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                 </div>
 
                 <div class="data-dictionary-form__tree-footer data-dictionary-form-tree-footer" >
-                  <button id="add-button" name="add-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
-                  <button id="remove-button" name="remove-button" class="data-dictionary-form__remove-field-button material-icons" type="button" phx-click="remove_data_dictionary_field">delete_outline</button>
+                  <button <%= if published?, do: "disabled" %> id="add-button" name="add-button" class="btn btn--primary-outline btn--save" type="button" phx-click="add_data_dictionary_field">Add</button>
+                  <button <%= if published?, do: "disabled" %> id="remove-button" name="remove-button" class="data-dictionary-form__remove-field-button material-icons" type="button" phx-click="remove_data_dictionary_field">delete_outline</button>
                 </div>
               </div>
 
               <div class="data-dictionary-form__edit-section">
                 <%= if @is_curator do %>
-                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, dataset_or_ingestion: :dataset) %>
+                  <%= live_component(@socket, AndiWeb.DataDictionary.FieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item, dataset_or_ingestion: :dataset, published?: published?) %>
                 <% else %>
                   <%= live_component(@socket, AndiWeb.SubmitLiveView.DataDictionaryFieldEditor, id: :data_dictionary_field_editor, form: @current_data_dictionary_item) %>
                 <% end %>

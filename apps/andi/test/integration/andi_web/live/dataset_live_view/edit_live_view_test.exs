@@ -12,7 +12,7 @@ defmodule AndiWeb.EditLiveViewTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
-  import FlokiHelpers, only: [get_text: 2, find_elements: 2]
+  import FlokiHelpers
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Datasets
@@ -544,6 +544,32 @@ defmodule AndiWeb.EditLiveViewTest do
 
       assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
       assert Enum.empty?(find_elements(html, ".data-dictionary-disabled-warning"))
+    end
+
+    test "Add/Remove Schema Field buttons are conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, "#add-button", "disabled"))
+      refute Enum.empty?(get_attributes(html, "#remove-button", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, "#add-button", "disabled"))
+      assert Enum.empty?(get_attributes(html, "#remove-button", "disabled"))
+    end
+
+    test "Editor Fields Name is conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__name input", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__name input", "disabled"))
+    end
+
+    test "Editor Fields Type is conditionally disabled", %{conn: conn, published_dataset: published_dataset, unpublished_dataset: unpublished_dataset} do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__type select", "disabled"))
+
+      assert {:ok, view, html} = live(conn, @url_path <> unpublished_dataset.id)
+      assert Enum.empty?(get_attributes(html, ".data-dictionary-field-editor__type select", "disabled"))
     end
   end
 end
