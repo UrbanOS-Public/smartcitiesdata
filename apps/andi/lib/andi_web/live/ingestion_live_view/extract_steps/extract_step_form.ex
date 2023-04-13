@@ -39,7 +39,6 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
     <div id="extract-step-form" class="form-component form-beginning">
       <div>
         <%= live_component(
-          @socket,
           AndiWeb.FormCollapsibleHeader,
           order: @order,
           visible?: @visible?,
@@ -67,8 +66,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
               <% {form_module, step_name} = inspect_module(Changeset.fetch_field(extract_step_changeset, :type)) %>
               <% changeset = ExtractStep.create_step_changeset_from_generic_step_changeset(extract_step_changeset) %>
 
-              <%= live_component(@socket, ExtractStepHeader, step_name: step_name, step_id: extract_step_changeset_id, parent_id: @myself) %>
-              <%= live_component(@socket, form_module, id: extract_step_changeset_id, changeset: changeset) %>
+              <%= live_component(ExtractStepHeader, step_name: step_name, step_id: extract_step_changeset_id, parent_id: @myself) %>
+              <%= live_component(form_module, id: extract_step_changeset_id, changeset: changeset) %>
             </div>
           <% end %>
         </div>

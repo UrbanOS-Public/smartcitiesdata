@@ -1,6 +1,8 @@
 defmodule Transformers.DateTime do
   @behaviour Transformation
 
+  use Timex
+
   alias Transformers.FieldFetcher
   alias Transformers.Validations.DateTimeFormat
   alias Transformers.Validations.NotBlank
@@ -19,7 +21,7 @@ defmodule Transformers.DateTime do
            validate(parameters),
          {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
-           string_to_datetime(payload_source_value, source_format, source_field),
+           string_to_datetime("#{payload_source_value}", source_format, source_field),
          {:ok, transformed_datetime} <- format_datetime(source_datetime, target_format) do
       {:ok, payload |> Map.put(target_field, transformed_datetime)}
     else
@@ -51,7 +53,7 @@ defmodule Transformers.DateTime do
   end
 
   defp string_to_datetime(date_string, date_format, source_field) do
-    with {:ok, result} <- Timex.parse(date_string, date_format) do
+    with {:ok, result} <- parse_format(date_string, date_format) do
       {:ok, result}
     else
       {:error, timexReason} ->
@@ -59,6 +61,37 @@ defmodule Transformers.DateTime do
          "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
            timexReason
          }"}
+    end
+  end
+
+  defp parse_format(string, format) do
+    if format == "{s-epoch}" do
+      normalized_value = "#{string}"
+
+      try do
+        seconds =
+          if String.contains?(normalized_value, ".") do
+            trunc(String.to_float(normalized_value))
+          else
+            case Float.parse(normalized_value) do
+              {value, _} ->
+                trunc(value)
+
+              :error ->
+                raise "Could not parse given value: #{normalized_value} into a float"
+            end
+          end
+
+        if String.length("#{seconds}") < 13 do
+          {:ok, Timex.from_unix(seconds)}
+        else
+          {:ok, Timex.from_unix(seconds, :milliseconds)}
+        end
+      rescue
+        err -> {:error, inspect(err)}
+      end
+    else
+      Timex.parse(string, format)
     end
   end
 

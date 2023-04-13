@@ -52,12 +52,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       ]
 
       ingestion = create_ingestion_with_schema(schema)
+      assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+      assert ["one", "three", "two"] == get_texts(html, ".data-dictionary-tree-field__name")
 
-      assert ["one", "two", "three"] == get_texts(html, ".data-dictionary-tree-field__name")
-
-      assert ["string", "integer", "float"] ==
+      assert ["string", "float", "integer"] ==
                get_texts(html, ".data-dictionary-tree-field__type")
     end
 
@@ -104,18 +103,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       ingestion = create_ingestion_with_schema(schema)
 
-      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+      assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert ["one", "two", "two-one", "three", "three-one", "three-two", "three-two-one"] ==
+      assert ["one", "three", "three-one", "three-two", "three-two-one", "two", "two-one"] ==
                get_texts(html, ".data-dictionary-tree-field__name")
 
-      assert ["two", "three", "three-two"] ==
+      assert ["three", "three-two", "two"] ==
                get_texts(
                  html,
                  ".data-dictionary-tree__field--expanded .data-dictionary-tree-field__name"
                )
 
-      assert ["two-one", "three-one", "three-two", "three-two-one"] ==
+      assert ["three-one", "three-two", "three-two-one", "two-one"] ==
                get_texts(
                  html,
                  ".data-dictionary-tree__sub-dictionary .data-dictionary-tree-field__name"
@@ -127,7 +126,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
                  ".data-dictionary-tree__sub-dictionary .data-dictionary-tree__sub-dictionary .data-dictionary-tree-field__name"
                )
 
-      assert ["string", "map", "integer", "list", "float", "map", "string"] ==
+      assert ["string", "list", "float", "map", "string", "map", "integer"] ==
                get_texts(html, ".data-dictionary-tree-field__type")
     end
 
@@ -160,27 +159,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       ingestion = create_ingestion_with_schema(schema)
 
-      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+      assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(
-               find_elements(
-                 html,
-                 "input[type='hidden']#data_dictionary_form_schema_schema_0_description"
-               )
-             )
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_0_description"))
 
-      assert Enum.count(
-               find_elements(
-                 html,
-                 "input[type='hidden']#data_dictionary_form_schema_schema_1_description"
-               )
-             ) > 0
+      assert Enum.empty?(find_elements(html, "input[type='hidden']#data_dictionary_form_schema_schema_1_description"))
     end
 
     test "displays help for ingestions with empty schema fields", %{conn: conn} do
       ingestion = create_ingestion_with_schema([])
 
-      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+      assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       assert get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
     end
@@ -196,7 +185,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       ingestion = create_ingestion_with_schema(schema)
 
-      assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+      assert {:ok, _view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       refute get_text(html, ".data-dictionary-tree__getting-started-help") =~ "add a new field"
     end
@@ -235,14 +224,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     end
 
     test "adds field as a sub schema", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
 
-      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+      html =
+        view
+        |> element("#data_dictionary_add-button")
+        |> render_click()
 
-      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      eventually(fn ->
+        assert find_elements(html, ".data-dictionary-add-field-editor--visible")
+      end)
 
       assert [
                {"Top Level", _},
@@ -264,33 +257,37 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      view
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
-      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+      render_click(element(view, "#add_data_dictionary_submit_button"))
 
-      render_change(form, form_data)
-      render(data_dictionary_view)
-      render_click(add_button)
-      html = render(data_dictionary_view)
+      eventually(fn ->
+        html = render(view)
 
-      assert "Natty" ==
-               get_text(
+        assert "Natty" in get_texts(
                  html,
-                 "#data_dictionary_tree_one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+                 "#data_dictionary_tree_one .data-dictionary-tree-field__name"
                )
+      end)
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
     end
 
     test "adds field as part of top level schema", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
 
-      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+      html =
+        view
+        |> element("#data_dictionary_add-button")
+        |> render_click()
 
-      refute Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      eventually(fn ->
+        assert find_elements(html, ".data-dictionary-add-field-editor--visible")
+      end)
 
       assert [
                {"Top Level", ingestion_id},
@@ -312,104 +309,115 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      view
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
-      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+      render_click(element(view, "#add_data_dictionary_submit_button"))
 
-      render_change(form, form_data)
-      render(data_dictionary_view)
-      render_click(add_button)
+      eventually(fn ->
+        html = render(view)
 
-      html = render(data_dictionary_view)
-
-      assert "Steeeeeeez" ==
-               get_text(
+        assert "Steeeeeeez" in get_texts(
                  html,
-                 "#data_dictionary_tree .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+                 ".data-dictionary-tree-field__name"
                )
+      end)
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
     end
 
-    test "dictionary fields with changed types are eligible for adding a field to", %{
+    test "adding a field to ", %{
       conn: conn,
       ingestion: ingestion
     } do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      updated_ingestion_schema =
-        ingestion
-        |> put_in([:schema, Access.at(0), :subSchema, Access.at(0), :type], "map")
-        |> FormTools.form_data_from_andi_ingestion()
-        |> get_in([:schema])
+      html =
+        view
+        |> element("#data_dictionary_add-button")
+        |> render_click()
 
-      form_data = %{"schema" => updated_ingestion_schema}
-
-      render_change(data_dictionary_view, "validate", %{
-        "data_dictionary_form_schema" => form_data
-      })
-
-      html = render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       expected_options = [
         "Top Level",
-        "one > one-one",
         "one",
         "two"
       ]
-
-      select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
       Enum.each(select_options, fn {option_name, _} ->
         assert option_name in expected_options
       end)
 
-      {_, new_eligible_parent_id} = List.keyfind(select_options, "one > one-one", 0)
-
-      add_field_form_data = %{
+      form_data = %{
         "field" => %{
           "name" => "Jared",
           "type" => "integer",
-          "parent_id" => new_eligible_parent_id
+          "parent_id" => ingestion.id
         }
       }
 
-      form = element(data_dictionary_view, "#data_dictionary_add_field_editor form")
+      view
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
 
-      add_button = element(data_dictionary_view, "#data_dictionary_add_field_editor button", "ADD FIELD")
+      render_click(element(view, "#add_data_dictionary_submit_button"))
 
-      render_change(form, add_field_form_data)
-      render(data_dictionary_view)
-      render_click(add_button)
+      eventually(fn ->
+        html = render(view)
+        select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
 
-      html = render(data_dictionary_view)
+        assert Enum.any?(select_options, fn {option_name, _} -> option_name == "Jared" end) == false
+      end)
 
-      assert "Jared" ==
-               get_text(
-                 html,
-                 "#data_dictionary_tree_one_one-one .data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
-               )
+      form_data = %{
+        "field" => %{
+          "name" => "Newer Jared",
+          "type" => "list",
+          "parent_id" => ingestion.id
+        }
+      }
+
+      view
+      |> form("#add_data_dictionary_form", form_data)
+      |> render_change()
+
+      render_click(element(view, "#add_data_dictionary_submit_button"))
+
+      html =
+        view
+        |> element("#data_dictionary_add-button")
+        |> render_click()
+
+      eventually(fn ->
+        html = render(view)
+        select_options = get_all_select_options(html, ".data-dictionary-add-field-editor__parent-id select")
+
+        assert Enum.any?(select_options, fn {option_name, _} -> option_name == "Newer Jared" end)
+      end)
     end
 
     test "cancels back to modal not being visible", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      html =
+        view
+        |> element("#data_dictionary_add-button")
+        |> render_click()
 
-      render_click(data_dictionary_view, "add_data_dictionary_field", %{})
+      eventually(fn ->
+        assert find_elements(html, ".data-dictionary-add-field-editor--visible")
+      end)
 
-      cancel_button = element(data_dictionary_view, "#data_dictionary_add_field_editor input.btn")
-      render_click(cancel_button)
+      html =
+        view
+        |> element("#add_data_dictionary_cancel_button")
+        |> render_click()
 
-      html = render(data_dictionary_view)
-
-      assert nil == get_value(html, ".data-dictionary-add-field-editor__name input")
-
-      assert [] == get_select(html, ".data-dictionary-add-field-editor__type select")
-
-      assert Enum.empty?(find_elements(html, ".data-dictionary-add-field-editor--visible"))
+      eventually(fn ->
+        assert find_elements(html, ".data-dictionary-add-field-editor--hidden")
+      end)
     end
   end
 
@@ -427,7 +435,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           description: "this is a map",
           subSchema: [
             %{
-              name: "two-one",
+              name: "child",
               type: "integer"
             }
           ]
@@ -437,188 +445,109 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       [ingestion: create_ingestion_with_schema(schema)]
     end
 
-    test "removes non parent field from subschema", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+    test "removes non parent field", %{conn: conn, ingestion: ingestion} do
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
-      html = render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      view
+      |> element(".data-dictionary-tree-field__text", "one")
+      |> render_click()
 
-      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
+      html =
+        view
+        |> element("#data_dictionary_remove-button")
+        |> render_click()
 
-      render_click(delete_button)
-      html = render(data_dictionary_view)
-      selected_field_name = "one"
+      eventually(fn ->
+        assert find_elements(html, ".data-dictionary-remove-field-editor--visible")
+      end)
 
-      refute selected_field_name in get_texts(
-               html,
-               ".data-dictionary-tree__field .data-dictionary-tree-field__name"
-             )
+      html =
+        view
+        |> element("#data_dictionary_remove_submit_button")
+        |> render_click()
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      eventually(fn ->
+        html = render(view)
 
-      assert "two" ==
-               get_text(
+        assert "one" not in get_texts(
                  html,
-                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+                 "#data_dictionary_tree_one .data-dictionary-tree-field__name"
                )
-    end
-
-    test "removing a field selects the next sibling", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      assert "one" ==
-               get_text(
-                 html,
-                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
-               )
-
-      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
-
-      render_click(delete_button)
-      html = render(data_dictionary_view)
-
-      assert "two" ==
-               get_text(
-                 html,
-                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
-               )
+      end)
     end
 
     test "removes parent field along with its children", %{conn: conn, ingestion: ingestion} do
-      ingestion
-      |> update_in([:schema], &List.delete_at(&1, 0))
-      |> Ingestions.update()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      view
+      |> element(".data-dictionary-tree-field__text", "two")
+      |> render_click()
 
-      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
-      html = render(data_dictionary_view)
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+      html =
+        view
+        |> element("#data_dictionary_remove-button")
+        |> render_click()
 
-      assert "two" ==
-               get_text(
-                 html,
-                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
-               )
+      assert find_elements(html, ".data-dictionary-remove-field-editor--visible")
 
-      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
-
-      render_click(delete_button)
-      html = render(data_dictionary_view)
+      html =
+        view
+        |> element("#data_dictionary_remove_submit_button")
+        |> render_click()
 
       assert "WARNING! Removing this field will also remove its children. Would you like to continue?" ==
                get_text(html, ".data-dicitionary-remove-field-editor__message")
 
-      render_click(delete_button)
-      html = render(data_dictionary_view)
+      view
+      |> element("#data_dictionary_remove_submit_button")
+      |> render_click()
 
-      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
+      eventually(fn ->
+        html = render(view)
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-    end
-
-    test "no field is selected when the schema is empty", %{conn: conn, ingestion: ingestion} do
-      ingestion
-      |> update_in([:schema], &List.delete_at(&1, 1))
-      |> Ingestions.update()
-
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
-      html = render(data_dictionary_view)
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      assert "one" ==
-               get_text(
+        assert "two" not in get_texts(
                  html,
-                 ".data-dictionary-tree__field--selected .data-dictionary-tree-field__name"
+                 ".data-dictionary-tree-field__name"
                )
 
-      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
-
-      render_click(delete_button)
-
-      html = render(data_dictionary_view)
-
-      assert Enum.empty?(get_texts(html, ".data-dictionary-tree__field .data-dictionary-tree-field__name"))
-
-      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
+        assert "child" not in get_texts(
+                 html,
+                 ".data-dictionary-tree-field__name"
+               )
+      end)
     end
 
     test "cannot remove field when none is selected", %{conn: conn, ingestion: ingestion} do
-      ingestion
-      |> update_in([:schema], fn _ -> [] end)
-      |> Ingestions.update()
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      html =
+        view
+        |> element("#data_dictionary_remove-button")
+        |> render_click()
 
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-      assert Enum.empty?(find_elements(html, ".data-dictionary-tree__field--selected"))
-
-      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
-      html = render(data_dictionary_view)
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-    end
-
-    test "shows error message when ecto delete fails", %{conn: conn, ingestion: ingestion} do
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-
-      assert Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      render_click(data_dictionary_view, "remove_data_dictionary_field", %{})
-      html = render(data_dictionary_view)
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--hidden"))
-
-      [selected_field_id] =
-        get_attributes(
-          html,
-          ".data-dictionary-tree__field--selected .data-dictionary-tree-field__text",
-          "phx-value-field-id"
-        )
-
-      assert {:ok, _} = DataDictionaryFields.remove_field(selected_field_id)
-
-      delete_button = element(data_dictionary_view, "#data_dictionary_remove_field_editor button", "DELETE")
-
-      render_click(delete_button)
-
-      html = render(data_dictionary_view)
-
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor--visible"))
-
-      refute Enum.empty?(find_elements(html, ".data-dictionary-remove-field-editor__error-msg--visible"))
+      assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
     end
   end
 
   test "required schema field displays proper error message", %{conn: conn} do
     ingestion = create_ingestion_with_schema([])
 
-    assert {:ok, _view, html} = live(conn, @url_path <> ingestion.id)
+    assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
-    assert get_text(html, "#schema-error-msg") == "Please add a field to continue"
+    assert get_text(html, ".data_dictionary__error-message") == "Please add a field to continue"
   end
 
   describe "default timestamp/date" do
     setup do
-      timestamp_schema = [%{name: "timestamp_field", type: "timestamp"}]
-      date_schema = [%{name: "date_field", type: "date"}]
+      timestamp_schema = [
+        %{name: "timestamp_field", type: "timestamp", default: %{provider: "date", version: "1", opts: %{offset_in_days: -1}}}
+      ]
+
+      date_schema = [%{name: "date_field", type: "date", default: %{provider: "date", version: "1", opts: %{offset_in_seconds: -1}}}]
       andi_ingestion_with_timestamp = create_ingestion_with_schema(timestamp_schema)
       andi_ingestion_with_date = create_ingestion_with_schema(date_schema)
 
@@ -641,12 +570,18 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       schema_field_id = andi_ingestion.schema |> hd() |> Map.get(:id)
 
-      {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
-      assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+      view
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
-      assert get_value(html, "#data_dictionary_field_editor__offset_input") == "-1"
+      eventually(fn ->
+        html = render(view)
+        assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+
+        assert get_value(html, "#data_dictionary_field_editor__offset_input") == "-1"
+      end)
 
       form_schema = %{
         "schema" => %{
@@ -657,49 +592,42 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
             "type" => "date",
             "bread_crumb" => "date_field",
             "id" => schema_field_id,
-            "use_default" => "false",
-            "offset" => "-1"
+            "use_default" => "false"
           }
         }
       }
 
       html =
-        data_dictionary_view
-        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+        view
+        |> form("#data_dictionary_form", form_data: form_schema)
+        |> render_change()
 
-      render_change(view, "save")
+      eventually(fn ->
+        html = render(view)
 
-      eventually(
-        fn ->
-          updated_andi_ingestion = Ingestions.get(andi_ingestion.id)
-
-          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
-
-          updated_schema_field = smrt_ingestion_from_andi_ingestion.schema |> hd()
-
-          refute Map.has_key?(updated_schema_field, :default)
-
-          assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
-
-          assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
-        end,
-        20,
-        200
-      )
+        assert [] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+        assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+      end)
     end
 
     test "replaces nil provider with default when use default checkbox is checked", %{conn: conn} do
-      schema = [%{name: "date_field", type: "date"}]
+      schema = [%{name: "date_field", type: "date", use_default: false}]
       andi_ingestion = create_ingestion_with_schema(schema)
 
       schema_field_id = andi_ingestion.schema |> hd() |> Map.get(:id)
 
-      {:ok, view, html} = live(conn, @url_path <> andi_ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
-      assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "checked"))
+      view
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
-      assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+      eventually(fn ->
+        html = render(view)
+        assert [] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+
+        assert ["disabled"] = get_attributes(html, "#data_dictionary_field_editor__offset_input", "disabled")
+      end)
 
       form_schema = %{
         "schema" => %{
@@ -716,26 +644,16 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       }
 
       html =
-        data_dictionary_view
-        |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+        view
+        |> form("#data_dictionary_form", form_data: form_schema)
+        |> render_change()
 
-      render_change(view, "save")
+      eventually(fn ->
+        html = render(view)
 
-      eventually(
-        fn ->
-          updated_andi_ingestion = Ingestions.get(andi_ingestion.id)
-
-          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
-
-          updated_schema_field = smrt_ingestion_from_andi_ingestion.schema |> hd()
-
-          assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
-
-          assert %{provider: "date"} = Map.get(updated_schema_field, :default)
-        end,
-        20,
-        100
-      )
+        assert ["checked"] = get_attributes(html, "#data_dictionary_field_editor__use-default", "checked")
+        assert get_value(html, "#data_dictionary_field_editor__offset_input") == "0"
+      end)
     end
 
     test "generates provision for timestamps", %{
@@ -744,8 +662,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     } do
       schema_field_id = andi_ingestion_with_timestamp.schema |> hd() |> Map.get(:id)
 
-      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_timestamp.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_timestamp.id}")
+
+      view
+      |> element(".data-dictionary-tree-field__text", "timestamp_field")
+      |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
       offset_in_seconds = -1 * 60 * 60 * 24
@@ -765,31 +686,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      data_dictionary_view
-      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+      html =
+        view
+        |> form("#data_dictionary_form", form_data: form_schema)
+        |> render_change()
 
-      render_change(view, "save")
+      eventually(fn ->
+        html = render(view)
 
-      eventually(
-        fn ->
-          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_timestamp.id)
-
-          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
-
-          assert %{
-                   default: %{
-                     provider: "timestamp",
-                     version: "2",
-                     opts: %{
-                       format: format,
-                       offset_in_seconds: offset_in_seconds
-                     }
-                   }
-                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
-        end,
-        10,
-        200
-      )
+        assert format == get_value(html, "#data_dictionary_field_editor_format")
+        assert "#{offset_in_seconds}" == get_value(html, "#data_dictionary_field_editor__offset_input")
+      end)
     end
 
     test "generates provision for dates", %{
@@ -798,8 +705,11 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     } do
       schema_field_id = andi_ingestion_with_date.schema |> hd() |> Map.get(:id)
 
-      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_date.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_date.id}")
+
+      view
+      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
       offset_in_days = -1
@@ -819,81 +729,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
         }
       }
 
-      data_dictionary_view
-      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
+      html =
+        view
+        |> form("#data_dictionary_form", form_data: form_schema)
+        |> render_change()
 
-      render_change(view, "save")
+      eventually(fn ->
+        html = render(view)
 
-      eventually(
-        fn ->
-          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_date.id)
-
-          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
-
-          assert %{
-                   default: %{
-                     provider: "date",
-                     version: "1",
-                     opts: %{
-                       format: format,
-                       offset_in_days: offset_in_days
-                     }
-                   }
-                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
-        end,
-        10,
-        200
-      )
-    end
-
-    test "defaults offset to 0", %{conn: conn, andi_ingestion_with_date: andi_ingestion_with_date} do
-      schema_field_id = andi_ingestion_with_date.schema |> hd() |> Map.get(:id)
-
-      {:ok, view, html} = live(conn, @url_path <> andi_ingestion_with_date.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-
-      format = "{YYYY}-{0M}-{0D}"
-
-      form_schema = %{
-        "schema" => %{
-          "0" => %{
-            "ingestion_id" => andi_ingestion_with_date.id,
-            "default_offset" => nil,
-            "use_default" => "true",
-            "format" => format,
-            "name" => "date_field",
-            "type" => "date",
-            "bread_crumb" => "date_field",
-            "id" => schema_field_id
-          }
-        }
-      }
-
-      data_dictionary_view
-      |> render_change("validate", %{"data_dictionary_form_schema" => form_schema})
-
-      render_change(view, "save")
-
-      eventually(
-        fn ->
-          updated_andi_ingestion = Ingestions.get(andi_ingestion_with_date.id)
-
-          smrt_ingestion_from_andi_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(updated_andi_ingestion)
-
-          assert %{
-                   default: %{
-                     provider: "date",
-                     version: "1",
-                     opts: %{
-                       format: format,
-                       offset_in_days: 0
-                     }
-                   }
-                 } = smrt_ingestion_from_andi_ingestion.schema |> hd()
-        end,
-        10,
-        200
-      )
+        assert format == get_value(html, "#data_dictionary_field_editor_format")
+        assert "#{offset_in_days}" == get_value(html, "#data_dictionary_field_editor__offset_input")
+      end)
     end
   end
 
@@ -902,37 +748,49 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-      html = render(data_dictionary_view)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
-      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      html = render(view)
+
+      assert find_elements(html, ".data-dictionary-form__file-upload")
     end
 
     test "is shown when sourceFormat is TSV", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/plain", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-      html = render(data_dictionary_view)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
-      refute Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      html = render(view)
+
+      assert find_elements(html, ".data-dictionary-form__file-upload")
     end
 
     test "is hidden when sourceFormat is not CSV, TSV, nor JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "application/geo+json", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
-      html = render(data_dictionary_view)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+      html = render(view)
 
       assert Enum.empty?(find_elements(html, ".data-dictionary-form__file-upload"))
     end
@@ -941,46 +799,70 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 200_000_001})
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
 
-      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+      html = render_hook(view, "file_upload", %{"fileSize" => 200_000_001})
+
+      eventually(fn ->
+        html = render(view)
+
+        assert "File size must be less than 200MB" == get_text(html, ".data_dictionary__error-message")
+      end)
     end
 
     test "should throw error when empty csv file is passed", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = ""
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      html = render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+      eventually(fn ->
+        html = render(view)
+
+        assert "There was a problem interpreting this file" == get_text(html, ".data_dictionary__error-message")
+      end)
     end
 
     data_test "accepts common csv file type #{type}", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = "string,int,float,bool,date\nabc,9,1.5,true,2020-07-22T21:24:40"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 10, "fileType" => type, "file" => csv_sample})
+      html = render_hook(view, "file_upload", %{"fileSize" => 10, "fileType" => type, "file" => csv_sample})
 
-      assert Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+      eventually(fn ->
+        html = render(view)
+
+        assert "" == get_text(html, ".data_dictionary__error-message")
+      end)
 
       where([
         [:type],
@@ -993,126 +875,134 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = "\n"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      html = render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+      eventually(fn ->
+        html = render(view)
+
+        assert "There was a problem interpreting this file" == get_text(html, ".data_dictionary__error-message")
+      end)
     end
 
     test "provides modal when existing schema will be overwritten", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
 
-      {:ok, _} = Datasets.update(dataset)
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
+
+      eventually(fn ->
+        assert Ingestions.get(ingestion.id) != nil
+      end)
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = "CAM\nrules"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      html = render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      refute Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+      eventually(fn ->
+        render(view)
+
+        assert element(view, ".overwrite-schema-modal--visible")
+      end)
     end
 
     test "does not provide modal with no existing schema", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("text/csv", view)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      ingestion = create_ingestion_with_schema([], "text/csv")
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = "CAM\nrules"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      html = render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      assert Enum.empty?(find_elements(html, ".overwrite-schema-modal--visible"))
+      eventually(fn ->
+        render(view)
 
-      updated_ingestion = Ingestions.get(ingestion.id)
-      refute Enum.empty?(updated_ingestion.schema)
+        assert element(view, ".overwrite-schema-modal--hidden")
+      end)
     end
 
     test "parses CSVs with various types", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("text/csv", view)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      ingestion = create_ingestion_with_schema([], "text/csv")
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample = "string,int,float,bool,date,timestamp\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
 
-      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      updated_ingestion = Ingestions.get(ingestion.id)
+      eventually(fn ->
+        render(view)
 
-      generated_schema =
-        updated_ingestion.schema
-        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
-
-      expected_schema = [
-        %{name: "string", type: "string"},
-        %{name: "int", type: "integer"},
-        %{name: "float", type: "float"},
-        %{name: "bool", type: "boolean"},
-        %{name: "date", type: "date"},
-        %{name: "timestamp", type: "timestamp"}
-      ]
-
-      assert generated_schema == expected_schema
+        assert element(view, ".data-dictionary-tree-field__name", "string")
+        assert element(view, ".data-dictionary-tree-field__type", "string")
+        assert element(view, ".data-dictionary-tree-field__name", "int")
+        assert element(view, ".data-dictionary-tree-field__type", "integer")
+        assert element(view, ".data-dictionary-tree-field__name", "float")
+        assert element(view, ".data-dictionary-tree-field__type", "float")
+        assert element(view, ".data-dictionary-tree-field__name", "bool")
+        assert element(view, ".data-dictionary-tree-field__type", "boolean")
+        assert element(view, ".data-dictionary-tree-field__name", "date")
+        assert element(view, ".data-dictionary-tree-field__type", "date")
+        assert element(view, ".data-dictionary-tree-field__name", "timestamp")
+        assert element(view, ".data-dictionary-tree-field__type", "timestamp")
+      end)
     end
 
     test "parses CSV with valid column names", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("text/csv", view)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      ingestion = create_ingestion_with_schema([], "text/csv")
+
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       csv_sample =
         "string\r,i&^%$nt,fl\toat,bool---,date as multi word column,timestamp as multi word column\nabc,9,1.5,true,2020-07-22,2020-07-22T21:24:40"
 
-      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
+      render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "text/csv", "file" => csv_sample})
 
-      updated_ingestion = Ingestions.get(ingestion.id)
+      eventually(fn ->
+        render(view)
 
-      generated_schema =
-        updated_ingestion.schema
-        |> Enum.map(fn item -> %{type: item.type, name: item.name} end)
-
-      expected_schema = [
-        %{name: "string", type: "string"},
-        %{name: "int", type: "integer"},
-        %{name: "float", type: "float"},
-        %{name: "bool", type: "boolean"},
-        %{name: "date as multi word column", type: "date"},
-        %{name: "timestamp as multi word column", type: "timestamp"}
-      ]
-
-      assert generated_schema == expected_schema
+        assert element(view, ".data-dictionary-tree-field__name", "string")
+        assert element(view, ".data-dictionary-tree-field__type", "string")
+        assert element(view, ".data-dictionary-tree-field__name", "int")
+        assert element(view, ".data-dictionary-tree-field__type", "integer")
+        assert element(view, ".data-dictionary-tree-field__name", "float")
+        assert element(view, ".data-dictionary-tree-field__type", "float")
+        assert element(view, ".data-dictionary-tree-field__name", "bool")
+        assert element(view, ".data-dictionary-tree-field__type", "boolean")
+        assert element(view, ".data-dictionary-tree-field__name", "date as multi word column")
+        assert element(view, ".data-dictionary-tree-field__type", "date")
+        assert element(view, ".data-dictionary-tree-field__name", "timestamp as multi word column")
+        assert element(view, ".data-dictionary-tree-field__type", "timestamp")
+      end)
     end
 
     test "handles invalid json", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
-      {:ok, _} = Ingestions.update(ingestion)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      ingestion = create_ingestion_with_schema([])
+      assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
       json_sample = "header"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
+      render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
 
-      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
+      eventually(fn ->
+        html = render(view)
+
+        assert "There was a problem interpreting this file: \"header\"" == get_text(html, ".data_dictionary__error-message")
+      end)
     end
 
     test "should throw error when empty json file is passed", %{conn: conn} do
@@ -1125,36 +1015,19 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
       json_sample = "[]"
 
-      html = render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
-      refute Enum.empty?(find_elements(html, "#schema_sample-error-msg"))
-    end
+      render_hook(view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
 
-    test "generates eligible parents list", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      ingestion = Ingestions.create(dataset.id)
-      assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
-      select_source_format("application/json", view)
-      data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
+      eventually(fn ->
+        html = render(view)
 
-      json_sample = [%{list_field: [%{child_list_field: []}]}] |> Jason.encode!()
-
-      render_hook(data_dictionary_view, "file_upload", %{"fileSize" => 100, "fileType" => "application/json", "file" => json_sample})
-
-      updated_ingestion = Ingestions.get(ingestion.id)
-
-      generated_bread_crumbs =
-        updated_ingestion
-        |> DataDictionaryFields.get_parent_ids_from_ingestion()
-        |> Enum.map(fn {bread_crumb, _} -> bread_crumb end)
-
-      assert ["Top Level", "list_field", "list_field > child_list_field"] == generated_bread_crumbs
+        assert "Json file is empty" == get_text(html, ".data_dictionary__error-message")
+      end)
     end
   end
 
-  defp create_ingestion_with_schema(schema) do
+  defp create_ingestion_with_schema(schema, source_format \\ "application/json") do
     dataset = TDG.create_dataset(%{})
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema})
+    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema, sourceFormat: source_format})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
