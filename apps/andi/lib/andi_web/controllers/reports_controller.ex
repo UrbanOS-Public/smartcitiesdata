@@ -18,9 +18,17 @@ defmodule AndiWeb.ReportsController do
   defp build_csv() do
     values =
       get_datasets()
-      |> Enum.map(fn dataset -> [dataset.id, get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)] end)
+      |> Enum.map(fn dataset ->
+        [
+          dataset.id,
+          dataset.dataTitle,
+          dataset.orgTitle,
+          dataset.systemName,
+          get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)
+        ]
+      end)
 
-    [["Dataset ID", "Users"] | values]
+    [["Dataset ID", "Dataset Title", "Organization", "System Name", "Users"] | values]
   end
 
   defp get_users_for_dataset(is_public, access_groups, org_id) do
@@ -39,12 +47,20 @@ defmodule AndiWeb.ReportsController do
     query =
       from(dataset in Dataset,
         where: dataset.submission_status != :draft,
-        preload: [:technical, access_groups: [:users]]
+        preload: [:business, :technical, access_groups: [:users]]
       )
 
     Andi.Repo.all(query)
     |> Enum.map(fn dataset ->
-      %{id: dataset.id, is_public: not dataset.technical.private, access_groups: dataset.access_groups, org_id: dataset.technical.orgId}
+      %{
+        id: dataset.id,
+        dataTitle: dataset.business.dataTitle,
+        orgTitle: dataset.business.orgTitle,
+        systemName: dataset.technical.systemName,
+        is_public: not dataset.technical.private,
+        access_groups: dataset.access_groups,
+        org_id: dataset.technical.orgId
+      }
     end)
   end
 
