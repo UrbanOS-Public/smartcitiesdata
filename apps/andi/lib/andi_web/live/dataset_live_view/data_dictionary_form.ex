@@ -59,8 +59,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       end
 
     published? = assigns.dataset.submission_status == :published
-    IO.inspect(published?, label: "RYAN - IS PUBLISHED")
-    IO.inspect(assigns.dataset.submission_status, label: "RYAN - Status")
 
     ~L"""
     <div id="data-dictionary-form" class="form-component form-end">

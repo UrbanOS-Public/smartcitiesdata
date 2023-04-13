@@ -20,8 +20,6 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
     editing_ingestion? = assigns.dataset_or_ingestion == :ingestion
     read_only? = not editing_ingestion? and Map.get(assigns, :published?, false)
 
-    IO.inspect(assigns, label: "RYAN - Dictionary Assigns")
-
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
         <%= hidden_input(@form, :id, id: id <> "_id") %>
