@@ -70,12 +70,12 @@ defmodule Transformers do
 
         value when is_list(value) ->
           value
-            |> Enum.with_index
-            |> Enum.reduce(acc, fn({value, index}), enum_acc ->
-              parent_key = "#{concat_key(key, parent_key)}[#{index}]"
-              child_payload = flatten_payload(value, parent_key)
-              Map.merge(enum_acc, child_payload)
-            end)
+          |> Enum.with_index()
+          |> Enum.reduce(acc, fn {value, index}, enum_acc ->
+            parent_key = "#{concat_key(key, parent_key)}[#{index}]"
+            child_payload = flatten_payload(value, parent_key)
+            Map.merge(enum_acc, child_payload)
+          end)
 
         value ->
           Map.put(acc, concat_key(key, parent_key), value)
@@ -101,8 +101,11 @@ defmodule Transformers do
 
           if Regex.match?(~r/\[.\]/, parent_key) do
             base_parent_key = Regex.replace(~r/\[.\]/, parent_key, "")
-            index = Regex.scan(~r/\[.\]/, parent_key)
-              |> hd() |> hd()
+
+            index =
+              Regex.scan(~r/\[.\]/, parent_key)
+              |> hd()
+              |> hd()
               |> String.replace("[", "")
               |> String.replace("]", "")
               |> String.to_integer()

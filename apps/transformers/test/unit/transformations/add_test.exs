@@ -208,12 +208,12 @@ defmodule Transformers.AddTest do
       {:ok, resulting_payload} = Add.transform(payload, parameters)
 
       assert resulting_payload == %{
-        "parent_list[0].one" => 4,
-        "parent_list2[0].two" => 5,
-        "parent_list2[1].two" => 2,
-        "parent_list2[2].two" => 6,
-        "target" => 17
-      }
+               "parent_list[0].one" => 4,
+               "parent_list2[0].two" => 5,
+               "parent_list2[1].two" => 2,
+               "parent_list2[2].two" => 6,
+               "target" => 17
+             }
     end
   end
 

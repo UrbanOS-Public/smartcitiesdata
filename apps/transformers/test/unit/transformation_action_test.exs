@@ -235,7 +235,7 @@ defmodule TransformationActionTest do
                  }
                },
                "parent_list" => [
-                %{"child" => 9}
+                 %{"child" => 9}
                ],
                "concat" => "something, else"
              }

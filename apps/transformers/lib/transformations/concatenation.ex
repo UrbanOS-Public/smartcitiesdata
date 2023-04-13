@@ -47,7 +47,6 @@ defmodule Transformers.Concatenation do
 
   def find_values_or_errors(payload, field_names) do
     Enum.reduce(field_names, %{values: [], errors: []}, fn field_name, accumulator ->
-
       if Regex.match?(~r/\[\*\]/, field_name) do
         [base_parent_key, child_key] = String.split(field_name, "[*].")
 
