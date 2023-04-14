@@ -573,7 +573,12 @@ defmodule AndiWeb.EditLiveViewTest do
       {:ok, _} = Datasets.update(list_dataset)
       {:ok, _} = Datasets.update(date_dataset)
 
-      [published_dataset: published_dataset, unpublished_dataset: unpublished_dataset, date_dataset: date_dataset, list_dataset: list_dataset]
+      [
+        published_dataset: published_dataset,
+        unpublished_dataset: unpublished_dataset,
+        date_dataset: date_dataset,
+        list_dataset: list_dataset
+      ]
     end
 
     test "Upload section conditionally does not exist", %{
