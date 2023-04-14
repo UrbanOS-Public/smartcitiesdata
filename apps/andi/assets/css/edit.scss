@@ -1,6 +1,15 @@
 $component-number-width: 4rem;
 $component-header-height: 4.5rem;
 
+.disabled-data-dictionary {
+    pointer-events:none;
+}
+    
+.data-dictionary-disabled-warning {
+    padding: 30px 0px 0px 0px;
+    color: $color-error;
+}
+
 .edit-page {
     display: grid;
     grid-template-columns: 1fr;

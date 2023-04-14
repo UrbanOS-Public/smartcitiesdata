@@ -18,6 +18,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
     form_with_errors = DataDictionaryHelpers.add_errors_to_form(assigns.form)
     field_type = input_value(assigns.form, :type)
     editing_ingestion? = assigns.dataset_or_ingestion == :ingestion
+    read_only? = not editing_ingestion? and Map.get(assigns, :published?, false)
 
     ~L"""
       <div id="<%= @id %>" class="data-dictionary-field-editor" >
@@ -28,7 +29,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required", for: id <> "_name") %>
-          <%= text_input(@form, :name, [id: id <> "_name", aria_label: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
+          <%= text_input(@form, :name, [disabled: read_only?, id: id <> "_name", aria_label: id <> "_name", class: "data-dictionary-field-editor__name input", "phx-debounce": "1000", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :name) %>
         </div>
 
@@ -42,14 +43,14 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
 
         <div class="data-dictionary-field-editor__type">
           <%= label(@form, :type, "Type", class: "label label--required", for: id <> "_type") %>
-          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>
+          <%= select(@form, :type, DataDictionaryHelpers.get_item_types(), [disabled: read_only?, id: id <> "_type", class: "data-dictionary-field-editor__type select", required: true]) %>
           <%= ErrorHelpers.error_tag(form_with_errors, :type) %>
         </div>
 
         <div class="data-dictionary-field-editor__type-info">
           <%= if field_type == "list" do %>
             <%= label(@form, :itemType, "Item Type", class: "label label--required", for: id <> "_item_type") %>
-            <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), [id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", required: true]) %>
+            <%= select(@form, :itemType, DataDictionaryHelpers.get_item_types(@form), [disabled: read_only?, id: id <> "_item_type", class: "data-dictionary-field-editor__item-type select", required: true]) %>
             <%= ErrorHelpers.error_tag(form_with_errors, :itemType) %>
           <% end %>
 
@@ -58,7 +59,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
               <%= label(@form, :format, "Format", class: "label label--required", for: id <> "_format") %>
               <a href="https://hexdocs.pm/timex/Timex.Format.DateTime.Formatters.Default.html" target="_blank">Help</a>
             </div>
-            <%= text_input(@form, :format, [id: id <> "_format", class: "data-dictionary-field-editor__format input", required: true]) %>
+            <%= text_input(@form, :format, [disabled: read_only?, id: id <> "_format", class: "data-dictionary-field-editor__format input", required: true]) %>
             <%= ErrorHelpers.error_tag(form_with_errors, :format) %>
           <% end %>
         </div>
@@ -69,7 +70,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
             <% offset = input_value(@form, :default_offset) |> get_offset_from_default(using_default) %>
 
             <div class="inline" style="align-items: baseline;">
-              <%= checkbox(@form, :use_default, id: id <> "__use-default", value: using_default) %>
+              <%= checkbox(@form, :use_default, disabled: read_only?, id: id <> "__use-default", value: using_default) %>
               <%= label(@form, :use_default, "Set the Default #{String.capitalize(field_type)}", class: "label", for: id <> "__use-default") %>
               <div class="test-status__tooltip-wrapper"><p phx-hook="addTooltip" data-tooltip-content="If the data ingested does not have a <%= field_type %> value, the system can add this value during ingestion by taking the current <%= field_type %> offset by the value entered below" class="add-default-tooltip">Help</p></div>
             </div>
