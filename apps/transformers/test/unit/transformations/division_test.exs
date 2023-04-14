@@ -224,6 +224,25 @@ defmodule Transformers.DivisionTest do
 
       assert result == {:ok, %{"target" => "test"}}
     end
+
+    test "should parse from list" do
+      params = %{
+        "dividend" => "parent_list[0].dividend",
+        "divisor" => "parent_list[1].divisor",
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{
+        "parent_list[0].dividend" => 10,
+        "parent_list[0].divisor" => 2,
+        "parent_list[1].divisor" => 2
+      }
+
+      {:ok, transformed_payload} = Division.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "output_number")
+      assert actual_target_field == 5
+    end
   end
 
   describe "validate/1" do
@@ -269,6 +288,26 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Division.validate(parameters)
 
       assert reason == %{"targetField" => "Missing or empty field"}
+    end
+
+    test "returns error if fields end in ." do
+      params = %{
+        "dividend" => "dividend.",
+        "divisor" => "divisor.",
+        "targetField" => "output_number"
+      }
+
+      message_payload = %{
+        "dividend" => 4,
+        "divisor" => 4
+      }
+
+      {:error, reason} = Division.transform(message_payload, params)
+
+      assert reason == %{
+               "dividend" => "Missing or empty child field",
+               "divisor" => "Missing or empty child field"
+             }
     end
   end
 

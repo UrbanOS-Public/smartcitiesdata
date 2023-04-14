@@ -42,6 +42,8 @@ defmodule Transformers.DateTime do
     |> NotBlank.check(parameters, @source_format)
     |> NotBlank.check(parameters, @target_field)
     |> NotBlank.check(parameters, @target_format)
+    |> NotBlank.check_nested(parameters, @source_field)
+    |> NotBlank.check_nested(parameters, @target_field)
     |> DateTimeFormat.check(parameters, @source_format)
     |> DateTimeFormat.check(parameters, @target_format)
     |> ValidationStatus.ordered_values_or_errors([
