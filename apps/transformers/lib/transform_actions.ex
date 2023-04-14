@@ -73,8 +73,19 @@ defmodule Transformers do
           |> Enum.with_index()
           |> Enum.reduce(acc, fn {value, index}, enum_acc ->
             parent_key = "#{concat_key(key, parent_key)}[#{index}]"
-            child_payload = flatten_payload(value, parent_key)
-            Map.merge(enum_acc, child_payload)
+
+            case value do
+              innerListValue when is_list(innerListValue) ->
+                child_payload = flatten_payload(innerListValue, parent_key)
+                Map.merge(enum_acc, child_payload)
+
+              innerMapValue when is_map(innerMapValue) ->
+                child_payload = flatten_payload(innerMapValue, parent_key)
+                Map.merge(enum_acc, child_payload)
+
+              primitiveValue ->
+                Map.put(enum_acc, parent_key, primitiveValue)
+            end
           end)
 
         value ->
@@ -93,8 +104,24 @@ defmodule Transformers do
   defp split_payload(payload) do
     Enum.reduce(payload, %{}, fn {key, value}, acc ->
       case String.split(key, ".") do
-        hierarchy when length(hierarchy) == 1 ->
-          Map.put(acc, hd(hierarchy), value)
+        [head | []] ->
+          if Regex.match?(~r/\[.\]/, head) do
+            base_parent_key = Regex.replace(~r/\[.\]/, head, "")
+
+            index =
+              Regex.scan(~r/\[.\]/, head)
+              |> hd()
+              |> hd()
+              |> String.replace("[", "")
+              |> String.replace("]", "")
+              |> String.to_integer()
+
+            current_acc_list = Map.get(acc, base_parent_key, [])
+
+            Map.put(acc, base_parent_key, current_acc_list ++ [value])
+          else
+            Map.put(acc, head, value)
+          end
 
         hierarchy ->
           {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
@@ -115,7 +142,6 @@ defmodule Transformers do
             updated_map = create_child_map(child_hierarchy, value)
 
             updated_acc = List.insert_at(current_acc, index, updated_map)
-
             Map.put(acc, base_parent_key, updated_acc)
           else
             map_child(parent_key, child_hierarchy, value, acc)
