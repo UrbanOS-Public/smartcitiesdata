@@ -4,6 +4,7 @@ defmodule Andi.ReportsControllerTest do
   use Placebo
   use AndiWeb.Test.AuthConnCase.IntegrationCase
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.Datasets.Business
   alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.AccessGroup
   alias Andi.InputSchemas.Organization
@@ -11,17 +12,33 @@ defmodule Andi.ReportsControllerTest do
 
   describe "download_report" do
     test "sets dataset users to public when dataset is not private", %{curator_conn: conn} do
-      dataset1 = %Dataset{id: "12345", technical: %Technical{private: false}}
+      dataset1 = %Dataset{
+        id: "12345",
+        business: %Business{dataTitle: "Example", orgTitle: "Test"},
+        technical: %Technical{private: false, systemName: "Test__Example"}
+      }
 
       allow Andi.Repo.all(any()), seq: [[dataset1]]
       result = get(conn, "/report")
       assert result.status == 200
-      assert result.resp_body == "Dataset ID,Users\r\n12345,All (public)\r\n"
+
+      assert result.resp_body ==
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,All (public)\r\n"
     end
 
     test "adds users to private dataset based on the dataset's org", %{curator_conn: conn} do
-      dataset1 = %Dataset{id: "12345", technical: %Technical{private: true, orgId: "1122"}, access_groups: []}
-      dataset2 = %Dataset{id: "6789", technical: %Technical{private: false}}
+      dataset1 = %Dataset{
+        id: "12345",
+        business: %Business{dataTitle: "Example", orgTitle: "Test"},
+        technical: %Technical{private: true, orgId: "1122", systemName: "Test__Example"},
+        access_groups: []
+      }
+
+      dataset2 = %Dataset{
+        id: "6789",
+        business: %Business{dataTitle: "Example2", orgTitle: "Test2"},
+        technical: %Technical{private: false, systemName: "Test2__Example2"}
+      }
 
       user1 = %User{
         subject_id: UUID.uuid4(),
@@ -40,7 +57,9 @@ defmodule Andi.ReportsControllerTest do
       allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
       result = get(conn, "/report")
       assert result.status == 200
-      assert result.resp_body == "Dataset ID,Users\r\n12345,\"user1@fakemail.com, user2@fakemail.com\"\r\n6789,All (public)\r\n"
+
+      assert result.resp_body ==
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com\"\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
 
     test "adds users to private dataset based on the dataset's org and access groups", %{curator_conn: conn} do
@@ -64,8 +83,20 @@ defmodule Andi.ReportsControllerTest do
 
       access_group1 = %AccessGroup{users: [user1]}
       access_group2 = %AccessGroup{users: [user2]}
-      dataset1 = %Dataset{id: "12345", technical: %Technical{private: true, orgId: "1122"}, access_groups: [access_group1, access_group2]}
-      dataset2 = %Dataset{id: "6789", technical: %Technical{private: false}}
+
+      dataset1 = %Dataset{
+        id: "12345",
+        business: %Business{dataTitle: "Example", orgTitle: "Test"},
+        technical: %Technical{private: true, orgId: "1122", systemName: "Test__Example"},
+        access_groups: [access_group1, access_group2]
+      }
+
+      dataset2 = %Dataset{
+        id: "6789",
+        business: %Business{dataTitle: "Example2", orgTitle: "Test2"},
+        technical: %Technical{private: false, systemName: "Test2__Example2"}
+      }
+
       org = %Organization{id: "1122", users: [user3]}
 
       allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
@@ -73,7 +104,7 @@ defmodule Andi.ReportsControllerTest do
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Users\r\n12345,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\"\r\n6789,All (public)\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\"\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
 
     test "filters duplicates", %{curator_conn: conn} do
@@ -85,14 +116,28 @@ defmodule Andi.ReportsControllerTest do
 
       access_group1 = %AccessGroup{users: [user1]}
       access_group2 = %AccessGroup{users: [user1]}
-      dataset1 = %Dataset{id: "12345", technical: %Technical{private: true, orgId: "1122"}, access_groups: [access_group1, access_group2]}
-      dataset2 = %Dataset{id: "6789", technical: %Technical{private: false}}
+
+      dataset1 = %Dataset{
+        id: "12345",
+        business: %Business{dataTitle: "Example", orgTitle: "Test"},
+        technical: %Technical{private: true, orgId: "1122", systemName: "Test__Example"},
+        access_groups: [access_group1, access_group2]
+      }
+
+      dataset2 = %Dataset{
+        id: "6789",
+        business: %Business{dataTitle: "Example2", orgTitle: "Test2"},
+        technical: %Technical{private: false, systemName: "Test2__Example2"}
+      }
+
       org = %Organization{id: "1122", users: [user1]}
 
       allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
       result = get(conn, "/report")
       assert result.status == 200
-      assert result.resp_body == "Dataset ID,Users\r\n12345,user1@fakemail.com\r\n6789,All (public)\r\n"
+
+      assert result.resp_body ==
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,user1@fakemail.com\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
   end
 end

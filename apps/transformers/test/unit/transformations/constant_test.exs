@@ -158,5 +158,21 @@ defmodule Transformers.ConstantTest do
 
       assert result == "Error: could not convert 'flooooaaaat' to type: float"
     end
+
+    test "returns error when target fields ends with ." do
+      parameters = %{
+        "targetField" => "testField.",
+        "newValue" => "new value",
+        "valueType" => "flat"
+      }
+
+      payload = %{
+        "testField" => "old value"
+      }
+
+      {:error, result} = Constant.transform(payload, parameters)
+
+      assert result == %{"targetField" => "Missing or empty child field"}
+    end
   end
 end

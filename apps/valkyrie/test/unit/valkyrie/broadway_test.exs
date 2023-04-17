@@ -125,7 +125,7 @@ defmodule Valkyrie.BroadwayTest do
 
       assert dlqd_message.app == "Valkyrie"
       assert dlqd_message.dataset_id == @dataset_id
-      assert dlqd_message.reason == :something_went_badly
+      assert dlqd_message.reason == ":something_went_badly"
     end)
   end
 
@@ -144,7 +144,7 @@ defmodule Valkyrie.BroadwayTest do
 
       assert dlqd_message.app == "Valkyrie"
       assert dlqd_message.dataset_id == "ds1"
-      assert dlqd_message.reason == %{"age" => :invalid_integer}
+      assert dlqd_message.reason == "%{\"age\" => :invalid_integer}"
       assert dlqd_message.error == :failed_schema_validation
       assert dlqd_message.original_message == Jason.encode!(data)
     end)

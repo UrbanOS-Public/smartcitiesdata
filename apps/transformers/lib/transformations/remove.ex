@@ -24,6 +24,7 @@ defmodule Transformers.Remove do
   def validate(parameters) do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @source_field)
+    |> NotBlank.check_nested(parameters, @source_field)
     |> ValidationStatus.ordered_values_or_errors([@source_field])
   end
 

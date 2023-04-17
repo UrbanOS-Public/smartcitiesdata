@@ -111,6 +111,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       case Changeset.fetch_field(socket.assigns.transformation_changeset, :parameters) do
         {_, parameters} -> parameters
         :error -> %{}
+        _ -> %{}
       end
 
     condition_select =
@@ -118,6 +119,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         nil -> nil
         "true" -> true
         "false" -> false
+        _ -> nil
       end
 
     static =
@@ -125,12 +127,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         nil -> nil
         "Static Value" -> true
         "Target Field" -> false
+        _ -> nil
       end
 
     show_date =
       case Map.get(parameters, :conditionDataType) do
         nil -> false
         "DateTime" -> true
+        _ -> false
       end
 
     {:noreply, assign(socket, visible?: not current_visibility, condition?: condition_select, static?: static, date?: show_date)}

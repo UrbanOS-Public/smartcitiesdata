@@ -101,7 +101,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
         assert dlqd_message.app == "reaper"
         assert dlqd_message.dataset_id == "ds9"
         assert dlqd_message.original_message == {%{three: 3, four: 4}, 2}
-        assert dlqd_message.reason == "bad stuff"
+        assert dlqd_message.reason == "\"bad stuff\""
       end)
     end
   end
