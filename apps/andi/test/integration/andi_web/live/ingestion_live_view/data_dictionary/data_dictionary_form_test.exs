@@ -600,7 +600,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       html =
         view
         |> form("#data_dictionary_form", form_data: form_schema)
-        |> render_change()
+        |> render_change(%{"_target" => ["form"]})
 
       eventually(fn ->
         html = render(view)
@@ -646,7 +646,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       html =
         view
         |> form("#data_dictionary_form", form_data: form_schema)
-        |> render_change()
+        |> render_change(%{"_target" => ["form"]})
 
       eventually(fn ->
         html = render(view)
@@ -689,7 +689,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       html =
         view
         |> form("#data_dictionary_form", form_data: form_schema)
-        |> render_change()
+        |> render_change(%{"_target" => ["form"]})
 
       eventually(fn ->
         html = render(view)
@@ -732,7 +732,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       html =
         view
         |> form("#data_dictionary_form", form_data: form_schema)
-        |> render_change()
+        |> render_change(%{"_target" => ["form"]})
 
       eventually(fn ->
         html = render(view)
