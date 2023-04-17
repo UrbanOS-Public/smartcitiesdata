@@ -158,30 +158,19 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data, "_target" => target}, socket) do
-    changeset =
-      form_data
-      |> DataDictionaryFormSchema.changeset_from_form_data()
-
-    send(self(), {:update_data_dictionary, changeset})
-
-    if Enum.any?(target, fn t -> t == "selected_modifier" end) do
+    if List.last(target) == "selected_modifier" do
       {:noreply, socket}
     else
+      changeset =
+        form_data
+        |> DataDictionaryFormSchema.changeset_from_form_data()
+
       updated_current_form = update_current_data_dictionary_item(socket, changeset)
+
+      send(self(), {:update_data_dictionary, changeset})
+
       {:noreply, assign(socket, current_data_dictionary_item: updated_current_form)}
     end
-  end
-
-  def handle_event("validate", %{"form_data" => form_data}, socket) do
-    changeset =
-      form_data
-      |> DataDictionaryFormSchema.changeset_from_form_data()
-
-    updated_current_form = update_current_data_dictionary_item(socket, changeset)
-
-    send(self(), {:update_data_dictionary, changeset})
-
-    {:noreply, assign(socket, current_data_dictionary_item: updated_current_form)}
   end
 
   def handle_event("validate", _, socket) do
