@@ -297,8 +297,12 @@ defmodule Andi.InputSchemas.Ingestion do
       Changeset.get_field(changeset, :schema, [])
       |> StructTools.to_map()
 
-    DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
-    |> Enum.reduce(changeset, fn error, changeset_acc -> Changeset.add_error(changeset_acc, :schema, error) end)
+    selector_validated_changeset =
+      DatasetSchemaValidator.validate(schema, changes[:sourceFormat])
+      |> Enum.reduce(changeset, fn error, changeset_acc -> Changeset.add_error(changeset_acc, :schema, error) end)
+
+    DatasetSchemaValidator.validate_values(schema)
+    |> Enum.reduce(selector_validated_changeset, fn error, changeset_acc -> Changeset.add_error(changeset_acc, :schema, error) end)
   end
 
   defp validate_extract_steps(changeset) do

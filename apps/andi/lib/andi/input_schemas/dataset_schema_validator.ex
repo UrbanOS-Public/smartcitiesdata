@@ -2,6 +2,19 @@ defmodule Andi.InputSchemas.DatasetSchemaValidator do
   @moduledoc """
   Used to validate dataset schemas
   """
+  alias Timex.Format.DateTime.Formatter
+
+  def validate_values(schema) do
+    Enum.reduce(schema, [], fn item, acc ->
+      type = Map.get(item, :type, "")
+
+      cond do
+        type == "list" and String.trim(Map.get(item, :itemType, "")) == "" -> acc ++ ["list schema must have an item type"]
+        type in ["date", "timestamp"] -> validate_date(acc, item)
+        true -> acc
+      end
+    end)
+  end
 
   def validate(schema, source_format) when source_format in ["xml", "text/xml"] do
     validate_schema_has_selectors(schema)
@@ -33,4 +46,18 @@ defmodule Andi.InputSchemas.DatasetSchemaValidator do
   end
 
   defp build_field_validator(field), do: SimplyValidate.validate(field, [selector_required(field)])
+
+  defp validate_date(acc, item) do
+    try do
+      case Formatter.validate(Map.get(item, :format, "")) do
+        :ok ->
+          acc
+
+        {:error, err} ->
+          acc ++ [err]
+      end
+    rescue
+      _ -> acc ++ ["failed to parse"]
+    end
+  end
 end
