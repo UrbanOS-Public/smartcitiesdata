@@ -134,6 +134,9 @@ defmodule AndiWeb.EditLiveView do
 
     AndiWeb.Endpoint.broadcast_from(self(), "form-save", "save-all", %{dataset_id: dataset_id})
 
+    # Temporary solution to handle concurrent save events. Future rearchitecting suggested.
+    Process.sleep(1_000)
+
     andi_dataset = Datasets.get(dataset_id)
     dataset_changeset = InputConverter.andi_dataset_to_full_ui_changeset(andi_dataset)
 
@@ -243,6 +246,7 @@ defmodule AndiWeb.EditLiveView do
       |> InputConverter.andi_dataset_to_full_ui_changeset()
       |> Dataset.validate_unique_system_name()
       |> Map.put(:action, :update)
+      |> IO.inspect(label: "mikeyc - form-save")
 
     success_message = save_message(new_changeset.valid?)
 
