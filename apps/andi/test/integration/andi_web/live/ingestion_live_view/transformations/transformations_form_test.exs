@@ -238,7 +238,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     refute has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
   end
 
-  test "in the condition form, selecting 'static value' will allow equals, not equals, greater than, or less than comparisons", %{view: view, ingestion: ingestion} do
+  test "in the condition form, selecting 'static value' will allow equals, not equals, greater than, or less than comparisons", %{
+    view: view,
+    ingestion: ingestion
+  } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
@@ -260,7 +263,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Is Less Than"
   end
 
-  test "in the condition form, selecting 'target field' will allow equals, not equals, greater than, or less than comparisons", %{view: view, ingestion: ingestion} do
+  test "in the condition form, selecting 'target field' will allow equals, not equals, greater than, or less than comparisons", %{
+    view: view,
+    ingestion: ingestion
+  } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
@@ -368,7 +374,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Null or Empty"
   end
 
-  test "in the condition form, selecting 'Is Greater Than' will show static and target field compare to types", %{view: view, ingestion: ingestion} do
+  test "in the condition form, selecting 'Is Greater Than' will show static and target field compare to types", %{
+    view: view,
+    ingestion: ingestion
+  } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
@@ -389,7 +398,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     refute options_html =~ "Null or Empty"
   end
 
-  test "in the condition form, selecting 'Is Less Than' will show static and target field compare to types", %{view: view, ingestion: ingestion} do
+  test "in the condition form, selecting 'Is Less Than' will show static and target field compare to types", %{
+    view: view,
+    ingestion: ingestion
+  } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
