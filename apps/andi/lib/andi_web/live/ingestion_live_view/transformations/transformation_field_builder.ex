@@ -13,6 +13,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     show_date_format_fields = not is_nil(assigns.date?) and assigns.date?
     show_additional_fields? = not is_nil(assigns.compare_to_null?) and not assigns.compare_to_null?
     show_all_comparison_options? = is_nil(assigns.compare_to_null?) or not assigns.compare_to_null?
+    show_all_compare_to_types? = is_nil(assigns.allow_all_compare_to_types?) or assigns.allow_all_compare_to_types?
 
     ~L"""
     <h3><b>IF</b></h3>
@@ -40,11 +41,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
           <%= ErrorHelpers.error_tag(form.source, :conditionOperation, bind_to_input: false, id: "#{@id}_transformation_condition_comparison_error") %>
         </div>
       <% end %>
-      <div>
-        <%= label(form, :conditionCompareTo, "Compare to", class: "label label--required", for: "transformation_condition_#{@id}__compareTo") %>
-        <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field", "Null or Empty"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
-        <%= ErrorHelpers.error_tag(form.source, :conditionCompareTo, bind_to_input: false, id: "#{@id}_transformation_condition_compareTo_error") %>
-      </div>
+      <%= if show_all_compare_to_types? do %>
+        <div>
+          <%= label(form, :conditionCompareTo, "Compare to", class: "label label--required", for: "transformation_condition_#{@id}__compareTo") %>
+          <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field", "Null or Empty"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
+          <%= ErrorHelpers.error_tag(form.source, :conditionCompareTo, bind_to_input: false, id: "#{@id}_transformation_condition_compareTo_error") %>
+        </div>
+      <% else %>
+        <div>
+          <%= label(form, :conditionCompareTo, "Compare to", class: "label label--required", for: "transformation_condition_#{@id}__compareTo") %>
+          <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
+          <%= ErrorHelpers.error_tag(form.source, :conditionCompareTo, bind_to_input: false, id: "#{@id}_transformation_condition_compareTo_error") %>
+        </div>
+      <% end %>
       <%= if show_additional_fields? do %>
         <%= if show_static_field do %>
           <div>

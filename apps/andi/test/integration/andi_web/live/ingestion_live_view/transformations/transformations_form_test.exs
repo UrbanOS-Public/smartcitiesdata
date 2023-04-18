@@ -326,6 +326,111 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Is Less Than"
   end
 
+  test "in the condition form, selecting 'Is Equal To' will show all compare to types", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionOperation" => "Is Equal To"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__compareTo") |> render()
+    assert options_html =~ "Static Value"
+    assert options_html =~ "Target Field"
+    assert options_html =~ "Null or Empty"
+  end
+
+  test "in the condition form, selecting 'Is Not Equal To' will show all compare to types", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionOperation" => "Is Not Equal To"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__compareTo") |> render()
+    assert options_html =~ "Static Value"
+    assert options_html =~ "Target Field"
+    assert options_html =~ "Null or Empty"
+  end
+
+  test "in the condition form, selecting 'Is Greater Than' will show static and target field compare to types", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionOperation" => "Is Greater Than"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__compareTo") |> render()
+    assert options_html =~ "Static Value"
+    assert options_html =~ "Target Field"
+    refute options_html =~ "Null or Empty"
+  end
+
+  test "in the condition form, selecting 'Is Less Than' will show static and target field compare to types", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionOperation" => "Is Less Than"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__compareTo") |> render()
+    assert options_html =~ "Static Value"
+    assert options_html =~ "Target Field"
+    refute options_html =~ "Null or Empty"
+  end
+
+  test "in the condition form, when no condition operation selected, will show all compare to options", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"condition" => "true"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__compareTo") |> render()
+    assert options_html =~ "Static Value"
+    assert options_html =~ "Target Field"
+    assert options_html =~ "Null or Empty"
+  end
+
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 

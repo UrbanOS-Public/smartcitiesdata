@@ -19,7 +19,8 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
        condition?: nil,
        static?: nil,
        date?: false,
-       compare_to_null?: false
+       compare_to_null?: false,
+       allow_all_compare_to_types?: true
      )}
   end
 
@@ -78,12 +79,14 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
     show_static_value? = check_form_data(form_data, "conditionCompareTo", "Static Value")
     show_date_fields? = check_form_data(form_data, "conditionDataType", "DateTime")
     compare_to_null? = check_form_data(form_data, "conditionCompareTo", "Null or Empty")
+    allow_all_compare_to_types? = check_form_data(form_data, "conditionOperation", "Is Equal To") ||
+      check_form_data(form_data, "conditionOperation", "Is Not Equal To")
 
     transformation = Transformation.changeset(socket.assigns.transformation_changeset, form_data)
 
     AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
 
-    {:noreply, assign(socket, condition?: show_condition?, static?: show_static_value?, date?: show_date_fields?, compare_to_null?: compare_to_null?)}
+    {:noreply, assign(socket, condition?: show_condition?, static?: show_static_value?, date?: show_date_fields?, compare_to_null?: compare_to_null?, allow_all_compare_to_types?: allow_all_compare_to_types?)}
   end
 
   def handle_event("validate", _, socket) do
@@ -146,7 +149,15 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
         _ -> false
       end
 
-    {:noreply, assign(socket, visible?: not current_visibility, condition?: condition_select, static?: static, date?: show_date, compare_to_null?: compare_to_null)}
+    allow_all_compare_to_types =
+      case Map.get(parameters, :conditionOperation) do
+        nil -> true
+        "Is Equal To" -> true
+        "Is Not Equal To" -> true
+        _ -> false
+      end
+
+    {:noreply, assign(socket, visible?: not current_visibility, condition?: condition_select, static?: static, date?: show_date, compare_to_null?: compare_to_null, allow_all_compare_to_types?: allow_all_compare_to_types)}
   end
 
   defp transformation_name(form) do
