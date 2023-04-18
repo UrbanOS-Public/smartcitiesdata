@@ -217,6 +217,27 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
   end
 
+  test "in the condition form, selecting 'Null or Empty' will not show an additional input field", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Null or Empty"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    refute has_element?(view, "#transformation_condition_#{transformation.id}__targetValue")
+    refute has_element?(view, "#transformation_condition_#{transformation.id}__targetField")
+    refute has_element?(view, "#transformation_condition_#{transformation.id}__sourceDateFormat")
+    refute has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
+  end
+
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 

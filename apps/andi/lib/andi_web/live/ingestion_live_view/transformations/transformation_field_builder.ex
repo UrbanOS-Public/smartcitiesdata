@@ -11,6 +11,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     show_static_field = not is_nil(assigns.static?) and assigns.static?
     show_target_field = not is_nil(assigns.static?) and not assigns.static?
     show_date_format_fields = not is_nil(assigns.date?) and assigns.date?
+    show_additional_fields? = not is_nil(assigns.compare_to_null?) and not assigns.compare_to_null?
 
     ~L"""
     <h3><b>IF</b></h3>
@@ -32,10 +33,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
       </div>
       <div>
         <%= label(form, :conditionCompareTo, "Compare to", class: "label label--required", for: "transformation_condition_#{@id}__compareTo") %>
-        <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
+        <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field", "Null or Empty"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
         <%= ErrorHelpers.error_tag(form.source, :conditionCompareTo, bind_to_input: false, id: "#{@id}_transformation_condition_compareTo_error") %>
       </div>
-      <%= if show_static_field or show_target_field do %>
+      <%= if show_additional_fields? do %>
         <%= if show_static_field do %>
           <div>
             <%= label(form, :targetConditionValue, "Value", class: "label label--required", for: "transformation_condition_#{@id}__targetValue") %>
