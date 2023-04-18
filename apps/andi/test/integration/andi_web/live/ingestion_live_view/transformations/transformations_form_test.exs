@@ -304,6 +304,28 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     refute options_html =~ "Is Less Than"
   end
 
+  test "in the condition form, when no compare to type selected yet, show all comparison options", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"condition" => "true"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__comparison") |> render()
+    assert options_html =~ "Is Equal To"
+    assert options_html =~ "Is Not Equal To"
+    assert options_html =~ "Is Greater Than"
+    assert options_html =~ "Is Less Than"
+  end
+
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 

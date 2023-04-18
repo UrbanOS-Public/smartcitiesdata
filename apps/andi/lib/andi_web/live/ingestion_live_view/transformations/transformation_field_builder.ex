@@ -12,6 +12,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
     show_target_field = not is_nil(assigns.static?) and not assigns.static?
     show_date_format_fields = not is_nil(assigns.date?) and assigns.date?
     show_additional_fields? = not is_nil(assigns.compare_to_null?) and not assigns.compare_to_null?
+    show_all_comparison_options? = is_nil(assigns.compare_to_null?) or not assigns.compare_to_null?
 
     ~L"""
     <h3><b>IF</b></h3>
@@ -26,7 +27,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
         <%= select(form, :conditionDataType, ["", "String", "Number", "DateTime"], [value: get_in(form.source.changes, [:parameters, :conditionDataType]), id: "transformation_condition_#{@id}__comparisonType", class: "select transformation-type", required: true]) %>
         <%= ErrorHelpers.error_tag(form.source, :conditionDataType, bind_to_input: false, id: "#{@id}_transformation_condition_comparisonType_error") %>
       </div>
-      <%= if show_additional_fields? do %>
+      <%= if show_all_comparison_options? do %>
         <div>
           <%= label(form, :conditionOperation, "Comparison", class: "label label--required", for: "transformation_condition_#{@id}__comparison") %>
           <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Not Equal To", "Is Greater Than", "Is Less Than"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
