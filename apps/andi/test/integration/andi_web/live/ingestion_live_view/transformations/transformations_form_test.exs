@@ -238,6 +238,72 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     refute has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
   end
 
+  test "in the condition form, selecting 'static value' will allow equals, not equals, greater than, or less than comparisons", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Static Value"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__comparison") |> render()
+    assert options_html =~ "Is Equal To"
+    assert options_html =~ "Is Not Equal To"
+    assert options_html =~ "Is Greater Than"
+    assert options_html =~ "Is Less Than"
+  end
+
+  test "in the condition form, selecting 'target field' will allow equals, not equals, greater than, or less than comparisons", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Target Field"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__comparison") |> render()
+    assert options_html =~ "Is Equal To"
+    assert options_html =~ "Is Not Equal To"
+    assert options_html =~ "Is Greater Than"
+    assert options_html =~ "Is Less Than"
+  end
+
+  test "in the condition form, selecting 'Null or Empty' will allow equals and not equals comparisons", %{view: view, ingestion: ingestion} do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"conditionCompareTo" => "Null or Empty"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    options_html = element(view, "#transformation_condition_#{transformation.id}__comparison") |> render()
+    assert options_html =~ "Is Equal To"
+    assert options_html =~ "Is Not Equal To"
+    refute options_html =~ "Is Greater Than"
+    refute options_html =~ "Is Less Than"
+  end
+
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 

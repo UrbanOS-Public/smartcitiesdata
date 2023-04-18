@@ -26,11 +26,19 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFieldBuilder d
         <%= select(form, :conditionDataType, ["", "String", "Number", "DateTime"], [value: get_in(form.source.changes, [:parameters, :conditionDataType]), id: "transformation_condition_#{@id}__comparisonType", class: "select transformation-type", required: true]) %>
         <%= ErrorHelpers.error_tag(form.source, :conditionDataType, bind_to_input: false, id: "#{@id}_transformation_condition_comparisonType_error") %>
       </div>
-      <div>
-        <%= label(form, :conditionOperation, "Comparison", class: "label label--required", for: "transformation_condition_#{@id}__comparison") %>
-        <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Not Equal To", "Is Greater Than", "Is Less Than"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
-        <%= ErrorHelpers.error_tag(form.source, :conditionOperation, bind_to_input: false, id: "#{@id}_transformation_condition_comparison_error") %>
-      </div>
+      <%= if show_additional_fields? do %>
+        <div>
+          <%= label(form, :conditionOperation, "Comparison", class: "label label--required", for: "transformation_condition_#{@id}__comparison") %>
+          <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Not Equal To", "Is Greater Than", "Is Less Than"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
+          <%= ErrorHelpers.error_tag(form.source, :conditionOperation, bind_to_input: false, id: "#{@id}_transformation_condition_comparison_error") %>
+        </div>
+      <% else %>
+        <div>
+          <%= label(form, :conditionOperation, "Comparison", class: "label label--required", for: "transformation_condition_#{@id}__comparison") %>
+          <%= select(form, :conditionOperation, ["", "Is Equal To", "Is Not Equal To"], [value: get_in(form.source.changes, [:parameters, :conditionOperation]), id: "transformation_condition_#{@id}__comparison", class: "select transformation-type", required: true]) %>
+          <%= ErrorHelpers.error_tag(form.source, :conditionOperation, bind_to_input: false, id: "#{@id}_transformation_condition_comparison_error") %>
+        </div>
+      <% end %>
       <div>
         <%= label(form, :conditionCompareTo, "Compare to", class: "label label--required", for: "transformation_condition_#{@id}__compareTo") %>
         <%= select(form, :conditionCompareTo, ["", "Static Value", "Target Field", "Null or Empty"], [value: get_in(form.source.changes, [:parameters, :conditionCompareTo]), id: "transformation_condition_#{@id}__compareTo", class: "select transformation-type", required: true]) %>
