@@ -21,7 +21,7 @@ defmodule AndiWeb.AuthController do
     Logger.error("Failed to retrieve auth credentials: #{inspect(fails)} with params #{inspect(params)}")
 
     conn
-    |> redirect(to: "/")
+    |> redirect(to: "/autherror")
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
