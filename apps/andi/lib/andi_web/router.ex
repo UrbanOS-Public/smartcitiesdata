@@ -106,4 +106,9 @@ defmodule AndiWeb.Router do
   scope "/", AndiWeb do
     get "/healthcheck", HealthCheckController, :index
   end
+
+  scope "/", AndiWeb do
+    pipe_through :browser
+    live "/autherror", ErrorLiveView, layout: {AndiWeb.LayoutView, :app}
+  end
 end
