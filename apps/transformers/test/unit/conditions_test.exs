@@ -146,6 +146,29 @@ defmodule Transformers.ConditionsTest do
       assert result == {:ok, false}
     end
 
+    @tag :skip
+    test "returns true when source is null for null comparison" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Null or Empty",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => nil
+      }
+
+      payload = %{
+        "testField" => nil
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+
     test "maps operation string 'Is Equal To'" do
       parameters = %{
         "targetField" => "testField",

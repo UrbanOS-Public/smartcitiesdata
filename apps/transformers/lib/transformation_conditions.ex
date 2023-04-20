@@ -23,7 +23,7 @@ defmodule Transformers.Conditions do
   @source_date_format "conditionSourceDateFormat"
   @target_date_format "conditionTargetDateFormat"
 
-  # used with condition input form. Can be "Static Value" or "Target Field"
+  # used with condition input form. Can be "Static Value" or "Target Field" or "Null or Empty"
   @condition_compare_to "conditionCompareTo"
 
   def check(payload, parameters) do
