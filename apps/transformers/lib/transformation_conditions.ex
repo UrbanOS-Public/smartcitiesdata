@@ -130,19 +130,37 @@ defmodule Transformers.Conditions do
 
       right_value =
         cond do
-          compare_to == "Null or Empty" -> nil
-          is_nil(target_value) -> try_parse(Map.fetch!(payload, target_field), data_type, target_format)
-          true -> try_parse(target_value, data_type, target_format)
+          compare_to == "Null or Empty" ->
+            nil
+
+          is_nil(target_value) ->
+            try_parse(Map.fetch!(payload, target_field), data_type, target_format)
+
+          true ->
+            try_parse(target_value, data_type, target_format)
         end
 
       case map_operation(operation) do
-        operation when compare_to == "Null or Empty" and operation == "=" -> {:ok, left_value in [nil, ""]}
-        operation when compare_to == "Null or Empty" and operation == "!=" -> {:ok, left_value not in [nil, ""]}
-        "=" -> {:ok, left_value == right_value}
-        "!=" -> {:ok, left_value != right_value}
-        ">" -> {:ok, left_value > right_value}
-        "<" -> {:ok, left_value < right_value}
-        _ -> {:error, "unsupported condition operation"}
+        operation when compare_to == "Null or Empty" and operation == "=" ->
+          {:ok, left_value in [nil, ""]}
+
+        operation when compare_to == "Null or Empty" and operation == "!=" ->
+          {:ok, left_value not in [nil, ""]}
+
+        "=" ->
+          {:ok, left_value == right_value}
+
+        "!=" ->
+          {:ok, left_value != right_value}
+
+        ">" ->
+          {:ok, left_value > right_value}
+
+        "<" ->
+          {:ok, left_value < right_value}
+
+        _ ->
+          {:error, "unsupported condition operation"}
       end
     rescue
       error -> {:error, error}
