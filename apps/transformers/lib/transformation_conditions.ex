@@ -169,6 +169,7 @@ defmodule Transformers.Conditions do
 
   defp try_parse(value, type, format) do
     case String.downcase(type) do
+      _ when is_nil(value) -> value
       "string" ->
         if is_binary(value), do: value, else: Kernel.inspect(value)
 
