@@ -230,6 +230,74 @@ defmodule Transformers.ConditionsTest do
       result = Conditions.check(payload, parameters)
       assert result == {:ok, true}
     end
+
+    test "returns true when source field is a boolean and provided value are equal" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "true"
+      }
+
+      payload = %{
+        "testField" => true
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+
+    test "returns true when source field and target field are boolean and they are equal" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
+      }
+
+      payload = %{
+        "testField" => true,
+        "compareField" => true
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+
+    test "returns true when source field is string boolean and target field is boolean and they are equal" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Target Field",
+        "conditionDataType" => "string",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "=",
+        "targetConditionField" => "compareField",
+        "targetConditionValue" => nil
+      }
+
+      payload = %{
+        "testField" => "true",
+        "compareField" => true
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
   end
 
   describe "not equals" do
