@@ -1,5 +1,6 @@
 defmodule Transformers.ConditionsTest do
   use ExUnit.Case
+  import Checkov
 
   alias Transformers.Conditions
 
@@ -146,27 +147,42 @@ defmodule Transformers.ConditionsTest do
       assert result == {:ok, false}
     end
 
-    @tag :skip
-    test "returns true when source is null for null comparison" do
+    data_test "returns #{expected_result} null condition" do
       parameters = %{
         "targetField" => "testField",
         "newValue" => "new value",
-        "valueType" => "string",
+        "valueType" => value_type,
         "condition" => "true",
         "conditionCompareTo" => "Null or Empty",
         "conditionDataType" => "string",
         "sourceConditionField" => "testField",
-        "conditionOperation" => "=",
+        "conditionOperation" => operation,
         "targetConditionField" => nil,
         "targetConditionValue" => nil
       }
 
       payload = %{
-        "testField" => nil
+        "testField" => test_field
       }
 
       result = Conditions.check(payload, parameters)
-      assert result == {:ok, true}
+      assert result == {:ok, expected_result}
+
+      where([
+        [:value_type, :operation, :expected_result, :test_field],
+        ["String", "=", true, nil],
+        ["String", "=", false, "asdf"],
+        ["String", "!=", false, nil],
+        ["String", "!=", true, "asdf"],
+        ["Number", "=", true, nil],
+        ["Number", "=", false, 2],
+        ["Number", "!=", false, nil],
+        ["Number", "!=", true, 2],
+        ["DateTime", "=", true, nil],
+        ["DateTime", "=", false, DateTime.utc_now()],
+        ["DateTime", "!=", false, nil],
+        ["DateTime", "!=", true, DateTime.utc_now()]
+      ])
     end
 
     test "maps operation string 'Is Equal To'" do
