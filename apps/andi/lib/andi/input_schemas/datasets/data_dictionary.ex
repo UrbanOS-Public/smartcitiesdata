@@ -16,6 +16,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:demographic, :string)
     field(:description, :string)
     field(:format, :string)
+    field(:ingestion_field_selector, :string)
     field(:itemType, :string)
     field(:masked, :string)
     field(:name, :string)
@@ -55,7 +56,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :format,
     :sequence,
     :use_default,
-    :ingestion_id
+    :ingestion_id,
+    :ingestion_field_selector
   ]
 
   @cast_fields_for_ingestion [
@@ -81,7 +83,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   @required_fields [
     :name,
     :type,
-    :bread_crumb
+    :bread_crumb,
+    :ingestion_field_selector
   ]
 
   def changeset(dictionary, changes) do

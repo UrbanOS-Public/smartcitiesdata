@@ -64,6 +64,16 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
           <% end %>
         </div>
 
+        <div class="data-dictionary-field-editor__ingestion-field-selector">
+          <%= if @dataset_or_ingestion == :dataset do %>
+            <div class="ingestion-field-selector-label">
+              <%= label(@form, :ingestion_field_selector, "Ingestion Field", class: "label label--required", for: id <> "_ingestion-field-selector") %>
+            </div>
+            <%= text_input(@form, :ingestion_field_selector, [disabled: false, id: id <> "_ingestion-field-selector", class: "data-dictionary-field-editor__ingestion-field-selector input", required: true]) %>
+            <%= ErrorHelpers.error_tag(form_with_errors, :ingestion_field_selector) %>
+          <% end %>
+        </div>
+
         <div class="data-dictionary-field-editor__default full-width">
           <%= if field_type in ["date", "timestamp"] do %>
             <% using_default = input_value(@form, :default_offset) != nil %>
