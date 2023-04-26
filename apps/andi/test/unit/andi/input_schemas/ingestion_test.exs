@@ -16,13 +16,13 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     cadence: "never",
     extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}],
     schema: [
-      %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
+      %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam", ingestion_field_selector: "name"}
     ],
     sourceFormat: "text/csv"
   }
 
   @test_extract_step %{type: "http", context: %{action: "GET", url: "http://example.com"}}
-  @test_schema %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam"}
+  @test_schema %{id: Ecto.UUID.generate(), name: "name", type: "type", bread_crumb: "name", dataset_id: "id", selector: "/cam/cam", ingestion_field_selector: "name"}
   @test_ingestion %Andi.InputSchemas.Ingestion{
     id: "f5484914-c640-47a7-b509-ce16e8d70b85",
     name: "test_ingestion",
@@ -203,7 +203,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     data_test "valid formats are accepted for #{field} schema fields" do
       changes =
         @valid_changes
-        |> put_in([:schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: format}])
+        |> put_in([:schema], [%{name: "datefield", type: field, dataset_id: "123", bread_crumb: "thing", format: format, ingestion_field_selector: "datefield"}])
         |> Map.merge(%{
           sourceFormat: "text/csv"
         })

@@ -187,7 +187,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     if ingestion_field_sync do
       put_change(changeset, :ingestion_field_selector, schema_name)
     else
-      put_change(changeset, :ingestion_field_selector, "")
+      changeset
     end
   end
 
