@@ -169,7 +169,12 @@ defmodule ValkyrieTest do
 
     invalid_message =
       TestHelpers.create_data(%{
-        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "thirty-two", "ingestion_field_selector" => "Capt"},
+        payload: %{
+          "name" => "Jack Sparrow",
+          "alignment" => "chaotic",
+          "age" => "thirty-two",
+          "ingestion_field_selector" => "Capt"
+        },
         dataset_id: dataset.id
       })
 
