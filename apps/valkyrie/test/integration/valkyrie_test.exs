@@ -27,9 +27,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
@@ -96,9 +96,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
@@ -172,8 +172,7 @@ defmodule ValkyrieTest do
         payload: %{
           "name" => "Jack Sparrow",
           "alignment" => "chaotic",
-          "age" => "thirty-two",
-          "ingestion_field_selector" => "Capt"
+          "age" => "thirty-two"
         },
         dataset_id: dataset.id
       })
@@ -181,7 +180,7 @@ defmodule ValkyrieTest do
     messages = [
       invalid_message,
       TestHelpers.create_data(%{
-        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => 25, "ingestion_field_selector" => "Barbosa"},
+        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => 25},
         dataset_id: dataset.id
       })
     ]
