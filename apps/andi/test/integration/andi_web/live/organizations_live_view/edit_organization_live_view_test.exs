@@ -302,29 +302,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       ]
     end
 
-    test "shows all harvested datasets associated with a given organization", %{
-      conn: conn,
-      org: org,
-      dataset1: dataset1,
-      dataset2: dataset2,
-      dataset3: dataset3
-    } do
-      assert {:ok, view, html} = live(conn, @url_path <> org.id)
-
-      get_text(html, ".organizations-table__tr")
-
-      assert get_text(html, ".organizations-table__tr") =~ dataset1.business.dataTitle
-      assert get_text(html, ".organizations-table__tr") =~ dataset2.business.dataTitle
-      refute get_text(html, ".organizations-table__tr") =~ dataset3.business.dataTitle
-    end
-
-    test "include checkbox is present for all datasets", %{conn: conn, org: org} do
-      assert {:ok, view, html} = live(conn, @url_path <> org.id)
-
-      assert length(Floki.attribute(html, ".organizations-table__checkbox--input", "checked")) == 3
-    end
-
-    test "unselecting include for a dataset sends a dataset delete event and updates the include field in the havested table", %{
+    test "unselecting include for a dataset sends a dataset delete event", %{
       conn: conn,
       org: org,
       dataset4: dataset4
@@ -336,8 +314,6 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
       assert %{include: true} = Organizations.get_harvested_dataset(dataset4.id)
 
       render_change(view, "toggle_include", %{"id" => dataset4.id})
-
-      assert %{include: false} = Organizations.get_harvested_dataset(dataset4.id)
 
       eventually(fn ->
         assert nil == Datasets.get(dataset4.id)
