@@ -60,8 +60,6 @@ defmodule Andi.Schemas.AuditEvents do
     Repo.all(query)
   end
 
-
-  #TODO figure out what this even means
   def get_all_by_event_id(event_id) do
     query =
       from(event in AuditEvent,
