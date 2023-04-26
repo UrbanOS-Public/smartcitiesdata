@@ -413,7 +413,6 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         post_save_ingestion
         |> Ingestion.changeset(%{})
         |> Ingestion.validate()
-        # |> IO.inspect(label: "Nicholas - post validation")
 
       {error, details} ->
         raise "Unable to save ingestion. Error: #{error}. Details: #{details}"

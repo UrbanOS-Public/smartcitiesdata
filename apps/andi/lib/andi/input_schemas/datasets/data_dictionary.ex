@@ -172,14 +172,17 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   def preload(struct), do: StructTools.preload(struct, [:subSchema])
 
   defp format_ingestion_sync(changeset) do
-    schema_name = case fetch_field(changeset, :name) do
-      {_, name} -> name
-      :error -> ""
-    end
-    ingestion_field_sync = case fetch_field(changeset, :ingestion_field_sync) do
-      {_, ingestion_field_sync} -> ingestion_field_sync
-      :error -> true
-    end
+    schema_name =
+      case fetch_field(changeset, :name) do
+        {_, name} -> name
+        :error -> ""
+      end
+
+    ingestion_field_sync =
+      case fetch_field(changeset, :ingestion_field_sync) do
+        {_, ingestion_field_sync} -> ingestion_field_sync
+        :error -> true
+      end
 
     if ingestion_field_sync do
       put_change(changeset, :ingestion_field_selector, schema_name)
