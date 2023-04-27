@@ -83,17 +83,21 @@ defmodule AndiWeb.Router do
 
     get "/v1/datasets", DatasetController, :get_all
     get "/v1/dataset/:dataset_id", DatasetController, :get
-    get "/v1/ingestions", IngestionController, :get_all
-    get "/v1/ingestion/:ingestion_id", IngestionController, :get
     put "/v1/dataset", DatasetController, :create
-    put "/v1/ingestion", IngestionController, :create
-    post "/v1/ingestion/publish", IngestionController, :publish
     post "/v1/dataset/disable", DatasetController, :disable
     post "/v1/dataset/delete", DatasetController, :delete
+
+    get "/v1/ingestions", IngestionController, :get_all
+    get "/v1/ingestion/:ingestion_id", IngestionController, :get
+    put "/v1/ingestion", IngestionController, :create
+    post "/v1/ingestion/publish", IngestionController, :publish
     post "/v1/ingestion/delete", IngestionController, :delete
+
     get "/v1/organizations", OrganizationController, :get_all
     post "/v1/organization/:org_id/users/add", OrganizationController, :add_users_to_organization
     post "/v1/organization", OrganizationController, :create
+
+    get "/v1/audit", AuditLogController, :get
   end
 
   scope "/auth", AndiWeb do
