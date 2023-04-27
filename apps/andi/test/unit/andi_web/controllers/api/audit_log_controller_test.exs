@@ -5,6 +5,8 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   alias Andi.Schemas.AuditEvents
   alias Andi.Schemas.AuditEvent
   @route "/api/v1/audit"
+  @error_text "Unsupported request. Only one filter can be used at a time - 'user_id', 'audit_id', 'type', 'event_id.'" <>
+                "For time, exactly 'start' and 'end' must be used."
 
   setup %{} do
     logs = [
@@ -88,5 +90,17 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     assert_called(AuditEvents.get_all_by_event_id(event_id))
 
     assert response(conn, 200) =~ logs_as_text
+  end
+
+  test "returns error when given multiple arguments", %{conn: conn, logs: logs} do
+    conn = get(conn, "#{@route}?event_id=event&type=type")
+
+    assert response(conn, 400) =~ @error_text
+  end
+
+  test "returns error when given unsupported argument", %{conn: conn, logs: logs} do
+    conn = get(conn, "#{@route}?foobar=foo")
+
+    assert response(conn, 400) =~ @error_text
   end
 end
