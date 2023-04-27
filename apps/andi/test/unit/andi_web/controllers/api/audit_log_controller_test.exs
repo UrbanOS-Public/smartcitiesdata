@@ -6,7 +6,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   alias Andi.Schemas.AuditEvent
   @route "/api/v1/audit"
   @error_text "Unsupported request. Only one filter can be used at a time - 'user_id', 'audit_id', 'type', 'event_id.'" <>
-                "For time, exactly 'start' and 'end' must be used."
+                "For time, exactly 'start_date' and 'end_date' must be used and formatted in ISO-8601. ex. /start_date=2020-12-31&end-date=2021-01-01"
 
   setup %{} do
     logs = [
@@ -92,13 +92,24 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     assert response(conn, 200) =~ logs_as_text
   end
 
-  test "returns error when given multiple arguments", %{conn: conn, logs: logs} do
+  test "filter by dates", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
+    {:ok, start_date_struct} = Date.new(2020, 6, 5)
+    {:ok, end_date_struct} = Date.new(2020, 10, 9)
+    allow(AuditEvents.get_all_in_range(start_date_struct, end_date_struct), return: logs)
+
+    conn = get(conn, "#{@route}?start_date=2020-06-05&end_date=2020-10-09")
+
+    assert_called(AuditEvents.get_all_in_range(start_date_struct, end_date_struct))
+    assert response(conn, 200) =~ logs_as_text
+  end
+
+  test "returns error when given multiple arguments", %{conn: conn} do
     conn = get(conn, "#{@route}?event_id=event&type=type")
 
     assert response(conn, 400) =~ @error_text
   end
 
-  test "returns error when given unsupported argument", %{conn: conn, logs: logs} do
+  test "returns error when given unsupported argument", %{conn: conn} do
     conn = get(conn, "#{@route}?foobar=foo")
 
     assert response(conn, 400) =~ @error_text

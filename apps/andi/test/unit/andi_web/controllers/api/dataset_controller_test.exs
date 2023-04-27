@@ -225,7 +225,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   end
 
   @tag capture_log: true
-  test "PUT /api/ creating a dataset with a set id returns a 400", %{conn: conn, example_datasets: example_datasets} do
+  test "PUT /api/ creating a dataset with a set id returns a 400", %{conn: conn} do
     dataset = TDG.create_dataset(%{}) |> struct_to_map_with_string_keys()
 
     allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
