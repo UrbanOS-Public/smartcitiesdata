@@ -47,7 +47,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.ValidateTransformationsTest 
     ingestion =
       TDG.create_ingestion(%{
         id: UUID.uuid4(),
-        targetDataset: dataset.id,
+        targetDatasets: [dataset.id],
         name: "sample_ingestion",
         transformations: [transformation1, transformation2]
       })

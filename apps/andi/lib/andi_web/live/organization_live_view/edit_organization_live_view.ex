@@ -76,12 +76,6 @@ defmodule AndiWeb.EditOrganizationLiveView do
         </div>
       </form>
 
-      <div class="harvested-datasets-table">
-        <h2>Remote Datasets Attached To This Organization</h2>
-
-        <%= live_component(@socket, AndiWeb.OrganizationLiveView.HarvestedDatasetsTable, datasets: @harvested_datasets, order: @order) %>
-      </div>
-
       <%= live_component(@socket, AndiWeb.UnsavedChangesModal, id: "edit-org-unsaved-changes-modal", visibility: @unsaved_changes_modal_visibility) %>
 
       <%= live_component(@socket, AndiWeb.EditLiveView.PublishSuccessModal, visibility: @publish_success_modal_visibility) %>

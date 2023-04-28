@@ -9,7 +9,7 @@ defmodule AndiWeb.Views.InputTypes do
     conditionOperation: @select,
     "Source Data Type": @select,
     sourceFormat: @select,
-    targetDataset: @select,
+    targetDatasets: @select,
     "Target Data Type": @select,
     type: @select,
     valueType: @select

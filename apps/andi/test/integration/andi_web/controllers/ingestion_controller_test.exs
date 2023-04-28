@@ -31,7 +31,7 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion delete" do
     test "sends ingestion:delete event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset["id"]})
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDatasets: [dataset["id"]]})
       {:ok, response} = create_ingestion(ingestion)
       body = response.body |> Jason.decode!()
 
@@ -70,7 +70,7 @@ defmodule Andi.IngestionControllerTest do
   describe "ingestion publish" do
     test "sends ingestion:update event" do
       dataset = setup_dataset()
-      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDataset: dataset["id"]})
+      ingestion = TDG.create_ingestion(%{id: nil, sourceType: "remote", targetDatasets: [dataset["id"]]})
       {:ok, response} = create_ingestion(ingestion)
       body = response.body |> Jason.decode!()
 
@@ -123,7 +123,7 @@ defmodule Andi.IngestionControllerTest do
         "sourceFormat" => "application/gtfs+protobuf",
         "cadence" => "*/9000 * * * * *",
         "schema" => [%{name: "billy", type: "writer"}],
-        "targetDataset" => dataset["id"],
+        "targetDatasets" => [dataset["id"]],
         "topLevelSelector" => "$.someValue",
         "transformations" => []
       }
@@ -169,7 +169,7 @@ defmodule Andi.IngestionControllerTest do
           sourceFormat: "application/gtfs+protobuf",
           cadence: "*/9000 * * * * *",
           schema: [%{name: "billy", type: "writer"}],
-          targetDataset: dataset["id"],
+          targetDatasets: [dataset["id"]],
           topLevelSelector: "$.someValue",
           transformations: []
         })
@@ -205,7 +205,7 @@ defmodule Andi.IngestionControllerTest do
           sourceFormat: "application/gtfs+protobuf",
           cadence: "     */9000 * * * * *",
           schema: [%{name: "billy", type: "writer   "}],
-          targetDataset: "#{dataset["id"]}   ",
+          targetDatasets: ["#{dataset["id"]}   "],
           topLevelSelector: "   $.someValue",
           transformations: []
         })
@@ -219,7 +219,7 @@ defmodule Andi.IngestionControllerTest do
 
       assert response["cadence"] == "*/9000 * * * * *"
       assert response["topLevelSelector"] == "$.someValue"
-      assert response["targetDataset"] == dataset["id"]
+      assert response["targetDatasets"] == [dataset["id"]]
       assert response["sourceFormat"] == "application/gtfs+protobuf"
       assert response["topLevelSelector"] == "$.someValue"
       assert List.first(response["schema"])["type"] == "writer"
@@ -233,7 +233,7 @@ defmodule Andi.IngestionControllerTest do
         TDG.create_ingestion(%{
           id: nil,
           name: "Name",
-          targetDataset: dataset["id"],
+          targetDatasets: [dataset["id"]],
           transformations: [],
           extractSteps: [
             %{
@@ -265,7 +265,7 @@ defmodule Andi.IngestionControllerTest do
         TDG.create_ingestion(%{
           id: nil,
           cadence: "*/9000 * * * * * * *",
-          targetDataset: dataset["id"],
+          targetDatasets: [dataset["id"]],
           topLevelSelector: "$.someValue"
         })
 

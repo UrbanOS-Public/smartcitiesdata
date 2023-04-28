@@ -62,7 +62,7 @@ defmodule AndiWeb.Views.DisplayNames do
     sub_key: "Name",
     targetConditionField: "Target Field",
     targetConditionValue: "Target Value",
-    targetDataset: "Target Dataset",
+    targetDatasets: "Target Datasets",
     temporal: "Temporal Boundaries",
     time: "Time",
     topLevelSelector: "Top Level Selector",

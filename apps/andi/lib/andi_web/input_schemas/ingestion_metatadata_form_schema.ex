@@ -9,21 +9,21 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   embedded_schema do
     field(:name, :string)
     field(:sourceFormat, :string)
-    field(:targetDataset, :string)
+    field(:targetDatasets, {:array, :string})
     field(:topLevelSelector, :string)
   end
 
   @cast_fields [
     :name,
     :sourceFormat,
-    :targetDataset,
+    :targetDatasets,
     :topLevelSelector
   ]
 
   @required_fields [
     :name,
     :sourceFormat,
-    :targetDataset
+    :targetDatasets
   ]
 
   def extract_from_ingestion_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset) do
@@ -34,7 +34,7 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     extracted_data = %__MODULE__{
       name: ingestion_data.name,
       sourceFormat: ingestion_data.sourceFormat,
-      targetDataset: ingestion_data.targetDataset,
+      targetDatasets: ingestion_data.targetDatasets,
       topLevelSelector: ingestion_data.topLevelSelector
     }
 
@@ -44,7 +44,7 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
         {:name, {msg, opts}} -> {:name, {msg, opts}}
         {:sourceFormat, {msg, opts}} -> {:sourceFormat, {msg, opts}}
         {:topLevelSelector, {msg, opts}} -> {:topLevelSelector, {msg, opts}}
-        {:targetDataset, {msg, opts}} -> {:targetDataset, {msg, opts}}
+        {:targetDatasets, {msg, opts}} -> {:targetDatasets, {msg, opts}}
         other_errors -> nil
       end)
       |> Enum.reject(&is_nil/1)

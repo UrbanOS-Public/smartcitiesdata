@@ -29,7 +29,7 @@ defmodule IngestionHelpers do
 
   def create_ingestion(overrides) do
     andi_dataset = DatasetHelpers.create_empty_dataset()
-    smrt_ingestion = Map.merge(%{targetDataset: andi_dataset.id}, overrides) |> TDG.create_ingestion()
+    smrt_ingestion = Map.merge(%{targetDatasets: [andi_dataset.id]}, overrides) |> TDG.create_ingestion()
 
     ingestion_changes = smrt_ingestion |> InputConverter.prepare_smrt_ingestion_for_casting()
 

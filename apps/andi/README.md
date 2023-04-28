@@ -88,7 +88,7 @@ For details on how to use the ANDI API, please review the Postman collection loc
 
 When ANDI emits events of various types, it logs the details of the event to a Postgres table named `audit_events`.
 
-In order to access those logs, a user can run the following commands from the elixir console:
+To access these logs a user will need access to the elixir console from a running version of ANDI. If ANDI is running in a kubernetes pod, the user will need to shell into the pod then run the `bin/andi remote_console` command to get access to ANDI's elixir console. Then see the below options for what logs can be accessed.
 
 1. To get all logs of all events, run the command `Andi.Schemas.AuditEvents.get_all()`. Note that this may result in a large volume of events.
 2. To get a specific log entry by id, run the command `Andi.Schemas.AuditEvents.get(audit_event_id)`.

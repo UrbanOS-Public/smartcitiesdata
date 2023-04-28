@@ -12,7 +12,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
   @valid_changes %{
     id: @ingestion_id,
     name: "Name",
-    targetDataset: @dataset_id,
+    targetDatasets: [@dataset_id],
     cadence: "never",
     extractSteps: [%{type: "http", context: %{action: "GET", url: "http://example.com"}}],
     schema: [
@@ -67,7 +67,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         [:field],
         [:cadence],
         [:sourceFormat],
-        [:targetDataset],
+        [:targetDatasets],
         [:name]
       ])
     end

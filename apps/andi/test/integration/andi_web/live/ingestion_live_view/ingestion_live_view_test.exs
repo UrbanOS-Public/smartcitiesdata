@@ -46,8 +46,8 @@ defmodule AndiWeb.IngestionLiveViewTest do
       {:ok, dataset_a} = TDG.create_dataset(business: %{dataTitle: "dataset_a"}) |> Datasets.update()
       {:ok, dataset_b} = TDG.create_dataset(business: %{dataTitle: "datset_b"}) |> Datasets.update()
 
-      ingestion_a = TDG.create_ingestion(%{targetDataset: dataset_a.id, name: "ingestion_a"}) |> Ingestions.update()
-      ingestion_b = TDG.create_ingestion(%{targetDataset: dataset_b.id, name: "ingestion_b"}) |> Ingestions.update()
+      ingestion_a = TDG.create_ingestion(%{targetDatasets: [dataset_a.id], name: "ingestion_a"}) |> Ingestions.update()
+      ingestion_b = TDG.create_ingestion(%{targetDatasets: [dataset_b.id], name: "ingestion_b"}) |> Ingestions.update()
 
       {:ok, _view, html} = live(conn, @url_path)
 
@@ -69,7 +69,7 @@ defmodule AndiWeb.IngestionLiveViewTest do
 
     test "ingestion publication status is shown", %{curator_conn: conn} do
       {:ok, dataset} = TDG.create_dataset(business: %{dataTitle: "dataset"}) |> Datasets.update()
-      {:ok, ingestion} = TDG.create_ingestion(%{targetDataset: dataset.id, name: "ingestion"}) |> Ingestions.update()
+      {:ok, ingestion} = TDG.create_ingestion(%{targetDatasets: [dataset.id], name: "ingestion"}) |> Ingestions.update()
 
       {:ok, _view, html} = live(conn, @url_path)
 

@@ -23,7 +23,7 @@ defmodule Transformers.Conditions do
   @source_date_format "conditionSourceDateFormat"
   @target_date_format "conditionTargetDateFormat"
 
-  # used with condition input form. Can be "Static Value" or "Target Field"
+  # used with condition input form. Can be "Static Value" or "Target Field" or "Null or Empty"
   @condition_compare_to "conditionCompareTo"
 
   def check(payload, parameters) do
@@ -49,7 +49,8 @@ defmodule Transformers.Conditions do
              payload,
              source_format,
              target_format,
-             data_type
+             data_type,
+             compare_to
            ) do
       {:ok, result}
     else
@@ -121,22 +122,45 @@ defmodule Transformers.Conditions do
          payload,
          source_format,
          target_format,
-         data_type
+         data_type,
+         compare_to
        ) do
     try do
       left_value = try_parse(Map.fetch!(payload, source_field), data_type, source_format)
 
       right_value =
-        if is_nil(target_value),
-          do: try_parse(Map.fetch!(payload, target_field), data_type, target_format),
-          else: try_parse(target_value, data_type, target_format)
+        cond do
+          compare_to == "Null or Empty" ->
+            nil
+
+          is_nil(target_value) ->
+            try_parse(Map.fetch!(payload, target_field), data_type, target_format)
+
+          true ->
+            try_parse(target_value, data_type, target_format)
+        end
 
       case map_operation(operation) do
-        "=" -> {:ok, left_value == right_value}
-        "!=" -> {:ok, left_value != right_value}
-        ">" -> {:ok, left_value > right_value}
-        "<" -> {:ok, left_value < right_value}
-        _ -> {:error, "unsupported condition operation"}
+        operation when compare_to == "Null or Empty" and operation == "=" ->
+          {:ok, left_value in [nil, ""]}
+
+        operation when compare_to == "Null or Empty" and operation == "!=" ->
+          {:ok, left_value not in [nil, ""]}
+
+        "=" ->
+          {:ok, left_value == right_value}
+
+        "!=" ->
+          {:ok, left_value != right_value}
+
+        ">" ->
+          {:ok, left_value > right_value}
+
+        "<" ->
+          {:ok, left_value < right_value}
+
+        _ ->
+          {:error, "unsupported condition operation"}
       end
     rescue
       error -> {:error, error}
@@ -145,6 +169,9 @@ defmodule Transformers.Conditions do
 
   defp try_parse(value, type, format) do
     case String.downcase(type) do
+      _ when is_nil(value) ->
+        value
+
       "string" ->
         if is_binary(value), do: value, else: Kernel.inspect(value)
 

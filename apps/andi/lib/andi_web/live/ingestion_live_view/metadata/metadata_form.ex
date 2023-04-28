@@ -19,7 +19,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   end
 
   def render(assigns) do
-    {_, selected_dataset} = Changeset.fetch_field(assigns.changeset, :targetDataset)
+    {_, selected_datasets} = Changeset.fetch_field(assigns.changeset, :targetDatasets)
 
     ~L"""
     <div>
@@ -36,27 +36,27 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
           <%= ErrorHelpers.error_tag(f, :sourceFormat, bind_to_input: false) %>
         </div>
 
-      <div class="metadata-form__top-level-selector">
-        <%= if input_value(f, :sourceFormat) not in ["text/xml", "application/json", "application/geo+json"] do %>
-          <%= label(f, :emptyValue, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-          <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
-        <% else %>
-          <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
-          <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
-        <% end %>
-        <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
-      </div>
+        <div class="metadata-form__top-level-selector">
+          <%= if input_value(f, :sourceFormat) not in ["text/xml", "application/json", "application/geo+json"] do %>
+            <%= label(f, :emptyValue, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+            <%= text_input(f, :emptyValue, [class: "input--text input disable-focus", readonly: true]) %>
+          <% else %>
+            <%= label(f, :topLevelSelector, DisplayNames.get(:topLevelSelector), class: MetadataFormHelpers.top_level_selector_label_class(input_value(f, :sourceFormat))) %>
+            <%= text_input(f, :topLevelSelector, [class: "input--text input"]) %>
+          <% end %>
+          <%= ErrorHelpers.error_tag(f, :topLevelSelector) %>
+        </div>
 
-        <div class="ingestion-metadata-form ingestion-metadata-form__target-dataset">
-          <%= label(f, :targetDatasetName, "Dataset Name", class: "label label--required") %>
-          <%= hidden_input(f, :targetDataset, value: selected_dataset) %>
-          <%= text_input(f, :targetDatasetName, [class: "input ingestion-form-fields", value: get_dataset_name(selected_dataset), disabled: true, required: true]) %>
-          <button id="open-select-dataset-modal" class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Dataset</button>
-          <%= ErrorHelpers.error_tag(f, :targetDataset, bind_to_input: false) %>
+        <div class="ingestion-metadata-form ingestion-metadata-form__target-datasets">
+          <%= label(f, :targetDatasetNames, "Dataset Names", class: "label label--required") %>
+          <%= hidden_input(f, :targetDatasets, value: selected_datasets) %>
+          <%= text_input(f, :targetDatasetNames, [class: "input ingestion-form-fields", value: get_dataset_names(selected_datasets), disabled: true, required: true]) %>
+          <button id="open-select-dataset-modal" class="btn btn--select-dataset-search btn--primary-outline" phx-click="select-dataset" phx-target="<%= @myself %>" type="button">Select Datasets</button>
+          <%= ErrorHelpers.error_tag(f, :targetDatasets, bind_to_input: false) %>
         </div>
       </form>
       <%= live_component(@socket, AndiWeb.IngestionLiveView.SelectDatasetModal,
-            selected_dataset: selected_dataset,
+            selected_datasets: selected_datasets,
             visibility: @select_dataset_modal_visibility,
             id: :ingestion_metadata_search,
             close_modal_callback: &close_modal/0
@@ -108,5 +108,15 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
       nil -> "Dataset does not exist"
       dataset -> dataset.business.dataTitle
     end
+  end
+
+  defp get_dataset_names(ids) do
+    ids
+      |> Enum.map(fn id -> case Andi.InputSchemas.Datasets.get(id) do
+          nil -> "Dataset does not exist"
+          dataset -> dataset.business.dataTitle
+        end end)
+      |> Enum.sort()
+      |> Enum.join(", ")
   end
 end
