@@ -46,7 +46,8 @@ defmodule Flair.MixProject do
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
+      # {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
+      {:smart_city_test, path: "../../../smart_city_test", only: [:test, :integration]},
       {:distillery, "~> 2.1"},
       {:pipeline, in_umbrella: true},
       {:tasks, in_umbrella: true, only: :dev}

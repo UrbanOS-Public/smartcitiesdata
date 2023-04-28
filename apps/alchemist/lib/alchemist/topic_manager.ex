@@ -11,24 +11,25 @@ defmodule Alchemist.TopicManager do
   getter(:output_topic_prefix, generic: true)
   getter(:input_topic_prefix, generic: true)
 
-  @spec setup_topics(%SmartCity.Ingestion{}) :: %{input_topic: String.t(), output_topic: String.t()}
+  @spec setup_topics(%SmartCity.Ingestion{}) :: %{input_topic: String.t(), output_topics: list(String.t())}
   def setup_topics(ingestion) do
     input_topic = input_topic(ingestion.id)
-    output_topic = output_topic(ingestion.targetDataset)
+    output_topics = output_topics(ingestion.targetDatasets)
 
     Elsa.create_topic(elsa_brokers(), input_topic)
-    Elsa.create_topic(elsa_brokers(), output_topic)
-    wait_for_topic(input_topic)
-    wait_for_topic(output_topic)
+    Enum.each(output_topics, fn topic -> Elsa.create_topic(elsa_brokers(), topic) end)
 
-    %{input_topic: input_topic, output_topic: output_topic}
+    wait_for_topic(input_topic)
+    Enum.each(output_topics, fn topic -> wait_for_topic(topic) end)
+
+    %{input_topic: input_topic, output_topics: output_topics}
   end
 
   def delete_topics(ingestion) do
     input_topic = input_topic(ingestion.id)
-    output_topic = output_topic(ingestion.targetDataset)
+    output_topics = output_topics(ingestion.targetDatasets)
     Elsa.delete_topic(elsa_brokers(), input_topic)
-    Elsa.delete_topic(elsa_brokers(), output_topic)
+    Enum.each(output_topics, fn topic -> Elsa.delete_topic(elsa_brokers(), topic) end)
   end
 
   def wait_for_topic(topic) do
@@ -42,6 +43,9 @@ defmodule Alchemist.TopicManager do
     end
   end
 
-  defp output_topic(dataset_id), do: "#{output_topic_prefix()}-#{dataset_id}"
+  defp output_topics(targetDatasets) do
+    Enum.map(targetDatasets, fn dataset_id -> "#{output_topic_prefix()}-#{dataset_id}" end)
+  end
+
   defp input_topic(ingestion_id), do: "#{input_topic_prefix()}-#{ingestion_id}"
 end

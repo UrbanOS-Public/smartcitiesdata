@@ -7,7 +7,7 @@ defmodule ValkyrieTest do
   import SmartCity.TestHelper
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0]
+    only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0, dataset_delete: 0]
 
   alias TelemetryEvent.Helper.TelemetryEventHelper
 
@@ -18,8 +18,9 @@ defmodule ValkyrieTest do
   getter(:input_topic_prefix, generic: true)
   getter(:output_topic_prefix, generic: true)
 
-  setup_all do
+  setup do
     dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
 
     dataset =
       TDG.create_dataset(%{
@@ -34,65 +35,9 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
-
-    pid = start_telemetry()
-
-    on_exit(fn ->
-      stop_telemetry(pid)
-    end)
-
-    invalid_message =
-      TestHelpers.create_data(%{
-        payload: %{"name" => "Blackbeard", "alignment" => %{"invalid" => "string"}, "age" => "thirty-two"},
-        dataset_id: dataset.id
-      })
-
-    messages = [
-      TestHelpers.create_data(%{
-        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
-        dataset_id: dataset.id
-      }),
-      invalid_message,
-      TestHelpers.create_data(%{
-        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
-        dataset_id: dataset.id
-      }),
-      TestHelpers.create_data(%{
-        payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
-        dataset_id: dataset.id
-      })
-    ]
-
-    input_topic = "#{input_topic_prefix()}-#{dataset.id}"
-    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
-
-    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
-
-    eventually fn ->
-      assert Brook.get!(@instance_name, :datasets, dataset.id) != nil
-    end
-
-    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
-    TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
-
-    TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
-
-    {:ok, %{output_topic: output_topic, messages: messages, invalid_message: invalid_message, dataset: dataset}}
-  end
-
-  test "valkyrie updates the operational struct", %{output_topic: output_topic} do
-    eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
-
-      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
-    end
-  end
-
-  test "valkyrie only starts the processes for ingest once on event handle", %{messages: messages} do
-    dataset =
+    dataset2 =
       TDG.create_dataset(%{
-        id: Faker.UUID.v4(),
+        id: dataset_id2,
         technical: %{
           sourceType: "ingest",
           schema: [
@@ -103,18 +48,125 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
 
-    messages = Enum.map(messages, fn message -> Map.put(message, :dataset_id, dataset.id) end)
+    invalid_message =
+      TestHelpers.create_data(%{
+        payload: %{"name" => "Blackbeard", "alignment" => %{"invalid" => "string"}, "age" => "thirty-two"},
+        dataset_ids: [dataset_id, dataset_id2]
+      })
 
-    input_topic = "#{input_topic_prefix()}-#{dataset.id}"
-    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
+    messages = [
+      TestHelpers.create_data(%{
+        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
+        dataset_ids: [dataset_id, dataset_id2]
+      }),
+      invalid_message,
+      TestHelpers.create_data(%{
+        payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
+        dataset_ids: [dataset_id, dataset_id2]
+      }),
+      TestHelpers.create_data(%{
+        payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
+        dataset_ids: [dataset_id, dataset_id2]
+      })
+    ]
+
+    input_topic = "#{input_topic_prefix()}-#{dataset_id}"
+    input_topic2 = "#{input_topic_prefix()}-#{dataset_id2}"
+    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
+    output_topic2 = "#{output_topic_prefix()}-#{dataset_id2}"
 
     Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset2)
+
+    eventually fn ->
+      assert Brook.get!(@instance_name, :datasets, dataset_id) != nil
+      assert Brook.get!(@instance_name, :datasets, dataset_id2) != nil
+    end
+
+    Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic2)
+
+    TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
+    TestHelpers.produce_messages(messages, input_topic2, elsa_brokers())
+
+    on_exit(fn ->
+      delete_all_datasets()
+
+      terminate_all_supervisors()
+      eventually fn ->
+        assert any_supervisors_exist?() == false
+      end
+    end)
+
+    {:ok, %{output_topics: [output_topic, output_topic2], messages: messages, invalid_message: invalid_message, dataset: dataset, dataset2: dataset2}}
+  end
+
+  setup_all do
+    pid = start_telemetry()
+
+    on_exit(fn ->
+      stop_telemetry(pid)
+    end)
+  end
+
+  test "valkyrie updates the operational struct", %{output_topics: [output_topic, output_topic2]} do
+    eventually fn ->
+      first_topic_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
+      second_topic_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic2, elsa_brokers())
+
+      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = first_topic_messages
+      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = second_topic_messages
+    end
+  end
+
+  test "valkyrie only starts the processes for ingest once on event handle", %{messages: messages} do
+    dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
+    dataset =
+      TDG.create_dataset(%{
+        id: dataset_id,
+        technical: %{
+          sourceType: "ingest",
+          schema: [
+            %{name: "name", type: "string"},
+            %{name: "alignment", type: "string"},
+            %{name: "age", type: "string"}
+          ]
+        }
+      })
+
+    dataset2 =
+      TDG.create_dataset(%{
+        id: dataset_id2,
+        technical: %{
+          sourceType: "ingest",
+          schema: [
+            %{name: "name", type: "string"},
+            %{name: "alignment", type: "string"},
+            %{name: "age", type: "string"}
+          ]
+        }
+      })
+
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
+
+    messages = Enum.map(messages, fn message -> Map.put(message, :dataset_ids, [dataset_id, dataset_id2]) end)
+
+    input_topic = "#{input_topic_prefix()}-#{dataset_id}"
+    input_topic2 = "#{input_topic_prefix()}-#{dataset_id2}"
+    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
+    output_topic2 = "#{output_topic_prefix()}-#{dataset_id2}"
+
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset2)
 
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
 
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic2)
 
     1..100
     |> Enum.each(fn _ ->
@@ -122,12 +174,16 @@ defmodule ValkyrieTest do
     end)
 
     TestHelpers.produce_messages(messages, input_topic, elsa_brokers())
+    TestHelpers.produce_messages(messages, input_topic2, elsa_brokers())
 
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
+      first_topic_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
+      second_topic_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic2, elsa_brokers())
 
-      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = messages
+      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = first_topic_messages
+      assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = second_topic_messages
     end
+
   end
 
   test "valkyrie updates the view state of running ingestions on dataset update" do
@@ -144,7 +200,7 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
     output_topic = "#{output_topic_prefix()}-#{dataset.id}"
@@ -152,7 +208,7 @@ defmodule ValkyrieTest do
 
     eventually fn ->
       dataset = Brook.get!(@instance_name, :datasets, dataset.id)
-      dataset != nil
+      assert dataset != nil
     end
 
     Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
@@ -190,7 +246,6 @@ defmodule ValkyrieTest do
 
     eventually fn ->
       output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
-
       assert messages -- [invalid_message] == output_messages
     end
   end
@@ -209,7 +264,7 @@ defmodule ValkyrieTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
     input_topic = "#{input_topic_prefix()}-#{dataset.id}"
 
@@ -240,14 +295,16 @@ defmodule ValkyrieTest do
   end
 
   test "valkyrie rejects unparseable messages and passes the rest through", %{
-    output_topic: output_topic,
+    output_topics: [output_topic, output_topic2],
     messages: messages,
     invalid_message: invalid_message
   } do
     eventually fn ->
-      output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
+      first_topic_output_messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
+      second_topic_output_messages = TestHelpers.get_data_messages_from_kafka(output_topic2, elsa_brokers())
 
-      assert messages -- [invalid_message] == output_messages
+      assert messages -- [invalid_message] == first_topic_output_messages
+      assert messages -- [invalid_message] == second_topic_output_messages
     end
   end
 
@@ -302,5 +359,34 @@ defmodule ValkyrieTest do
       nil -> :ok
       pid -> DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
     end
+  end
+
+  defp terminate_all_supervisors() do
+    children = DynamicSupervisor.which_children(Valkyrie.Dynamic.Supervisor)
+    Enum.each(children, fn
+      {:undefined, pid, :supervisor, [Valkyrie.DatasetSupervisor]} ->
+        DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
+
+      _ -> nil
+    end)
+  end
+
+  defp any_supervisors_exist?() do
+    children = DynamicSupervisor.which_children(Valkyrie.Dynamic.Supervisor)
+    Enum.any?(children, fn
+      {:undefined, _pid, :supervisor, [Valkyrie.DatasetSupervisor]} -> true
+      _ -> false
+    end)
+  end
+
+  defp delete_all_datasets() do
+    eventually fn ->
+      {:ok, datasets} = Brook.get_all(@instance_name, :datasets)
+      Enum.each(datasets, fn {_dataset_id, dataset} ->
+        Brook.Event.send(@instance_name, dataset_delete(), :valkyrie, dataset)
+      end)
+
+      assert Brook.get_all(@instance_name, :datasets) == {:ok, %{}}
+    end, 10_000
   end
 end

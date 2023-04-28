@@ -9,7 +9,7 @@ defmodule Alchemist.IngestionProcessor do
     start_options = [
       ingestion: ingestion,
       input_topic: topics.input_topic,
-      output_topic: topics.output_topic
+      output_topics: topics.output_topics
     ]
 
     Alchemist.IngestionSupervisor.ensure_started(start_options)

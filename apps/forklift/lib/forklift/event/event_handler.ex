@@ -22,24 +22,26 @@ defmodule Forklift.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDataset: dataset_id} = data,
+        data: %Ingestion{targetDatasets: dataset_ids} = data,
         author: author
       }) do
-    data_ingest_start()
-    |> add_event_count(author, dataset_id)
+    Enum.each(dataset_ids, fn dataset_id ->
+      data_ingest_start()
+      |> add_event_count(author, dataset_id)
 
-    dataset = Forklift.Datasets.get!(dataset_id)
+      dataset = Forklift.Datasets.get!(dataset_id)
 
-    if dataset != nil do
-      :ok = Forklift.DataReaderHelper.init(dataset)
-    end
+      if dataset != nil do
+        :ok = Forklift.DataReaderHelper.init(dataset)
+      end
+    end)
 
     :ok
   rescue
     error ->
       Logger.error("data_ingest_start failed to process. #{inspect(error)}")
 
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
 
       :discard
   end
@@ -67,7 +69,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process. #{inspect(error)}")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => error, "dataset" => data})
       :discard
   end
@@ -81,7 +83,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_end failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -109,7 +111,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("migration:last_insert_date:start failed to process.")
-      DeadLetter.process(nil, nil, event, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([], nil, event, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -129,7 +131,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_delete failed to process.")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -137,28 +139,31 @@ defmodule Forklift.Event.EventHandler do
         type: data_extract_end(),
         data:
           %{
-            "dataset_id" => dataset_id,
+            "dataset_ids" => dataset_ids,
             "extract_start_unix" => extract_start,
             "ingestion_id" => ingestion_id,
             "msgs_extracted" => msg_target
           } = data,
         author: author
       }) do
-    data_extract_end() |> add_event_count(author, dataset_id)
+    Enum.each(dataset_ids, fn dataset_id ->
+      data_extract_end() |> add_event_count(author, dataset_id)
 
-    dataset = Forklift.Datasets.get!(dataset_id)
+      dataset = Forklift.Datasets.get!(dataset_id)
 
-    ingestion_status = Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start)
+      ingestion_status = Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start)
 
-    if ingestion_status == :ingestion_complete do
-      Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
-    end
+      if ingestion_status == :ingestion_complete do
+        Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
+      end
+    end)
+
 
     :ok
   rescue
     error ->
       Logger.error("data_extract_end failed to process.")
-      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

@@ -1,17 +1,22 @@
 defmodule Alchemist.BroadwayTest do
   use ExUnit.Case
   use Placebo
+  use Properties, otp_app: :alchemist
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
+
   @ingestion_id "ingestion1"
   @dataset_id "ds1"
+  @dataset_id2 "ds2"
   @topic "raw-ds1"
   @producer :ds1_producer
   @current_time "2019-07-17T14:45:06.123456Z"
+
+  getter(:output_topic_prefix, generic: true)
 
   describe "with valid transformations" do
     setup do
@@ -41,17 +46,17 @@ defmodule Alchemist.BroadwayTest do
       ingestion =
         TDG.create_ingestion(%{
           id: @ingestion_id,
-          targetDataset: @dataset_id,
+          targetDatasets: [@dataset_id, @dataset_id2],
           transformations: [transform1, transform2]
         })
 
       {:ok, broadway} =
         Alchemist.Broadway.start_link(
-          # ingestion is destructured in handle message as the th~ird argument
+          # ingestion is destructured in handle message as the third argument
           #   it serves as context for an incoming SmartCity.data message
           ingestion: ingestion,
           output: [
-            topic: :output_topic,
+            topics: [:output_topic],
             connection: @producer
           ],
           input: [
@@ -150,14 +155,14 @@ defmodule Alchemist.BroadwayTest do
         refute dead_message == :empty
 
         assert dead_message.app == "Alchemist"
-        assert dead_message.dataset_id == @dataset_id
+        assert dead_message.dataset_ids == [@dataset_id, @dataset_id2]
         assert dead_message.original_message == Jason.encode!(badData)
         assert dead_message.reason == inspect("Invalid data message: %{\"bad_field\" => \"junk\"}")
       end)
     end
 
     test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
-      data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+      data1 = TDG.create_data(dataset_ids: [@dataset_id, @datset_id2], payload: %{"name" => "johnny", "age" => 21})
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 
@@ -171,7 +176,7 @@ defmodule Alchemist.BroadwayTest do
         refute dead_message == :empty
 
         assert dead_message.app == "Alchemist"
-        assert dead_message.dataset_id == "ds1"
+        assert dead_message.dataset_ids == [@dataset_id, @dataset_id2]
         assert dead_message.original_message == Jason.encode!(data1)
       end)
     end
@@ -195,7 +200,7 @@ defmodule Alchemist.BroadwayTest do
       ingestion =
         TDG.create_ingestion(%{
           id: @ingestion_id,
-          targetDataset: @dataset_id,
+          targetDatasets: [@dataset_id, @dataset_id2],
           transformations: [transform]
         })
 
@@ -204,8 +209,9 @@ defmodule Alchemist.BroadwayTest do
           # ingestion is destructured in handle message as the th~ird argument
           #   it serves as context for an incoming SmartCity.data message
           ingestion: ingestion,
+          #TODO: DOES THIS NEED TO CHANGE?
           output: [
-            topic: :output_topic,
+            topics: ["#{output_topic_prefix()}-#{@dataset_id}", "#{output_topic_prefix()}-#{@dataset_id2}"],
             connection: @producer
           ],
           input: [
@@ -224,7 +230,7 @@ defmodule Alchemist.BroadwayTest do
 
     test "should dead letter messages", %{broadway: broadway} do
       data1 =
-        TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+        TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 
@@ -238,7 +244,7 @@ defmodule Alchemist.BroadwayTest do
         refute dead_message == :empty
 
         assert dead_message.app == "Alchemist"
-        assert dead_message.dataset_id == "ds1"
+        assert dead_message.dataset_ids == [@dataset_id, @dataset_id2]
         assert dead_message.original_message == Jason.encode!(data1)
       end)
     end

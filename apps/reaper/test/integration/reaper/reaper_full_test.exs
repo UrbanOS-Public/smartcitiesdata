@@ -32,7 +32,9 @@ defmodule Reaper.FullTest do
 
   @pre_existing_ingestion_id "00000-0000"
   @pre_existing_target_dataset "1701-1701"
+  @pre_existing_target_dataset2 "1501-1501"
   @partial_load_dataset_id "11111-1113"
+  @partial_load_dataset_id2 "222333-4445"
   @partial_load_ingestion_id "11111-1112"
   @extraction_start_time "2022-05-19T19:31:16.994987Z"
 
@@ -82,7 +84,7 @@ defmodule Reaper.FullTest do
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
-          targetDataset: @pre_existing_target_dataset,
+          targetDatasets: [@pre_existing_target_dataset, @pre_existing_target_dataset2],
           cadence: "once",
           sourceFormat: "json",
           schema: [
@@ -115,7 +117,7 @@ defmodule Reaper.FullTest do
     test "configures and ingests a json-source that was added before reaper started" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: @pre_existing_target_dataset,
+          dataset_ids: [@pre_existing_target_dataset, @pre_existing_target_dataset2],
           extraction_start_time: @extraction_start_time,
           ingestion_id: @pre_existing_ingestion_id,
           payload: %{
@@ -167,7 +169,7 @@ defmodule Reaper.FullTest do
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @partial_load_ingestion_id,
-          targetDataset: @partial_load_dataset_id,
+          targetDatasets: [@partial_load_dataset_id, @partial_load_dataset_id2],
           cadence: "once",
           sourceFormat: "csv",
           schema: [%{name: "name", type: "string"}],
@@ -211,12 +213,13 @@ defmodule Reaper.FullTest do
     test "configures and ingests a gtfs source", %{bypass: bypass} do
       ingestion_id = "12345-6789"
       dataset_id = "0123-4567"
+      dataset_id2 = "985348-47723"
       topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
       gtfs_ingestion =
         TDG.create_ingestion(%{
           id: ingestion_id,
-          targetDataset: dataset_id,
+          targetDatasets: [dataset_id, dataset_id2],
           cadence: "once",
           sourceFormat: "gtfs",
           topLevelSelector: nil,
@@ -626,7 +629,7 @@ defmodule Reaper.FullTest do
       pre_existing_ingestion =
         TDG.create_ingestion(%{
           id: @pre_existing_ingestion_id,
-          targetDataset: @pre_existing_target_dataset,
+          targetDatasets: [@pre_existing_target_dataset, @pre_existing_target_dataset2],
           cadence: "once",
           sourceFormat: "xml",
           schema: [
@@ -656,7 +659,7 @@ defmodule Reaper.FullTest do
     test "is processed successfully" do
       expected =
         TestUtils.create_data(%{
-          dataset_id: @pre_existing_target_dataset,
+          dataset_ids: [@pre_existing_target_dataset, @pre_existing_target_dataset2],
           extraction_start_time: @extraction_start_time,
           ingestion_id: @pre_existing_ingestion_id,
           payload: %{

@@ -54,29 +54,32 @@ defmodule Alchemist.IngestionSupervisor do
   def init(opts) do
     ingestion = Keyword.fetch!(opts, :ingestion)
     input_topic = Keyword.fetch!(opts, :input_topic)
-    output_topic = Keyword.fetch!(opts, :output_topic)
+    output_topics = Keyword.fetch!(opts, :output_topics)
     producer = :"#{ingestion.id}_producer"
 
+
     children = [
-      elsa_producer(ingestion, output_topic, producer),
-      broadway(ingestion, input_topic, output_topic, producer)
+      elsa_producer(ingestion, output_topics, producer),
+      broadway(ingestion, input_topic, output_topics, producer)
     ]
 
     Supervisor.init(children, strategy: :one_for_all)
   end
 
-  defp elsa_producer(ingestion, topic, producer) do
-    Supervisor.child_spec({Elsa.Supervisor, endpoints: elsa_brokers(), connection: producer, producer: [topic: topic]},
+  defp elsa_producer(ingestion, topics, producer) do
+    producer_config = Enum.map(topics, fn topic -> [topic: topic] end)
+
+    Supervisor.child_spec({Elsa.Supervisor, endpoints: elsa_brokers(), connection: producer, producer: producer_config},
       id: :"#{ingestion.id}_elsa_producer"
     )
   end
 
-  defp broadway(ingestion, input_topic, output_topic, producer) do
+  defp broadway(ingestion, input_topic, output_topics, producer) do
     config = [
       ingestion: ingestion,
       output: [
         connection: producer,
-        topic: output_topic
+        topics: output_topics
       ],
       input: [
         connection: :"#{ingestion.id}_elsa_consumer",

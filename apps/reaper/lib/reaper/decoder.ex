@@ -47,6 +47,6 @@ defmodule Reaper.Decoder do
   end
 
   defp throw_error(ingestion, message, error) do
-    DeadLetter.process(ingestion.targetDataset, ingestion.id, message, "reaper", error: inspect(error))
+    DeadLetter.process(ingestion.targetDatasets, ingestion.id, message, "reaper", error: inspect(error))
   end
 end

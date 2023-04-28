@@ -16,7 +16,7 @@ defmodule Valkyrie.Event.EventHandlerTest do
   describe "Data Ingest Start" do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_target_dataset = UUID.uuid4()
-      invalid_ingestion = TDG.create_ingestion(%{targetDataset: id_for_invalid_target_dataset})
+      invalid_ingestion = TDG.create_ingestion(%{targetDatasets: [id_for_invalid_target_dataset]})
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
@@ -42,8 +42,8 @@ defmodule Valkyrie.Event.EventHandlerTest do
             actual = Jason.decode!(message.value)
 
             case actual["original_message"] do
-              %{"targetDataset" => message_target_dataset} ->
-                message_target_dataset == id_for_invalid_target_dataset
+              %{"targetDatasets" => message_target_datasets} ->
+                Enum.member?(message_target_datasets, id_for_invalid_target_dataset)
 
               _ ->
                 false

@@ -32,7 +32,20 @@ defmodule AlchemistTest do
         }
       })
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    dataset2 =
+      TDG.create_dataset(%{
+        id: "pirates2",
+        technical: %{
+          sourceType: "ingest",
+          schema: [
+            %{name: "name", type: "string"},
+            %{name: "alignment", type: "string"},
+            %{name: "age", type: "string"}
+          ]
+        }
+      })
+
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id, dataset2.id]})
 
     pid = start_telemetry()
 
@@ -40,40 +53,67 @@ defmodule AlchemistTest do
       stop_telemetry(pid)
     end)
 
-    pre_transform_messages = [
+    pre_transform_messages_for_first_dataset = [
       TestHelpers.create_data(%{
         payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
-        dataset_id: dataset.id
+        dataset_id: "none"
       }),
       TestHelpers.create_data(%{
         payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
-        dataset_id: dataset.id
+        dataset_id: "none"
       }),
       TestHelpers.create_data(%{
         payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
-        dataset_id: dataset.id
+        dataset_id: "none"
       })
     ]
 
+    # pre_transform_messages_for_second_dataset = [
+    #   TestHelpers.create_data(%{
+    #     payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
+    #     dataset_id: dataset2.id
+    #   }),
+    #   TestHelpers.create_data(%{
+    #     payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
+    #     dataset_id: dataset2.id
+    #   }),
+    #   TestHelpers.create_data(%{
+    #     payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
+    #     dataset_id: dataset2.id
+    #   })
+    # ]
+
     input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
-    output_topic = "#{output_topic_prefix()}-#{dataset.id}"
+    output_topics = [
+      "#{output_topic_prefix()}-#{dataset.id}",
+      "#{output_topic_prefix()}-#{dataset2.id}",
+    ]
 
     Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
-    TestHelpers.produce_messages(pre_transform_messages, input_topic, elsa_brokers())
+    TestHelpers.produce_messages(pre_transform_messages_for_first_dataset, input_topic, elsa_brokers())
+    # TestHelpers.produce_messages(pre_transform_messages_for_second_dataset, input_topic, elsa_brokers())
 
-    {:ok, %{output_topic: output_topic, pre_transform_messages: pre_transform_messages, dataset: dataset}}
+    {:ok, %{
+      output_topics: output_topics,
+      pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
+      # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
+      datasets: [dataset, dataset2]
+      }}
   end
 
   test "alchemist updates the operational struct", %{
-    output_topic: output_topic,
-    pre_transform_messages: pre_transform_messages
+    output_topics: [dataset1_topic, dataset2_topic],
+    pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
+    # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
   } do
     eventually fn ->
-      post_transform_messages = TestHelpers.get_data_messages_from_kafka_with_timing(output_topic, elsa_brokers())
+      post_transform_messages_for_first_topic = TestHelpers.get_data_messages_from_kafka_with_timing(dataset1_topic, elsa_brokers())
+      post_transform_messages_for_second_topic = TestHelpers.get_data_messages_from_kafka_with_timing(dataset2_topic, elsa_brokers())
 
-      assert pre_transform_messages == post_transform_messages
+      assert pre_transform_messages_for_first_dataset == post_transform_messages_for_first_topic
+      assert pre_transform_messages_for_first_dataset == post_transform_messages_for_second_topic
     end
   end
 

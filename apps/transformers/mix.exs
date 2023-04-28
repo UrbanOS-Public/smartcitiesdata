@@ -32,8 +32,10 @@ defmodule Transformers.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:smart_city, "~> 5.2.8"},
-      {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
+      # {:smart_city, "~> 5.2.8"},
+      # {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
+      {:smart_city, path: "../../../smart_city"},
+      {:smart_city_test, path: "../../../smart_city_test", only: [:test, :integration]},
       {:timex, "~> 3.6"},
       {:decimal, "~> 1.0"}
     ]

@@ -109,7 +109,7 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp convert_to_data_message(payload, state) do
     data = %{
-      dataset_id: state.ingestion.targetDataset,
+      dataset_ids: state.ingestion.targetDatasets,
       ingestion_id: state.ingestion.id,
       extraction_start_time: format_date(state.start_time),
       operational: %{timing: add_timing(state)},

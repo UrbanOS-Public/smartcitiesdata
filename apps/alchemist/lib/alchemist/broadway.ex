@@ -50,7 +50,7 @@ defmodule Alchemist.Broadway do
       context: %{
         ingestion: ingestion,
         transformations: Transformers.construct(transformations),
-        output_topic: Keyword.fetch!(output, :topic),
+        output_topics: Keyword.fetch!(output, :topics),
         producer: Keyword.fetch!(output, :connection)
       }
     ]
@@ -70,7 +70,7 @@ defmodule Alchemist.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
-        DeadLetter.process(ingestion.targetDataset, ingestion.id, message_data.value, @app_name, reason: inspect(reason))
+        DeadLetter.process(ingestion.targetDatasets, ingestion.id, message_data.value, @app_name, reason: inspect(reason))
 
         Message.failed(message, reason)
     end
@@ -79,7 +79,7 @@ defmodule Alchemist.Broadway do
   # used by batcher
   def handle_batch(_batch, messages, _batch_info, context) do
     data_messages = messages |> Enum.map(fn message -> message.data.value end)
-    Elsa.produce(context.producer, context.output_topic, data_messages, partition: 0)
+    Enum.each(context.output_topics, fn topic -> Elsa.produce(context.producer, topic, data_messages, partition: 0) end)
     messages
   end
 end

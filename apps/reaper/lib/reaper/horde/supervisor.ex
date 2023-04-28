@@ -41,7 +41,7 @@ defmodule Reaper.Horde.Supervisor do
     send_extract_complete_event = fn processor_result ->
       message = %{
         ingestion_id: ingestion.id,
-        dataset_id: ingestion.targetDataset,
+        dataset_ids: ingestion.targetDatasets,
         msgs_extracted: processor_result,
         extract_start_unix: extract_start |> DateTime.to_unix()
       }

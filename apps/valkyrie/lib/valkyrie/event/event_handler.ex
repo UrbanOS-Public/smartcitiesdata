@@ -14,22 +14,24 @@ defmodule Valkyrie.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDataset: target_dataset_id} = data,
+        data: %Ingestion{targetDatasets: target_dataset_ids} = data,
         author: author
       }) do
-    add_event_count(data_ingest_start(), author, target_dataset_id)
-    dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
+    Enum.each(target_dataset_ids, fn target_dataset_id ->
+      add_event_count(data_ingest_start(), author, target_dataset_id)
+      dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
 
-    if dataset != nil do
-      Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
-      Valkyrie.DatasetProcessor.start(dataset)
-    end
+      if dataset != nil do
+        Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
+        Valkyrie.DatasetProcessor.start(dataset)
+      end
+    end)
 
     :ok
   rescue
     error ->
       Logger.error("data_ingest_start failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -47,7 +49,7 @@ defmodule Valkyrie.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_standardization_end failed to process: #{inspect(error)}")
-      DeadLetter.process(dataset_id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -68,7 +70,7 @@ defmodule Valkyrie.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -92,7 +94,7 @@ defmodule Valkyrie.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

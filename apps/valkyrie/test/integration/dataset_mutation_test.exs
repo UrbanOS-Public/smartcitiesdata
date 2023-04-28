@@ -16,26 +16,37 @@ defmodule Valkyrie.DatasetMutationTest do
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
     dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
     schema = [%{name: "age", type: "string"}]
     dataset = TDG.create_dataset(id: dataset_id, technical: %{schema: schema})
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset_id})
+    dataset2 = TDG.create_dataset(id: dataset_id2, technical: %{schema: schema})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
 
-    data1 = TDG.create_data(dataset_id: dataset_id, payload: %{"age" => "21"})
+    data1 = TDG.create_data(dataset_ids: [dataset_id, dataset_id2], payload: %{"age" => "21"})
     Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset2)
     Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic(dataset_id))
+    TestHelpers.wait_for_topic(elsa_brokers(), input_topic(dataset_id2))
     TestHelpers.wait_for_topic(elsa_brokers(), output_topic(dataset_id))
+    TestHelpers.wait_for_topic(elsa_brokers(), output_topic(dataset_id2))
 
     Elsa.produce(elsa_brokers(), input_topic(dataset_id), Jason.encode!(data1), partition: 0)
+    Elsa.produce(elsa_brokers(), input_topic(dataset_id2), Jason.encode!(data1), partition: 0)
 
     eventually(
       fn ->
-        messages = Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
+        first_output_topic_messages = Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
+        second_output_topic_messages = Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
 
-        payloads =
-          Enum.map(messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
+        first_payloads =
+          Enum.map(first_output_topic_messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
 
-        assert payloads == [%{"age" => "21"}]
+        second_payloads =
+          Enum.map(second_output_topic_messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
+
+        assert first_payloads == [%{"age" => "21"}]
+        assert second_payloads == [%{"age" => "21"}]
       end,
       2_000,
       40
@@ -46,7 +57,7 @@ defmodule Valkyrie.DatasetMutationTest do
 
     Process.sleep(2_000)
 
-    data2 = TDG.create_data(dataset_id: dataset_id, payload: %{"age" => "22"})
+    data2 = TDG.create_data(dataset_ids: [dataset_id], payload: %{"age" => "22"})
     Elsa.produce(elsa_brokers(), input_topic(dataset_id), Jason.encode!(data2), partition: 0)
 
     eventually(
@@ -65,10 +76,11 @@ defmodule Valkyrie.DatasetMutationTest do
 
   test "should delete all view state for the dataset and the input and output topics when dataset:delete is called" do
     dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
     input_topic = input_topic(dataset_id)
     output_topic = output_topic(dataset_id)
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "ingest"})
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
     Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
     Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
 
