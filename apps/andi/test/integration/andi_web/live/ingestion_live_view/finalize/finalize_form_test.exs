@@ -166,7 +166,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
 
   defp create_ingestion_with_cadence(cadence) do
     dataset = TDG.create_dataset(%{})
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, cadence: cadence})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id], cadence: cadence})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

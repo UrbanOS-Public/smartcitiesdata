@@ -46,7 +46,7 @@ defmodule AndiWeb.EditControllerTest do
       smrt_dataset = TDG.create_dataset(%{})
       {:ok, _dataset} = Datasets.update(smrt_dataset)
 
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: smrt_dataset.id})
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: [smrt_dataset.id]})
       {:ok, ingestion} = Ingestions.update(smrt_ingestion)
 
       conn = get(conn, "#{@ingestions_url_path}/#{ingestion.id}")

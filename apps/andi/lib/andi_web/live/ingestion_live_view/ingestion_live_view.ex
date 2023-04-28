@@ -62,7 +62,7 @@ defmodule AndiWeb.IngestionLiveView do
       from(ingestion in Ingestion,
         left_join: dataset in Dataset,
         as: :dataset,
-        on: dataset.id == ingestion.targetDataset,
+        on: dataset.id in ingestion.targetDatasets,
         preload: [dataset: dataset, dataset: :business],
         select: ingestion
       )

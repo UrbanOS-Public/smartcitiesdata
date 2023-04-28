@@ -32,10 +32,12 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
   describe "ingestions" do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{})
+      dataset2 = TDG.create_dataset(%{})
       ingestion_id = UUID.uuid4()
-      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset.id, dataset2.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset2)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
       eventually(fn ->
@@ -221,9 +223,9 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     test "saving form as draft does not send brook event", %{curator_conn: conn} do
       allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
-      {:ok, ingestion} =
+      {_, ingestion} =
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
         |> Ingestions.save()
 
@@ -286,13 +288,14 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
       {:ok, ingestion} =
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
         |> Ingestions.save()
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
       render_click(view, "publish")
 
       refute_called Brook.Event.send(any(), any(), any(), any())
@@ -300,7 +303,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
     test "adding a transformation and cancelling prompts a confirmation", %{curator_conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: nil})
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
       {:ok, ingestion} =
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)

@@ -67,7 +67,7 @@ defmodule Andi.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -80,7 +80,7 @@ defmodule Andi.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

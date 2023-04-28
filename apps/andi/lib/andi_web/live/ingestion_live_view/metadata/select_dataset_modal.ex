@@ -9,8 +9,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     {:ok,
      assign(socket,
        search_results: [],
-       selected_dataset: nil,
-       old_selected_dataset: nil,
+       selected_datasets: [],
        search_text: ""
      )}
   end
@@ -69,7 +68,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
                     <td class="search-table__cell search-table__cell--break wide-column"><%= dataset.business.orgTitle %></td>
                     <td class="search-table__cell search-table__cell--break wide-column"><%= Enum.join(dataset.business.keywords, ", ") %></td>
                     <td class="search-table__cell search-table__cell--break thin-column">
-                      <a class="modal-action-text" href="javascript:void(0)" phx-click="select-dataset-search" phx-target="<%= @myself %>" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_dataset)%></a>
+                      <a class="modal-action-text" href="javascript:void(0)" phx-click="select-dataset-search" phx-target="<%= @myself %>" phx-value-id=<%= dataset.id %>><%=selected_value(dataset.id, @selected_datasets)%></a>
                     </td>
                   </tr>
                 <% end %>
@@ -82,13 +81,15 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     <div class="dataset-search-selected-datasets">
         <p class="search-modal-section-header-text">Selected Dataset</p>
         <div class="selected-results-from-search">
-          <%= if(selected_dataset(@search_results, @selected_dataset) == nil) do %>
+          <%= if(@selected_datasets == []) do %>
             <div></div>
           <% else %>
-            <div class="selected-result-from-search">
-              <span class="selected-result-text"><%= get_dataset_name(@selected_dataset) %></span>
-              <button type="button" class="btn btn--transparent material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-target="<%= @myself %>" phx-value-id=<%= @selected_dataset %>>close</button>
-            </div>
+            <%= for ds <- @selected_datasets do %>
+              <div class="selected-result-from-search">
+                <span class="selected-result-text"><%= get_dataset_name(ds) %></span>
+                <button type="button" class="btn btn--transparent material-icons remove-selected-result" phx-click="remove-selected-dataset" phx-target="<%= @myself %>" phx-value-id=<%= ds %>>close</button>
+              </div>
+            <% end %>
           <% end %>
         </div>
     </div>
@@ -105,7 +106,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
   def handle_event("save-dataset-search", _, socket) do
     socket.assigns.close_modal_callback.()
-    send(self(), {:update_dataset, socket.assigns.selected_dataset})
+    send(self(), {:update_dataset, socket.assigns.selected_datasets})
 
     {:noreply, socket}
   end
@@ -123,19 +124,21 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
      assign(socket,
        search_text: search_value,
        search_results: search_results,
-       selected_dataset: socket.assigns.selected_dataset
+       selected_datasets: socket.assigns.selected_datasets
      )}
   end
 
   def handle_event("remove-selected-dataset", %{"id" => id}, socket) do
-    {:noreply, assign(socket, selected_dataset: nil, old_selected_dataset: id)}
+    selected_datasets = socket.assigns.selected_datasets
+    {:noreply, assign(socket, selected_datasets: List.delete(selected_datasets, id))}
   end
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
-    if(socket.assigns.selected_dataset == id) do
-      {:noreply, assign(socket, selected_dataset: nil, old_selected_dataset: id)}
+    selected_datasets = socket.assigns.selected_datasets
+    if(id in selected_datasets) do
+      {:noreply, assign(socket, selected_datasets: List.delete(selected_datasets, id))}
     else
-      {:noreply, assign(socket, selected_dataset: id, old_selected_dataset: socket.assigns.selected_dataset)}
+      {:noreply, assign(socket, selected_datasets: [id] ++ selected_datasets)}
     end
   end
 
@@ -179,19 +182,8 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     |> Andi.Repo.all()
   end
 
-  defp selected_dataset(datasets, selected_dataset) do
-    if(selected_dataset == nil) do
-      nil
-    else
-      case Enum.find(datasets, fn dataset -> dataset.id == selected_dataset end) do
-        nil -> Andi.InputSchemas.Datasets.get(selected_dataset)
-        result -> result
-      end
-    end
-  end
-
-  defp selected_value(dataset_id, selected_dataset) do
-    case dataset_id == selected_dataset do
+  defp selected_value(dataset_id, selected_datasets) do
+    case dataset_id in selected_datasets do
       true -> "Remove"
       false -> "Select"
     end

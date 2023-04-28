@@ -7,6 +7,7 @@ defmodule Andi.InputSchemas.Ingestion do
 
   alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.Ingestions.ExtractStep
@@ -24,7 +25,8 @@ defmodule Andi.InputSchemas.Ingestion do
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
     field(:submissionStatus, Ecto.Enum, values: [:published, :draft], default: :draft)
-    belongs_to(:dataset, Dataset, type: :string, foreign_key: :targetDataset)
+    field(:targetDatasets, {:array, :string})
+    has_many(:dataset, Dataset)
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:extractSteps, ExtractStep, on_replace: :delete)
     has_many(:transformations, Transformation, on_replace: :delete)
@@ -37,7 +39,7 @@ defmodule Andi.InputSchemas.Ingestion do
     :cadence,
     :sourceFormat,
     :topLevelSelector,
-    :targetDataset,
+    :targetDatasets,
     :name,
     :sourceFormat,
     :submissionStatus
@@ -46,7 +48,7 @@ defmodule Andi.InputSchemas.Ingestion do
   @required_fields [
     :cadence,
     :sourceFormat,
-    :targetDataset,
+    :targetDatasets,
     :name
   ]
 
@@ -60,12 +62,13 @@ defmodule Andi.InputSchemas.Ingestion do
 
     changeset
     |> Map.replace(:errors, [])
-    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [[]], force_changes: true)
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset(&1, &2, source_format), invalid_message: "is required")
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
     |> Changeset.validate_required(@required_fields, message: "is required")
-    |> Changeset.foreign_key_constraint(:targetDataset)
+    |> validate_datasets()
     |> validate_source_format()
     |> CadenceValidator.validate()
     |> validate_top_level_selector()
@@ -84,11 +87,12 @@ defmodule Andi.InputSchemas.Ingestion do
 
     changeset
     |> Map.replace(:errors, [])
-    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [], force_changes: true)
+    |> Changeset.cast(data_as_changes, @cast_fields, empty_values: [[]], force_changes: true)
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
-    |> Changeset.foreign_key_constraint(:targetDataset)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
+    |> validate_datasets()
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
@@ -104,6 +108,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -112,6 +117,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
@@ -122,6 +128,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
   end
 
   def changeset_for_draft(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
@@ -130,6 +137,7 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
+    |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
   end
 
   def merge_metadata_changeset(
@@ -144,7 +152,7 @@ defmodule Andi.InputSchemas.Ingestion do
       name: metadata.name,
       sourceFormat: metadata.sourceFormat,
       topLevelSelector: metadata.topLevelSelector,
-      targetDataset: metadata.targetDataset
+      targetDatasets: metadata.targetDatasets
     }
 
     changeset(ingestion_changeset, extracted_metadata)
@@ -361,5 +369,17 @@ defmodule Andi.InputSchemas.Ingestion do
         Changeset.add_error(acc_error, key, message)
       end)
     end)
+  end
+
+  defp validate_datasets(changeset) do
+    dataset_ids = Changeset.get_field(changeset, :targetDatasets)
+
+    if is_nil(dataset_ids) or dataset_ids == [] do
+      Changeset.add_error(changeset, :targetDatasets, "no target datasets")
+    else
+      Enum.reduce(dataset_ids, changeset, fn id, acc->
+        if is_nil(Datasets.get(id)), do: Changeset.add_error(changeset, :targetDatasets, "one or more target datasets do not exist"), else: changeset
+      end)
+    end
   end
 end

@@ -50,7 +50,7 @@ defmodule AndiWeb.API.IngestionController do
     changeset = InputConverter.smrt_ingestion_to_full_changeset(ingestion)
 
     with true <- changeset.valid?,
-         :ok <- validate_target_dataset(ingestion) do
+         :ok <- validate_target_datasets(ingestion) do
       :valid
     else
       false -> {:invalid, format_changeset_errors(changeset)}
@@ -58,14 +58,28 @@ defmodule AndiWeb.API.IngestionController do
     end
   end
 
-  defp validate_target_dataset(ingestion) do
-    dataset_id = ingestion["targetDataset"]
+  defp validate_target_datasets(ingestion) do
+    dataset_ids = ingestion["targetDatasets"]
 
-    case dataset_exists?(dataset_id) do
+    dataset_statuses = Enum.map(dataset_ids, fn id -> case dataset_exists?(id) do
       {:ok, true} -> :ok
       {:ok, false} -> {:error, "Target dataset does not exist"}
       {:error, _} -> {:error, "Unable to retrieve target dataset"}
+    end end)
+
+    with true <- Enum.all?(dataset_statuses, fn status -> status == :ok end) do
+      :ok
+    else
+      false -> {:error, parse_target_dataset_errors(dataset_statuses)}
     end
+  end
+
+  defp parse_target_dataset_errors(statuses) do
+    statuses
+    |> Enum.filter(fn status -> is_map(status) end)
+    |> Enum.dedup()
+    |> Enum.map(fn {code, msg} -> msg end)
+    |> Enum.join(", ")
   end
 
   defp dataset_exists?(id) do

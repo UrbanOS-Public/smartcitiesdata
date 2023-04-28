@@ -34,10 +34,12 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
   describe "ingestions metadata form edit" do
     setup %{conn: conn} do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
+      dataset2 = TDG.create_dataset(%{name: "sample_dataset2"})
       ingestion_id = UUID.uuid4()
-      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion"})
+      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset.id, dataset2.id], name: "sample_ingestion"})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
+      Brook.Event.send(@instance_name, dataset_update(), :andi, dataset2)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
 
       eventually(fn ->
@@ -45,7 +47,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       end)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
-      [ingestion: ingestion, view: view, html: html, dataset: dataset, conn: conn]
+      [ingestion: ingestion, view: view, html: html, dataset: dataset, dataset2: dataset2, conn: conn]
     end
 
     test "name field defaults to it's existing name", %{
@@ -141,13 +143,16 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert error_message == "Please select a valid source format."
     end
 
-    test "dataset name field defaults to it's existing association", %{
+    test "dataset name field defaults to it's existing association and sorts names alphabetically", %{
       view: view,
       html: html,
       ingestion: ingestion,
-      dataset: dataset
+      dataset: dataset,
+      dataset2: dataset2
     } do
-      assert get_value(html, "#ingestion_metadata_form_targetDatasetName") == dataset.business.dataTitle
+
+      sorted_titles = Enum.sort([dataset.business.dataTitle, dataset2.business.dataTitle]) |> Enum.join(", ")
+      assert get_value(html, "#ingestion_metadata_form_targetDatasetNames") == sorted_titles
     end
 
     test "can close dataset modal", %{
@@ -174,8 +179,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       assert Enum.empty?(find_elements(html, ".manage-datasets-modal--visible"))
     end
 
-    # todo: ticket #757 will fullfil this test
-    @tag :skip
     test "can not edit source format for published ingestion", %{
       view: view,
       html: html,
@@ -192,7 +195,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       end)
 
       {:ok, ingestion} =
-        TDG.create_ingestion(%{targetDataset: dataset.id, name: "testing123"})
+        TDG.create_ingestion(%{targetDatasets: [dataset.id], name: "testing123"})
         |> Ingestions.update()
 
       Ingestions.update_submission_status(ingestion.id, :published)
@@ -219,7 +222,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
     end)
 
     {:ok, ingestion} =
-      TDG.create_ingestion(%{targetDataset: dataset.id, submissionStatus: :published, sourceFormat: "text/csv"})
+      TDG.create_ingestion(%{targetDatasets: [dataset.id], submissionStatus: :published, sourceFormat: "text/csv"})
       |> Ingestions.update()
 
     assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)

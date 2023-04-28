@@ -241,8 +241,8 @@ defmodule AndiWeb.API.IngestionControllerTest do
       assert json_response(conn, 500) =~ "Unable to process your request"
     end
 
-    test "PUT /api/ targetDataset must exist in the datastore", %{conn: conn} do
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: "nonexistent_dataset"})
+    test "PUT /api/ targetDatasets must exist in the datastore", %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: ["nonexistent_dataset"]})
       {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
@@ -255,7 +255,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
     end
 
     test "PUT /api/ fail validation when datasetStore fails", %{conn: conn} do
-      smrt_ingestion = TDG.create_ingestion(%{targetDataset: "error_dataset"})
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: ["error_dataset"]})
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
