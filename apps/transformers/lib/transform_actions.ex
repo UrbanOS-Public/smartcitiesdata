@@ -75,11 +75,12 @@ defmodule Transformers do
     case payload do
       payload when is_list(payload) ->
         payload
-          |> Enum.with_index()
-          |> Enum.reduce(%{}, fn {value, index}, enum_acc ->
-            new_parent_key = "#{parent_key}[#{index}]"
-            Map.merge(enum_acc, flatten_list(value, new_parent_key))
-          end)
+        |> Enum.with_index()
+        |> Enum.reduce(%{}, fn {value, index}, enum_acc ->
+          new_parent_key = "#{parent_key}[#{index}]"
+          Map.merge(enum_acc, flatten_list(value, new_parent_key))
+        end)
+
       payload ->
         %{parent_key => payload}
     end
@@ -127,49 +128,58 @@ defmodule Transformers do
 
   defp split_payload(payload) do
     payload
-      |> Map.keys()
-      |> Enum.sort()
-      |> Enum.reduce(%{}, fn key, acc ->
-        value = Map.get(payload, key)
+    |> Map.keys()
+    |> Enum.sort()
+    |> Enum.reduce(%{}, fn key, acc ->
+      value = Map.get(payload, key)
 
-        case String.split(key, ".") do
-          [head | []] ->
-            if Regex.match?(~r/\[.\]/, head) do
-              base_parent_key = Regex.replace(~r/\[.\]/, key, "")
-              list_acc = Map.get(acc, base_parent_key, [])
+      case String.split(key, ".") do
+        [head | []] ->
+          if Regex.match?(~r/\[.\]/, head) do
+            base_parent_key = Regex.replace(~r/\[.\]/, key, "")
+            list_acc = Map.get(acc, base_parent_key, [])
 
-              updated_list = Regex.scan(~r/\[.\]/, head)
-                |> split_list(value, list_acc)
+            updated_list =
+              Regex.scan(~r/\[.\]/, head)
+              |> split_list(value, list_acc)
 
-              Map.put(acc, base_parent_key, updated_list)
-            else
-              Map.put(acc, key, value)
-            end
-          hierarchy ->
-            {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
+            Map.put(acc, base_parent_key, updated_list)
+          else
+            Map.put(acc, key, value)
+          end
 
-            if Regex.match?(~r/\[.\]/, parent_key) do
-              base_parent_key = Regex.replace(~r/\[.\]/, key, "")
-              list_acc = Map.get(acc, base_parent_key, [])
+        hierarchy ->
+          {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
 
-              updated_list = Regex.scan(~r/\[.\]/, parent_key)
-                |> split_list(value, list_acc)
+          if Regex.match?(~r/\[.\]/, parent_key) do
+            base_parent_key = Regex.replace(~r/\[.\]/, key, "")
+            list_acc = Map.get(acc, base_parent_key, [])
 
-              Map.put(acc, base_parent_key, updated_list)
-            else
-              map_child(parent_key, child_hierarchy, value, acc)
-            end
-        end
-      end)
+            updated_list =
+              Regex.scan(~r/\[.\]/, parent_key)
+              |> split_list(value, list_acc)
+
+            Map.put(acc, base_parent_key, updated_list)
+          else
+            map_child(parent_key, child_hierarchy, value, acc)
+          end
+      end
+    end)
   end
 
   defp split_list(index_list, value, list_acc) do
     {first_index_str, popped_list} = List.pop_at(index_list, 0)
-    first_index = Regex.replace(~r/\[|\]/, first_index_str |> hd(), "")
+
+    first_index =
+      Regex.replace(~r/\[|\]/, first_index_str |> hd(), "")
       |> String.to_integer()
 
     {list_acc_at_index, rest_of_list} = List.pop_at(list_acc, first_index, [])
-    new_value = if Enum.any?(popped_list), do: split_list(popped_list, value, list_acc_at_index), else: value
+
+    new_value =
+      if Enum.any?(popped_list),
+        do: split_list(popped_list, value, list_acc_at_index),
+        else: value
 
     List.insert_at(rest_of_list, first_index, new_value)
   end
