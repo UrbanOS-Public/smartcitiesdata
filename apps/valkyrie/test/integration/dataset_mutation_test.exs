@@ -37,13 +37,19 @@ defmodule Valkyrie.DatasetMutationTest do
     eventually(
       fn ->
         first_output_topic_messages = Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
-        second_output_topic_messages = Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
+
+        second_output_topic_messages =
+          Elsa.Fetch.fetch_stream(elsa_brokers(), output_topic(dataset_id)) |> Enum.into([])
 
         first_payloads =
-          Enum.map(first_output_topic_messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
+          Enum.map(first_output_topic_messages, fn message ->
+            SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload)
+          end)
 
         second_payloads =
-          Enum.map(second_output_topic_messages, fn message -> SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload) end)
+          Enum.map(second_output_topic_messages, fn message ->
+            SmartCity.Data.new(message.value) |> elem(1) |> Map.get(:payload)
+          end)
 
         assert first_payloads == [%{"age" => "21"}]
         assert second_payloads == [%{"age" => "21"}]

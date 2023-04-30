@@ -8,7 +8,6 @@ defmodule Alchemist.BroadwayTest do
 
   import SmartCity.TestHelper, only: [eventually: 1]
 
-
   @ingestion_id "ingestion1"
   @dataset_id "ds1"
   @dataset_id2 "ds2"
@@ -209,7 +208,7 @@ defmodule Alchemist.BroadwayTest do
           # ingestion is destructured in handle message as the th~ird argument
           #   it serves as context for an incoming SmartCity.data message
           ingestion: ingestion,
-          #TODO: DOES THIS NEED TO CHANGE?
+          # TODO: DOES THIS NEED TO CHANGE?
           output: [
             topics: ["#{output_topic_prefix()}-#{@dataset_id}", "#{output_topic_prefix()}-#{@dataset_id2}"],
             connection: @producer
@@ -230,7 +229,10 @@ defmodule Alchemist.BroadwayTest do
 
     test "should dead letter messages", %{broadway: broadway} do
       data1 =
-        TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
+        TDG.create_data(
+          dataset_ids: [@dataset_id, @dataset_id2],
+          payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"}
+        )
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 

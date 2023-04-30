@@ -134,13 +134,14 @@ defmodule Reaper.Event.EventHandler do
   end
 
   defp add_event_count(event_type, dataset_ids) do
-    Enum.map(dataset_ids, fn dataset_id -> [
-      app: "reaper",
-      author: "reaper",
-      dataset_id: dataset_id,
-      event_type: event_type
-    ]
-  end)
+    Enum.map(dataset_ids, fn dataset_id ->
+      [
+        app: "reaper",
+        author: "reaper",
+        dataset_id: dataset_id,
+        event_type: event_type
+      ]
+    end)
     |> Enum.each(fn message -> TelemetryEvent.add_event_metrics(message, [:events_handled]) end)
   end
 end

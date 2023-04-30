@@ -130,7 +130,9 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "should yeet message if standardizing data fails due to schmear validation", %{broadway: broadway} do
-    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => "twenty-one"})
+    data =
+      TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => "twenty-one"})
+
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])

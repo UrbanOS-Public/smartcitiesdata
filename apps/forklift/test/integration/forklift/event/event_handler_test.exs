@@ -21,7 +21,9 @@ defmodule Forklift.Event.EventHandlerTest do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_ingestion = UUID.uuid4()
       id_for_invalid_dataset = UUID.uuid4()
-      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDatasets: [id_for_invalid_dataset]})
+
+      invalid_ingestion =
+        TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDatasets: [id_for_invalid_dataset]})
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})

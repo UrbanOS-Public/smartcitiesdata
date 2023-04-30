@@ -57,7 +57,6 @@ defmodule Alchemist.IngestionSupervisor do
     output_topics = Keyword.fetch!(opts, :output_topics)
     producer = :"#{ingestion.id}_producer"
 
-
     children = [
       elsa_producer(ingestion, output_topics, producer),
       broadway(ingestion, input_topic, output_topics, producer)

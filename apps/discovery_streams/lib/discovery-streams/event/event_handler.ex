@@ -23,6 +23,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
         DiscoveryStreams.Stream.Supervisor.start_child(dataset_id)
       end
     end)
+
     :ok
   end
 

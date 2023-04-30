@@ -13,9 +13,9 @@ defmodule Flair.DurationsTest do
         |> Data.add_timing(make_timing())
 
       assert %{
-        "ds1" => [%Timing{}],
-        "ds2" => [%Timing{}]
-        } = Durations.reducer(message, %{})
+               "ds1" => [%Timing{}],
+               "ds2" => [%Timing{}]
+             } = Durations.reducer(message, %{})
     end
 
     test "with existing accumulator" do
@@ -24,9 +24,9 @@ defmodule Flair.DurationsTest do
         |> Data.add_timing(make_timing())
 
       assert %{
-        "ds1" => [%Timing{}, %Timing{}],
-        "ds2" => [%Timing{}, %Timing{}],
-        } = Durations.reducer(message, Durations.reducer(message, %{}))
+               "ds1" => [%Timing{}, %Timing{}],
+               "ds2" => [%Timing{}, %Timing{}]
+             } = Durations.reducer(message, Durations.reducer(message, %{}))
     end
 
     test "three messages" do
@@ -36,16 +36,18 @@ defmodule Flair.DurationsTest do
         |> Enum.map(&Data.add_timing(&1, make_timing()))
 
       assert %{
-        "ds1" => [%Timing{}, %Timing{}, %Timing{}],
-        "ds2" => [%Timing{}, %Timing{}, %Timing{}]
-        } = Enum.reduce(messages, %{}, &Durations.reducer/2)
+               "ds1" => [%Timing{}, %Timing{}, %Timing{}],
+               "ds2" => [%Timing{}, %Timing{}, %Timing{}]
+             } = Enum.reduce(messages, %{}, &Durations.reducer/2)
     end
 
     test "different dataset_ids" do
-      message = make_data_message(dataset_ids: ["1", "2", "3"])
+      message =
+        make_data_message(dataset_ids: ["1", "2", "3"])
         |> Data.add_timing(make_timing())
 
-      assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} = Durations.reducer(message, %{})
+      assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} =
+               Durations.reducer(message, %{})
     end
   end
 

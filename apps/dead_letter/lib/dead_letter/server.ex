@@ -122,7 +122,6 @@ defmodule DeadLetter.Server do
       ]
       |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
     end)
-
   rescue
     error ->
       Logger.error("Unable to update the metrics: #{error}")

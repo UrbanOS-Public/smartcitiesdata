@@ -96,12 +96,20 @@ defmodule ValkyrieTest do
       delete_all_datasets()
 
       terminate_all_supervisors()
+
       eventually fn ->
         assert any_supervisors_exist?() == false
       end
     end)
 
-    {:ok, %{output_topics: [output_topic, output_topic2], messages: messages, invalid_message: invalid_message, dataset: dataset, dataset2: dataset2}}
+    {:ok,
+     %{
+       output_topics: [output_topic, output_topic2],
+       messages: messages,
+       invalid_message: invalid_message,
+       dataset: dataset,
+       dataset2: dataset2
+     }}
   end
 
   setup_all do
@@ -125,6 +133,7 @@ defmodule ValkyrieTest do
   test "valkyrie only starts the processes for ingest once on event handle", %{messages: messages} do
     dataset_id = Faker.UUID.v4()
     dataset_id2 = Faker.UUID.v4()
+
     dataset =
       TDG.create_dataset(%{
         id: dataset_id,
@@ -183,7 +192,6 @@ defmodule ValkyrieTest do
       assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = first_topic_messages
       assert [%{operational: %{timing: [%{app: "valkyrie"} | _]}} | _] = second_topic_messages
     end
-
   end
 
   test "valkyrie updates the view state of running ingestions on dataset update" do
@@ -363,16 +371,19 @@ defmodule ValkyrieTest do
 
   defp terminate_all_supervisors() do
     children = DynamicSupervisor.which_children(Valkyrie.Dynamic.Supervisor)
+
     Enum.each(children, fn
       {:undefined, pid, :supervisor, [Valkyrie.DatasetSupervisor]} ->
         DynamicSupervisor.terminate_child(Valkyrie.Dynamic.Supervisor, pid)
 
-      _ -> nil
+      _ ->
+        nil
     end)
   end
 
   defp any_supervisors_exist?() do
     children = DynamicSupervisor.which_children(Valkyrie.Dynamic.Supervisor)
+
     Enum.any?(children, fn
       {:undefined, _pid, :supervisor, [Valkyrie.DatasetSupervisor]} -> true
       _ -> false
@@ -381,12 +392,14 @@ defmodule ValkyrieTest do
 
   defp delete_all_datasets() do
     eventually fn ->
-      {:ok, datasets} = Brook.get_all(@instance_name, :datasets)
-      Enum.each(datasets, fn {_dataset_id, dataset} ->
-        Brook.Event.send(@instance_name, dataset_delete(), :valkyrie, dataset)
-      end)
+                 {:ok, datasets} = Brook.get_all(@instance_name, :datasets)
 
-      assert Brook.get_all(@instance_name, :datasets) == {:ok, %{}}
-    end, 10_000
+                 Enum.each(datasets, fn {_dataset_id, dataset} ->
+                   Brook.Event.send(@instance_name, dataset_delete(), :valkyrie, dataset)
+                 end)
+
+                 assert Brook.get_all(@instance_name, :datasets) == {:ok, %{}}
+               end,
+               10_000
   end
 end

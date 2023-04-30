@@ -42,7 +42,10 @@ defmodule Valkyrie.EndOfDataTest do
     eod_message = end_of_data()
 
     message_to_not_consume =
-      TestHelpers.create_data(%{dataset_ids: [dataset_id, dataset_id2], payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
+      TestHelpers.create_data(%{
+        dataset_ids: [dataset_id, dataset_id2],
+        payload: %{"name" => %{"first" => "Post", "last" => "Man"}}
+      })
 
     Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
     Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)

@@ -82,6 +82,7 @@ defmodule Forklift.DataWriter do
     topic = "#{input_topic_prefix()}-#{dataset.id}"
 
     IO.inspect("Grr", label: "RYAN - FOO")
+
     [endpoints: elsa_brokers(), topic: topic]
     |> IO.inspect(label: "RYAN - FOO2")
     |> topic_writer().delete()

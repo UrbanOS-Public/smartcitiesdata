@@ -9,7 +9,11 @@ defmodule Flair.OverallTimeTest do
 
   describe "add/1" do
     test "data message is unchanged when timing list is empty" do
-      data = TestDataGenerator.create_data(dataset_ids: ["pirates", "eyepatch"], operational: %{timing: []})
+      data =
+        TestDataGenerator.create_data(
+          dataset_ids: ["pirates", "eyepatch"],
+          operational: %{timing: []}
+        )
 
       assert OverallTime.add(data) == data
     end
@@ -33,7 +37,12 @@ defmodule Flair.OverallTimeTest do
           end_time: offset_datetime(current_time, 15)
         )
 
-      data = TestDataGenerator.create_data(dataset_ids: ["pirates", "eyepatch"], operational: %{timing: []})
+      data =
+        TestDataGenerator.create_data(
+          dataset_ids: ["pirates", "eyepatch"],
+          operational: %{timing: []}
+        )
+
       data = data |> Data.add_timing(second_time) |> Data.add_timing(first_time)
 
       timings = data |> OverallTime.add() |> Data.get_all_timings()

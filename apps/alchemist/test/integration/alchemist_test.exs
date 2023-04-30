@@ -84,9 +84,10 @@ defmodule AlchemistTest do
     # ]
 
     input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
+
     output_topics = [
       "#{output_topic_prefix()}-#{dataset.id}",
-      "#{output_topic_prefix()}-#{dataset2.id}",
+      "#{output_topic_prefix()}-#{dataset2.id}"
     ]
 
     Brook.Event.send(@instance_name, ingestion_update(), :alchemist, ingestion)
@@ -95,22 +96,26 @@ defmodule AlchemistTest do
     TestHelpers.produce_messages(pre_transform_messages_for_first_dataset, input_topic, elsa_brokers())
     # TestHelpers.produce_messages(pre_transform_messages_for_second_dataset, input_topic, elsa_brokers())
 
-    {:ok, %{
-      output_topics: output_topics,
-      pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
-      # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
-      datasets: [dataset, dataset2]
-      }}
+    {:ok,
+     %{
+       output_topics: output_topics,
+       pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
+       # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
+       datasets: [dataset, dataset2]
+     }}
   end
 
   test "alchemist updates the operational struct", %{
     output_topics: [dataset1_topic, dataset2_topic],
-    pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
+    pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset
     # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
   } do
     eventually fn ->
-      post_transform_messages_for_first_topic = TestHelpers.get_data_messages_from_kafka_with_timing(dataset1_topic, elsa_brokers())
-      post_transform_messages_for_second_topic = TestHelpers.get_data_messages_from_kafka_with_timing(dataset2_topic, elsa_brokers())
+      post_transform_messages_for_first_topic =
+        TestHelpers.get_data_messages_from_kafka_with_timing(dataset1_topic, elsa_brokers())
+
+      post_transform_messages_for_second_topic =
+        TestHelpers.get_data_messages_from_kafka_with_timing(dataset2_topic, elsa_brokers())
 
       assert pre_transform_messages_for_first_dataset == post_transform_messages_for_first_topic
       assert pre_transform_messages_for_first_dataset == post_transform_messages_for_second_topic

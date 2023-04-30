@@ -17,7 +17,6 @@ defmodule Flair.Durations do
         timing ++ x
       end)
     end)
-
   end
 
   @doc """

@@ -59,7 +59,8 @@ defmodule Andi.Event.EventHandlerTest do
   end
 
   describe "Ingestion Update" do
-    test "A failing message gets placed on dead letter queue and discarded" do # TODO: Fix test once deadletter can process multiple datasets.
+    # TODO: Fix test once deadletter can process multiple datasets.
+    test "A failing message gets placed on dead letter queue and discarded" do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 

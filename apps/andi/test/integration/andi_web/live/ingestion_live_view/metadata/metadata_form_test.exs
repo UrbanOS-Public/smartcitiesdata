@@ -150,7 +150,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataFormTest do
       dataset: dataset,
       dataset2: dataset2
     } do
-
       sorted_titles = Enum.sort([dataset.business.dataTitle, dataset2.business.dataTitle]) |> Enum.join(", ")
       assert get_value(html, "#ingestion_metadata_form_targetDatasetNames") == sorted_titles
     end

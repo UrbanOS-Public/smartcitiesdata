@@ -300,6 +300,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
   def handle_event("publish", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
+
     try do
       save_ingestion(socket)
 
@@ -311,12 +312,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         _ ->
           {:noreply, update_publish_message(socket, "invalid")}
       end
-
     rescue
       _ ->
         {:noreply, update_publish_message(socket, "invalid")}
     end
-
   end
 
   def handle_event("save", _, socket) do

@@ -121,6 +121,7 @@ defmodule Forklift.Event.EventHandler do
     Logger.debug("#{__MODULE__}: Deleting Dataset: #{data.id}")
 
     IO.inspect("Real Delete 1", label: "RYAN - DS DELETE")
+
     dataset_delete()
     |> IO.inspect(label: "RYAN - Piped")
     |> add_event_count(author, data.id)
@@ -166,7 +167,6 @@ defmodule Forklift.Event.EventHandler do
         Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
       end
     end)
-
 
     :ok
   rescue

@@ -61,11 +61,14 @@ defmodule AndiWeb.API.IngestionController do
   defp validate_target_datasets(ingestion) do
     dataset_ids = ingestion["targetDatasets"]
 
-    dataset_statuses = Enum.map(dataset_ids, fn id -> case dataset_exists?(id) do
-      {:ok, true} -> :ok
-      {:ok, false} -> {:error, "Target dataset does not exist"}
-      {:error, _} -> {:error, "Unable to retrieve target dataset"}
-    end end)
+    dataset_statuses =
+      Enum.map(dataset_ids, fn id ->
+        case dataset_exists?(id) do
+          {:ok, true} -> :ok
+          {:ok, false} -> {:error, "Target dataset does not exist"}
+          {:error, _} -> {:error, "Unable to retrieve target dataset"}
+        end
+      end)
 
     with true <- Enum.all?(dataset_statuses, fn status -> status == :ok end) do
       :ok

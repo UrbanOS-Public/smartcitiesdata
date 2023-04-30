@@ -135,6 +135,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
   def handle_event("select-dataset-search", %{"id" => id}, socket) do
     selected_datasets = socket.assigns.selected_datasets
+
     if(id in selected_datasets) do
       {:noreply, assign(socket, selected_datasets: List.delete(selected_datasets, id))}
     else

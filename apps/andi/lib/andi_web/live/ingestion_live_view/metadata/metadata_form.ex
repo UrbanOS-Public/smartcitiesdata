@@ -112,11 +112,13 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
 
   defp get_dataset_names(ids) do
     ids
-      |> Enum.map(fn id -> case Andi.InputSchemas.Datasets.get(id) do
-          nil -> "Dataset does not exist"
-          dataset -> dataset.business.dataTitle
-        end end)
-      |> Enum.sort()
-      |> Enum.join(", ")
+    |> Enum.map(fn id ->
+      case Andi.InputSchemas.Datasets.get(id) do
+        nil -> "Dataset does not exist"
+        dataset -> dataset.business.dataTitle
+      end
+    end)
+    |> Enum.sort()
+    |> Enum.join(", ")
   end
 end

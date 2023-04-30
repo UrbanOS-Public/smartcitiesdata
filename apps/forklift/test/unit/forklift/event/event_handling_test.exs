@@ -162,6 +162,7 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
         return: :in_progress
       )
+
       expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
         return: :in_progress
       )
@@ -191,9 +192,10 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
         return: :ingestion_complete
       )
+
       expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
-      return: :ingestion_complete
-    )
+        return: :ingestion_complete
+      )
 
       expect(Forklift.Datasets.get!(dataset.id), return: dataset)
       expect(Forklift.Datasets.get!(dataset2.id), return: dataset2)
@@ -222,9 +224,10 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
         return: :in_progress
       )
+
       expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
-      return: :in_progress
-    )
+        return: :in_progress
+      )
 
       allow(Forklift.Datasets.get!(dataset.id), return: dataset)
       allow(Forklift.Datasets.get!(dataset2.id), return: dataset2)

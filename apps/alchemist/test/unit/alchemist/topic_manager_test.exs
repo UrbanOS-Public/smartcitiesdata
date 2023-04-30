@@ -22,10 +22,11 @@ defmodule Alchemist.TopicManagerTest do
     topics = TopicManager.setup_topics(ingestion)
 
     assert "#{input_topic_prefix()}-#{@ingestion_id}" == Map.get(topics, :input_topic)
+
     assert [
-      "#{output_topic_prefix()}-#{@dataset_id1}",
-       "#{output_topic_prefix()}-#{@dataset_id2}"
-       ] == Map.get(topics, :output_topics)
+             "#{output_topic_prefix()}-#{@dataset_id1}",
+             "#{output_topic_prefix()}-#{@dataset_id2}"
+           ] == Map.get(topics, :output_topics)
   end
 
   test "creates a topic with the provided input topic name" do
