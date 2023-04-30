@@ -12,7 +12,10 @@ defmodule Flair.DurationsTest do
         make_data_message()
         |> Data.add_timing(make_timing())
 
-      assert %{"some_id" => [%Timing{}]} = Durations.reducer(message, %{})
+      assert %{
+        "ds1" => [%Timing{}],
+        "ds2" => [%Timing{}]
+        } = Durations.reducer(message, %{})
     end
 
     test "with existing accumulator" do
@@ -20,8 +23,10 @@ defmodule Flair.DurationsTest do
         make_data_message()
         |> Data.add_timing(make_timing())
 
-      assert %{"some_id" => [%Timing{}, %Timing{}]} =
-               Durations.reducer(message, Durations.reducer(message, %{}))
+      assert %{
+        "ds1" => [%Timing{}, %Timing{}],
+        "ds2" => [%Timing{}, %Timing{}],
+        } = Durations.reducer(message, Durations.reducer(message, %{}))
     end
 
     test "three messages" do
@@ -30,19 +35,17 @@ defmodule Flair.DurationsTest do
         |> Enum.map(fn _ -> make_data_message() end)
         |> Enum.map(&Data.add_timing(&1, make_timing()))
 
-      assert %{"some_id" => [%Timing{}, %Timing{}, %Timing{}]} =
-               Enum.reduce(messages, %{}, &Durations.reducer/2)
+      assert %{
+        "ds1" => [%Timing{}, %Timing{}, %Timing{}],
+        "ds2" => [%Timing{}, %Timing{}, %Timing{}]
+        } = Enum.reduce(messages, %{}, &Durations.reducer/2)
     end
 
     test "different dataset_ids" do
-      messages =
-        1..3
-        |> Enum.map(&Integer.to_string/1)
-        |> Enum.map(&make_data_message(dataset_id: &1))
-        |> Enum.map(&Data.add_timing(&1, make_timing()))
+      message = make_data_message(dataset_ids: ["1", "2", "3"])
+        |> Data.add_timing(make_timing())
 
-      assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} =
-               Enum.reduce(messages, %{}, &Durations.reducer/2)
+      assert %{"1" => [%Timing{}], "2" => [%Timing{}], "3" => [%Timing{}]} = Durations.reducer(message, %{})
     end
   end
 
@@ -93,12 +96,12 @@ defmodule Flair.DurationsTest do
   end
 
   defp make_data_message(opts \\ []) do
-    dataset_id = Keyword.get(opts, :dataset_id, "some_id")
+    dataset_ids = Keyword.get(opts, :dataset_ids, ["ds1", "ds2"])
     timing = Keyword.get(opts, :timing, [])
 
     {:ok, data} =
       Data.new(%{
-        dataset_id: dataset_id,
+        dataset_ids: dataset_ids,
         ingestion_id: "some_ingestion",
         extraction_start_time: DateTime.utc_now() |> DateTime.to_iso8601(),
         payload: "dont_care",

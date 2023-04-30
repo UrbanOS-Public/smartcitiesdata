@@ -1,6 +1,6 @@
 defmodule Flair.Durations.Flow do
   @moduledoc """
-  This flow takes in messages from the producer that it starts. 
+  This flow takes in messages from the producer that it starts.
   It aggregates those messages per dataset/per window and then calculates their durations, finally persisting them.
   """
   require Logger
@@ -61,7 +61,7 @@ defmodule Flair.Durations.Flow do
     |> ok()
   end
 
-  defp extract_id(%Data{dataset_id: id}), do: id
+  defp extract_id(%Data{dataset_ids: ids}), do: Enum.reduce(ids, "", fn id, acc -> acc <> id end)
 
   defp ok({:ok, data}), do: data
 end

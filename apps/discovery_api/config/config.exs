@@ -14,7 +14,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   pubsub_server: DiscoveryApi.PubSub,
   instrumenters: [DiscoveryApiWeb.Endpoint.Instrumenter],
   http: [
-    port: 4000,
+    port: 4001,
     stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h],
     protocol_options: [idle_timeout: idle_timeout]
   ]

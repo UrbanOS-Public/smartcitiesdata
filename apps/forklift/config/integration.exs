@@ -35,7 +35,7 @@ config :forklift,
 
 config :forklift, :brook,
   instance: :forklift,
-  event_processing_timeout: 10_000,
+  event_processing_timeout: 30_000,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
