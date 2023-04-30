@@ -122,15 +122,10 @@ defmodule Pipeline.Writer.S3Writer do
   @impl Pipeline.Writer
   @spec delete(dataset: [term()]) :: :ok | {:error, term()}
   def delete(args) do
-    IO.inspect("1", label: "RYAN - S3Delete 1")
     dataset = Keyword.fetch!(args, :dataset)
-    IO.inspect("2", label: "RYAN - S3Delete 1")
     new_table_name = StatementUtils.parse_new_table_name(dataset.technical.systemName)
-    IO.inspect("3", label: "RYAN - S3Delete 1")
     delete_table("ORC", new_table_name, dataset.technical.systemName)
-    IO.inspect("4", label: "RYAN - S3Delete 1")
     delete_table("JSON", new_table_name, dataset.technical.systemName)
-    IO.inspect("5", label: "RYAN - S3Delete 1")
   end
 
   defp write_to_temporary_file(file_contents, table_name) do

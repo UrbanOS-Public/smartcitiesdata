@@ -120,26 +120,20 @@ defmodule Forklift.Event.EventHandler do
   def handle_event(%Brook.Event{type: dataset_delete(), data: %SmartCity.Dataset{} = data, author: author}) do
     Logger.debug("#{__MODULE__}: Deleting Dataset: #{data.id}")
 
-    IO.inspect("Real Delete 1", label: "RYAN - DS DELETE")
-
     dataset_delete()
-    |> IO.inspect(label: "RYAN - Piped")
     |> add_event_count(author, data.id)
 
     case delete_dataset(data) do
       :ok ->
-        IO.inspect("Real Delete 2", label: "RYAN - DS DELETE")
         Logger.debug("#{__MODULE__}: Deleted dataset for dataset: #{data.id}")
         :ok
 
       {:error, error} ->
-        IO.inspect("Real Delete 3", label: "RYAN - DS DELETE")
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{data.id}, Reason: #{inspect(error)}")
         :discard
     end
   rescue
     error ->
-      IO.inspect("Real Delete 4", label: "RYAN - DS DELETE")
       Logger.error("dataset_delete failed to process.")
       DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
@@ -177,13 +171,9 @@ defmodule Forklift.Event.EventHandler do
   end
 
   defp delete_dataset(dataset) do
-    IO.inspect("Inner Real Delete 1", label: "RYAN - DS DELETE")
     Forklift.DataReaderHelper.terminate(dataset)
-    IO.inspect("Inner Real Delete 2", label: "RYAN - DS DELETE")
     Forklift.DataWriter.delete(dataset)
-    IO.inspect("Inner Real Delete 3", label: "RYAN - DS DELETE")
     Forklift.Datasets.delete(dataset.id)
-    IO.inspect("Inner Real Delete 4", label: "RYAN - DS DELETE")
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id

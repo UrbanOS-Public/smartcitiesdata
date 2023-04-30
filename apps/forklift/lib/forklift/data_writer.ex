@@ -81,17 +81,11 @@ defmodule Forklift.DataWriter do
   def delete(dataset) do
     topic = "#{input_topic_prefix()}-#{dataset.id}"
 
-    IO.inspect("Grr", label: "RYAN - FOO")
-
     [endpoints: elsa_brokers(), topic: topic]
-    |> IO.inspect(label: "RYAN - FOO2")
     |> topic_writer().delete()
-    |> IO.inspect(label: "RYAN - FOO3")
 
     [dataset: dataset]
-    |> IO.inspect(label: "RYAN - FOO4")
     |> table_writer().delete()
-    |> IO.inspect(label: "RYAN - FOO5")
   end
 
   @spec bootstrap() :: :ok | {:error, term()}

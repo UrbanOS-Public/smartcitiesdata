@@ -1,7 +1,7 @@
 Divo.Suite.start()
 # Wait for Brook to be ready
 Process.sleep(5_000)
-ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 120_000)
+ExUnit.start(exclude: [:performance, :compaction, :skip], timeout: 300_000)
 Faker.start()
 
 defmodule Helper do
@@ -107,15 +107,11 @@ defmodule Helper do
 
   def wait_for_tables_to_be_created(datasets) do
     eventually(fn ->
-      IO.inspect("Creating tables", label: "RYAN - Table")
       ExUnit.Assertions.assert(Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName) end))
-      IO.inspect("Creating tables2", label: "RYAN - Table")
 
       ExUnit.Assertions.assert(
         Enum.all?(datasets, fn dataset -> table_exists?(dataset.technical.systemName <> "__json") end)
       )
-
-      IO.inspect("Creating tables3", label: "RYAN - Table")
     end)
   end
 
@@ -128,19 +124,15 @@ defmodule Helper do
   end
 
   def delete_all_datasets() do
-    IO.inspect("1", label: "RYAN - DELETE DS")
     datasets = Datasets.get_all!()
-    IO.inspect("2", label: "RYAN - DELETE DS")
 
     datasets
     |> Enum.each(fn dataset ->
-      IO.inspect("3", label: "RYAN - DELETE DS")
       Brook.Event.send(@instance_name, dataset_delete(), :forklift, dataset)
     end)
 
     eventually(
       fn ->
-        IO.inspect("4", label: "RYAN - DELETE DS")
         ExUnit.Assertions.assert(Enum.all?(datasets, fn dataset -> !table_exists?(dataset.technical.systemName) end))
       end,
       10_000

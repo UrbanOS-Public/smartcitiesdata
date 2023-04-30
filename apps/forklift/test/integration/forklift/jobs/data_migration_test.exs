@@ -19,17 +19,13 @@ defmodule Forklift.Jobs.DataMigrationTest do
   @instance_name Forklift.instance_name()
 
   setup do
-    IO.inspect("1", label: "RYAN - pre debug")
     delete_all_datasets()
 
     dataset = TDG.create_dataset(%{technical: %{cadence: "once"}})
-    IO.inspect("2", label: "RYAN - pre debug")
     Brook.Event.send(@instance_name, dataset_update(), :forklift, dataset)
-    IO.inspect("3", label: "RYAN - pre debug")
-    # Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :forklift, dataset)
 
     wait_for_tables_to_be_created([dataset])
-    IO.inspect("4", label: "RYAN - pre debug")
 
     on_exit(fn ->
       Application.put_env(:forklift, :overwrite_mode, false)
@@ -50,21 +46,16 @@ defmodule Forklift.Jobs.DataMigrationTest do
     write_json_records(dataset, other_ingestion_records, Faker.UUID.v4(), extract_start)
     write_json_records(dataset, other_extraction_records, ingestion_id, 789_101)
 
-    IO.inspect("1", label: "RYAN - debug")
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
-    IO.inspect("2", label: "RYAN - debug")
 
     assert result == {:ok, dataset.id}
 
     assert count(dataset.technical.systemName) == expected_records
 
     table = dataset |> Map.get(:technical) |> Map.get(:systemName)
-    IO.inspect("3", label: "RYAN - debug")
     {:ok, response} = PrestigeHelper.execute_query("select * from #{table}")
-    IO.inspect("4", label: "RYAN - debug")
 
     actual_partition = response |> Prestige.Result.as_maps() |> List.first() |> Map.get("os_partition")
-    IO.inspect("5", label: "RYAN - debug")
 
     assert {:ok, _} = Timex.parse(actual_partition, "{YYYY}_{0M}")
 

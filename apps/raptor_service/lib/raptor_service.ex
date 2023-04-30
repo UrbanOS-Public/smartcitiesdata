@@ -88,7 +88,6 @@ defmodule RaptorService do
   def get_user_id_from_api_key(raptor_url, api_key) do
     case HTTPoison.get(url_for_api_key_validation(raptor_url, api_key)) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
-        IO.inspect(body, label: "RYAN - body")
         {:ok, get_user_id_from_response_body(body)}
 
       {:ok, %{body: body, status_code: status_code}} when status_code == 401 ->
