@@ -20,12 +20,15 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
+      [dataset_id, dataset_id2] = ingestion.targetDatasets
+
       allow(Brook.get!(any(), any(), any()), return: ingestion.id)
 
       event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
       response = EventHandler.handle_event(event)
 
-      assert_called DiscoveryStreams.Stream.Supervisor.start_child(ingestion.targetDataset), once()
+      assert_called DiscoveryStreams.Stream.Supervisor.start_child(dataset_id), once()
+      assert_called DiscoveryStreams.Stream.Supervisor.start_child(dataset_id2), once()
       assert :ok == response
     end
 
@@ -35,12 +38,15 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
+      [dataset_id, dataset_id2] = ingestion.targetDatasets
+
       allow(Brook.get!(any(), any(), any()), return: nil)
 
       event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
       response = EventHandler.handle_event(event)
 
-      assert not called?(DiscoveryStreams.Stream.Supervisor.start_child(ingestion.targetDataset))
+      assert not called?(DiscoveryStreams.Stream.Supervisor.start_child(dataset_id))
+      assert not called?(DiscoveryStreams.Stream.Supervisor.start_child(dataset_id2))
       assert :ok == response
     end
   end

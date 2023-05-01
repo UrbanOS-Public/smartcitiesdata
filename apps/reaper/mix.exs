@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "2.0.29",
+      version: "2.0.30",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

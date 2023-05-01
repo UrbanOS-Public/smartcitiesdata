@@ -23,7 +23,7 @@ defmodule Reaper.RunTask do
   rescue
     e ->
       Logger.error("Reaper Task Failed with error: #{inspect(e)}")
-      DeadLetter.process("Unknown", "Unknown", inspect(info), Atom.to_string(@instance_name), reason: inspect(e))
+      DeadLetter.process(["Unknown"], "Unknown", inspect(info), Atom.to_string(@instance_name), reason: inspect(e))
 
       reraise e, __STACKTRACE__
   end
