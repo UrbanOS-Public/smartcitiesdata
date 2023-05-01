@@ -122,7 +122,7 @@ defmodule Andi.IngestionControllerTest do
         ],
         "sourceFormat" => "application/gtfs+protobuf",
         "cadence" => "*/9000 * * * * *",
-        "schema" => [%{name: "billy", type: "writer"}],
+        "schema" => [%{name: "billy", type: "writer", ingestion_field_selector: "billy"}],
         "targetDataset" => dataset["id"],
         "topLevelSelector" => "$.someValue",
         "transformations" => []
@@ -204,7 +204,7 @@ defmodule Andi.IngestionControllerTest do
           id: nil,
           sourceFormat: "application/gtfs+protobuf",
           cadence: "     */9000 * * * * *",
-          schema: [%{name: "billy", type: "writer   "}],
+          schema: [%{name: "billy", type: "writer   ", ingestion_field_selector: "billy"}],
           targetDataset: "#{dataset["id"]}   ",
           topLevelSelector: "   $.someValue",
           transformations: []

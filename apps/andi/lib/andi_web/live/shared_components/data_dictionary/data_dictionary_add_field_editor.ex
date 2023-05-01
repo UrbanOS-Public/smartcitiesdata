@@ -82,6 +82,8 @@ defmodule AndiWeb.DataDictionary.AddFieldEditor do
       socket.assigns.changeset.changes
       |> Map.put(:dataset_id, dataset_id)
 
+    field_as_atomic_map = Map.put(field_as_atomic_map, :ingestion_field_selector, field_as_atomic_map.name)
+
     parent_bread_crumb =
       Enum.map(socket.assigns.eligible_parents, fn {n, i} ->
         {i, n}

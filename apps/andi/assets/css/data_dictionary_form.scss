@@ -48,6 +48,14 @@ $tick-height: 1rem + $field-padding - 0.44;
         font-size: 14px;
       }
     }
+
+    .ingestion-field-selector-label {
+      padding-bottom: 15px;
+
+      label {
+        padding-right: 5px;
+      }
+    }
   }
 
   .upload-section {
