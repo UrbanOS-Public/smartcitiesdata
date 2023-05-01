@@ -68,7 +68,6 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
     |> Changeset.validate_required(@required_fields, message: "is required")
-    |> validate_datasets()
     |> validate_source_format()
     |> CadenceValidator.validate()
     |> validate_top_level_selector()
@@ -92,7 +91,6 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
-    |> validate_datasets()
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
@@ -369,19 +367,5 @@ defmodule Andi.InputSchemas.Ingestion do
         Changeset.add_error(acc_error, key, message)
       end)
     end)
-  end
-
-  defp validate_datasets(changeset) do
-    dataset_ids = Changeset.get_field(changeset, :targetDatasets)
-
-    if is_nil(dataset_ids) or dataset_ids == [] do
-      Changeset.add_error(changeset, :targetDatasets, "no target datasets")
-    else
-      Enum.reduce(dataset_ids, changeset, fn id, acc ->
-        if is_nil(Datasets.get(id)),
-          do: Changeset.add_error(changeset, :targetDatasets, "one or more target datasets do not exist"),
-          else: changeset
-      end)
-    end
   end
 end
