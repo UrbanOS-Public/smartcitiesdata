@@ -57,7 +57,10 @@ defmodule Transformers.Constant do
 
   defp check_value(status, parameters) do
     data_type = Map.get(parameters, @value_type)
-    if data_type != "null / empty", do: NotBlank.check(status, parameters, @new_value), else: status
+
+    if data_type != "null / empty",
+      do: NotBlank.check(status, parameters, @new_value),
+      else: status
   end
 
   def fields() do

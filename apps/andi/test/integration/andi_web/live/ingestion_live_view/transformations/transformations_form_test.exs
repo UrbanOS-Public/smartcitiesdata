@@ -443,7 +443,10 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Null or Empty"
   end
 
-  test "in the constant transformation form, when 'null / empty' type is selected, the value field is not shown", %{view: view, ingestion: ingestion} do
+  test "in the constant transformation form, when 'null / empty' type is selected, the value field is not shown", %{
+    view: view,
+    ingestion: ingestion
+  } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
