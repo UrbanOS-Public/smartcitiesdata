@@ -151,18 +151,7 @@ defmodule Transformers do
         hierarchy ->
           {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
 
-          if Regex.match?(~r/\[.\]/, parent_key) do
-            base_parent_key = Regex.replace(~r/\[.\]/, key, "")
-            list_acc = Map.get(acc, base_parent_key, [])
-
-            updated_list =
-              Regex.scan(~r/\[.\]/, parent_key)
-              |> split_list(value, list_acc)
-
-            Map.put(acc, base_parent_key, updated_list)
-          else
-            map_child(parent_key, child_hierarchy, value, acc)
-          end
+          map_child(parent_key, child_hierarchy, value, acc)
       end
     end)
   end
@@ -187,19 +176,30 @@ defmodule Transformers do
   defp map_child(parent_key, child_hierarchy, value, acc) do
     parent_map = Map.get(acc, parent_key, %{})
 
-    updated_parent_map =
-      create_child_map(child_hierarchy, value)
-      |> Map.merge(parent_map)
+    child_map =
+      create_child_map(child_hierarchy, value, parent_map)
+    updated_parent_map = Map.merge(parent_map, child_map)
 
     Map.put(acc, parent_key, updated_parent_map)
   end
 
-  defp create_child_map(hierarchy, value) do
+  defp create_child_map(hierarchy, value, acc) do
     {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
 
-    case hierarchy do
-      hierarchy when length(hierarchy) == 1 -> Map.new([{hd(hierarchy), value}])
-      _ -> Map.new([{parent_key, create_child_map(child_hierarchy, value)}])
+    if Regex.match?(~r/\[.\]/, parent_key) do
+      base_parent_key = Regex.replace(~r/\[.\]/, parent_key, "")
+      list_acc = Map.get(acc, base_parent_key, [])
+
+      updated_list =
+        Regex.scan(~r/\[.\]/, parent_key)
+        |> split_list(value, list_acc)
+
+      Map.new([{base_parent_key, updated_list}])
+    else
+      case hierarchy do
+        hierarchy when length(hierarchy) == 1 -> Map.new([{hd(hierarchy), value}])
+        _ -> Map.new([{parent_key, create_child_map(child_hierarchy, value, Map.get(acc, parent_key, %{}))}])
+      end
     end
   end
 end

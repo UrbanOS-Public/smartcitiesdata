@@ -228,6 +228,17 @@ defmodule TransformationActionTest do
           "list[0][1], list2[1][1]"
         ],
         [
+          "nested lists within maps",
+          %{"parent" =>
+            %{"child" =>
+              %{"list" =>
+                [[4, 13243], [342134, 3]]
+              }
+            }
+          },
+          "parent.child.list[0][0], parent.child.list[1][1]"
+        ],
+        [
           "multiple objects in list",
           %{
             "list" => [[135_893, 4], [23425, 2842]],
