@@ -25,8 +25,8 @@ defmodule Transformers.Constant do
     %ValidationStatus{}
     |> NotBlank.check(parameters, @target_field)
     |> NotBlank.check_nested(parameters, @target_field)
-    |> NotBlank.check(parameters, @new_value)
     |> NotBlank.check(parameters, @value_type)
+    |> check_value(parameters)
     |> ValidationStatus.ordered_values_or_errors([@target_field, @new_value, @value_type])
   end
 
@@ -50,8 +50,17 @@ defmodule Transformers.Constant do
       "string" -> {value, ""}
       "integer" -> Integer.parse(value, 10)
       "float" -> Float.parse(value)
+      "null / empty" -> {nil, ""}
       _ -> raise "Error: Invalid conversion type: #{value_type}"
     end
+  end
+
+  defp check_value(status, parameters) do
+    data_type = Map.get(parameters, @value_type)
+
+    if data_type != "null / empty",
+      do: NotBlank.check(status, parameters, @new_value),
+      else: status
   end
 
   def fields() do
@@ -62,15 +71,15 @@ defmodule Transformers.Constant do
         field_label: "Target Field"
       },
       %{
-        field_name: @new_value,
-        field_type: "string",
-        field_label: "Value to replace in source field"
-      },
-      %{
         field_name: @value_type,
         field_type: "string",
         field_label: "Data type",
-        options: ["integer", "string", "float"]
+        options: ["integer", "string", "float", "null / empty"]
+      },
+      %{
+        field_name: @new_value,
+        field_type: "string",
+        field_label: "Value to insert into target field"
       }
     ]
   end
