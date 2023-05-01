@@ -43,10 +43,8 @@ defmodule Pipeline.MixProject do
       {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      #   {:smart_city, "~> 5.2.8"},
-      # {:smart_city_test, "~> 2.2.8", only: [:test, :integration]},
-      {:smart_city, path: "../../../smart_city"},
-      {:smart_city_test, path: "../../../smart_city_test", only: [:test, :integration]},
+      {:smart_city, "~> 5.4.0"},
+      {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
       {:divo, "~> 1.3", only: [:dev, :integration]},
       {:divo_kafka, "~> 0.1.5", only: [:dev, :integration]},
       {:telemetry_event, in_umbrella: true}
