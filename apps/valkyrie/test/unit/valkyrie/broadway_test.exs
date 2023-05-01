@@ -20,8 +20,8 @@ defmodule Valkyrie.BroadwayTest do
     allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
 
     schema = [
-      %{name: "name", type: "string"},
-      %{name: "age", type: "integer"}
+      %{name: "name", type: "string", ingestion_field_selector: "name"},
+      %{name: "age", type: "integer", ingestion_field_selector: "age"}
     ]
 
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
