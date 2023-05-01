@@ -143,7 +143,7 @@ defmodule E2ETest do
       fn ->
         {:ok, first_resp} = HTTPoison.get("http://localhost:4000/api/v1/datasets")
         IO.inspect(first_resp, label: "RYAN - FIRST RESPONSE")
-        assert length(Jason.decode!(first_resp.body)) == 3
+        assert length(Jason.decode!(first_resp.body)) == 4
       end,
       500,
       20
