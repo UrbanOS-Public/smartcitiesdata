@@ -49,6 +49,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: field_name,
         type: field_type,
+        ingestion_field_selector: field_name,
         parent_id: technical_id,
         dataset_id: dataset.id
       }
@@ -79,6 +80,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: field_name,
         type: field_type,
+        ingestion_field_selector: field_name,
         parent_id: parent_id,
         dataset_id: dataset.id
       }
@@ -140,6 +142,7 @@ defmodule Andi.InputSchemas.DataDictionaryFieldsTest do
       field_as_map = %{
         name: "cam",
         type: "date",
+        ingestion_field_selector: "cam",
         parent_id: technical_id,
         dataset_id: dataset.id
       }

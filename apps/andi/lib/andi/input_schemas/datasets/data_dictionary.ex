@@ -16,6 +16,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     field(:demographic, :string)
     field(:description, :string)
     field(:format, :string)
+    field(:ingestion_field_selector, :string)
+    field(:ingestion_field_sync, :boolean, default: true)
     field(:itemType, :string)
     field(:masked, :string)
     field(:name, :string)
@@ -55,7 +57,9 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :format,
     :sequence,
     :use_default,
-    :ingestion_id
+    :ingestion_id,
+    :ingestion_field_selector,
+    :ingestion_field_sync
   ]
 
   @cast_fields_for_ingestion [
@@ -76,12 +80,14 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     :format,
     :sequence,
     :use_default,
-    :ingestion_id
+    :ingestion_id,
+    :ingestion_field_selector
   ]
   @required_fields [
     :name,
     :type,
-    :bread_crumb
+    :bread_crumb,
+    :ingestion_field_selector
   ]
 
   def changeset(dictionary, changes) do
@@ -93,6 +99,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:dataset_id)
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
+    |> format_ingestion_sync()
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
     |> validate_format(:name, ~r/^[[:print:]]+$/)
@@ -163,6 +170,26 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
   end
 
   def preload(struct), do: StructTools.preload(struct, [:subSchema])
+
+  defp format_ingestion_sync(changeset) do
+    schema_name =
+      case fetch_field(changeset, :name) do
+        {_, name} -> name
+        :error -> ""
+      end
+
+    ingestion_field_sync =
+      case fetch_field(changeset, :ingestion_field_sync) do
+        {_, ingestion_field_sync} -> ingestion_field_sync
+        :error -> true
+      end
+
+    if ingestion_field_sync do
+      put_change(changeset, :ingestion_field_selector, schema_name)
+    else
+      changeset
+    end
+  end
 
   defp validate_item_type(%{changes: %{type: "list", itemType: "list"}} = changeset) do
     Ecto.Changeset.add_error(changeset, :itemType, "List of lists type not supported")

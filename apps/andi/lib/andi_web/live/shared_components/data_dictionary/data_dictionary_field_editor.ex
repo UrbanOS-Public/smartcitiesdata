@@ -64,6 +64,21 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
           <% end %>
         </div>
 
+        <div class="data-dictionary-field-editor__ingestion-field-selector full-width">
+          <%= if @dataset_or_ingestion == :dataset do %>
+            <% sync? = input_value(@form, :ingestion_field_sync) %>
+            <div class="ingestion-field-selector-label">
+              <%= label(@form, :ingestion_field_sync, "Sync Ingestion Field", for: id <> "__ingestion-field-sync") %>
+              <%= checkbox(@form, :ingestion_field_sync, disabled: read_only?, id: id <> "__ingestion-field-sync", value: sync?) %>
+            </div>
+            <div width="400px">
+              <%= label(@form, :ingestion_field_selector, "Ingestion Field", class: "label label--required", for: id <> "_ingestion-field-selector") %>
+              <%= text_input(@form, :ingestion_field_selector, [disabled: sync?, id: id <> "_ingestion-field-selector", class: "data-dictionary-field-editor__ingestion-field-selector input", required: true]) %>
+              <%= ErrorHelpers.error_tag(form_with_errors, :ingestion_field_selector) %>
+            </div>
+          <% end %>
+        </div>
+
         <div class="data-dictionary-field-editor__default full-width">
           <%= if field_type in ["date", "timestamp"] do %>
             <% using_default = input_value(@form, :default_offset) != nil %>
