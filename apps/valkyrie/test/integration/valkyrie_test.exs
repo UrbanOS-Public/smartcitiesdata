@@ -28,9 +28,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
@@ -41,9 +41,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
@@ -201,9 +201,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
@@ -223,9 +223,9 @@ defmodule ValkyrieTest do
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     updated_schema = [
-      %{name: "name", type: "string"},
-      %{name: "alignment", type: "string"},
-      %{name: "age", type: "integer"}
+      %{name: "name", type: "string", ingestion_field_selector: "name"},
+      %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+      %{name: "age", type: "integer", ingestion_field_selector: "age"}
     ]
 
     dataset = put_in(dataset, [:technical, :schema], updated_schema)
@@ -233,7 +233,11 @@ defmodule ValkyrieTest do
 
     invalid_message =
       TestHelpers.create_data(%{
-        payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "thirty-two"},
+        payload: %{
+          "name" => "Jack Sparrow",
+          "alignment" => "chaotic",
+          "age" => "thirty-two"
+        },
         dataset_id: dataset.id
       })
 

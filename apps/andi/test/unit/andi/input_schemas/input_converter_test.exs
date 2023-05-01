@@ -123,6 +123,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
                 name: "timstamp_field",
                 type: "timestamp",
                 format: "{YYYY}",
+                ingestion_field_selector: "timstamp_field",
                 default: %{provider: "timestamp", version: "2", opts: %{format: "{YYYY}", offset_in_seconds: -1000}}
               }
             ]

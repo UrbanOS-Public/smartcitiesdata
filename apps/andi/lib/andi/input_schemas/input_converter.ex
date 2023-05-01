@@ -483,6 +483,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.delete(:id)
     |> Map.delete(:dataset_id)
     |> Map.delete(:bread_crumb)
+    |> Map.delete(:ingestion_field_sync)
     |> Map.update(:subSchema, nil, fn sub_schema ->
       Enum.map(sub_schema, &drop_fields_from_dictionary_item/1)
     end)

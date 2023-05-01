@@ -17,10 +17,10 @@ defmodule E2ETest do
       dataName: "end",
       systemName: "end_to__end",
       schema: [
-        %{name: "one", type: "boolean"},
-        %{name: "two", type: "string"},
-        %{name: "three", type: "integer"},
-        %{name: "parsed", type: "string"}
+        %{name: "one", type: "boolean", ingestion_field_selector: "one"},
+        %{name: "two", type: "string", ingestion_field_selector: "two"},
+        %{name: "three", type: "integer", ingestion_field_selector: "three"},
+        %{name: "parsed", type: "string", ingestion_field_selector: "oparsedne"}
       ],
       sourceType: "ingest",
       sourceUrl: "http://example.com",
@@ -122,9 +122,9 @@ defmodule E2ETest do
         targetDataset: dataset["id"],
         cadence: "once",
         schema: [
-          %{name: "one", type: "boolean"},
-          %{name: "two", type: "string"},
-          %{name: "three", type: "integer"}
+          %{name: "one", type: "boolean", ingestion_field_selector: "oparsedne"},
+          %{name: "two", type: "string", ingestion_field_selector: "oparsedne"},
+          %{name: "three", type: "integer", ingestion_field_selector: "oparsedne"}
         ],
         sourceFormat: "text/csv",
         topLevelSelector: nil,
@@ -157,9 +157,9 @@ defmodule E2ETest do
         targetDataset: streaming_dataset["id"],
         cadence: "*/10 * * * * *",
         schema: [
-          %{name: "one", type: "boolean"},
-          %{name: "two", type: "string"},
-          %{name: "three", type: "integer"}
+          %{name: "one", type: "boolean", ingestion_field_selector: "oparsedne"},
+          %{name: "two", type: "string", ingestion_field_selector: "oparsedne"},
+          %{name: "three", type: "integer", ingestion_field_selector: "oparsedne"}
         ],
         sourceFormat: "text/csv",
         topLevelSelector: nil,

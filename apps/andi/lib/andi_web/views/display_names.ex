@@ -29,6 +29,7 @@ defmodule AndiWeb.Views.DisplayNames do
     homepage: "Homepage URL",
     hour: "Hour",
     id: "ID",
+    ingestion_field_selector: "Ingestion Field",
     issuedDate: "Release Date",
     itemType: "Item Type",
     keywords: "Keywords",
