@@ -4,7 +4,7 @@ defmodule DeadLetterTest do
   import Assertions
 
   test "successfully sends messages to kafka" do
-    DeadLetter.process("123-456", "789-101", %{topic: "foobar", payload: "{\"key\":\"value\"}"}, "loader")
+    DeadLetter.process(["123-456"], "789-101", %{topic: "foobar", payload: "{\"key\":\"value\"}"}, "loader")
 
     assert_async(timeout: 1_000, sleep_wait: 100) do
       message =
@@ -23,8 +23,8 @@ defmodule DeadLetterTest do
   end
 
   test "recovers if message is undeliverable" do
-    DeadLetter.process("invalid-dataset", "invalid-ingestion", "invalid-message", {"wrong"})
-    DeadLetter.process("valid-dataset", "valid-ingestion", "valid-message", "normalizer")
+    DeadLetter.process(["invalid-dataset"], "invalid-ingestion", "invalid-message", {"wrong"})
+    DeadLetter.process(["valid-dataset"], "valid-ingestion", "valid-message", "normalizer")
 
     assert_async(timeout: 1_000, sleep_wait: 100) do
       original_messages =
