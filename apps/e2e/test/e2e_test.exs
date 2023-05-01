@@ -119,7 +119,7 @@ defmodule E2ETest do
     ingestion_struct =
       TDG.create_ingestion(%{
         id: nil,
-        targetDataset: dataset["id"],
+        targetDatasets: [dataset["id"]],
         cadence: "once",
         schema: [
           %{name: "one", type: "boolean", ingestion_field_selector: "oparsedne"},
@@ -154,7 +154,7 @@ defmodule E2ETest do
 
     streaming_ingestion_struct =
       TDG.create_ingestion(%{
-        targetDataset: streaming_dataset["id"],
+        targetDatasets: [streaming_dataset["id"]],
         cadence: "*/10 * * * * *",
         schema: [
           %{name: "one", type: "boolean", ingestion_field_selector: "oparsedne"},
@@ -470,7 +470,7 @@ defmodule E2ETest do
       smrt_ingestion =
         TDG.create_ingestion(%{
           topLevelSelector: nil,
-          targetDataset: ds["id"],
+          targetDatasets: [ds["id"]],
           extractSteps: [
             %{
               type: "date",
