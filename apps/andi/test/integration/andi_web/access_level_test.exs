@@ -103,6 +103,13 @@ defmodule AndiWeb.AccessLevelTest do
     end
   end
 
+  describe "audit logs" do
+    test "does not allow access to audit logs without curator role", %{curator_conn: conn} do
+      assert get(conn, "/audit")
+             |> response(404)
+    end
+  end
+
   defp andi_children() do
     Supervisor.which_children(Andi.Supervisor)
     |> Enum.map(&elem(&1, 0))

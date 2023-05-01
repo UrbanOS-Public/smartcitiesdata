@@ -39,60 +39,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
       meck_options: [:passthrough]
     )
 
-    uuid = Faker.UUID.v4()
-
-    request = %{
-      "id" => uuid,
-      "technical" => %{
-        "dataName" => "dataset",
-        "orgId" => "org-123-456",
-        "orgName" => "org",
-        "stream" => false,
-        "sourceUrl" => "https://example.com",
-        "sourceType" => "stream",
-        "sourceFormat" => "gtfs",
-        "cadence" => "9000",
-        "schema" => [%{name: "billy", type: "writer"}],
-        "private" => false,
-        "headers" => %{
-          "accepts" => "application/foobar"
-        },
-        "sourceQueryParams" => %{
-          "apiKey" => "foobar"
-        },
-        "systemName" => "org__dataset",
-        "transformations" => [],
-        "validations" => []
-      },
-      "business" => %{
-        "benefitRating" => 0.5,
-        "dataTitle" => "dataset title",
-        "description" => "description",
-        "modifiedDate" => "",
-        "orgTitle" => "org title",
-        "contactName" => "contact name",
-        "contactEmail" => "contact@email.com",
-        "license" => "https://www.test.net",
-        "rights" => "rights information",
-        "homepage" => "",
-        "keywords" => [],
-        "issuedDate" => "2020-01-01T00:00:00Z",
-        "publishFrequency" => "all day, ey'r day",
-        "riskRating" => 1.0
-      },
-      "_metadata" => %{
-        "intendedUse" => [],
-        "expectedBenefit" => []
-      }
-    }
-
-    message =
-      request
-      |> SmartCity.Helpers.to_atom_keys()
-      |> TDG.create_dataset()
-      |> struct_to_map_with_string_keys()
-
-    {:ok, request: request, message: message, example_datasets: example_datasets}
+    {:ok, example_datasets: example_datasets}
   end
 
   describe "POST /dataset/disable" do
@@ -225,7 +172,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   end
 
   @tag capture_log: true
-  test "PUT /api/ creating a dataset with a set id returns a 400", %{conn: conn, example_datasets: example_datasets} do
+  test "PUT /api/ creating a dataset with a set id returns a 400", %{conn: conn} do
     dataset = TDG.create_dataset(%{}) |> struct_to_map_with_string_keys()
 
     allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)

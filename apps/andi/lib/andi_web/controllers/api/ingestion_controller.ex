@@ -71,7 +71,7 @@ defmodule AndiWeb.API.IngestionController do
   defp dataset_exists?(id) do
     case DatasetStore.get(id) do
       {:ok, nil} -> {:ok, false}
-      {:ok, dataset} -> {:ok, true}
+      {:ok, _dataset} -> {:ok, true}
       {:error, error} -> {:error, error}
     end
   end
