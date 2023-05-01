@@ -229,13 +229,7 @@ defmodule TransformationActionTest do
         ],
         [
           "nested lists within maps",
-          %{"parent" =>
-            %{"child" =>
-              %{"list" =>
-                [[4, 13243], [342134, 3]]
-              }
-            }
-          },
+          %{"parent" => %{"child" => %{"list" => [[4, 13243], [342_134, 3]]}}},
           "parent.child.list[0][0], parent.child.list[1][1]"
         ],
         [
