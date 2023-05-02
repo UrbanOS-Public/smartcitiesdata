@@ -41,7 +41,11 @@ defmodule Valkyrie.DatasetMutationTest do
       40
     )
 
-    updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer", ingestion_field_selector: "age"}]}}
+    updated_dataset = %{
+      dataset
+      | technical: %{dataset.technical | schema: [%{name: "age", type: "integer", ingestion_field_selector: "age"}]}
+    }
+
     Brook.Event.send(@instance_name, dataset_update(), :author, updated_dataset)
 
     Process.sleep(2_000)
