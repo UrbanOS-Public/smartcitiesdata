@@ -447,9 +447,7 @@ defmodule E2ETest do
                    }
                  ] ==
                    query(
-                     "select * from #{
-                       first_table
-                     }",
+                     "select * from #{first_table}",
                      true
                    )
                    |> IO.inspect(label: "RYAN - Query")
