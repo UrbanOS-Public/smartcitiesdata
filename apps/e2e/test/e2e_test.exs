@@ -451,7 +451,7 @@ defmodule E2ETest do
                        first_table
                      }",
                      true
-                   )
+                   ) |> IO.inspect(label: "RYAN - Query")
 
           assert [
                    %{
@@ -465,11 +465,11 @@ defmodule E2ETest do
                    }
                  ] ==
                    query(
-                     "select one, two, three, parsed, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
+                     "select * as _extraction_start_time from #{
                        second_table
                      }",
                      true
-                   )
+                   ) |> IO.inspect(label: "RYAN - Query2")
         end,
         10_000
       )
