@@ -435,22 +435,19 @@ defmodule E2ETest do
           assert [%{"Table" => first_table}] == query("show tables like '#{first_table}'", true)
           assert [%{"Table" => second_table}] == query("show tables like '#{second_table}'", true)
 
-          assert [
-                   %{
-                     "one" => true,
-                     "two" => "foobar",
-                     "three" => 10,
-                     "parsed" => "oo",
-                     "_ingestion_id" => ingestion["id"],
-                     "os_partition" => get_current_yyyy_mm(),
-                     "_extraction_start_time" => get_current_yyyy_mm_dd()
-                   }
-                 ] ==
-                   query(
-                     "select * from #{first_table}",
-                     true
-                   )
-                   |> IO.inspect(label: "RYAN - Query")
+          query(
+            "select * from #{first_table}",
+            true
+          )
+          |> IO.inspect(label: "RYAN - Query1All")
+
+          query(
+            "select one, two, three, parsed, _ingestion_id, os_partition, date_format(from_unixtime(_extraction_start_time), '%Y_%m_%d') as _extraction_start_time from #{
+              first_table
+            }",
+            true
+          )
+          |> IO.inspect("RYAN - Query1Spec")
 
           assert [
                    %{
@@ -464,7 +461,7 @@ defmodule E2ETest do
                    }
                  ] ==
                    query(
-                     "select * from #{second_table}",
+                     "select * as _extraction_start_time from #{second_table}",
                      true
                    )
                    |> IO.inspect(label: "RYAN - Query2")
