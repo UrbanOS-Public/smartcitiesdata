@@ -337,7 +337,13 @@ defmodule ValkyrieTest do
             schema: [
               %{name: "name", type: "string", ingestion_field_selector: "name"},
               %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema, ingestion_field_selector: "spouses"}
+              %{
+                name: "spouses",
+                type: "list",
+                itemType: "map",
+                subSchema: sub_schema,
+                ingestion_field_selector: "spouses"
+              }
             ]
           }
         )
@@ -412,7 +418,13 @@ defmodule ValkyrieTest do
           technical: %{
             schema: [
               %{name: "name", type: "string", ingestion_field_selector: "name"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema, ingestion_field_selector: "spouses"}
+              %{
+                name: "spouses",
+                type: "list",
+                itemType: "map",
+                subSchema: sub_schema,
+                ingestion_field_selector: "spouses"
+              }
             ]
           }
         )

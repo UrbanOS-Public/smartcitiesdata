@@ -25,7 +25,15 @@ defmodule Valkyrie.EndOfDataTest do
         id: dataset_id,
         technical: %{
           schema: [
-            %{name: "name", type: "map", subSchema: [%{name: "first", type: "string", ingestion_field_selector: "first"}, %{name: "last", type: "string", ingestion_field_selector: "last"}], ingestion_field_selector: "name"}
+            %{
+              name: "name",
+              type: "map",
+              subSchema: [
+                %{name: "first", type: "string", ingestion_field_selector: "first"},
+                %{name: "last", type: "string", ingestion_field_selector: "last"}
+              ],
+              ingestion_field_selector: "name"
+            }
           ]
         }
       )
