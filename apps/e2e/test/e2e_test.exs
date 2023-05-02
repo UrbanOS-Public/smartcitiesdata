@@ -316,6 +316,7 @@ defmodule E2ETest do
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
         IO.inspect(data, label: "data")
+
         assert %{"one" => true, "two" => "foobar", "three" => 10, "parsed" => "oo"} ==
                  data.payload
       end)
