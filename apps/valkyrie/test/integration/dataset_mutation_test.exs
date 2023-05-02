@@ -16,7 +16,7 @@ defmodule Valkyrie.DatasetMutationTest do
   @tag timeout: 120_000
   test "a dataset with an updated schema properly parses new messages" do
     dataset_id = Faker.UUID.v4()
-    schema = [%{name: "age", type: "string"}]
+    schema = [%{name: "age", type: "string", ingestion_field_selector: "age"}]
     dataset = TDG.create_dataset(id: dataset_id, technical: %{schema: schema})
     ingestion = TDG.create_ingestion(%{targetDataset: dataset_id})
 
