@@ -31,8 +31,8 @@ defmodule E2ETest do
   @second_overrides %{
     technical: %{
       orgName: "end_to",
-      dataName: "end2",
-      systemName: "end_to__end2",
+      dataName: "second_end",
+      systemName: "end_to__second_end",
       schema: [
         %{name: "one", type: "boolean", ingestion_field_selector: "one"},
         %{name: "two", type: "string", ingestion_field_selector: "two"},
@@ -432,6 +432,9 @@ defmodule E2ETest do
 
       eventually(
         fn ->
+          query("show tables", true) |> IO.inspect(label: "RYAN - ALL TABLES")
+          query("describe #{first_table}", true) |> IO.inspect(label: "RYAN - FIRST TABLE")
+          query("describe #{second_table}", true) |> IO.inspect(label: "RYAN - SECOND TABLE")
           assert [%{"Table" => first_table}] == query("show tables like '#{first_table}'", true)
           assert [%{"Table" => second_table}] == query("show tables like '#{second_table}'", true)
 
