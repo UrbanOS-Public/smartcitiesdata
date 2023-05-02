@@ -447,7 +447,7 @@ defmodule E2ETest do
             }",
             true
           )
-          |> IO.inspect("RYAN - Query1Spec")
+          |> IO.inspect(label: "RYAN - Query1Spec")
 
           assert [
                    %{
