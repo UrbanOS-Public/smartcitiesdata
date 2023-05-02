@@ -316,7 +316,7 @@ defmodule E2ETest do
       eventually(
         fn ->
           first_table = query("describe hive.default.end_to__end", true)
-          second_table = query("describe hive.default.end_to__end2", true)
+          second_table = query("describe hive.default.end_to__second_end", true)
           assert first_table == expected
           assert second_table == expected
         end,
