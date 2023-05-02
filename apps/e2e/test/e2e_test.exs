@@ -20,7 +20,7 @@ defmodule E2ETest do
         %{name: "one", type: "boolean", ingestion_field_selector: "one"},
         %{name: "two", type: "string", ingestion_field_selector: "two"},
         %{name: "three", type: "integer", ingestion_field_selector: "three"},
-        %{name: "parsed", type: "string", ingestion_field_selector: "oparsedne"}
+        %{name: "parsed", type: "string", ingestion_field_selector: "parsed"}
       ],
       sourceType: "ingest",
       sourceUrl: "http://example.com",
@@ -315,7 +315,7 @@ defmodule E2ETest do
       eventually(fn ->
         {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
         {:ok, data} = SmartCity.Data.new(message.value)
-
+        IO.inspect(data, label: "data")
         assert %{"one" => true, "two" => "foobar", "three" => 10, "parsed" => "oo"} ==
                  data.payload
       end)
