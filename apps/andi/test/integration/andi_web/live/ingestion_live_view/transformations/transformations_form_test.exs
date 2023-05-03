@@ -443,6 +443,27 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Null or Empty"
   end
 
+  test "in the constant transformation form, when 'null / empty' type is selected, the value field is not shown", %{
+    view: view,
+    ingestion: ingestion
+  } do
+    transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
+
+    view
+    |> element("#transformation_#{transformation.id}__header")
+    |> render_click()
+
+    form_data = %{"valueType" => "null / empty"}
+
+    view
+    |> form("##{transformation.id}", form_data: form_data)
+    |> render_change()
+
+    html = render(view)
+
+    refute has_element?(view, "#transformation_#{transformation.id}__newValue_default")
+  end
+
   data_test "when selecting #{type}, its respective fields will show", %{view: view, ingestion: ingestion} do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "concatenation" end)
 
