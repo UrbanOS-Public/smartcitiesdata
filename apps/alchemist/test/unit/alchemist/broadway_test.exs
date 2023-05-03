@@ -80,28 +80,27 @@ defmodule Alchemist.BroadwayTest do
           }
         )
 
-        kafka_message = %{value: Jason.encode!(data)}
+      kafka_message = %{value: Jason.encode!(data)}
 
-        Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway, [kafka_message])
 
-        assert_receive {:ack, _ref, messages, _}, 5_000
+      assert_receive {:ack, _ref, messages, _}, 5_000
 
-        assert 1 == length(messages)
+      assert 1 == length(messages)
 
-        payload =
-          messages
-          |> Enum.map(fn message -> Data.new(message.data.value) end)
-          |> Enum.map(fn {:ok, data} -> data end)
-          |> Enum.map(fn data -> data.payload end)
-          |> List.first()
+      payload =
+        messages
+        |> Enum.map(fn message -> Data.new(message.data.value) end)
+        |> Enum.map(fn {:ok, data} -> data end)
+        |> Enum.map(fn data -> data.payload end)
+        |> List.first()
 
-
-        assert Map.get(payload, "phone") == "(555) 8675309"
-        assert Map.get(payload, "area_code") == "555"
-        assert Map.get(payload, "first_name") == "Nicole"
-        assert Map.get(payload, "first_letter") == "N"
-        assert Map.get(payload, "string_list") == [["one", "two"], ["three", "four"]]
-        assert Map.get(payload, "number_list") == [[1, 3], [5, 7]]
+      assert Map.get(payload, "phone") == "(555) 8675309"
+      assert Map.get(payload, "area_code") == "555"
+      assert Map.get(payload, "first_name") == "Nicole"
+      assert Map.get(payload, "first_letter") == "N"
+      assert Map.get(payload, "string_list") == [["one", "two"], ["three", "four"]]
+      assert Map.get(payload, "number_list") == [[1, 3], [5, 7]]
     end
 
     test "should run with nested, nested lists", %{broadway: broadway} do
@@ -118,28 +117,27 @@ defmodule Alchemist.BroadwayTest do
           }
         )
 
-        kafka_message = %{value: Jason.encode!(data)}
+      kafka_message = %{value: Jason.encode!(data)}
 
-        Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway, [kafka_message])
 
-        assert_receive {:ack, _ref, messages, _}, 5_000
+      assert_receive {:ack, _ref, messages, _}, 5_000
 
-        assert 1 == length(messages)
+      assert 1 == length(messages)
 
-        payload =
-          messages
-          |> Enum.map(fn message -> Data.new(message.data.value) end)
-          |> Enum.map(fn {:ok, data} -> data end)
-          |> Enum.map(fn data -> data.payload end)
-          |> List.first()
+      payload =
+        messages
+        |> Enum.map(fn message -> Data.new(message.data.value) end)
+        |> Enum.map(fn {:ok, data} -> data end)
+        |> Enum.map(fn data -> data.payload end)
+        |> List.first()
 
-
-        assert Map.get(payload, "phone") == "(555) 8675309"
-        assert Map.get(payload, "area_code") == "555"
-        assert Map.get(payload, "first_name") == "Nicole"
-        assert Map.get(payload, "first_letter") == "N"
-        assert Map.get(payload, "string_list") == [["one", "two"], ["three", "four"]]
-        assert payload |> Map.get("parent") |> Map.get("number_list") == [[1, 3], [5, 7]]
+      assert Map.get(payload, "phone") == "(555) 8675309"
+      assert Map.get(payload, "area_code") == "555"
+      assert Map.get(payload, "first_name") == "Nicole"
+      assert Map.get(payload, "first_letter") == "N"
+      assert Map.get(payload, "string_list") == [["one", "two"], ["three", "four"]]
+      assert payload |> Map.get("parent") |> Map.get("number_list") == [[1, 3], [5, 7]]
     end
 
     test "given valid transformation ingestion data, should call Regex Extract, pulling out the relevant data", %{
