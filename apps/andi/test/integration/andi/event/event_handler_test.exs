@@ -50,7 +50,7 @@ defmodule Andi.Event.EventHandlerTest do
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
-            actual["dataset_id"] == id_for_invalid_dataset
+            id_for_invalid_dataset in actual["dataset_ids"]
           end)
 
         assert 1 == length(failed_messages)
