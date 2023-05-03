@@ -451,7 +451,7 @@ defmodule ValkyrieTest do
           technical: %{
             schema: [
               %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "string"}
+              %{name: "luckyNumbers", type: "list", itemType: "integer"}
             ]
           }
         )
@@ -463,7 +463,34 @@ defmodule ValkyrieTest do
 
       result = Valkyrie.standardize_data(dataset, payload)
 
-      assert {:error, %{"luckyNumbers" => %{unhandled_standardization_exception: %ArgumentError{}}}} = result
+      assert {:error, %{"luckyNumbers" => %{unhandled_standardization_exception: %FunctionClauseError{}}}} = result
+    end
+
+    test "can parse list of lists" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string"},
+              %{name: "luckyNumbers", type: "list", itemType: "float"}
+            ]
+          }
+        )
+
+      payload = %{
+        "name" => "Pete",
+        "luckyNumbers" => [[-83.01347, 42.38928], [-83.01347, 42.38928], [-83.01347, 42.38928]]
+      }
+
+      expected =
+        {:ok,
+         %{
+           "name" => "Pete",
+           "luckyNumbers" => [[-83.01347, 42.38928], [-83.01347, 42.38928], [-83.01347, 42.38928]]
+         }}
+
+      assert expected == Valkyrie.standardize_data(dataset, payload)
     end
   end
 
