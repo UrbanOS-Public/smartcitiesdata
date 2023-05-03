@@ -11,24 +11,26 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: field_name, type: type}
+              %{name: field_name, type: type, ingestion_field_selector: selector}
             ]
           }
         )
 
-      payload = %{field_name => value}
+      payload = %{selector => value}
+      expected = %{field_name => value}
 
-      assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, expected} == Valkyrie.standardize_data(dataset, payload)
 
       where([
-        [:field_name, :type, :value],
-        ["name", "string", "some string"],
-        ["age", "integer", 1],
-        ["age", "long", 1],
-        ["raining?", "boolean", true],
-        ["raining?", "boolean", false],
-        ["temperature", "float", 87.5],
-        ["temperature", "double", 87.5]
+        [:field_name, :selector, :type, :value],
+        ["name", "name", "string", "some string"],
+        ["name", "selector", "string", "some string"],
+        ["age", "age", "integer", 1],
+        ["age", "age", "long", 1],
+        ["raining?", "raining?", "boolean", true],
+        ["raining?", "raining?", "boolean", false],
+        ["temperature", "temperature", "float", 87.5],
+        ["temperature", "temperature", "double", 87.5]
       ])
     end
 
@@ -38,30 +40,31 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: field_name, type: type}
+              %{name: field_name, type: type, ingestion_field_selector: selector}
             ]
           }
         )
 
-      assert {:ok, %{field_name => transformed_value}} === Valkyrie.standardize_data(dataset, %{field_name => value})
+      assert {:ok, %{field_name => transformed_value}} === Valkyrie.standardize_data(dataset, %{selector => value})
 
       where([
-        [:field_name, :type, :value, :transformed_value],
-        ["age", "string", 123, "123"],
-        ["age", "string", 123.5, "123.5"],
-        ["age", "string", "  42 ", "42"],
-        ["age", "integer", "21", 21],
-        ["age", "long", "22", 22],
-        ["age", "integer", "+25", 25],
-        ["age", "integer", "-12", -12],
-        ["raining?", "boolean", "true", true],
-        ["raining?", "boolean", "false", false],
-        ["temperature", "float", 101, 101.0],
-        ["temperature", "float", "101.8", 101.8],
-        ["temperature", "float", "+105.5", 105.5],
-        ["temperature", "float", "-123.7", -123.7],
-        ["temperature", "double", 87, 87.0],
-        ["temperature", "double", "101.8", 101.8]
+        [:field_name, :selector, :type, :value, :transformed_value],
+        ["age", "age", "string", 123, "123"],
+        ["age", "selector", "string", 123, "123"],
+        ["age", "age", "string", 123.5, "123.5"],
+        ["age", "age", "string", "  42 ", "42"],
+        ["age", "age", "integer", "21", 21],
+        ["age", "age", "long", "22", 22],
+        ["age", "age", "integer", "+25", 25],
+        ["age", "age", "integer", "-12", -12],
+        ["raining?", "raining?", "boolean", "true", true],
+        ["raining?", "raining?", "boolean", "false", false],
+        ["temperature", "temperature", "float", 101, 101.0],
+        ["temperature", "temperature", "float", "101.8", 101.8],
+        ["temperature", "temperature", "float", "+105.5", 105.5],
+        ["temperature", "temperature", "float", "-123.7", -123.7],
+        ["temperature", "temperature", "double", 87, 87.0],
+        ["temperature", "temperature", "double", "101.8", 101.8]
       ])
     end
 
@@ -71,7 +74,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "birthdate", format: format, type: type}
+              %{name: "birthdate", format: format, type: type, ingestion_field_selector: "birthdate"}
             ]
           }
         )
@@ -94,7 +97,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "birthdate", format: format, type: type}
+              %{name: "birthdate", format: format, type: type, ingestion_field_selector: "birthdate"}
             ]
           }
         )
@@ -124,24 +127,24 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: field_name, type: type}
+              %{name: field_name, type: type, ingestion_field_selector: selector}
             ]
           }
         )
 
       expected = {:error, %{field_name => reason}}
-      assert expected == Valkyrie.standardize_data(dataset, %{field_name => value})
+      assert expected == Valkyrie.standardize_data(dataset, %{selector => value})
 
       where([
-        [:field_name, :type, :value, :reason],
-        ["age", "integer", "abc", :invalid_integer],
-        ["age", "integer", "34.5", :invalid_integer],
-        ["age", "long", "abc", :invalid_long],
-        ["age", "long", "34.5", :invalid_long],
-        ["raining?", "boolean", "nope", :invalid_boolean],
-        ["temperature", "float", "howdy!", :invalid_float],
-        ["temperature", "double", "howdy!", :invalid_double],
-        ["temperature", "double", "123..7", :invalid_double]
+        [:field_name, :selector, :type, :value, :reason],
+        ["age", "age", "integer", "abc", :invalid_integer],
+        ["age", "age", "integer", "34.5", :invalid_integer],
+        ["age", "age", "long", "abc", :invalid_long],
+        ["age", "age", "long", "34.5", :invalid_long],
+        ["raining?", "raining?", "boolean", "nope", :invalid_boolean],
+        ["temperature", "temperature", "float", "howdy!", :invalid_float],
+        ["temperature", "temperature", "double", "howdy!", :invalid_double],
+        ["temperature", "temperature", "double", "123..7", :invalid_double]
       ])
     end
 
@@ -151,18 +154,18 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: field_name, type: type}
+              %{name: field_name, type: type, ingestion_field_selector: selector}
             ]
           }
         )
 
-      payload = %{field_name => nil}
+      payload = %{selector => nil}
       assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
 
       where([
-        [:field_name, :type],
-        ["name", "string"],
-        ["age", "integer"]
+        [:field_name, :selector, :type],
+        ["name", "name", "string"],
+        ["age", "age", "integer"]
       ])
     end
 
@@ -172,21 +175,21 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: field_name, type: type}
+              %{name: field_name, type: type, ingestion_field_selector: selector}
             ]
           }
         )
 
-      assert {:ok, %{field_name => nil}} == Valkyrie.standardize_data(dataset, %{field_name => ""})
+      assert {:ok, %{selector => nil}} == Valkyrie.standardize_data(dataset, %{selector => ""})
 
       where([
-        [:field_name, :type],
-        ["age", "integer"],
-        ["numOfLives", "long"],
-        ["weight", "double"],
-        ["height", "float"],
-        ["isCool", "boolean"],
-        ["dob", "timestamp"]
+        [:field_name, :selector, :type],
+        ["age", "age", "integer"],
+        ["numOfLives", "numOfLives", "long"],
+        ["weight", "weight", "double"],
+        ["height", "height", "float"],
+        ["isCool", "isCool", "boolean"],
+        ["dob", "dob", "timestamp"]
       ])
     end
 
@@ -196,7 +199,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "empty_string", type: "string"}
+              %{name: "empty_string", type: "string", ingestion_field_selector: "empty_string"}
             ]
           }
         )
@@ -206,11 +209,11 @@ defmodule ValkyrieTest do
 
     test "transforms valid values in a map" do
       sub_schema = [
-        %{name: "name", type: "string"},
-        %{name: "age", type: "integer"},
-        %{name: "human", type: "boolean"},
-        %{name: "color", type: "string"},
-        %{name: "luckyNumbers", type: "list", itemType: "integer"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"},
+        %{name: "age", type: "integer", ingestion_field_selector: "age"},
+        %{name: "human", type: "boolean", ingestion_field_selector: "human"},
+        %{name: "color", type: "string", ingestion_field_selector: "color"},
+        %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"}
       ]
 
       dataset =
@@ -218,8 +221,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "spouse", type: "map", subSchema: sub_schema, ingestion_field_selector: "spouse"}
             ]
           }
         )
@@ -253,7 +256,7 @@ defmodule ValkyrieTest do
 
     test "validates that specified map is a map" do
       sub_schema = [
-        %{name: "name", type: "string"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"}
       ]
 
       dataset =
@@ -261,8 +264,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "spouse", type: "map", subSchema: sub_schema, ingestion_field_selector: "spouse"}
             ]
           }
         )
@@ -275,8 +278,8 @@ defmodule ValkyrieTest do
 
     test "returns error that identifies nested field that fails" do
       sub_schema = [
-        %{name: "name", type: "string"},
-        %{name: "age", type: "integer"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"},
+        %{name: "age", type: "integer", ingestion_field_selector: "age"}
       ]
 
       dataset =
@@ -284,8 +287,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "spouse", type: "map", subSchema: sub_schema, ingestion_field_selector: "spouse"}
             ]
           }
         )
@@ -298,12 +301,12 @@ defmodule ValkyrieTest do
 
     test "returns error that identifies deeply nested field that fails" do
       sub_sub_schema = [
-        %{name: "name", type: "string"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"}
       ]
 
       sub_schema = [
-        %{name: "name", type: "string"},
-        %{name: "child", type: "map", subSchema: sub_sub_schema}
+        %{name: "name", type: "string", ingestion_field_selector: "name"},
+        %{name: "child", type: "map", subSchema: sub_sub_schema, ingestion_field_selector: "child"}
       ]
 
       dataset =
@@ -311,8 +314,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouse", type: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "spouse", type: "map", subSchema: sub_schema, ingestion_field_selector: "spouse"}
             ]
           }
         )
@@ -325,8 +328,8 @@ defmodule ValkyrieTest do
 
     test "transforms valid values in lists" do
       sub_schema = [
-        %{name: "name", type: "string"},
-        %{name: "age", type: "integer"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"},
+        %{name: "age", type: "integer", ingestion_field_selector: "age"}
       ]
 
       dataset =
@@ -334,9 +337,15 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"},
+              %{
+                name: "spouses",
+                type: "list",
+                itemType: "map",
+                subSchema: sub_schema,
+                ingestion_field_selector: "spouses"
+              }
             ]
           }
         )
@@ -370,7 +379,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "luckyNumbers", type: "list", itemType: "integer"}
+              %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"}
             ]
           }
         )
@@ -387,8 +396,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer"}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"}
             ]
           }
         )
@@ -401,8 +410,8 @@ defmodule ValkyrieTest do
 
     test "returns error that identifies invalid map in list" do
       sub_schema = [
-        %{name: "name", type: "string"},
-        %{name: "age", type: "integer"}
+        %{name: "name", type: "string", ingestion_field_selector: "name"},
+        %{name: "age", type: "integer", ingestion_field_selector: "age"}
       ]
 
       dataset =
@@ -410,8 +419,14 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "spouses", type: "list", itemType: "map", subSchema: sub_schema}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{
+                name: "spouses",
+                type: "list",
+                itemType: "map",
+                subSchema: sub_schema,
+                ingestion_field_selector: "spouses"
+              }
             ]
           }
         )
@@ -434,7 +449,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "geometry", type: "unknown"}
+              %{name: "geometry", type: "unknown", ingestion_field_selector: "geometry"}
             ]
           }
         )
@@ -450,8 +465,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer"}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"}
             ]
           }
         )
@@ -472,8 +487,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "float"}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "luckyNumbers", type: "list", itemType: "float", ingestion_field_selector: "luckyNumbers"}
             ]
           }
         )
@@ -501,7 +516,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "geometry", type: "json"}
+              %{name: "geometry", type: "json", ingestion_field_selector: "geometry"}
             ]
           }
         )
@@ -518,7 +533,7 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "geometry", type: "json"}
+              %{name: "geometry", type: "json", ingestion_field_selector: "geometry"}
             ]
           }
         )

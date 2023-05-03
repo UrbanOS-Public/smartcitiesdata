@@ -22,9 +22,9 @@ defmodule Valkyrie do
 
   defp standardize_schema(schema, payload) do
     schema
-    |> Enum.reduce(%{data: %{}, errors: %{}}, fn %{name: name} = field, acc ->
+    |> Enum.reduce(%{data: %{}, errors: %{}}, fn %{ingestion_field_selector: selector, name: name} = field, acc ->
       try do
-        case standardize(field, payload[name]) do
+        case standardize(field, payload[selector]) do
           {:ok, value} -> %{acc | data: Map.put(acc.data, name, value)}
           {:error, reason} -> %{acc | errors: Map.put(acc.errors, name, reason)}
         end
