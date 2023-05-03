@@ -17,8 +17,9 @@ defmodule ValkyrieTest do
         )
 
       payload = %{selector => value}
+      expected = %{field_name => value}
 
-      assert {:ok, payload} == Valkyrie.standardize_data(dataset, payload)
+      assert {:ok, expected} == Valkyrie.standardize_data(dataset, payload)
 
       where([
         [:field_name, :selector, :type, :value],
@@ -44,11 +45,12 @@ defmodule ValkyrieTest do
           }
         )
 
-      assert {:ok, %{selector => transformed_value}} === Valkyrie.standardize_data(dataset, %{selector => value})
+      assert {:ok, %{field_name => transformed_value}} === Valkyrie.standardize_data(dataset, %{selector => value})
 
       where([
         [:field_name, :selector, :type, :value, :transformed_value],
         ["age", "age", "string", 123, "123"],
+        ["age", "selector", "string", 123, "123"],
         ["age", "age", "string", 123.5, "123.5"],
         ["age", "age", "string", "  42 ", "42"],
         ["age", "age", "integer", "21", 21],

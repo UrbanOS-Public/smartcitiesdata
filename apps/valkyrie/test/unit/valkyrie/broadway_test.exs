@@ -21,7 +21,8 @@ defmodule Valkyrie.BroadwayTest do
 
     schema = [
       %{name: "name", type: "string", ingestion_field_selector: "name"},
-      %{name: "age", type: "integer", ingestion_field_selector: "age"}
+      %{name: "age", type: "integer", ingestion_field_selector: "age"},
+      %{name: "alias", type: "string", ingestion_field_selector: "name"}
     ]
 
     dataset = TDG.create_dataset(id: @dataset_id, technical: %{schema: schema})
@@ -61,7 +62,7 @@ defmodule Valkyrie.BroadwayTest do
       |> Enum.map(fn {:ok, data} -> data end)
       |> Enum.map(fn data -> data.payload end)
 
-    assert payloads == [%{"name" => "johnny", "age" => 21}]
+    assert payloads == [%{"name" => "johnny", "age" => 21, "alias" => "johnny"}]
   end
 
   test "applies valkyrie message timing", %{broadway: broadway} do
@@ -163,8 +164,8 @@ defmodule Valkyrie.BroadwayTest do
     captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
     assert 2 = length(captured_messages)
-    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == data1.payload
-    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == data2.payload
+    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == %{"age" => 21, "name" => "johnny", "alias" => "johnny"}
+    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == %{"age" => 33, "name" => "carl", "alias" => "carl"}
   end
 
   test "should emit a data standarization end event when END_OF_DATA message is recieved", %{broadway: broadway} do

@@ -22,11 +22,11 @@ defmodule Valkyrie do
 
   defp standardize_schema(schema, payload) do
     schema
-    |> Enum.reduce(%{data: %{}, errors: %{}}, fn %{ingestion_field_selector: selector} = field, acc ->
+    |> Enum.reduce(%{data: %{}, errors: %{}}, fn %{ingestion_field_selector: selector, name: name} = field, acc ->
       try do
         case standardize(field, payload[selector]) do
-          {:ok, value} -> %{acc | data: Map.put(acc.data, selector, value)}
-          {:error, reason} -> %{acc | errors: Map.put(acc.errors, selector, reason)}
+          {:ok, value} -> %{acc | data: Map.put(acc.data, name, value)}
+          {:error, reason} -> %{acc | errors: Map.put(acc.errors, name, reason)}
         end
       rescue
         exception -> %{acc | errors: Map.put(acc.errors, selector, %{unhandled_standardization_exception: exception})}
