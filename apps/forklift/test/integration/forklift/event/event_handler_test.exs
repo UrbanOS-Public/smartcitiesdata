@@ -17,7 +17,7 @@ defmodule Forklift.Event.EventHandlerTest do
     end)
   end
 
-  describe "Ingestion Update" do
+  describe "data_ingest_start" do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_ingestion = UUID.uuid4()
       id_for_invalid_dataset = UUID.uuid4()

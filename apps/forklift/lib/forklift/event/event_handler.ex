@@ -165,7 +165,7 @@ defmodule Forklift.Event.EventHandler do
     :ok
   rescue
     error ->
-      Logger.error("data_extract_end failed to process.")
+      Logger.error("data_extract_end failed to process. #{inspect(error)}")
       DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
