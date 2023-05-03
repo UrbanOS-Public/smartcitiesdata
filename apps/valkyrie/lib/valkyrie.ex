@@ -29,7 +29,7 @@ defmodule Valkyrie do
           {:error, reason} -> %{acc | errors: Map.put(acc.errors, name, reason)}
         end
       rescue
-        exception -> %{acc | errors: Map.put(acc.errors, selector, %{unhandled_standardization_exception: exception})}
+        exception -> %{acc | errors: Map.put(acc.errors, name, %{unhandled_standardization_exception: exception})}
       end
     end)
   end
