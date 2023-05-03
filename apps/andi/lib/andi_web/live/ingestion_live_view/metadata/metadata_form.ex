@@ -101,15 +101,6 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
     send_update(AndiWeb.IngestionLiveView.MetadataForm, id: component_id(), select_dataset_modal_visibility: "hidden")
   end
 
-  defp get_dataset_name(id) when id in ["", nil], do: ""
-
-  defp get_dataset_name(id) do
-    case Andi.InputSchemas.Datasets.get(id) do
-      nil -> "Dataset does not exist"
-      dataset -> dataset.business.dataTitle
-    end
-  end
-
   defp get_dataset_names(ids) do
     ids
     |> Enum.map(fn id ->

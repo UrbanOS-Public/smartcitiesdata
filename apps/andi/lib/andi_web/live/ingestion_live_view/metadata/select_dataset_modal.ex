@@ -106,7 +106,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
   def handle_event("save-dataset-search", _, socket) do
     socket.assigns.close_modal_callback.()
-    send(self(), {:update_dataset, socket.assigns.selected_datasets})
+    send(self(), {:update_datasets, socket.assigns.selected_datasets})
 
     {:noreply, socket}
   end

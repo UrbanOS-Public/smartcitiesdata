@@ -1,4 +1,4 @@
-defmodule AndiWeb.EditControllerTest do
+defmodule AndiWeb.AuditLogControllerTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase

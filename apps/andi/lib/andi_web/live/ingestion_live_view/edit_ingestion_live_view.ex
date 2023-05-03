@@ -193,9 +193,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
-  def handle_info({:update_dataset, update}, socket) do
+  def handle_info({:update_datasets, dataset_ids}, socket) do
     params = %{
-      targetDatasets: update
+      targetDatasets: dataset_ids
     }
 
     updated_changeset =

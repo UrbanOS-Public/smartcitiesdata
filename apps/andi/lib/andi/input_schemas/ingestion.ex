@@ -376,11 +376,10 @@ defmodule Andi.InputSchemas.Ingestion do
     if dataset_ids in [nil, []] do
       Changeset.add_error(changeset, :targetDatasets, "no target datasets")
     else
-      Enum.reduce(dataset_ids, changeset, fn id, acc ->
-        if is_nil(Datasets.get(id)),
-          do: Changeset.add_error(changeset, :targetDatasets, "one or more target datasets do not exist"),
-          else: changeset
-      end)
+      case Enum.any?(dataset_ids, fn id -> is_nil(Datasets.get(id)) end) do
+        true -> Changeset.add_error(changeset, :targetDatasets, "one or more target datasets do not exist")
+        false -> changeset
+      end
     end
   end
 end
