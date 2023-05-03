@@ -164,8 +164,18 @@ defmodule Valkyrie.BroadwayTest do
     captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
     assert 2 = length(captured_messages)
-    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == %{"age" => 21, "name" => "johnny", "alias" => "johnny"}
-    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == %{"age" => 33, "name" => "carl", "alias" => "carl"}
+
+    assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == %{
+             "age" => 21,
+             "name" => "johnny",
+             "alias" => "johnny"
+           }
+
+    assert Enum.at(captured_messages, 1) |> Jason.decode!() |> Map.get("payload") == %{
+             "age" => 33,
+             "name" => "carl",
+             "alias" => "carl"
+           }
   end
 
   test "should emit a data standarization end event when END_OF_DATA message is recieved", %{broadway: broadway} do
