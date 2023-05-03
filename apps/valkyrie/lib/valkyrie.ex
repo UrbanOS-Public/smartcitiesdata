@@ -121,6 +121,7 @@ defmodule Valkyrie do
             {:ok, new_value} -> {:cont, {:ok, [Enum.reverse(new_value) | acc]}}
             {:error, reason} -> {:halt, {:error, "#{inspect(reason)} at index #{index}"}}
           end
+
         _ ->
           case standardize(%{type: item_type, subSchema: field[:subSchema]}, item) do
             {:ok, new_value} -> {:cont, {:ok, [new_value | acc]}}
