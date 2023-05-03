@@ -68,21 +68,6 @@ defmodule AlchemistTest do
       })
     ]
 
-    # pre_transform_messages_for_second_dataset = [
-    #   TestHelpers.create_data(%{
-    #     payload: %{"name" => "Jack Sparrow", "alignment" => "chaotic", "age" => "32"},
-    #     dataset_id: dataset2.id
-    #   }),
-    #   TestHelpers.create_data(%{
-    #     payload: %{"name" => "Will Turner", "alignment" => "good", "age" => "25"},
-    #     dataset_id: dataset2.id
-    #   }),
-    #   TestHelpers.create_data(%{
-    #     payload: %{"name" => "Barbosa", "alignment" => "evil", "age" => "100"},
-    #     dataset_id: dataset2.id
-    #   })
-    # ]
-
     input_topic = "#{input_topic_prefix()}-#{ingestion.id}"
 
     output_topics = [
@@ -94,13 +79,11 @@ defmodule AlchemistTest do
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
 
     TestHelpers.produce_messages(pre_transform_messages_for_first_dataset, input_topic, elsa_brokers())
-    # TestHelpers.produce_messages(pre_transform_messages_for_second_dataset, input_topic, elsa_brokers())
 
     {:ok,
      %{
        output_topics: output_topics,
        pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset,
-       # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
        datasets: [dataset, dataset2]
      }}
   end
@@ -108,7 +91,6 @@ defmodule AlchemistTest do
   test "alchemist updates the operational struct", %{
     output_topics: [dataset1_topic, dataset2_topic],
     pre_transform_messages_for_first_dataset: pre_transform_messages_for_first_dataset
-    # pre_transform_messages_for_second_dataset: pre_transform_messages_for_second_dataset,
   } do
     eventually fn ->
       post_transform_messages_for_first_topic =

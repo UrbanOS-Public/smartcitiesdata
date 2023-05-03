@@ -280,7 +280,6 @@ defmodule Alchemist.BroadwayTest do
           # ingestion is destructured in handle message as the th~ird argument
           #   it serves as context for an incoming SmartCity.data message
           ingestion: ingestion,
-          # TODO: DOES THIS NEED TO CHANGE?
           output: [
             topics: ["#{output_topic_prefix()}-#{@dataset_id}", "#{output_topic_prefix()}-#{@dataset_id2}"],
             connection: @producer

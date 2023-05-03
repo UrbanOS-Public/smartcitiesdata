@@ -22,26 +22,6 @@ defmodule Alchemist.TopicCreationTest do
     output_topic_1 = "#{output_topic_prefix()}-#{dataset_id}"
     output_topic_2 = "#{output_topic_prefix()}-#{dataset_id2}"
 
-    # dataset =
-    #   TDG.create_dataset(
-    #     id: dataset_id,
-    #     technical: %{
-    #       schema: [
-    #         %{name: "name", type: "map", subSchema: [%{name: "first", type: "string"}, %{name: "last", type: "string"}]}
-    #       ]
-    #     }
-    #   )
-
-    # dataset2 =
-    #   TDG.create_dataset(
-    #     id: dataset_id2,
-    #     technical: %{
-    #       schema: [
-    #         %{name: "name", type: "map", subSchema: [%{name: "first", type: "string"}, %{name: "last", type: "string"}]}
-    #       ]
-    #     }
-    #   )
-
     ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset_id, dataset_id2]})
 
     data_message =

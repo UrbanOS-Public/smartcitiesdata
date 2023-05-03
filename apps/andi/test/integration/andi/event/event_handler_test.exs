@@ -59,18 +59,17 @@ defmodule Andi.Event.EventHandlerTest do
   end
 
   describe "Ingestion Update" do
-    # TODO: Fix test once deadletter can process multiple datasets.
     test "A failing message gets placed on dead letter queue and discarded" do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      id_for_invalid_ingestion = UUID.uuid4() |> IO.inspect(label: "invalidingestid")
+      id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
       allow(IngestionStore.update(invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
-      id = UUID.uuid4() |> IO.inspect(label: "validingestid")
+      id = UUID.uuid4()
       valid_ingestion = TDG.create_ingestion(%{id: id, targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)

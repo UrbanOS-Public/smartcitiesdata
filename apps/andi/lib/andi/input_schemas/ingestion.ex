@@ -373,7 +373,7 @@ defmodule Andi.InputSchemas.Ingestion do
   defp validate_datasets(changeset) do
     dataset_ids = Changeset.get_field(changeset, :targetDatasets)
 
-    if is_nil(dataset_ids) or dataset_ids == [] do
+    if dataset_ids in [nil, []] do
       Changeset.add_error(changeset, :targetDatasets, "no target datasets")
     else
       Enum.reduce(dataset_ids, changeset, fn id, acc ->
