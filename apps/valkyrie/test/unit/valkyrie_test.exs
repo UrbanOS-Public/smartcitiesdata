@@ -487,8 +487,8 @@ defmodule ValkyrieTest do
           id: "ds1",
           technical: %{
             schema: [
-              %{name: "name", type: "string"},
-              %{name: "luckyNumbers", type: "list", itemType: "float"}
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "luckyNumbers", type: "list", itemType: "float", ingestion_field_selector: "luckyNumbers"}
             ]
           }
         )
