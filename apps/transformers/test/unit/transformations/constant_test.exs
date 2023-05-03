@@ -77,6 +77,23 @@ defmodule Transformers.ConstantTest do
              }
     end
 
+    test "converts value to nil" do
+      parameters = %{
+        "targetField" => "testField",
+        "valueType" => "null / empty"
+      }
+
+      payload = %{
+        "testField" => "old value"
+      }
+
+      {:ok, result} = Constant.transform(payload, parameters)
+
+      assert result == %{
+               "testField" => nil
+             }
+    end
+
     test "performs transformation as normal when condition evaluates to true" do
       parameters = %{
         "targetField" => "testField",
