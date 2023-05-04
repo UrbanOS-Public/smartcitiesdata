@@ -44,7 +44,15 @@ defmodule Valkyrie.TopicCreationTest do
         id: dataset_id2,
         technical: %{
           schema: [
-            %{name: "name", type: "map", subSchema: [%{name: "first", type: "string"}, %{name: "last", type: "string"}]}
+            %{
+              name: "name",
+              type: "map",
+              ingestion_field_selector: "name",
+              subSchema: [
+                %{name: "first", type: "string", ingestion_field_selector: "first"},
+                %{name: "last", type: "string", ingestion_field_selector: "last"}
+              ]
+            }
           ]
         }
       )
