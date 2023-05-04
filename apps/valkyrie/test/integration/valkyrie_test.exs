@@ -269,9 +269,9 @@ defmodule ValkyrieTest do
         technical: %{
           sourceType: "ingest",
           schema: [
-            %{name: "name", type: "string"},
-            %{name: "alignment", type: "string"},
-            %{name: "age", type: "string"}
+            %{name: "name", type: "string", ingestion_field_selector: "name"},
+            %{name: "alignment", type: "string", ingestion_field_selector: "alignment"},
+            %{name: "age", type: "string", ingestion_field_selector: "age"}
           ]
         }
       })
