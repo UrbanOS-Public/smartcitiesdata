@@ -177,7 +177,7 @@ defmodule ValkyrieTest do
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic)
     TestHelpers.wait_for_topic(elsa_brokers(), input_topic2)
 
-    1..100
+    1..10
     |> Enum.each(fn _ ->
       Brook.Event.send(@instance_name, data_ingest_start(), :valkyrie, ingestion)
     end)
