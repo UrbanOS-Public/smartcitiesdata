@@ -22,6 +22,7 @@ defmodule Valkyrie do
 
   defp standardize_schema(schema, payload) do
     schema
+    |> IO.inspect(label: "RYAN - Schema")
     |> Enum.reduce(%{data: %{}, errors: %{}}, fn %{ingestion_field_selector: selector, name: name} = field, acc ->
       try do
         case standardize(field, payload[selector]) do
