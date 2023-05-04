@@ -17,7 +17,7 @@ defmodule Valkyrie.DatasetMutationTest do
   test "a dataset with an updated schema properly parses new messages" do
     dataset_id = Faker.UUID.v4()
     dataset_id2 = Faker.UUID.v4()
-    schema = [%{name: "age", type: "string"}]
+    schema = [%{name: "age", type: "string", ingestion_field_selector: "age"}]
     dataset = TDG.create_dataset(id: dataset_id, technical: %{schema: schema})
     dataset2 = TDG.create_dataset(id: dataset_id2, technical: %{schema: schema})
     ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
@@ -58,7 +58,11 @@ defmodule Valkyrie.DatasetMutationTest do
       40
     )
 
-    updated_dataset = %{dataset | technical: %{dataset.technical | schema: [%{name: "age", type: "integer"}]}}
+    updated_dataset = %{
+      dataset
+      | technical: %{dataset.technical | schema: [%{name: "age", type: "integer", ingestion_field_selector: "age"}]}
+    }
+
     Brook.Event.send(@instance_name, dataset_update(), :author, updated_dataset)
 
     Process.sleep(2_000)
