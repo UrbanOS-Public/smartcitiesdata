@@ -401,7 +401,7 @@ defmodule Andi.InputSchemas.Ingestion do
     end
   end
 
-  defp migrate_to_multiple_datasets(%{targetDataset: dataset_id}) do
+  defp migrate_to_multiple_datasets(%{targetDataset: dataset_id} = changes) do
     changes
     |> Map.put(:targetDatasets, [dataset_id])
     |> Map.delete(:targetDataset)
