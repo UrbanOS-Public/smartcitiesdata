@@ -3,6 +3,8 @@ defmodule AndiWeb.IngestionLiveView do
   use AndiWeb.HeaderLiveView
   use AndiWeb.FooterLiveView
 
+  require Logger
+
   import Ecto.Query, only: [from: 2]
 
   alias AndiWeb.IngestionLiveView.Table
@@ -79,11 +81,23 @@ defmodule AndiWeb.IngestionLiveView do
     %{
       "id" => ingestion.id,
       "ingestion_name" => ingestion.name,
-      "dataset_name" => dataset_name(ingestion),
+      "dataset_names" => dataset_names(ingestion),
       "status" => ingestion.submissionStatus |> Atom.to_string() |> String.capitalize()
     }
   end
 
-  def dataset_name(%{dataset: %{business: %{dataTitle: dataTitle}}}), do: dataTitle
-  def dataset_name(_ingestion), do: nil
+  def dataset_names(%{dataset: datasets}) do
+    datasets
+    |> Enum.map(fn
+      %{business: %{dataTitle: dataTitle}} ->
+        dataTitle
+
+      unknown ->
+        Logger.error("Unknown dataset object inside ingestion: #{inspect(unknown)}")
+        ""
+    end)
+    |> Enum.join(", ")
+  end
+
+  def dataset_names(_ingestion), do: []
 end

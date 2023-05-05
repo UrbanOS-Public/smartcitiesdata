@@ -20,8 +20,10 @@ defmodule Andi.MessageHandler do
             acc
 
           message ->
-            dataset_id = Map.get(message, "dataset_id")
-            Map.put(acc, dataset_id, message)
+            Map.get(message, "dataset_ids")
+            |> Enum.reduce(acc, fn dataset_id, inner_acc ->
+              Map.put(inner_acc, dataset_id, message)
+            end)
         end
       end)
 

@@ -53,8 +53,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
       ingestion
       |> Ingestion.changeset(%{})
       |> Ingestion.validate()
+      |> IO.inspect(label: "RYAN - ingestion changeset")
 
-    metadata_changeset = IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset)
+    metadata_changeset =
+      IngestionMetadataFormSchema.extract_from_ingestion_changeset(ingestion_changeset) |> IO.inspect(label: "RYAN - metadata changeset")
 
     {extract_step_changesets, extract_step_errors} = Ingestion.get_extract_step_changesets_and_errors(ingestion_changeset)
 

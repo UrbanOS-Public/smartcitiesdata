@@ -43,13 +43,29 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
 
     test "shows ingestions when there are rows to show and the dataset title not nil", %{conn: conn} do
       allow(Andi.Repo.all(any()),
-        return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}]
+        return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: [%{business: %{dataTitle: "Hazel"}}]}]
       )
 
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
       assert get_text(html, ".ingestions-table__cell") =~ "Hazel"
+    end
+
+    test "shows ingestions when there are multiple dataset titles not nil", %{conn: conn} do
+      datasets = [
+        %{business: %{dataTitle: "Hazel"}},
+        %{business: %{dataTitle: "Nut"}}
+      ]
+
+      allow(Andi.Repo.all(any()),
+        return: [%{submissionStatus: :draft, name: "penny", id: "123", dataset: datasets}]
+      )
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert get_text(html, ".ingestions-table__cell") =~ "penny"
+      assert get_text(html, ".ingestions-table__cell") =~ "Hazel, Nut"
     end
 
     test "reflects a draft ingestion status", %{conn: conn} do
