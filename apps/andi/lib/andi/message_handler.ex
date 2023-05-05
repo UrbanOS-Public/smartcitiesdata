@@ -16,38 +16,35 @@ defmodule Andi.MessageHandler do
     dlq_messages =
       Enum.reduce(messages, %{}, fn message, acc ->
         IO.inspect(messages, label: "RYAN - Messages")
+
         case handle_message(message) do
           :invalid_message ->
             acc
 
-          %Elsa{} ->
-            case Map.get(message, "dataset_ids") do
-              nil ->
-                IO.inspect("FOUND NIL", label: "RYAN - NIL")
-                acc
+          nil ->
+            acc
 
-              dataset_ids ->
-                IO.inspect(messages, label: "RYAN - FOUND IDS")
-                dataset_ids
-                |> Enum.reduce(acc, fn dataset_id, inner_acc ->
-                  Map.put(inner_acc, dataset_id, message)
-                  |> IO.inspect(label: "RYAN - results")
-                end)
-            end
+          %{"dataset_ids" => dataset_ids} ->
+            dataset_ids
+            |> Enum.reduce(acc, fn dataset_id, inner_acc ->
+              Map.put(inner_acc, dataset_id, message)
+              |> IO.inspect(label: "RYAN - results")
+            end)
         end
       end)
 
     dlq_messages
-    |> Map.values()
-    |> Enum.each(&Datasets.update_latest_dlq_message/1)
+    |> Enum.each(fn {dataset_id, dlq_message} ->
+      Datasets.update_latest_dlq_message(dataset_id, dlq_message)
+    end)
 
     {:ack, state}
   end
 
   def handle_message(%Elsa.Message{topic: @dead_letter_topic, timestamp: nil, value: value}) do
-    dataset_id = dataset_id_from_dlq_message(value)
+    dataset_ids = dataset_ids_from_dlq_message(value)
 
-    %{"dataset_id" => dataset_id} |> add_current_time_to_message()
+    %{"dataset_ids" => dataset_ids} |> add_current_time_to_message()
   end
 
   def handle_message(%Elsa.Message{topic: @dead_letter_topic, timestamp: timestamp, value: value}) do
@@ -58,15 +55,15 @@ defmodule Andi.MessageHandler do
 
     iso_datetime = DateTime.to_iso8601(timestamp_datetime)
 
-    dataset_id = dataset_id_from_dlq_message(value)
+    dataset_ids = dataset_ids_from_dlq_message(value)
 
-    %{"dataset_id" => dataset_id, "timestamp" => iso_datetime}
+    %{"dataset_ids" => dataset_ids, "timestamp" => iso_datetime}
   end
 
   def handle_message(%Elsa.Message{topic: @dead_letter_topic, value: value}) do
-    dataset_id = dataset_id_from_dlq_message(value)
+    dataset_ids = dataset_ids_from_dlq_message(value)
 
-    %{"dataset_id" => dataset_id} |> add_current_time_to_message()
+    %{"dataset_ids" => dataset_ids} |> add_current_time_to_message()
   end
 
   def handle_message(message) do
@@ -85,9 +82,9 @@ defmodule Andi.MessageHandler do
     Map.put(dlq_message, "timestamp", current_time)
   end
 
-  defp dataset_id_from_dlq_message(message) do
+  defp dataset_ids_from_dlq_message(message) do
     message
     |> Jason.decode!()
-    |> Map.get("dataset_id")
+    |> Map.get("dataset_ids")
   end
 end
