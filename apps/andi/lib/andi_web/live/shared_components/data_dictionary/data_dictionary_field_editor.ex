@@ -26,6 +26,12 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
         <%= hidden_input(@form, :bread_crumb) %>
         <%= hidden_input(@form, :dataset_id) %>
         <%= hidden_input(@form, :ingestion_id) %>
+        <%= hidden_input(@form, :name) %>
+        <%= hidden_input(@form, :type) %>
+        <%= hidden_input(@form, :itemType) %>
+        <%= hidden_input(@form, :format) %>
+        <%= hidden_input(@form, :default_offset) %>
+        <%= hidden_input(@form, :use_default) %>
 
         <div class="data-dictionary-field-editor__name">
           <%= label(@form, :name, "Name", class: "label label--required", for: id <> "_name") %>
@@ -69,7 +75,7 @@ defmodule AndiWeb.DataDictionary.FieldEditor do
             <% sync? = input_value(@form, :ingestion_field_sync) %>
             <div class="ingestion-field-selector-label">
               <%= label(@form, :ingestion_field_sync, "Sync Ingestion Field", for: id <> "__ingestion-field-sync") %>
-              <%= checkbox(@form, :ingestion_field_sync, disabled: read_only?, id: id <> "__ingestion-field-sync", value: sync?) %>
+              <%= checkbox(@form, :ingestion_field_sync, id: id <> "__ingestion-field-sync", value: sync?) %>
             </div>
             <div width="400px">
               <%= label(@form, :ingestion_field_selector, "Ingestion Field", class: "label label--required", for: id <> "_ingestion-field-selector") %>
