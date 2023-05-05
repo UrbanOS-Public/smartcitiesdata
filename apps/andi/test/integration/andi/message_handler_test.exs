@@ -27,7 +27,7 @@ defmodule Andi.MessageHandlerTest do
 
     dataset = TDG.create_dataset(%{})
     {:ok, _} = Datasets.update(dataset)
-    dlq_message_value = %{dataset_id: dataset.id} |> Jason.encode!()
+    dlq_message_value = %{dataset_ids: [dataset.id]} |> Jason.encode!()
 
     Elsa.produce(@endpoints, "dead-letters", {"key1", dlq_message_value}, partition: 0)
 
@@ -50,7 +50,7 @@ defmodule Andi.MessageHandlerTest do
       |> DateTime.truncate(:millisecond)
       |> DateTime.to_iso8601()
 
-    dlq_message = %{"dataset_id" => dataset.id, "timestamp" => current_timestamp_iso}
+    dlq_message = %{"dataset_ids" => [dataset.id], "timestamp" => current_timestamp_iso}
 
     elsa_messages = [
       %Elsa.Message{topic: "dead-letters", value: Jason.encode!(dlq_message), timestamp: DateTime.to_unix(current_timestamp, :millisecond)}

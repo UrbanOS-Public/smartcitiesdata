@@ -57,6 +57,7 @@ defmodule Andi.InputSchemas.Ingestion do
       changeset
       |> Changeset.apply_changes()
       |> StructTools.to_map()
+      |> migrate_to_multiple_datasets()
 
     source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
@@ -81,6 +82,7 @@ defmodule Andi.InputSchemas.Ingestion do
       changeset
       |> Changeset.apply_changes()
       |> StructTools.to_map()
+      |> migrate_to_multiple_datasets()
 
     source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
@@ -95,12 +97,17 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
-    changes_as_map = StructTools.to_map(changes)
+    changes_as_map =
+      StructTools.to_map(changes)
+      |> migrate_to_multiple_datasets()
+
     changeset(%__MODULE__{}, changes_as_map)
   end
 
   def changeset(%__MODULE__{} = ingestion, %{} = changes) do
-    changes_with_id = StructTools.ensure_id(ingestion, changes)
+    changes_with_id =
+      StructTools.ensure_id(ingestion, changes)
+      |> migrate_to_multiple_datasets()
 
     ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [])
@@ -111,8 +118,12 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
+    migrated_changes =
+      changes
+      |> migrate_to_multiple_datasets()
+
     changeset
-    |> Changeset.cast(changes, @cast_fields, empty_values: [])
+    |> Changeset.cast(migrated_changes, @cast_fields, empty_values: [])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
@@ -120,7 +131,9 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset_for_draft(%Andi.InputSchemas.Ingestion{} = ingestion, changes) do
-    changes_with_id = StructTools.ensure_id(ingestion, changes)
+    changes_with_id =
+      StructTools.ensure_id(ingestion, changes)
+      |> migrate_to_multiple_datasets()
 
     ingestion
     |> Changeset.cast(changes_with_id, @cast_fields, empty_values: [""])
@@ -131,8 +144,12 @@ defmodule Andi.InputSchemas.Ingestion do
   end
 
   def changeset_for_draft(%Ecto.Changeset{data: %__MODULE__{}} = changeset, changes) do
+    migrated_changes =
+      changes
+      |> migrate_to_multiple_datasets()
+
     changeset
-    |> Changeset.cast(changes, @cast_fields, empty_values: [""])
+    |> Changeset.cast(migrated_changes, @cast_fields, empty_values: [""])
     |> Changeset.cast_assoc(:schema, with: &DataDictionary.changeset_for_draft_ingestion/2)
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
@@ -146,6 +163,7 @@ defmodule Andi.InputSchemas.Ingestion do
     metadata =
       metadata_changeset
       |> Changeset.apply_changes()
+      |> migrate_to_multiple_datasets()
 
     extracted_metadata = %{
       name: metadata.name,
@@ -382,4 +400,12 @@ defmodule Andi.InputSchemas.Ingestion do
       end
     end
   end
+
+  defp migrate_to_multiple_datasets(%{targetDataset: dataset_id} = changes) do
+    changes
+    |> Map.put(:targetDatasets, [dataset_id])
+    |> Map.delete(:targetDataset)
+  end
+
+  defp migrate_to_multiple_datasets(changes), do: changes
 end

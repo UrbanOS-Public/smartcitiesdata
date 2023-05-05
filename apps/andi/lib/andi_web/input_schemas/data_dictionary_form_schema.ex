@@ -35,7 +35,9 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
   end
 
   def changeset_from_andi_ingestion(ingestion) do
-    ingestion = StructTools.to_map(ingestion)
+    ingestion =
+      StructTools.to_map(ingestion)
+      |> Map.update(:schema, [], &default_ingestion_selector_to_none(&1))
 
     changeset(ingestion)
   end
@@ -178,5 +180,20 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     %{schema: generated_schema}
     |> AtomicMap.convert(safe: false, underscore: false)
     |> changeset()
+  end
+
+  defp default_ingestion_selector_to_none(list_of_dictionary_fields) do
+    list_of_dictionary_fields
+    |> Enum.map(fn
+      %Ecto.Changeset{} = dictionary_field_changeset ->
+        dictionary_field_changeset
+        |> Changeset.put_change(:ingestion_field_selector, "None")
+        |> Changeset.put_change(:ingestion_field_sync, true)
+
+      %{} = dictionary_field_data ->
+        dictionary_field_data
+        |> Map.put(:ingestion_field_selector, "None")
+        |> Map.put(:ingestion_field_sync, true)
+    end)
   end
 end
