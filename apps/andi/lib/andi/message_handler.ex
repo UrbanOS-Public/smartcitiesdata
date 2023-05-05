@@ -22,10 +22,10 @@ defmodule Andi.MessageHandler do
           nil ->
             acc
 
-          %{"dataset_ids" => dataset_ids} ->
+          %{"dataset_ids" => dataset_ids} = msg ->
             dataset_ids
             |> Enum.reduce(acc, fn dataset_id, inner_acc ->
-              Map.put(inner_acc, dataset_id, message)
+              Map.put(inner_acc, dataset_id, msg)
             end)
         end
       end)
