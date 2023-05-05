@@ -15,15 +15,25 @@ defmodule Andi.MessageHandler do
   def handle_messages(messages, state) do
     dlq_messages =
       Enum.reduce(messages, %{}, fn message, acc ->
+        IO.inspect(messages, label: "RYAN - Messages")
         case handle_message(message) do
           :invalid_message ->
             acc
 
-          message ->
-            Map.get(message, "dataset_ids")
-            |> Enum.reduce(acc, fn dataset_id, inner_acc ->
-              Map.put(inner_acc, dataset_id, message)
-            end)
+          %Elsa{} ->
+            case Map.get(message, "dataset_ids") do
+              nil ->
+                IO.inspect("FOUND NIL", label: "RYAN - NIL")
+                acc
+
+              dataset_ids ->
+                IO.inspect(messages, label: "RYAN - FOUND IDS")
+                dataset_ids
+                |> Enum.reduce(acc, fn dataset_id, inner_acc ->
+                  Map.put(inner_acc, dataset_id, message)
+                  |> IO.inspect(label: "RYAN - results")
+                end)
+            end
         end
       end)
 
