@@ -42,7 +42,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoService.preview(any(), @system_name), return: list_of_maps)
+      expect(PrestoService.preview(any(), @system_name, any()), return: list_of_maps)
       expect(PrestoService.preview_columns(any(), @system_name), return: list_of_columns)
 
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
@@ -83,7 +83,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoService.preview(any(), @system_name), return: list_of_maps)
+      expect(PrestoService.preview(any(), @system_name, any()), return: list_of_maps)
       expect(PrestoService.preview_columns(any(), @system_name), return: list_of_columns)
 
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
@@ -95,7 +95,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       list_of_columns = ["id", "json_encoded"]
       expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoService.preview(any(), @system_name), return: [])
+      expect(PrestoService.preview(any(), @system_name, any()), return: [])
       expect(PrestoService.preview_columns(any(), @system_name), return: list_of_columns)
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
@@ -106,7 +106,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       expected = %{"data" => [], "meta" => %{"columns" => []}}
 
       allow(PrestoService.preview_columns(any(), any()), return: [])
-      allow(PrestoService.preview(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "Test error" end)
+      allow(PrestoService.preview(any(), any(), any()), exec: fn _, _, _ -> raise Prestige.Error, message: "Test error" end)
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -117,22 +117,22 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
     test "retrieves geojson dataset with bounding box", %{conn: conn} do
       dataset_name = "the_dataset"
       dataset_id = "the_dataset_id"
-
+      schema = [
+        %{name: "id", type: "integer"},
+        %{name: "name", type: "string"}
+      ]
       model =
         Helper.sample_model(%{
           id: dataset_id,
           name: dataset_name,
           sourceFormat: "geojson",
           systemName: dataset_name,
-          schema: [
-            %{name: "id", type: "integer"},
-            %{name: "name", type: "string"}
-          ]
+          schema: schema
         })
 
       allow(Model.get(dataset_id), return: model)
 
-      allow(DiscoveryApi.Services.PrestoService.preview(any(), dataset_name),
+      allow(DiscoveryApi.Services.PrestoService.preview(any(), dataset_name, schema),
         return: [
           %{"feature" => "{\"geometry\": { \"coordinates\": [[0, 0], [0, 1]] }}"},
           %{"feature" => "{\"geometry\": { \"coordinates\": [[1, 0]] }}"},
@@ -180,7 +180,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       allow(Model.get(dataset_id), return: model)
 
-      allow(DiscoveryApi.Services.PrestoService.preview(any(), dataset_name),
+      allow(DiscoveryApi.Services.PrestoService.preview(any(), dataset_name, any()),
         return: [
           %{"feature" => "{\"geometry\": { \"coordinates\": [] }}"}
         ]

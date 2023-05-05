@@ -91,7 +91,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       allow(Redix.command!(any(), any()), return: :ok)
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
@@ -132,7 +132,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         return: ["feature"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result), return: [])
 
@@ -177,7 +177,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         return: ["feature"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
@@ -232,7 +232,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         return: ["bob", "andi"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"andi" => 1, "bob" => 2}]
@@ -248,7 +248,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   describe "metrics" do
     setup do
-      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, name: "Joe"}, %{"id" => 2, name: "Robby"}]

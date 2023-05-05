@@ -44,14 +44,14 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     # these clearly need to be condensed
     allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["id", "name"]})
     allow(PrestoService.preview_columns(any(), @system_name), return: ["id", "name"])
-    allow(PrestoService.preview(any(), @system_name), return: [[1, "Joe"], [2, "Robby"]])
+    allow(PrestoService.preview(any(), @system_name, any()), return: [[1, "Joe"], [2, "Robby"]])
     allow(PrestoService.build_query(any(), any(), any()), return: {:ok, "select * from #{@system_name}"})
     allow(PrestoService.is_select_statement?("select * from #{@system_name}"), return: true)
     allow(PrestoService.get_affected_tables(any(), "select * from #{@system_name}"), return: {:ok, ["#{@system_name}"]})
 
     allow(Prestige.new_session(any()), return: :connection)
     allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
-    allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+    allow(Prestige.stream!(any(), any()), return: [:result])
 
     allow(Prestige.Result.as_maps(:result),
       return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]

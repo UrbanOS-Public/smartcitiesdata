@@ -6,9 +6,17 @@ defmodule DiscoveryApi.Services.PrestoService do
     ~r/^\s*WITH\s.*$/i
   ]
 
-  def preview(session, dataset_system_name, row_limit \\ 50) do
+  def preview(session, dataset_system_name, row_limit \\ 50, schema) do
+    case_sensitive_columns = case Enum.empty?(schema) do
+      true -> "*"
+      false -> Enum.map(schema, fn col ->
+        case_sensitive_name = Map.get(col, :name)
+        "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
+      end)
+      |> Enum.join(", ")
+    end
     session
-    |> Prestige.query!("select * from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.query!("select #{case_sensitive_columns} from #{dataset_system_name} limit #{row_limit}")
     |> Prestige.Result.as_maps()
   end
 

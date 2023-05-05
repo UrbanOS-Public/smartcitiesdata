@@ -64,7 +64,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
       data_stream =
         DiscoveryApi.prestige_opts()
         |> Prestige.new_session()
-        |> Prestige.stream!("select * from #{dataset_name}")
+        |> Prestige.stream!("select #{format_select_statement(schema)} from #{dataset_name}")
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
       rendered_data_stream =
@@ -100,7 +100,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
       data_stream =
         DiscoveryApi.prestige_opts()
         |> Prestige.new_session()
-        |> Prestige.stream!("select * from #{dataset_name}")
+        |> Prestige.stream!("select #{format_select_statement(schema)} from #{dataset_name}")
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
 
       rendered_data_stream =
@@ -123,5 +123,13 @@ defmodule DiscoveryApiWeb.DataDownloadController do
     expires = params["expires"] || "0"
     integer_expires = String.to_integer(expires)
     HmacToken.valid_hmac_token(key, dataset_id, integer_expires)
+  end
+
+  defp format_select_statement(schema) do
+    Enum.map(schema, fn col ->
+      case_sensitive_name = Map.get(col, :name)
+      "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
+    end)
+    |> Enum.join(", ")
   end
 end

@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
     System.put_env("REQUIRE_API_KEY", "true")
     allow(ObjectStorageService.download_file_as_stream(any(), any()), return: {:ok, @data_stream, "csv"})
     allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+    allow(Prestige.stream!(any(), any()), return: [:result])
     allow(Prestige.Result.as_maps(:result), return: @data_map)
     :ok
   end

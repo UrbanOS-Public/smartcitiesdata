@@ -67,12 +67,12 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
       # these clearly need to be condensed
       allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
       allow(PrestoService.preview_columns(any(), @system_name), return: ["feature"])
-      allow(PrestoService.preview(any(), @system_name), return: @geo_json_features)
+      allow(PrestoService.preview(any(), @system_name, any()), return: @geo_json_features)
       allow(PrestoService.build_query(any(), any(), any()), return: {:ok, "select * from #{@system_name}"})
 
       allow(Prestige.new_session(any()), return: :connect)
       allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
-      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(any()),
         return: [

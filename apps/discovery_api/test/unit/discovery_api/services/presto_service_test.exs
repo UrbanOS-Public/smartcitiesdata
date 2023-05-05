@@ -13,16 +13,22 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
   test "preview should query presto for given table" do
     dataset = "things_in_the_fire"
 
-    list_of_maps = [
-      %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},
-      %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)},
-      %{"id" => Faker.UUID.v4(), name: Faker.Lorem.characters(3..10)}
+    schema = [
+      %{name: "Thing1"},
+      %{name: "Thing2"},
+      %{name: "Thing3"}
     ]
 
-    allow(Prestige.query!(:connection, "select * from #{dataset} limit 50"), return: :result)
+    list_of_maps = [
+      %{"id" => Faker.UUID.v4(), name: "thing1"},
+      %{"id" => Faker.UUID.v4(), name: "thing2"},
+      %{"id" => Faker.UUID.v4(), name: "thing3"}
+    ]
+
+    allow(Prestige.query!(:connection, "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"), return: :result)
     expect(Prestige.Result.as_maps(:result), return: list_of_maps)
 
-    result = PrestoService.preview(:connection, dataset)
+    result = PrestoService.preview(:connection, dataset, schema)
     assert list_of_maps == result
   end
 
