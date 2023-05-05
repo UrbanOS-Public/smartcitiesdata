@@ -25,7 +25,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       %{"id" => Faker.UUID.v4(), name: "thing3"}
     ]
 
-    allow(Prestige.query!(:connection, "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"), return: :result)
+    allow(Prestige.query!(:connection, "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"),
+      return: :result
+    )
+
     expect(Prestige.Result.as_maps(:result), return: list_of_maps)
 
     result = PrestoService.preview(:connection, dataset, schema)

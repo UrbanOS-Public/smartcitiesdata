@@ -32,6 +32,7 @@ defmodule DiscoveryApiWeb.DataController do
     columns = PrestoService.preview_columns(session, dataset_name)
     schema = conn.assigns.model.schema
     rows = PrestoService.preview(session, dataset_name, schema)
+
     render(conn, :data, %{
       rows: rows,
       columns: columns,

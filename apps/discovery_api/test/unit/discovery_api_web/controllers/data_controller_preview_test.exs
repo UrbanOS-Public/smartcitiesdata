@@ -117,10 +117,12 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
     test "retrieves geojson dataset with bounding box", %{conn: conn} do
       dataset_name = "the_dataset"
       dataset_id = "the_dataset_id"
+
       schema = [
         %{name: "id", type: "integer"},
         %{name: "name", type: "string"}
       ]
+
       model =
         Helper.sample_model(%{
           id: dataset_id,
