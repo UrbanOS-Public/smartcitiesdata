@@ -30,7 +30,7 @@ defmodule Andi.InputSchemas.Ingestions do
     Repo.all(query)
   end
 
-  def create(dataset_id) do
+  def create(dataset_ids) do
     new_ingestion_id = UUID.uuid4()
 
     new_changeset =
@@ -38,7 +38,7 @@ defmodule Andi.InputSchemas.Ingestions do
         %Ingestion{},
         %{
           id: new_ingestion_id,
-          targetDataset: dataset_id
+          targetDatasets: dataset_ids
         }
       )
 

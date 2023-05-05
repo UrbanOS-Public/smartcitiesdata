@@ -40,7 +40,7 @@ defmodule Reaper.YeetTest do
         id: @ingestion_id,
         cadence: "once",
         sourceFormat: "json",
-        targetDataset: "noodles",
+        targetDatasets: ["noodles", "company"],
         extractSteps: [
           %{
             assigns: %{},
@@ -68,7 +68,7 @@ defmodule Reaper.YeetTest do
       eventually(fn ->
         messages = TestUtils.get_dlq_messages_from_kafka(@dlq_topic, elsa_brokers())
 
-        assert [%{app: "reaper", dataset_id: "noodles"} | _] = messages
+        assert [%{app: "reaper", dataset_ids: ["noodles", "company"]} | _] = messages
       end)
     end
 

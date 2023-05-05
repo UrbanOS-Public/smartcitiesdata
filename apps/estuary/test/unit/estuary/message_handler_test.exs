@@ -23,7 +23,7 @@ defmodule Estuary.MessageHandlerTest do
 
     expected_value = %{
       app: "estuary",
-      dataset_id: "Unknown",
+      dataset_ids: ["Unknown"],
       original_message: [payload],
       reason: inspect("Required field missing")
     }
@@ -35,7 +35,7 @@ defmodule Estuary.MessageHandlerTest do
       refute actual_value == :empty
 
       dlq_comparison =
-        &(&1.app == &2.app and &1.dataset_id == &2.dataset_id and
+        &(&1.app == &2.app and &1.dataset_ids == &2.dataset_ids and
             &1.original_message == &2.original_message and &1.reason == &2.reason)
 
       assert_maps_equal(expected_value, actual_value, dlq_comparison)
@@ -58,7 +58,7 @@ defmodule Estuary.MessageHandlerTest do
 
     expected_value = %{
       app: "estuary",
-      dataset_id: "Unknown",
+      dataset_ids: ["Unknown"],
       original_message: [payload],
       reason: inspect("Presto Error")
     }
@@ -71,7 +71,7 @@ defmodule Estuary.MessageHandlerTest do
       refute actual_value == :empty
 
       dlq_comparison =
-        &(&1.app == &2.app and &1.dataset_id == &2.dataset_id and
+        &(&1.app == &2.app and &1.dataset_ids == &2.dataset_ids and
             &1.original_message == &2.original_message and &1.reason == &2.reason)
 
       assert_maps_equal(

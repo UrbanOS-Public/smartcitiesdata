@@ -1,7 +1,7 @@
 defmodule Flair.Durations do
   @moduledoc """
-  Calculate durations. 
-  This is done first by reducing multiple data messages to an accumulater, 
+  Calculate durations.
+  This is done first by reducing multiple data messages to an accumulater,
   and then second by calculating the durations for those aggregate metrics.
   """
 
@@ -11,9 +11,11 @@ defmodule Flair.Durations do
   Aggregates data messages into a mapping of dataset ids to timing data lists.
   """
   @spec reducer(Data.t(), map()) :: %{String.t() => [SmartCity.Data.Timing.t()]}
-  def reducer(%Data{dataset_id: id, operational: %{timing: timing}}, acc) do
-    Map.update(acc, id, List.wrap(timing), fn x ->
-      timing ++ x
+  def reducer(%Data{dataset_ids: ids, operational: %{timing: timing}}, outer_acc) do
+    Enum.reduce(ids, outer_acc, fn id, inner_acc ->
+      Map.update(inner_acc, id, List.wrap(timing), fn x ->
+        timing ++ x
+      end)
     end)
   end
 

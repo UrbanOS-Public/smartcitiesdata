@@ -42,11 +42,11 @@ defmodule DeadLetter.Server do
   metadata.
   """
   @spec process(String.t(), String.t(), any(), String.t(), keyword()) :: :ok | {:error, any()}
-  def process(dataset_id, ingestion_id, message, app_name, options \\ []) do
+  def process(dataset_ids, ingestion_id, message, app_name, options \\ []) do
     dead_letter =
       message
       |> sanitize_message()
-      |> format_message(dataset_id, ingestion_id, app_name, options)
+      |> format_message(dataset_ids, ingestion_id, app_name, options)
 
     Logger.info(fn -> "Enqueueing dead letter: #{inspect(dead_letter)}" end)
 
@@ -66,8 +66,8 @@ defmodule DeadLetter.Server do
   @doc """
     Takes a message and formats the fields so that they can properly be encoded as json. It also enriches the message with a stack trace and timestamp.
   """
-  @spec format_message(any(), String.t(), String.t(), String.t(), keyword()) :: map()
-  def format_message(original_message, dataset_id, ingestion_id, app_name, options \\ []) do
+  @spec format_message(any(), list(String.t()), String.t(), String.t(), keyword()) :: map()
+  def format_message(original_message, dataset_ids, ingestion_id, app_name, options \\ []) do
     stacktrace =
       options
       |> Keyword.get(:stacktrace, Process.info(self(), :current_stacktrace))
@@ -84,10 +84,10 @@ defmodule DeadLetter.Server do
     reason = Keyword.get(options, :reason)
     timestamp = Keyword.get(options, :timestamp, DateTime.utc_now())
 
-    add_dead_letter_count(dataset_id, reason)
+    add_dead_letter_count(dataset_ids, reason)
 
     %{
-      dataset_id: dataset_id,
+      dataset_ids: dataset_ids,
       ingestion_id: ingestion_id,
       app: app_name,
       original_message: original_message,
@@ -114,12 +114,14 @@ defmodule DeadLetter.Server do
     stacktrace
   end
 
-  defp add_dead_letter_count(dataset_id, reason) do
-    [
-      dataset_id: dataset_id,
-      reason: Kernel.inspect(reason)
-    ]
-    |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
+  defp add_dead_letter_count(dataset_ids, reason) do
+    Enum.each(dataset_ids, fn dataset_id ->
+      [
+        dataset_id: dataset_id,
+        reason: Kernel.inspect(reason)
+      ]
+      |> TelemetryEvent.add_event_metrics([:dead_letters_handled])
+    end)
   rescue
     error ->
       Logger.error("Unable to update the metrics: #{error}")

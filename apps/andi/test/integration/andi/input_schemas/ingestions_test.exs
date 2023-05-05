@@ -24,8 +24,8 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert {:ok, _} = Datasets.update(dataset_one)
       assert {:ok, _} = Datasets.update(dataset_two)
 
-      ingestion_one = TDG.create_ingestion(%{targetDataset: dataset_one.id})
-      ingestion_two = TDG.create_ingestion(%{targetDataset: dataset_two.id})
+      ingestion_one = TDG.create_ingestion(%{targetDatasets: [dataset_one.id]})
+      ingestion_two = TDG.create_ingestion(%{targetDatasets: [dataset_two.id]})
 
       assert {:ok, _} = Ingestions.update(ingestion_one)
       assert {:ok, _} = Ingestions.update(ingestion_two)
@@ -39,13 +39,13 @@ defmodule Andi.InputSchemas.IngestionsTest do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
 
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
       {:ok,
        %{
          id: ingestion_id,
          name: name,
-         targetDataset: target_dataset,
+         targetDatasets: [target_dataset],
          extractSteps: [%{id: extract_steps_id} | _],
          schema: [%{id: schema_id} | _]
        } = _andi_ingestion} = Ingestions.update(ingestion)
@@ -53,7 +53,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert %{
                id: ^ingestion_id,
                name: ^name,
-               targetDataset: ^target_dataset,
+               targetDatasets: [^target_dataset],
                extractSteps: [%{id: ^extract_steps_id} | _],
                schema: [%{id: ^schema_id} | _]
              } = Ingestions.get(ingestion.id)
@@ -68,7 +68,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given no parameters, creates a blank Andi ingestion with a random UUID" do
       new_ingestion = Ingestions.create()
       assert is_binary(new_ingestion.id)
-      assert new_ingestion.targetDataset == nil
+      assert new_ingestion.targetDatasets == nil
       assert Ingestions.get(new_ingestion.id).id == new_ingestion.id
     end
   end
@@ -77,19 +77,19 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given an existing ingestion, it cascade deletes it" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
       {:ok,
        %{
          id: ingestion_id,
-         targetDataset: target_dataset,
+         targetDatasets: [target_dataset],
          extractSteps: [%{id: extract_steps_id} | _],
          schema: [%{id: schema_id} | _]
        } = _andi_ingestion} = Ingestions.update(ingestion)
 
       assert %{
                id: ^ingestion_id,
-               targetDataset: ^target_dataset,
+               targetDatasets: [^target_dataset],
                extractSteps: [%{id: ^extract_steps_id} | _],
                schema: [%{id: ^schema_id} | _]
              } = Ingestions.get(ingestion.id)
@@ -105,26 +105,37 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given a newly seen smart city ingestion, turns it into an Andi ingestion" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
       assert {:ok, _} = Ingestions.update(ingestion)
     end
 
     test "given a newly seen smart city ingestion, does not save it into an Andi ingestion unless it is associated with a dataset" do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = TDG.create_ingestion(%{targetDatasets: []})
 
       assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
       refute ingestion_changeset.valid?
 
       assert ingestion_changeset.errors == [
-               targetDataset: {"does not exist", [constraint: :foreign, constraint_name: "ingestions_targetDataset_fkey"]}
+               targetDatasets: {"no target datasets", []}
+             ]
+    end
+
+    test "given a smart city ingestion, does not save it into an Andi ingestion unless it is associated with a valid dataset" do
+      ingestion = TDG.create_ingestion(%{targetDatasets: ["bogus-dataset1", "bogus-dataset2"]})
+
+      assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
+      refute ingestion_changeset.valid?
+
+      assert ingestion_changeset.errors == [
+               targetDatasets: {"one or more target datasets do not exist", []}
              ]
     end
 
     test "given an existing smart city ingestion, updates it" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
       original_topLevelSelector = ingestion.topLevelSelector
 
       assert {:ok, %Ingestion{topLevelSelector: ^original_topLevelSelector} = andi_ingestion} = Ingestions.update(ingestion)
@@ -146,7 +157,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
       smrt_ingestion =
         TDG.create_ingestion(%{
-          targetDataset: dataset.id,
+          targetDatasets: [dataset.id],
           extractSteps: [
             %{
               type: "s3",
@@ -170,7 +181,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
 
       smrt_ingestion =
         TDG.create_ingestion(%{
-          targetDataset: dataset.id,
+          targetDatasets: [dataset.id],
           schema: [
             %{
               name: "one",
@@ -205,7 +216,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given an ingestion id and a cadence, the cadence is successfully updated" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, cadence: "never"})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id], cadence: "never"})
       assert {:ok, %Ingestion{cadence: "never"} = _} = Ingestions.update(ingestion)
 
       new_cadence = "once"

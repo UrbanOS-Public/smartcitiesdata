@@ -50,7 +50,11 @@ defmodule Andi.Event.EventHandlerTest do
           |> elem(2)
           |> Enum.filter(fn message ->
             actual = Jason.decode!(message.value)
-            actual["dataset_id"] == id_for_invalid_dataset
+
+            case actual["dataset_ids"] do
+              nil -> false
+              dataset_ids -> id_for_invalid_dataset in dataset_ids
+            end
           end)
 
         assert 1 == length(failed_messages)
@@ -70,7 +74,7 @@ defmodule Andi.Event.EventHandlerTest do
       allow(IngestionStore.update(invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
       id = UUID.uuid4()
-      valid_ingestion = TDG.create_ingestion(%{id: id, targetDataset: dataset.id})
+      valid_ingestion = TDG.create_ingestion(%{id: id, targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)

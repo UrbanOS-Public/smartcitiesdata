@@ -17,11 +17,13 @@ defmodule Forklift.Event.EventHandlerTest do
     end)
   end
 
-  describe "Ingestion Update" do
+  describe "data_ingest_start" do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_ingestion = UUID.uuid4()
       id_for_invalid_dataset = UUID.uuid4()
-      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDataset: id_for_invalid_dataset})
+
+      invalid_ingestion =
+        TDG.create_ingestion(%{id: id_for_invalid_ingestion, targetDatasets: [id_for_invalid_dataset]})
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
@@ -205,10 +207,12 @@ defmodule Forklift.Event.EventHandlerTest do
 
   describe "Data Extract End" do
     test "A failing message gets placed on dead letter queue and discarded" do
-      id_for_invalid_dataset = UUID.uuid4()
+      invalid_dataset_id = UUID.uuid4()
+      invalid_dataset_id2 = UUID.uuid4()
+      ids_for_invalid_dataset = [invalid_dataset_id, invalid_dataset_id2]
 
       invalid_data = %{
-        "dataset_id" => id_for_invalid_dataset,
+        "dataset_ids" => ids_for_invalid_dataset,
         "extract_start_unix" => "",
         "ingestion_id" => "",
         "msgs_extracted" => ""
@@ -216,7 +220,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.Datasets.get!(id_for_invalid_dataset), exec: fn _ -> raise "nope" end)
+      allow(Forklift.Datasets.get!(invalid_dataset_id), exec: fn _ -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, invalid_data)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -231,8 +235,8 @@ defmodule Forklift.Event.EventHandlerTest do
             actual = Jason.decode!(message.value)
 
             case actual["original_message"] do
-              %{"dataset_id" => message_dataset_id} ->
-                message_dataset_id == id_for_invalid_dataset
+              %{"dataset_ids" => message_dataset_ids} ->
+                Enum.member?(message_dataset_ids, invalid_dataset_id)
 
               _ ->
                 false

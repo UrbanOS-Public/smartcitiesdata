@@ -49,7 +49,7 @@ defmodule Valkyrie.BroadwayTest do
   end
 
   test "should return transformed data", %{broadway: broadway} do
-    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "21"})
+    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => "21"})
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
@@ -67,7 +67,7 @@ defmodule Valkyrie.BroadwayTest do
 
   test "applies valkyrie message timing", %{broadway: broadway} do
     Application.put_env(:valkyrie, :profiling_enabled, true)
-    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
@@ -93,7 +93,7 @@ defmodule Valkyrie.BroadwayTest do
 
   test "should return empty timing when profiling status is not true", %{broadway: broadway} do
     Application.put_env(:valkyrie, :profiling_enabled, false)
-    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
+    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => 21})
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
@@ -125,13 +125,15 @@ defmodule Valkyrie.BroadwayTest do
       refute dlqd_message == :empty
 
       assert dlqd_message.app == "Valkyrie"
-      assert dlqd_message.dataset_id == @dataset_id
+      assert dlqd_message.dataset_ids == [@dataset_id]
       assert dlqd_message.reason == ":something_went_badly"
     end)
   end
 
   test "should yeet message if standardizing data fails due to schmear validation", %{broadway: broadway} do
-    data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => "twenty-one"})
+    data =
+      TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => "twenty-one"})
+
     kafka_message = %{value: Jason.encode!(data)}
 
     Broadway.test_batch(broadway, [kafka_message])
@@ -144,7 +146,7 @@ defmodule Valkyrie.BroadwayTest do
       refute dlqd_message == :empty
 
       assert dlqd_message.app == "Valkyrie"
-      assert dlqd_message.dataset_id == "ds1"
+      assert dlqd_message.dataset_ids == [@dataset_id]
       assert dlqd_message.reason == "%{\"age\" => :invalid_integer}"
       assert dlqd_message.error == :failed_schema_validation
       assert dlqd_message.original_message == Jason.encode!(data)

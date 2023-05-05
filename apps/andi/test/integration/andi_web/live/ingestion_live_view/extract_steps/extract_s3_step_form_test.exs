@@ -30,7 +30,7 @@ defmodule AndiWeb.Extracts3StepFormTest do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
       s3_step = %{context: %{url: "bar.com"}, id: UUID.uuid4(), type: "s3", sequence: 0}
-      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [s3_step]})
+      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset.id], name: "sample_ingestion", extractSteps: [s3_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

@@ -25,14 +25,14 @@ defmodule Reaper.Event.EventHandler do
         data: %SmartCity.Ingestion{} = data
       }) do
     ingestion_update()
-    |> add_event_count(data.targetDataset)
+    |> add_event_count(data.targetDatasets)
 
     Extractions.update_ingestion(data)
     Reaper.Event.Handlers.IngestionUpdate.handle(data)
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -41,14 +41,14 @@ defmodule Reaper.Event.EventHandler do
         data: %SmartCity.Ingestion{} = data
       }) do
     ingestion_delete()
-    |> add_event_count(data.id)
+    |> add_event_count(data.targetDatasets)
 
     Reaper.Event.Handlers.IngestionDelete.handle(data)
     Extractions.delete_ingestion(data.id)
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -57,7 +57,7 @@ defmodule Reaper.Event.EventHandler do
         data: %SmartCity.Ingestion{} = data
       }) do
     data_extract_start()
-    |> add_event_count(data.targetDataset)
+    |> add_event_count(data.targetDatasets)
 
     if Extractions.is_enabled?(data.id) do
       Reaper.Horde.Supervisor.start_data_extract(data)
@@ -73,7 +73,7 @@ defmodule Reaper.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_extract_start failed to process: #{inspect(error)}")
-      DeadLetter.process(data.targetDataset, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -81,20 +81,20 @@ defmodule Reaper.Event.EventHandler do
         type: data_extract_end(),
         data:
           %{
-            "dataset_id" => dataset_id,
+            "dataset_ids" => dataset_ids,
             "extract_start_unix" => _extract_start,
             "ingestion_id" => ingestion_id,
             "msgs_extracted" => _msg_target
           } = data
       }) do
     data_extract_end()
-    |> add_event_count(dataset_id)
+    |> add_event_count(dataset_ids)
 
     Extractions.update_last_fetched_timestamp(ingestion_id)
   rescue
     error ->
       Logger.error("data_extract_end failed to process: #{inspect(error)}")
-      DeadLetter.process(dataset_id, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -103,14 +103,14 @@ defmodule Reaper.Event.EventHandler do
         data: %Dataset{} = data
       }) do
     dataset_delete()
-    |> add_event_count(data.id)
+    |> add_event_count([data.id])
 
     {:ok, extractions} = Brook.ViewState.get_all(@instance_name, :extractions)
 
     extractions_to_delete =
       Enum.filter(extractions, fn {key, e} ->
         with {:ok, ingestion} <- Map.fetch(e, "ingestion") do
-          ingestion[:targetDataset] == data[:id]
+          Enum.member?(ingestion[:targetDatasets], data[:id])
         else
           :error -> Logger.error("Extraction #{key} does not have an Ingestion object")
         end
@@ -129,17 +129,19 @@ defmodule Reaper.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process(data.id, nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
-  defp add_event_count(event_type, dataset_id) do
-    [
-      app: "reaper",
-      author: "reaper",
-      dataset_id: dataset_id,
-      event_type: event_type
-    ]
-    |> TelemetryEvent.add_event_metrics([:events_handled])
+  defp add_event_count(event_type, dataset_ids) do
+    Enum.map(dataset_ids, fn dataset_id ->
+      [
+        app: "reaper",
+        author: "reaper",
+        dataset_id: dataset_id,
+        event_type: event_type
+      ]
+    end)
+    |> Enum.each(fn message -> TelemetryEvent.add_event_metrics(message, [:events_handled]) end)
   end
 end

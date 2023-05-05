@@ -64,16 +64,26 @@ defmodule Forklift.Event.EventHandlingTest do
         :ok
       end)
 
+      MockReader
+      |> expect(:init, fn args ->
+        send(test, Keyword.get(args, :dataset))
+        :ok
+      end)
+
+      expect(MockTable, :init, fn args -> send(test, args) end)
       expect(MockTable, :init, fn args -> send(test, args) end)
 
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
-      ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+      dataset2 = TDG.create_dataset(%{id: "dataset-id2"})
+      ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id, dataset2.id]})
       Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset2)
       Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
 
       assert_receive %SmartCity.Dataset{id: "dataset-id"}
+      assert_receive %SmartCity.Dataset{id: "dataset-id2"}
     end
   end
 
@@ -119,12 +129,13 @@ defmodule Forklift.Event.EventHandlingTest do
   describe "on data:extract:end event" do
     setup do
       dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream"})
+      dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream"})
       ingestion_id = Faker.UUID.v4()
       msg_target = 5
       extract_start = Timex.now() |> Timex.to_unix()
 
       fake_extract_end_msg = %{
-        "dataset_id" => dataset.id,
+        "dataset_ids" => [dataset.id, dataset2.id],
         "extract_start_unix" => extract_start,
         "ingestion_id" => ingestion_id,
         "msgs_extracted" => msg_target
@@ -132,6 +143,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
       [
         dataset: dataset,
+        dataset2: dataset2,
         ingestion_id: ingestion_id,
         extract_start: extract_start,
         msg_target: msg_target,
@@ -141,6 +153,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
     test "stores ingestion_progress target message count", %{
       dataset: dataset,
+      dataset2: dataset2,
       ingestion_id: ingestion_id,
       extract_start: extract_start,
       msg_target: msg_target,
@@ -150,7 +163,12 @@ defmodule Forklift.Event.EventHandlingTest do
         return: :in_progress
       )
 
+      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
+        return: :in_progress
+      )
+
       expect(Forklift.Datasets.get!(dataset.id), return: dataset)
+      expect(Forklift.Datasets.get!(dataset2.id), return: dataset2)
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
@@ -165,6 +183,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
     test "kicks off compaction if ingestion_progress is complete", %{
       dataset: dataset,
+      dataset2: dataset2,
       ingestion_id: ingestion_id,
       extract_start: extract_start,
       msg_target: msg_target,
@@ -174,8 +193,14 @@ defmodule Forklift.Event.EventHandlingTest do
         return: :ingestion_complete
       )
 
+      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
+        return: :ingestion_complete
+      )
+
       expect(Forklift.Datasets.get!(dataset.id), return: dataset)
+      expect(Forklift.Datasets.get!(dataset2.id), return: dataset2)
       expect(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+      expect(Forklift.Jobs.DataMigration.compact(dataset2, ingestion_id, extract_start), return: {:ok, dataset2.id})
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(
@@ -190,6 +215,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
     test "*does not* kick off compaction if ingestion_progress is not complete", %{
       dataset: dataset,
+      dataset2: dataset2,
       ingestion_id: ingestion_id,
       extract_start: extract_start,
       msg_target: msg_target,
@@ -199,8 +225,14 @@ defmodule Forklift.Event.EventHandlingTest do
         return: :in_progress
       )
 
-      allow(Forklift.Datasets.get!(any()), return: dataset)
-      allow(Forklift.Jobs.DataMigration.compact(any(), any(), any()), return: {:ok, dataset.id})
+      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
+        return: :in_progress
+      )
+
+      allow(Forklift.Datasets.get!(dataset.id), return: dataset)
+      allow(Forklift.Datasets.get!(dataset2.id), return: dataset2)
+      allow(Forklift.Jobs.DataMigration.compact(dataset, any(), any()), return: {:ok, dataset.id})
+      allow(Forklift.Jobs.DataMigration.compact(dataset2, any(), any()), return: {:ok, dataset2.id})
 
       Brook.Test.with_event(@instance_name, fn ->
         EventHandler.handle_event(

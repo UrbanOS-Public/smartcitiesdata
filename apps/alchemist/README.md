@@ -102,7 +102,7 @@ t2 =
 ingestion =
   SmartCity.TestDataGenerator.create_ingestion(%{
     id: ingestId,
-    targetDataset: datasetId,
+    targetDatasets: [datasetId],
     transformations: [t1, t2]
   })
 

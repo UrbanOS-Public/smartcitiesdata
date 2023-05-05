@@ -16,12 +16,12 @@ defmodule Forklift.MessageHandlerTest do
   @moduletag capture_log: true
   test "malformed messages are sent to dead letter queue" do
     malformed_kafka_message =
-      TDG.create_data(dataset_id: "ds1")
+      TDG.create_data(dataset_ids: ["ds1"])
       |> (fn message -> Helper.make_kafka_message(message, "streaming-transformed") end).()
       |> Map.update(:value, "", fn value ->
         value
         |> Jason.decode!()
-        |> Map.drop(["dataset_id", "payload"])
+        |> Map.drop(["dataset_ids", "payload"])
         |> Jason.encode!()
       end)
 
@@ -35,7 +35,7 @@ defmodule Forklift.MessageHandlerTest do
       {:ok, dlqd_message} = DeadLetter.Carrier.Test.receive()
 
       assert dlqd_message.app == "forklift"
-      assert dlqd_message.dataset_id == "Unknown"
+      assert dlqd_message.dataset_ids == []
       assert dlqd_message.reason =~ "Invalid data message"
     end)
 

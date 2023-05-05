@@ -51,7 +51,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     ingestion =
       TDG.create_ingestion(%{
         id: UUID.uuid4(),
-        targetDataset: dataset.id,
+        targetDatasets: [dataset.id],
         name: "sample_ingestion",
         extractSteps: [date_extract_step, http_extract_step]
       })
@@ -135,7 +135,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
 
   test "empty extract steps are invalid", %{conn: conn} do
     dataset = TDG.create_dataset(%{name: "sample_dataset"})
-    ingestion = TDG.create_ingestion(%{id: UUID.uuid4(), targetDataset: dataset.id, name: "sample_ingestion", extractSteps: []})
+    ingestion = TDG.create_ingestion(%{id: UUID.uuid4(), targetDatasets: [dataset.id], name: "sample_ingestion", extractSteps: []})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -165,7 +165,7 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepFormTest do
     }
 
     ingestion =
-      TDG.create_ingestion(%{id: UUID.uuid4(), targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [date_extract_step]})
+      TDG.create_ingestion(%{id: UUID.uuid4(), targetDatasets: [dataset.id], name: "sample_ingestion", extractSteps: [date_extract_step]})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

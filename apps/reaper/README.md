@@ -152,7 +152,7 @@ ingestion = %SmartCity.Ingestion{
     }
   ],
   sourceFormat: "application/json",
-  targetDataset: "af7e0ad6-71d7-4ccb-9bed-56d6e1f91fff",
+  targetDatasets: ["af7e0ad6-71d7-4ccb-9bed-56d6e1f91fff", "0f8bc0f2-e2ad-11ed-b5ea-0242ac120002"],
   topLevelSelector: nil,
   transformations: []
 }

@@ -746,7 +746,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   describe "schema sample upload" do
     test "is shown when sourceFormat is CSV or JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -763,7 +763,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "is shown when sourceFormat is TSV", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/plain", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/plain", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -780,7 +780,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "is hidden when sourceFormat is not CSV, TSV, nor JSON", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "application/geo+json", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/geo+json", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -797,7 +797,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "does not allow file uploads greater than 200MB", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -819,7 +819,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "should throw error when empty csv file is passed", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -843,7 +843,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     data_test "accepts common csv file type #{type}", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -873,7 +873,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "should throw error when empty csv file with `\n` is passed", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -897,7 +897,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
     test "provides modal when existing schema will be overwritten", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
-      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "text/csv", targetDatasets: [dataset.id]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)
@@ -1008,7 +1008,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
     test "should throw error when empty json file is passed", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
-      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDataset: dataset.id})
+      ingestion = TDG.create_ingestion(%{sourceFormat: "application/json", targetDatasets: [dataset.id]})
       {:ok, _} = Ingestions.update(ingestion)
       assert {:ok, view, html} = live(conn, @url_path <> ingestion.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
@@ -1027,7 +1027,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
 
   defp create_ingestion_with_schema(schema, source_format \\ "application/json") do
     dataset = TDG.create_dataset(%{})
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id, schema: schema, sourceFormat: source_format})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id], schema: schema, sourceFormat: source_format})
 
     Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
     Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

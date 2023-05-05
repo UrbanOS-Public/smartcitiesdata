@@ -12,15 +12,17 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDataset: target_dataset_id} = _ingestion,
+        data: %Ingestion{targetDatasets: dataset_ids} = _ingestion,
         author: author
       }) do
-    add_event_count(data_ingest_start(), author, target_dataset_id)
-    dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, target_dataset_id)
+    Enum.each(dataset_ids, fn dataset_id ->
+      add_event_count(data_ingest_start(), author, dataset_id)
+      dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, dataset_id)
 
-    if dataset_name != nil do
-      DiscoveryStreams.Stream.Supervisor.start_child(target_dataset_id)
-    end
+      if dataset_name != nil do
+        DiscoveryStreams.Stream.Supervisor.start_child(dataset_id)
+      end
+    end)
 
     :ok
   end

@@ -86,7 +86,7 @@ defmodule Andi.InputSchemas.InputConverter do
     |> FormTools.replace(:schema, fn schema ->
       schema
       |> Enum.map(&add_ingestion_id(&1, ingestion.id))
-      |> Enum.map(&add_dataset_id(&1, ingestion.targetDataset))
+      |> Enum.map(&add_dataset_ids(&1, ingestion.targetDatasets))
       |> Enum.map(&convert_default/1)
     end)
   end
@@ -305,6 +305,17 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.put(:bread_crumb, bread_crumb)
     |> FormTools.replace(:subSchema, fn sub_schema ->
       Enum.map(sub_schema, &add_dataset_id(&1, dataset_id, bread_crumb <> " > "))
+    end)
+  end
+
+  defp add_dataset_ids(schema, dataset_ids, parent_bread_crumb \\ "") do
+    bread_crumb = parent_bread_crumb <> schema.name
+
+    schema
+    |> Map.put(:dataset_ids, dataset_ids)
+    |> Map.put(:bread_crumb, bread_crumb)
+    |> FormTools.replace(:subSchema, fn sub_schema ->
+      Enum.map(sub_schema, &add_dataset_ids(&1, dataset_ids, bread_crumb <> " > "))
     end)
   end
 

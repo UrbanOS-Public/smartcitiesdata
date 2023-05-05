@@ -38,7 +38,7 @@ defmodule AndiWeb.ExtractSecretStepFormTest do
       }
 
       ingestion =
-        TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [secret_step]})
+        TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset.id], name: "sample_ingestion", extractSteps: [secret_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

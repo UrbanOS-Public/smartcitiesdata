@@ -99,7 +99,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
         refute dlqd_message == :empty
 
         assert dlqd_message.app == "reaper"
-        assert dlqd_message.dataset_id == "ds9"
+        assert dlqd_message.dataset_ids == ["ds9", "ds10"]
         assert dlqd_message.original_message == {%{three: 3, four: 4}, 2}
         assert dlqd_message.reason == "\"bad stuff\""
       end)
@@ -109,7 +109,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
   defp ingestion(opts) do
     TDG.create_ingestion(%{
       id: Keyword.get(opts, :id, "ds1"),
-      targetDataset: "ds9",
+      targetDatasets: ["ds9", "ds10"],
       allow_duplicates: Keyword.get(opts, :allow_duplicates, true)
     })
   end

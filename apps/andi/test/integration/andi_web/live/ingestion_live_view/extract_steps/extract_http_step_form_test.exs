@@ -30,7 +30,9 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       dataset = TDG.create_dataset(%{name: "sample_dataset"})
       ingestion_id = UUID.uuid4()
       http_step = %{context: %{destination: "foo", url: "bar.com", action: "POST", body: "{}"}, id: UUID.uuid4(), type: "http", sequence: 0}
-      ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset.id, name: "sample_ingestion", extractSteps: [http_step]})
+
+      ingestion =
+        TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset.id], name: "sample_ingestion", extractSteps: [http_step]})
 
       Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), :andi, ingestion)

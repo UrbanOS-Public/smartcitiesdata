@@ -16,6 +16,7 @@ defmodule Valkyrie.EndOfDataTest do
 
   test "Data is not processed after END_OF_DATA message" do
     dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
 
     input_topic = "#{input_topic_prefix()}-#{dataset_id}"
     output_topic = "#{output_topic_prefix()}-#{dataset_id}"
@@ -38,18 +39,21 @@ defmodule Valkyrie.EndOfDataTest do
         }
       )
 
-    ingestion = TDG.create_ingestion(%{targetDataset: dataset.id})
+    ingestion = TDG.create_ingestion(%{targetDatasets: [dataset_id, dataset_id2]})
 
     data_message =
       TestHelpers.create_data(%{
-        dataset_id: dataset.id,
+        dataset_ids: [dataset_id, dataset_id2],
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
     eod_message = end_of_data()
 
     message_to_not_consume =
-      TestHelpers.create_data(%{dataset_id: dataset.id, payload: %{"name" => %{"first" => "Post", "last" => "Man"}}})
+      TestHelpers.create_data(%{
+        dataset_ids: [dataset_id, dataset_id2],
+        payload: %{"name" => %{"first" => "Post", "last" => "Man"}}
+      })
 
     Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
     Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)

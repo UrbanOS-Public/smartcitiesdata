@@ -1,6 +1,7 @@
-defmodule AndiWeb.EditControllerTest do
+defmodule AndiWeb.AuditLogControllerTest do
   use ExUnit.Case
   use Andi.DataCase
+
   use AndiWeb.Test.AuthConnCase.IntegrationCase
 
   @moduletag shared_data_connection: true
@@ -12,19 +13,22 @@ defmodule AndiWeb.EditControllerTest do
 
   describe "Audit Log controller" do
     setup do
-      AuditEvents.log_audit_event(:api, :event_type, %{data: "data"})
+      on_exit(fn -> System.put_env("REQUIRE_ADMIN_API_KEY", "false") end)
+      AuditEvents.log_audit_event(:api, "some:event:type", %{data: "data"})
+
+      :ok
     end
 
-    test "Returns 200 when for users with curator role", %{curator_conn: curator_conn, andi_dataset: andi_dataset} do
-      conn = get(curator_conn, "#{@url_path}/")
+    test "Returns 200 for all users when no Api Key required", %{public_conn: public_conn} do
+      conn = get(public_conn, "#{@url_path}/")
 
       assert response(conn, 200)
-      assert redirected_to(conn) =~ "data"
     end
 
-    test "displays error for users without a curator role", %{public_conn: public_conn, andi_dataset: andi_dataset} do
+    test "displays error for users without an api key", %{public_conn: public_conn} do
+      System.put_env("REQUIRE_ADMIN_API_KEY", "true")
       conn = get(public_conn, "#{@url_path}/")
-      assert response(conn, 403)
+      assert response(conn, 401)
     end
   end
 end

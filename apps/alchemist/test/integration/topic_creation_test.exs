@@ -16,24 +16,17 @@ defmodule Alchemist.TopicCreationTest do
   test "Input and Output topics should be created when a ingestion_update event is consumed" do
     ingestion_id = Faker.UUID.v4()
     dataset_id = Faker.UUID.v4()
+    dataset_id2 = Faker.UUID.v4()
     input_topic = "#{input_topic_prefix()}-#{ingestion_id}"
-    output_topic = "#{output_topic_prefix()}-#{dataset_id}"
 
-    dataset =
-      TDG.create_dataset(
-        id: dataset_id,
-        technical: %{
-          schema: [
-            %{name: "name", type: "map", subSchema: [%{name: "first", type: "string"}, %{name: "last", type: "string"}]}
-          ]
-        }
-      )
+    output_topic_1 = "#{output_topic_prefix()}-#{dataset_id}"
+    output_topic_2 = "#{output_topic_prefix()}-#{dataset_id2}"
 
-    ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDataset: dataset_id})
+    ingestion = TDG.create_ingestion(%{id: ingestion_id, targetDatasets: [dataset_id, dataset_id2]})
 
     data_message =
       TestHelpers.create_data(%{
-        dataset_id: dataset.id,
+        dataset_ids: [dataset_id, dataset_id2],
         payload: %{"name" => %{"first" => "Ben", "last" => "Brewer"}}
       })
 
@@ -43,9 +36,11 @@ defmodule Alchemist.TopicCreationTest do
     TestHelpers.produce_message(data_message, input_topic, elsa_brokers())
 
     eventually fn ->
-      messages = TestHelpers.get_data_messages_from_kafka(output_topic, elsa_brokers())
+      first_output_topic_messages = TestHelpers.get_data_messages_from_kafka(output_topic_1, elsa_brokers())
+      second_output_topic_messages = TestHelpers.get_data_messages_from_kafka(output_topic_2, elsa_brokers())
 
-      assert data_message in messages
+      assert data_message in first_output_topic_messages
+      assert data_message in second_output_topic_messages
     end
   end
 end

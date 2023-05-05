@@ -120,14 +120,14 @@ defmodule Reaper.Event.EventHandlerTest do
     test "should not send ingest_start event for data that updates more than once per minute on subsequent events" do
       allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
 
-      ingestion = TDG.create_ingestion(%{id: "in1", targetDataset: "ds2", cadence: "* 2 24 * * *"})
+      ingestion = TDG.create_ingestion(%{id: "in1", targetDatasets: ["ds2", "ds3"], cadence: "* 2 24 * * *"})
 
       Brook.Test.with_event(@instance_name, fn ->
         Reaper.Collections.Extractions.update_ingestion(ingestion)
       end)
 
       Brook.Test.send(@instance_name, data_extract_start(), :reaper, ingestion)
-      send_data_extract_end(ingestion.id, ingestion.targetDataset, 0, Timex.to_unix(Timex.now()))
+      send_data_extract_end(ingestion.id, ingestion.targetDatasets, 0, Timex.to_unix(Timex.now()))
 
       assert_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}}
 
@@ -155,8 +155,8 @@ defmodule Reaper.Event.EventHandlerTest do
     test "should persist last fetched timestamp" do
       date = DateTime.utc_now()
       allow(DateTime.utc_now(), return: date, meck_options: [:passthrough])
-      ingestion = TDG.create_ingestion(%{id: "ing1", targetDataset: "ds1"})
-      send_data_extract_end(ingestion.id, ingestion.targetDataset, 0, Timex.to_unix(date))
+      ingestion = TDG.create_ingestion(%{id: "ing1", targetDatasets: ["ds1", "ds2"]})
+      send_data_extract_end(ingestion.id, ingestion.targetDatasets, 0, Timex.to_unix(date))
 
       eventually(fn ->
         extraction = Brook.get!(@instance_name, :extractions, ingestion.id)
@@ -170,9 +170,9 @@ defmodule Reaper.Event.EventHandlerTest do
     test "should delete associated raw topic when dataset:delete event fires" do
       dataset = TDG.create_dataset(id: "dataset_id", technical: %{sourceType: "ingest"})
 
-      non_matching_ingestion = TDG.create_ingestion(%{id: 1, targetDataset: "other_dataset"})
-      matching_ingestion = TDG.create_ingestion(%{id: 2, targetDataset: "dataset_id"})
-      another_matching_ingestion = TDG.create_ingestion(%{id: 3, targetDataset: "dataset_id"})
+      non_matching_ingestion = TDG.create_ingestion(%{id: 1, targetDatasets: ["other_dataset", "bar"]})
+      matching_ingestion = TDG.create_ingestion(%{id: 2, targetDatasets: ["dataset_id", "foo"]})
+      another_matching_ingestion = TDG.create_ingestion(%{id: 3, targetDatasets: ["dataset_id", "baz"]})
 
       mock_view_state = %{
         1 => %{
@@ -214,10 +214,10 @@ defmodule Reaper.Event.EventHandlerTest do
     end
   end
 
-  defp send_data_extract_end(ingestion_id, dataset_id, msgs_count, unix_time) do
+  defp send_data_extract_end(ingestion_id, dataset_ids, msgs_count, unix_time) do
     msg = %{
       ingestion_id: ingestion_id,
-      dataset_id: dataset_id,
+      dataset_ids: dataset_ids,
       msgs_extracted: msgs_count,
       extract_start_unix: unix_time
     }

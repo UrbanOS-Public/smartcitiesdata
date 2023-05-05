@@ -82,7 +82,7 @@ defmodule Valkyrie.Broadway do
     else
       {:failed_schema_validation, reason} ->
         DeadLetter.process(
-          dataset.id,
+          [dataset.id],
           "Unknown",
           message_data.value,
           @app_name,
@@ -93,7 +93,7 @@ defmodule Valkyrie.Broadway do
         Message.failed(message, reason)
 
       {:error, reason} ->
-        DeadLetter.process(dataset.id, "Unknown", message_data.value, @app_name, reason: inspect(reason))
+        DeadLetter.process([dataset.id], "Unknown", message_data.value, @app_name, reason: inspect(reason))
 
         Message.failed(message, reason)
     end

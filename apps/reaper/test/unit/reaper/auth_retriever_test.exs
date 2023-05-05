@@ -8,7 +8,6 @@ defmodule AuthRetrieverTest do
   alias Reaper.Cache.AuthCache
 
   @ingestion_id "123"
-  @dataset_id "some-dataset"
   @auth_response Jason.encode!(%{"api_key" => "12343523423423"})
 
   setup do

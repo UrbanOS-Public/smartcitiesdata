@@ -7,7 +7,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
   alias Reaper.{Cache, Persistence}
   alias SmartCity.TestDataGenerator, as: TDG
 
-  @message_size 293
+  @message_size 306
   @iso_output DateTime.utc_now() |> DateTime.to_iso8601()
   @cache __MODULE__
 
@@ -37,14 +37,14 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
       state = %{
         cache: @cache,
-        ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
+        ingestion: TDG.create_ingestion(%{id: "ingest1", targetDatasets: ["ds1", "ds2"], allow_duplicates: false}),
         batch: [],
         bytes: 0,
         originals: [],
         start_time: DateTime.utc_now()
       }
 
-      [message | _] = create_data_messages(?a..?a, "ds1", state.ingestion, state.start_time)
+      [message | _] = create_data_messages(?a..?a, ["ds1", "ds2"], state.ingestion, state.start_time)
       incoming_events = ?a..?z |> create_messages() |> Enum.with_index()
 
       {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
@@ -54,31 +54,31 @@ defmodule Reaper.DataExtract.LoadStageTest do
     test "2 batches are sent to kafka", %{new_state: new_state} do
       assert_called Elsa.produce(
                       any(),
-                      "test-ds1",
-                      create_data_messages(?a..?j, "ds1", new_state.ingestion, new_state.start_time),
+                      "test-ingest1",
+                      create_data_messages(?a..?j, ["ds1", "ds2"], new_state.ingestion, new_state.start_time),
                       any()
                     )
 
       assert_called Elsa.produce(
                       any(),
-                      "test-ds1",
-                      create_data_messages(?k..?t, "ds1", new_state.ingestion, new_state.start_time),
+                      "test-ingest1",
+                      create_data_messages(?k..?t, ["ds1", "ds2"], new_state.ingestion, new_state.start_time),
                       any()
                     )
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do
-      assert new_state.batch == create_data_messages(?z..?u, "ds1", new_state.ingestion, new_state.start_time)
+      assert new_state.batch == create_data_messages(?z..?u, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
       assert new_state.bytes == 6 * @message_size
     end
 
     test "the last processed index is recorded when batch is sent to kafka" do
-      assert_called Persistence.record_last_processed_index("ds1", 9)
-      assert_called Persistence.record_last_processed_index("ds1", 19)
+      assert_called Persistence.record_last_processed_index("ingest1", 9)
+      assert_called Persistence.record_last_processed_index("ingest1", 19)
     end
 
     test "all messages sent to kafka are cached" do
-      ?a..?t
+      ?a..?r
       |> create_messages()
       |> Enum.each(fn msg ->
         assert {:duplicate, msg} == Cache.mark_duplicates(@cache, msg)
@@ -119,7 +119,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
     state = %{
       cache: @cache,
-      ingestion: TDG.create_ingestion(%{id: "ds1", targetDataset: "ds1", allow_duplicates: false}),
+      ingestion: TDG.create_ingestion(%{id: "ds1", targetDatasets: ["ds1", "ds2"], allow_duplicates: false}),
       batch: [],
       bytes: 0,
       originals: [],
@@ -129,7 +129,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
     incoming_events = ?a..?c |> create_messages() |> Enum.with_index()
 
     {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
-    assert new_state.batch == create_data_messages(?c..?a, "ds1", new_state.ingestion, new_state.start_time)
+    assert new_state.batch == create_data_messages(?c..?a, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
   end
 
   defp create_messages(range, opts \\ []) do
@@ -144,12 +144,12 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end)
   end
 
-  defp create_data_messages(range, dataset_id, ingestion, start_time) do
+  defp create_data_messages(range, dataset_ids, ingestion, start_time) do
     range
     |> create_messages()
     |> Enum.map(fn payload ->
       %{
-        dataset_id: dataset_id,
+        dataset_ids: dataset_ids,
         ingestion_id: ingestion.id,
         extraction_start_time: start_time,
         payload: payload,

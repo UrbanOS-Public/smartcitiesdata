@@ -17,7 +17,7 @@ defmodule Alchemist.IngestionSupervisorTest do
       start_options = [
         ingestion: ingestion,
         input_topic: "input_topic",
-        output_topic: "output_topic"
+        output_topics: "output_topics"
       ]
 
       %{start_options: start_options}

@@ -53,7 +53,6 @@ services:
     - metastore
     - minio
     image: trinodb/trino:389
-    platform: linux/amd64
     ports:
     - "8080:8080"
     healthcheck:

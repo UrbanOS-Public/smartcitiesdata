@@ -48,7 +48,7 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationsStepTest do
       TDG.create_ingestion(%{
         id: UUID.uuid4(),
         name: "Original",
-        targetDataset: dataset.id,
+        targetDatasets: [dataset.id],
         transformations: [transformation1, transformation2]
       })
 

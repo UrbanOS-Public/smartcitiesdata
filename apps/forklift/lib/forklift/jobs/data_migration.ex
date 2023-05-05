@@ -21,7 +21,8 @@ defmodule Forklift.Jobs.DataMigration do
 
     json_table = json_table_name(system_name)
 
-    with {:ok, original_count} <- PrestigeHelper.count(system_name),
+    with {:ok, original_count} <-
+           PrestigeHelper.count(system_name),
          {:ok, extraction_count} <-
            PrestigeHelper.count_query(
              "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{

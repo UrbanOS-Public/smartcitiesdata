@@ -38,6 +38,7 @@ defmodule Pipeline.Writer.S3Writer do
     else
       {error, {:ok, statement}} ->
         Logger.error("Error creating table as: #{inspect(statement)}")
+        Logger.error("Error reason: #{inspect(error)}")
         {:error, "Presto table creation failed due to: #{inspect(error)}"}
     end
   end

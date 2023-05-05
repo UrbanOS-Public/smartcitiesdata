@@ -132,7 +132,7 @@ defmodule Reaper.EventHandlerTest do
       id_for_invalid_ingestion = UUID.uuid4()
 
       data = %{
-        "dataset_id" => UUID.uuid4(),
+        "dataset_ids" => [UUID.uuid4(), UUID.uuid4()],
         "extract_start_unix" => "",
         "ingestion_id" => id_for_invalid_ingestion,
         "msgs_extracted" => ""

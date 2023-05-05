@@ -21,16 +21,17 @@ defmodule DeadLetterTest do
   }
 
   @dataset_id "ds1"
+  @dataset_id2 "ds2"
   @ingestion_id "in1"
 
   describe "process/2" do
     @tag capture_log: true
     test "sends formatted message to the queue" do
-      DeadLetter.process(@dataset_id, @ingestion_id, @default_original_message, "forklift")
+      DeadLetter.process([@dataset_id, @dataset_id2], @ingestion_id, @default_original_message, "forklift")
 
       assert_async do
         expected = %{
-          dataset_id: @dataset_id,
+          dataset_ids: [@dataset_id, @dataset_id2],
           app: "forklift",
           original_message: @default_original_message
         }
@@ -40,7 +41,7 @@ defmodule DeadLetterTest do
         refute actual == :empty
 
         comparison =
-          &(&1.dataset_id == &2.dataset_id and &1.app == &2.app and
+          &(&1.dataset_ids == &2.dataset_ids and &1.app == &2.app and
               &1.original_message == &2.original_message)
 
         assert_maps_equal(expected, actual, comparison)
@@ -51,7 +52,7 @@ defmodule DeadLetterTest do
     test "message is an unparseable binary" do
       message = <<80, 75, 3, 4, 20, 0, 6, 0, 8, 0, 0, 0, 33, 0, 235, 122, 210>>
 
-      DeadLetter.process(@dataset_id, @ingestion_id, message, "forklift")
+      DeadLetter.process([@dataset_id, @dataset_id2], @ingestion_id, message, "forklift")
 
       assert_async do
         {:ok, actual} = Carrier.receive()
@@ -63,7 +64,9 @@ defmodule DeadLetterTest do
     end
 
     test "properly handles tuples being passed" do
-      DeadLetter.process(@dataset_id, @ingestion_id, "some message", "valkyrie", reason: {:error, "bad date!"})
+      DeadLetter.process([@dataset_id, @dataset_id2], @ingestion_id, "some message", "valkyrie",
+        reason: {:error, "bad date!"}
+      )
 
       assert_async do
         {:ok, actual} = Carrier.receive()
@@ -78,7 +81,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           @default_original_message,
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           "forklift"
         )
@@ -102,7 +105,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           @default_original_message,
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           "forklift"
         )
@@ -116,7 +119,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           reason: "Failed to parse something"
@@ -131,7 +134,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           reason: RuntimeError.exception("Failed to parse something")
@@ -144,7 +147,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           error: "Failed to parse something"
@@ -157,7 +160,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           error: KeyError.exception("Bad Key!")
@@ -172,7 +175,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           @default_original_message,
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           "forklift",
           stacktrace: stacktrace
@@ -185,7 +188,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           @default_original_message,
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           "forklift",
           stacktrace: @default_stacktrace
@@ -205,7 +208,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           exit_code: an_exit
@@ -218,7 +221,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message
         )
@@ -232,7 +235,7 @@ defmodule DeadLetterTest do
       actual =
         DeadLetter.Server.format_message(
           "forklift",
-          @dataset_id,
+          [@dataset_id, @dataset_id2],
           @ingestion_id,
           @default_original_message,
           timestamp: epoch

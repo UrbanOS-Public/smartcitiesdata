@@ -81,7 +81,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
 
       ingestion_one =
         TDG.create_ingestion(%{
-          targetDataset: dataset_one.id,
+          targetDatasets: [dataset_one.id],
           transformations: [
             %{
               name: "name1",
@@ -106,7 +106,7 @@ defmodule Andi.InputSchemas.Ingestions.TransformationsTest do
 
       ingestion_two =
         TDG.create_ingestion(%{
-          targetDataset: dataset_two.id,
+          targetDatasets: [dataset_two.id],
           transformations: [
             %{
               name: "name3",

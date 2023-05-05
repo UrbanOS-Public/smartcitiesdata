@@ -193,9 +193,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     {:noreply, assign(socket, changeset: new_ingestion_changeset, unsaved_changes: true)}
   end
 
-  def handle_info({:update_dataset, id}, socket) do
+  def handle_info({:update_datasets, dataset_ids}, socket) do
     params = %{
-      targetDataset: id
+      targetDatasets: dataset_ids
     }
 
     updated_changeset =
@@ -301,26 +301,35 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   def handle_event("publish", _, socket) do
     ingestion_id = socket.assigns.ingestion.id
 
-    save_ingestion(socket)
+    try do
+      save_ingestion(socket)
 
-    case publish_ingestion(ingestion_id, socket.assigns.user_id) do
-      {:ok, ingestion_changeset} ->
-        updated_socket = assign(socket, changeset: ingestion_changeset)
-        {:noreply, update_publish_message(updated_socket, "valid")}
+      case publish_ingestion(ingestion_id, socket.assigns.user_id) do
+        {:ok, ingestion_changeset} ->
+          updated_socket = assign(socket, changeset: ingestion_changeset)
+          {:noreply, update_publish_message(updated_socket, "valid")}
 
+        _ ->
+          {:noreply, update_publish_message(socket, "invalid")}
+      end
+    rescue
       _ ->
         {:noreply, update_publish_message(socket, "invalid")}
     end
   end
 
   def handle_event("save", _, socket) do
-    new_ingestion_changeset = save_ingestion(socket)
+    try do
+      new_ingestion_changeset = save_ingestion(socket)
 
-    new_socket =
-      assign(socket, changeset: new_ingestion_changeset)
-      |> update_save_message("valid")
+      new_socket =
+        assign(socket, changeset: new_ingestion_changeset)
+        |> update_save_message("valid")
 
-    {:noreply, new_socket}
+      {:noreply, new_socket}
+    rescue
+      _ -> {:noreply, socket}
+    end
   end
 
   def handle_event("cancel-edit", _, socket) do
@@ -398,7 +407,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
     safe_extracted_data = %{
       name: safe_ingestion_data.name,
       sourceFormat: safe_ingestion_data.sourceFormat,
-      targetDataset: safe_ingestion_data.targetDataset,
+      targetDatasets: safe_ingestion_data.targetDatasets,
       topLevelSelector: safe_ingestion_data.topLevelSelector,
       extractSteps: safe_ingestion_data.extractSteps,
       schema: safe_ingestion_data.schema,
