@@ -156,8 +156,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
       Datasets.update_submission_status(dataset.id, :approved)
 
       dlq_time = DateTime.utc_now() |> Timex.shift(days: -3) |> DateTime.to_iso8601()
-      dlq_message = %{"dataset_id" => dataset.id, "timestamp" => dlq_time}
-      Datasets.update_latest_dlq_message(dlq_message)
+      dlq_message = %{"dataset_ids" => [dataset.id], "timestamp" => dlq_time}
+      Datasets.update_latest_dlq_message(dataset.id, dlq_message)
 
       eventually(fn ->
         dlq_message =
@@ -182,11 +182,11 @@ defmodule AndiWeb.DatasetLiveViewTest do
       Datasets.update_submission_status(dataset.id, :approved)
 
       old_time = current_time |> Timex.shift(days: -8) |> DateTime.to_iso8601()
-      dlq_message = %{"dataset_id" => dataset.id, "timestamp" => old_time}
-      Datasets.update_latest_dlq_message(dlq_message)
+      dlq_message = %{"dataset_ids" => [dataset.id], "timestamp" => old_time}
+      Datasets.update_latest_dlq_message(dataset.id, dlq_message)
 
       eventually(fn ->
-        assert %{"dataset_id" => dataset.id, "timestamp" => old_time} == Datasets.get(dataset.id) |> Map.get(:dlq_message)
+        assert %{"dataset_ids" => [dataset.id], "timestamp" => old_time} == Datasets.get(dataset.id) |> Map.get(:dlq_message)
       end)
 
       assert {:ok, view, html} = live(conn, @url_path)

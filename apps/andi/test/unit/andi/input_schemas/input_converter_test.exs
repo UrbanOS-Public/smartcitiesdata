@@ -108,6 +108,15 @@ defmodule Andi.InputSchemas.InputConverterTest do
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_dataset_to_smrt_dataset()
 
+      dataset_schema = Map.get(dataset.technical, :schema, [])
+
+      dataset =
+        Map.put(
+          dataset,
+          :technical,
+          Map.put(dataset.technical, :schema, Enum.map(dataset_schema, fn schema -> Map.put(schema, :ingestion_field_sync, true) end))
+        )
+
       assert new_dataset == dataset
     end
 
@@ -124,6 +133,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
                 type: "timestamp",
                 format: "{YYYY}",
                 ingestion_field_selector: "timstamp_field",
+                ingestion_field_sync: true,
                 default: %{provider: "timestamp", version: "2", opts: %{format: "{YYYY}", offset_in_seconds: -1000}}
               }
             ]
@@ -150,6 +160,15 @@ defmodule Andi.InputSchemas.InputConverterTest do
         |> InputConverter.smrt_dataset_to_full_changeset()
         |> Ecto.Changeset.apply_changes()
         |> InputConverter.andi_dataset_to_smrt_dataset()
+
+      dataset_schema = Map.get(dataset.technical, :schema, [])
+
+      dataset =
+        Map.put(
+          dataset,
+          :technical,
+          Map.put(dataset.technical, :schema, Enum.map(dataset_schema, fn schema -> Map.put(schema, :ingestion_field_sync, true) end))
+        )
 
       assert new_dataset == dataset
     end
