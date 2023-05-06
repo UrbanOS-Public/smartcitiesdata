@@ -7,21 +7,8 @@ defmodule DiscoveryApi.Services.PrestoService do
   ]
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
-    case_sensitive_columns =
-      case Enum.empty?(schema) do
-        true ->
-          "*"
-
-        false ->
-          Enum.map(schema, fn col ->
-            case_sensitive_name = Map.get(col, :name)
-            "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
-          end)
-          |> Enum.join(", ")
-      end
-
     session
-    |> Prestige.query!("select #{case_sensitive_columns} from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.query!("select #{build_case_sensitive_columns_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}")
     |> Prestige.Result.as_maps()
   end
 
@@ -148,11 +135,9 @@ defmodule DiscoveryApi.Services.PrestoService do
     |> remove_metadata_columns()
   end
 
-  def build_query(params, system_name, columns) do
-    column_string = Map.get(params, "columns", Enum.join(columns, ", "))
-
+  def build_query(params, system_name, schema) do
     ["SELECT"]
-    |> build_columns(column_string)
+    |> build_columns(build_case_sensitive_columns_from_schema(schema))
     |> Enum.concat(["FROM #{system_name}"])
     |> add_clause("where", params)
     |> add_clause("groupBy", params)
@@ -207,5 +192,19 @@ defmodule DiscoveryApi.Services.PrestoService do
     metadata_columns = ["_extraction_start_time", "_ingestion_id", "os_partition"]
 
     columns |> Enum.reject(fn column -> column in metadata_columns end)
+  end
+
+  defp build_case_sensitive_columns_from_schema(schema) do
+    case Enum.empty?(schema) do
+      true ->
+        "*"
+
+      false ->
+        Enum.map(schema, fn col ->
+          case_sensitive_name = Map.get(col, :name)
+          "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
+        end)
+        |> Enum.join(", ")
+    end
   end
 end

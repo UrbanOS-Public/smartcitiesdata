@@ -68,7 +68,7 @@ defmodule DiscoveryApiWeb.DataController do
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
     with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
-         {:ok, query} <- PrestoService.build_query(params, dataset_name, columns),
+         {:ok, query} <- PrestoService.build_query(params, dataset_name, schema),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(query),
          true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key) do
       data_stream =
