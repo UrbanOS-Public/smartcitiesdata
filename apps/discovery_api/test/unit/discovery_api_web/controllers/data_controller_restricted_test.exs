@@ -45,7 +45,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["id", "name"]})
     allow(PrestoService.preview_columns(any(), @system_name), return: ["id", "name"])
     allow(PrestoService.preview(any(), @system_name, any()), return: [[1, "Joe"], [2, "Robby"]])
-    allow(PrestoService.build_query(any(), any(), any()), return: {:ok, "select * from #{@system_name}"})
+    allow(PrestoService.build_query(any(), any(), any(), any()), return: {:ok, "select * from #{@system_name}"})
     allow(PrestoService.is_select_statement?("select * from #{@system_name}"), return: true)
     allow(PrestoService.get_affected_tables(any(), "select * from #{@system_name}"), return: {:ok, ["#{@system_name}"]})
 

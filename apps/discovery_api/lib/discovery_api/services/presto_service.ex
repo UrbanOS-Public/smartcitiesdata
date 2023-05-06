@@ -135,9 +135,11 @@ defmodule DiscoveryApi.Services.PrestoService do
     |> remove_metadata_columns()
   end
 
-  def build_query(params, system_name, schema) do
+  def build_query(params, system_name, columns, schema) do
+    column_string = Map.get(params, "columns", Enum.join(columns, ", "))
+
     ["SELECT"]
-    |> build_columns(build_case_sensitive_columns_from_schema(schema))
+    |> build_columns(column_string, schema)
     |> Enum.concat(["FROM #{system_name}"])
     |> add_clause("where", params)
     |> add_clause("groupBy", params)
@@ -169,8 +171,8 @@ defmodule DiscoveryApi.Services.PrestoService do
   defp build_clause("limit", value), do: "LIMIT #{value}"
   defp build_clause("groupBy", value), do: "GROUP BY #{value}"
 
-  defp build_columns(clauses, column_string) do
-    cleaned_columns = column_string |> clean_columns() |> Enum.join(", ")
+  defp build_columns(clauses, column_string, schema) do
+    cleaned_columns = column_string |> clean_columns() |> add_casing_based_on_schema(schema) |> Enum.join(", ")
     clauses ++ [cleaned_columns]
   end
 
@@ -206,5 +208,16 @@ defmodule DiscoveryApi.Services.PrestoService do
         end)
         |> Enum.join(", ")
     end
+  end
+
+  defp add_casing_based_on_schema(columns, schema) do
+    schema_columns_within_columns =
+      Enum.map(schema, fn col -> Map.get(col, :name) end)
+      |> Enum.filter(fn s_col -> Enum.any?(columns, fn col -> col == String.downcase(s_col) end) end)
+
+    columns_without_schema_columns =
+      Enum.filter(columns, fn col -> not Enum.any?(schema_columns_within_columns, fn s_col -> String.downcase(s_col) == col end) end)
+
+    schema_columns_within_columns ++ columns_without_schema_columns
   end
 end

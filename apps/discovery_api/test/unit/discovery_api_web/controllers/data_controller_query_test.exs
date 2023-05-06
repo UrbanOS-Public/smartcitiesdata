@@ -270,7 +270,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       allow(Redix.command!(any(), any()), return: :doesnt_matter)
 
       allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
-      allow(PrestoService.build_query(any(), any(), any()), return: {:ok, "SELECT id, name FROM geojson"})
+      allow(PrestoService.build_query(any(), any(), any(), any()), return: {:ok, "SELECT id, name FROM geojson"})
       allow(PrestoService.is_select_statement?(any()), return: true)
       allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, ["geojson__geojson"]})
       allow(ModelAccessUtils.has_access?(any(), any()), return: true)
