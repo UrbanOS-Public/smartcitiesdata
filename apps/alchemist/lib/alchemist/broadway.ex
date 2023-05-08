@@ -84,8 +84,4 @@ defmodule Alchemist.Broadway do
     Enum.each(context.output_topics, fn topic -> Elsa.produce(context.producer, topic, data_messages, partition: 0) end)
     messages
   end
-
-  defp ryan_debug(log, ingestion_id, label) do
-    log
-  end
 end

@@ -87,12 +87,6 @@ defmodule Forklift.Jobs.DataMigration do
     Forklift.DataReaderHelper.init(dataset)
   end
 
-  defp ryan_debug(log, id, num) do
-    if id == "a23fc4ed-332b-476e-ac7b-78c36cbfb9cc" do
-      IO.inspect(log, label: "RYAN Debug #{num}")
-    end
-  end
-
   defp refit_to_partitioned(table, original_count) do
     with false <- has_partition_field(table),
          {:ok, _} <- create_partitioned_table(table),
