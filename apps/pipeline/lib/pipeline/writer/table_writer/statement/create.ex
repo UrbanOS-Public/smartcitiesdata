@@ -32,29 +32,60 @@ defmodule Pipeline.Writer.TableWriter.Statement.Create do
     "#{create_statement} WITH (#{partition}, #{format})"
   end
 
-  defp translate_columns(cols) do
+  defp translate_columns(cols, child_of_list \\ false) do
     cols
-    |> Enum.map(&translate_column/1)
+    |> Enum.map(&translate_column(&1, child_of_list))
     |> Enum.join(", ")
   end
 
-  defp translate_column(%{type: "map"} = col) do
+  defp translate_column(col, child_of_list \\ false)
+
+  defp translate_column(%{type: "map"} = col, child_of_list) do
     row_def = translate_columns(col.subSchema)
-    ~s|"#{col.name}" row(#{row_def})|
+
+    if child_of_list do
+      ~s|row(#{row_def})|
+    else
+      ~s|"#{safe_col_name(col.name)}" row(#{row_def})|
+    end
   end
 
-  defp translate_column(%{type: "list", itemType: "map"} = col) do
+  defp translate_column(%{type: "list", itemType: "map"} = col, child_of_list) do
     row_def = translate_columns(col.subSchema)
-    ~s|"#{col.name}" array(row(#{row_def}))|
+
+    if child_of_list do
+      ~s|array(row(#{row_def}))|
+    else
+      ~s|"#{safe_col_name(col.name)}" array(row(#{row_def}))|
+    end
   end
 
-  defp translate_column(%{type: "list", itemType: type} = col) do
+  defp translate_column(%{type: "list", itemType: "list"} = col, child_of_list) do
+    row_def = translate_columns(col.subSchema, true)
+
+    if child_of_list do
+      ~s|array(#{row_def})|
+    else
+      ~s|"#{safe_col_name(col.name)}" array(#{row_def})|
+    end
+  end
+
+  defp translate_column(%{type: "list", itemType: type} = col, child_of_list) do
     array_def = translate(type)
-    ~s|"#{col.name}" array(#{array_def})|
+
+    if child_of_list do
+      ~s|array(#{array_def})|
+    else
+      ~s|"#{safe_col_name(col.name)}" array(#{array_def})|
+    end
   end
 
-  defp translate_column(col) do
-    ~s|"#{col.name}" #{translate(col.type)}|
+  defp translate_column(col, child_of_list) do
+    if child_of_list do
+      ~s|#{translate(col.type)}|
+    else
+      ~s|"#{safe_col_name(col.name)}" #{translate(col.type)}|
+    end
   end
 
   defp translate("decimal"), do: "decimal"
@@ -73,5 +104,9 @@ defmodule Pipeline.Writer.TableWriter.Statement.Create do
       nil -> raise FieldTypeError, message: "#{type} Type is not supported"
       value -> value
     end
+  end
+
+  defp safe_col_name(col_name) do
+    String.replace(col_name, "-", "_")
   end
 end

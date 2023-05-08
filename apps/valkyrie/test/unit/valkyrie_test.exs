@@ -373,6 +373,160 @@ defmodule ValkyrieTest do
       assert expected == Valkyrie.standardize_data(dataset, payload)
     end
 
+    test "transforms valid values in deeply nested lists" do
+      second_sub_schema = [
+        %{name: "second_list_name", type: "list", itemType: "string", ingestion_field_selector: "name"}
+      ]
+
+      first_sub_schema = [
+        %{
+          name: "first_list_name",
+          type: "list",
+          itemType: "list",
+          subSchema: second_sub_schema,
+          ingestion_field_selector: "name"
+        }
+      ]
+
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{
+                name: "luckyNumbers",
+                type: "list",
+                itemType: "list",
+                subSchema: first_sub_schema,
+                ingestion_field_selector: "luckyNumbers"
+              }
+            ]
+          }
+        )
+
+      payload = %{
+        "name" => "Pete",
+        "luckyNumbers" => [[["1", 1, "foo"]]]
+      }
+
+      expected =
+        {:ok,
+         %{
+           "name" => "Pete",
+           "luckyNumbers" => [[["1", "1", "foo"]]]
+         }}
+
+      assert expected == Valkyrie.standardize_data(dataset, payload)
+    end
+
+    test "transforms valid values in combined nested lists and maps" do
+      fourth_sub_schema = [
+        %{name: "inner_field", type: "string", ingestion_field_selector: "inner_field"}
+      ]
+
+      third_sub_schema = [
+        %{name: "fieldA", type: "string", ingestion_field_selector: "fieldA"},
+        %{
+          name: "fieldB",
+          type: "list",
+          itemType: "map",
+          subSchema: fourth_sub_schema,
+          ingestion_field_selector: "fieldB"
+        }
+      ]
+
+      second_sub_schema = [
+        %{
+          name: "second_list_name",
+          type: "list",
+          itemType: "map",
+          subSchema: third_sub_schema,
+          ingestion_field_selector: "second_list_name"
+        }
+      ]
+
+      first_sub_schema = [
+        %{
+          name: "first_list_name",
+          type: "list",
+          itemType: "list",
+          subSchema: second_sub_schema,
+          ingestion_field_selector: "first_list_name"
+        }
+      ]
+
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{
+                name: "luckyNumbers",
+                type: "list",
+                itemType: "list",
+                subSchema: first_sub_schema,
+                subingestion_field_selector: "luckyNumbers",
+                ingestion_field_selector: "luckyNumbers"
+              }
+            ]
+          }
+        )
+
+      payload = %{
+        "name" => "Pete",
+        "luckyNumbers" => [
+          [
+            [
+              %{
+                "fieldA" => 1,
+                "fieldB" => [
+                  %{"inner_field" => 1},
+                  %{"inner_field" => "1"}
+                ]
+              },
+              %{
+                "fieldA" => "1",
+                "fieldB" => [
+                  %{"inner_field" => 1},
+                  %{"inner_field" => "1"}
+                ]
+              }
+            ]
+          ]
+        ]
+      }
+
+      expected =
+        {:ok,
+         %{
+           "name" => "Pete",
+           "luckyNumbers" => [
+             [
+               [
+                 %{
+                   "fieldA" => "1",
+                   "fieldB" => [
+                     %{"inner_field" => "1"},
+                     %{"inner_field" => "1"}
+                   ]
+                 },
+                 %{
+                   "fieldA" => "1",
+                   "fieldB" => [
+                     %{"inner_field" => "1"},
+                     %{"inner_field" => "1"}
+                   ]
+                 }
+               ]
+             ]
+           ]
+         }}
+
+      assert expected == Valkyrie.standardize_data(dataset, payload)
+    end
+
     test "validates the provided list is a list" do
       dataset =
         TDG.create_dataset(
@@ -439,7 +593,7 @@ defmodule ValkyrieTest do
         ]
       }
 
-      expected = {:error, %{"spouses" => {:invalid_list, "#{inspect(%{"age" => :invalid_integer})} at index 1"}}}
+      expected = {:error, %{"spouses" => %{"age" => :invalid_integer}}}
       assert expected == Valkyrie.standardize_data(dataset, payload)
     end
 
@@ -460,13 +614,23 @@ defmodule ValkyrieTest do
     end
 
     test "returns error if cannot parse list of lists" do
+      sub_schema = [
+        %{name: "doesntMatter", type: "list", itemType: "integer", ingestion_field_selector: "doesntMatter"}
+      ]
+
       dataset =
         TDG.create_dataset(
           id: "ds1",
           technical: %{
             schema: [
               %{name: "name", type: "string", ingestion_field_selector: "name"},
-              %{name: "luckyNumbers", type: "list", itemType: "integer", ingestion_field_selector: "luckyNumbers"}
+              %{
+                name: "luckyNumbers",
+                type: "list",
+                itemType: "list",
+                subSchema: sub_schema,
+                ingestion_field_selector: "luckyNumbers"
+              }
             ]
           }
         )
@@ -482,13 +646,23 @@ defmodule ValkyrieTest do
     end
 
     test "can parse list of lists" do
+      sub_schema = [
+        %{name: "doesntMatter", type: "list", itemType: "float", ingestion_field_selector: "doesntMatter"}
+      ]
+
       dataset =
         TDG.create_dataset(
           id: "ds1",
           technical: %{
             schema: [
               %{name: "name", type: "string", ingestion_field_selector: "name"},
-              %{name: "luckyNumbers", type: "list", itemType: "float", ingestion_field_selector: "luckyNumbers"}
+              %{
+                name: "luckyNumbers",
+                type: "list",
+                itemType: "list",
+                subSchema: sub_schema,
+                ingestion_field_selector: "luckyNumbers"
+              }
             ]
           }
         )

@@ -338,4 +338,111 @@ defmodule TransformationActionTest do
              }
     end
   end
+
+  describe "put_value_with_accessor_keys" do
+    test "simple map put" do
+      value = "foo"
+      accessor_keys = ["top"]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"top" => "foo"}
+    end
+
+    test "merged map put" do
+      value = "foo"
+      accessor_keys = ["top"]
+      existing_acc = %{"parent" => [4, 2_438_509], "bar" => 3}
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, existing_acc)
+      assert actual == %{"top" => "foo", "parent" => [4, 2_438_509], "bar" => 3}
+    end
+
+    test "simple list put" do
+      value = "foo"
+      accessor_keys = ["top", 0]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"top" => ["foo"]}
+    end
+
+    test "list of map put" do
+      value = "foo"
+      accessor_keys = ["top", 0, "bottom"]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"top" => [%{"bottom" => "foo"}]}
+    end
+
+    test "nested list put" do
+      value = "foo"
+      accessor_keys = ["top", 0, 0, 0]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"top" => [[["foo"]]]}
+    end
+
+    test "putting into a combined list and map structure" do
+      value = "foo"
+      accessor_keys = ["grandParent", 0, 0, "parent", 0, "child"]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"grandParent" => [[%{"parent" => [%{"child" => "foo"}]}]]}
+    end
+
+    test "putting into a combined list and map structure based on previous acc" do
+      value = "foo"
+      accessor_keys = ["grandParent", 0, 0, "parent", 1, "child"]
+      previous_acc = %{"grandParent" => [[%{"parent" => [%{"child" => "bar"}]}]]}
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, previous_acc)
+
+      expected = %{
+        "grandParent" => [[%{"parent" => [%{"child" => "bar"}, %{"child" => "foo"}]}]]
+      }
+
+      assert actual == expected
+    end
+  end
+
+  describe "split_key_into_accessors" do
+    test "simple map split" do
+      key = "bar"
+      expected = ["bar"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "simple list put" do
+      key = "top[0]"
+      expected = ["top", 0]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "list of map put" do
+      key = "top[3].bar"
+      expected = ["top", 3, "bar"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "nested list put" do
+      key = "top[3][2][6].bar"
+      expected = ["top", 3, 2, 6, "bar"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "putting into a combined list and map structure" do
+      key = "top[3][2].bar[6].child"
+      expected = ["top", 3, 2, "bar", 6, "child"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+  end
 end
