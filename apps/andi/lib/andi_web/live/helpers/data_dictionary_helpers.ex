@@ -22,7 +22,8 @@ defmodule AndiWeb.Helpers.DataDictionaryHelpers do
       "list" ->
         options
         |> Enum.map(fn {actual_value, description} -> [key: description, value: actual_value] end)
-        |> Enum.reject(fn [key: _key, value: value] -> value == "list" end)
+
+      # |> Enum.reject(fn [key: _key, value: value] -> value == "list" end)
 
       _ ->
         []

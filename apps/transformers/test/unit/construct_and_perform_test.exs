@@ -74,4 +74,66 @@ defmodule Transformers.ConstructAndPerformTest do
 
     assert %{"thing" => "123abc", "number" => 1} == result
   end
+
+  test "transform with a nested list structure" do
+    parameters = %{
+      "sourceField" => "full_name",
+      "targetField" => "first_name",
+      "regex" => "^(\\w+)"
+    }
+
+    transformation1 =
+      Transformation.new(%{type: "regex_extract", name: "Transformation", parameters: parameters})
+
+    parameters = %{
+      "sourceField" => "full_name",
+      "targetField" => "last_name",
+      "regex" => "(\\w+)$"
+    }
+
+    transformation2 =
+      Transformation.new(%{type: "regex_extract", name: "Transformation", parameters: parameters})
+
+    transformations = [transformation1, transformation2]
+
+    operations = Transformers.construct(transformations)
+
+    payload = %{
+      "full_name" => "Emily Shire",
+      "features" => [
+        %{
+          "geometry" => %{
+            "coordinates" => [
+              [
+                -93.776684050999961,
+                41.617961698000045
+              ]
+            ]
+          }
+        }
+      ]
+    }
+
+    expected = %{
+      "full_name" => "Emily Shire",
+      "features" => [
+        %{
+          "geometry" => %{
+            "coordinates" => [
+              [
+                -93.776684050999961,
+                41.617961698000045
+              ]
+            ]
+          }
+        }
+      ],
+      "first_name" => "Emily",
+      "last_name" => "Shire"
+    }
+
+    {:ok, result} = Transformers.perform(operations, payload)
+
+    assert expected == result
+  end
 end

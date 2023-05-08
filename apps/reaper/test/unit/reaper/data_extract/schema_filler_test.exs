@@ -120,9 +120,26 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
         }
       ]
 
+      nested_list_schema = [
+        %{name: "id", type: "string"},
+        %{
+          name: "grandParent",
+          type: "list",
+          itemType: "list",
+          subSchema: [
+            %{
+              name: "parentList",
+              type: "list",
+              itemType: "string"
+            }
+          ]
+        }
+      ]
+
       [
         two_level_list_schema: two_level_list_schema,
-        nested_maps_schema: nested_maps_schema
+        nested_maps_schema: nested_maps_schema,
+        nested_list_schema: nested_list_schema
       ]
     end
 
@@ -224,6 +241,309 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
 
       assert expected == actual
     end
+
+    test "empty list grandparent", %{nested_list_schema: schema} do
+      payload = %{"id" => "id", "grandParent" => []}
+
+      expected = %{
+        "id" => "id",
+        "grandParent" => []
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "empty parent list", %{nested_list_schema: schema} do
+      payload = %{"id" => "id", "grandParent" => [[]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParent" => [[]]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil grandParent list", %{nested_list_schema: schema} do
+      payload = %{"id" => "id", "grandParent" => nil}
+
+      expected = %{
+        "id" => "id",
+        "grandParent" => []
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil parent list", %{nested_list_schema: schema} do
+      payload = %{"id" => "id", "grandParent" => [nil]}
+
+      expected = %{
+        "id" => "id",
+        "grandParent" => []
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nested list - no fill needed", %{nested_list_schema: schema} do
+      payload = %{"id" => "id", "grandParent" => [["foo"]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParent" => [["foo"]]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+  end
+
+  describe "list of [list of maps of list of map of primitive] and [list of map of primitive]" do
+    setup do
+      complex_structure = [
+        %{name: "id", type: "string"},
+        %{
+          name: "grandParentList",
+          type: "list",
+          itemType: "list",
+          subSchema: [
+            %{
+              name: "parentList1",
+              type: "list",
+              itemType: "map",
+              subSchema: [
+                %{
+                  name: "inner_list",
+                  type: "list",
+                  itemType: "map",
+                  subSchema: [
+                    %{name: "fieldA", type: "string"},
+                    %{name: "fieldB", type: "string"}
+                  ]
+                },
+                %{
+                  name: "inner_list2",
+                  type: "list",
+                  itemType: "map",
+                  subSchema: [
+                    %{name: "fieldA", type: "string"},
+                    %{name: "fieldB", type: "string"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+      [complex_structure: complex_structure]
+    end
+
+    #   test "empty first-level", %{complex_structure: schema} do
+    #     payload = %{"id" => "id", "grandParentList" => []}
+
+    #     expected = %{
+    #       "id" => "id",
+    #       "grandParent" => [
+    #         [
+    #           %{"inner_list" => [
+    #             %{"fieldA" => nil},
+    #             %{"fieldB" => nil}
+    #             ]
+    #           },
+    #           %{"inner_list2" => [
+    #             %{"fieldA" => nil},
+    #             %{"fieldB" => nil}
+    #           ]}
+    #         ],
+    #         [
+    #           %{"fieldA" => nil},
+    #           %{"fieldB" => nil}
+    #         ]
+    #       ]
+    #     }
+
+    #     actual = SchemaFiller.fill(schema, payload)
+
+    #     assert expected == actual
+    #   end
+    # end
+
+    test "empty grandParentList", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => []}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => []
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "empty parentList", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [[], []]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [[], []]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil parentList", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [nil, []]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [[]]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "empty map inside parentList", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [[%{}, %{}], [%{}, %{}]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [[], []]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil map inside parentList", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [[nil]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [[]]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "empty innerList and innerList2", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [[%{"inner_list" => []}, %{"inner_list2" => []}]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [
+          [
+            %{"inner_list" => [], "inner_list2" => []},
+            %{"inner_list" => [], "inner_list2" => []}
+          ]
+        ]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "nil innerList without innerList2", %{complex_structure: schema} do
+      payload = %{"id" => "id", "grandParentList" => [[%{"inner_list" => nil}]]}
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [[%{"inner_list" => [], "inner_list2" => []}]]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "Empty map inside inner list", %{complex_structure: schema} do
+      payload = %{
+        "id" => "id",
+        "grandParentList" => [
+          [
+            %{"inner_list" => [%{}]}
+          ],
+          [
+            %{"inner_list2" => [%{}]}
+          ]
+        ]
+      }
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [
+          [
+            %{"inner_list" => [], "inner_list2" => []}
+          ],
+          [
+            %{"inner_list" => [], "inner_list2" => []}
+          ]
+        ]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "Partial map inside inner list", %{complex_structure: schema} do
+      payload = %{
+        "id" => "id",
+        "grandParentList" => [
+          [
+            %{"inner_list" => [%{"fieldA" => "fieldA"}]}
+          ],
+          [
+            %{"inner_list2" => [%{"fieldB" => "fieldB"}]}
+          ]
+        ]
+      }
+
+      expected = %{
+        "id" => "id",
+        "grandParentList" => [
+          [
+            %{
+              "inner_list" => [
+                %{"fieldA" => "fieldA", "fieldB" => nil}
+              ],
+              "inner_list2" => []
+            }
+          ],
+          [
+            %{
+              "inner_list" => [],
+              "inner_list2" => [
+                %{"fieldA" => nil, "fieldB" => "fieldB"}
+              ]
+            }
+          ]
+        ]
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
   end
 
   describe "default values" do
@@ -233,8 +553,14 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
         %{name: "designation", type: "string"}
       ]
 
+      schema_with_list = [
+        %{name: "id", type: "string", default: "123"},
+        %{name: "designation", type: "list", itemType: "string"}
+      ]
+
       [
-        basic_schema: basic_schema
+        basic_schema: basic_schema,
+        schema_with_list: schema_with_list
       ]
     end
 
@@ -270,6 +596,19 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
       expected = %{
         "id" => "456",
         "designation" => nil
+      }
+
+      actual = SchemaFiller.fill(schema, payload)
+
+      assert expected == actual
+    end
+
+    test "missing key of list without default is filled with []", %{schema_with_list: schema} do
+      payload = %{"id" => "456"}
+
+      expected = %{
+        "id" => "456",
+        "designation" => []
       }
 
       actual = SchemaFiller.fill(schema, payload)
