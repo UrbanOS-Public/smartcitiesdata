@@ -22,6 +22,29 @@ defmodule Transformers.PerformTest do
              Transformers.RegexExtract.transform(payload, first_name_extractor_parameters)
   end
 
+  test "does not discard list of lists in a payload" do
+    payload = %{"name" => "elizabeth bennet", "parent" => [["a", "b"]]}
+
+    first_name_extractor_parameters = %{
+      "sourceField" => "name",
+      "targetField" => "firstName",
+      "regex" => "^(\\w+)"
+    }
+
+    first_name_extractor_function =
+      OperationBuilder.build("regex_extract", first_name_extractor_parameters)
+
+    {:ok, resultant_payload} = Transformers.perform([first_name_extractor_function], payload)
+
+    expected_payload = %{
+      "name" => "elizabeth bennet",
+      "firstName" => "elizabeth",
+      "parent" => [["a", "b"]]
+    }
+
+    assert resultant_payload == expected_payload
+  end
+
   test "multiple transformations return a payload that matches multiple manual transformation" do
     payload = %{"name" => "elizabeth bennet"}
 
