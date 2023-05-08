@@ -402,6 +402,111 @@ defmodule TransformationActionTest do
 
       assert actual == expected
     end
+
+    test "putting into a nested list of more than 10 elements" do
+      value = -99.79152222299996
+
+      previous_acc = %{
+        "geometry" => %{
+          "coordinates" => [
+            [
+              -93.79152224399996,
+              41.61494825200003
+            ],
+            [
+              -93.79150531999994,
+              41.61501428300005
+            ],
+            [
+              -93.79140579199998,
+              41.61557707600008
+            ],
+            [
+              -93.79134543099997,
+              41.61578244400005
+            ],
+            [
+              -93.79128030499999,
+              41.615977213000065
+            ],
+            [
+              -93.79120089199995,
+              41.616140173000076
+            ],
+            [
+              -93.79107900999998,
+              41.61629616500005
+            ],
+            [
+              -93.79055801099997,
+              41.61681760700003
+            ],
+            [
+              -93.79013560199996,
+              41.617246805000036
+            ],
+            [
+              -93.78983055299994,
+              41.61756248000006
+            ]
+          ]
+        }
+      }
+
+      accessor_keys = ["geometry", "coordinates", 10, 0]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, previous_acc)
+
+      expected = %{
+        "geometry" => %{
+          "coordinates" => [
+            [
+              -93.79152224399996,
+              41.61494825200003
+            ],
+            [
+              -93.79150531999994,
+              41.61501428300005
+            ],
+            [
+              -93.79140579199998,
+              41.61557707600008
+            ],
+            [
+              -93.79134543099997,
+              41.61578244400005
+            ],
+            [
+              -93.79128030499999,
+              41.615977213000065
+            ],
+            [
+              -93.79120089199995,
+              41.616140173000076
+            ],
+            [
+              -93.79107900999998,
+              41.61629616500005
+            ],
+            [
+              -93.79055801099997,
+              41.61681760700003
+            ],
+            [
+              -93.79013560199996,
+              41.617246805000036
+            ],
+            [
+              -93.78983055299994,
+              41.61756248000006
+            ],
+            [value]
+          ]
+        }
+      }
+
+      assert actual == expected
+    end
   end
 
   describe "split_key_into_accessors" do
@@ -413,7 +518,7 @@ defmodule TransformationActionTest do
       assert actual == expected
     end
 
-    test "simple list put" do
+    test "simple list split" do
       key = "top[0]"
       expected = ["top", 0]
 
@@ -421,7 +526,7 @@ defmodule TransformationActionTest do
       assert actual == expected
     end
 
-    test "list of map put" do
+    test "list of map split" do
       key = "top[3].bar"
       expected = ["top", 3, "bar"]
 
@@ -429,7 +534,7 @@ defmodule TransformationActionTest do
       assert actual == expected
     end
 
-    test "nested list put" do
+    test "nested list split" do
       key = "top[3][2][6].bar"
       expected = ["top", 3, 2, 6, "bar"]
 
@@ -437,9 +542,17 @@ defmodule TransformationActionTest do
       assert actual == expected
     end
 
-    test "putting into a combined list and map structure" do
+    test "split from a combined list and map structure" do
       key = "top[3][2].bar[6].child"
       expected = ["top", 3, 2, "bar", 6, "child"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "split a nested list deeper than 10 elements" do
+      key = "top[1][11].bar"
+      expected = ["top", 1, 11, "bar"]
 
       actual = Transformers.split_key_into_accessors(key)
       assert actual == expected

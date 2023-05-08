@@ -131,7 +131,7 @@ defmodule Transformers do
   defp split_payload(payload) do
     payload
     |> Map.keys()
-    |> Enum.sort()
+    |> NaturalSort.sort()
     |> Enum.map(fn key ->
       {key, split_key_into_accessors(key)}
     end)
