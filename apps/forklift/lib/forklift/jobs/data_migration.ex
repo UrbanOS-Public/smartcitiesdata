@@ -28,7 +28,7 @@ defmodule Forklift.Jobs.DataMigration do
              "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
                extract_time
              })"
-           )
+           ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(extraction_count),
          {:ok, _} <-
