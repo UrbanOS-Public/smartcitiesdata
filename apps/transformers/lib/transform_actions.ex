@@ -200,10 +200,10 @@ defmodule Transformers do
 
   def split_key_into_accessors(key, acc) do
     child_list_accessor = Regex.run(~r/^(\[\d+\])/, key, capture: :all_but_first)
-    named_list_accessor = Regex.run(~r/^(\w+\[\d+\])/, key, capture: :all_but_first)
-    map_list_accessor = Regex.run(~r/^(\w+\.)/, key, capture: :all_but_first)
+    named_list_accessor = Regex.run(~r/^([\w_-]+\[\d+\])/, key, capture: :all_but_first)
+    map_list_accessor = Regex.run(~r/^([\w_-]+\.)/, key, capture: :all_but_first)
     child_map_accessor = Regex.run(~r/^(\.)/, key, capture: :all_but_first)
-    map_accessor = Regex.run(~r/^(\w+)/, key, capture: :all_but_first)
+    map_accessor = Regex.run(~r/^([\w_-]+)/, key, capture: :all_but_first)
 
     shortest_accessor =
       [

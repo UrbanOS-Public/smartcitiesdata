@@ -507,6 +507,14 @@ defmodule TransformationActionTest do
 
       assert actual == expected
     end
+
+    test "put into fields with hyphens" do
+      value = "foo"
+      accessor_keys = ["top", 0, "inner-field", 0]
+
+      actual = Transformers.put_value_with_accessor_keys(value, accessor_keys, %{})
+      assert actual == %{"top" => [%{"inner-field" => ["foo"]}]}
+    end
   end
 
   describe "split_key_into_accessors" do
@@ -553,6 +561,14 @@ defmodule TransformationActionTest do
     test "split a nested list deeper than 10 elements" do
       key = "top[1][11].bar"
       expected = ["top", 1, 11, "bar"]
+
+      actual = Transformers.split_key_into_accessors(key)
+      assert actual == expected
+    end
+
+    test "split on fields with hyphens" do
+      key = "top[1][11]some-map[0]"
+      expected = ["top", 1, 11, "some-map", 0]
 
       actual = Transformers.split_key_into_accessors(key)
       assert actual == expected
