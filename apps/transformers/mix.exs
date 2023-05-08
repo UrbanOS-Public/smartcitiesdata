@@ -4,7 +4,7 @@ defmodule Transformers.MixProject do
   def project do
     [
       app: :transformers,
-      version: "1.0.31",
+      version: "1.0.32",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -35,6 +35,7 @@ defmodule Transformers.MixProject do
       {:smart_city, "~> 5.4.0"},
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
       {:timex, "~> 3.6"},
+      {:natural_sort, "~> 0.2.1"},
       {:decimal, "~> 1.0"}
     ]
   end
