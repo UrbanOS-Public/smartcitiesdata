@@ -349,36 +349,6 @@ defmodule Reaper.DataExtract.SchemaFillerTest do
       [complex_structure: complex_structure]
     end
 
-    #   test "empty first-level", %{complex_structure: schema} do
-    #     payload = %{"id" => "id", "grandParentList" => []}
-
-    #     expected = %{
-    #       "id" => "id",
-    #       "grandParent" => [
-    #         [
-    #           %{"inner_list" => [
-    #             %{"fieldA" => nil},
-    #             %{"fieldB" => nil}
-    #             ]
-    #           },
-    #           %{"inner_list2" => [
-    #             %{"fieldA" => nil},
-    #             %{"fieldB" => nil}
-    #           ]}
-    #         ],
-    #         [
-    #           %{"fieldA" => nil},
-    #           %{"fieldB" => nil}
-    #         ]
-    #       ]
-    #     }
-
-    #     actual = SchemaFiller.fill(schema, payload)
-
-    #     assert expected == actual
-    #   end
-    # end
-
     test "empty grandParentList", %{complex_structure: schema} do
       payload = %{"id" => "id", "grandParentList" => []}
 

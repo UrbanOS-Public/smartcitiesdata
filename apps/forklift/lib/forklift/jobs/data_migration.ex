@@ -22,21 +22,19 @@ defmodule Forklift.Jobs.DataMigration do
     json_table = json_table_name(system_name)
 
     with {:ok, original_count} <-
-           PrestigeHelper.count(system_name) |> ryan_debug(id, 1),
+           PrestigeHelper.count(system_name),
          {:ok, extraction_count} <-
            PrestigeHelper.count_query(
              "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
                extract_time
              })"
            )
-           |> ryan_debug(id, 2),
-         {:ok, _} <- refit_to_partitioned(system_name, original_count) |> ryan_debug(id, 3),
-         {:ok, _} <- check_for_data_to_migrate(extraction_count) |> ryan_debug(id, 4),
+         {:ok, _} <- refit_to_partitioned(system_name, original_count),
+         {:ok, _} <- check_for_data_to_migrate(extraction_count),
          {:ok, _} <-
-           drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time)
-           |> ryan_debug(id, 5),
+           drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
-           insert_partitioned_data(json_table, system_name, ingestion_id, extract_time) |> ryan_debug(id, 6),
+           insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
              system_name,
@@ -44,10 +42,9 @@ defmodule Forklift.Jobs.DataMigration do
              extract_time,
              extraction_count,
              "main table includes all messages related to the extraction from the json table"
-           )
-           |> ryan_debug(id, 7),
+           ),
          {:ok, _} <-
-           remove_extraction_from_table(json_table, ingestion_id, extract_time) |> ryan_debug(id, 8),
+           remove_extraction_from_table(json_table, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
              json_table,
