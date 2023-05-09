@@ -20,6 +20,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Ingestions
+  alias Floki
 
   @url_path "/ingestions/"
   @moduletag shared_data_connection: true
@@ -190,6 +191,54 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
 
       html = render(view)
       assert get_value(html, "##{auth_step.id}_auth_cacheTtl") == new_cacheTtl
+    end
+
+    test "header fields will keep order after double digits", %{view: view, auth_step: auth_step} do
+      new_headers =
+        Enum.reduce(0..22, %{}, fn index, acc ->
+          view |> element(".url-form__source-headers-add-btn") |> render_click()
+          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index * 2}"})
+        end)
+
+      form_data = %{
+        "headers" => new_headers
+      }
+
+      view
+      |> form("##{auth_step.id}", form_data: form_data)
+      |> render_change()
+
+      html = render(view)
+
+      elements = find_elements(html, ".url-form__source-headers-key-input")
+
+      assert Enum.count(elements) == 23
+
+      elements
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
+
+        assert element_text == index
+      end)
+
+      elements = find_elements(html, ".url-form__source-headers-value-input")
+
+      assert Enum.count(elements) == 23
+
+      elements
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
+
+        assert element_text == index * 2
+      end)
     end
   end
 end

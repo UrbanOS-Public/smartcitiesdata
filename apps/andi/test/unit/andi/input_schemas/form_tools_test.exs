@@ -15,11 +15,11 @@ defmodule AndiWeb.Helpers.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-               "sourceQueryParams" => %{
-                 "0" => %{"key" => "look", "value" => "at"},
-                 "1" => %{"key" => "me", "value" => "i"},
-                 "2" => %{"key" => "have", "value" => "params"}
-               }
+               "sourceQueryParams" => [
+                 %{"key" => "look", "value" => "at"},
+                 %{"key" => "me", "value" => "i"},
+                 %{"key" => "have", "value" => "params"}
+               ]
              } = updated_form_data
     end
 
@@ -34,11 +34,11 @@ defmodule AndiWeb.Helpers.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-               "sourceQueryParams" => %{
-                 "0" => %{"key" => "look", "value" => "at"},
-                 "1" => %{"key" => "me", "value" => "i"},
-                 "2" => %{"key" => "have", "value" => "params"}
-               }
+               "sourceQueryParams" => [
+                 %{"key" => "look", "value" => "at"},
+                 %{"key" => "me", "value" => "i"},
+                 %{"key" => "have", "value" => "params"}
+               ]
              } = updated_form_data
     end
 
@@ -67,10 +67,7 @@ defmodule AndiWeb.Helpers.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-               "sourceQueryParams" => %{
-                 "0" => %{"key" => "hello world", "value" => "true"},
-                 "1" => %{"key" => "goodbye scott", "value" => "false"}
-               }
+               "sourceQueryParams" => [%{"key" => "hello world", "value" => "true"}, %{"key" => "goodbye scott", "value" => "false"}]
              } = updated_form_data
     end
   end
