@@ -1,4 +1,6 @@
 defmodule Transformers do
+  require Logger
+
   alias Transformers.OperationUtils
 
   def construct(transformations) do
@@ -129,81 +131,131 @@ defmodule Transformers do
   defp split_payload(payload) do
     payload
     |> Map.keys()
-    |> Enum.sort()
-    |> Enum.reduce(%{}, fn key, acc ->
+    |> NaturalSort.sort()
+    |> Enum.map(fn key ->
+      {key, split_key_into_accessors(key)}
+    end)
+    |> Enum.reduce(%{}, fn {key, accessors}, acc ->
       value = Map.get(payload, key)
-
-      case String.split(key, ".") do
-        [head | []] ->
-          if Regex.match?(~r/\[.\]/, head) do
-            base_parent_key = Regex.replace(~r/\[.\]/, key, "")
-            list_acc = Map.get(acc, base_parent_key, [])
-
-            updated_list =
-              Regex.scan(~r/\[.\]/, head)
-              |> split_list(value, list_acc)
-
-            Map.put(acc, base_parent_key, updated_list)
-          else
-            Map.put(acc, key, value)
-          end
-
-        hierarchy ->
-          {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
-
-          map_child(parent_key, child_hierarchy, value, acc)
-      end
+      put_value_with_accessor_keys(value, accessors, acc)
     end)
   end
 
-  defp split_list(index_list, value, list_acc) do
-    {first_index_str, popped_list} = List.pop_at(index_list, 0)
-
-    first_index =
-      Regex.replace(~r/\[|\]/, first_index_str |> hd(), "")
-      |> String.to_integer()
-
-    {list_acc_at_index, rest_of_list} = List.pop_at(list_acc, first_index, [])
-
-    new_value =
-      if Enum.any?(popped_list),
-        do: split_list(popped_list, value, list_acc_at_index),
-        else: value
-
-    List.insert_at(rest_of_list, first_index, new_value)
+  def put_value_with_accessor_keys(value, [head | []] = accessor_keys, acc)
+      when is_integer(head) do
+    acc ++ [value]
   end
 
-  defp map_child(parent_key, child_hierarchy, value, acc) do
-    parent_map = Map.get(acc, parent_key, %{})
-
-    child_map = create_child_map(child_hierarchy, value, parent_map)
-    updated_parent_map = Map.merge(parent_map, child_map)
-
-    Map.put(acc, parent_key, updated_parent_map)
+  def put_value_with_accessor_keys(value, [head | []] = accessor_keys, acc)
+      when is_binary(head) do
+    Map.merge(acc, %{head => value})
   end
 
-  defp create_child_map(hierarchy, value, acc) do
-    {parent_key, child_hierarchy} = List.pop_at(hierarchy, 0)
+  def put_value_with_accessor_keys(value, [head | []] = accessor_keys, acc) do
+    raise("#{head} is not an integer or binary for value element placement")
+  end
 
-    if Regex.match?(~r/\[.\]/, parent_key) do
-      base_parent_key = Regex.replace(~r/\[.\]/, parent_key, "")
-      list_acc = Map.get(acc, base_parent_key, [])
+  def put_value_with_accessor_keys(value, [head | tail] = accessor_keys, acc)
+      when is_binary(head) do
+    case tail do
+      [head_of_tail | _] when is_integer(head_of_tail) ->
+        current_value = Map.get(acc, head, [])
+        Map.put(acc, head, put_value_with_accessor_keys(value, tail, current_value))
 
-      updated_list =
-        Regex.scan(~r/\[.\]/, parent_key)
-        |> split_list(value, list_acc)
+      [head_of_tail | _] when is_binary(head_of_tail) ->
+        current_value = Map.get(acc, head, %{})
+        Map.put(acc, head, put_value_with_accessor_keys(value, tail, current_value))
+    end
+  end
 
-      Map.new([{base_parent_key, updated_list}])
-    else
-      case hierarchy do
-        hierarchy when length(hierarchy) == 1 ->
-          Map.new([{hd(hierarchy), value}])
+  def put_value_with_accessor_keys(value, [head | tail] = accessor_keys, acc)
+      when is_integer(head) do
+    new_acc =
+      case tail do
+        [head_of_tail | _] when is_integer(head_of_tail) ->
+          current_value = Enum.at(acc, head, [])
 
-        _ ->
-          Map.new([
-            {parent_key, create_child_map(child_hierarchy, value, Map.get(acc, parent_key, %{}))}
-          ])
+          if length(acc) == head do
+            acc ++ [put_value_with_accessor_keys(value, tail, current_value)]
+          else
+            List.replace_at(acc, head, put_value_with_accessor_keys(value, tail, current_value))
+          end
+
+        [head_of_tail | _] when is_binary(head_of_tail) ->
+          current_value = Enum.at(acc, head, %{})
+
+          if length(acc) == head do
+            acc ++ [put_value_with_accessor_keys(value, tail, current_value)]
+          else
+            List.replace_at(acc, head, put_value_with_accessor_keys(value, tail, current_value))
+          end
       end
+  end
+
+  def split_key_into_accessors(key, acc \\ [])
+
+  def split_key_into_accessors(key, acc) when key == "" do
+    Enum.reverse(acc)
+  end
+
+  def split_key_into_accessors(key, acc) do
+    child_list_accessor = Regex.run(~r/^(\[\d+\])/, key, capture: :all_but_first)
+    named_list_accessor = Regex.run(~r/^([\w_-]+\[\d+\])/, key, capture: :all_but_first)
+    map_list_accessor = Regex.run(~r/^([\w_-]+\.)/, key, capture: :all_but_first)
+    child_map_accessor = Regex.run(~r/^(\.)/, key, capture: :all_but_first)
+    map_accessor = Regex.run(~r/^([\w_-]+)/, key, capture: :all_but_first)
+
+    shortest_accessor =
+      [
+        child_list_accessor,
+        named_list_accessor,
+        map_list_accessor,
+        child_map_accessor,
+        map_accessor
+      ]
+      |> Enum.reject(&is_nil/1)
+
+    if length(shortest_accessor) == 0 do
+      Logger.error("No accessor was found for key: #{key}")
+    end
+
+    shortest_accessor =
+      shortest_accessor
+      |> Enum.map(fn [accessor] -> accessor end)
+      |> Enum.min_by(fn accessor -> String.length(accessor) end)
+
+    length_of_accessor = String.length(shortest_accessor)
+    remaining_key = String.slice(key, length_of_accessor..-1)
+
+    case [shortest_accessor] do
+      ^child_list_accessor ->
+        trimmed_key =
+          shortest_accessor
+          |> String.replace("[", "")
+          |> String.replace("]", "")
+
+        updated_accessor_list = [String.to_integer(trimmed_key) | acc]
+        split_key_into_accessors(remaining_key, updated_accessor_list)
+
+      ^named_list_accessor ->
+        [map_accessor, list_accessor] =
+          Regex.run(~r/^(\w+)\[(\d+)\]/, shortest_accessor, capture: :all_but_first)
+
+        updated_accessor_list = [String.to_integer(list_accessor) | [map_accessor | acc]]
+
+        split_key_into_accessors(remaining_key, updated_accessor_list)
+
+      ^map_list_accessor ->
+        trim_dot = String.slice(shortest_accessor, 0..-2)
+        updated_accessor_list = [trim_dot | acc]
+        split_key_into_accessors(remaining_key, updated_accessor_list)
+
+      ^child_map_accessor ->
+        split_key_into_accessors(remaining_key, acc)
+
+      ^map_accessor ->
+        updated_accessor_list = [shortest_accessor | acc]
+        split_key_into_accessors(remaining_key, updated_accessor_list)
     end
   end
 end

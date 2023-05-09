@@ -112,6 +112,114 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
     end
 
     @tag capture_log: true
+    test "handles array of array of primitive" do
+      schema = [
+        %{
+          name: "outer_list_column",
+          type: "list",
+          itemType: "list",
+          subSchema: [
+            %{
+              name: "inner_list_column",
+              type: "list",
+              itemType: "string"
+            }
+          ]
+        }
+      ]
+
+      expected = ~s|CREATE TABLE IF NOT EXISTS table_name ("outer_list_column" array(array(varchar)))|
+
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
+    end
+
+    @tag capture_log: true
+    test "handles 4x nested array of primitive" do
+      schema = [
+        %{
+          name: "first_list_column",
+          type: "list",
+          itemType: "list",
+          subSchema: [
+            %{
+              name: "second_list_column",
+              type: "list",
+              itemType: "list",
+              subSchema: [
+                %{
+                  name: "third_list_column",
+                  type: "list",
+                  itemType: "list",
+                  subSchema: [
+                    %{
+                      name: "fourth_list_column",
+                      type: "list",
+                      itemType: "string"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+      expected = ~s|CREATE TABLE IF NOT EXISTS table_name ("first_list_column" array(array(array(array(varchar)))))|
+
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
+    end
+
+    @tag capture_log: true
+    test "handles array of array of map of array of map of primitive" do
+      schema = [
+        %{
+          name: "first_list_column",
+          type: "list",
+          itemType: "list",
+          subSchema: [
+            %{
+              name: "second_list_column",
+              type: "list",
+              itemType: "map",
+              subSchema: [
+                %{
+                  name: "first_inner_list_column",
+                  type: "list",
+                  itemType: "map",
+                  subSchema: [
+                    %{
+                      name: "primitive",
+                      type: "string"
+                    },
+                    %{
+                      name: "another_prim",
+                      type: "integer"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+
+      expected =
+        ~s|CREATE TABLE IF NOT EXISTS table_name ("first_list_column" array(array(row("first_inner_list_column" array(row("primitive" varchar, "another_prim" integer))))))|
+
+      assert {:ok, ^expected} = Statement.create(%{table: "table_name", schema: schema})
+    end
+
+    @tag capture_log: true
+    test "replaces dashes in col names to underscores" do
+      sub_schema = [%{name: "nested-field", type: "string"}]
+      schema = [%{name: "my-field", type: "integer"}, %{name: "some_map", type: "map", subSchema: sub_schema}]
+
+      expected = ~s|CREATE TABLE IF NOT EXISTS table_name ("my_field" integer, "some_map" row("nested_field" varchar))|
+      {:ok, actual} = Statement.create(%{table: "table_name", schema: schema})
+      assert expected == actual
+    end
+
+    @tag capture_log: true
     test "returns error tuple with type message when field cannot be mapped" do
       schema = [%{name: "my_field", type: "unsupported"}]
       expected = "unsupported Type is not supported"

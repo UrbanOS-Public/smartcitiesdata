@@ -191,10 +191,6 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     end
   end
 
-  defp validate_item_type(%{changes: %{type: "list", itemType: "list"}} = changeset) do
-    Ecto.Changeset.add_error(changeset, :itemType, "List of lists type not supported")
-  end
-
   defp validate_item_type(%{changes: %{type: "list"}} = changeset) do
     validate_required(changeset, [:itemType], message: "is required")
   end

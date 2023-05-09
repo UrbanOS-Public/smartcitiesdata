@@ -31,7 +31,8 @@ defmodule Forklift.Jobs.DataMigration do
            ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(extraction_count),
-         {:ok, _} <- drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
+         {:ok, _} <-
+           drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
