@@ -44,7 +44,7 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
             <%= ErrorHelpers.error_tag(f, :url, bind_to_input: false, id: "#{@id}_auth_url_error") %>
           </div>
 
-          <%= live_component(@socket, KeyValueEditor, id: "#{@id}__key_pvalue_editor_headers", css_label: "source-headers", form: f, field: :headers, parent_id: @id, changesets: header_changesets, parent_module: __MODULE__) %>
+          <%= live_component(KeyValueEditor, id: "#{@id}__key_pvalue_editor_headers", css_label: "source-headers", form: f, field: :headers, parent_id: @id, changesets: header_changesets, parent_module: __MODULE__) %>
 
           <div class="extract-auth-step-form__body">
             <%= label(f, :body, DisplayNames.get(:body), class: "label", for: "#{@id}_auth_body") %>
@@ -72,6 +72,8 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
+    form_data = form_data
+      |> sort_map_to_list("headers")
     extract_step = ExtractAuthStep.changeset(socket.assigns.changeset, form_data)
 
     AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
@@ -110,6 +112,17 @@ defmodule AndiWeb.ExtractSteps.ExtractAuthStepForm do
 
   def update(assigns, socket) do
     {:ok, assign(socket, assigns)}
+  end
+
+  defp sort_map_to_list(form_data, value) do
+    updated_list = form_data
+      |> Map.get(value, [])
+      |> Enum.reduce([], fn {key, value}, acc ->
+        int_key = String.to_integer(key)
+        List.insert_at(acc, int_key, value)
+      end)
+
+    Map.put(form_data, value, updated_list)
   end
 
   defp path_to_string(empty_path) when empty_path in [nil, ""], do: empty_path
