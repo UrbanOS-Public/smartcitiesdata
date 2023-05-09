@@ -197,7 +197,7 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       new_headers =
         Enum.reduce(0..22, %{}, fn index, acc ->
           view |> element(".url-form__source-headers-add-btn") |> render_click()
-          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index*2}"})
+          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index * 2}"})
         end)
 
       form_data = %{
@@ -205,8 +205,8 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       }
 
       view
-        |> form("##{auth_step.id}", form_data: form_data)
-        |> render_change()
+      |> form("##{auth_step.id}", form_data: form_data)
+      |> render_change()
 
       html = render(view)
 
@@ -215,28 +215,30 @@ defmodule AndiWeb.ExtractAuthStepFormTest do
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index
-        end)
+        assert element_text == index
+      end)
 
       elements = find_elements(html, ".url-form__source-headers-value-input")
 
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index*2
-        end)
+        assert element_text == index * 2
+      end)
     end
   end
 end

@@ -87,7 +87,7 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       new_headers =
         Enum.reduce(0..22, %{}, fn index, acc ->
           view |> element(".url-form__source-headers-add-btn") |> render_click()
-          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index*2}"})
+          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index * 2}"})
         end)
 
       form_data = %{
@@ -95,8 +95,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       }
 
       view
-        |> form("##{http_step.id}", form_data: form_data)
-        |> render_change()
+      |> form("##{http_step.id}", form_data: form_data)
+      |> render_change()
 
       html = render(view)
 
@@ -105,35 +105,37 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index
-        end)
+        assert element_text == index
+      end)
 
       elements = find_elements(html, ".url-form__source-headers-value-input")
 
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index*2
-        end)
+        assert element_text == index * 2
+      end)
     end
 
     test "query param fields will keep order after double digits", %{view: view, http_step: http_step} do
       new_headers =
         Enum.reduce(0..22, %{}, fn index, acc ->
           view |> element(".url-form__source-query-params-add-btn") |> render_click()
-          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index*2}"})
+          Map.put(acc, "#{index}", %{"key" => "#{index}", "value" => "#{index * 2}"})
         end)
 
       form_data = %{
@@ -141,8 +143,8 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       }
 
       view
-        |> form("##{http_step.id}", form_data: form_data)
-        |> render_change()
+      |> form("##{http_step.id}", form_data: form_data)
+      |> render_change()
 
       html = render(view)
 
@@ -151,28 +153,30 @@ defmodule AndiWeb.ExtractHttpStepFormTest do
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index
-        end)
+        assert element_text == index
+      end)
 
       elements = find_elements(html, ".url-form__source-query-params-value-input")
 
       assert Enum.count(elements) == 23
 
       elements
-        |> Enum.with_index()
-        |> Enum.each(fn {element, index} ->
-          element_text = Floki.attribute(element, "value")
-            |> hd()
-            |> String.to_integer()
+      |> Enum.with_index()
+      |> Enum.each(fn {element, index} ->
+        element_text =
+          Floki.attribute(element, "value")
+          |> hd()
+          |> String.to_integer()
 
-          assert element_text == index*2
-        end)
+        assert element_text == index * 2
+      end)
     end
   end
 end

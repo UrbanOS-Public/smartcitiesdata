@@ -132,9 +132,11 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   def handle_event("validate", %{"form_data" => form_data}, socket) do
-    form_data = form_data
+    form_data =
+      form_data
       |> sort_map_to_list("headers")
       |> sort_map_to_list("queryParams")
+
     extract_step = ExtractHttpStep.changeset(socket.assigns.changeset, form_data)
 
     ExtractStepForm.update_extract_step(extract_step, socket.assigns.id)
@@ -224,7 +226,8 @@ defmodule AndiWeb.ExtractSteps.ExtractHttpStepForm do
   end
 
   defp sort_map_to_list(form_data, value) do
-    updated_list = form_data
+    updated_list =
+      form_data
       |> Map.get(value, [])
       |> Enum.reduce([], fn {key, value}, acc ->
         int_key = String.to_integer(key)
