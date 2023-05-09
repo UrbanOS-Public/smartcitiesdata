@@ -527,6 +527,227 @@ defmodule ValkyrieTest do
       assert expected == Valkyrie.standardize_data(dataset, payload)
     end
 
+    test "validates a real data case" do
+      real_payload = %{
+        "id" => "edf2162b-1f5d-4ddd-a731-78fb81a22e6a",
+        "type" => "Feature",
+        "properties" => %{
+           "core_details" => %{
+              "data_source_id" => "1",
+              "event_type" => "work-zone",
+              "road_names" => [
+                 "128th Street"
+              ],
+              "direction" => "northbound",
+              "name" => "WDM-58493-NB",
+              "description" => "Single direction work zone with detailed lane-level information. Also includes additional details in vehicle impact",
+              "creation_date" => "2009-12-13T13:35:26Z",
+              "update_date" => "2009-12-31T15:11:16Z"
+           },
+           "beginning_cross_street" => "US 6, Hickman Road",
+           "ending_cross_street" => "Douglas Ave",
+           "is_start_position_verified" => false,
+           "is_end_position_verified" => false,
+           "start_date" => "2010-01-01T06:00:00Z",
+           "end_date" => "2010-05-01T05:00:00Z",
+           "work_zone_type" => "static",
+           "location_method" => "channel-device-method",
+           "is_start_date_verified" => false,
+           "is_end_date_verified" => false,
+           "vehicle_impact" => "some-lanes-closed-merge-left",
+           "lanes" => [
+              %{
+                 "order" => 1,
+                 "status" => "open",
+                 "type" => "general",
+                 "restrictions" => [
+                    %{
+                       "type" => "reduced-width",
+                       "value" => 10,
+                       "unit" => "feet"
+                    }
+                 ]
+              },
+              %{
+                 "order" => 2,
+                 "status" => "closed",
+                 "type" => "general"
+              }
+           ]
+        },
+        "geometry" => %{
+           "type" => "LineString",
+           "coordinates" => [
+              [
+                 -93.791522243999964,
+                 41.614948252000033
+              ],
+              [
+                 -93.791505319999942,
+                 41.61501428300005
+              ],
+              [
+                 -93.791405791999978,
+                 41.615577076000079
+              ],
+              [
+                 -93.791345430999968,
+                 41.615782444000047
+              ],
+              [
+                 -93.791280304999987,
+                 41.615977213000065
+              ],
+              [
+                 -93.791200891999949,
+                 41.616140173000076
+              ],
+              [
+                 -93.791079009999976,
+                 41.616296165000051
+              ],
+              [
+                 -93.790558010999973,
+                 41.61681760700003
+              ],
+              [
+                 -93.790135601999964,
+                 41.617246805000036
+              ],
+              [
+                 -93.789830552999945,
+                 41.617562480000061
+              ],
+              [
+                 -93.789680613999963,
+                 41.617771613000059
+              ],
+              [
+                 -93.789596382999946,
+                 41.617913356000031
+              ]
+           ]
+        }
+     }
+
+     schema = SmartCity.SchemaGenerator.generate_schema([real_payload])
+     |> IO.inspect(label: "RYAN - SCHEMA")
+
+     dataset =
+       TDG.create_dataset(
+         id: "ds1",
+         technical: %{
+           schema: schema
+         }
+       )
+
+     expected =
+      {:ok,
+      %{
+        "id" => "edf2162b-1f5d-4ddd-a731-78fb81a22e6a",
+        "type" => "Feature",
+        "properties" => %{
+           "core_details" => %{
+              "data_source_id" => "1",
+              "event_type" => "work-zone",
+              "road_names" => [
+                 "128th Street"
+              ],
+              "direction" => "northbound",
+              "name" => "WDM-58493-NB",
+              "description" => "Single direction work zone with detailed lane-level information. Also includes additional details in vehicle impact",
+              "creation_date" => "2009-12-13T13:35:26Z",
+              "update_date" => "2009-12-31T15:11:16Z"
+           },
+           "beginning_cross_street" => "US 6, Hickman Road",
+           "ending_cross_street" => "Douglas Ave",
+           "is_start_position_verified" => false,
+           "is_end_position_verified" => false,
+           "start_date" => "2010-01-01T06:00:00Z",
+           "end_date" => "2010-05-01T05:00:00Z",
+           "work_zone_type" => "static",
+           "location_method" => "channel-device-method",
+           "is_start_date_verified" => false,
+           "is_end_date_verified" => false,
+           "vehicle_impact" => "some-lanes-closed-merge-left",
+           "lanes" => [
+              %{
+                 "order" => 1,
+                 "status" => "open",
+                 "type" => "general",
+                 "restrictions" => [
+                    %{
+                       "type" => "reduced-width",
+                       "value" => 10,
+                       "unit" => "feet"
+                    }
+                 ]
+              },
+              %{
+                 "order" => 2,
+                 "status" => "closed",
+                 "type" => "general"
+              }
+           ]
+        },
+        "geometry" => %{
+           "type" => "LineString",
+           "coordinates" => [
+              [
+                 -93.791522243999964,
+                 41.614948252000033
+              ],
+              [
+                 -93.791505319999942,
+                 41.61501428300005
+              ],
+              [
+                 -93.791405791999978,
+                 41.615577076000079
+              ],
+              [
+                 -93.791345430999968,
+                 41.615782444000047
+              ],
+              [
+                 -93.791280304999987,
+                 41.615977213000065
+              ],
+              [
+                 -93.791200891999949,
+                 41.616140173000076
+              ],
+              [
+                 -93.791079009999976,
+                 41.616296165000051
+              ],
+              [
+                 -93.790558010999973,
+                 41.61681760700003
+              ],
+              [
+                 -93.790135601999964,
+                 41.617246805000036
+              ],
+              [
+                 -93.789830552999945,
+                 41.617562480000061
+              ],
+              [
+                 -93.789680613999963,
+                 41.617771613000059
+              ],
+              [
+                 -93.789596382999946,
+                 41.617913356000031
+              ]
+           ]
+        }
+     }}
+
+    assert expected == Valkyrie.standardize_data(dataset, real_payload)
+    end
+
     test "validates the provided list is a list" do
       dataset =
         TDG.create_dataset(

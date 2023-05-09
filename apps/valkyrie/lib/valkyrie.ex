@@ -94,6 +94,7 @@ defmodule Valkyrie do
   end
 
   defp standardize(%{type: type, format: format}, value) when type in ["date", "timestamp"] do
+    IO.inspect(value, label: 'RYAN - Inspecting value')
     case Timex.parse(value, format) do
       {:ok, parsed_value} -> {:ok, parsed_value}
       {:error, reason} -> {:error, {:"invalid_#{type}", reason}}
@@ -188,6 +189,7 @@ defmodule Valkyrie do
     do: {:error, {:invalid_list, "#{field.name} has no itemType. Lists must have itemTypes defined in the schema"}}
 
   defp standardize(ss, v) do
+    IO.inspect(v, label: "RYAN - catch all")
     {:error, :invalid_type}
   end
 
