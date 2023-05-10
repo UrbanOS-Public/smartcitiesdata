@@ -5,24 +5,26 @@ defmodule Valkyrie do
   """
   require Logger
   alias SmartCity.Dataset
+  alias Jason
 
   def instance_name(), do: :valkyrie_brook
 
   @type reason :: %{String.t() => term()}
 
   @spec standardize_data(Dataset.t(), map()) :: {:ok, map()} | {:error, reason()}
-  def standardize_data(%Dataset{technical: %{schema: schema}}, payload) do
-    %{data: data, errors: errors} = standardize_schema(schema, payload) |> IO.inspect(label: "standardize schema")
+  def standardize_data(%Dataset{technical: %{schema: schema}} = dataset, payload) do
+    %{data: data, errors: errors} = standardize_schema(schema, payload)
 
     case Enum.empty?(errors) do
-      true -> {:ok, data}
-      false -> {:error, errors}
+      true ->
+        {:ok, data}
+
+      false ->
+        {:error, errors}
     end
   end
 
   defp standardize_schema(schema, payload) do
-    IO.inspect(schema, label: "schema")
-    IO.inspect(payload, label: "payload")
     schema
     |> Enum.reduce(%{data: %{}, errors: %{}}, fn
       %{ingestion_field_selector: selector, name: name} = field, acc ->
@@ -96,7 +98,6 @@ defmodule Valkyrie do
   end
 
   defp standardize(%{type: type, format: format}, value) when type in ["date", "timestamp"] do
-    IO.inspect(value, label: 'RYAN - Inspecting value')
     case Timex.parse(value, format) do
       {:ok, parsed_value} -> {:ok, parsed_value}
       {:error, reason} -> {:error, {:"invalid_#{type}", reason}}
@@ -110,9 +111,11 @@ defmodule Valkyrie do
     end
   end
 
-  defp standardize(%{type: "map"}, value) when not is_map(value), do: {:error, :invalid_map}
+  defp standardize(%{type: "map"}, value) when not is_map(value) do
+    {:error, :invalid_map}
+  end
 
-  defp standardize(%{type: "map", subSchema: sub_schema}, value) do
+  defp standardize(%{type: "map", subSchema: sub_schema} = field, value) do
     %{data: data, errors: errors} = standardize_schema(sub_schema, value)
 
     case Enum.empty?(errors) do
@@ -139,7 +142,7 @@ defmodule Valkyrie do
               {:halt, {:error, reason}}
           end
 
-        not_a_map, {:ok, acc} ->
+        _not_a_map, {:ok, _acc} ->
           {:halt, {:error, "#{field.name} is a list with subtype map, but has children that are not maps"}}
       end)
 
@@ -191,7 +194,6 @@ defmodule Valkyrie do
     do: {:error, {:invalid_list, "#{field.name} has no itemType. Lists must have itemTypes defined in the schema"}}
 
   defp standardize(ss, v) do
-    IO.inspect(v, label: "RYAN - catch all")
     {:error, :invalid_type}
   end
 
