@@ -136,6 +136,7 @@ defmodule Andi.Application do
     Application.put_env(:andi, :error_color, get_error_color())
     Application.put_env(:andi, :footer_left_side_text, get_footer_left_side_text())
     Application.put_env(:andi, :footer_left_side_link, get_footer_left_side_link())
+    Application.put_env(:andi, :custom_fav_icon_base64, get_custom_fav_icon_base64())
     Application.put_env(:andi, :andi_footer_right_links, get_footer_right_links())
     Application.put_env(:andi, :secure_cookie, get_secure_cookie())
   end
@@ -162,6 +163,11 @@ defmodule Andi.Application do
 
   def get_error_color() do
     get_env_variable("ANDI_ERROR_COLOR", true)
+  end
+
+  def get_custom_fav_icon_base64() do
+    # Optional env variable, to display a favicon
+    get_env_variable("CUSTOM_FAV_ICON_BASE64", false)
   end
 
   def get_footer_left_side_text() do
