@@ -132,7 +132,14 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    assert_called Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start), once()
+    assert_called Forklift.IngestionProgress.new_messages(
+                    Enum.count(fake_data),
+                    ingestion_id,
+                    dataset.id,
+                    extract_start
+                  ),
+                  once()
+
     refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
 
@@ -165,7 +172,14 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    assert_called Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start), once()
+    assert_called Forklift.IngestionProgress.new_messages(
+                    Enum.count(fake_data),
+                    ingestion_id,
+                    dataset.id,
+                    extract_start
+                  ),
+                  once()
+
     assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
   end
 end

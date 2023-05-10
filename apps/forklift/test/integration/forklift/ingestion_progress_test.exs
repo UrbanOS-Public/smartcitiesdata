@@ -17,9 +17,16 @@ defmodule Forklift.IngestionProgressTest do
   end
 
   describe "IngestionTest" do
-    test "new_messages updates the message count when called", %{ingestion_id: ingestion_id, extract_time: extract_time, dataset: dataset} do
+    test "new_messages updates the message count when called", %{
+      ingestion_id: ingestion_id,
+      extract_time: extract_time,
+      dataset: dataset
+    } do
       IngestionProgress.new_messages(1, ingestion_id, dataset.id, extract_time)
-      resulting_count = Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, dataset.id, extract_time) <> "_count"])
+
+      resulting_count =
+        Redix.command!(:redix, ["GET", get_extract_id(ingestion_id, dataset.id, extract_time) <> "_count"])
+
       assert resulting_count == "1"
     end
 

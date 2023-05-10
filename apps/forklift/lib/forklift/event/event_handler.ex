@@ -26,6 +26,7 @@ defmodule Forklift.Event.EventHandler do
         author: author
       }) do
     Logger.info("Ingestion: #{data.id}, Datasets: #{dataset_ids} - Received data_ingest_start event from #{author}")
+
     Enum.each(dataset_ids, fn dataset_id ->
       data_ingest_start()
       |> add_event_count(author, dataset_id)
@@ -54,6 +55,7 @@ defmodule Forklift.Event.EventHandler do
       })
       when type in ["stream", "ingest"] do
     Logger.info("Dataset: #{data.id} - Received dataset_update event from #{author}")
+
     dataset_update()
     |> add_event_count(author, data.id)
 
@@ -78,6 +80,7 @@ defmodule Forklift.Event.EventHandler do
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{} = data, author: author}) do
     Logger.info("Datasets: #{data.id} - Received data_ingest_end event from #{author}")
+
     data_ingest_end()
     |> add_event_count(author, data.id)
 
@@ -153,7 +156,10 @@ defmodule Forklift.Event.EventHandler do
           } = data,
         author: author
       }) do
-    Logger.info("Ingestion: #{ingestion_id} Datasets: #{inspect(dataset_ids)} - Received data_extract_end event from #{author}")
+    Logger.info(
+      "Ingestion: #{ingestion_id} Datasets: #{inspect(dataset_ids)} - Received data_extract_end event from #{author}"
+    )
+
     Enum.each(dataset_ids, fn dataset_id ->
       data_extract_end() |> add_event_count(author, dataset_id)
 
