@@ -1,16 +1,8 @@
 defmodule AndiWeb.LayoutView do
   use AndiWeb, :view
 
-  def get_custom_fav_icon_base64() do
-    icon_string = Andi.Application.get_custom_fav_icon_base64()
-    if !icon_string do
-      nil
-    else
-      icon_string
-      |> Base.decode64!()
-      |> :zlib.gunzip()
-      |> Base.encode64()
-    end
+  def get_custom_fav_icon_url() do
+    Andi.Application.get_custom_fav_icon_url()
   end
 
   def get_primary_color() do
