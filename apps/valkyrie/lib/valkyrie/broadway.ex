@@ -72,7 +72,7 @@ defmodule Valkyrie.Broadway do
 
   def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
     start_time = Data.Timing.current_time()
-
+    IO.inspect(message, label: "MESSAGE TIME")
     with {:ok, smart_city_data} <- SmartCity.Data.new(message_data.value),
          {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
          smart_city_data <- %{smart_city_data | payload: standardized_payload},

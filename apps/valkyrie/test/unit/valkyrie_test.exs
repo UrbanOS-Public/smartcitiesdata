@@ -632,6 +632,10 @@ defmodule ValkyrieTest do
 
      schema = SmartCity.SchemaGenerator.generate_schema([real_payload])
      |> IO.inspect(label: "RYAN - SCHEMA")
+#      IO.inspect(Enum.at(schema, 2), label: "IAN stuff")
+#      schema = put_in(Map.get(Enum.at(Map.get(Enum.at(schema, 2), "subSchema"), 1), "subSchema"), ["properties", "core_details", "creation_date", "format"], "foo")
+#      format_schema = %{"properties" => %{"core_details" => %{"creation_date" => %{"format" => "{ISO:Extended}"}, "update_date" => %{"format" => "{ISO:Extended}"}}, "end_date" => %{"format" => "{ISO:Extended}"}, "start_date" => %{"format" => "{ISO:Extended}"}}}
+#      schema = List.replace_at(schema, 2, Map.merge(Enum.at(schema, 2), format_schema))
 
      dataset =
        TDG.create_dataset(

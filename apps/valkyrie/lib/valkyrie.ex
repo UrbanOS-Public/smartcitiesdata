@@ -12,7 +12,7 @@ defmodule Valkyrie do
 
   @spec standardize_data(Dataset.t(), map()) :: {:ok, map()} | {:error, reason()}
   def standardize_data(%Dataset{technical: %{schema: schema}}, payload) do
-    %{data: data, errors: errors} = standardize_schema(schema, payload)
+    %{data: data, errors: errors} = standardize_schema(schema, payload) |> IO.inspect(label: "standardize schema")
 
     case Enum.empty?(errors) do
       true -> {:ok, data}
@@ -21,6 +21,8 @@ defmodule Valkyrie do
   end
 
   defp standardize_schema(schema, payload) do
+    IO.inspect(schema, label: "schema")
+    IO.inspect(payload, label: "payload")
     schema
     |> Enum.reduce(%{data: %{}, errors: %{}}, fn
       %{ingestion_field_selector: selector, name: name} = field, acc ->
