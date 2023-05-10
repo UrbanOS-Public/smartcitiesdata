@@ -5,18 +5,22 @@ defmodule Valkyrie do
   """
   require Logger
   alias SmartCity.Dataset
+  alias Jason
 
   def instance_name(), do: :valkyrie_brook
 
   @type reason :: %{String.t() => term()}
 
   @spec standardize_data(Dataset.t(), map()) :: {:ok, map()} | {:error, reason()}
-  def standardize_data(%Dataset{technical: %{schema: schema}}, payload) do
+  def standardize_data(%Dataset{technical: %{schema: schema}} = dataset, payload) do
     %{data: data, errors: errors} = standardize_schema(schema, payload)
 
     case Enum.empty?(errors) do
-      true -> {:ok, data}
-      false -> {:error, errors}
+      true ->
+        {:ok, data}
+
+      false ->
+        {:error, errors}
     end
   end
 
@@ -107,9 +111,11 @@ defmodule Valkyrie do
     end
   end
 
-  defp standardize(%{type: "map"}, value) when not is_map(value), do: {:error, :invalid_map}
+  defp standardize(%{type: "map"}, value) when not is_map(value) do
+    {:error, :invalid_map}
+  end
 
-  defp standardize(%{type: "map", subSchema: sub_schema}, value) do
+  defp standardize(%{type: "map", subSchema: sub_schema} = field, value) do
     %{data: data, errors: errors} = standardize_schema(sub_schema, value)
 
     case Enum.empty?(errors) do
@@ -136,7 +142,7 @@ defmodule Valkyrie do
               {:halt, {:error, reason}}
           end
 
-        not_a_map, {:ok, acc} ->
+        _not_a_map, {:ok, _acc} ->
           {:halt, {:error, "#{field.name} is a list with subtype map, but has children that are not maps"}}
       end)
 
