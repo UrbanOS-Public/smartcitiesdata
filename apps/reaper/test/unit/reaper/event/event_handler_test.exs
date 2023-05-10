@@ -166,37 +166,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
   end
 
-  describe "#{dataset_delete()}" do
-    test "should delete associated raw topic when dataset:delete event fires" do
-      dataset = TDG.create_dataset(id: "dataset_id", technical: %{sourceType: "ingest"})
-
-      non_matching_ingestion = TDG.create_ingestion(%{id: 1, targetDatasets: ["other_dataset", "bar"]})
-      matching_ingestion = TDG.create_ingestion(%{id: 2, targetDatasets: ["dataset_id", "foo"]})
-      another_matching_ingestion = TDG.create_ingestion(%{id: 3, targetDatasets: ["dataset_id", "baz"]})
-
-      mock_view_state = %{
-        1 => %{
-          "ingestion" => non_matching_ingestion
-        },
-        2 => %{
-          "ingestion" => matching_ingestion
-        },
-        3 => %{
-          "ingestion" => another_matching_ingestion
-        }
-      }
-
-      allow(IngestionDelete.handle(any()), return: :ok)
-      allow(Brook.ViewState.get_all(@instance_name, :extractions), return: {:ok, mock_view_state})
-
-      Brook.Test.send(@instance_name, dataset_delete(), :reaper, dataset)
-
-      assert_called(IngestionDelete.handle(matching_ingestion))
-      assert_called(IngestionDelete.handle(another_matching_ingestion))
-      refute_called(IngestionDelete.handle(non_matching_ingestion))
-    end
-  end
-
   describe "#{ingestion_delete()}" do
     test "successfully deletes an ingestion when event is sent" do
       ingestion = TDG.create_ingestion(%{id: "ds9"})

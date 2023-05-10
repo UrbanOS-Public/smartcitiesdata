@@ -98,41 +98,6 @@ defmodule Reaper.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{
-        type: dataset_delete(),
-        data: %Dataset{} = data
-      }) do
-    dataset_delete()
-    |> add_event_count([data.id])
-
-    {:ok, extractions} = Brook.ViewState.get_all(@instance_name, :extractions)
-
-    extractions_to_delete =
-      Enum.filter(extractions, fn {key, e} ->
-        with {:ok, ingestion} <- Map.fetch(e, "ingestion") do
-          Enum.member?(ingestion[:targetDatasets], data[:id])
-        else
-          :error -> Logger.error("Extraction #{key} does not have an Ingestion object")
-        end
-      end)
-
-    Enum.each(
-      extractions_to_delete,
-      fn {_id, extraction} ->
-        if extraction["ingestion"] do
-          IngestionDelete.handle(extraction["ingestion"])
-        end
-      end
-    )
-
-    :ok
-  rescue
-    error ->
-      Logger.error("dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
-      :discard
-  end
-
   defp add_event_count(event_type, dataset_ids) do
     Enum.map(dataset_ids, fn dataset_id ->
       [
