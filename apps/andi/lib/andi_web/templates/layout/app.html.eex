@@ -4,8 +4,8 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <%= if get_custom_fav_icon_base64() do %>
-      <link href="data:image/x-icon;base64,<%= get_custom_fav_icon_base64() %>" rel="icon" type="image/x-icon" />
+    <%= if get_custom_fav_icon_url() do %>
+      <link href="<%= get_custom_fav_icon_url() %>" rel="icon" type="image/x-icon" />
     <% end %>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>" type="text/css"/>
     <%= csrf_meta_tag() %>
