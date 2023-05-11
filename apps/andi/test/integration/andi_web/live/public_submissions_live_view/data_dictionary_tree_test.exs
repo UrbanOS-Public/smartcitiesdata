@@ -56,17 +56,17 @@ defmodule AndiWeb.DataDictionary.TreeTest do
       assert {:ok, view, html} = live(conn, @url_path <> andi_dataset.id)
       data_dictionary_view = find_live_child(view, "data_dictionary_form_editor")
 
-      [expandable_one_id, expandable_two_id] =
-        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-value-field-id")
-
-      [expandable_one_target, expandable_two_target] =
-        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_expanded']", "phx-target")
-
       [checkable_one_id, _, _, checkable_two_id] =
-        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-value-field-id")
+        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_selected']", "phx-value-field-id")
 
       [checkable_one_target, _, _, checkable_two_target] =
-        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_selected']", "phx-target")
+        get_attributes(html, ".data-dictionary-tree-field__action[phx-click='toggle_selected']", "phx-target")
+
+      [expandable_one_id, _, expandable_two_id, _] =
+        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_expanded']", "phx-value-field-id")
+
+      [expandable_one_target, _, expandable_two_target, _] =
+        get_attributes(html, ".data-dictionary-tree-field__text[phx-click='toggle_expanded']", "phx-target")
 
       [
         view: data_dictionary_view,
@@ -92,23 +92,23 @@ defmodule AndiWeb.DataDictionary.TreeTest do
       one_id = expandable_one.id
       two_id = expandable_two.id
 
-      assert [^one_id, ^two_id] = get_action_field_ids(html, "expanded")
+      assert [^one_id, ^two_id] = get_expandable_field_ids(html, "expanded")
     end
 
     test "clicking an expandable field once collapses it", %{view: view, expandable_one: expandable_one} do
       one_id = expandable_one.id
 
-      expandable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
+      expandable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
 
       html = render_click(expandable)
 
-      assert [^one_id] = get_action_field_ids(html, "collapsed")
+      assert [^one_id] = get_expandable_field_ids(html, "collapsed")
     end
 
     test "clicking an expandable field twice toggles it", %{view: view, expandable_one: expandable_one} do
       one_id = expandable_one.id
 
-      expandable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
+      expandable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
 
       _html = render_click(expandable)
       html = render_click(expandable)
@@ -127,7 +127,7 @@ defmodule AndiWeb.DataDictionary.TreeTest do
 
       assert [^one_id, ^two_id] = get_action_field_ids(html, "expanded")
 
-      expandable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{two_id}']")
+      expandable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{two_id}']")
       html = render_click(expandable)
 
       assert [^one_id] = get_action_field_ids(html, "expanded")
@@ -136,7 +136,7 @@ defmodule AndiWeb.DataDictionary.TreeTest do
 
     test "clicking a selectable and expandable field once selects it but leaves it expanded", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
-      selectable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
+      selectable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
 
       html = render_click(selectable)
 
@@ -147,7 +147,7 @@ defmodule AndiWeb.DataDictionary.TreeTest do
     test "clicking a selectable and checkable field once selects and checks it", %{view: view, checkable_two: checkable_two} do
       two_id = checkable_two.id
 
-      selectable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{two_id}']")
+      selectable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{two_id}']")
       html = render_click(selectable)
 
       assert [^two_id] = get_action_field_ids(html, "selected")
@@ -157,7 +157,7 @@ defmodule AndiWeb.DataDictionary.TreeTest do
     test "clicking a checkable field twice does not unselect it", %{view: view, checkable_one: checkable_one} do
       one_id = checkable_one.id
 
-      selectable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
+      selectable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
       _html = render_click(selectable)
       html = render_click(selectable)
 
@@ -176,8 +176,8 @@ defmodule AndiWeb.DataDictionary.TreeTest do
       assert one_id in get_action_field_ids(html, "selected")
       assert two_id in get_action_field_ids(html, "unselected")
 
-      selectable_one = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
-      selectable_two = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{two_id}']")
+      selectable_one = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
+      selectable_two = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{two_id}']")
 
       html = render_click(selectable_two)
 
@@ -195,7 +195,7 @@ defmodule AndiWeb.DataDictionary.TreeTest do
       one_name = checkable_one.name
       one_type = checkable_one.type
 
-      selectable = element(view, ".data-dictionary-tree-field__text[phx-value-field-id='#{one_id}']")
+      selectable = element(view, ".data-dictionary-tree-field__action[phx-value-field-id='#{one_id}']")
 
       _html = render_click(selectable)
 
@@ -209,5 +209,9 @@ defmodule AndiWeb.DataDictionary.TreeTest do
 
   def get_action_field_ids(html, action) do
     get_attributes(html, ".data-dictionary-tree__field--#{action} > .data-dictionary-tree-field__action", "phx-value-field-id")
+  end
+
+  def get_expandable_field_ids(html, action) do
+    get_attributes(html, ".data-dictionary-tree__field--#{action} > .data-dictionary-tree-field__text", "phx-value-field-id")
   end
 end
