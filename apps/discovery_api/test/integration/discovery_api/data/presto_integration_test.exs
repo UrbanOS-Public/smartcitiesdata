@@ -45,20 +45,34 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
     organization = Helper.create_persisted_organization()
 
-    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          orgId: organization.id,
+          schema: [
+            %{
+              name: "id",
+              type: "integer"
+            },
+            %{
+              name: "name",
+              type: "varchar"
+            }
+          ]
+        }
+      })
+
     system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
-    |> IO.inspect(label: "RYAN - Statement result 1")
 
     DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
-    |> IO.inspect(label: "RYAN - Statement result 2")
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 

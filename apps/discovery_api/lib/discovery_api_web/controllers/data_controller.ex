@@ -30,13 +30,12 @@ defmodule DiscoveryApiWeb.DataController do
     session =
       DiscoveryApi.prestige_opts()
       |> Prestige.new_session()
-      |> IO.inspect(label: "RYAN - Session")
 
-    dataset_name = conn.assigns.model.systemName |> IO.inspect(label: "RYAN - DS Name")
-    schema = conn.assigns.model.schema |> IO.inspect(label: "RYAN - Schema")
+    dataset_name = conn.assigns.model.systemName
+    schema = conn.assigns.model.schema
 
-    columns = PrestoService.preview_columns(schema) |> IO.inspect(label: "RYAN - Preview Columns")
-    rows = PrestoService.preview(session, dataset_name, schema) |> IO.inspect(label: "RYAN - rows")
+    columns = PrestoService.preview_columns(schema)
+    rows = PrestoService.preview(session, dataset_name, schema)
 
     render(conn, :data, %{
       rows: rows,
@@ -45,7 +44,9 @@ defmodule DiscoveryApiWeb.DataController do
       schema: schema
     })
   rescue
-    Prestige.Error -> render(conn, :data, %{rows: [], columns: [], schema: []})
+    error in Prestige.Error ->
+      Logger.error("Fetch Preview encountered an error: #{inspect(error)}")
+      render(conn, :data, %{rows: [], columns: [], schema: []})
   end
 
   def download_presigned_url(conn, params) do

@@ -3,7 +3,7 @@ alias DiscoveryApi.Test.Helper
 Divo.Suite.start()
 Helper.wait_for_brook_to_be_ready()
 Faker.start()
-ExUnit.start()
+ExUnit.start(timeout: 300_000)
 
 defmodule URLResolver do
   def resolve_url(url) do
