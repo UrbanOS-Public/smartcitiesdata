@@ -8,16 +8,13 @@ defmodule DiscoveryApi.Services.PrestoService do
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
     session
-    |> Prestige.query!("select #{build_case_sensitive_columns_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}")
-    |> Prestige.Result.as_maps()
+    |> Prestige.query!("select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.Result.as_maps() |> IO.inspect(label: "result")
+    |> map_prestige_results_to_schema(schema)
   end
 
-  def preview_columns(session, dataset_system_name) do
-    session
-    |> Prestige.query!("show columns from #{dataset_system_name}")
-    |> Map.get(:rows)
-    |> Enum.map(fn [column_name | _tail] -> column_name end)
-    |> remove_metadata_columns()
+  def preview_columns(schema) do
+    Enum.map(schema, fn s -> Map.get(s, :name) end)
   end
 
   def is_select_statement?(statement) do
@@ -196,7 +193,18 @@ defmodule DiscoveryApi.Services.PrestoService do
     columns |> Enum.reject(fn column -> column in metadata_columns end)
   end
 
-  defp build_case_sensitive_columns_from_schema(schema) do
+  defp add_casing_based_on_schema(columns, schema) do
+    schema_columns_within_columns =
+      Enum.map(schema, fn col -> Map.get(col, :name) end)
+      |> Enum.filter(fn s_col -> Enum.any?(columns, fn col -> col == String.downcase(s_col) end) end)
+
+    columns_without_schema_columns =
+      Enum.filter(columns, fn col -> not Enum.any?(schema_columns_within_columns, fn s_col -> String.downcase(s_col) == col end) end)
+
+    schema_columns_within_columns ++ columns_without_schema_columns
+  end
+
+  def format_select_statement_from_schema(schema) do
     case Enum.empty?(schema) do
       true ->
         "*"
@@ -210,14 +218,76 @@ defmodule DiscoveryApi.Services.PrestoService do
     end
   end
 
-  defp add_casing_based_on_schema(columns, schema) do
-    schema_columns_within_columns =
-      Enum.map(schema, fn col -> Map.get(col, :name) end)
-      |> Enum.filter(fn s_col -> Enum.any?(columns, fn col -> col == String.downcase(s_col) end) end)
+  def map_prestige_results_to_schema(data, schema) do
+    case Enum.any?(schema, fn s ->
+      subSchema = Map.get(s, :subSchema)
+      not is_nil(subSchema) and length(subSchema) > 0
+    end) do
+      false -> data
+      true -> map_keys(data, schema)
+    end
+  end
 
-    columns_without_schema_columns =
-      Enum.filter(columns, fn col -> not Enum.any?(schema_columns_within_columns, fn s_col -> String.downcase(s_col) == col end) end)
+  defp map_keys(data, schema) do
+    meta_fields = strip_meta_fields(data)
+    cleaned_data = remove_metadata_from_fields(data)
+    mapped_schema_keys = Enum.map(cleaned_data, fn row -> map_keys_to_schema(row, schema) end)
+    Enum.map(Stream.zip([meta_fields, mapped_schema_keys]), fn {map1, map2} ->
+     Map.merge(map1, map2)
+    end)
+  end
 
-    schema_columns_within_columns ++ columns_without_schema_columns
+  defp map_keys_to_schema(data, schema) when is_list(data), do: traverse_rows(data |> IO.inspect(label: "list"), schema |> IO.inspect(label: "schema"), true)
+    # Enum.map(data, fn row -> traverse_rows(row, schema) end)
+  # end
+
+  defp map_keys_to_schema(data, schema) when is_map(data), do: traverse_rows(data |> IO.inspect(label: "map"), schema |> IO.inspect(label: "mapschema"))
+
+  defp map_keys_to_schema(data, _schema), do: data |> IO.inspect(label: "data")
+
+  defp traverse_rows(row, schema, child_of_list \\ false)
+  defp traverse_rows(row, schema, child_of_list) when is_map(row) do
+    schema = if child_of_list == true, do: schema = Map.get(hd(schema), :subSchema), else: schema
+    Enum.reduce_while(row, %{}, fn {key, val}, acc ->
+      schema_part = get_schema_part(schema, key)
+      case schema_part do
+        nil -> {:halt, acc}
+        _ -> schema_name = Map.get(schema_part, :name)
+          {:cont, Map.put(acc, schema_name, map_keys_to_schema(val, Map.get(schema_part, :subSchema)))}
+      end
+    end)
+  end
+
+  defp traverse_rows(row, schema, child_of_list) when is_list(row) do
+    use_schema = if child_of_list == true, do: Map.get(hd(schema), :subSchema), else: schema
+    Enum.map(row, fn r ->
+      case use_schema do
+        nil -> map_keys_to_schema(r, schema)
+        _ -> map_keys_to_schema(r, use_schema)
+      end
+    end)
+  end
+
+  defp traverse_rows(row, schema, _child_of_list), do: map_keys_to_schema(row, schema)
+
+  defp get_schema_part(schema, key) do
+    schema_part_for_key = Enum.filter(schema, fn s -> String.downcase(Map.get(s, :name)) == String.downcase(key) end)
+    if is_list(schema_part_for_key) and length(schema_part_for_key) > 0 do
+      hd(schema_part_for_key)
+    else
+      nil
+    end
+  end
+
+  defp strip_meta_fields(data) do
+    Enum.map(data, fn d ->
+      Map.take(d, ["_extraction_start_time", "_ingestion_id", "os_partition"])
+    end)
+  end
+
+  defp remove_metadata_from_fields(data) do
+    Enum.map(data, fn d ->
+      Map.drop(d, ["_extraction_start_time", "_ingestion_id", "os_partition"])
+    end)
   end
 end

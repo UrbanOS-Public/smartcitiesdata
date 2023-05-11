@@ -35,6 +35,83 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     assert list_of_maps == result
   end
 
+  test "preview should query presto for given table with nested data and map case based on schema" do
+    dataset = "nested_dataset"
+
+    schema = [
+      %{
+        name: "PARENT",
+        subSchema: [
+          %{
+            name: "Children",
+            subSchema: [
+              %{
+                name: "Age",
+                subSchema: [],
+                type: "integer"
+              },
+              %{
+                name: "Name",
+                subSchema: [],
+                type: "string"
+              }
+            ],
+            type: "list"
+          },
+          %{name: "ParentName", subSchema: [], type: "string"},
+          %{name: "ParentType", subSchema: [], type: "string"}
+        ],
+        technical_id: "f51e937b-db8d-467d-b31b-5b9e2a7c3c07",
+        type: "list"
+      }
+    ]
+
+    list_of_maps = [
+      %{
+        "_extraction_start_time" => "202305011200",
+        "PARENT" => [
+          %{
+            "children" => [%{"age" => 17, "name" => "Winfred"}, %{"age" => 25, "name" => "Tabitha"}],
+            "parentname" => "Meredeth",
+            "parenttype" => "Mother"
+          },
+          %{
+            "children" => [%{"age" => 3, "name" => "Gretchen"}, %{"age" => 7, "name" => "Ferdinand"}],
+            "parentname" => "Ricktavian",
+            "parenttype" => "Father"
+          }
+        ]
+      }
+    ]
+
+    expected = [
+      %{
+        "_extraction_start_time" => "202305011200",
+        "PARENT" => [
+          %{
+            "Children" => [%{"Age" => 17, "Name" => "Winfred"}, %{"Age" => 25, "Name" => "Tabitha"}],
+            "ParentName" => "Meredeth",
+            "ParentType" => "Mother"
+          },
+          %{
+            "Children" => [%{"Age" => 3, "Name" => "Gretchen"}, %{"Age" => 7, "Name" => "Ferdinand"}],
+            "ParentName" => "Ricktavian",
+            "ParentType" => "Father"
+          }
+        ]
+      }
+    ]
+
+    allow(Prestige.query!(:connection, "select parent as \"PARENT\" from #{dataset} limit 50"),
+      return: :result
+    )
+
+    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+
+    result = PrestoService.preview(:connection, dataset, schema)
+    assert result == expected
+  end
+
   test "preview_columns should query presto for given columns" do
     dataset = "things_in_the_fire"
 
@@ -167,6 +244,295 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
 
       assert {:sql_error, _} = PrestoService.get_affected_tables(any(), statement)
+    end
+  end
+
+  describe "map_prestige_results_to_schema" do
+    test "returns list as normal if there are no subschemas" do
+      schema = [
+        %{
+          name: "regular_field",
+          subSchema: [],
+          technical_id: "some-id",
+        }
+      ]
+
+      list_of_maps = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "hello"
+        }
+      ]
+
+      expected = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "hello"
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns single result mapped with schema" do
+      schema = [
+        %{
+          name: "CAPS_FIELD",
+          subSchema: [
+            %{
+              name: "SUB_CAPS_FIELD1",
+              subSchema: []
+            },
+            %{
+              name: "SUB_CAPS_FIELD2",
+              subSchema: []
+            }
+          ],
+          technical_id: "some-id",
+        }
+      ]
+
+      list_of_maps = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "caps_field" => [
+            %{"sub_caps_field1" => "hello", "sub_caps_field2" => "world"}
+          ]
+        }
+      ]
+
+      expected = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "CAPS_FIELD" => [
+            %{"SUB_CAPS_FIELD1" => "hello", "SUB_CAPS_FIELD2" => "world"}
+          ]
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns list of results mapped with schema" do
+      schema = [
+        %{
+          name: "CAPS_FIELD",
+          subSchema: [
+            %{
+              name: "SUB_CAPS_FIELD1",
+              subSchema: []
+            },
+            %{
+              name: "SUB_CAPS_FIELD2",
+              subSchema: []
+            }
+          ],
+          technical_id: "some-id",
+        }
+      ]
+
+      list_of_maps = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "caps_field" => [
+            %{"sub_caps_field1" => "hello", "sub_caps_field2" => "world"}
+          ]
+        },
+        %{
+          "_extraction_start_time" => "202305011200",
+          "caps_field" => [
+            %{"sub_caps_field1" => "second", "sub_caps_field2" => "field"}
+          ]
+        }
+      ]
+
+      expected = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "CAPS_FIELD" => [
+            %{"SUB_CAPS_FIELD1" => "hello", "SUB_CAPS_FIELD2" => "world"}
+          ]
+        },
+        %{
+          "_extraction_start_time" => "202305011200",
+          "CAPS_FIELD" => [
+            %{"SUB_CAPS_FIELD1" => "second", "SUB_CAPS_FIELD2" => "field"}
+          ]
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns results if schema missing subSchema" do
+      schema = [
+        %{
+          name: "regular_field",
+          technical_id: "some-id",
+        }
+      ]
+
+      list_of_maps = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "hello"
+        },
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "world"
+        }
+      ]
+
+      expected = [
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "hello"
+        },
+        %{
+          "_extraction_start_time" => "202305011200",
+          "regular_field" => "world"
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns as normal if data is missing meta fields" do
+      schema = [
+        %{
+          name: "CAPS_FIELD",
+          subSchema: [
+            %{
+              name: "SUB_CAPS_FIELD1",
+              subSchema: []
+            },
+            %{
+              name: "SUB_CAPS_FIELD2",
+              subSchema: []
+            }
+          ],
+          technical_id: "some-id",
+        }
+      ]
+
+      list_of_maps = [
+        %{
+          "caps_field" => [
+            %{"sub_caps_field1" => "hello", "sub_caps_field2" => "world"}
+          ]
+        },
+        %{
+          "caps_field" => [
+            %{"sub_caps_field1" => "second", "sub_caps_field2" => "field"}
+          ]
+        }
+      ]
+
+      expected = [
+        %{
+          "CAPS_FIELD" => [
+            %{"SUB_CAPS_FIELD1" => "hello", "SUB_CAPS_FIELD2" => "world"}
+          ]
+        },
+        %{
+          "CAPS_FIELD" => [
+            %{"SUB_CAPS_FIELD1" => "second", "SUB_CAPS_FIELD2" => "field"}
+          ]
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns correct case with map of a map" do
+      schema = [%{
+        name: "Parent",
+        subSchema: [
+          %{
+            name: "Children",
+            subSchema: [
+              %{
+                name: "ChildName"
+              }
+            ]
+          }
+        ]
+      }]
+
+      list_of_maps = [
+        %{
+          "parent" => %{
+            "children" => [%{"childname" => "Timothy"}],
+          }
+        }
+      ]
+
+      expected = [
+        %{
+          "Parent" => %{
+            "Children" => [%{"ChildName" => "Timothy"}],
+          }
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
+    end
+
+    test "returns correct results with list of list of floats" do
+      schema = [%{
+        name: "Coordinates",
+        subSchema: [
+          %{
+            name: "foo",
+            subSchema: [
+              %{
+                name: "bar",
+                subSchema: [
+                  %{
+                    name: "Baz"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }]
+
+      list_of_maps = [
+        %{
+          "coordinates" => [
+            [
+              [%{"baz" => "hi"}]
+            ]
+          ]
+        }
+      ]
+
+      expected = [
+        %{
+          "Coordinates" => [
+            [
+              [%{"Baz" => "hi"}]
+            ]
+          ]
+        }
+      ]
+
+      actual = PrestoService.map_prestige_results_to_schema(list_of_maps, schema)
+
+      assert actual == expected
     end
   end
 
