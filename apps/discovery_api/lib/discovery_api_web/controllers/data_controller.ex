@@ -27,9 +27,11 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def fetch_preview(conn, _params) do
-    session = DiscoveryApi.prestige_opts()
-    |> Prestige.new_session()
-    |> IO.inspect(label: "RYAN - Session")
+    session =
+      DiscoveryApi.prestige_opts()
+      |> Prestige.new_session()
+      |> IO.inspect(label: "RYAN - Session")
+
     dataset_name = conn.assigns.model.systemName |> IO.inspect(label: "RYAN - DS Name")
     schema = conn.assigns.model.schema |> IO.inspect(label: "RYAN - Schema")
 
