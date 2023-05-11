@@ -451,7 +451,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
       view
-      |> element(".data-dictionary-tree-field__text", "one")
+      |> element("#data_dictionary_form_schema_0_selected_modifier")
       |> render_click()
 
       html =
@@ -484,7 +484,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       assert find_elements(html, ".data-dictionary-remove-field-editor--hidden")
 
       view
-      |> element(".data-dictionary-tree-field__text", "two")
+      |> element("#data_dictionary_form_schema_1_selected_modifier")
       |> render_click()
 
       html =
@@ -573,7 +573,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
       view
-      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> element("#data_dictionary_form_schema_0_selected_modifier")
       |> render_click()
 
       eventually(fn ->
@@ -619,7 +619,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion.id}")
 
       view
-      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> element("#data_dictionary_form_schema_0_selected_modifier")
       |> render_click()
 
       eventually(fn ->
@@ -665,7 +665,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_timestamp.id}")
 
       view
-      |> element(".data-dictionary-tree-field__text", "timestamp_field")
+      |> element(".data-dictionary-tree-field__action")
       |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
@@ -708,7 +708,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
       {:ok, view, html} = live(conn, "#{@url_path}/#{andi_ingestion_with_date.id}")
 
       view
-      |> element(".data-dictionary-tree-field__text", "date_field")
+      |> element("#data_dictionary_form_schema_0_selected_modifier")
       |> render_click()
 
       format = "{YYYY}-{0M}-{0D}"
