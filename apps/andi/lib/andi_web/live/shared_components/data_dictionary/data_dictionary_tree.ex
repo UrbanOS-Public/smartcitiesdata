@@ -65,7 +65,6 @@ defmodule AndiWeb.DataDictionary.Tree do
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
-    IO.inspect("_____________________________")
     assign_current_dictionary_field(field_id, index, name, id)
     {:noreply, assign(socket, selected_field_id: field_id, new_field_initial_render: false)}
   end
