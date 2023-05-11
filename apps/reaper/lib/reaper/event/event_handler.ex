@@ -49,6 +49,8 @@ defmodule Reaper.Event.EventHandler do
 
     Reaper.Event.Handlers.IngestionDelete.handle(data)
     Extractions.delete_ingestion(data.id)
+
+    :ok
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
@@ -95,6 +97,7 @@ defmodule Reaper.Event.EventHandler do
     |> add_event_count(dataset_ids)
 
     Extractions.update_last_fetched_timestamp(ingestion_id)
+    :ok
   rescue
     error ->
       Logger.error("data_extract_end failed to process: #{inspect(error)}")

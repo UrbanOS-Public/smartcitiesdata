@@ -59,11 +59,13 @@ defmodule Andi.Event.EventHandler do
     ingestion_update()
     |> add_event_count(author, data.id)
 
+    IngestionStore.update(data)
+
     data
     |> Map.put(:ingestionTime, %{ingestionTime: DateTime.to_iso8601(DateTime.utc_now())})
     |> Ingestions.update()
 
-    IngestionStore.update(data)
+    :ok
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
@@ -77,6 +79,8 @@ defmodule Andi.Event.EventHandler do
 
     Ingestions.delete(data.id)
     IngestionStore.delete(data.id)
+
+    :ok
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
@@ -92,6 +96,8 @@ defmodule Andi.Event.EventHandler do
 
     Organizations.update(data)
     OrgStore.update(data)
+
+    :ok
   rescue
     error ->
       Logger.error("organization_update failed to process: #{inspect(error)}")
@@ -208,6 +214,8 @@ defmodule Andi.Event.EventHandler do
 
     Datasets.delete(data.id)
     DatasetStore.delete(data.id)
+
+    :ok
   rescue
     error ->
       Logger.error("dataset_delete failed to process: #{inspect(error)}")
@@ -220,6 +228,7 @@ defmodule Andi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+    :ok
   rescue
     error ->
       Logger.error("user_login failed to process: #{inspect(error)}")
