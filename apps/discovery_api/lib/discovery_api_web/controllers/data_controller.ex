@@ -81,6 +81,7 @@ defmodule DiscoveryApiWeb.DataController do
         session
         |> Prestige.stream!(query)
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> map_schema?(schema, format)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})
@@ -93,5 +94,9 @@ defmodule DiscoveryApiWeb.DataController do
       _ ->
         render_error(conn, 400, "Bad Request")
     end
+  end
+
+  defp map_schema?(data, schema, format) do
+    if format == "json" || format == "geojson", do: PrestoService.map_prestige_results_to_schema(data, schema), else: data
   end
 end
