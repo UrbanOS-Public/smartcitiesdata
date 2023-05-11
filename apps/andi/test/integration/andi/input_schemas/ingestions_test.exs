@@ -68,7 +68,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given no parameters, creates a blank Andi ingestion with a random UUID" do
       new_ingestion = Ingestions.create()
       assert is_binary(new_ingestion.id)
-      assert new_ingestion.targetDatasets == nil
+      assert new_ingestion.targetDatasets == []
       assert Ingestions.get(new_ingestion.id).id == new_ingestion.id
     end
   end
@@ -108,28 +108,6 @@ defmodule Andi.InputSchemas.IngestionsTest do
       ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
 
       assert {:ok, _} = Ingestions.update(ingestion)
-    end
-
-    test "given a newly seen smart city ingestion, does not save it into an Andi ingestion unless it is associated with a dataset" do
-      ingestion = TDG.create_ingestion(%{targetDatasets: []})
-
-      assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
-      refute ingestion_changeset.valid?
-
-      assert ingestion_changeset.errors == [
-               targetDatasets: {"no target datasets", []}
-             ]
-    end
-
-    test "given a smart city ingestion, does not save it into an Andi ingestion unless it is associated with a valid dataset" do
-      ingestion = TDG.create_ingestion(%{targetDatasets: ["bogus-dataset1", "bogus-dataset2"]})
-
-      assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
-      refute ingestion_changeset.valid?
-
-      assert ingestion_changeset.errors == [
-               targetDatasets: {"one or more target datasets do not exist", []}
-             ]
     end
 
     test "given an existing smart city ingestion, updates it" do

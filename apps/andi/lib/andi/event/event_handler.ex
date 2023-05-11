@@ -59,11 +59,13 @@ defmodule Andi.Event.EventHandler do
     ingestion_update()
     |> add_event_count(author, data.id)
 
+    IngestionStore.update(data)
+
     data
     |> Map.put(:ingestionTime, %{ingestionTime: DateTime.to_iso8601(DateTime.utc_now())})
     |> Ingestions.update()
 
-    IngestionStore.update(data)
+    :ok
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
@@ -77,6 +79,8 @@ defmodule Andi.Event.EventHandler do
 
     Ingestions.delete(data.id)
     IngestionStore.delete(data.id)
+
+    :ok
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
@@ -92,6 +96,8 @@ defmodule Andi.Event.EventHandler do
 
     Organizations.update(data)
     OrgStore.update(data)
+
+    :ok
   rescue
     error ->
       Logger.error("organization_update failed to process: #{inspect(error)}")
@@ -203,8 +209,13 @@ defmodule Andi.Event.EventHandler do
     |> add_event_count(author, data.id)
 
     Task.start(fn -> add_dataset_count() end)
+
+    remove_dataset_from_ingestions(data)
+
     Datasets.delete(data.id)
     DatasetStore.delete(data.id)
+
+    :ok
   rescue
     error ->
       Logger.error("dataset_delete failed to process: #{inspect(error)}")
@@ -217,6 +228,7 @@ defmodule Andi.Event.EventHandler do
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+    :ok
   rescue
     error ->
       Logger.error("user_login failed to process: #{inspect(error)}")
@@ -264,5 +276,40 @@ defmodule Andi.Event.EventHandler do
       nil -> :ok
       _ -> Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org)
     end
+  end
+
+  defp remove_dataset_from_ingestions(%Dataset{} = data) do
+    Ingestions.get_all()
+    |> Enum.filter(fn andi_ingestion -> Enum.member?(andi_ingestion.targetDatasets, data.id) end)
+    |> Enum.map(fn andi_ingestion ->
+      Map.update(andi_ingestion, :targetDatasets, [], fn datasets -> List.delete(datasets, data.id) end)
+    end)
+    |> Enum.each(fn
+      %{submissionStatus: :published, targetDatasets: targetDatasets} = andi_ingestion ->
+        updated_andi_ingestion =
+          case Enum.empty?(andi_ingestion.targetDatasets) do
+            true -> Map.put(andi_ingestion, :submissionStatus, :draft)
+            false -> andi_ingestion
+          end
+
+        case Ingestions.update(updated_andi_ingestion) do
+          {:ok, ingestion} ->
+            :ok
+
+          {:error, changeset} ->
+            raise "Dataset #{data.id} could not be removed from Ingestion #{andi_ingestion.id} due to #{inspect(changeset.errors)}"
+        end
+
+        Brook.Event.send(@instance_name, ingestion_update(), :andi, updated_andi_ingestion)
+
+      %{submissionStatus: :draft} = andi_ingestion ->
+        case Ingestions.update(andi_ingestion) do
+          {:ok, ingestion} ->
+            :ok
+
+          {:error, changeset} ->
+            raise "Dataset #{data.id} could not be removed from Ingestion #{andi_ingestion.id} due to #{inspect(changeset.errors)}"
+        end
+    end)
   end
 end

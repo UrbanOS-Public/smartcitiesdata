@@ -76,8 +76,6 @@ defmodule AndiWeb.Helpers.FormTools do
         form_data_params =
           params
           |> Enum.map(&convert_param_to_key_value/1)
-          |> Enum.with_index()
-          |> Enum.reduce(%{}, &convert_param_to_form_data/2)
 
         form_data
         |> put_in([query_params_location], form_data_params)
@@ -93,7 +91,6 @@ defmodule AndiWeb.Helpers.FormTools do
     source_query_params =
       form_data
       |> Map.get(query_params_location, %{})
-      |> Enum.map(fn {_index, v} -> v end)
 
     updated_source_url = Andi.URI.update_url_with_params(source_url, source_query_params)
 

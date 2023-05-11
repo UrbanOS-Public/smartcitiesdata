@@ -15,7 +15,7 @@ defmodule Forklift.DataWriterTest do
   setup :verify_on_exit!
 
   setup do
-    allow(Forklift.IngestionProgress.new_messages(any(), any(), any()), return: :in_progress)
+    allow(Forklift.IngestionProgress.new_messages(any(), any(), any(), any()), return: :in_progress)
     :ok
   end
 
@@ -84,7 +84,7 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start),
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
       return: ingestion_status
     )
 
@@ -116,7 +116,7 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start),
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
       return: ingestion_status
     )
 
@@ -132,7 +132,14 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    assert_called Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start), once()
+    assert_called Forklift.IngestionProgress.new_messages(
+                    Enum.count(fake_data),
+                    ingestion_id,
+                    dataset.id,
+                    extract_start
+                  ),
+                  once()
+
     refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
 
@@ -149,7 +156,7 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start),
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
       return: ingestion_status
     )
 
@@ -165,7 +172,14 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    assert_called Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, extract_start), once()
+    assert_called Forklift.IngestionProgress.new_messages(
+                    Enum.count(fake_data),
+                    ingestion_id,
+                    dataset.id,
+                    extract_start
+                  ),
+                  once()
+
     assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
   end
 end

@@ -37,7 +37,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       allow(SystemNameCache.get(any(), any()), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), any()),
+      allow(PrestoService.preview_columns(any()),
         return: ["bob", "andi"]
       )
 

@@ -33,7 +33,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
 
-    allow(PrestoService.preview_columns(any(), @system_name),
+    allow(PrestoService.preview_columns(any()),
       return: ["id", "name"]
     )
 
@@ -70,11 +70,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["id", "int_array"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
@@ -111,11 +111,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["feature"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result), return: [])
 
@@ -156,11 +156,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["feature"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
@@ -211,11 +211,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["bob", "andi"]
       )
 
-      allow(Prestige.stream!(any(), "select * from #{model.systemName}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"andi" => 1, "bob" => 2}]
@@ -231,7 +231,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
 
   describe "metrics" do
     setup do
-      allow(Prestige.stream!(any(), "select * from #{@system_name}"), return: [:result])
+      allow(Prestige.stream!(any(), any()), return: [:result])
 
       allow(Prestige.Result.as_maps(:result),
         return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]

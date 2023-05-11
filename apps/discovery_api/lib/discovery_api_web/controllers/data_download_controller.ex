@@ -1,5 +1,6 @@
 defmodule DiscoveryApiWeb.DataDownloadController do
   use DiscoveryApiWeb, :controller
+  alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApi.Services.ObjectStorageService
   alias DiscoveryApiWeb.Plugs.{GetModel, RecordMetrics}
   alias DiscoveryApiWeb.DataView
@@ -64,8 +65,9 @@ defmodule DiscoveryApiWeb.DataDownloadController do
       data_stream =
         DiscoveryApi.prestige_opts()
         |> Prestige.new_session()
-        |> Prestige.stream!("select * from #{dataset_name}")
+        |> Prestige.stream!("select #{PrestoService.format_select_statement_from_schema(schema)} from #{dataset_name}")
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> map_schema?(schema, format)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{
@@ -100,8 +102,13 @@ defmodule DiscoveryApiWeb.DataDownloadController do
       data_stream =
         DiscoveryApi.prestige_opts()
         |> Prestige.new_session()
-        |> Prestige.stream!("select * from #{dataset_name}")
+        |> Prestige.stream!(
+          "select #{if format == "json" or format == "geojson", do: PrestoService.format_select_statement_from_schema(schema), else: "*"} from #{
+            dataset_name
+          }"
+        )
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> map_schema?(schema, format)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{
@@ -123,5 +130,9 @@ defmodule DiscoveryApiWeb.DataDownloadController do
     expires = params["expires"] || "0"
     integer_expires = String.to_integer(expires)
     HmacToken.valid_hmac_token(key, dataset_id, integer_expires)
+  end
+
+  defp map_schema?(data, schema, format) do
+    if format == "json" || format == "geojson", do: PrestoService.map_prestige_results_to_schema(data, schema), else: data
   end
 end

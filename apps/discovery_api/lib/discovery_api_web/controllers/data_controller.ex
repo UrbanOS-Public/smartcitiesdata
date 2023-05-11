@@ -27,11 +27,15 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def fetch_preview(conn, _params) do
-    session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
+    session =
+      DiscoveryApi.prestige_opts()
+      |> Prestige.new_session()
+
     dataset_name = conn.assigns.model.systemName
-    columns = PrestoService.preview_columns(session, dataset_name)
     schema = conn.assigns.model.schema
-    rows = PrestoService.preview(session, dataset_name)
+
+    columns = PrestoService.preview_columns(schema)
+    rows = PrestoService.preview(session, dataset_name, schema)
 
     render(conn, :data, %{
       rows: rows,
@@ -40,7 +44,9 @@ defmodule DiscoveryApiWeb.DataController do
       schema: schema
     })
   rescue
-    Prestige.Error -> render(conn, :data, %{rows: [], columns: [], schema: []})
+    error in Prestige.Error ->
+      Logger.error("Fetch Preview encountered an error: #{inspect(error)}")
+      render(conn, :data, %{rows: [], columns: [], schema: []})
   end
 
   def download_presigned_url(conn, params) do
@@ -68,7 +74,7 @@ defmodule DiscoveryApiWeb.DataController do
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
     with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
-         {:ok, query} <- PrestoService.build_query(params, dataset_name, columns),
+         {:ok, query} <- PrestoService.build_query(params, dataset_name, columns, schema),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(query),
          true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key) do
       data_stream =

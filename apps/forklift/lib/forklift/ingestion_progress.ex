@@ -1,7 +1,7 @@
 defmodule Forklift.IngestionProgress do
-  @spec new_messages(Integer.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
-  def new_messages(count, ingestion_id, extract_time) do
-    extract_id = get_extract_id(ingestion_id, extract_time)
+  @spec new_messages(Integer.t(), String.t(), String.t(), Integer.t()) :: :in_progress | :ingestion_complete
+  def new_messages(count, ingestion_id, dataset_id, extract_time) do
+    extract_id = get_extract_id(ingestion_id, dataset_id, extract_time)
 
     increment_ingestion_count(extract_id, count)
 
@@ -17,7 +17,7 @@ defmodule Forklift.IngestionProgress do
   @spec store_target(SmartCity.Dataset.t(), Integer.t(), String.t(), Integer.t(), Integer.t()) ::
           :in_progress | :ingestion_complete
   def store_target(dataset, target, ingestion_id, extract_time, timer_time \\ 240_000) do
-    extract_id = get_extract_id(ingestion_id, extract_time)
+    extract_id = get_extract_id(ingestion_id, dataset.id, extract_time)
 
     timer =
       :timer.apply_after(timer_time, Forklift.IngestionTimer, :compact_if_not_finished, [
@@ -82,8 +82,8 @@ defmodule Forklift.IngestionProgress do
     :ingestion_complete
   end
 
-  @spec get_extract_id(String.t(), Integer.t()) :: String.t()
-  defp get_extract_id(ingestion_id, extract_time) do
-    ingestion_id <> "_" <> (extract_time |> Integer.to_string())
+  @spec get_extract_id(String.t(), String.t(), Integer.t()) :: String.t()
+  defp get_extract_id(ingestion_id, dataset_id, extract_time) do
+    ingestion_id <> "_" <> dataset_id <> "_" <> (extract_time |> Integer.to_string())
   end
 end
