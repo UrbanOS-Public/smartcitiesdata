@@ -48,7 +48,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
     allow(Model.get(@dataset_id), return: model)
 
-    allow(PrestoService.preview_columns(any(), @system_name),
+    allow(PrestoService.preview_columns(any()),
       return: ["id", "name"]
     )
 
@@ -85,7 +85,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["id", "int_array"]
       )
 
@@ -128,7 +128,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["feature"]
       )
 
@@ -173,7 +173,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["feature"]
       )
 
@@ -228,7 +228,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
       allow(Model.get(dataset_id), return: model)
 
-      allow(PrestoService.preview_columns(any(), model.systemName),
+      allow(PrestoService.preview_columns(any()),
         return: ["bob", "andi"]
       )
 

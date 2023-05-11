@@ -29,8 +29,8 @@ defmodule DiscoveryApiWeb.DataController do
   def fetch_preview(conn, _params) do
     session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
     dataset_name = conn.assigns.model.systemName
-    schema = conn.assigns.model.schema |> IO.inspect(label: "schema")
-    columns = PrestoService.preview_columns(schema) |> IO.inspect(label: "preview_columns")
+    schema = conn.assigns.model.schema
+    columns = PrestoService.preview_columns(schema)
     rows = PrestoService.preview(session, dataset_name, schema)
 
     render(conn, :data, %{
