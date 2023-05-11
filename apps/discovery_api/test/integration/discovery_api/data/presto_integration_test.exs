@@ -52,11 +52,13 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!("create table if not exists #{system_name} (id integer, name varchar)")
+    |> IO.inspect(label: "RYAN - Statement result 1")
 
     DiscoveryApi.prestige_opts()
     |> Keyword.merge(receive_timeout: 10_000)
     |> Prestige.new_session()
     |> Prestige.query!(~s|insert into "#{system_name}" values (1, 'bob'), (2, 'mike')|)
+    |> IO.inspect(label: "RYAN - Statement result 2")
 
     Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
