@@ -775,7 +775,8 @@ defmodule Reaper.FullTest do
       TDG.create_ingestion(%{
         id: ingestion_id,
         allow_duplicates: false,
-        cadence: "*/5 * * * * * *"
+        cadence: "*/5 * * * * * *",
+        targetDatasets: ["ds1"]
       })
 
     Brook.Event.send(@instance_name, ingestion_update(), :author, ingestion)

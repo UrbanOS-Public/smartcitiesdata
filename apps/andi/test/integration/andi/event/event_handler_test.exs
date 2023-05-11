@@ -70,7 +70,7 @@ defmodule Andi.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
       id_for_invalid_ingestion = UUID.uuid4()
-      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
+      invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion}) |> IO.inspect(label: 'Orig ingestion')
       allow(IngestionStore.update(invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
       id = UUID.uuid4()

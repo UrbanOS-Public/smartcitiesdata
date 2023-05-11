@@ -45,7 +45,23 @@ defmodule DiscoveryApi.Data.PrestoIngrationTest do
     allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
     organization = Helper.create_persisted_organization()
 
-    dataset = TDG.create_dataset(%{technical: %{orgId: organization.id}})
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{
+          orgId: organization.id,
+          schema: [
+            %{
+              name: "id",
+              type: "integer"
+            },
+            %{
+              name: "name",
+              type: "varchar"
+            }
+          ]
+        }
+      })
+
     system_name = dataset.technical.systemName
 
     DiscoveryApi.prestige_opts()

@@ -81,7 +81,7 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
     <div class="dataset-search-selected-datasets">
         <p class="search-modal-section-header-text">Selected Dataset</p>
         <div class="selected-results-from-search">
-          <%= if(@selected_datasets == []) do %>
+          <%= if(@selected_datasets == [] or @selected_datasets == nil) do %>
             <div></div>
           <% else %>
             <%= for ds <- @selected_datasets do %>
@@ -191,7 +191,9 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
   end
 
   defp get_dataset_name(id) do
-    dataset = Andi.InputSchemas.Datasets.get(id)
-    dataset.business.dataTitle
+    case Andi.InputSchemas.Datasets.get(id) do
+      nil -> "Invalid Dataset"
+      dataset -> dataset.business.dataTitle
+    end
   end
 end

@@ -10,7 +10,6 @@ defmodule Reaper.Event.EventHandlerTest do
       data_ingest_start: 0,
       data_extract_start: 0,
       data_extract_end: 0,
-      dataset_delete: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
       error_ingestion_update: 0
@@ -163,37 +162,6 @@ defmodule Reaper.Event.EventHandlerTest do
         assert extraction != nil
         assert date == Map.get(extraction, "last_fetched_timestamp", nil)
       end)
-    end
-  end
-
-  describe "#{dataset_delete()}" do
-    test "should delete associated raw topic when dataset:delete event fires" do
-      dataset = TDG.create_dataset(id: "dataset_id", technical: %{sourceType: "ingest"})
-
-      non_matching_ingestion = TDG.create_ingestion(%{id: 1, targetDatasets: ["other_dataset", "bar"]})
-      matching_ingestion = TDG.create_ingestion(%{id: 2, targetDatasets: ["dataset_id", "foo"]})
-      another_matching_ingestion = TDG.create_ingestion(%{id: 3, targetDatasets: ["dataset_id", "baz"]})
-
-      mock_view_state = %{
-        1 => %{
-          "ingestion" => non_matching_ingestion
-        },
-        2 => %{
-          "ingestion" => matching_ingestion
-        },
-        3 => %{
-          "ingestion" => another_matching_ingestion
-        }
-      }
-
-      allow(IngestionDelete.handle(any()), return: :ok)
-      allow(Brook.ViewState.get_all(@instance_name, :extractions), return: {:ok, mock_view_state})
-
-      Brook.Test.send(@instance_name, dataset_delete(), :reaper, dataset)
-
-      assert_called(IngestionDelete.handle(matching_ingestion))
-      assert_called(IngestionDelete.handle(another_matching_ingestion))
-      refute_called(IngestionDelete.handle(non_matching_ingestion))
     end
   end
 

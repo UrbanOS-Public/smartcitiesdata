@@ -83,7 +83,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         [:field],
         [:cadence],
         [:sourceFormat],
-        [:targetDatasets],
         [:name]
       ])
     end
