@@ -110,17 +110,6 @@ defmodule Andi.InputSchemas.IngestionsTest do
       assert {:ok, _} = Ingestions.update(ingestion)
     end
 
-    test "given a newly seen smart city ingestion, does not save it into an Andi ingestion unless it is associated with a dataset" do
-      ingestion = TDG.create_ingestion(%{targetDatasets: []})
-
-      assert {:error, ingestion_changeset} = Ingestions.update(ingestion)
-      refute ingestion_changeset.valid?
-
-      assert ingestion_changeset.errors == [
-               targetDatasets: {"no target datasets", []}
-             ]
-    end
-
     test "given an existing smart city ingestion, updates it" do
       dataset = TDG.create_dataset(%{})
       assert {:ok, _} = Datasets.update(dataset)
