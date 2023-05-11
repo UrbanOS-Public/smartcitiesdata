@@ -10,7 +10,6 @@ defmodule Reaper.Event.EventHandlerTest do
       data_ingest_start: 0,
       data_extract_start: 0,
       data_extract_end: 0,
-      dataset_delete: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
       error_ingestion_update: 0
