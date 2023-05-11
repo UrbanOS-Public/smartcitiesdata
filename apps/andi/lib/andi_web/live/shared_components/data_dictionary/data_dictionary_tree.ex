@@ -25,13 +25,13 @@ defmodule AndiWeb.DataDictionary.Tree do
           <%= hidden_inputs(field, @selected_field_id) %>
           <%= hidden_input(field, :dataset_id) %>
 
-          <% {icon_modifier, selected_modifier} = get_action(field, assigns) %>
+          <% {icon_modifier, selected_modifier} = get_action(field, assigns)%>
 
           <div class="data-dictionary-tree-field data-dictionary-tree__field data-dictionary-tree__field--<%= icon_modifier %> data-dictionary-tree__field--<%= selected_modifier %>">
           <%= checkbox(field, :selected_modifier,
               [class: "data-dictionary-tree-field__action",
               checked: selected_modifier == "selected",
-              "phx-click": if(is_set?(field, :subSchema), do: "toggle_expanded", else: "toggle_selected"),
+              "phx-click": "toggle_selected",
               "phx-value-field-id": input_value(field, :id),
               "phx-value-index": field.index,
               "phx-value-name": field.name,
@@ -39,7 +39,7 @@ defmodule AndiWeb.DataDictionary.Tree do
               aria_label: "#{input_value(field, :name)} checkbox",
               "phx-target": "##{@root_id}"]) %>
 
-          <div class="data-dictionary-tree-field__text" phx-click="toggle_selected" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>">
+          <div class="data-dictionary-tree-field__text" phx-click="toggle_expanded" phx-value-field-id="<%= input_value(field, :id) %>" phx-value-index="<%= field.index %>" phx-value-name="<%= field.name %>" phx-value-id="<%= field.id %>" phx-target="#<%= @root_id %>">
               <div class="data-dictionary-tree-field__name data-dictionary-tree-field-attribute"><%= input_value(field, :name) %></div>
               <div class="data-dictionary-tree-field__type data-dictionary-tree-field-attribute"><%= input_value(field, :type) %></div>
             </div>
@@ -65,6 +65,7 @@ defmodule AndiWeb.DataDictionary.Tree do
   end
 
   def handle_event("toggle_selected", %{"field-id" => field_id, "index" => index, "name" => name, "id" => id}, socket) do
+    IO.inspect("_____________________________")
     assign_current_dictionary_field(field_id, index, name, id)
     {:noreply, assign(socket, selected_field_id: field_id, new_field_initial_render: false)}
   end
