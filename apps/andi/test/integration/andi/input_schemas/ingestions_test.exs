@@ -68,7 +68,7 @@ defmodule Andi.InputSchemas.IngestionsTest do
     test "given no parameters, creates a blank Andi ingestion with a random UUID" do
       new_ingestion = Ingestions.create()
       assert is_binary(new_ingestion.id)
-      assert new_ingestion.targetDatasets == nil
+      assert new_ingestion.targetDatasets == []
       assert Ingestions.get(new_ingestion.id).id == new_ingestion.id
     end
   end
