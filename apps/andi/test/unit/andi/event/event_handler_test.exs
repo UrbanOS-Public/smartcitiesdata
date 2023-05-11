@@ -56,6 +56,7 @@ defmodule Andi.Event.EventHandlerTest do
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
     allow(Organizations.delete_harvested_dataset(any()), return: any())
+    allow(Ingestions.get_all(), return: [])
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
 
     Brook.Event.new(type: dataset_delete(), data: dataset, author: :author)

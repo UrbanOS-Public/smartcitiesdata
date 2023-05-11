@@ -24,11 +24,15 @@ defmodule Reaper.Event.EventHandler do
         type: ingestion_update(),
         data: %SmartCity.Ingestion{} = data
       }) do
-    ingestion_update()
-    |> add_event_count(data.targetDatasets)
+    if not Enum.empty?(data.targetDatasets) do
+      ingestion_update()
+      |> add_event_count(data.targetDatasets)
 
-    Extractions.update_ingestion(data)
-    Reaper.Event.Handlers.IngestionUpdate.handle(data)
+      Extractions.update_ingestion(data)
+      Reaper.Event.Handlers.IngestionUpdate.handle(data)
+    end
+
+    :ok
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
@@ -95,41 +99,6 @@ defmodule Reaper.Event.EventHandler do
     error ->
       Logger.error("data_extract_end failed to process: #{inspect(error)}")
       DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
-      :discard
-  end
-
-  def handle_event(%Brook.Event{
-        type: dataset_delete(),
-        data: %Dataset{} = data
-      }) do
-    dataset_delete()
-    |> add_event_count([data.id])
-
-    {:ok, extractions} = Brook.ViewState.get_all(@instance_name, :extractions)
-
-    extractions_to_delete =
-      Enum.filter(extractions, fn {key, e} ->
-        with {:ok, ingestion} <- Map.fetch(e, "ingestion") do
-          Enum.member?(ingestion[:targetDatasets], data[:id])
-        else
-          :error -> Logger.error("Extraction #{key} does not have an Ingestion object")
-        end
-      end)
-
-    Enum.each(
-      extractions_to_delete,
-      fn {_id, extraction} ->
-        if extraction["ingestion"] do
-          IngestionDelete.handle(extraction["ingestion"])
-        end
-      end
-    )
-
-    :ok
-  rescue
-    error ->
-      Logger.error("dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

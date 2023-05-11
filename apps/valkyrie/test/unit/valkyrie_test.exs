@@ -3,6 +3,7 @@ defmodule ValkyrieTest do
   import Checkov
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Jason
 
   describe "standardize_data/1" do
     data_test "validates that #{value} is a valid #{type}" do
