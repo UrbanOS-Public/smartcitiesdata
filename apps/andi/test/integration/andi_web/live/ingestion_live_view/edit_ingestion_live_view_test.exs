@@ -288,7 +288,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
       allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
+      smrt_ingestion = TDG.create_ingestion(%{sourceFormat: nil})
 
       {:ok, ingestion} =
         InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
