@@ -1,6 +1,10 @@
 defmodule AndiWeb.LayoutView do
   use AndiWeb, :view
 
+  def get_custom_fav_icon_url() do
+    Andi.Application.get_custom_fav_icon_url()
+  end
+
   def get_primary_color() do
     Andi.Application.get_primary_color()
   end
