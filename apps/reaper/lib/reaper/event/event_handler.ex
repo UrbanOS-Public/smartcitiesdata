@@ -31,6 +31,8 @@ defmodule Reaper.Event.EventHandler do
       Extractions.update_ingestion(data)
       Reaper.Event.Handlers.IngestionUpdate.handle(data)
     end
+
+    :ok
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
