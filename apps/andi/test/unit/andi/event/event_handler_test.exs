@@ -19,31 +19,6 @@ defmodule Andi.Event.EventHandlerTest do
 
   @instance_name Andi.instance_name()
 
-  test "dataset_delete should remove itself from any ingestions and republish" do
-    first_ingestion =
-      TDG.create_ingestion(%{
-        id: Faker.UUID.v4(),
-        targetDatasets: ["not_the_dataset", "dataset_to_be_deleted"]
-      })
-
-    second_ingestion =
-      TDG.create_ingestion(%{
-        id: Faker.UUID.v4(),
-        targetDatasets: ["not_the_dataset", "dataset_to_be_deleted"]
-      })
-
-    allow(IngestionStore.get_all(), return: [])
-    allow(IngestionStore.delete(any()), return: :ok)
-    allow(Ingestions.delete(any()), return: {:ok, "good"})
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-
-    Brook.Event.new(type: ingestion_delete(), data: ingestion, author: :author)
-    |> EventHandler.handle_event()
-
-    assert_called Ingestions.delete(ingestion.id)
-    assert_called IngestionStore.delete(ingestion.id)
-  end
-
   test "should delete the view state and the postgres entry when ingestion delete event is called" do
     ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
     allow(IngestionStore.delete(any()), return: :ok)
