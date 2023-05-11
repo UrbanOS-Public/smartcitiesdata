@@ -25,7 +25,7 @@ defmodule Andi.InputSchemas.Ingestion do
     field(:sourceFormat, :string)
     field(:topLevelSelector, :string)
     field(:submissionStatus, Ecto.Enum, values: [:published, :draft], default: :draft)
-    field(:targetDatasets, {:array, :string})
+    field(:targetDatasets, {:array, :string}, default: [])
     has_many(:dataset, Dataset)
     has_many(:schema, DataDictionary, on_replace: :delete)
     has_many(:extractSteps, ExtractStep, on_replace: :delete)
@@ -48,7 +48,6 @@ defmodule Andi.InputSchemas.Ingestion do
   @required_fields [
     :cadence,
     :sourceFormat,
-    :targetDatasets,
     :name
   ]
 
@@ -93,7 +92,6 @@ defmodule Andi.InputSchemas.Ingestion do
     |> Changeset.cast_assoc(:extractSteps, with: &ExtractStep.changeset/2)
     |> Changeset.cast_assoc(:transformations, with: &Transformation.changeset/2)
     |> Changeset.cast_assoc(:dataset, wih: &Dataset.changeset/2)
-    |> validate_datasets()
   end
 
   def changeset(%SmartCity.Ingestion{} = changes) do
@@ -386,19 +384,6 @@ defmodule Andi.InputSchemas.Ingestion do
         Changeset.add_error(acc_error, key, message)
       end)
     end)
-  end
-
-  defp validate_datasets(changeset) do
-    dataset_ids = Changeset.get_field(changeset, :targetDatasets)
-
-    if dataset_ids in [nil, []] do
-      Changeset.add_error(changeset, :targetDatasets, "no target datasets")
-    else
-      case Enum.any?(dataset_ids, fn id -> is_nil(Datasets.get(id)) end) do
-        true -> Changeset.add_error(changeset, :targetDatasets, "one or more target datasets do not exist")
-        false -> changeset
-      end
-    end
   end
 
   defp migrate_to_multiple_datasets(%{targetDataset: dataset_id} = changes) do

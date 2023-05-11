@@ -20,7 +20,9 @@ defmodule Alchemist.Event.EventHandler do
       Alchemist.IngestionProcessor.stop(data.id)
     end
 
-    Alchemist.IngestionProcessor.start(data)
+    if not Enum.empty?(data.targetDatasets) do
+      Alchemist.IngestionProcessor.start(data)
+    end
 
     merge(:ingestions, data.id, data)
   rescue

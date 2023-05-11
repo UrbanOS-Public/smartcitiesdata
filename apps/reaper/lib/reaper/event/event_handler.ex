@@ -24,11 +24,13 @@ defmodule Reaper.Event.EventHandler do
         type: ingestion_update(),
         data: %SmartCity.Ingestion{} = data
       }) do
-    ingestion_update()
-    |> add_event_count(data.targetDatasets)
+    if not Enum.empty?(data.targetDatasets) do
+      ingestion_update()
+      |> add_event_count(data.targetDatasets)
 
-    Extractions.update_ingestion(data)
-    Reaper.Event.Handlers.IngestionUpdate.handle(data)
+      Extractions.update_ingestion(data)
+      Reaper.Event.Handlers.IngestionUpdate.handle(data)
+    end
   rescue
     error ->
       Logger.error("ingestion_update failed to process: #{inspect(error)}")
