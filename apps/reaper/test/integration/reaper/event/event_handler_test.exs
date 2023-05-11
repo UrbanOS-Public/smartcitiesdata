@@ -184,7 +184,7 @@ defmodule Reaper.EventHandlerTest do
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
       id_for_valid_ingestion = UUID.uuid4()
-      valid_ingestion = TDG.create_ingestion(%{id: id_for_valid_ingestion})
+      valid_ingestion = TDG.create_ingestion(%{id: id_for_valid_ingestion, targetDatasets: ["ds1"]})
 
       allow(Brook.ViewState.get_all(@instance_name, :extractions),
         exec: fn _ -> raise "nope" end
