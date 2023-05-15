@@ -73,6 +73,13 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
   end
 
+  def generate_xml_schema(decoded_file, dataset_id) do
+    decoded_file
+    |> SchemaGenerator.generate_schema()
+    |> Enum.map(&assign_schema_field_details(&1, dataset_id, nil))
+    |> Enum.map(&assign_selector_for_xml(&1, dataset_id, nil))
+  end
+
   defp generate_sequenced_field({field, index}) do
     field
     |> SchemaGenerator.extract_field()
@@ -96,6 +103,32 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
         updated_sub_schema =
           Enum.map(Map.get(schema_field, "subSchema"), fn child_field ->
             assign_schema_field_details(child_field, dataset_id, bread_crumb)
+          end)
+
+        Map.put(updated_field, "subSchema", updated_sub_schema)
+
+      false ->
+        updated_field
+    end
+  end
+
+  defp assign_selector_for_xml(schema_field, dataset_id, parent_selector) do
+    selector =
+      case parent_selector do
+        nil -> "/" <> Map.get(schema_field, "name")
+        parent_selector -> parent_selector <> "/" <> Map.get(schema_field, "name")
+      end
+
+    updated_field =
+      schema_field
+      |> Map.put("dataset_id", dataset_id)
+      |> Map.put("selector", selector)
+
+    case Map.has_key?(schema_field, "subSchema") do
+      true ->
+        updated_sub_schema =
+          Enum.map(Map.get(schema_field, "subSchema"), fn child_field ->
+            assign_selector_for_xml(child_field, dataset_id, selector)
           end)
 
         Map.put(updated_field, "subSchema", updated_sub_schema)
@@ -176,6 +209,14 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
 
   def changeset_from_file(parsed_file, dataset_id) do
     generated_schema = generate_schema(parsed_file, dataset_id)
+
+    %{schema: generated_schema}
+    |> AtomicMap.convert(safe: false, underscore: false)
+    |> changeset()
+  end
+
+  def changeset_from_xml_file(parsed_file, dataset_id) do
+    generated_schema = generate_xml_schema(parsed_file, dataset_id)
 
     %{schema: generated_schema}
     |> AtomicMap.convert(safe: false, underscore: false)

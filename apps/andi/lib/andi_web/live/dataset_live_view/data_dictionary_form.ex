@@ -8,6 +8,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
 
   alias AndiWeb.ErrorHelpers
   alias AndiWeb.DataDictionary.Tree
+  alias AndiWeb.Helpers.DataDictionaryHelpers
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.DataDictionary
@@ -97,7 +98,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
                     <div class="file-input-button--<%= loader_visibility %>">
                       <div class="file-input-button">
                         <%= label(f, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
+                        <%= file_input(f, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values, text/xml") %>
                         <%= ErrorHelpers.error_tag(f, :schema_sample, bind_to_input: false) %>
                       </div>
                     </div>
@@ -164,11 +165,18 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
   end
 
   def handle_event("file_upload", %{"fileType" => file_type}, socket)
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
+      when file_type not in [
+             "text/csv",
+             "application/json",
+             "application/vnd.ms-excel",
+             "text/plain",
+             "text/tab-separated-values",
+             "text/xml"
+           ] do
     new_changeset =
       socket.assigns.changeset
       |> reset_changeset_errors()
-      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV, TSV, or JSON")
+      |> Ecto.Changeset.add_error(:schema_sample, "File type must be CSV, TSV, XML, or JSON")
 
     {:noreply, assign(socket, changeset: new_changeset, loading_schema: false)}
   end
@@ -358,35 +366,6 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     {:noreply, assign(socket, current_data_dictionary_item: field, selected_field_id: field_id)}
   end
 
-  defp parse_csv(file_string) do
-    file_string
-    |> String.split("\n")
-    |> Enum.take(2)
-    |> List.update_at(0, &String.replace(&1, ~r/[^[:alnum:] _,]/, "", global: true))
-    |> Enum.map(fn row -> String.split(row, ",") end)
-    |> Enum.zip()
-    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
-  end
-
-  defp parse_tsv(file_string) do
-    file_string
-    |> String.split("\n")
-    |> Enum.take(2)
-    |> List.update_at(0, &String.replace(&1, ~r/[^[:alnum:] _\t]/, "", global: true))
-    |> Enum.map(fn row -> String.split(row, "\t") end)
-    |> Enum.zip()
-    |> Enum.map(fn {k, v} -> {k, convert_value(v)} end)
-  end
-
-  defp convert_value(nil), do: nil
-
-  defp convert_value(string) do
-    case Jason.decode(string) do
-      {:ok, value} -> value
-      {:error, _} -> string
-    end
-  end
-
   defp reset_changeset_errors(changeset) do
     Map.update!(changeset, :errors, fn errors -> Keyword.delete(errors, :schema_sample) end)
   end
@@ -416,7 +395,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       {:ok, file} ->
         new_changeset =
           file
-          |> parse_csv()
+          |> DataDictionaryHelpers.parse_csv()
           |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
           |> send_data_dictionary_status(socket)
 
@@ -432,8 +411,24 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
       {:ok, file} ->
         new_changeset =
           file
-          |> parse_tsv()
+          |> DataDictionaryHelpers.parse_tsv()
           |> DataDictionaryFormSchema.changeset_from_tuple_list(socket.assigns.dataset_id)
+          |> send_data_dictionary_status(socket)
+
+        assign_new_schema(socket, new_changeset)
+
+      :error ->
+        send_error_interpreting_file(socket.assigns.changeset, socket)
+    end
+  end
+
+  defp generate_new_schema(socket, file, "text/xml") do
+    case check_empty(file) do
+      {:ok, file} ->
+        new_changeset =
+          file
+          |> DataDictionaryHelpers.parse_xml()
+          |> DataDictionaryFormSchema.changeset_from_xml_file(socket.assigns.dataset_id)
           |> send_data_dictionary_status(socket)
 
         assign_new_schema(socket, new_changeset)

@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "2.6.77",
+      version: "2.6.78",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -92,6 +92,8 @@ defmodule Andi.MixProject do
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:ssl_verify_fun, "~> 1.1"},
+      {:sax_map, "~> 1.0"},
+      {:saxy, "~> 1.0"},
       {:sweet_xml, "~> 0.6"},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},

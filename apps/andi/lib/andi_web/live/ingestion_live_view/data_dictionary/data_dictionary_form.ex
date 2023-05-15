@@ -6,6 +6,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   import Phoenix.HTML.Form
 
   alias AndiWeb.ErrorHelpers
+  alias AndiWeb.Helpers.DataDictionaryHelpers
   alias AndiWeb.InputSchemas.DataDictionaryFormSchema
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.DataDictionaryFields
@@ -62,13 +63,13 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         <%= f = form_for sorted_changeset, "#", [ id: "data_dictionary_form", as: :form_data, phx_change: :validate, phx_target: @myself ] %>
           <div class="data-dictionary-form-edit-section form-grid">
             <div class="upload-section">
-              <%= if @sourceFormat in ["text/csv", "application/json", "text/plain"] and @is_curator do %>
+              <%= if @sourceFormat in ["text/csv", "application/json", "text/plain", "text/xml"] and @is_curator do %>
                 <div class="data-dictionary-form__file-upload">
                   <div class="file-input-button--<%= loader_visibility %>">
                     <div class="file-input-button">
                       <%= upload_form = form_for :form, "#", [ as: :form_data, multipart: true ] %>
                         <%= label(upload_form, :schema_sample, "Upload data sample", class: "label") %>
-                        <%= file_input(upload_form, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values") %>
+                        <%= file_input(upload_form, :schema_sample, phx_hook: "readFile", accept: "text/csv, application/json, text/plain, text/tab-separated-values, text/xml") %>
                         <div class="data_dictionary__error-message"><%= get_schema_sample_error(@schema_sample_errors, sorted_changeset) %></div>
                       </form>
                     </div>
@@ -273,10 +274,17 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
   end
 
   def file_upload(%{"fileType" => file_type})
-      when file_type not in ["text/csv", "application/json", "application/vnd.ms-excel", "text/plain", "text/tab-separated-values"] do
+      when file_type not in [
+             "text/csv",
+             "application/json",
+             "application/vnd.ms-excel",
+             "text/plain",
+             "text/tab-separated-values",
+             "text/xml"
+           ] do
     send_update(__MODULE__,
       id: component_id(),
-      schema_sample_errors: "File type must be CSV, TSV, or JSON",
+      schema_sample_errors: "File type must be CSV, TSV, XML, or JSON",
       loading_schema: false
     )
   end
@@ -378,6 +386,45 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
                loading_schema: false,
                pending_schema: decoded_file,
                pending_file_type: file_type,
+               overwrite_schema_visible?: true
+             )}
+        end
+    end
+  end
+
+  def update(%{action: :generate_new_schema, file: file, file_type: "text/xml"}, socket) do
+    case DataDictionaryHelpers.parse_xml(file) do
+      {:error, error} ->
+        {:ok, assign(socket, schema_sample_errors: "There was a problem interpreting this file: #{inspect(error.data)}")}
+
+      {:ok, []} ->
+        {:ok, assign(socket, schema_sample_errors: "XML file is empty")}
+
+      parsed_xml ->
+        is_schema_empty? =
+          case Changeset.fetch_field(socket.assigns.changeset, :schema) do
+            {_, schema} -> schema
+            :error -> []
+          end
+          |> Enum.empty?()
+
+        case is_schema_empty? do
+          true ->
+            changeset =
+              parsed_xml
+              |> DataDictionaryFormSchema.changeset_from_xml_file(socket.assigns.ingestion_id)
+              |> IO.inspect(label: "changeset")
+
+            send(self(), {:update_data_dictionary, changeset})
+
+            {:ok, assign(socket, loading_schema: false, current_data_dictionary_item: :no_dictionary)}
+
+          false ->
+            {:ok,
+             assign(socket,
+               loading_schema: false,
+               pending_schema: parsed_xml,
+               pending_file_type: "text/xml",
                overwrite_schema_visible?: true
              )}
         end
