@@ -44,7 +44,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "string",
           sequence: 0,
           subSchema: [],
-          type: "string",
+          type: "string"
         }
       ]
 
@@ -54,7 +54,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "string",
           sequence: 0,
           subSchema: [],
-          type: "string",
+          type: "string"
         },
         %{
           id: "testUpdatedId",
@@ -86,7 +86,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "list1",
           sequence: 0,
           subSchema: [],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -96,7 +96,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "list1",
           sequence: 0,
           subSchema: [updated_field],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -138,7 +138,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -166,7 +166,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -217,7 +217,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -255,7 +255,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -273,7 +273,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "string",
           sequence: 0,
           subSchema: [],
-          type: "string",
+          type: "string"
         }
       ]
 
@@ -296,10 +296,10 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               name: "string1",
               sequence: 0,
               subSchema: [],
-              type: "string",
+              type: "string"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -309,7 +309,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
           name: "list1",
           sequence: 0,
           subSchema: [],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -352,7 +352,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -380,7 +380,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -431,7 +431,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 
@@ -468,7 +468,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
               type: "list"
             }
           ],
-          type: "list",
+          type: "list"
         }
       ]
 

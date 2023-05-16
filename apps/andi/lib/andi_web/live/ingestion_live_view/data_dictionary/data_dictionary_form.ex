@@ -490,7 +490,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
 
   def remove_field(schema, field_id) do
     Enum.reduce_while(schema, [], fn individual_schema, acc ->
-      remove_element = (Map.get(individual_schema, :id) == field_id)
+      remove_element = Map.get(individual_schema, :id) == field_id
       sub_schema = Map.get(individual_schema, :subSchema)
 
       updated_schema =
