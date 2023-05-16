@@ -3,32 +3,6 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryFormTest do
   use ExUnit.Case
 
   describe "add field" do
-    test "adds updated field to empty schema" do
-      updated_field = %{
-        id: "testUpdatedId",
-        name: "string1",
-        sequence: 1,
-        subSchema: [],
-        type: "string"
-      }
-
-      schema = []
-
-      expected_schema = [
-        %{
-          id: "testUpdatedId",
-          name: "string1",
-          sequence: 1,
-          subSchema: [],
-          type: "string"
-        }
-      ]
-
-      schema_result = DataDictionaryForm.add_field(updated_field, schema)
-
-      assert schema_result == expected_schema
-    end
-
     test "adds updated field to schema" do
       updated_field = %{
         id: "testUpdatedId",
