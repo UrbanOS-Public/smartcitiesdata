@@ -436,24 +436,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       if Enum.empty?(schema) do
         [updated_field]
       else
-        Enum.reduce_while(schema, [], fn individual_schema, acc ->
-          parent_id = Map.get(updated_field, :parent_id)
-          schema_id = Map.get(individual_schema, :id)
-
-          case parent_id do
-            parent_id when is_nil(parent_id) ->
-              {:halt, schema ++ [updated_field]}
-
-            parent_id when schema_id === parent_id ->
-              sub_schema = Map.get(individual_schema, :subSchema, [])
-              updated_sub_schema = sub_schema ++ [updated_field]
-              updated_schema = Map.put(individual_schema, :subSchema, updated_sub_schema)
-              {:cont, acc ++ [updated_schema]}
-
-            _ ->
-              {:cont, acc ++ [individual_schema]}
-          end
-        end)
+        add_field(updated_field, schema)
       end
 
     updated_data_dictionary_changeset = Changeset.put_change(socket.assigns.changeset, :schema, updated_schema)
@@ -461,6 +444,29 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
     send(self(), {:update_data_dictionary, updated_data_dictionary_changeset})
 
     {:ok, assign(socket, add_data_dictionary_field_visible: add_data_dictionary_field_visible)}
+  end
+
+  def add_field(updated_field, schema) do
+    Enum.reduce_while(schema, [], fn individual_schema, acc ->
+      parent_id = Map.get(updated_field, :parent_id)
+      schema_id = Map.get(individual_schema, :id)
+      sub_schema = Map.get(individual_schema, :subSchema, [])
+
+      case parent_id do
+        parent_id when is_nil(parent_id) ->
+          {:halt, schema ++ [updated_field]}
+
+        parent_id when schema_id === parent_id ->
+          updated_sub_schema = sub_schema ++ [updated_field]
+          updated_schema = Map.put(individual_schema, :subSchema, updated_sub_schema)
+          {:cont, acc ++ [updated_schema]}
+
+        _ ->
+          updated_sub_schema = add_field(updated_field, sub_schema)
+          updated_schema = Map.put(individual_schema, :subSchema, updated_sub_schema)
+          {:cont, acc ++ [updated_schema]}
+      end
+    end)
   end
 
   def update(
@@ -473,37 +479,27 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
         :error -> []
       end
 
-    element_to_remove =
-      Enum.find(schema, fn data_dictionary ->
-        Map.get(data_dictionary, :id) == selected_field_id
-      end)
-
-    updated_schema =
-      if is_nil(element_to_remove) do
-        Enum.reduce(schema, [], fn individual_schema, acc ->
-          sub_schema = Map.get(individual_schema, :subSchema)
-
-          element_to_remove = Enum.find(sub_schema, fn s -> Map.get(s, :id) == selected_field_id end)
-
-          updated_sub_schema =
-            if is_nil(element_to_remove) do
-              sub_schema
-            else
-              List.delete(sub_schema, element_to_remove) |> sort_by_sequence()
-            end
-
-          acc ++ [Map.put(individual_schema, :subSchema, updated_sub_schema)]
-        end)
-      else
-        List.delete(schema, element_to_remove)
-        |> sort_by_sequence()
-      end
+    updated_schema = remove_field(schema, selected_field_id)
 
     updated_data_dictionary_changeset = Changeset.put_change(socket.assigns.changeset, :schema, updated_schema)
 
     send(self(), {:update_data_dictionary, updated_data_dictionary_changeset})
 
     {:ok, assign(socket, remove_data_dictionary_field_visible: false, selected_field_id: :no_dictionary)}
+  end
+
+  def remove_field(schema, field_id) do
+    Enum.reduce_while(schema, [], fn individual_schema, acc ->
+      remove_element = Map.get(individual_schema, :id) == field_id
+      sub_schema = Map.get(individual_schema, :subSchema)
+
+      updated_schema =
+        cond do
+          remove_element -> {:halt, List.delete(schema, individual_schema) |> sort_by_sequence()}
+          !is_nil(sub_schema) -> {:cont, acc ++ [Map.put(individual_schema, :subSchema, remove_field(sub_schema, field_id))]}
+          true -> {:cont, acc ++ individual_schema}
+        end
+    end)
   end
 
   def update(assigns, socket) do
