@@ -1,11 +1,11 @@
 defmodule Alchemist.BroadwayTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :alchemist
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
+  import Mock
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @ingestion_id "ingestion1"
@@ -18,9 +18,10 @@ defmodule Alchemist.BroadwayTest do
   getter(:output_topic_prefix, generic: true)
 
   describe "with valid transformations" do
-    setup do
-      allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
+    setup_with_mocks([
+      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]}
+      {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
+    ]) do
 
       transform1 =
         TDG.create_transformation(%{
@@ -254,9 +255,10 @@ defmodule Alchemist.BroadwayTest do
   end
 
   describe "with invalid transformation" do
-    setup do
-      allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow SmartCity.Data.Timing.current_time(), return: @current_time, meck_options: [:passthrough]
+    setup_with_mocks([
+      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]}
+      {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
+    ]) do
 
       transform =
         TDG.create_transformation(%{

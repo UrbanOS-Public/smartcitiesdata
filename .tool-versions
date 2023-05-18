@@ -1,6 +1,6 @@
 # describe what versions of erlang / elixir asdf version manager should utilize and enforce.
-erlang 23.2.7.5
-elixir 1.10.4-otp-23
+erlang 25.3.2
+elixir 1.14.4-otp-25
 
 # when updating this file, ensure smart_city and smart_city_test
 # tool versions are updated as well

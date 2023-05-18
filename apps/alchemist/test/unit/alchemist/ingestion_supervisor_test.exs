@@ -1,18 +1,16 @@
 defmodule Alchemist.IngestionSupervisorTest do
   use ExUnit.Case
-  use Placebo
+
+  import Mock
 
   alias Alchemist.IngestionSupervisor
   alias SmartCity.TestDataGenerator, as: TDG
 
   describe "ensure_started/1" do
-    setup %{} do
+    setup_with_mocks([
+      {DynamicSupervisor, [:passthrough] [start_child: fn(_, _) -> exec: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{ingestion.id}_supervisor") end end]}
+    ]) do
       ingestion = TDG.create_ingestion(%{})
-
-      allow(DynamicSupervisor.start_child(any(), any()),
-        exec: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{ingestion.id}_supervisor") end,
-        meck_options: [:passthrough]
-      )
 
       start_options = [
         ingestion: ingestion,
