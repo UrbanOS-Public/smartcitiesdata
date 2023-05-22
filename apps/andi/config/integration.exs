@@ -1,7 +1,7 @@
 use Mix.Config
 
-System.put_env("AUTH0_DOMAIN", "urbanos-dev.us.auth0.com")
-System.put_env("AUTH0_CLIENT_ID", "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa")
+# System.put_env("AUTH0_DOMAIN", "urbanos-demo.us.auth0.com")
+# System.put_env("AUTH0_CLIENT_ID", "S3H3cToHVddG7Q7zEKK1nJbzrAy9GqG0")
 System.put_env("SECURE_COOKIE", "false")
 System.put_env("REQUIRE_ADMIN_API_KEY", "false")
 System.put_env("RAPTOR_URL", "http://localhost:4002")
@@ -78,9 +78,9 @@ config :andi, :brook,
     init_arg: [redix_args: redix_args, namespace: "andi:view"]
   ]
 
-config :andi, :auth0,
-  url: "https://urbanos-dev.us.auth0.com/oauth/token",
-  audience: "https://urbanos-dev.us.auth0.com/api/v2/"
+# config :andi, :auth0,
+#   url: "https://urbanos-demo.us.auth0.com/oauth/token",
+#   audience: "https://urbanos-demo.us.auth0.com/api/v2/"
 
 config :andi, AndiWeb.Endpoint,
   pubsub_server: Andi.PubSub,
@@ -130,16 +130,16 @@ config :ueberauth, Ueberauth,
        ]}
   ]
 
-config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-  domain: "urbanos-dev.us.auth0.com",
-  client_id: "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa",
-  client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+# config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+#   domain: "urbanos-demo.us.auth0.com",
+#   client_id: "S3H3cToHVddG7Q7zEKK1nJbzrAy9GqG0",
+#   client_secret: System.get_env("AUTH0_CLIENT_SECRET")
 
-config :andi, AndiWeb.Auth.TokenHandler,
-  issuer: "https://urbanos-dev.us.auth0.com/",
-  allowed_algos: ["RS256"],
-  verify_issuer: false,
-  allowed_drift: 3_000_000_000_000
+# config :andi, AndiWeb.Auth.TokenHandler,
+#   issuer: "https://urbanos-demo.us.auth0.com/",
+#   allowed_algos: ["RS256"],
+#   verify_issuer: false,
+#   allowed_drift: 3_000_000_000_000
 
 config :andi, Guardian.DB, repo: Andi.Repo
 
