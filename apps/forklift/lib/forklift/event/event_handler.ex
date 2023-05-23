@@ -13,7 +13,8 @@ defmodule Forklift.Event.EventHandler do
       data_write_complete: 0,
       error_dataset_update: 0,
       dataset_delete: 0,
-      data_extract_end: 0
+      data_extract_end: 0,
+      ingestion_delete: 0
     ]
 
   import Brook.ViewState
@@ -145,6 +146,34 @@ defmodule Forklift.Event.EventHandler do
       :discard
   end
 
+  def handle_event(%Brook.Event{type: ingestion_delete(), data: %SmartCity.Ingestion{} = ingestion, author: author}) do
+    Logger.info("Dataset #{ingestion.id} - Received ingestion_delete event from #{author}")
+
+    ingestion_delete()
+    |> add_event_count(author, ingestion.id)
+
+    Enum.each(ingestion.targetDatasets, fn dataset_id ->
+      dataset = Forklift.Datasets.get!(dataset_id)
+      if dataset != nil do
+        case delete_ingestion_data(dataset, ingestion) do
+          {:ok, _} ->
+            Logger.info("#{__MODULE__}: Deleted ingestion data #{ingestion.id} for dataset: #{dataset.id}")
+            :ok
+
+          {:error, error} ->
+            Logger.error("#{__MODULE__}: Failed to delete ingestion data for dataset: #{dataset.id}, ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
+            :discard
+        end
+      end
+    end)
+
+  rescue
+    error ->
+      Logger.error("ingestion_delete failed to process.")
+      DeadLetter.process([ingestion.id], nil, ingestion, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
   def handle_event(%Brook.Event{
         type: data_extract_end(),
         data:
@@ -184,6 +213,10 @@ defmodule Forklift.Event.EventHandler do
     Forklift.DataReaderHelper.terminate(dataset)
     Forklift.DataWriter.delete(dataset)
     Forklift.Datasets.delete(dataset.id)
+  end
+
+  defp delete_ingestion_data(dataset, ingestion) do
+    Forklift.DataWriter.delete_ingestion_data(dataset, ingestion)
   end
 
   defp parse_dataset_id("forklift:last_insert_date:" <> dataset_id), do: dataset_id

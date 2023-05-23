@@ -79,6 +79,11 @@ defmodule Pipeline.Writer.TableWriter do
     StatementUtils.drop_table(dataset.technical.systemName)
   end
 
+  @impl Pipeline.Writer
+  def delete_ingestion_data(ingestion, dataset) do
+    StatementUtils.delete_ingestion_data_from_table(dataset.technical.systemName, ingestion.id)
+  end
+
   defp parse_args(args) do
     %{
       table: Keyword.fetch!(args, :table),

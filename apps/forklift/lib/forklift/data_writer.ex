@@ -88,6 +88,12 @@ defmodule Forklift.DataWriter do
     |> table_writer().delete()
   end
 
+  @impl Pipeline.Writer
+  def delete_ingestion_data(dataset, ingestion) do
+    [dataset: dataset, ingestion: ingestion]
+    table_writer().delete_ingestion_data(ingestion, dataset)
+  end
+
   @spec bootstrap() :: :ok | {:error, term()}
   @doc """
   Initializes `:topic_writer` from Forklift's application environment if an

@@ -11,6 +11,10 @@ defmodule Pipeline.Writer.TableWriter.Statement do
   end
 
   def create(%{table: name, schema: schema, format: format, partitions: partitions}) do
+    IO.inspect(name, label: "table name")
+    IO.inspect(schema, label: "schema")
+    IO.inspect(format, label: "format")
+    IO.inspect(partitions, label: "partitions")
     case partitions do
       nil ->
         {:ok, Create.compose(name, schema, format)}
@@ -27,6 +31,8 @@ defmodule Pipeline.Writer.TableWriter.Statement do
   end
 
   def create(%{table: name, schema: schema}) do
+    IO.inspect(name, label: "table name")
+    IO.inspect(schema, label: "schema")
     {:ok, Create.compose(name, schema)}
   rescue
     e in FieldTypeError ->
@@ -37,6 +43,8 @@ defmodule Pipeline.Writer.TableWriter.Statement do
   end
 
   def create(%{table: name, as: select}) do
+    IO.inspect(name, label: "table name")
+    IO.inspect(select, label: "select")
     {:ok, "create table #{name} as (#{select})"}
   end
 
@@ -70,5 +78,9 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     %{table: "#{new_table_name}", as: "select * from #{table_name}"}
     |> create()
     |> elem(1)
+  end
+
+  def delete_ingestion_data_from_table(table_name, ingestion_id) do
+    "delete from #{table_name} where _ingestion_id = '#{ingestion_id}'"
   end
 end

@@ -20,6 +20,11 @@ defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
     "deleted__#{current_timestamp()}__#{table_name}"
   end
 
+  def delete_ingestion_data_from_table(table_name, ingestion_id) do
+    Statement.delete_ingestion_data_from_table(table_name, ingestion_id)
+    |> PrestigeHelper.execute_query()
+  end
+
   defp current_timestamp() do
     DateTime.utc_now()
     |> DateTime.to_unix(:millisecond)
