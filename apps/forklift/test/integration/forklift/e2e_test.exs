@@ -5,11 +5,12 @@ defmodule Forklift.E2ETest do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
   import SmartCity.Event,
-         only: [
-           data_ingest_start: 0,
-           dataset_update: 0,
-           data_extract_end: 0
-         ]
+    only: [
+      data_ingest_start: 0,
+      dataset_update: 0,
+      data_extract_end: 0
+    ]
+
   import SmartCity.TestHelper
 
   @instance_name Forklift.instance_name()
@@ -85,25 +86,34 @@ defmodule Forklift.E2ETest do
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        assert Forklift.Datasets.get!(dataset.id) != nil
-      end, 10000)
+      eventually(
+        fn ->
+          assert Forklift.Datasets.get!(dataset.id) != nil
+        end,
+        10000
+      )
 
-      eventually(fn ->
-        assert @expected_table_values ==
-                 "DESCRIBE #{dataset.technical.systemName}"
-                 |> execute_query(session)
+      eventually(
+        fn ->
+          assert @expected_table_values ==
+                   "DESCRIBE #{dataset.technical.systemName}"
+                   |> execute_query(session)
 
-        assert @expected_json_table_values ==
-                 "DESCRIBE #{dataset.technical.systemName}__json"
-                 |> execute_query(session)
-      end, 10000)
+          assert @expected_json_table_values ==
+                   "DESCRIBE #{dataset.technical.systemName}__json"
+                   |> execute_query(session)
+        end,
+        10000
+      )
 
       Brook.Event.send(@instance_name, data_ingest_start(), __MODULE__, ingestion)
 
-      eventually(fn ->
-        assert Elsa.topic?(@brokers, topic_name)
-      end, 10000)
+      eventually(
+        fn ->
+          assert Elsa.topic?(@brokers, topic_name)
+        end,
+        10000
+      )
 
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data)
 
@@ -136,32 +146,36 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_count_key(extract_id)]) == nil
-      end, 10000)
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_count_key(extract_id)]) == nil
+        end,
+        10000
+      )
 
+      eventually(
+        fn ->
+          try do
+            query2 = "show tables"
+            session |> Prestige.query!(query2) |> IO.inspect(label: "a;lksdjfasl;dkfij")
+            query = "select * from #{dataset.technical.systemName}" |> IO.inspect(label: "query")
 
-        eventually(fn ->
-           try do
-             query2 = "show tables"
-             session |> Prestige.query!(query2) |> IO.inspect(label: "a;lksdjfasl;dkfij")
-             query = "select * from #{dataset.technical.systemName}" |> IO.inspect(label: "query")
+            result =
+              session
+              |> Prestige.query!(query)
+              |> Prestige.Result.as_maps()
 
-             result =
-               session
-               |> Prestige.query!(query)
-               |> Prestige.Result.as_maps()
-
-             assert result == [
-               expected_table_data,
-               expected_table_data,
-               expected_table_data
-             ]
-           rescue
-             error -> assert error == nil
-           end
-        end, 10000)
-
+            assert result == [
+                     expected_table_data,
+                     expected_table_data,
+                     expected_table_data
+                   ]
+          rescue
+            error -> assert error == nil
+          end
+        end,
+        10000
+      )
     end
   end
 
@@ -198,6 +212,6 @@ defmodule Forklift.E2ETest do
   end
 
   defp get_extract_id(ingestion_id, dataset_id, extract_time) do
-    ingestion_id <> "_" <> dataset_id <> "_" <>  Integer.to_string(extract_time)
+    ingestion_id <> "_" <> dataset_id <> "_" <> Integer.to_string(extract_time)
   end
 end
