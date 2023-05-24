@@ -17,9 +17,12 @@ defmodule Forklift.E2ETest do
   @brokers Application.get_env(:forklift, :elsa_brokers)
 
   setup do
-    session = create_session()
     drop_all_tables()
     delete_validated_topics()
+    Redix.command!(:redix, ["FLUSHALL"])
+
+    session = create_session()
+
     [session: session]
   end
 
