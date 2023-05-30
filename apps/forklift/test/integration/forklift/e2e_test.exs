@@ -184,7 +184,7 @@ defmodule Forklift.E2ETest do
       # ================================================
       eventually(
         fn ->
-          assert Forklift.Datasets.get!(dataset.id) |> IO.inspect(label: "DATASETS") != nil
+          assert Forklift.Datasets.get!(dataset.id) != nil
         end,
         10000
       )
@@ -193,7 +193,7 @@ defmodule Forklift.E2ETest do
       # ================================================
       eventually(
         fn ->
-          assert length(Forklift.Ingestions.get_all!()) |> IO.inspect(label: "INGESTIONS") == 2
+          assert length(Forklift.Ingestions.get_all!()) == 2
         end,
         10000
       )
@@ -299,15 +299,12 @@ defmodule Forklift.E2ETest do
       eventually(
         fn ->
           try do
-            query2 = "show tables"
-            session |> Prestige.query!(query2) |> IO.inspect(label: "a;lksdjfasl;dkfij")
-            query = "select * from #{dataset.technical.systemName}" |> IO.inspect(label: "query")
+            query = "select * from #{dataset.technical.systemName}"
 
             result =
               session
               |> Prestige.query!(query)
               |> Prestige.Result.as_maps()
-              |> IO.inspect(label: "query result")
 
             assert Enum.sort(result) ==
                      Enum.sort([
@@ -328,7 +325,7 @@ defmodule Forklift.E2ETest do
 
       eventually(
         fn ->
-          assert length(Forklift.Ingestions.get_all!()) |> IO.inspect(label: "INGESTIONS") == 1
+          assert length(Forklift.Ingestions.get_all!()) == 1
         end,
         10000
       )
@@ -379,13 +376,12 @@ defmodule Forklift.E2ETest do
       eventually(
         fn ->
           try do
-            query = "select * from #{dataset.technical.systemName}" |> IO.inspect(label: "query")
+            query = "select * from #{dataset.technical.systemName}"
 
             result =
               session
               |> Prestige.query!(query)
               |> Prestige.Result.as_maps()
-              |> IO.inspect(label: "result 2")
 
             assert Enum.sort(result) ==
                      Enum.sort([

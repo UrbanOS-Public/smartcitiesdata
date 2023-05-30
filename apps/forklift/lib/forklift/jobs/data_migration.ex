@@ -13,7 +13,6 @@ defmodule Forklift.Jobs.DataMigration do
   @spec compact(SmartCity.Dataset.t(), String.t(), Integer.t()) ::
           {:abort, any} | {:error, any} | {:ok, any}
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
-    IO.inspect("COMPACTING #{ingestion_id}")
     overwrite_mode = Application.fetch_env!(:forklift, :overwrite_mode)
 
     Logger.debug(
@@ -87,14 +86,11 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp remove_deleted_ingestions_if_overwrite(overwrite_mode, table, dataset_id) do
-    IO.inspect("REMOVE BEGIN")
-
     if overwrite_mode do
       Forklift.Ingestions.get_all!()
       |> Enum.filter(fn ingestion -> Enum.member?(ingestion.targetDatasets, dataset_id) end)
       |> Enum.map(fn ingestion -> ingestion.id end)
       |> filter_unmatched_ingestion_ids_from_table(table)
-      |> IO.inspect(label: "filter result")
     else
       {:ok, :overwrite_mode_disabled}
     end
@@ -157,14 +153,9 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp filter_unmatched_ingestion_ids_from_table(ingestion_ids, table) do
-    IO.inspect(ingestion_ids, label: "INGESTION IDS")
-    IO.inspect(Enum.map(ingestion_ids, fn id -> "#{id}" end), label: "MAPPED IDS")
-    IO.inspect(Enum.map(ingestion_ids, fn id -> "#{id}" end) |> Enum.join(", "), label: "STRING IDS")
-
     "delete from #{table} where _ingestion_id not in (#{
       Enum.map(ingestion_ids, fn id -> "\'" <> id <> "\'" end) |> Enum.join(",")
     })"
-    |> IO.inspect(label: "QUERY TIME")
     |> PrestigeHelper.execute_query()
   end
 
