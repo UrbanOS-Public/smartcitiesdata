@@ -64,7 +64,7 @@ defmodule Forklift.E2ETest do
 
       extract_time_1 = current_time
       extract_time_unix_1 = current_time |> Timex.to_unix()
-      extract_iso_time_1 = extract_time_1 |> Timex.format!("{ISO:Extended:Z}") |> Timex.to_unix()
+      extract_iso_time_1 = extract_time_1 |> Timex.format!("{ISO:Extended:Z}")
 
       extract_data_1 = %{
         "dataset_ids" => [dataset.id],
@@ -102,7 +102,7 @@ defmodule Forklift.E2ETest do
       # ================================================
       extract_time_2 = current_time
       extract_time_unix_2 = extract_time_2 |> Timex.to_unix()
-      extract_iso_time_2 = extract_time_2 |> Timex.format!("{ISO:Extended:Z}") |> Timex.to_unix()
+      extract_iso_time_2 = extract_time_2 |> Timex.format!("{ISO:Extended:Z}")
 
       extract_data_2 = %{
         "dataset_ids" => [dataset.id],
@@ -140,7 +140,7 @@ defmodule Forklift.E2ETest do
       # ================================================
       extract_time_3 = current_time |> Timex.shift(minutes: 1)
       extract_time_unix_3 = extract_time_3 |> Timex.to_unix()
-      extract_iso_time_3 = extract_time_3 |> Timex.format!("{ISO:Extended:Z}") |> Timex.to_unix()
+      extract_iso_time_3 = extract_time_3 |> Timex.format!("{ISO:Extended:Z}")
 
       extract_data_3 = %{
         "dataset_ids" => [dataset.id],
