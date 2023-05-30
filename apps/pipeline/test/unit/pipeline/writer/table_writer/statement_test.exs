@@ -619,12 +619,6 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
              })
   end
 
-  test "should create query for deleting ingestion data from table" do
-    expected_query = "delete from table__name where _ingestion_id = 'ingestion_id_123'"
-
-    assert ^expected_query = Statement.delete_ingestion_data_from_table("table__name", "ingestion_id_123")
-  end
-
   defp config(schema \\ [%{name: "id", type: "integer"}, %{name: "name", type: "string"}]) do
     %{table: "rivers", schema: schema}
   end

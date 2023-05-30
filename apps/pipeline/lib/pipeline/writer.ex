@@ -9,5 +9,5 @@ defmodule Pipeline.Writer do
   @callback compact(keyword()) :: :ok | {:error, term()}
   @callback delete(keyword()) :: :ok | {:error, term()}
 
-  @optional_callbacks compact: 1, terminate: 1, delete: 1, delete_ingestion_data: 2
+  @optional_callbacks compact: 1, terminate: 1, delete: 1
 end

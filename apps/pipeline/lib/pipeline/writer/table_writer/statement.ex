@@ -71,8 +71,4 @@ defmodule Pipeline.Writer.TableWriter.Statement do
     |> create()
     |> elem(1)
   end
-
-  def delete_ingestion_data_from_table(table_name, ingestion_id) do
-    "delete from #{table_name} where _ingestion_id = '#{ingestion_id}'"
-  end
 end
