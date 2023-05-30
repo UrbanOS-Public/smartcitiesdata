@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
   http: [port: 4001, stream_handlers: [Web.StreamHandlers.StripServerHeader, :cowboy_stream_h]],
@@ -29,4 +29,4 @@ config :discovery_streams,
 config :ex_aws,
   region: "us-east-2"
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 input_topic_prefix = "transformed"
 
@@ -20,7 +20,7 @@ config :logger,
   level: :info,
   compile_time_purge_matching: [[lower_level_than: :debug]]
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"
 
 config :prestige, :session_opts,
   catalog: "hive",

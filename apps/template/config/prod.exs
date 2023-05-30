@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :template, TemplateWeb.Endpoint,
   http: [port: {:system, "PORT"}],

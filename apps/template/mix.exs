@@ -5,12 +5,12 @@ defmodule Template.MixProject do
     [
       app: :template,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "0.1.14",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: test_paths(Mix.env()),
@@ -28,17 +28,17 @@ defmodule Template.MixProject do
 
   defp deps do
     [
-      {:brook, "== 0.4.9"},
-      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
+      {:brook_stream, "~> 1.0"},
+      {:divo, "~> 2.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 0.2.0"},
       {:properties, in_umbrella: true},
-      {:redix, "~> 0.10"},
-      {:smart_city, "~> 5.4.0"},
-      {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
+      {:redix, "~> 1.2"},
+      {:smart_city, "~> 6.0"},
+      {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:distillery, "~> 2.1"}

@@ -4,12 +4,12 @@ defmodule Performance.MixProject do
   def project do
     [
       app: :performance,
-      version: "0.1.10",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -24,10 +24,10 @@ defmodule Performance.MixProject do
   defp deps do
     [
       {:combinatorics, "~> 0.1.0", only: [:integration]},
-      {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:benchee, "~> 1.1", only: [:integration]},
       {:exprof, "~> 0.2.3", only: [:integration]},
-      {:retry, "~> 0.13"}
+      {:retry, "~> 0.18"}
     ]
   end
 end

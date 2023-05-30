@@ -4,12 +4,12 @@ defmodule Properties.MixProject do
   def project do
     [
       app: :properties,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -25,7 +25,7 @@ defmodule Properties.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.3", only: [:dev]}
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 end

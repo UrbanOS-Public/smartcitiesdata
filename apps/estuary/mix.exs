@@ -4,8 +4,8 @@ defmodule Estuary.MixProject do
   def project do
     [
       app: :estuary,
-      version: "0.11.21",
-      elixir: "~> 1.10",
+      version: "1.0.0",
+      elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -29,13 +29,14 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
-      {:cowlib, "== 2.9.1", override: true},
-      {:credo, "~> 1.0", only: [:dev], runtime: false},
+      {:cowlib, "== 2.12.1", override: true},
+      {:credo, "~> 1.7", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
-      {:elsa, "~> 0.12"},
+      {:elsa_kafka, "~> 1.0"},
       {:floki, "~> 0.23", only: [:dev, :test, :integration]},
       {:jason, "~> 1.2"},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
@@ -43,12 +44,11 @@ defmodule Estuary.MixProject do
       {:phoenix_live_view, "~>0.4"},
       {:phoenix_pubsub, "~> 2.0"},
       {:pipeline, in_umbrella: true},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.5"},
       {:plug_heartbeat, "~> 0.2.0"},
-      {:prestige, "~> 2.0.0"},
+      {:prestige, "~> 3.0.0"},
       {:properties, in_umbrella: true},
-      {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
       {:quantum, "~>2.4"},
       {:timex, "~> 3.6"}

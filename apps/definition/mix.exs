@@ -4,12 +4,12 @@ defmodule Definition.MixProject do
   def project do
     [
       app: :definition,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       test_paths: test_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -31,10 +31,10 @@ defmodule Definition.MixProject do
 
       # Def/Test Dependencies
       {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
-      {:placebo, "~> 2.0.0-rc.2", only: [:dev, :test]},
+      {:mock, "~> 0.3", only: [:dev, :test]},
       {:stream_data, "~> 0.4.0", only: [:dev, :test]},
       {:checkov, "~> 1.0", only: [:test]},
-      {:credo, "~> 1.3", only: [:dev]}
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 

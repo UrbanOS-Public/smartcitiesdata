@@ -4,12 +4,12 @@ defmodule Management.MixProject do
   def project do
     [
       app: :management,
-      version: "0.1.1",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,8 +23,8 @@ defmodule Management.MixProject do
 
   defp deps do
     [
-      {:brook, "== 0.4.9"},
-      {:credo, "~> 1.3", only: [:dev]}
+      {:brook_stream, "~> 1.0"},
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 end

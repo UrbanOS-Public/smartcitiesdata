@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 System.put_env("REQUIRE_ADMIN_API_KEY", "false")
 

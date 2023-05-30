@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :template, TemplateWeb.Endpoint,
   url: [host: "localhost"],
@@ -11,4 +11,4 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

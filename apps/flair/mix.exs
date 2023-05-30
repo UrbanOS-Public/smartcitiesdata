@@ -4,8 +4,8 @@ defmodule Flair.MixProject do
   def project do
     [
       app: :flair,
-      version: "0.5.11",
-      elixir: "~> 1.10",
+      version: "1.0.0",
+      elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -34,19 +34,19 @@ defmodule Flair.MixProject do
 
   defp deps do
     [
-      {:elsa, "~> 0.12"},
+      {:elsa_kafka, "~> 2.0"},
       {:flow, "~> 1.0"},
       {:gen_stage, "~> 1.0", override: true},
       {:jason, "~> 1.2"},
-      {:retry, "~> 0.14.0"},
+      {:retry, "~> 0.18"},
       {:statistics, "~> 0.6"},
-      {:credo, "~> 1.0", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.11", only: :dev},
+      {:credo, "~> 1.7", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.16.1", only: :dev},
       {:ex_doc, "~> 0.21"},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
+      {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:distillery, "~> 2.1"},
       {:pipeline, in_umbrella: true},
       {:tasks, in_umbrella: true, only: :dev}

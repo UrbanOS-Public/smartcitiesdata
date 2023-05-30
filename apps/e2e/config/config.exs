@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :e2e,
   divo: "test/docker-compose.yml",

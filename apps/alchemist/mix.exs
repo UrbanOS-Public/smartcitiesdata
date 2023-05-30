@@ -33,16 +33,16 @@ defmodule Alchemist.MixProject do
 
   defp deps do
     [
-      {:brook, "== 0.6.0"},
+      {:brook_stream, "~> 1.0"},
       {:cachex, "~> 3.6"},
       {:checkov, "~> 1.0", only: [:test]},
       {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},
-      {:divo, "~> 2.0", only: [:dev, :test, :integration]},
-      {:divo_kafka, "~> 1.0", only: [:integration]},
-      {:divo_redis, "~> 1.0", only: [:integration]},
+      {:divo, "~> 2.0.0", only: [:dev, :test, :integration]},
+      {:divo_kafka, "~> 1.0.0", only: [:integration]},
+      {:divo_redis, "~> 1.0.0", only: [:integration]},
       {:elixir_uuid, "~> 1.2"},
       {:excoveralls, "~> 0.16.1", only: :test},
       {:tasks, in_umbrella: true, only: :dev},
@@ -53,7 +53,6 @@ defmodule Alchemist.MixProject do
       {:observer_cli, "~> 1.7.4"},
       {:off_broadway_kafka, "~> 1.0.1"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.18"},
       {:smart_city, "~> 6.0.0"},

@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 aws_region = "local"
 System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
 System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")

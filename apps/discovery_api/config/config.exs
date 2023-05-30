@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :prestige, :session_opts,
   user: "discovery-api",
@@ -53,4 +53,4 @@ config :elastix,
   json_options: [keys: :atoms],
   httpoison_options: [timeout: 120_000, recv_timeout: 120_000]
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"
