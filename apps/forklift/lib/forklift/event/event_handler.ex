@@ -83,22 +83,25 @@ defmodule Forklift.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: ingestion_update(),
-        data: data,
+        data: %Ingestion{} = ingestion,
         author: author
       }) do
-    Logger.info("Ingestion: #{data.id} - Received ingestion_update event from #{author}")
+    Logger.info("Ingestion: #{ingestion.id} - Received ingestion_update event from #{author}")
 
     ingestion_update()
-    |> add_event_count(author, data.id)
+    |> add_event_count(author, ingestion.id)
 
-    Forklift.Ingestions.update(data)
+    Forklift.Ingestions.update(ingestion)
 
     :ok
   rescue
     error ->
       Logger.error("ingestion_update failed to process. #{inspect(error)}")
-      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
-      Brook.Event.send(@instance_name, error_ingestion_update(), :forklift, %{"reason" => error, "dataset" => data})
+
+      DeadLetter.process([ingestion.targetDatasets], ingestion.id, ingestion, Atom.to_string(@instance_name),
+        reason: inspect(error)
+      )
+
       :discard
   end
 
@@ -170,7 +173,7 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: ingestion_delete(), data: %SmartCity.Ingestion{} = ingestion, author: author}) do
-    Logger.info("Dataset #{ingestion.id} - Received ingestion_delete event from #{author}")
+    Logger.info("Ingestion #{ingestion.id} - Received ingestion_delete event from #{author}")
 
     ingestion_delete()
     |> add_event_count(author, ingestion.id)
@@ -179,7 +182,11 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_delete failed to process.")
-      DeadLetter.process([ingestion.id], nil, ingestion, Atom.to_string(@instance_name), reason: inspect(error))
+
+      DeadLetter.process([ingestion.targetDatasets], ingestion.id, ingestion, Atom.to_string(@instance_name),
+        reason: inspect(error)
+      )
+
       :discard
   end
 

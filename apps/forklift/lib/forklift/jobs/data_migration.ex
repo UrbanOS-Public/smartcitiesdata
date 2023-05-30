@@ -87,10 +87,18 @@ defmodule Forklift.Jobs.DataMigration do
 
   defp remove_deleted_ingestions_if_overwrite(overwrite_mode, table, dataset_id) do
     if overwrite_mode do
-      Forklift.Ingestions.get_all!()
-      |> Enum.filter(fn ingestion -> Enum.member?(ingestion.targetDatasets, dataset_id) end)
-      |> Enum.map(fn ingestion -> ingestion.id end)
-      |> filter_unmatched_ingestion_ids_from_table(table)
+      ingestions = Forklift.Ingestions.get_all!()
+
+      cond do
+        length(ingestions) > 0 ->
+          ingestions
+          |> Enum.filter(fn ingestion -> Enum.member?(ingestion.targetDatasets, dataset_id) end)
+          |> Enum.map(fn ingestion -> ingestion.id end)
+          |> filter_unmatched_ingestion_ids_from_table(table)
+
+        true ->
+          {:ok, :no_ingestions_to_delete}
+      end
     else
       {:ok, :overwrite_mode_disabled}
     end

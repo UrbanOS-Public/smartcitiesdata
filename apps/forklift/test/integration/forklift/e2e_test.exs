@@ -224,7 +224,7 @@ defmodule Forklift.E2ETest do
         10000
       )
 
-      # Toggle end of data extraction 1 and check message target value was set from the extract data
+      # Indicates reaper is done extracting data for extraction 1 and forklift should eventually receive the set amount of messages
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_1)
 
@@ -265,7 +265,7 @@ defmodule Forklift.E2ETest do
         10000
       )
 
-      # Toggle end of data extraction 2 and check message target value was set from the extract data
+      # # Indicates reaper is done extracting data for extraction 2 and forklift should eventually receive the set amount of messages
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_2)
 
@@ -330,7 +330,7 @@ defmodule Forklift.E2ETest do
         10000
       )
 
-      # Toggle end of data extraction 3 and check message target value was set from the extract data
+      # # Indicates reaper is done extracting data for extraction 3 and forklift should eventually receive the set amount of messages
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_3)
 
@@ -433,9 +433,3 @@ defmodule Forklift.E2ETest do
     ingestion_id <> "_" <> dataset_id <> "_" <> Integer.to_string(extract_time)
   end
 end
-
-# [%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
-# [%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "d50b5380-6369-4628-b68f-0fe609f316f5", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
-#
-# [%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "97af36c6-0800-4a17-9701-70f728f7cfe7", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
-# [%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
