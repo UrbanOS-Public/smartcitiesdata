@@ -130,6 +130,8 @@ defmodule Pipeline.Writer.S3Writer do
 
   @impl Pipeline.Writer
   def delete_ingestion_data(ingestion, dataset) do
+    IO.inspect(ingestion, label: "ingestion")
+    IO.inspect(dataset, label: "dataset")
     StatementUtils.delete_ingestion_data_from_table(dataset.technical.systemName, ingestion.id)
   end
 

@@ -22,7 +22,9 @@ defmodule Pipeline.Writer.TableWriter.Statement.StatementUtils do
 
   def delete_ingestion_data_from_table(table_name, ingestion_id) do
     Statement.delete_ingestion_data_from_table(table_name, ingestion_id)
+    |> IO.inspect(label: "statement")
     |> PrestigeHelper.execute_query()
+    |> IO.inspect(label: "execute")
   end
 
   defp current_timestamp() do

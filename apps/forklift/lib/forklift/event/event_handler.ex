@@ -12,9 +12,11 @@ defmodule Forklift.Event.EventHandler do
       data_ingest_end: 0,
       data_write_complete: 0,
       error_dataset_update: 0,
+      error_ingestion_update: 0,
       dataset_delete: 0,
       data_extract_end: 0,
-      ingestion_delete: 0
+      ingestion_delete: 0,
+      ingestion_update: 0
     ]
 
   import Brook.ViewState
@@ -76,6 +78,27 @@ defmodule Forklift.Event.EventHandler do
       Logger.error("dataset_update failed to process. #{inspect(error)}")
       DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       Brook.Event.send(@instance_name, error_dataset_update(), :forklift, %{"reason" => error, "dataset" => data})
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+    type: ingestion_update(),
+    data: data,
+    author: author
+  }) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_update event from #{author}")
+
+    ingestion_update()
+    |> add_event_count(author, data.id)
+
+    Forklift.Ingestions.update(data)
+
+    :ok
+  rescue
+    error ->
+      Logger.error("ingestion_update failed to process. #{inspect(error)}")
+      DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      Brook.Event.send(@instance_name, error_ingestion_update(), :forklift, %{"reason" => error, "dataset" => data})
       :discard
   end
 
@@ -152,20 +175,21 @@ defmodule Forklift.Event.EventHandler do
     ingestion_delete()
     |> add_event_count(author, ingestion.id)
 
-    Enum.each(ingestion.targetDatasets, fn dataset_id ->
-      dataset = Forklift.Datasets.get!(dataset_id)
-      if dataset != nil do
-        case delete_ingestion_data(dataset, ingestion) do
-          {:ok, _} ->
-            Logger.info("#{__MODULE__}: Deleted ingestion data #{ingestion.id} for dataset: #{dataset.id}")
-            :ok
-
-          {:error, error} ->
-            Logger.error("#{__MODULE__}: Failed to delete ingestion data for dataset: #{dataset.id}, ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
-            :discard
-        end
-      end
-    end)
+    Forklift.Ingestions.delete(ingestion.id)
+#    Enum.each(ingestion.targetDatasets, fn dataset_id ->
+#      dataset = Forklift.Datasets.get!(dataset_id)
+#      if dataset != nil do
+#        case delete_ingestion_data(dataset, ingestion) do
+#          {:ok, _} ->
+#            Logger.info("#{__MODULE__}: Deleted ingestion data #{ingestion.id} for dataset: #{dataset.id}")
+#            :ok
+#
+#          {:error, error} ->
+#            Logger.error("#{__MODULE__}: Failed to delete ingestion data for dataset: #{dataset.id}, ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
+#            :discard
+#        end
+#      end
+#    end)
 
   rescue
     error ->
