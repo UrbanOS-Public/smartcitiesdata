@@ -82,10 +82,10 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{
-    type: ingestion_update(),
-    data: data,
-    author: author
-  }) do
+        type: ingestion_update(),
+        data: data,
+        author: author
+      }) do
     Logger.info("Ingestion: #{data.id} - Received ingestion_update event from #{author}")
 
     ingestion_update()
@@ -176,21 +176,20 @@ defmodule Forklift.Event.EventHandler do
     |> add_event_count(author, ingestion.id)
 
     Forklift.Ingestions.delete(ingestion.id)
-#    Enum.each(ingestion.targetDatasets, fn dataset_id ->
-#      dataset = Forklift.Datasets.get!(dataset_id)
-#      if dataset != nil do
-#        case delete_ingestion_data(dataset, ingestion) do
-#          {:ok, _} ->
-#            Logger.info("#{__MODULE__}: Deleted ingestion data #{ingestion.id} for dataset: #{dataset.id}")
-#            :ok
-#
-#          {:error, error} ->
-#            Logger.error("#{__MODULE__}: Failed to delete ingestion data for dataset: #{dataset.id}, ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
-#            :discard
-#        end
-#      end
-#    end)
-
+    #    Enum.each(ingestion.targetDatasets, fn dataset_id ->
+    #      dataset = Forklift.Datasets.get!(dataset_id)
+    #      if dataset != nil do
+    #        case delete_ingestion_data(dataset, ingestion) do
+    #          {:ok, _} ->
+    #            Logger.info("#{__MODULE__}: Deleted ingestion data #{ingestion.id} for dataset: #{dataset.id}")
+    #            :ok
+    #
+    #          {:error, error} ->
+    #            Logger.error("#{__MODULE__}: Failed to delete ingestion data for dataset: #{dataset.id}, ingestion: #{ingestion.id}, Reason: #{inspect(error)}")
+    #            :discard
+    #        end
+    #      end
+    #    end)
   rescue
     error ->
       Logger.error("ingestion_delete failed to process.")

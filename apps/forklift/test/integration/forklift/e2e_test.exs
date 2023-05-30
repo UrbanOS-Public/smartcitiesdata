@@ -59,7 +59,6 @@ defmodule Forklift.E2ETest do
 
       topic_name = "validated-#{dataset.id}"
 
-
       # Extraction 1 (Ingestion 1)
       # ================================================
 
@@ -99,7 +98,6 @@ defmodule Forklift.E2ETest do
         "os_partition" => "#{yyyy_mm_time}"
       }
 
-
       # Extraction 2 (Ingestion 2)
       # ================================================
       extract_time_2 = current_time
@@ -137,7 +135,6 @@ defmodule Forklift.E2ETest do
         "foo" => "testBar",
         "os_partition" => "#{yyyy_mm_time}"
       }
-
 
       # Extraction 3 (Ingestion 1)
       # ================================================
@@ -177,13 +174,11 @@ defmodule Forklift.E2ETest do
         "os_partition" => "#{yyyy_mm_time}"
       }
 
-
       # Create dataset and ingestions with existing test data
       # ================================================
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, ingestion_1)
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, ingestion_2)
-
 
       # Wait for dataset to be stored in state
       # ================================================
@@ -233,10 +228,12 @@ defmodule Forklift.E2ETest do
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_1)
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_target_key(extract_id_1)]) == "2"
-      end, 10000)
-
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_1)]) == "2"
+        end,
+        10000
+      )
 
       # Send the kafka messages to topic and verify count key is updated for each messages recieved
       # ================================================
@@ -247,9 +244,12 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == "1"
-      end, 10000)
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == "1"
+        end,
+        10000
+      )
 
       Elsa.Producer.produce(
         @brokers,
@@ -258,19 +258,23 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == nil
-      end, 10000)
-
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == nil
+        end,
+        10000
+      )
 
       # Toggle end of data extraction 2 and check message target value was set from the extract data
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_2)
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_target_key(extract_id_2)]) == "1"
-      end, 10000)
-
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_2)]) == "1"
+        end,
+        10000
+      )
 
       # Send the kafka messages to topic and verify count key is updated for each messages recieved
       # ================================================
@@ -288,7 +292,6 @@ defmodule Forklift.E2ETest do
         10000
       )
 
-
       # Verify dataset table contents have been updated with data from the received messages
       # All Ingestion 1 data should be present from the 1st extraction
       # All Ingestion 2 data should be present 2nd extraction
@@ -305,18 +308,19 @@ defmodule Forklift.E2ETest do
               |> Prestige.query!(query)
               |> Prestige.Result.as_maps()
               |> IO.inspect(label: "query result")
-            assert Enum.sort(result) == Enum.sort([
-                     expected_table_data_1,
-                     expected_table_data_1,
-                     expected_table_data_2
-                   ])
+
+            assert Enum.sort(result) ==
+                     Enum.sort([
+                       expected_table_data_1,
+                       expected_table_data_1,
+                       expected_table_data_2
+                     ])
           rescue
             error -> assert error == nil
           end
         end,
         10000
       )
-
 
       # Trigger delete of all ingestion 2 data and verify ingestion is reduced accordingly
       # ================================================
@@ -329,14 +333,16 @@ defmodule Forklift.E2ETest do
         10000
       )
 
-
       # Toggle end of data extraction 3 and check message target value was set from the extract data
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_3)
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_target_key(extract_id_3)]) == "2"
-      end, 10000)
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_3)]) == "2"
+        end,
+        10000
+      )
 
       Elsa.Producer.produce(
         @brokers,
@@ -345,9 +351,12 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == "1"
-      end, 10000)
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == "1"
+        end,
+        10000
+      )
 
       Elsa.Producer.produce(
         @brokers,
@@ -356,10 +365,12 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(fn ->
-        assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == nil
-      end, 10000)
-
+      eventually(
+        fn ->
+          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == nil
+        end,
+        10000
+      )
 
       # Verify dataset table contents have been updated with data from the received messages
       # All Ingestion 1 data should overwritten with data from the 3rd extraction
@@ -376,10 +387,11 @@ defmodule Forklift.E2ETest do
               |> Prestige.Result.as_maps()
               |> IO.inspect(label: "result 2")
 
-            assert Enum.sort(result) == Enum.sort([
-                     expected_table_data_3,
-                     expected_table_data_3
-                   ])
+            assert Enum.sort(result) ==
+                     Enum.sort([
+                       expected_table_data_3,
+                       expected_table_data_3
+                     ])
           rescue
             error -> assert error == nil
           end
@@ -425,8 +437,9 @@ defmodule Forklift.E2ETest do
     ingestion_id <> "_" <> dataset_id <> "_" <> Integer.to_string(extract_time)
   end
 end
-#[%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
-#[%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "d50b5380-6369-4628-b68f-0fe609f316f5", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
+
+# [%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
+# [%{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054918, "_ingestion_id" => "d50b5380-6369-4628-b68f-0fe609f316f5", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685054978, "_ingestion_id" => "08b123d2-d2bf-471f-aaef-0311bc7603e3", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
 #
-#[%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "97af36c6-0800-4a17-9701-70f728f7cfe7", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
-#[%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
+# [%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "97af36c6-0800-4a17-9701-70f728f7cfe7", "bar" => 54321, "foo" => "testBar", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
+# [%{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055838, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}, %{"_extraction_start_time" => 1685055898, "_ingestion_id" => "e35b0500-f042-4ed8-901a-482b0f57dbf1", "bar" => 12345, "foo" => "testFoo", "os_partition" => "2023_05"}]
