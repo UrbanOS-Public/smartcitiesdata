@@ -52,7 +52,8 @@ defmodule Forklift.Jobs.DataMigration do
              extract_time,
              0,
              "json table was cleared of the compacted extraction"
-           ) do
+           ),
+         {:ok, _} <- remove_deleted_ingestions_if_overwrite(overwrite_mode, system_name, id) do
       Logger.debug(
         "Successful data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{
           extract_time
@@ -82,6 +83,25 @@ defmodule Forklift.Jobs.DataMigration do
     end
   after
     Forklift.DataReaderHelper.init(dataset)
+  end
+
+  defp remove_deleted_ingestions_if_overwrite(overwrite_mode, table, dataset_id) do
+    if overwrite_mode do
+      ingestions = Forklift.Ingestions.get_all!()
+
+      cond do
+        length(ingestions) > 0 ->
+          ingestions
+          |> Enum.filter(fn ingestion -> Enum.member?(ingestion.targetDatasets, dataset_id) end)
+          |> Enum.map(fn ingestion -> ingestion.id end)
+          |> filter_unmatched_ingestion_ids_from_table(table)
+
+        true ->
+          {:ok, :no_ingestions_to_delete}
+      end
+    else
+      {:ok, :overwrite_mode_disabled}
+    end
   end
 
   defp refit_to_partitioned(table, original_count) do
@@ -137,6 +157,13 @@ defmodule Forklift.Jobs.DataMigration do
 
   defp remove_ingestion_from_table(table, ingestion_id) do
     "delete from #{table} where _ingestion_id = '#{ingestion_id}'"
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp filter_unmatched_ingestion_ids_from_table(ingestion_ids, table) do
+    "delete from #{table} where _ingestion_id not in (#{
+      Enum.map(ingestion_ids, fn id -> "\'" <> id <> "\'" end) |> Enum.join(",")
+    })"
     |> PrestigeHelper.execute_query()
   end
 
