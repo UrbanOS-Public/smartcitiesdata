@@ -1,7 +1,7 @@
 use Mix.Config
 
 System.put_env("AUTH0_DOMAIN", "urbanos-dev.us.auth0.com")
-System.put_env("AUTH0_CLIENT_ID", "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa")
+System.put_env("ANDI_AUTH0_CLIENT_ID", "oRb8LbGixCD7a6T7u3sTx1Ve65nL2hWa")
 System.put_env("SECURE_COOKIE", "false")
 System.put_env("REQUIRE_ADMIN_API_KEY", "false")
 System.put_env("RAPTOR_URL", "http://localhost:4002")
