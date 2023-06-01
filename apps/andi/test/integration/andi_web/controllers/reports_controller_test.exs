@@ -93,7 +93,7 @@ defmodule Andi.ReportsControllerTest do
 
       dataset2 = %Dataset{
         id: "6789",
-        business: %Business{dataTitle: "Example2", orgTitle: "Test2"},
+        business: %Business{dataTitle: "Example2", orgTitle: "Test2", keywords: []},
         technical: %Technical{private: false, systemName: "Test2__Example2"}
       }
 
@@ -104,7 +104,7 @@ defmodule Andi.ReportsControllerTest do
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\",\"keyword1, keyword2\",Private\r\n6789,Example2,Test2,Test2__Example2,All (public),\"keyword1, keyword2\",Public\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\",\"keyword1, keyword2\",Private\r\n6789,Example2,Test2,Test2__Example2,All (public),\"\",Public\r\n"
     end
 
     test "filters duplicates", %{curator_conn: conn} do
