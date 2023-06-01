@@ -23,7 +23,7 @@ defmodule Andi.ReportsControllerTest do
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,All (public),Public,\"keyword1,keyword2\"\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,All (public),\"keyword1,keyword2\",Public\r\n"
     end
 
     test "adds users to private dataset based on the dataset's org", %{curator_conn: conn} do

@@ -25,7 +25,7 @@ defmodule AndiWeb.ReportsController do
           dataset.orgTitle,
           dataset.systemName,
           get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id),
-          dataset.keywords |> Enum.join(", "),
+          get_keyword_list(dataset.keywords),
           get_access_level(dataset.is_public)
         ]
       end)
