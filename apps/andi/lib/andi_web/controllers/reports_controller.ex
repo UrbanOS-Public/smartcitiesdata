@@ -19,16 +19,19 @@ defmodule AndiWeb.ReportsController do
     values =
       get_datasets()
       |> Enum.map(fn dataset ->
+        IO.inspect(dataset, label: "report dataset")
         [
           dataset.id,
           dataset.dataTitle,
           dataset.orgTitle,
           dataset.systemName,
-          get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id)
+          get_users_for_dataset(dataset.is_public, dataset.access_groups, dataset.org_id),
+          dataset.keywords |> Enum.join(", "),
+          get_access_level(dataset.is_public)
         ]
       end)
 
-    [["Dataset ID", "Dataset Title", "Organization", "System Name", "Users"] | values]
+    [["Dataset ID", "Dataset Title", "Organization", "System Name", "Users", "Tags", "Access Level"] | values]
   end
 
   defp get_users_for_dataset(is_public, access_groups, org_id) do
@@ -40,6 +43,14 @@ defmodule AndiWeb.ReportsController do
       |> Enum.dedup()
       |> Enum.sort()
       |> Enum.join(", ")
+    end
+  end
+
+  defp get_access_level(is_public) do
+    if is_public do
+      "Public"
+    else
+      "Private"
     end
   end
 
@@ -59,7 +70,8 @@ defmodule AndiWeb.ReportsController do
         systemName: dataset.technical.systemName,
         is_public: not dataset.technical.private,
         access_groups: dataset.access_groups,
-        org_id: dataset.technical.orgId
+        org_id: dataset.technical.orgId,
+        keywords: dataset.business.keywords
       }
     end)
   end
