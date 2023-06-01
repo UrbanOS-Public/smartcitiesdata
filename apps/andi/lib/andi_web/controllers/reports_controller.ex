@@ -19,8 +19,6 @@ defmodule AndiWeb.ReportsController do
     values =
       get_datasets()
       |> Enum.map(fn dataset ->
-        IO.inspect(dataset, label: "report dataset")
-
         [
           dataset.id,
           dataset.dataTitle,
@@ -52,6 +50,14 @@ defmodule AndiWeb.ReportsController do
       "Public"
     else
       "Private"
+    end
+  end
+
+  defp get_keyword_list(keywords) do
+    if length(keywords) > 0 do
+      Enum.join(keywords, ", ")
+    else
+      []
     end
   end
 
