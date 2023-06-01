@@ -20,6 +20,7 @@ defmodule AndiWeb.ReportsController do
       get_datasets()
       |> Enum.map(fn dataset ->
         IO.inspect(dataset, label: "report dataset")
+
         [
           dataset.id,
           dataset.dataTitle,
