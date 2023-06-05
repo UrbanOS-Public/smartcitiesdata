@@ -163,6 +163,7 @@ defmodule Forklift.Event.EventHandler do
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{data.id}, Reason: #{inspect(error)}")
     end
+
     :discard
   rescue
     error ->
