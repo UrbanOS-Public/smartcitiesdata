@@ -41,7 +41,7 @@ defmodule Forklift.Event.EventHandler do
       end
     end)
 
-    :ok
+    :discard
   rescue
     error ->
       Logger.error("data_ingest_start failed to process. #{inspect(error)}")
@@ -93,7 +93,7 @@ defmodule Forklift.Event.EventHandler do
 
     Forklift.Ingestions.update(ingestion)
 
-    :ok
+    :discard
   rescue
     error ->
       Logger.error("ingestion_update failed to process. #{inspect(error)}")
@@ -114,7 +114,7 @@ defmodule Forklift.Event.EventHandler do
     Forklift.DataReaderHelper.terminate(data)
     Forklift.Datasets.delete(data.id)
 
-    :ok
+    :discard
   rescue
     error ->
       Logger.error("data_ingest_end failed to process.")
@@ -159,12 +159,11 @@ defmodule Forklift.Event.EventHandler do
     case delete_dataset(data) do
       :ok ->
         Logger.info("#{__MODULE__}: Deleted dataset for dataset: #{data.id}")
-        :ok
 
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete dataset for dataset: #{data.id}, Reason: #{inspect(error)}")
-        :discard
     end
+    :discard
   rescue
     error ->
       Logger.error("dataset_delete failed to process.")
@@ -179,6 +178,7 @@ defmodule Forklift.Event.EventHandler do
     |> add_event_count(author, ingestion.id)
 
     Forklift.Ingestions.delete(ingestion.id)
+    :discard
   rescue
     error ->
       Logger.error("ingestion_delete failed to process.")
@@ -217,7 +217,7 @@ defmodule Forklift.Event.EventHandler do
       end
     end)
 
-    :ok
+    :discard
   rescue
     error ->
       Logger.error("data_extract_end failed to process. #{inspect(error)}")
