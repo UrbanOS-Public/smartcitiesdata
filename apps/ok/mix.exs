@@ -24,7 +24,7 @@ defmodule Ok.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: [:dev]},
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
     ]
   end
 end

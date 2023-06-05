@@ -28,14 +28,14 @@ defmodule DeadLetter.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.3", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
       {:elsa_kafka, "~> 2.0"},
       {:divo, "~> 2.0", only: [:dev, :integration]},
       {:divo_kafka, "~> 1.0", only: [:integration]},
-      {:assertions, "~> 0.14", only: [:test, :integration]},
+      {:assertions, "~> 0.19", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true}
     ]

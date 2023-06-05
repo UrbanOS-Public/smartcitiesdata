@@ -54,7 +54,7 @@ defmodule Valkyrie.MixProject do
       {:off_broadway_kafka, "~> 1.0.1"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
-      {:retry, "~> 0.18"},
+      {:retry, "~> 0.15"},
       {:smart_city, "~> 6.0"},
       {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:telemetry_event, in_umbrella: true},

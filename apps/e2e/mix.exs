@@ -36,7 +36,7 @@ defmodule E2E.MixProject do
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
-      {:ranch, "~> 1.7.1", override: true},
+      {:ranch, "~> 2.1", override: true},
       {:smart_city, "~> 6.0"},
       {:jason, "~> 1.2", override: true}
     ]

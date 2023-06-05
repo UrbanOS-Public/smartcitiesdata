@@ -32,7 +32,7 @@ defmodule DefinitionKafka.MixProject do
       {:ok, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
       {:protocol_source, in_umbrella: true},
-      {:telemetry, "~> 0.4.1"},
+      {:telemetry, "~> 0.4"},
       {:json_serde, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev]},
       {:divo, "~> 2.0", only: [:dev, :integration]},

@@ -25,14 +25,14 @@ defmodule Definition.MixProject do
   defp deps do
     [
       {:ok, in_umbrella: true},
-      {:norm, "0.10.4"},
+      {:norm, "~> 0.13"},
       {:jason, "~> 1.1"},
       {:elixir_uuid, "~> 1.1"},
 
       # Def/Test Dependencies
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:mock, "~> 0.3", only: [:dev, :test]},
-      {:stream_data, "~> 0.4.0", only: [:dev, :test]},
+      {:stream_data, "~> 0.5", only: [:dev, :test]},
       {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.7", only: [:dev]}
     ]

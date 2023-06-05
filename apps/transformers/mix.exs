@@ -35,7 +35,7 @@ defmodule Transformers.MixProject do
       {:smart_city, "~> 6.0"},
       {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:timex, "~> 3.6"},
-      {:natural_sort, "~> 0.2.1"},
+      {:natural_sort, "~> 0.3"},
       {:decimal, "~> 2.0"}
     ]
   end

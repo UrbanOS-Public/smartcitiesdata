@@ -27,7 +27,7 @@ defmodule Performance.MixProject do
       {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:benchee, "~> 1.1", only: [:integration]},
       {:exprof, "~> 0.2.3", only: [:integration]},
-      {:retry, "~> 0.18"}
+      {:retry, "~> 0.15"}
     ]
   end
 end
