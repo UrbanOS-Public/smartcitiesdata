@@ -53,14 +53,4 @@ defmodule Alchemist.Event.EventHandler do
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
-
-  # defp add_event_count(event_type, author, dataset_id) do
-  #   [
-  #     app: "alchemist",
-  #     author: author,
-  #     dataset_id: dataset_id,
-  #     event_type: event_type
-  #   ]
-  #   |> TelemetryEvent.add_event_metrics([:events_handled])
-  # end
 end
