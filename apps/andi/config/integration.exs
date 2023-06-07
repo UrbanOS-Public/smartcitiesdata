@@ -157,9 +157,6 @@ config :ex_aws, :s3,
   },
   port: 9000
 
-config :logger,
-  level: :info
-
 System.put_env("AWS_ACCESS_KEY_ID", "minioadmin")
 System.put_env("AWS_ACCESS_KEY_SECRET", "minioadmin")
 System.put_env("ANDI_LOGO_URL", "/images/UrbanOS.svg")
