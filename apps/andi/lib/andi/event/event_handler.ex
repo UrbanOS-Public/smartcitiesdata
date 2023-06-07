@@ -37,6 +37,8 @@ defmodule Andi.Event.EventHandler do
   @instance_name Andi.instance_name()
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
+    Logger.info("Dataset: #{data.id} - Received dataset_update event from #{author}")
+
     dataset_update()
     |> add_event_count(author, data.id)
 
@@ -56,6 +58,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: ingestion_update(), data: %Ingestion{} = data, author: author}) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_update event from #{author}")
+
     ingestion_update()
     |> add_event_count(author, data.id)
 
@@ -74,6 +78,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: ingestion_delete(), data: %Ingestion{} = data, author: author}) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_delete event from #{author}")
+
     ingestion_delete()
     |> add_event_count(author, data.id)
 
@@ -89,6 +95,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
+    Logger.info("Organization: #{data.id} - Received organization_update event from #{author}")
+
     organization_update()
     |> add_event_count(author, data.id)
 
@@ -107,9 +115,11 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email} = data,
+        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id} = data,
         author: author
       }) do
+    Logger.info("User: #{subject_id}; Organization: #{org_id} - Received user_organization_associate event from #{author}")
+
     user_organization_associate()
     |> add_event_count(author, nil)
 
@@ -129,15 +139,19 @@ defmodule Andi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(
-        %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = data, author: author} = _event
-      ) do
+  def handle_event(%Brook.Event{
+        type: user_organization_disassociate(),
+        data: %UserOrganizationDisassociate{subject_id: subject_id, org_id: org_id} = data,
+        author: author
+      }) do
+    Logger.info("User: #{subject_id}; Organization: #{org_id} - Received user_organization_associate event from #{author}")
+
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
-    case User.disassociate_with_organization(data.subject_id, data.org_id) do
+    case User.disassociate_with_organization(subject_id, org_id) do
       {:error, error} ->
-        Logger.error("Unable to disassociate user with organization #{data.org_id}: #{inspect(error)}. This event has been discarded.")
+        Logger.error("Unable to disassociate user with organization #{org_id}: #{inspect(error)}. This event has been discarded.")
 
       _ ->
         :ok
@@ -152,6 +166,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_start(), data: %Organization{} = data, author: author}) do
+    Logger.info("Organization: #{data.id} - Received dataset_harvest_start event from #{author}")
+
     dataset_harvest_start()
     |> add_event_count(author, data.id)
 
@@ -166,6 +182,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_end(), data: data}) do
+    Logger.info("Dataset: #{data.id} - Received dataset_harvest_end event")
+
     Organizations.update_harvested_dataset(data)
     :discard
   rescue
@@ -176,6 +194,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: "migration:modified_date:start", author: author} = event) do
+    Logger.info("Received migration:modified_date:start event from #{author}")
+
     "migration:modified_date:start"
     |> add_event_count(author, nil)
 
@@ -189,6 +209,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: data_ingest_end(), data: %Dataset{id: id} = data, create_ts: create_ts, author: author}) do
+    Logger.info("Dataset: #{id} - Received data_ingest_end event from #{author}")
+
     data_ingest_end()
     |> add_event_count(author, id)
 
@@ -205,6 +227,8 @@ defmodule Andi.Event.EventHandler do
         data: %Dataset{id: id} = data,
         author: author
       }) do
+    Logger.info("Dataset: #{id} - Received dataset_delete event from #{author}")
+
     dataset_delete()
     |> add_event_count(author, data.id)
 
@@ -224,6 +248,8 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name} = data, author: author}) do
+    Logger.info("User: #{subject_id}; Email: #{email}; Name: #{name} - Received user_login event from #{author}")
+
     user_login()
     |> add_event_count(author, nil)
 
