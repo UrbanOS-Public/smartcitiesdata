@@ -6,11 +6,13 @@ defmodule Alchemist.IngestionSupervisorTest do
   alias Alchemist.IngestionSupervisor
   alias SmartCity.TestDataGenerator, as: TDG
 
+  @ingestion_id "ingestion_id"
+
   describe "ensure_started/1" do
     setup_with_mocks([
-      {DynamicSupervisor, [:passthrough] [start_child: fn(_, _) -> exec: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{ingestion.id}_supervisor") end end]}
+      {DynamicSupervisor, [], [start_child: fn(_, _) -> Agent.start(fn -> 36 end, name: :"#{@ingestion_id}_supervisor") end]}
     ]) do
-      ingestion = TDG.create_ingestion(%{})
+      ingestion = TDG.create_ingestion(%{id: @ingestion_id})
 
       start_options = [
         ingestion: ingestion,
@@ -27,6 +29,8 @@ defmodule Alchemist.IngestionSupervisorTest do
       assert_called(
         DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options})
       )
+
+      Agent.stop(:"#{@ingestion_id}_supervisor")
     end
 
     test "should not restart a running ingestion process", %{start_options: start_options} do
@@ -34,10 +38,12 @@ defmodule Alchemist.IngestionSupervisorTest do
 
       assert {:ok, ^first_pid} = IngestionSupervisor.ensure_started(start_options)
 
-      assert_called(
+      assert_called_exactly(
         DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options}),
-        once()
+        1
       )
+
+      Agent.stop(:"#{@ingestion_id}_supervisor")
     end
   end
 end

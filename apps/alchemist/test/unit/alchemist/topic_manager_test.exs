@@ -16,9 +16,7 @@ defmodule Alchemist.TopicManagerTest do
   getter(:output_topic_prefix, generic: true)
 
   test "returns the input and output topic names" do
-    with_mocks([
-      {Elsa, [create_type: fn(_, _) -> :doesnt_matter end, topic?: fn(_, _) -> true end]}
-    ]) do
+    with_mock(Elsa, [create_topic: fn(_, _) -> :doesnt_matter end, topic?: fn(_, _) -> true end]) do
       ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDatasets: [@dataset_id1, @dataset_id2]})
 
       topics = TopicManager.setup_topics(ingestion)
@@ -33,9 +31,7 @@ defmodule Alchemist.TopicManagerTest do
   end
 
   test "creates a topic with the provided input topic name" do
-    with_mocks([
-      {Elsa, [create_type: fn(_, _) -> :doesnt_matter end, topic?: fn(_, _) -> true end]}
-    ]) do
+    with_mock(Elsa, [create_topic: fn(_, _) -> :doesnt_matter end, topic?: fn(_, _) -> true end]) do
       ingestion = TDG.create_ingestion(%{id: @ingestion_id})
 
       TopicManager.setup_topics(ingestion)
@@ -45,37 +41,33 @@ defmodule Alchemist.TopicManagerTest do
   end
 
   test "verifies input and output topics are available" do
+    :meck.new(Elsa)
+    :meck.expect(Elsa, :create_topic, 2, :doesnt_matter)
+    :meck.loop(Elsa, :topic?, 2, [false, false, true])
 
-    with_mock(Elsa, [create_topic: fn(_, _) -> :doesnt_matter]) do
-      :meck.new(Elsa)
-      :meck.expect(Elsa, topic?, [_, "#{input_topic_prefix()}-#{@ingestion_id}"], :meck.seq([false, false, true]))
-      :meck.expect(Elsa, topic?, [_, "#{output_topic_prefix()}-#{@dataset_id1}"], :meck.seq([false, false, true]))
+    ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDatasets: [@dataset_id1]})
 
-      ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDatasets: [@dataset_id1]})
+    TopicManager.setup_topics(ingestion)
 
-      TopicManager.setup_topics(ingestion)
+    assert_called_exactly Elsa.topic?(elsa_brokers(), "#{input_topic_prefix()}-#{@ingestion_id}"), 3
+    assert_called_exactly Elsa.topic?(elsa_brokers(), "#{output_topic_prefix()}-#{@dataset_id1}"), 3
 
-      assert_called Elsa.topic?(elsa_brokers(), "#{input_topic_prefix()}-#{@ingestion_id}"), times(3)
-      assert_called Elsa.topic?(elsa_brokers(), "#{output_topic_prefix()}-#{@dataset_id1}"), times(3)
-
-      :meck.unload(Elsa)
-    end
+    :meck.unload()
+    # end
   end
 
   test "raises an error when it times out waiting for a topic" do
-    with_mocks([
-      {Elsa, [create_topic: fn(_, _) -> :doesnt_matter, topic?: fn(_, "#{input_topic_prefix()}-#{@ingestion_id}") -> true end, topic?: fn(_, "#{output_topic_prefix()}-#{@dataset_id1}") -> true end]}
-    ]) do
+    with_mock(Elsa, [create_topic: fn(_, _) -> :doesnt_matter end, topic?: fn(_, _ingestion_input) -> true end, topic?: fn(_, _dataset_output) -> false end]) do
       ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDatasets: [@dataset_id1]})
 
-      assert_raise RuntimeError, "Timed out waiting for #{output_topic_prefix()}-#{@dataset_id1} to be available", fn ->
+      assert_raise RuntimeError, "Timed out waiting for #{"#{input_topic_prefix()}-#{@ingestion_id}"} to be available", fn ->
         TopicManager.setup_topics(ingestion)
       end
     end
   end
 
   test "should delete input and output topic when the topic names are provided" do
-    with_mock(Elsa, [delete_topic: fn(_, _) -> :doesnt_matter]) do
+    with_mock(Elsa, [delete_topic: fn(_, _) -> :doesnt_matter end]) do
       ingestion = TDG.create_ingestion(%{id: @ingestion_id, targetDatasets: [@dataset_id1, @dataset_id2]})
       TopicManager.delete_topics(ingestion)
       assert_called(Elsa.delete_topic(elsa_brokers(), "#{input_topic_prefix()}-#{@ingestion_id}"))

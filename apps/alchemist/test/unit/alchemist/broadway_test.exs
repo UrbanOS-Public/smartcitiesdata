@@ -19,7 +19,7 @@ defmodule Alchemist.BroadwayTest do
 
   describe "with valid transformations" do
     setup_with_mocks([
-      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]}
+      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]},
       {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
     ]) do
 
@@ -70,10 +70,10 @@ defmodule Alchemist.BroadwayTest do
         assert_receive {:DOWN, ^ref, _, _, _}, 2_000
       end)
 
-      [broadway: broadway]
+      [broadway_name: String.to_atom("#{@ingestion_id}_broadway")]
     end
 
-    test "should run with nested lists", %{broadway: broadway} do
+    test "should run with nested lists", %{broadway_name: broadway_name} do
       data =
         TDG.create_data(
           dataset_id: @dataset_id,
@@ -87,7 +87,7 @@ defmodule Alchemist.BroadwayTest do
 
       kafka_message = %{value: Jason.encode!(data)}
 
-      Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway_name, [kafka_message])
 
       assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -108,7 +108,7 @@ defmodule Alchemist.BroadwayTest do
       assert Map.get(payload, "number_list") == [[1, 3], [5, 7]]
     end
 
-    test "should run with nested, nested lists", %{broadway: broadway} do
+    test "should run with nested, nested lists", %{broadway_name: broadway_name} do
       data =
         TDG.create_data(
           dataset_id: @dataset_id,
@@ -124,7 +124,7 @@ defmodule Alchemist.BroadwayTest do
 
       kafka_message = %{value: Jason.encode!(data)}
 
-      Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway_name, [kafka_message])
 
       assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -146,7 +146,7 @@ defmodule Alchemist.BroadwayTest do
     end
 
     test "given valid transformation ingestion data, should call Regex Extract, pulling out the relevant data", %{
-      broadway: broadway
+      broadway_name: broadway_name
     } do
       data =
         TDG.create_data(
@@ -159,7 +159,7 @@ defmodule Alchemist.BroadwayTest do
 
       kafka_message = %{value: Jason.encode!(data)}
 
-      Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway_name, [kafka_message])
 
       assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -178,12 +178,12 @@ defmodule Alchemist.BroadwayTest do
       assert Map.get(payload, "first_letter") == "N"
     end
 
-    test "should return empty timing when profiling status is not true", %{broadway: broadway} do
+    test "should return empty timing when profiling status is not true", %{broadway_name: broadway_name} do
       Application.put_env(:alchemist, :profiling_enabled, false)
       data = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
       kafka_message = %{value: Jason.encode!(data)}
 
-      Broadway.test_batch(broadway, [kafka_message])
+      Broadway.test_batch(broadway_name, [kafka_message])
 
       assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -197,27 +197,30 @@ defmodule Alchemist.BroadwayTest do
       assert timing == []
     end
 
-    test "should send the messages to the output kafka topic", %{broadway: broadway} do
+    test "should send the messages to the output kafka topic", %{broadway_name: broadway_name} do
       data1 =
         TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(555) 555-5555", "first_name" => "johnny"})
 
       data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"phone" => "(123) 456-7890", "first_name" => "carl"})
       kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
 
-      Broadway.test_batch(broadway, kafka_messages)
+      Broadway.test_batch(broadway_name, kafka_messages)
 
       assert_receive {:ack, _ref, messages, _}, 5_000
       assert 2 == length(messages)
 
-      captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
+      [{pid, {module, method, calls}, :ok}] = call_history(Elsa)
 
-      assert 2 = length(captured_messages)
+      assert not is_nil(pid)
+      assert module == Elsa
+      assert method == :produce
+      assert length(calls) == 4
     end
 
-    test "should dead letter messages that don't match the SmartCity.Message struct", %{broadway: broadway} do
+    test "should dead letter messages that don't match the SmartCity.Message struct", %{broadway_name: broadway_name} do
       badData = %{bad_field: "junk"}
       kafka_messages = [%{value: Jason.encode!(badData)}]
-      Broadway.test_batch(broadway, kafka_messages)
+      Broadway.test_batch(broadway_name, kafka_messages)
 
       assert_receive {:ack, _ref, _, [message]}, 5_000
       assert {:failed, "Invalid data message: %{\"bad_field\" => \"junk\"}"} == message.status
@@ -233,12 +236,12 @@ defmodule Alchemist.BroadwayTest do
       end)
     end
 
-    test "should dead letter messages that fail to be transformed", %{broadway: broadway} do
-      data1 = TDG.create_data(dataset_ids: [@dataset_id, @datset_id2], payload: %{"name" => "johnny", "age" => 21})
+    test "should dead letter messages that fail to be transformed", %{broadway_name: broadway_name} do
+      data1 = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => 21})
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 
-      Broadway.test_batch(broadway, kafka_messages)
+      Broadway.test_batch(broadway_name, kafka_messages)
 
       assert_receive {:ack, _ref, _, failed_messages}, 5_000
       assert 1 == length(failed_messages)
@@ -256,7 +259,7 @@ defmodule Alchemist.BroadwayTest do
 
   describe "with invalid transformation" do
     setup_with_mocks([
-      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]}
+      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]},
       {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
     ]) do
 
@@ -297,10 +300,10 @@ defmodule Alchemist.BroadwayTest do
         assert_receive {:DOWN, ^ref, _, _, _}, 2_000
       end)
 
-      [broadway: broadway]
+      [broadway_name: String.to_atom("#{@ingestion_id}_broadway")]
     end
 
-    test "should dead letter messages", %{broadway: broadway} do
+    test "should dead letter messages", %{broadway_name: broadway_name} do
       data1 =
         TDG.create_data(
           dataset_ids: [@dataset_id, @dataset_id2],
@@ -309,7 +312,7 @@ defmodule Alchemist.BroadwayTest do
 
       kafka_messages = [%{value: Jason.encode!(data1)}]
 
-      Broadway.test_batch(broadway, kafka_messages)
+      Broadway.test_batch(broadway_name, kafka_messages)
 
       assert_receive {:ack, _ref, _, failed_messages}, 5_000
       assert 1 == length(failed_messages)
