@@ -12,6 +12,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
 
 config :discovery_api,
   allowed_origins: ["integrationtests.example.com", "localhost:9001"],
+  dead_letter_topic: "dead-letters",
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 3000, max_tries: 50],
   hosted_bucket: "trino-hive-storage",

@@ -11,6 +11,7 @@ config :discovery_api, DiscoveryApiWeb.Endpoint,
   url: [scheme: "https", host: "data.tests.example.com", port: 443]
 
 config :discovery_api,
+  dead_letter_topic: "dead-letters",
   user_info_endpoint: "pretend-this-is-a-url/userinfo",
   jwks_endpoint: "pretend-this-is-a-url/jwks",
   allowed_origins: ["tests.example.com"],

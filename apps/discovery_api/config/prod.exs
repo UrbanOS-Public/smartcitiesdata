@@ -16,7 +16,9 @@ config :logger, level: :info
 config :redix,
   args: [host: "localhost"]
 
-config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
+config :discovery_api,
+  dead_letter_topic: "streaming-dead-letters",
+  ecto_repos: [DiscoveryApi.Repo]
 
 config :tzdata, :data_dir, "./tzdata"
 # Finally import the config/prod.secret.exs

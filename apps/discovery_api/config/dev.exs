@@ -28,5 +28,6 @@ config :redix,
   args: [host: "localhost"]
 
 config :discovery_api,
+  dead_letter_topic: "streaming-dead-letters",
   divo: "test/integration/docker-compose.yaml",
   divo_wait: [dwell: 1000, max_tries: 20]
