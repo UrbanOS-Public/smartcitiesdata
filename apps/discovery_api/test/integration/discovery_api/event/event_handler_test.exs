@@ -4,6 +4,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   use DiscoveryApi.DataCase
   use DiscoveryApi.ElasticSearchCase
   use Placebo
+  use Properties, otp_app: :discovery_api
 
   import SmartCity.TestHelper
 
@@ -24,6 +25,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   alias DiscoveryApi.Schemas.Users.User
 
   @instance_name DiscoveryApi.instance_name()
+  getter(:elsa_brokers, generic: true)
 
   setup_all do
     allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
@@ -49,6 +51,41 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       eventually(fn ->
         assert {:ok, %Model{id: ^dataset_id, title: "updated title"}} = Elasticsearch.Document.get(dataset_id)
+      end)
+    end
+
+    test "A failing message gets placed on dead letter queue and discarded" do
+      id_for_invalid_dataset = UUID.uuid4()
+      invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset, technical: %{sourceType: "ingest"}})
+
+      id_for_valid_dataset = UUID.uuid4()
+      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
+      allow(Forklift.Datasets.update(invalid_dataset), exec: fn _ -> raise "nope" end)
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
+
+      eventually(fn ->
+        cached_dataset = Forklift.Datasets.get!(id_for_valid_dataset)
+
+        failed_messages =
+          Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
+          |> elem(2)
+          |> Enum.filter(fn message ->
+            actual = Jason.decode!(message.value)
+
+            case actual["original_message"] do
+              %{"id" => message_dataset_id} ->
+                message_dataset_id == id_for_invalid_dataset
+
+              _ ->
+                false
+            end
+          end)
+
+        assert cached_dataset != nil
+        assert cached_dataset.id == id_for_valid_dataset
+        assert 1 == length(failed_messages)
       end)
     end
   end
