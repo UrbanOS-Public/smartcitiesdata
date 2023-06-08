@@ -39,7 +39,6 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     Organizations.create_or_update(data)
     :discard
-
   rescue
     error ->
       Logger.error("organization_update failed to process: #{inspect(error)}")
@@ -50,7 +49,9 @@ defmodule DiscoveryApi.Event.EventHandler do
   def handle_event(
         %Brook.Event{type: user_organization_associate(), data: %UserOrganizationAssociate{} = association, author: author} = event
       ) do
-    Logger.info("User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{author}")
+    Logger.info(
+      "User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{author}"
+    )
 
     user_organization_associate()
     |> add_event_count(author, nil)
@@ -74,7 +75,11 @@ defmodule DiscoveryApi.Event.EventHandler do
   def handle_event(
         %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
       ) do
-    Logger.info("User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{author}")
+    Logger.info(
+      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{
+        author
+      }"
+    )
 
     user_organization_disassociate()
     |> add_event_count(author, nil)
@@ -161,7 +166,11 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.info("Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_associate event from #{author}")
+    Logger.info(
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_associate event from #{
+        author
+      }"
+    )
 
     dataset_access_group_associate()
     |> add_event_count(author, relation.dataset_id)
@@ -181,7 +190,11 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_disassociate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.info("Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_disassociate event from #{author}")
+    Logger.info(
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_disassociate event from #{
+        author
+      }"
+    )
 
     dataset_access_group_disassociate()
     |> add_event_count(author, relation.dataset_id)

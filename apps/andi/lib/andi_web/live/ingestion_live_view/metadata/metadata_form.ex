@@ -8,6 +8,7 @@ defmodule AndiWeb.IngestionLiveView.MetadataForm do
   alias Ecto.Changeset
 
   require Logger
+
   def component_id() do
     :ingestion_metadata_form_editor
   end

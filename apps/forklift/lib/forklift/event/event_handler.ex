@@ -95,9 +95,11 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_update failed to process. #{inspect(error)}")
+
       DeadLetter.process([ingestion.targetDatasets], ingestion.id, ingestion, Atom.to_string(@instance_name),
         reason: inspect(error)
       )
+
       :discard
   end
 
@@ -179,9 +181,11 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_delete failed to process.")
+
       DeadLetter.process([ingestion.targetDatasets], ingestion.id, ingestion, Atom.to_string(@instance_name),
         reason: inspect(error)
       )
+
       :discard
   end
 
