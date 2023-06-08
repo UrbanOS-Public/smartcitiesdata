@@ -15,6 +15,8 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Ingestion{targetDatasets: dataset_ids} = data,
         author: author
       }) do
+    Logger.info("Ingestion: #{data.id} - Received data_ingest_start event from #{author}")
+
     Enum.each(dataset_ids, fn dataset_id ->
       add_event_count(data_ingest_start(), author, dataset_id)
       dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, dataset_id)
@@ -37,6 +39,8 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: false}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_update event from #{author}")
+
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
@@ -53,6 +57,8 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: true}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_update event from #{author}")
+
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
@@ -70,6 +76,8 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{id: id, technical: %{systemName: system_name}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{id} - Received dataset_delete event from #{author}")
+
     add_event_count(dataset_delete(), author, id)
 
     delete_from_viewstate(id, system_name)
