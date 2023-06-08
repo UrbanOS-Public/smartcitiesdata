@@ -11,7 +11,10 @@ defmodule Transformers do
         Transformers.OperationBuilder.build(type, parameters)
       else
         :error ->
-          Logger.error("Error occurred constructing this transformation: #{inspect(transformation)}")
+          Logger.error(
+            "Error occurred constructing this transformation: #{inspect(transformation)}"
+          )
+
           {:error, "Map provided is not a valid transformation"}
       end
     end)
@@ -28,7 +31,10 @@ defmodule Transformers do
         end
       else
         :error ->
-          Logger.error("Error occurred validating this transformation: #{inspect(transformation)}")
+          Logger.error(
+            "Error occurred validating this transformation: #{inspect(transformation)}"
+          )
+
           {:error, "Map provided is not a valid transformation"}
       end
     end)
