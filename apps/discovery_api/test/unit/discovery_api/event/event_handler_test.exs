@@ -241,7 +241,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       assert capture_log(fn ->
                Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
-             end) =~ ~r/Failed to delete dataset: #{dataset.id}.*#{inspect(error)}/
+             end) =~ ~r/"Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}"/
     end
   end
 
