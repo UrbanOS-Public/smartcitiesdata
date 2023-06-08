@@ -41,6 +41,11 @@ defmodule Raptor.Event.EventHandler do
     {:ok, dataset} = Raptor.Schemas.Dataset.from_event(dataset)
     DatasetStore.persist(dataset)
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -53,6 +58,11 @@ defmodule Raptor.Event.EventHandler do
     {:ok, user_org_assoc} = UserOrgAssoc.from_associate_event(association)
     UserOrgAssocStore.persist(user_org_assoc)
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_associate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -65,6 +75,11 @@ defmodule Raptor.Event.EventHandler do
     {:ok, user_org_assoc} = UserOrgAssoc.from_disassociate_event(disassociation)
     UserOrgAssocStore.delete(user_org_assoc)
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -79,6 +94,11 @@ defmodule Raptor.Event.EventHandler do
 
     UserAccessGroupRelationStore.persist(user_access_group_assoc)
     :discard
+  rescue
+    error ->
+      Logger.error("user_access_group_associate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -93,6 +113,11 @@ defmodule Raptor.Event.EventHandler do
 
     UserAccessGroupRelationStore.delete(user_access_group_disassoc)
     :discard
+  rescue
+    error ->
+      Logger.error("user_access_group_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -107,6 +132,11 @@ defmodule Raptor.Event.EventHandler do
 
     DatasetAccessGroupRelationStore.persist(dataset_access_group_assoc)
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_access_group_associate failed to process: #{inspect(error)}")
+      DeadLetter.process([association.dataset_id], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -121,5 +151,10 @@ defmodule Raptor.Event.EventHandler do
 
     DatasetAccessGroupRelationStore.delete(dataset_access_group_disassoc)
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_access_group_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process([disassociation.dataset_id], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 end
