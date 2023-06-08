@@ -231,7 +231,7 @@ defmodule DiscoveryApi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author}) do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author} = data) do
     Logger.info("Dataset: #{dataset.id} - Received dataset_delete event from #{author}")
 
     dataset_delete()
@@ -250,7 +250,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      DeadLetter.process([dataset.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

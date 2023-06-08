@@ -18,6 +18,8 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   alias AndiWeb.ExtractSteps.ExtractStepHeader
   alias Andi.UrlBuilder
 
+  require Logger
+
   def component_id() do
     :extract_step_form_editor
   end

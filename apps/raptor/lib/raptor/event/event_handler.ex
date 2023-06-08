@@ -195,7 +195,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "Dataset: #{association.dataset_id}; Access Group: #{association.access_group_id} - Received dataset_access_group_disassociate event from #{
+      "Dataset: #{disassociation.dataset_id}; Access Group: #{disassociation.access_group_id} - Received dataset_access_group_disassociate event from #{
         author
       }"
     )
