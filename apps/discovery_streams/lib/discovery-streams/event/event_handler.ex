@@ -12,7 +12,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDatasets: dataset_ids} = _ingestion,
+        data: %Ingestion{targetDatasets: dataset_ids} = data,
         author: author
       }) do
     Enum.each(dataset_ids, fn dataset_id ->
@@ -25,6 +25,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
     end)
 
     :ok
+  rescue
+    error ->
+      Logger.error("data_ingest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(dataset_ids, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -36,6 +41,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
     save_dataset_to_viewstate(dataset.id, system_name)
     :ok
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -48,6 +58,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
     save_dataset_to_viewstate(dataset.id, system_name)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     :ok
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -60,6 +75,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
     delete_from_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
+  rescue
+    error ->
+      Logger.error("dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process([id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def save_dataset_to_viewstate(id, system_name) do
