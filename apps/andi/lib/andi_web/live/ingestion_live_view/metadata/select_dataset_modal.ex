@@ -5,6 +5,8 @@ defmodule AndiWeb.IngestionLiveView.SelectDatasetModal do
 
   alias Andi.InputSchemas.Datasets.Dataset
 
+  require Logger
+
   def mount(socket) do
     {:ok,
      assign(socket,

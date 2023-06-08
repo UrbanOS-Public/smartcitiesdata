@@ -31,6 +31,8 @@ defmodule Raptor.Event.EventHandler do
     DatasetAccessGroupRelation
   }
 
+  require Logger
+
   def handle_event(%Brook.Event{
         type: dataset_update(),
         author: author,
