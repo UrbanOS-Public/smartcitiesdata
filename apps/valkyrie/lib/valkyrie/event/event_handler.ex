@@ -17,6 +17,8 @@ defmodule Valkyrie.Event.EventHandler do
         data: %Ingestion{targetDatasets: target_dataset_ids} = data,
         author: author
       }) do
+    Logger.info("Ingestion: #{data.id} - Received data_ingest_start event from #{author}")
+
     Enum.each(target_dataset_ids, fn target_dataset_id ->
       add_event_count(data_ingest_start(), author, target_dataset_id)
       dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
@@ -44,6 +46,8 @@ defmodule Valkyrie.Event.EventHandler do
         data: %{"dataset_id" => dataset_id} = data,
         author: author
       }) do
+    Logger.info("Dataset: #{dataset_id} - Received data_standardization_end event from #{author}")
+
     data_standardization_end()
     |> add_event_count(author, dataset_id)
 
@@ -62,6 +66,8 @@ defmodule Valkyrie.Event.EventHandler do
         data: %Dataset{} = data,
         author: author
       }) do
+    Logger.info("Dataset: #{data.id} - Received dataset_update event from #{author}")
+
     dataset_update()
     |> add_event_count(author, data.id)
 
@@ -83,6 +89,8 @@ defmodule Valkyrie.Event.EventHandler do
         data: %Dataset{} = data,
         author: author
       }) do
+    Logger.info("Dataset: #{data.id} - Received dataset_delete event from #{author}")
+
     dataset_delete()
     |> add_event_count(author, data.id)
 
