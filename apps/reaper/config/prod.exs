@@ -1,6 +1,6 @@
 use Mix.Config
 
 config :logger,
-  level: :warn
+  level: :info
 
 config :tzdata, :data_dir, "./tzdata"
