@@ -233,7 +233,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     end
 
     test "should return ok if it throws error when dataset:delete is called", %{dataset: dataset} do
-      error = "ERR value is not an integer or out of range"
+      error = %RuntimeError{message: "ERR value is not an integer or out of range"}
 
       allow(RecommendationEngine.delete(dataset.id),
         exec: fn _ -> raise error end
@@ -241,7 +241,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       assert capture_log(fn ->
                Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
-             end) =~ ~r/"Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}"/
+             end) =~ ~r/^.*Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}/
     end
   end
 
