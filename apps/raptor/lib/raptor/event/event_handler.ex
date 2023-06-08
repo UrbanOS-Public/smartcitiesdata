@@ -33,9 +33,11 @@ defmodule Raptor.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: dataset_update(),
-        author: _author,
+        author: author,
         data: %Dataset{} = dataset
       }) do
+    Logger.info("Dataset #{dataset.id} - Received dataset_update event from #{author}")
+
     {:ok, dataset} = Raptor.Schemas.Dataset.from_event(dataset)
     DatasetStore.persist(dataset)
     :discard
@@ -44,8 +46,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
         data: %UserOrganizationAssociate{} = association,
-        author: _author
+        author: author
       }) do
+    Logger.info("User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{author}")
+
     {:ok, user_org_assoc} = UserOrgAssoc.from_associate_event(association)
     UserOrgAssocStore.persist(user_org_assoc)
     :discard
@@ -54,8 +58,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: user_organization_disassociate(),
         data: %UserOrganizationDisassociate{} = disassociation,
-        author: _author
+        author: author
       }) do
+    Logger.info("User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{author}")
+
     {:ok, user_org_assoc} = UserOrgAssoc.from_disassociate_event(disassociation)
     UserOrgAssocStore.delete(user_org_assoc)
     :discard
@@ -64,8 +70,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: user_access_group_associate(),
         data: %UserAccessGroupRelation{} = association,
-        author: _author
+        author: author
       }) do
+    Logger.info("User: #{association.subject_id}; Access Group: #{association.access_group_id} - Received user_access_group_associate event from #{author}")
+
     {:ok, user_access_group_assoc} =
       Raptor.Schemas.UserAccessGroupRelation.from_smrt_relation(association)
 
@@ -76,8 +84,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: user_access_group_disassociate(),
         data: %UserAccessGroupRelation{} = disassociation,
-        author: _author
+        author: author
       }) do
+    Logger.info("User: #{disassociation.subject_id}; Access Group: #{disassociation.access_group_id} - Received user_access_group_associate event from #{author}")
+
     {:ok, user_access_group_disassoc} =
       Raptor.Schemas.UserAccessGroupRelation.from_smrt_relation(disassociation)
 
@@ -88,8 +98,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: dataset_access_group_associate(),
         data: %DatasetAccessGroupRelation{} = association,
-        author: _author
+        author: author
       }) do
+    Logger.info("Dataset: #{association.dataset_id}; Access Group: #{association.access_group_id} - Received dataset_access_group_associate event from #{author}")
+
     {:ok, dataset_access_group_assoc} =
       Raptor.Schemas.DatasetAccessGroupRelation.from_smrt_relation(association)
 
@@ -100,8 +112,10 @@ defmodule Raptor.Event.EventHandler do
   def handle_event(%Brook.Event{
         type: dataset_access_group_disassociate(),
         data: %DatasetAccessGroupRelation{} = disassociation,
-        author: _author
+        author: author
       }) do
+    Logger.info("Dataset: #{association.dataset_id}; Access Group: #{association.access_group_id} - Received dataset_access_group_disassociate event from #{author}")
+
     {:ok, dataset_access_group_disassoc} =
       Raptor.Schemas.DatasetAccessGroupRelation.from_smrt_relation(disassociation)
 
