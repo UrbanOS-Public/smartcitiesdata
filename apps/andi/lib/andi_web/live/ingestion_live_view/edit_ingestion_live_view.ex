@@ -485,7 +485,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         andi_ingestion = Ingestions.get(ingestion_id)
 
         changeset_errors =
-          andi_ingestionF
+          andi_ingestion
           |> Ingestion.changeset(%{})
           |> Ingestion.validate()
           |> Map.get(:errors)

@@ -115,7 +115,7 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: user_organization_associate(),
-        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id} = data,
+        data: %UserOrganizationAssociate{subject_id: subject_id, org_id: org_id, email: _email} = data,
         author: author
       }) do
     Logger.info("User: #{subject_id}; Organization: #{org_id} - Received user_organization_associate event from #{author}")

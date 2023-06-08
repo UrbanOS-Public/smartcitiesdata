@@ -28,6 +28,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApi.Services.MetricsService
+  alias DeadLetter
 
   @instance_name DiscoveryApi.instance_name()
 
