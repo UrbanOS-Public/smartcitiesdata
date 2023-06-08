@@ -23,6 +23,8 @@ defmodule Reaper.Event.EventHandler do
         type: ingestion_update(),
         data: %SmartCity.Ingestion{} = data
       }) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_update event")
+
     if not Enum.empty?(data.targetDatasets) do
       ingestion_update()
       |> add_event_count(data.targetDatasets)
@@ -43,6 +45,8 @@ defmodule Reaper.Event.EventHandler do
         type: ingestion_delete(),
         data: %SmartCity.Ingestion{} = data
       }) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_delete event")
+
     ingestion_delete()
     |> add_event_count(data.targetDatasets)
 
@@ -61,6 +65,8 @@ defmodule Reaper.Event.EventHandler do
         type: data_extract_start(),
         data: %SmartCity.Ingestion{} = data
       }) do
+    Logger.info("Ingestion: #{data.id} - Received data_extract_start event")
+
     data_extract_start()
     |> add_event_count(data.targetDatasets)
 
@@ -92,6 +98,8 @@ defmodule Reaper.Event.EventHandler do
             "msgs_extracted" => _msg_target
           } = data
       }) do
+    Logger.info("Ingestion: #{ingestion_id} - Received data_extract_end event")
+
     data_extract_end()
     |> add_event_count(dataset_ids)
 
