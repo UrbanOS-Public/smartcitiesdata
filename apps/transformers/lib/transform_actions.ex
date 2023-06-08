@@ -11,7 +11,7 @@ defmodule Transformers do
         Transformers.OperationBuilder.build(type, parameters)
       else
         :error ->
-          IO.inspect(transformation, label: "Error occurred constructing this transformation")
+          Logger.error("Error occurred constructing this transformation: #{transformation}")
           {:error, "Map provided is not a valid transformation"}
       end
     end)
@@ -28,7 +28,7 @@ defmodule Transformers do
         end
       else
         :error ->
-          IO.inspect(transformation, label: "Error occurred validating this transformation")
+          Logger.error("Error occurred validating this transformation: #{transformation}")
           {:error, "Map provided is not a valid transformation"}
       end
     end)
@@ -38,7 +38,7 @@ defmodule Transformers do
     if(OperationUtils.allOperationsItemsAreFunctions(operations)) do
       executeOperations(operations, initial_payload)
     else
-      IO.inspect(operations, label: "Error occurred executing these ops")
+      Logger.error("Error occurred executing these operations: #{operations}")
       {:error, "Invalid list of functions passed to performTransformations"}
     end
   end

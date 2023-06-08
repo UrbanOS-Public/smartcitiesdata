@@ -24,12 +24,10 @@ defmodule Valkyrie.Event.EventHandler do
       dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
 
       if dataset != nil do
-        IO.inspect("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
         Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
         Valkyrie.DatasetProcessor.start(dataset)
       else
-        IO.inspect("Could not find dataset_id: #{target_dataset_id} in ")
-        Logger.debug("#{__MODULE__}: Preparing standardization for dataset: #{target_dataset_id}")
+        Logger.debug("Could not find dataset_id: #{target_dataset_id} in ingestion: #{data.id}")
       end
     end)
 

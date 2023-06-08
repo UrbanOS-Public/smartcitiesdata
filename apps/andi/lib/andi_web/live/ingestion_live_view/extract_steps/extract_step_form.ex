@@ -170,18 +170,13 @@ defmodule AndiWeb.IngestionLiveView.ExtractSteps.ExtractStepForm do
   end
 
   def handle_event(event, payload, socket) do
-    IO.inspect("Unhandled Event in module #{__MODULE__}")
-    IO.inspect(event, label: "Event")
-    IO.inspect(payload, label: "Payload")
-    IO.inspect(socket, label: "Socket")
+    Logger.error("Unhandled Event in module #{__MODULE__}; Event: #{event}, payload: #{payload}, socket: #{socket}")
 
     {:noreply, socket}
   end
 
   def handle_event(event, socket) do
-    IO.inspect("Event: #{event}, socket: #{socket}",
-      label: 'Unhandled Event in module #{__MODULE__}'
-    )
+    Logger.error("Unhandled Event in module #{__MODULE__}; Event: #{event}, socket: #{socket}")
 
     {:noreply, socket}
   end
