@@ -24,6 +24,7 @@ config :logger, :console,
   metadata: [:user_id]
 
 config :discovery_api,
+  dead_letter_topic: "streaming-dead-letters",
   hsts_enabled: true,
   download_link_expire_seconds: 60,
   presign_key: "test_presign_key"

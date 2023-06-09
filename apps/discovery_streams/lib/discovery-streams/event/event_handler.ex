@@ -12,9 +12,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
-        data: %Ingestion{targetDatasets: dataset_ids} = _ingestion,
+        data: %Ingestion{targetDatasets: dataset_ids} = data,
         author: author
       }) do
+    Logger.info("Ingestion: #{data.id} - Received data_ingest_start event from #{author}")
+
     Enum.each(dataset_ids, fn dataset_id ->
       add_event_count(data_ingest_start(), author, dataset_id)
       dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, dataset_id)
@@ -25,6 +27,11 @@ defmodule DiscoveryStreams.Event.EventHandler do
     end)
 
     :ok
+  rescue
+    error ->
+      Logger.error("data_ingest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(dataset_ids, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -32,10 +39,17 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: false}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_update event from #{author}")
+
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
     :ok
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -43,11 +57,18 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{technical: %{sourceType: "stream", systemName: system_name, private: true}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_update event from #{author}")
+
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     :ok
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
@@ -55,11 +76,18 @@ defmodule DiscoveryStreams.Event.EventHandler do
         data: %Dataset{id: id, technical: %{systemName: system_name}} = dataset,
         author: author
       }) do
+    Logger.info("Dataset: #{id} - Received dataset_delete event from #{author}")
+
     add_event_count(dataset_delete(), author, id)
 
     delete_from_viewstate(id, system_name)
     DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
     DiscoveryStreams.TopicHelper.delete_input_topic(id)
+  rescue
+    error ->
+      Logger.error("dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process([id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def save_dataset_to_viewstate(id, system_name) do

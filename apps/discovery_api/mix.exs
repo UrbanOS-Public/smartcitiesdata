@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "1.3.15",
+      version: "1.3.16",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -50,6 +50,7 @@ defmodule DiscoveryApi.Mixfile do
       {:csv, "~> 2.3"},
       {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 1.0", only: [:test, :integration]},
+      {:dead_letter, in_umbrella: true},
       {:divo, "~> 1.3", only: [:dev, :test, :integration]},
       {:ex_json_schema, "== 0.7.3", only: [:test, :integration]},
       {:ecto, "== 3.9.0", override: true},

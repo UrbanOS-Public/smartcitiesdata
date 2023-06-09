@@ -12,6 +12,8 @@ defmodule Template.Event.EventHandler do
 
   alias SmartCity.{UserOrganizationAssociate, UserOrganizationDisassociate, Organization}
 
+  require Logger
+
   @instance_name Template.instance_name()
 
   def handle_event(%Brook.Event{
@@ -19,7 +21,7 @@ defmodule Template.Event.EventHandler do
         data: %Organization{} = data,
         author: author
       }) do
-    IO.inspect(data, label: "I received this event")
+    Logger.info("Organization: #{data.id} - Received dataset_delete event from #{author}")
 
     :discard
   end

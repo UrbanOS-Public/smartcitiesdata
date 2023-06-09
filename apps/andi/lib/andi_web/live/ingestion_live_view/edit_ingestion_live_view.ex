@@ -252,7 +252,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{payload: payload},
         socket
       ) do
-    IO.inspect("payload: #{payload}, socket: #{socket}", label: 'Unhandled Info Message in module #{__MODULE__}}')
+    Logger.error("Unhandled Info Message in module #{__MODULE__}; payload: #{payload}, socket: #{socket}")
 
     {:noreply, socket}
   end
@@ -268,9 +268,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         %{topic: topic, event: event, payload: payload},
         socket
       ) do
-    IO.inspect("Topic: #{topic}, Event: #{event}, payload: #{payload}, socket: #{socket}",
-      label: 'Unhandled Info Message in module #{__MODULE__}}'
-    )
+    Logger.error("Unhandled Info Message in module #{__MODULE__}; Topic: #{topic}, Event: #{event}, payload: #{payload}, socket: #{socket}")
 
     {:noreply, socket}
   end
@@ -385,16 +383,13 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
   end
 
   def handle_event(event, payload, socket) do
-    IO.inspect("Unhandled Event in module #{__MODULE__}")
-    IO.inspect(event, label: "Event")
-    IO.inspect(payload, label: "Payload")
-    IO.inspect(socket, label: "Socket")
+    Logger.error("Unhandled Event in module #{__MODULE__}; Event: #{event}, payload: #{payload}, socket: #{socket}")
 
     {:noreply, socket}
   end
 
   def handle_event(event, socket) do
-    IO.inspect("Event: #{event}, socket: #{socket}", label: 'Unhandled Event in module #{__MODULE__}}')
+    Logger.error("Unhandled Event in module #{__MODULE__}; Event: #{event}, socket: #{socket}")
 
     {:noreply, socket}
   end
@@ -479,12 +474,11 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           {:ok, ingestion_changeset}
 
         error ->
-          IO.inspect("Error from brook event", label: "Publish to Brook Error")
-          Logger.warn("Unable to create new SmartCity.Ingestion: #{inspect(error)}")
+          Logger.error("Ingestion Publish Error: Unable to publish updated ingestion to Brook: #{inspect(error)}")
       end
     else
       nil ->
-        IO.inspect("Ingestion not found with id: #{ingestion_id}", label: "Publishing Ingestion Error")
+        Logger.error("Ingestion Publish Error: Ingestion not found with id: #{ingestion_id}")
         {:not_found, nil}
 
       false ->
@@ -496,12 +490,12 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
           |> Ingestion.validate()
           |> Map.get(:errors)
 
-        IO.inspect("Changeset validation found errors in ingestion: #{inspect(changeset_errors)}", label: "Publishing Ingestion Error")
+        Logger.error("Ingestion Publish Error: Changeset validation found errors in ingestion: #{inspect(changeset_errors)}")
 
         {:error, changeset_errors}
 
       error ->
-        IO.inspect(error, label: "General error when publishing ingestion")
+        Logger.error("Ingestion Publish Error: #{inspect(error)}")
         {:error, error}
     end
   end

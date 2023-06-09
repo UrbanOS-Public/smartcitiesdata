@@ -16,7 +16,14 @@ redix_args = get_redix_args.(System.get_env("REDIS_HOST"), redis_port, System.ge
 
 kafka_brokers = System.get_env("KAFKA_BROKERS")
 
-endpoint =
+endpoints =
+  kafka_brokers
+  |> String.split(",")
+  |> Enum.map(&String.trim/1)
+  |> Enum.map(fn entry -> String.split(entry, ":") end)
+  |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
+
+elsa_brokers =
   kafka_brokers
   |> String.split(",")
   |> Enum.map(&String.trim/1)
@@ -42,6 +49,7 @@ config :discovery_api,
   presign_key: System.get_env("PRESIGN_KEY")
 
 config :discovery_api, DiscoveryApi.Repo,
+  elsa_brokers: elsa_brokers,
   database: System.get_env("POSTGRES_DBNAME"),
   username: System.get_env("POSTGRES_USER"),
   password: System.get_env("POSTGRES_PASSWORD"),
@@ -51,6 +59,15 @@ config :discovery_api, DiscoveryApi.Repo,
   ssl_opts: [
     versions: [:"tlsv1.2"],
     cacertfile: System.get_env("CA_CERTFILE_PATH")
+  ]
+
+config :dead_letter,
+  driver: [
+    module: DeadLetter.Carrier.Kafka,
+    init_args: [
+      endpoints: endpoints,
+      topic: "streaming-dead-letters"
+    ]
   ]
 
 postgres_verify_sni = Regex.match?(~r/^true$/i, System.get_env("POSTGRES_VERIFY_SNI"))
@@ -116,7 +133,7 @@ config :discovery_api, :brook,
   driver: [
     module: Brook.Driver.Kafka,
     init_arg: [
-      endpoints: endpoint,
+      endpoints: endpoints,
       topic: "event-stream",
       group: "discovery-api-event-stream",
       config: [

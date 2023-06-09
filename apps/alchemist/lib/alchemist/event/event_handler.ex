@@ -14,7 +14,7 @@ defmodule Alchemist.Event.EventHandler do
         type: ingestion_update(),
         data: %Ingestion{} = data
       }) do
-    Logger.debug("#{__MODULE__}: Begin transformation processor for ingestion: #{data.id}")
+    Logger.info("Ingestion: #{data.id} - Received ingestion_update event")
 
     if Alchemist.IngestionSupervisor.is_started?(data.id) do
       Alchemist.IngestionProcessor.stop(data.id)
@@ -36,9 +36,11 @@ defmodule Alchemist.Event.EventHandler do
         type: ingestion_delete(),
         data: %Ingestion{} = data
       }) do
+    Logger.info("Ingestion: #{data.id} - Received ingestion_delete event")
+
     case Alchemist.IngestionProcessor.delete(data) do
       :ok ->
-        Logger.debug("#{__MODULE__}: Deleted ingestion for #{data.id}")
+        Logger.info("#{__MODULE__}: Deleted ingestion for #{data.id}")
 
       {:error, error} ->
         Logger.error("#{__MODULE__}: Failed to delete ingestion: #{data.id}, Reason: #{inspect(error)}")
@@ -51,14 +53,4 @@ defmodule Alchemist.Event.EventHandler do
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
-
-  # defp add_event_count(event_type, author, dataset_id) do
-  #   [
-  #     app: "alchemist",
-  #     author: author,
-  #     dataset_id: dataset_id,
-  #     event_type: event_type
-  #   ]
-  #   |> TelemetryEvent.add_event_metrics([:events_handled])
-  # end
 end

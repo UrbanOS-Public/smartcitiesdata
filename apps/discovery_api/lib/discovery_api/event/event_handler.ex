@@ -28,20 +28,32 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.Services.DataJsonService
   alias DiscoveryApi.Search.Elasticsearch
   alias DiscoveryApi.Services.MetricsService
+  alias DeadLetter
 
   @instance_name DiscoveryApi.instance_name()
 
   def handle_event(%Brook.Event{type: organization_update(), data: %Organization{} = data, author: author}) do
+    Logger.info("Organization: #{data.id} - Received organization_update event")
+
     organization_update()
     |> add_event_count(author, data.id)
 
     Organizations.create_or_update(data)
     :discard
+  rescue
+    error ->
+      Logger.error("organization_update failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(
         %Brook.Event{type: user_organization_associate(), data: %UserOrganizationAssociate{} = association, author: author} = event
       ) do
+    Logger.info(
+      "User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{author}"
+    )
+
     user_organization_associate()
     |> add_event_count(author, nil)
 
@@ -54,11 +66,22 @@ defmodule DiscoveryApi.Event.EventHandler do
     TableInfoCache.invalidate()
 
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_associate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(
         %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
       ) do
+    Logger.info(
+      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{
+        author
+      }"
+    )
+
     user_organization_disassociate()
     |> add_event_count(author, nil)
 
@@ -71,13 +94,19 @@ defmodule DiscoveryApi.Event.EventHandler do
     TableInfoCache.invalidate()
 
     :discard
+  rescue
+    error ->
+      Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{
         type: data_write_complete(),
-        data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp},
+        data: %SmartCity.DataWriteComplete{id: id, timestamp: timestamp} = data,
         author: author
       }) do
+    Logger.info("DataWriteComplete: #{id} - Received data_write_complete event from #{author}")
     Logger.debug(fn -> "Handling write complete for #{inspect(id)}" end)
 
     data_write_complete()
@@ -99,9 +128,15 @@ defmodule DiscoveryApi.Event.EventHandler do
         Logger.debug(fn -> "Discarded write complete for dataset #{inspect(id)} due to #{inspect(error)}" end)
         :discard
     end
+  rescue
+    error ->
+      Logger.error("data_write_complete failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_update(), author: author, data: %Dataset{} = dataset}) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_update event from #{author}")
     Logger.debug(fn -> "Handling dataset: `#{dataset.technical.systemName}`" end)
 
     dataset_update()
@@ -124,12 +159,19 @@ defmodule DiscoveryApi.Event.EventHandler do
         Logger.error("Unable to process message `#{inspect(dataset)}` from `#{inspect(author)}` : ERROR: #{inspect(reason)}")
         :discard
     end
+  rescue
+    error ->
+      Logger.error("dataset_update failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.debug(fn ->
-      "Handling dataset-access-group association: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
-    end)
+    Logger.info(
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_associate event from #{
+        author
+      }"
+    )
 
     dataset_access_group_associate()
     |> add_event_count(author, relation.dataset_id)
@@ -141,12 +183,19 @@ defmodule DiscoveryApi.Event.EventHandler do
       {:ok, dataset} -> handle_dataset_associate(dataset, relation)
       {:error, reason} -> handle_dataset_error(relation, author, reason)
     end
+  rescue
+    error ->
+      Logger.error("dataset_access_group_associate failed to process: #{inspect(error)}")
+      DeadLetter.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   def handle_event(%Brook.Event{type: dataset_access_group_disassociate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
-    Logger.debug(fn ->
-      "Handling dataset-access-group disassociation: `Dataset: #{relation.dataset_id} Access Group: #{relation.access_group_id}`"
-    end)
+    Logger.info(
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_disassociate event from #{
+        author
+      }"
+    )
 
     dataset_access_group_disassociate()
     |> add_event_count(author, relation.dataset_id)
@@ -158,9 +207,16 @@ defmodule DiscoveryApi.Event.EventHandler do
       {:ok, dataset} -> handle_dataset_dissociate(dataset, relation)
       {:error, reason} -> handle_dataset_error(relation, author, reason)
     end
+  rescue
+    error ->
+      Logger.error("dataset_access_group_disassociate failed to process: #{inspect(error)}")
+      DeadLetter.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp}) do
+  def handle_event(%Brook.Event{type: dataset_query(), data: dataset_id, author: author, create_ts: timestamp} = data) do
+    Logger.info("Dataset: #{dataset_id} - Received dataset_query event from #{author}")
+
     dataset_query()
     |> add_event_count(author, dataset_id)
 
@@ -169,9 +225,16 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     clear_caches()
     :discard
+  rescue
+    error ->
+      Logger.error("dataset_query failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
-  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author}) do
+  def handle_event(%Brook.Event{type: dataset_delete(), data: %Dataset{} = dataset, author: author} = data) do
+    Logger.info("Dataset: #{dataset.id} - Received dataset_delete event from #{author}")
+
     dataset_delete()
     |> add_event_count(author, dataset.id)
 
@@ -187,15 +250,23 @@ defmodule DiscoveryApi.Event.EventHandler do
     :discard
   rescue
     error ->
-      Logger.error("#{__MODULE__}: Failed to delete dataset: #{dataset.id}, Reason: #{inspect(error)}")
+      Logger.error("Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}")
+      DeadLetter.process([dataset.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
-  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name}, author: author}) do
+  def handle_event(%Brook.Event{type: user_login(), data: %{subject_id: subject_id, email: email, name: name} = data, author: author}) do
+    Logger.info("User: #{subject_id}; Email: #{email}; Name: #{name} - Received user_login event from #{author}")
+
     user_login()
     |> add_event_count(author, nil)
 
     create_user_if_not_exists(subject_id, email, name)
+  rescue
+    error ->
+      Logger.error("user_login failed to process: #{inspect(error)}")
+      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
   end
 
   defp handle_dataset_associate(dataset, relation) do

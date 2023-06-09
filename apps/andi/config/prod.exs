@@ -15,7 +15,8 @@ use Mix.Config
 #   # cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  level: :info
 
 config :andi, AndiWeb.Endpoint,
   pubsub_server: Andi.PubSub,

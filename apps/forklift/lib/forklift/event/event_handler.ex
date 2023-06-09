@@ -45,9 +45,7 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_start failed to process. #{inspect(error)}")
-
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
-
       :discard
   end
 
