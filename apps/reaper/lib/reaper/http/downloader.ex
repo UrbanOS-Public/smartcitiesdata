@@ -182,15 +182,39 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp handle_status(response, _headers) do
-    Logger.warn(fn ->
+    Logger.error(fn ->
       "Invalid Status Code returned while attempting to download file : #{inspect(response)}"
     end)
 
-    {:error,
-     InvalidStatusError.exception(
-       status: response.status,
-       message: "Invalid status code: #{response.status}"
-     )}
+    raise InvalidStatusError.exception(
+            status: response.status,
+            message: generate_error_message(response.status)
+          )
+  end
+
+  defp generate_error_message(status) do
+    case status do
+      400 ->
+        "Invalid status code 400 Bad Request: Double check all headers and query parameters"
+
+      401 ->
+        "Invalid status code 401 Unauthorized: User provided invalid authorization credentials. Check the authentication headers in the request"
+
+      403 ->
+        "Invalid status code 401 Forbidden: User does not have permission to access the requested resource. Check the authentication headers in the request or have the user check their permissions"
+
+      404 ->
+        "Invalid status code 404 Not found: The requested resource does not exist. Double check the URL in the request"
+
+      405 ->
+        "Invalid status code 405 Method Not Allowed: The requested resource exists, but this is not a valid HTTP Method to access it. Double check the HTTP Method in the request"
+
+      415 ->
+        "Invalid status code 405 Unsupported Media Type: The requested Media Type is not supported. Double check the Content-Type header in the request"
+
+      500 ->
+        "Invalid status code 500 Internal Server Error: Unknown server error, double check the requested resource is working"
+    end
   end
 
   defp get_location(headers) do
