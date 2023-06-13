@@ -108,18 +108,94 @@ defmodule Reaper.Http.DownloaderTest do
   end
 
   @tag capture_log: true
-  test "raises an error when request returns a non 200 status code", %{bypass: bypass} do
+  test "raises specific error when request returns a 400 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 400, "Bad Request")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 400 Bad Request: Double check all headers and query parameters",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
+
+  @tag capture_log: true
+  test "raises specific error when request returns a 401 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 401, "Unauthorized")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 401 Unauthorized: User provided invalid authorization credentials. Check the authentication headers in the request",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
+
+  @tag capture_log: true
+  test "raises specific error when request returns a 403 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 403, "Forbidden")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 403 Forbidden: User does not have permission to access the requested resource. Check the authentication headers in the request or have the user check their permissions",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
+
+  @tag capture_log: true
+  test "raises specific error when request returns a 404 status code", %{bypass: bypass} do
     Bypass.expect(bypass, fn conn ->
       Conn.send_resp(conn, 404, "Not Found")
     end)
 
-    {:error, reason} = Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 404 Not found: The requested resource does not exist. Double check the URL in the request",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
 
-    assert reason ==
-             Downloader.InvalidStatusError.exception(
-               message: "Invalid status code: 404",
-               status: 404
-             )
+  @tag capture_log: true
+  test "raises specific error when request returns a 405 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 405, "Method Not Allowed")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 405 Method Not Allowed: The requested resource exists, but this is not a valid HTTP Method to access it. Double check the HTTP Method in the request",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
+
+  @tag capture_log: true
+  test "raises specific error when request returns a 415 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 415, "Unsupported Media Type")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 415 Unsupported Media Type: The requested Media Type is not supported. Double check the Content-Type header in the request",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
+  end
+
+  @tag capture_log: true
+  test "raises specific error when request returns a 500 status code", %{bypass: bypass} do
+    Bypass.expect(bypass, fn conn ->
+      Conn.send_resp(conn, 500, "Internal Server Error")
+    end)
+
+    assert_raise Downloader.InvalidStatusError,
+                 "Invalid status code 500 Internal Server Error: Unknown server error, double check the requested resource is working",
+                 fn ->
+                   Downloader.download("http://localhost:#{bypass.port}/file/to/download", to: "test.output")
+                 end
   end
 
   test "raises an error when request is made" do

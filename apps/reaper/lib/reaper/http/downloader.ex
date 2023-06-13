@@ -201,7 +201,7 @@ defmodule Reaper.Http.Downloader do
         "Invalid status code 401 Unauthorized: User provided invalid authorization credentials. Check the authentication headers in the request"
 
       403 ->
-        "Invalid status code 401 Forbidden: User does not have permission to access the requested resource. Check the authentication headers in the request or have the user check their permissions"
+        "Invalid status code 403 Forbidden: User does not have permission to access the requested resource. Check the authentication headers in the request or have the user check their permissions"
 
       404 ->
         "Invalid status code 404 Not found: The requested resource does not exist. Double check the URL in the request"
@@ -210,7 +210,7 @@ defmodule Reaper.Http.Downloader do
         "Invalid status code 405 Method Not Allowed: The requested resource exists, but this is not a valid HTTP Method to access it. Double check the HTTP Method in the request"
 
       415 ->
-        "Invalid status code 405 Unsupported Media Type: The requested Media Type is not supported. Double check the Content-Type header in the request"
+        "Invalid status code 415 Unsupported Media Type: The requested Media Type is not supported. Double check the Content-Type header in the request"
 
       500 ->
         "Invalid status code 500 Internal Server Error: Unknown server error, double check the requested resource is working"
