@@ -1,6 +1,7 @@
 defmodule Andi.Migration.MigrationsTest do
   use ExUnit.Case
-  use Placebo
+
+  import Mock
 
   require Andi
 
@@ -12,21 +13,25 @@ defmodule Andi.Migration.MigrationsTest do
   alias Andi.Migration.Migrations
 
   test "send the modified date migration event if it has not succeeded yet" do
-    allow(Brook.get!(@instance_name, :migration, "modified_date_migration_completed"), return: nil)
-    allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+    with_mocks([
+      {Brook, [], [get!: fn(@instance_name, :migration, "modified_date_migration_completed") -> nil end]},
+      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+    ]) do
+      Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
 
-    Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
-
-    assert_called Brook.Event.send(@instance_name, @modified_date_event, :andi, %{})
+      assert_called Brook.Event.send(@instance_name, @modified_date_event, :andi, %{})
+    end
   end
 
   test "Do not send the modified date migration event if it already succeeded" do
-    allow(Brook.get!(@instance_name, any(), any()), return: true)
-    allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+    with_mocks([
+      {Brook, [], [get!: fn(@instance_name, _, _) -> true end]},
+      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+    ]) do
+      Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
 
-    Migrations.migrate_once(@modified_date_completed_flag, @modified_date_event)
-
-    refute_called Brook.get_all_values!(@instance_name, :dataset)
-    refute_called Brook.Event.send(@instance_name, any(), any(), any())
+      assert_not_called Brook.get_all_values!(@instance_name, :dataset)
+      assert_not_called Brook.Event.send(@instance_name, :_, :_, :_)
+    end
   end
 end

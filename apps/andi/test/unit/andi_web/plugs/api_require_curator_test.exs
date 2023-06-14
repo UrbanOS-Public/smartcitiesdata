@@ -1,9 +1,9 @@
 defmodule AndiWeb.Plugs.APIRequireCuratorTest do
   use ExUnit.Case, async: true
   use Plug.Test
-  use Placebo
 
   import Phoenix.ConnTest
+  import Mock
 
   alias AndiWeb.Plugs.APIRequireCurator
 
@@ -13,7 +13,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
       conn = build_conn(:get, "/doesnt/matter")
       result = APIRequireCurator.call(conn, [])
 
-      result.resp_body == nil
+      assert result.resp_body == nil
     end
   end
 
@@ -33,27 +33,30 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
     end
 
     test "returns connection when Raptor service validates the auth0 role" do
-      allow(RaptorService.check_auth0_role(any(), any(), any()), return: {:ok, "\"has_role\": true"})
-      conn = build_conn(:get, "/doesnt/matter")
-      result = APIRequireCurator.call(conn, [])
+      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:ok, "\"has_role\": true"} end]) do
+        conn = build_conn(:get, "/doesnt/matter")
+        result = APIRequireCurator.call(conn, [])
 
-      result.resp_body == nil
+        result.resp_body == nil
+      end
     end
 
     test "returns invalid api key response when Raptor cannot validate api key" do
-      allow(RaptorService.check_auth0_role(any(), any(), any()), return: {:ok, "\"has_role\": false"})
-      conn = build_conn(:get, "/doesnt/matter")
-      result = APIRequireCurator.call(conn, [])
+      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:ok, "\"has_role\": false"} end]) do
+        conn = build_conn(:get, "/doesnt/matter")
+        result = APIRequireCurator.call(conn, [])
 
-      result.resp_body == "Unauthorized: Missing user role"
+        result.resp_body == "Unauthorized: Missing user role"
+      end
     end
 
     test "returns internal error when Raptor has internal error" do
-      allow(RaptorService.check_auth0_role(any(), any(), any()), return: {:error, "doesntMatter", 500})
-      conn = build_conn(:get, "/doesnt/matter")
-      result = APIRequireCurator.call(conn, [])
+      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:error, "doesntMatter", 500} end]) do
+        conn = build_conn(:get, "/doesnt/matter")
+        result = APIRequireCurator.call(conn, [])
 
-      result.resp_body == "Internal Server Error"
+        result.resp_body == "Internal Server Error"
+      end
     end
   end
 

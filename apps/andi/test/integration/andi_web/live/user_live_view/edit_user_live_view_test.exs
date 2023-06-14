@@ -5,7 +5,6 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
   @moduletag shared_data_connection: true
 
-  use Placebo
   import Phoenix.LiveViewTest
 
   import SmartCity.Event,
@@ -65,7 +64,12 @@ defmodule AndiWeb.EditUserLiveViewTest do
   end
 
   describe "curator user access" do
-    setup do
+    setup_with_mocks([
+      {Auth0Management, [:passthrough], [
+        get_roles: fn() -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end,
+        get_user_roles: fn(_) -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
+      ]}
+    ]) do
       user_one_subject_id = UUID.uuid4()
 
       {:ok, user} =
@@ -78,16 +82,6 @@ defmodule AndiWeb.EditUserLiveViewTest do
       org1 = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title"})
 
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
-
-      allow(Auth0Management.get_roles(),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
-
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
 
       [org: org1, user: user]
     end
@@ -172,7 +166,13 @@ defmodule AndiWeb.EditUserLiveViewTest do
   end
 
   describe "curator user roles" do
-    setup do
+    setup_with_mocks([
+      {Auth0Management, [:passthrough], [
+        get_roles: fn() -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end,
+        assign_user_role: fn(_, _) -> {:ok, ""} end,
+        delete_user_role: fn(_, _) -> {:ok, ""} end
+      ]}
+    ]) do
       user_one_subject_id = UUID.uuid4()
 
       {:ok, user} =
@@ -186,77 +186,48 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
       Brook.Event.send(@instance_name, organization_update(), __MODULE__, org1)
 
-      allow(Auth0Management.get_roles(),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
-
-      allow(Auth0Management.assign_user_role(any(), any()),
-        return: {:ok, any()},
-        meck_options: [:passthrough]
-      )
-
-      allow(Auth0Management.delete_user_role(any(), any()),
-        return: {:ok, any()},
-        meck_options: [:passthrough]
-      )
-
       [org: org1, user: user]
     end
 
     test "curators can view users current roles", %{curator_conn: conn, user: user} do
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
+      with_mock(Auth0Management, [:passthrough], [get_user_roles: fn(_) -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]}]) do
+        assert {:ok, view, html} = live(conn, @url_path <> user.id)
 
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
-
-      assert length(find_elements(html, ".roles-table__tr")) == 1
+        assert length(find_elements(html, ".roles-table__tr")) == 1
+      end
     end
 
     test "curators can add roles to users", %{curator_conn: conn, user: user} do
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, []},
-        meck_options: [:passthrough]
-      )
+      with_mock(Auth0Management, [:passthrough], [get_user_roles: fn(_) -> {:ok, []}]) do
+        assert {:ok, view, html} = live(conn, @url_path <> user.id)
 
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+        assert Enum.empty?(find_elements(html, ".roles-table__tr"))
+      end
 
-      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
+      with_mock(Auth0Management, [:passthrough], [get_user_roles: fn(_) -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]}]) do
+        # add role to user
+        html = render_change(view, "add-role", %{"selected-role" => "rol_OQaxdo38yewzqWR0"})
 
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
-
-      # add role to user
-      html = render_change(view, "add-role", %{"selected-role" => "rol_OQaxdo38yewzqWR0"})
-
-      assert length(find_elements(html, ".roles-table__tr")) == 1
+        assert length(find_elements(html, ".roles-table__tr")) == 1
+      end
     end
 
     test "curators can remove roles from users", %{curator_conn: conn, user: user} do
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]},
-        meck_options: [:passthrough]
-      )
+      with_mock(Auth0Management, [:passthrough], [get_user_roles: fn(_) -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]}]) do
+        assert {:ok, view, html} = live(conn, @url_path <> user.id)
 
-      assert {:ok, view, html} = live(conn, @url_path <> user.id)
+        assert length(find_elements(html, ".roles-table__tr")) == 1
+      end
 
-      assert length(find_elements(html, ".roles-table__tr")) == 1
+      with_mock(Auth0Management, [:passthrough], [get_user_roles: fn(_) -> {:ok, []}]) do
+        # remove role
+        send(view.pid, {:remove_role, "rol_OQaxdo38yewzqWR0"})
 
-      allow(Auth0Management.get_user_roles(any()),
-        return: {:ok, []},
-        meck_options: [:passthrough]
-      )
+        html = render(view)
 
-      # remove role
-      send(view.pid, {:remove_role, "rol_OQaxdo38yewzqWR0"})
-
-      html = render(view)
-
-      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
+        assert Enum.empty?(find_elements(html, ".roles-table__tr"))
+      end
     end
   end
 end
+[]

@@ -38,10 +38,10 @@ defmodule Estuary.MixProject do
       {:jason, "~> 1.2"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:phoenix, "~> 1.7"},
-      {:phoenix_html, "~> 3.3"},
+      {:phoenix, "~> 1.4"},
+      {:phoenix_html, "~> 2.14"},
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
-      {:phoenix_live_view, "~> 0.19"},
+      {:phoenix_live_view, "~> 0.14"},
       {:phoenix_pubsub, "~> 2.0"},
       {:pipeline, in_umbrella: true},
       {:plug_cowboy, "~> 2.6"},
@@ -50,7 +50,7 @@ defmodule Estuary.MixProject do
       {:properties, in_umbrella: true},
       {:smart_city_test, "~> 3.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev},
-      {:quantum, "~> 3.5"},
+      {:quantum, "~> 2.4"},
       {:timex, "~> 3.6"}
     ]
   end

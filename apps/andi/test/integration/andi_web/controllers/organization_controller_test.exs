@@ -1,7 +1,6 @@
 defmodule Andi.OrganizationControllerTest do
   use ExUnit.Case
   use Andi.DataCase
-  use Placebo
   use Tesla
 
   @moduletag shared_data_connection: true
@@ -11,17 +10,16 @@ defmodule Andi.OrganizationControllerTest do
   alias Andi.Services.OrgStore
   alias Andi.InputSchemas.Organizations
   import SmartCity.TestHelper, only: [eventually: 1]
+  import Mock
 
   @instance_name Andi.instance_name()
 
   plug Tesla.Middleware.BaseUrl, "http://localhost:4000"
 
   describe "failure to send new organization to event stream" do
-    setup do
-      allow(Brook.Event.send(@instance_name, any(), :andi, any()),
-        return: {:error, :reason},
-        meck_options: [:passthrough]
-      )
+    setup_with_mocks([
+      {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> {:error, :reason} end]}
+    ]) do
 
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)

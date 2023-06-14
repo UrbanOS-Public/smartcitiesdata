@@ -48,7 +48,7 @@ defmodule Forklift.MixProject do
       {:poison, "~> 5.0", override: true},
       {:prestige, "~> 3.0.0"},
       {:properties, in_umbrella: true},
-      {:quantum, "~> 3.5"},
+      {:quantum, "~> 2.4"},
       {:redix, "~> 1.2"},
       {:retry, "~> 0.15"},
       {:smart_city, "~> 6.0"},

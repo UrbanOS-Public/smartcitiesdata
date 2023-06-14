@@ -19,22 +19,22 @@ defmodule AndiWeb.Test.AuthConnCase.UnitCase do
   alias Andi.Test.AuthConnCase.AuthHelper
 
   setup _tags do
-    disable_revocation_list()
+    # disable_revocation_list()
     AuthHelper.build_connections()
   end
 
   setup_all do
-    disable_revocation_list()
+    # disable_revocation_list()
     exit_hook = AuthHelper.setup_jwks()
     on_exit(exit_hook)
 
-    [auth_conn_case: %{disable_revocation_list: &disable_revocation_list/0}]
+    []
   end
 
   @doc """
   This exists b/c Placebo clears mocks on setup, so you can't just do it once in the helper case setup
   """
-  def disable_revocation_list() do
-    allow Guardian.DB.Token.find_by_claims(any()), return: nil
-  end
+  # def disable_revocation_list() do
+  #   allow Guardian.DB.Token.find_by_claims(any()), return: nil
+  # end
 end

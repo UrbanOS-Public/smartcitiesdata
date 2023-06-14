@@ -1,6 +1,7 @@
 defmodule AndiWeb.Helpers.FormToolsTest do
   use ExUnit.Case
-  use Placebo
+
+  import Mock
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias AndiWeb.Helpers.FormTools
@@ -42,9 +43,9 @@ defmodule AndiWeb.Helpers.FormToolsTest do
              } = updated_form_data
     end
 
-    test "given a url with partial URL encoding characters in it ignores them" do
+    test "given a url with partial URL encoding characters, it strips them from the parmas" do
       current_form_data = %{
-        "sourceUrl" => "https://source.url.example.com?invalid%=stuff",
+        "sourceUrl" => "https://source.url.example.com?invalid#(%*&#)(%&$()&#(*$#%=stuff",
         "sourceQueryParams" => %{
           "0" => %{"id" => "uuid-1", "key" => "still", "value" => "here"}
         }
@@ -53,9 +54,7 @@ defmodule AndiWeb.Helpers.FormToolsTest do
       updated_form_data = FormTools.adjust_source_query_params_for_url(current_form_data)
 
       assert %{
-               "sourceQueryParams" => %{
-                 "0" => %{"key" => "still", "value" => "here"}
-               }
+               "sourceQueryParams" => [%{"key" => "invalid", "value" => ""}]
              } = updated_form_data
     end
 
@@ -163,24 +162,24 @@ defmodule AndiWeb.Helpers.FormToolsTest do
     test "updating the orgId updates the orgName" do
       org = TDG.create_organization(%{orgTitle: "Existing Org Title", orgName: "existing_org_name", id: "existing_org_id"})
 
-      Placebo.allow(OrgStore.get(any()), return: {:ok, org})
+      with_mock(OrgStore, [get: fn(_) -> {:ok, org} end]) do
+        current_form_data = %{
+          "orgTitle" => "Another Org Title",
+          "dataName" => "another_data_title",
+          "orgName" => "something_not_related",
+          "orgId" => "existing_org_id"
+        }
 
-      current_form_data = %{
-        "orgTitle" => "Another Org Title",
-        "dataName" => "another_data_title",
-        "orgName" => "something_not_related",
-        "orgId" => "existing_org_id"
-      }
+        new_form_data = FormTools.adjust_org_name(current_form_data)
 
-      new_form_data = FormTools.adjust_org_name(current_form_data)
-
-      assert %{
-               "orgTitle" => "Existing Org Title",
-               "dataName" => "another_data_title",
-               "orgName" => "existing_org_name",
-               "orgId" => "existing_org_id",
-               "systemName" => "existing_org_name__another_data_title"
-             } == new_form_data
+        assert %{
+                 "orgTitle" => "Existing Org Title",
+                 "dataName" => "another_data_title",
+                 "orgName" => "existing_org_name",
+                 "orgId" => "existing_org_id",
+                 "systemName" => "existing_org_name__another_data_title"
+               } == new_form_data
+      end
     end
   end
 end

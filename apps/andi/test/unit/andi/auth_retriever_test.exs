@@ -1,6 +1,5 @@
 defmodule AuthRetrieverTest do
   use ExUnit.Case
-  use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
 

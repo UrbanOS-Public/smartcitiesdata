@@ -1,6 +1,5 @@
 defmodule Andi.InputSchemas.DatasetSchemaValidatorTest do
   use ExUnit.Case
-  use Placebo
 
   alias Andi.InputSchemas.DatasetSchemaValidator
 

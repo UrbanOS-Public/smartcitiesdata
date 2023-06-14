@@ -1,25 +1,29 @@
 defmodule Andi.Scripts.ResendEventsTest do
   use ExUnit.Case
-  use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.DatasetStore
   alias Andi.Schemas.User
   alias SmartCity.UserOrganizationAssociate, as: UOA
+
   import SmartCity.Event
+  import Mock
 
   describe "resend_dataset_events/0" do
     test "resends all datasets in the DatasetStore as dataset:update events in Brook" do
       dataset1 = TDG.create_dataset(%{})
       dataset2 = TDG.create_dataset(%{})
       expected_datasets = {:ok, [dataset1, dataset2]}
-      allow(DatasetStore.get_all(), return: expected_datasets)
-      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
 
-      Andi.Scripts.ResendEvents.resend_dataset_events()
+      with_mocks([
+        {DatasetStore, [], [get_all: fn() -> expected_datasets end]},
+        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+      ]) do
+        Andi.Scripts.ResendEvents.resend_dataset_events()
 
-      assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset1)
-      assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset2)
+        assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset1)
+        assert_called Brook.Event.send(:andi, dataset_update(), :data_migrator, dataset2)
+      end
     end
   end
 
@@ -57,34 +61,36 @@ defmodule Andi.Scripts.ResendEventsTest do
         }
       ]
 
-      allow(User.get_all(), return: users)
-      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
+      with_mocks([
+        {User, [], [get_all: fn() -> users end]},
+        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+      ]) do
+        Andi.Scripts.ResendEvents.resend_user_org_assoc_events()
 
-      Andi.Scripts.ResendEvents.resend_user_org_assoc_events()
+        assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
+                        email: "sample@accenture.com",
+                        org_id: "1",
+                        subject_id: "auth0|1"
+                      })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
-                      email: "sample@accenture.com",
-                      org_id: "1",
-                      subject_id: "auth0|1"
-                    })
+        assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
+                        email: "sample@accenture.com",
+                        org_id: "2",
+                        subject_id: "auth0|1"
+                      })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
-                      email: "sample@accenture.com",
-                      org_id: "2",
-                      subject_id: "auth0|1"
-                    })
+        assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
+                        email: "sample@accenture.com",
+                        org_id: "3",
+                        subject_id: "auth0|2"
+                      })
 
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
-                      email: "sample@accenture.com",
-                      org_id: "3",
-                      subject_id: "auth0|2"
-                    })
-
-      assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
-                      email: "sample@accenture.com",
-                      org_id: "4",
-                      subject_id: "auth0|2"
-                    })
+        assert_called Brook.Event.send(:andi, user_organization_associate(), :data_migrator, %UOA{
+                        email: "sample@accenture.com",
+                        org_id: "4",
+                        subject_id: "auth0|2"
+                      })
+      end
     end
   end
 end

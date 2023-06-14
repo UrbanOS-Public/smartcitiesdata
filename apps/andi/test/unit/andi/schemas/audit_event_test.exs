@@ -1,7 +1,6 @@
 defmodule Andi.Schemas.AuditEventTest do
   use ExUnit.Case
   import Checkov
-  use Placebo
 
   alias Andi.Schemas.AuditEvent
   import SmartCity.Event

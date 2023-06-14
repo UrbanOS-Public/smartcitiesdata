@@ -5,7 +5,6 @@ defmodule IngestionHelpers do
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.InputConverter
   alias DatasetHelpers
-  import Placebo
 
   def create_with_auth_extract_step(context) do
     create_with_step("auth", context)
@@ -38,13 +37,6 @@ defmodule IngestionHelpers do
       |> Ecto.Changeset.apply_changes()
 
     %{ingestion: andi_ingestion, dataset: andi_dataset}
-  end
-
-  def mock_repo_get(%{ingestion: ingestion, dataset: dataset}) do
-    allow(Andi.InputSchemas.Ingestions.get(ingestion.id), return: ingestion)
-    allow(Andi.InputSchemas.Datasets.get(dataset.id), return: dataset)
-
-    %{ingestion: ingestion, dataset: dataset}
   end
 
   def save_ingestion(%{ingestion: ingestion, dataset: dataset}) do

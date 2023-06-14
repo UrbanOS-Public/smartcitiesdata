@@ -1,11 +1,12 @@
 defmodule Andi.Event.EventHandlerTest do
   use ExUnit.Case
   use Andi.DataCase
-  use Placebo
   use Properties, otp_app: :andi
 
   import SmartCity.TestHelper
   import SmartCity.Event
+  import Mock
+  
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
   alias Andi.Schemas.User
@@ -29,36 +30,37 @@ defmodule Andi.Event.EventHandlerTest do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
-      allow(DatasetCache.add_dataset_info(invalid_dataset), exec: fn _nh -> raise "nope" end)
 
-      id = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id})
+      with_mock(DatasetCache, [add_dataset_info: fn(_) -> raise "nope" end]) do
+        id = UUID.uuid4()
+        valid_dataset = TDG.create_dataset(%{id: id})
 
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == valid_dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == valid_dataset.id
 
-        invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
-        assert invalid_dataset_from_ecto == nil
+          invalid_dataset_from_ecto = Datasets.get(id_for_invalid_dataset)
+          assert invalid_dataset_from_ecto == nil
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["dataset_ids"] do
-              nil -> false
-              dataset_ids -> id_for_invalid_dataset in dataset_ids
-            end
-          end)
+              case actual["dataset_ids"] do
+                nil -> false
+                dataset_ids -> id_for_invalid_dataset in dataset_ids
+              end
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -71,32 +73,33 @@ defmodule Andi.Event.EventHandlerTest do
 
       id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
-      allow(IngestionStore.update(invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
-      id = UUID.uuid4()
-      valid_ingestion = TDG.create_ingestion(%{id: id, targetDatasets: [dataset.id]})
+      with_mock(IngestionStore, [update: fn(invalid_ingestion) -> raise "nope" end]) do
+        id = UUID.uuid4()
+        valid_ingestion = TDG.create_ingestion(%{id: id, targetDatasets: [dataset.id]})
 
-      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
-      Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
+        Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
+        Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
-      eventually(fn ->
-        valid_ingestion_from_ecto = Ingestions.get(id)
-        assert valid_ingestion_from_ecto != nil
-        assert valid_ingestion_from_ecto.id == valid_ingestion.id
+        eventually(fn ->
+          valid_ingestion_from_ecto = Ingestions.get(id)
+          assert valid_ingestion_from_ecto != nil
+          assert valid_ingestion_from_ecto.id == valid_ingestion.id
 
-        invalid_ingestion_from_ecto = Ingestions.get(id_for_invalid_ingestion)
-        assert invalid_ingestion_from_ecto == nil
+          invalid_ingestion_from_ecto = Ingestions.get(id_for_invalid_ingestion)
+          assert invalid_ingestion_from_ecto == nil
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
-            actual["ingestion_id"] == id_for_invalid_ingestion
-          end)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
+              actual["ingestion_id"] == id_for_invalid_ingestion
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -107,26 +110,27 @@ defmodule Andi.Event.EventHandlerTest do
 
       id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
-      allow(IngestionStore.delete(id_for_invalid_ingestion), exec: fn _nh -> raise "nope" end)
 
-      Brook.Event.send(@instance_name, ingestion_delete(), __MODULE__, invalid_ingestion)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+      with_mock(IngestionStore, [delete: fn(id_for_invalid_ingestion) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, ingestion_delete(), __MODULE__, invalid_ingestion)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
-            actual["ingestion_id"] == id_for_invalid_ingestion
-          end)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
+              actual["ingestion_id"] == id_for_invalid_ingestion
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -137,33 +141,34 @@ defmodule Andi.Event.EventHandlerTest do
 
       id_for_org = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: id_for_org})
-      allow(OrgStore.update(invalid_org), exec: fn _nh -> raise "nope" end)
 
-      Brook.Event.send(@instance_name, organization_update(), __MODULE__, invalid_org)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+      with_mock(OrgStore, [update: fn(invalid_org) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, organization_update(), __MODULE__, invalid_org)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["original_message"] do
-              %{"id" => message_org_id} ->
-                message_org_id == id_for_org
+              case actual["original_message"] do
+                %{"id" => message_org_id} ->
+                  message_org_id == id_for_org
 
-              _ ->
-                false
-            end
-          end)
+                _ ->
+                  false
+              end
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -248,35 +253,36 @@ defmodule Andi.Event.EventHandlerTest do
       subject_id = UUID.uuid4()
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
-      allow(User.associate_with_organization(any(), any()), exec: fn _nh -> raise "nope" end)
 
-      association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject_id, email: "blah@blah.com"}
+      with_mock(User, [associate_with_organization: fn(_, _) -> raise "nope" end]) do
+        association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject_id, email: "blah@blah.com"}
 
-      Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["original_message"] do
-              %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
-                message_org_id == org_id && message_subject_id == subject_id
+              case actual["original_message"] do
+                %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+                  message_org_id == org_id && message_subject_id == subject_id
 
-              _ ->
-                false
-            end
-          end)
+                _ ->
+                  false
+              end
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -288,35 +294,36 @@ defmodule Andi.Event.EventHandlerTest do
       subject_id = UUID.uuid4()
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
-      allow(User.disassociate_with_organization(any(), any()), exec: fn _nh -> raise "nope" end)
 
-      disassociation = %UserOrganizationDisassociate{org_id: org_id, subject_id: subject_id}
+      with_mock(User, [disassociate_with_organization: fn(_, _) -> raise "nope" end]) do
+        disassociation = %UserOrganizationDisassociate{org_id: org_id, subject_id: subject_id}
 
-      Brook.Event.send(@instance_name, user_organization_disassociate(), __MODULE__, disassociation)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        Brook.Event.send(@instance_name, user_organization_disassociate(), __MODULE__, disassociation)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["original_message"] do
-              %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
-                message_org_id == org_id && message_subject_id == subject_id
+              case actual["original_message"] do
+                %{"org_id" => message_org_id, "subject_id" => message_subject_id} ->
+                  message_org_id == org_id && message_subject_id == subject_id
 
-              _ ->
-                false
-            end
-          end)
+                _ ->
+                  false
+              end
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -328,38 +335,33 @@ defmodule Andi.Event.EventHandlerTest do
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
 
-      allow(
-        TelemetryEvent.add_event_metrics([app: "andi", author: any(), dataset_id: any(), event_type: dataset_harvest_start()], [
-          :events_handled
-        ]),
-        exec: fn _nh -> raise "nope" end
-      )
+      with_mock(TelemetryEvent, [add_event_metrics: fn([app: "andi", author: _, dataset_id: _, event_type: dataset_harvest_start()], [:events_handled]) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+              case actual["original_message"] do
+                %{"id" => message_org_id} ->
+                  message_org_id == org_id
 
-            case actual["original_message"] do
-              %{"id" => message_org_id} ->
-                message_org_id == org_id
+                _ ->
+                  false
+              end
+            end)
 
-              _ ->
-                false
-            end
-          end)
-
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -370,33 +372,34 @@ defmodule Andi.Event.EventHandlerTest do
 
       fake_id = UUID.uuid4()
       fake_harvested_dataset = %{fake: fake_id}
-      allow(Organizations.update_harvested_dataset(any()), exec: fn _nh -> raise "nope" end)
 
-      Brook.Event.send(@instance_name, dataset_harvest_end(), __MODULE__, fake_harvested_dataset)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+      with_mock(Organizations, [update_harvested_dataset: fn(_) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, dataset_harvest_end(), __MODULE__, fake_harvested_dataset)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["original_message"] do
-              %{"fake" => message_fake_id} ->
-                message_fake_id == fake_id
+              case actual["original_message"] do
+                %{"fake" => message_fake_id} ->
+                  message_fake_id == fake_id
 
-              _ ->
-                false
-            end
-          end)
+                _ ->
+                  false
+              end
+            end)
 
-        assert 1 == length(failed_messages)
-      end)
+          assert 1 == length(failed_messages)
+        end)
+      end
     end
   end
 
@@ -421,33 +424,33 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      allow(Andi.Migration.ModifiedDateMigration.do_migration(), exec: fn _nh -> raise "nope" end)
+      with_mock(Andi.Migration.ModifiedDateMigration, [do_migration: fn() -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, "migration:modified_date:start", __MODULE__, %{})
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      Brook.Event.send(@instance_name, "migration:modified_date:start", __MODULE__, %{})
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+              case actual["original_message"] do
+                %{"type" => message_type} ->
+                  message_type == "migration:modified_date:start"
 
-            case actual["original_message"] do
-              %{"type" => message_type} ->
-                message_type == "migration:modified_date:start"
+                _ ->
+                  false
+              end
+            end)
 
-              _ ->
-                false
-            end
-          end)
-
-        assert length(failed_messages) == existing_messages + 1
-      end)
+          assert length(failed_messages) == existing_messages + 1
+        end)
+      end
     end
   end
 
@@ -456,36 +459,33 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      allow(
-        TelemetryEvent.add_event_metrics([app: any(), author: any(), dataset_id: any(), event_type: data_ingest_end()], [:events_handled]),
-        exec: fn _nh -> raise "nope" end
-      )
+      with_mock(TelemetryEvent, [add_event_metrics: fn([app: _, author: _, dataset_id: _, event_type: data_ingest_end()], [:events_handled]) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, dataset)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, dataset)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+              case actual["original_message"] do
+                %{"id" => message_dataset_id} ->
+                  message_dataset_id == dataset_id
 
-            case actual["original_message"] do
-              %{"id" => message_dataset_id} ->
-                message_dataset_id == dataset_id
+                _ ->
+                  false
+              end
+            end)
 
-              _ ->
-                false
-            end
-          end)
-
-        assert length(failed_messages) == 1
-      end)
+          assert length(failed_messages) == 1
+        end)
+      end
     end
   end
 
@@ -494,33 +494,33 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      allow(DatasetStore.delete(dataset_id), exec: fn _nh -> raise "nope" end)
+      with_mock(DatasetStore, [delete: fn(dataset_id) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, dataset)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, dataset)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+              case actual["original_message"] do
+                %{"id" => message_dataset_id} ->
+                  message_dataset_id == dataset_id
 
-            case actual["original_message"] do
-              %{"id" => message_dataset_id} ->
-                message_dataset_id == dataset_id
+                _ ->
+                  false
+              end
+            end)
 
-              _ ->
-                false
-            end
-          end)
-
-        assert length(failed_messages) == 1
-      end)
+          assert length(failed_messages) == 1
+        end)
+      end
     end
   end
 
@@ -572,33 +572,34 @@ defmodule Andi.Event.EventHandlerTest do
 
       subject_id = UUID.uuid4()
       {:ok, user} = %{subject_id: subject_id, email: "abc", name: "abc"} |> SmartCity.User.new()
-      allow(User.get_by_subject_id(subject_id), exec: fn _nh -> raise "nope" end)
 
-      Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
+      with_mock(User, [get_by_subject_id: fn(subject_id) -> raise "nope" end]) do
+        Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
+        Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
-      eventually(fn ->
-        valid_dataset_from_ecto = Datasets.get(dataset_id)
-        assert valid_dataset_from_ecto != nil
-        assert valid_dataset_from_ecto.id == dataset.id
+        eventually(fn ->
+          valid_dataset_from_ecto = Datasets.get(dataset_id)
+          assert valid_dataset_from_ecto != nil
+          assert valid_dataset_from_ecto.id == dataset.id
 
-        failed_messages =
-          Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
+          failed_messages =
+            Elsa.Fetch.fetch(kafka_broker(), "dead-letters")
+            |> elem(2)
+            |> Enum.filter(fn message ->
+              actual = Jason.decode!(message.value)
 
-            case actual["original_message"] do
-              %{"subject_id" => message_subject_id} ->
-                message_subject_id == subject_id
+              case actual["original_message"] do
+                %{"subject_id" => message_subject_id} ->
+                  message_subject_id == subject_id
 
-              _ ->
-                false
-            end
-          end)
+                _ ->
+                  false
+              end
+            end)
 
-        assert length(failed_messages) == 1
-      end)
+          assert length(failed_messages) == 1
+        end)
+      end
     end
   end
 end

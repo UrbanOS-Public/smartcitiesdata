@@ -2,7 +2,6 @@ defmodule AndiWeb.MetadataFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Placebo
 
   import Checkov
 

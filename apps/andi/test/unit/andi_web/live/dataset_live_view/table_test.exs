@@ -1,10 +1,10 @@
 defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+
   alias Andi.Schemas.User
 
   import Phoenix.LiveViewTest
-
+  import Mock
   import FlokiHelpers,
     only: [
       get_attributes: 3
@@ -16,43 +16,30 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   @ingested_time_a DateTime.from_iso8601("2020-10-01T00:00:00Z") |> elem(1)
   @ingested_time_b DateTime.from_iso8601("2020-11-01T00:00:00Z") |> elem(1)
+  @dataset_a DatasetHelpers.create_dataset(business: %{orgTitle: "org_d", dataTitle: "data_a"}) |> Map.put(:ingestedTime, @ingested_time_a)
+  @dataset_b DatasetHelpers.create_dataset(business: %{orgTitle: "org_c", dataTitle: "data_b"}) |> Map.put(:ingestedTime, @ingested_time_b)
+  @dataset_c DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_c"}) |> Map.put(:ingestedTime, nil) |> Map.put(:submission_status, :rejected)
+  @dataset_d DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_d"}) |> Map.put(:ingestedTime, nil) |> Map.put(:submission_status, :approved)
 
-  setup %{auth_conn_case: auth_conn_case, conn: conn} do
-    allow(User.get_all(), return: [@user])
-    allow(User.get_by_subject_id(any()), return: @user)
+  setup_with_mocks [
+    {User, [], [
+      get_all: fn() -> [@user] end,
+      get_by_subject_id: fn(_) -> @user end
+    ]},
+    {Andi.Repo, [], [all: fn(_) -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end]},
+    {Guardian.DB.Token, [], [find_by_claims: fn(_) -> nil end]}
+  ], %{conn: conn} do
 
-    auth_conn_case.disable_revocation_list.()
-
-    dataset_a =
-      DatasetHelpers.create_dataset(business: %{orgTitle: "org_d", dataTitle: "data_a"})
-      |> Map.put(:ingestedTime, @ingested_time_a)
-
-    dataset_b =
-      DatasetHelpers.create_dataset(business: %{orgTitle: "org_c", dataTitle: "data_b"})
-      |> Map.put(:ingestedTime, @ingested_time_b)
-
-    dataset_c =
-      DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_c"})
-      |> Map.put(:ingestedTime, nil)
-      |> Map.put(:submission_status, :rejected)
-
-    dataset_d =
-      DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_d"})
-      |> Map.put(:ingestedTime, nil)
-      |> Map.put(:submission_status, :approved)
-
-    DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
-
-    allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b, dataset_c, dataset_d])
+    DatasetHelpers.replace_all_datasets_in_repo([@dataset_a, @dataset_b])
 
     {:ok, view, _} =
       get(conn, @url_path)
       |> live()
 
-    row_a = ["Success", dataset_a.business.dataTitle, dataset_a.business.orgTitle, "Edit"]
-    row_b = ["Success", dataset_b.business.dataTitle, dataset_b.business.orgTitle, "Edit"]
-    row_c = ["Rejected", dataset_c.business.dataTitle, dataset_c.business.orgTitle, "Edit"]
-    row_d = ["Approved", dataset_d.business.dataTitle, dataset_d.business.orgTitle, "Edit"]
+    row_a = ["Success", @dataset_a.business.dataTitle, @dataset_a.business.orgTitle, "Edit"]
+    row_b = ["Success", @dataset_b.business.dataTitle, @dataset_b.business.orgTitle, "Edit"]
+    row_c = ["Rejected", @dataset_c.business.dataTitle, @dataset_c.business.orgTitle, "Edit"]
+    row_d = ["Approved", @dataset_d.business.dataTitle, @dataset_d.business.orgTitle, "Edit"]
 
     {:ok, %{view: view, row_a: row_a, row_b: row_b, row_c: row_c, row_d: row_d}}
   end
@@ -146,12 +133,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     test "edit buttons link to dataset edit", %{conn: conn} do
       dataset = DatasetHelpers.create_dataset(%{})
 
-      allow(Andi.Repo.all(any()), return: [dataset])
-      DatasetHelpers.replace_all_datasets_in_repo([dataset])
+      with_mock(Andi.Repo, [all: fn(_) -> [dataset] end]) do
+        DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
-      {:ok, _view, html} = live(conn, @url_path)
+        {:ok, _view, html} = live(conn, @url_path)
 
-      assert get_attributes(html, ".btn", "href") == ["#{@url_path}/#{dataset.id}"]
+        assert get_attributes(html, ".btn", "href") == ["#{@url_path}/#{dataset.id}"]
+      end
     end
   end
 

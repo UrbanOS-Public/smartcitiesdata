@@ -30,8 +30,8 @@ defmodule Template.MixProject do
     [
       {:brook_stream, "~> 1.0"},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
-      {:phoenix, "~> 1.7"},
-      {:phoenix_html, "~> 3.3"},
+      {:phoenix, "~> 1.4"},
+      {:phoenix_html, "~> 2.14"},
       {:phoenix_pubsub, "~> 2.0"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 1.0"},

@@ -1,8 +1,9 @@
 defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
   use ExUnit.Case
   use AndiWeb.ConnCase
-  use Placebo
+
   import AndiWeb.Test.PublicAccessCase
+  import Mock
 
   alias AndiWeb.Auth.EnsureAccessLevelForRoute
 
@@ -116,14 +117,14 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
     end
 
     test "if an exception occurs, returns 404, not 500" do
-      allow AndiWeb.Test.FailingController.access_levels_supported(any()), exec: fn _ -> raise "KABOOM!" end
+      with_mock(AndiWeb.Test.FailingController, [access_levels_supported: fn(_) -> raise "KABOOM!" end]) do
+        conn =
+          build_conn(:get, "/kaboom")
+          |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
 
-      conn =
-        build_conn(:get, "/kaboom")
-        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)
-
-      assert conn.status == 404
-      assert conn.halted
+        assert conn.status == 404
+        assert conn.halted
+      end
     end
   end
 end

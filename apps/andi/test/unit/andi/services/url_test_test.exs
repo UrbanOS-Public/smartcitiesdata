@@ -1,6 +1,5 @@
 defmodule Andi.Services.UrlTestTest do
   use ExUnit.Case
-  use Placebo
 
   describe "test/1" do
     test "returns status code from tested url" do
