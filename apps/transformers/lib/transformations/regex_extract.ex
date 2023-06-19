@@ -16,14 +16,19 @@ defmodule Transformers.RegexExtract do
     with {:ok, true} <- Conditions.check(payload, parameters),
          {:ok, [source_field, target_field, regex]} <- validate(parameters),
          {:ok, value} <- FieldFetcher.fetch_value(payload, source_field) do
-      case Regex.run(regex, value, capture: :all_but_first) do
-        nil ->
-          transformed_payload = Map.put(payload, target_field, nil)
-          {:ok, transformed_payload}
+      try do
+        case Regex.run(regex, value, capture: :all_but_first) do
+          nil ->
+            transformed_payload = Map.put(payload, target_field, nil)
+            {:ok, transformed_payload}
 
-        [extracted_value | _] ->
-          transformed_payload = Map.put(payload, target_field, extracted_value)
-          {:ok, transformed_payload}
+          [extracted_value | _] ->
+            transformed_payload = Map.put(payload, target_field, extracted_value)
+            {:ok, transformed_payload}
+        end
+      rescue
+        error ->
+          {:error, "Failure to parse regex: #{inspect(regex)}"}
       end
     else
       {:ok, false} ->
