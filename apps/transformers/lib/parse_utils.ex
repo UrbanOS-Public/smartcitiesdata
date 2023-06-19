@@ -31,29 +31,11 @@ defmodule Transformers.ParseUtils do
     {:ok, value}
   end
 
-  def parseValue(value, payload) when is_list(value) do
-    if Regex.match?(~r/\[\*\]/, value) do
-      [base_parent_key, child_key] = String.split(value, "[*].")
-
-      list =
-        Enum.reduce(payload, [], fn {key, value}, acc ->
-          if String.starts_with?(key, base_parent_key) and String.ends_with?(key, child_key) do
-            acc ++ [value]
-          else
-            acc
-          end
-        end)
-
-      {:ok, list}
-    else
-      {:error, nil}
-    end
-  end
-
   def parseValue(value, payload) do
     {payloadResult, payloadValue} = parsePayloadValue(value, payload)
     {integerResult, integer} = parseInteger(value)
     {floatResult, float} = parseFloat(value)
+    {listResult, list} = parseList(value, payload)
 
     cond do
       payloadResult == :ok ->
@@ -64,6 +46,9 @@ defmodule Transformers.ParseUtils do
 
       floatResult == :ok ->
         {:ok, float}
+
+      listResult == :ok ->
+        {:ok, list}
 
       true ->
         {:error,
@@ -91,6 +76,25 @@ defmodule Transformers.ParseUtils do
     case Float.parse(prospectiveFloat) do
       {float, remainder} when remainder == "" -> {:ok, float}
       _ -> {:error, nil}
+    end
+  end
+
+  defp parseList(prospectiveList, payload) do
+    if Regex.match?(~r/\[\*\]/, prospectiveList) do
+      [base_parent_key, child_key] = String.split(prospectiveList, "[*].")
+
+      list =
+        Enum.reduce(payload, [], fn {key, value}, acc ->
+          if String.starts_with?(key, base_parent_key) and String.ends_with?(key, child_key) do
+            acc ++ [value]
+          else
+            acc
+          end
+        end)
+
+      {:ok, list}
+    else
+      {:error, nil}
     end
   end
 end
