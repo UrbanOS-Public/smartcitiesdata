@@ -73,6 +73,7 @@ defmodule Alchemist.Broadway do
     else
       {:error, reason} ->
         Logger.error("Ingestion: #{ingestion.id}; Failed to transform payload: #{inspect(reason)}")
+
         DeadLetter.process(ingestion.targetDatasets, ingestion.id, message_data.value, @app_name,
           reason: inspect(reason)
         )
