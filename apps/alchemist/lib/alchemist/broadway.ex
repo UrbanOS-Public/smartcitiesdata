@@ -12,6 +12,8 @@ defmodule Alchemist.Broadway do
 
   alias Broadway.Message
 
+  require Logger
+
   @app_name "Alchemist"
 
   getter(:processor_stages, generic: true, default: 1)
@@ -70,6 +72,8 @@ defmodule Alchemist.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
+        Logger.error("Ingestion: #{ingestion.id}; Failed to transform payload: #{inspect(reason)}")
+
         DeadLetter.process(ingestion.targetDatasets, ingestion.id, message_data.value, @app_name,
           reason: inspect(reason)
         )

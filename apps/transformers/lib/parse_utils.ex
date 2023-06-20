@@ -38,11 +38,23 @@ defmodule Transformers.ParseUtils do
     {listResult, list} = parseList(value, payload)
 
     cond do
-      payloadResult == :ok -> {:ok, payloadValue}
-      integerResult == :ok -> {:ok, integer}
-      floatResult == :ok -> {:ok, float}
-      listResult == :ok -> {:ok, list}
-      true -> {:error, "A value cannot be parsed to integer or float: " <> value}
+      payloadResult == :ok ->
+        {:ok, payloadValue}
+
+      integerResult == :ok ->
+        {:ok, integer}
+
+      floatResult == :ok ->
+        {:ok, float}
+
+      listResult == :ok ->
+        {:ok, list}
+
+      true ->
+        {:error,
+         "A given value #{value} cannot be parsed to integer or float, nor is it in the following payload: #{
+           inspect(payload)
+         }}"}
     end
   end
 

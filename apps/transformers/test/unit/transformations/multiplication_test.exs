@@ -117,7 +117,8 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "A value cannot be parsed to integer or float: bar"
+      assert reason ==
+               "A given value bar cannot be parsed to integer or float, nor is it in the following payload: %{\"some_other_input_number\" => 3}}"
     end
 
     test "ignores additional payload fields that are not in the multiplicands" do
@@ -144,7 +145,8 @@ defmodule Transformers.MultiplicationTest do
 
       {:error, reason} = Transformers.Multiplication.transform(message_payload, params)
 
-      assert reason == "A value cannot be parsed to integer or float: invalid"
+      assert reason ==
+               "A given value invalid cannot be parsed to integer or float, nor is it in the following payload: %{\"invalid\" => \"not a number\", \"some_other_input_number\" => 3}}"
     end
 
     test "performs transformation as normal when condition evaluates to true" do
