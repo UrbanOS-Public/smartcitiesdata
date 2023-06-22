@@ -59,7 +59,7 @@ defmodule Transformers do
             {:cont, {:ok, result}}
 
           {:error, reason} ->
-            {:halt, {:error, reason}}
+            {:halt, {:error, "PAYLOAD: #{inspect(acc_payload)}; #{inspect(reason)}"}}
         end
       end)
 

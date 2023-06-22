@@ -52,9 +52,7 @@ defmodule Transformers.ParseUtils do
 
       true ->
         {:error,
-         "A given value #{value} cannot be parsed to integer or float, nor is it in the following payload: #{
-           inspect(payload)
-         }}"}
+         "A given value #{value} cannot be parsed to integer or float, nor is it in the payload"}
     end
   end
 

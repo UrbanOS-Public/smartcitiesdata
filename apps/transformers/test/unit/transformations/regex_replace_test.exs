@@ -19,7 +19,8 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == %{"#{parameter}" => "Missing or empty field"}
+    assert reason ==
+             "Regex Replace Transformation Error: %{\"#{parameter}\" => \"Missing or empty field\"}"
 
     where(parameter: ["sourceField", "regex", "replacement"])
   end
@@ -40,7 +41,8 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == %{"#{parameter}" => "Missing or empty child field"}
+    assert reason ==
+             "Regex Replace Transformation Error: %{\"#{parameter}\" => \"Missing or empty child field\"}"
 
     where(parameter: ["sourceField", "replacement"])
   end
@@ -58,7 +60,7 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Missing field in payload: something"
+    assert reason == "Regex Replace Transformation Error: \"Missing field in payload: something\""
   end
 
   test "when regex does not compile, return error" do
@@ -74,7 +76,8 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == %{"regex" => "Invalid regular expression: missing ) at index 3"}
+    assert reason ==
+             "Regex Replace Transformation Error: %{\"regex\" => \"Invalid regular expression: missing ) at index 3\"}"
   end
 
   test "when replacement is not a string, return error" do
@@ -90,7 +93,8 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == %{"replacement" => "Not a string or list"}
+    assert reason ==
+             "Regex Replace Transformation Error: %{\"replacement\" => \"Not a string or list\"}"
   end
 
   test "if source field is not a string, return error" do
@@ -106,7 +110,8 @@ defmodule Transformers.RegexReplaceTest do
 
     {:error, reason} = RegexReplace.transform(payload, parameters)
 
-    assert reason == "Value of field something is not a string: 123"
+    assert reason ==
+             "Regex Replace Transformation Error: \"Value of field something is not a string: 123\""
   end
 
   test "if no regex match, payload is unchanged" do

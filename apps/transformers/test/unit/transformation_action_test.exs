@@ -181,7 +181,8 @@ defmodule TransformationActionTest do
 
       {:error, reason} = Transformers.perform(operations, initial_payload)
 
-      assert reason == "Missing field in payload: [INVALID]"
+      assert reason ==
+               "Concatenation Transformation Error: \"Missing field in payload: [INVALID]\""
     end
 
     data_test "should flatten and split correctly: #{test_name}" do

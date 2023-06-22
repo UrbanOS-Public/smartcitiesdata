@@ -16,7 +16,7 @@ defmodule Transformers.Constant do
       convert_value(new_value, value_type, payload, target_field)
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Constant Transformation Error: #{inspect(reason)}"}
     end
   end
 

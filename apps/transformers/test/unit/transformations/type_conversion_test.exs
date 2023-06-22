@@ -28,7 +28,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Missing field in payload: something"} == result
+    assert {:error,
+            "Type Conversion Transformation Error: \"Missing field in payload: something\""} ==
+             result
   end
 
   test "if params do not contain field return error" do
@@ -37,7 +39,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, %{"field" => "Missing or empty field"}} == result
+    assert {:error,
+            "Type Conversion Transformation Error: %{\"field\" => \"Missing or empty field\"}"} ==
+             result
   end
 
   test "if params do not contain source type return error" do
@@ -46,7 +50,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, %{"sourceType" => "Missing or empty field"}} == result
+    assert {:error,
+            "Type Conversion Transformation Error: %{\"sourceType\" => \"Missing or empty field\"}"} ==
+             result
   end
 
   test "if params do not contain target type return error" do
@@ -55,7 +61,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, %{"targetType" => "Missing or empty field"}} == result
+    assert {:error,
+            "Type Conversion Transformation Error: %{\"targetType\" => \"Missing or empty field\"}"} ==
+             result
   end
 
   test "if field supposed to be float but is not, return error" do
@@ -64,7 +72,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Field some_float not of expected type: float"} == result
+    assert {:error,
+            "Type Conversion Transformation Error: \"Field some_float not of expected type: float\""} ==
+             result
   end
 
   test "if field supposed to be integer but is not, return error" do
@@ -73,7 +83,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Field some_int not of expected type: integer"} == result
+    assert {:error,
+            "Type Conversion Transformation Error: \"Field some_int not of expected type: integer\""} ==
+             result
   end
 
   test "if field supposed to be string but is not, return error" do
@@ -82,7 +94,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, "Field some_string not of expected type: string"} == result
+    assert {:error,
+            "Type Conversion Transformation Error: \"Field some_string not of expected type: string\""} ==
+             result
   end
 
   test "if field ends with ., return error" do
@@ -91,7 +105,9 @@ defmodule Transformers.TypeConversionTest do
 
     result = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert {:error, %{"field" => "Missing or empty child field"}} == result
+    assert {:error,
+            "Type Conversion Transformation Error: %{\"field\" => \"Missing or empty child field\"}"} ==
+             result
   end
 
   test "convert from integer to string" do
@@ -181,10 +197,8 @@ defmodule Transformers.TypeConversionTest do
 
     {:error, reason} = Transformers.TypeConversion.transform(payload, parameters)
 
-    assert reason == %{
-             "sourceType" => "Conversion from boolean to string is not supported",
-             "targetType" => "Conversion from boolean to string is not supported"
-           }
+    assert reason ==
+             "Type Conversion Transformation Error: %{\"sourceType\" => \"Conversion from boolean to string is not supported\", \"targetType\" => \"Conversion from boolean to string is not supported\"}"
   end
 
   test "if string cannot be parsed into integer return error" do

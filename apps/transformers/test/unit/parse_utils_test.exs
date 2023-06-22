@@ -49,7 +49,7 @@ defmodule Transformers.ParseUtilsTest do
 
       assert result ==
                {:error,
-                "A given value badValue cannot be parsed to integer or float, nor is it in the following payload: %{}}"}
+                "A given value badValue cannot be parsed to integer or float, nor is it in the payload"}
     end
   end
 
@@ -92,7 +92,7 @@ defmodule Transformers.ParseUtilsTest do
 
       assert result ==
                {:error,
-                "A given value badValue cannot be parsed to integer or float, nor is it in the following payload: %{}}"}
+                "A given value badValue cannot be parsed to integer or float, nor is it in the payload"}
     end
   end
 
@@ -132,7 +132,7 @@ defmodule Transformers.ParseUtilsTest do
 
       assert result ==
                {:error,
-                "A given value badValue cannot be parsed to integer or float, nor is it in the following payload: %{}}"}
+                "A given value badValue cannot be parsed to integer or float, nor is it in the payload"}
     end
 
     test "when called with non-binary and non-list operands, returns error tuple with reason" do

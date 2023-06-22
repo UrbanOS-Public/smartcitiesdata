@@ -22,7 +22,7 @@ defmodule Transformers.TypeConversion do
       parse_or_error(conversion_function, payload, field, value, target_type)
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Type Conversion Transformation Error: #{inspect(reason)}"}
       nil_payload -> {:ok, nil_payload}
     end
   end

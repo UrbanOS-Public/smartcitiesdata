@@ -18,7 +18,7 @@ defmodule Transformers.Add do
       {:ok, payload |> Map.put(target_field, sum)}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Addition Transformation Error: #{inspect(reason)}"}
     end
   end
 

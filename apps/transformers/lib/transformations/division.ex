@@ -24,7 +24,7 @@ defmodule Transformers.Division do
       {:ok, payload |> Map.put(target_field_name, D.to_float(quotient))}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Division Transformation Error: #{inspect(reason)}"}
     end
   end
 

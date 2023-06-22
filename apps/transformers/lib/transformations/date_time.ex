@@ -29,7 +29,7 @@ defmodule Transformers.DateTime do
         {:ok, payload}
 
       {:error, reason} ->
-        {:error, reason}
+        {:error, "DateTime Transformation Error: #{inspect(reason)}"}
 
       nil_payload ->
         {:ok, nil_payload}

@@ -19,7 +19,7 @@ defmodule Transformers.Subtract do
       {:ok, payload |> Map.put(target_field, difference)}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Subtraction Transformation Error: #{inspect(reason)}"}
     end
   end
 

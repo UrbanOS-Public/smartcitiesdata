@@ -60,7 +60,8 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"minuend" => "Missing or empty field"}
+      assert reason ==
+               "Subtraction Transformation Error: %{\"minuend\" => \"Missing or empty field\"}"
     end
 
     test "if subtrahends is not specified, return error" do
@@ -75,7 +76,8 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"subtrahends" => "Missing or empty field"}
+      assert reason ==
+               "Subtraction Transformation Error: %{\"subtrahends\" => \"Missing or empty field\"}"
     end
 
     test "if subtrahends is an empty array, return error" do
@@ -91,7 +93,8 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"subtrahends" => "Missing or empty field"}
+      assert reason ==
+               "Subtraction Transformation Error: %{\"subtrahends\" => \"Missing or empty field\"}"
     end
 
     test "if targetField is not specified, return error" do
@@ -106,7 +109,8 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"targetField" => "Missing or empty field"}
+      assert reason ==
+               "Subtraction Transformation Error: %{\"targetField\" => \"Missing or empty field\"}"
     end
 
     test "if specified subtrahend is not on payload, return error" do
@@ -123,7 +127,7 @@ defmodule Transformers.SubtractTest do
       {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason ==
-               "A given value target cannot be parsed to integer or float, nor is it in the following payload: %{\"not_target\" => 1}}"
+               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
     end
 
     test "if specified minuend is not on payload, return error" do
@@ -139,7 +143,7 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == "Missing field in payload: minuend"
+      assert reason == "Subtraction Transformation Error: \"Missing field in payload: minuend\""
     end
 
     test "if specified subtrahend is not a number, return error" do
@@ -157,7 +161,7 @@ defmodule Transformers.SubtractTest do
       {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason ==
-               "A given value target cannot be parsed to integer or float, nor is it in the following payload: %{\"some_field\" => 0, \"target\" => \"target\"}}"
+               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
     end
 
     test "performs transformation as normal when condition evaluates to true" do
@@ -231,7 +235,8 @@ defmodule Transformers.SubtractTest do
 
       {:error, reason} = Subtract.transform(payload, parameters)
 
-      assert reason == %{"subtrahends" => "Missing or empty child field"}
+      assert reason ==
+               "Subtraction Transformation Error: %{\"subtrahends\" => \"Missing or empty child field\"}"
     end
 
     test "subtracts from all values in list" do
