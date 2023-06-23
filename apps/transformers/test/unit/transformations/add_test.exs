@@ -83,7 +83,7 @@ defmodule Transformers.AddTest do
       {:error, reason} = Add.transform(payload, parameters)
 
       assert reason ==
-               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
+               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "if specified addend is not a number, return error" do
@@ -100,7 +100,7 @@ defmodule Transformers.AddTest do
       {:error, reason} = Add.transform(payload, parameters)
 
       assert reason ==
-               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
+               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "sets target field to addend when given single addend" do

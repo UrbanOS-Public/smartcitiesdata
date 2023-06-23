@@ -127,7 +127,7 @@ defmodule Transformers.SubtractTest do
       {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason ==
-               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
+               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "if specified minuend is not on payload, return error" do
@@ -161,7 +161,7 @@ defmodule Transformers.SubtractTest do
       {:error, reason} = Subtract.transform(payload, parameters)
 
       assert reason ==
-               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float, nor is it in the payload\""
+               "Subtraction Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "performs transformation as normal when condition evaluates to true" do

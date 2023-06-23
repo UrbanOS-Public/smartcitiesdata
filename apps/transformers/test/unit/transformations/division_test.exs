@@ -126,7 +126,7 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Division.transform(message_payload, params)
 
       assert reason ==
-               "Division Transformation Error: \"A given value not_valid cannot be parsed to integer or float, nor is it in the payload\""
+               "Division Transformation Error: \"A given value not_valid cannot be parsed to integer or float\""
     end
 
     test "returns an error if a field in the divisor doesnt exist" do
@@ -141,7 +141,7 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Division.transform(message_payload, params)
 
       assert reason ==
-               "Division Transformation Error: \"A given value not_valid cannot be parsed to integer or float, nor is it in the payload\""
+               "Division Transformation Error: \"A given value not_valid cannot be parsed to integer or float\""
     end
 
     test "returns an error if a field in the dividend is not a number" do
@@ -156,7 +156,7 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Division.transform(message_payload, params)
 
       assert reason ==
-               "Division Transformation Error: \"A given value invalid cannot be parsed to integer or float, nor is it in the payload\""
+               "Division Transformation Error: \"A given value invalid cannot be parsed to integer or float\""
     end
 
     test "returns an error if a field in the divisor is not a number" do
@@ -171,7 +171,7 @@ defmodule Transformers.DivisionTest do
       {:error, reason} = Division.transform(message_payload, params)
 
       assert reason ==
-               "Division Transformation Error: \"A given value invalid cannot be parsed to integer or float, nor is it in the payload\""
+               "Division Transformation Error: \"A given value invalid cannot be parsed to integer or float\""
     end
 
     test "returns an error if the divisor is 0" do
