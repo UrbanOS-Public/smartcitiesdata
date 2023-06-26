@@ -22,7 +22,7 @@ defmodule Transformers.Multiplication do
       {:ok, payload |> Map.put(target_field_name, D.to_float(product))}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Multiplication Transformation Error: #{inspect(reason)}"}
     end
   end
 

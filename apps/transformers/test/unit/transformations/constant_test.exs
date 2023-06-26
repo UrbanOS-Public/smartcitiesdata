@@ -189,7 +189,8 @@ defmodule Transformers.ConstantTest do
 
       {:error, result} = Constant.transform(payload, parameters)
 
-      assert result == %{"targetField" => "Missing or empty child field"}
+      assert result ==
+               "Constant Transformation Error: %{\"targetField\" => \"Missing or empty child field\"}"
     end
   end
 end

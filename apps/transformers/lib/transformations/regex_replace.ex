@@ -23,7 +23,7 @@ defmodule Transformers.RegexReplace do
       {:ok, transformed_payload}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Regex Replace Transformation Error: #{inspect(reason)}"}
     end
   end
 

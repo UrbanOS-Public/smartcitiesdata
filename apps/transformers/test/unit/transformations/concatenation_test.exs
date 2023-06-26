@@ -21,7 +21,7 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == %{"#{parameter}" => "#{message}"}
+      assert reason == "Concatenation Transformation Error: %{\"#{parameter}\" => \"#{message}\"}"
 
       where(
         parameter: ["sourceFields", "separator", "targetField"],
@@ -42,7 +42,8 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == "Missing field in payload: [middle_initial, last_name]"
+      assert reason ==
+               "Concatenation Transformation Error: \"Missing field in payload: [middle_initial, last_name]\""
     end
 
     test "return error if source fields not a list" do
@@ -59,7 +60,8 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == "Expected list but received single value: sourceFields"
+      assert reason ==
+               "Concatenation Transformation Error: \"Expected list but received single value: sourceFields\""
     end
 
     test "concatenate string fields into new field" do
@@ -193,7 +195,8 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, result} = Concatenation.transform(payload, parameters)
 
-      assert result == "Could not convert all source fields into strings"
+      assert result ==
+               "Concatenation Transformation Error: \"Could not convert all source fields into strings\""
     end
 
     test "performs transform as normal when condition evaluates to true" do
@@ -264,7 +267,8 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == %{"sourceFields" => "Missing or empty child field"}
+      assert reason ==
+               "Concatenation Transformation Error: %{\"sourceFields\" => \"Missing or empty child field\"}"
     end
 
     test "if target end with a period, return error" do
@@ -281,10 +285,8 @@ defmodule Transformers.ConcatenationTest do
 
       {:error, reason} = Concatenation.transform(payload, parameters)
 
-      assert reason == %{
-               "sourceFields" => "Missing or empty child field",
-               "targetField" => "Missing or empty child field"
-             }
+      assert reason ==
+               "Concatenation Transformation Error: %{\"sourceFields\" => \"Missing or empty child field\", \"targetField\" => \"Missing or empty child field\"}"
     end
   end
 

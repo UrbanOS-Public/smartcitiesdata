@@ -169,7 +169,8 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.transform(%{}, params)
 
-      assert reason == %{"#{parameter}" => "Missing or empty field"}
+      assert reason ==
+               "DateTime Transformation Error: %{\"#{parameter}\" => \"Missing or empty field\"}"
 
       where(parameter: ["sourceField", "sourceFormat", "targetField", "targetFormat"])
     end
@@ -188,7 +189,7 @@ defmodule Transformers.DateTimeTest do
 
       {:error, reason} = Transformers.DateTime.transform(message_payload, params)
 
-      assert reason == "Missing field in payload: missing"
+      assert reason == "DateTime Transformation Error: \"Missing field in payload: missing\""
     end
 
     test "returns error when sourceFormat doesn't match sourceField value" do
@@ -207,7 +208,7 @@ defmodule Transformers.DateTimeTest do
       {:error, reason} = Transformers.DateTime.transform(message_payload, params)
 
       assert reason ==
-               "Unable to parse datetime from \"#{sourceField}\" in format \"#{sourceFormat}\": Expected `full month name` at line 1, column 1."
+               "DateTime Transformation Error: \"Unable to parse datetime from \\\"date1\\\" in format \\\"{Mfull}\\\": Expected `full month name` at line 1, column 1.\""
     end
 
     test "returns error when date in payload does not match expected source format" do
@@ -223,7 +224,7 @@ defmodule Transformers.DateTimeTest do
       {:error, reason} = Transformers.DateTime.transform(message_payload, params)
 
       assert reason ==
-               "Unable to parse datetime from \"date1\" in format \"{YYYY}-{0M}-{D} {h24}:{m}\": Expected `2 digit month` at line 1, column 4."
+               "DateTime Transformation Error: \"Unable to parse datetime from \\\"date1\\\" in format \\\"{YYYY}-{0M}-{D} {h24}:{m}\\\": Expected `2 digit month` at line 1, column 4.\""
     end
 
     test "returns error when epoch is incorrect" do
@@ -239,7 +240,7 @@ defmodule Transformers.DateTimeTest do
       {:error, reason} = Transformers.DateTime.transform(message_payload, params)
 
       assert reason ==
-               "Unable to parse datetime from \"date1\" in format \"{s-epoch}\": %RuntimeError{message: \"Could not parse given value: epoch into a float\"}"
+               "DateTime Transformation Error: \"Unable to parse datetime from \\\"date1\\\" in format \\\"{s-epoch}\\\": %RuntimeError{message: \\\"Could not parse given value: epoch into a float\\\"}\""
     end
 
     test "performs transform as normal when condition evaluates to true" do

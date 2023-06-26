@@ -28,7 +28,10 @@ defmodule Transformers.RegexExtract do
         end
       rescue
         error ->
-          {:error, "Failure to parse regex: #{inspect(regex)}"}
+          {:error,
+           "Regex Extract Transformation Error: Failure to parse REGEX: #{inspect(regex)} from VALUE: #{
+             inspect(value)
+           } of SOURCE_FIELD: #{inspect(source_field)}"}
       end
     else
       {:ok, false} ->

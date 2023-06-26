@@ -17,7 +17,7 @@ defmodule Transformers.Remove do
       {:ok, transformed_payload}
     else
       {:ok, false} -> {:ok, payload}
-      {:error, reason} -> {:error, reason}
+      {:error, reason} -> {:error, "Remove Transformation Error: #{inspect(reason)}"}
     end
   end
 

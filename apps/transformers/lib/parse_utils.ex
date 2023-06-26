@@ -51,10 +51,7 @@ defmodule Transformers.ParseUtils do
         {:ok, list}
 
       true ->
-        {:error,
-         "A given value #{value} cannot be parsed to integer or float, nor is it in the following payload: #{
-           inspect(payload)
-         }}"}
+        {:error, "A given value #{value} cannot be parsed to integer or float"}
     end
   end
 

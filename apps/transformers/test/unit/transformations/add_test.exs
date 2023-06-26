@@ -35,7 +35,8 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{"addends" => "Missing or empty field"}
+      assert reason ==
+               "Addition Transformation Error: %{\"addends\" => \"Missing or empty field\"}"
     end
 
     test "if addends is an empty array, return error" do
@@ -50,7 +51,8 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{"addends" => "Missing or empty field"}
+      assert reason ==
+               "Addition Transformation Error: %{\"addends\" => \"Missing or empty field\"}"
     end
 
     test "if targetField is not specified, return error" do
@@ -64,7 +66,8 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{"targetField" => "Missing or empty field"}
+      assert reason ==
+               "Addition Transformation Error: %{\"targetField\" => \"Missing or empty field\"}"
     end
 
     test "if specified addend is not on payload, return error" do
@@ -80,7 +83,7 @@ defmodule Transformers.AddTest do
       {:error, reason} = Add.transform(payload, parameters)
 
       assert reason ==
-               "A given value target cannot be parsed to integer or float, nor is it in the following payload: %{\"some_field\" => 0}}"
+               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "if specified addend is not a number, return error" do
@@ -97,7 +100,7 @@ defmodule Transformers.AddTest do
       {:error, reason} = Add.transform(payload, parameters)
 
       assert reason ==
-               "A given value target cannot be parsed to integer or float, nor is it in the following payload: %{\"some_field\" => 0, \"target\" => \"target\"}}"
+               "Addition Transformation Error: \"A given value target cannot be parsed to integer or float\""
     end
 
     test "sets target field to addend when given single addend" do
@@ -171,7 +174,8 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{"addends" => "Missing or empty child field"}
+      assert reason ==
+               "Addition Transformation Error: %{\"addends\" => \"Missing or empty child field\"}"
     end
 
     test "if target end with a period, return error" do
@@ -188,10 +192,8 @@ defmodule Transformers.AddTest do
 
       {:error, reason} = Add.transform(payload, parameters)
 
-      assert reason == %{
-               "addends" => "Missing or empty child field",
-               "targetField" => "Missing or empty child field"
-             }
+      assert reason ==
+               "Addition Transformation Error: %{\"addends\" => \"Missing or empty child field\", \"targetField\" => \"Missing or empty child field\"}"
     end
 
     test "should get into list values" do
