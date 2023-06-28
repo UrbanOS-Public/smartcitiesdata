@@ -33,6 +33,7 @@ defmodule Valkyrie.MixProject do
 
   defp deps do
     [
+      {:assertions, "~> 0.14", only: [:test, :integration]},
       {:brook, "== 0.4.9"},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test]},
