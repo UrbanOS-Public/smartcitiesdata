@@ -90,11 +90,14 @@ defmodule Valkyrie.Broadway do
           error: :failed_schema_validation,
           reason: inspect(reason)
         )
-        
+
         decoded_message_data = Jason.decode!(message_data.value)
         ingestion_id = decoded_message_data["ingestion_id"]
         payload = decoded_message_data["payload"]
-        Logger.error("ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}")
+
+        Logger.error(
+          "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}"
+        )
 
         Message.failed(message, reason)
 
@@ -104,7 +107,10 @@ defmodule Valkyrie.Broadway do
         decoded_message_data = Jason.decode!(message_data.value)
         ingestion_id = decoded_message_data["ingestion_id"]
         payload = decoded_message_data["payload"]
-        Logger.error("ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}")
+
+        Logger.error(
+          "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}"
+        )
 
         Message.failed(message, reason)
     end
