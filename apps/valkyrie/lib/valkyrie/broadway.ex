@@ -82,18 +82,18 @@ defmodule Valkyrie.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:failed_schema_validation, reason} ->
+        decoded_message_data = Jason.decode!(message_data.value)
+        ingestion_id = decoded_message_data["ingestion_id"]
+        payload = decoded_message_data["payload"]
+
         DeadLetter.process(
           [dataset.id],
-          "Unknown",
+          ingestion_id,
           message_data.value,
           @app_name,
           error: :failed_schema_validation,
           reason: inspect(reason)
         )
-
-        decoded_message_data = Jason.decode!(message_data.value)
-        ingestion_id = decoded_message_data["ingestion_id"]
-        payload = decoded_message_data["payload"]
 
         Logger.error(
           "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}"
@@ -102,11 +102,11 @@ defmodule Valkyrie.Broadway do
         Message.failed(message, reason)
 
       {:error, reason} ->
-        DeadLetter.process([dataset.id], "Unknown", message_data.value, @app_name, reason: inspect(reason))
-
         decoded_message_data = Jason.decode!(message_data.value)
         ingestion_id = decoded_message_data["ingestion_id"]
         payload = decoded_message_data["payload"]
+
+        DeadLetter.process([dataset.id], ingestion_id, message_data.value, @app_name, reason: inspect(reason))
 
         Logger.error(
           "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}"
