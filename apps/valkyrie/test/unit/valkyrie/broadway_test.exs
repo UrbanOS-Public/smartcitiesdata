@@ -113,7 +113,7 @@ defmodule Valkyrie.BroadwayTest do
   test "should yeet message when it fails to parse properly", %{broadway: broadway} do
     allow SmartCity.Data.new(any()), return: {:error, :something_went_badly}
 
-    kafka_message = %{value: :message}
+    kafka_message = %{value: Jason.encode!(%{payload: %{}, ingestion_id: ""})}
 
     Broadway.test_batch(broadway, [kafka_message])
 
