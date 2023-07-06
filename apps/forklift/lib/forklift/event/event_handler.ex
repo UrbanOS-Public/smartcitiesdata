@@ -62,13 +62,19 @@ defmodule Forklift.Event.EventHandler do
 
     Forklift.Datasets.update(data)
 
-    [
-      table: data.technical.systemName,
-      schema: data.technical.schema,
-      json_partitions: ["_extraction_start_time", "_ingestion_id"],
-      main_partitions: ["_ingestion_id"]
-    ]
-    |> Forklift.DataWriter.init()
+    init_result = Forklift.DataWriter.init(
+      [
+        table: data.technical.systemName,
+        schema: data.technical.schema,
+        json_partitions: ["_extraction_start_time", "_ingestion_id"],
+        main_partitions: ["_ingestion_id"]
+      ]
+    )
+
+    case init_result do
+      :ok -> Brook.Event.send(@instance_name, "table:created", :forklift, data) # use SmartCity.Event value
+      {:error, reason} -> raise reason
+    end
 
     :discard
   rescue

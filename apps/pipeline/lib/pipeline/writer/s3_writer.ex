@@ -34,6 +34,7 @@ defmodule Pipeline.Writer.S3Writer do
     with {:ok, orc_table_name} <- create_table("ORC", options |> Keyword.merge(partitions: main_partitions)),
          {:ok, _json_table_name} <- create_table("JSON", options |> Keyword.merge(partitions: json_partitions)) do
       Logger.info("Created #{orc_table_name} table")
+      IO.inspect("s3_writer???")
       :ok
     else
       {error, {:ok, statement}} ->
