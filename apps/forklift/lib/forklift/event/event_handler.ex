@@ -16,7 +16,8 @@ defmodule Forklift.Event.EventHandler do
       dataset_delete: 0,
       data_extract_end: 0,
       ingestion_delete: 0,
-      ingestion_update: 0
+      ingestion_update: 0,
+      table_created: 0
     ]
 
   import Brook.ViewState
@@ -61,14 +62,27 @@ defmodule Forklift.Event.EventHandler do
     |> add_event_count(author, data.id)
 
     Forklift.Datasets.update(data)
+    init_result = Forklift.DataWriter.init(
+      [
+        table: data.technical.systemName,
+        schema: data.technical.schema,
+        json_partitions: ["_extraction_start_time", "_ingestion_id"],
+        main_partitions: ["_ingestion_id"]
+      ]
+    )
 
-    [
-      table: data.technical.systemName,
-      schema: data.technical.schema,
-      json_partitions: ["_extraction_start_time", "_ingestion_id"],
-      main_partitions: ["_ingestion_id"]
-    ]
-    |> Forklift.DataWriter.init()
+    event_data = %{
+      title: "Table Created",
+      timestamp: DateTime.utc_now(),
+      source: "Forklift",
+      description: "Successfully created initial table",
+      dataset_id: data.id
+    }
+
+    case init_result do
+      :ok -> Brook.Event.send(@instance_name, "table:created", :forklift, event_data) # TODO: use SmartCity.Event value
+      {:error, reason} -> raise reason
+    end
 
     :discard
   rescue

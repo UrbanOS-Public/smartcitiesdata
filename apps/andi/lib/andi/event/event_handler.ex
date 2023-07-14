@@ -18,10 +18,11 @@ defmodule Andi.Event.EventHandler do
       dataset_harvest_end: 0,
       user_login: 0,
       ingestion_update: 0,
-      ingestion_delete: 0
+      ingestion_delete: 0,
+      table_created: 0
     ]
 
-  alias SmartCity.{Dataset, Organization, Ingestion}
+  alias SmartCity.{Dataset, Organization, Ingestion, EventLog}
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
 
@@ -33,6 +34,7 @@ defmodule Andi.Event.EventHandler do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Ingestions
   alias Andi.Services.IngestionStore
+  alias Andi.Services.EventLogStore
 
   @instance_name Andi.instance_name()
 
@@ -54,6 +56,22 @@ defmodule Andi.Event.EventHandler do
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
       DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{type: "table:created", data: data, author: author}) do # TODO: replace with SmartCity event
+    Logger.info("Dataset: #{data.dataset_id} - Received table_created event from #{author}")
+
+    "table:created" # TODO: replace with SmartCity event
+    |> add_event_count(author, data.dataset_id)
+
+    EventLogStore.update(data)
+    # TODO: do we need an input schema/changeset update here?
+
+  rescue
+    error ->
+      Logger.error("Dataset ID: #{data.dataset_id}; Failed to write event to event log table: #{inspect(error)}")
+      DeadLetter.process([data.dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
