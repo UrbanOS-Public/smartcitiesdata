@@ -44,6 +44,7 @@ defmodule Reaper.FullTest do
   @csv_file_name "random_stuff.csv"
   @xml_file_name "xml_sample.xml"
   @json_file_name_subpath "json_subpath.json"
+  @large_data_name "larger_than_1MB.json"
 
   @host to_charlist(System.get_env("HOST"))
   @sftp %{host: @host, port: 2222, user: 'sftp_user', password: 'sftp_password'}
@@ -63,6 +64,7 @@ defmodule Reaper.FullTest do
     |> TestUtils.bypass_file(@csv_file_name)
     |> TestUtils.bypass_file(@xml_file_name)
     |> TestUtils.bypass_file(@json_file_name_subpath)
+    |> TestUtils.bypass_file(@large_data_name)
 
     eventually(fn ->
       {type, result} = get("http://localhost:#{bypass.port}/#{@csv_file_name}")
@@ -75,6 +77,48 @@ defmodule Reaper.FullTest do
   setup do
     Redix.command(@redix, ["FLUSHALL"])
     :ok
+  end
+
+  describe "Dataset that is larger than 1 MB" do
+    test "it can process data", %{bypass: bypass} do
+
+      ingestion =
+        TDG.create_ingestion(%{
+          id: Faker.UUID.v4(),
+          targetDatasets: ["not-real"],
+          cadence: "once",
+          sourceFormat: "json",
+          schema: [
+            %{name: "name"},
+          ],
+          topLevelSelector: nil,
+          extractSteps: [
+            %{
+              assigns: %{},
+              context: %{
+                action: "GET",
+                body: "",
+                headers: [],
+                protocol: nil,
+                queryParams: [],
+                url: "http://localhost:#{bypass.port}/#{@large_data_name}"
+              },
+              type: "http"
+            }
+          ]
+        })
+
+      Brook.Event.send(@instance_name, ingestion_update(), :reaper, ingestion)
+
+      topic = "#{output_topic_prefix()}-#{ingestion.id}"
+
+      eventually(fn ->
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
+        last_one = List.last(results)
+
+        assert 1 == last_one
+      end)
+    end
   end
 
   describe "pre-existing ingestion" do
