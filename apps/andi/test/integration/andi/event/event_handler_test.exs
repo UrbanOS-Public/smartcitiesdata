@@ -8,6 +8,7 @@ defmodule Andi.Event.EventHandlerTest do
   import SmartCity.Event
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
+  alias SmartCity.EventLog
   alias Andi.Schemas.User
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.InputSchemas.Organization
@@ -598,6 +599,35 @@ defmodule Andi.Event.EventHandlerTest do
           end)
 
         assert length(failed_messages) == 1
+      end)
+    end
+  end
+
+  describe "#{table_created()}" do
+    test "The event log is persisted to the postgres table" do
+      my_time = DateTime.to_iso8601(DateTime.utc_now())
+
+      event_log = %SmartCity.EventLog{
+        title: "someTitle",
+        timestamp: my_time,
+        description: "someStuff",
+        source: "fromATest",
+        dataset_id: UUID.uuid4(),
+        ingestion_id: UUID.uuid4()
+      }
+
+      Brook.Event.send(@instance_name, table_created(), __MODULE__, event_log)
+
+      {:ok, event_log_datetime, _} = DateTime.from_iso8601(event_log.timestamp)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+      eventually(fn ->
+        [persisted_event_log | tail] = Andi.InputSchemas.EventLogs.get_all_for_dataset_id(event_log.dataset_id)
+        assert persisted_event_log.dataset_id == event_log.dataset_id
+        assert persisted_event_log.ingestion_id == event_log.ingestion_id
+        assert persisted_event_log.title == event_log.title
+        assert persisted_event_log.timestamp == expected_timestamp
+        assert persisted_event_log.source == event_log.source
+        assert persisted_event_log.description == event_log.description
       end)
     end
   end

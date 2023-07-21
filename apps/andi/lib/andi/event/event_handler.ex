@@ -33,8 +33,8 @@ defmodule Andi.Event.EventHandler do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.EventLogs
   alias Andi.Services.IngestionStore
-  alias Andi.Services.EventLogStore
 
   @instance_name Andi.instance_name()
 
@@ -59,19 +59,20 @@ defmodule Andi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: "table:created", data: data, author: author}) do # TODO: replace with SmartCity event
-    Logger.info("Dataset: #{data.dataset_id} - Received table_created event from #{author}")
+  def handle_event(%Brook.Event{type: table_created(), data: %SmartCity.EventLog{} = event_log, author: author}) do
+    Logger.info("Dataset: #{event_log.dataset_id} - Received table_created event from #{author}")
 
-    "table:created" # TODO: replace with SmartCity event
-    |> add_event_count(author, data.dataset_id)
+    table_created()
+    |> add_event_count(author, event_log.dataset_id)
 
-    EventLogStore.update(data)
-    # TODO: do we need an input schema/changeset update here?
+    EventLogs.update(event_log)
+
+    :ok
 
   rescue
     error ->
-      Logger.error("Dataset ID: #{data.dataset_id}; Failed to write event to event log table: #{inspect(error)}")
-      DeadLetter.process([data.dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      Logger.error("Dataset ID: #{event_log.dataset_id}; Failed to write event to event log table: #{inspect(error)}")
+      DeadLetter.process([event_log.dataset_id], nil, event_log, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
