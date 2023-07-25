@@ -78,9 +78,10 @@ defmodule Forklift.Event.EventHandler do
       description: "Successfully created initial table",
       dataset_id: data.id
     }
+    IO.inspect("hey")
 
     case init_result do
-      :ok -> Brook.Event.send(@instance_name, "table:created", :forklift, event_data) # TODO: use SmartCity.Event value
+      :ok -> Brook.Event.send(@instance_name, table_created(), :forklift, event_data)
       {:error, reason} -> raise reason
     end
 

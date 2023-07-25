@@ -20,7 +20,7 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
 
     event_log = Andi.InputSchemas.EventLogs.get_all_for_dataset_id(dataset.id)
       |> IO.inspect(label: "RYAN - Event Log")
-
+    IO
     {:ok,
      assign(socket,
        visibility: "collapsed",

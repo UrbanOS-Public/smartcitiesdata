@@ -61,7 +61,7 @@ defmodule Andi.Event.EventHandler do
 
   def handle_event(%Brook.Event{type: table_created(), data: %SmartCity.EventLog{} = event_log, author: author}) do
     Logger.info("Dataset: #{event_log.dataset_id} - Received table_created event from #{author}")
-
+    IO.inspect("received event")
     table_created()
     |> add_event_count(author, event_log.dataset_id)
 
