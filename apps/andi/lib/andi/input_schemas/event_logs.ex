@@ -30,7 +30,9 @@ defmodule Andi.InputSchemas.EventLogs do
 
   def update(%SmartCity.EventLog{} = event_log) do
     EventLog.changeset(event_log)
+    |> IO.inspect(label: "changeset")
     |> Repo.insert_or_update()
+    |> IO.inspect(label: "insert")
   end
 
   def delete(%EventLog{} = event_log) do

@@ -71,14 +71,13 @@ defmodule Forklift.Event.EventHandler do
       ]
     )
 
-    event_data = %{
+    event_data = %SmartCity.EventLog{
       title: "Table Created",
-      timestamp: DateTime.utc_now(),
+      timestamp: DateTime.utc_now() |> DateTime.to_string(),
       source: "Forklift",
       description: "Successfully created initial table",
       dataset_id: data.id
     }
-    IO.inspect("hey")
 
     case init_result do
       :ok -> Brook.Event.send(@instance_name, table_created(), :forklift, event_data)
