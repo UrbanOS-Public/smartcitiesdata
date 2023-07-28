@@ -697,9 +697,9 @@ defmodule AndiWeb.EditLiveViewTest do
         })
         |> Map.put(:submission_status, :published)
 
-        {:ok, _} = Datasets.update(published_dataset)
+      {:ok, _} = Datasets.update(published_dataset)
 
-        [published_dataset: published_dataset]
+      [published_dataset: published_dataset]
     end
 
     test "Event Log Section exists", %{
@@ -722,9 +722,6 @@ defmodule AndiWeb.EditLiveViewTest do
       conn: conn,
       published_dataset: published_dataset
     } do
-
-      
-
       assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
       assert Enum.empty?(find_elements(html, ".event_element"))
     end

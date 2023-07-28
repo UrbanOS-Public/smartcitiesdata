@@ -37,8 +37,7 @@ defmodule Andi.InputSchemas.EventLog do
   ]
 
   def changeset(%SmartCity.EventLog{} = changes) do
-    changes_as_map =
-      StructTools.to_map(changes)
+    changes_as_map = StructTools.to_map(changes)
 
     changeset(%__MODULE__{}, changes_as_map)
   end

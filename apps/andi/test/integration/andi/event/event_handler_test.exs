@@ -620,6 +620,7 @@ defmodule Andi.Event.EventHandlerTest do
 
       {:ok, event_log_datetime, _} = DateTime.from_iso8601(event_log.timestamp)
       expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+
       eventually(fn ->
         [persisted_event_log | tail] = Andi.InputSchemas.EventLogs.get_all_for_dataset_id(event_log.dataset_id)
         assert persisted_event_log.dataset_id == event_log.dataset_id

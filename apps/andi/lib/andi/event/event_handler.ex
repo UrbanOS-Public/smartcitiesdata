@@ -68,7 +68,6 @@ defmodule Andi.Event.EventHandler do
     EventLogs.update(event_log)
 
     :ok
-
   rescue
     error ->
       Logger.error("Dataset ID: #{event_log.dataset_id}; Failed to write event to event log table: #{inspect(error)}")
