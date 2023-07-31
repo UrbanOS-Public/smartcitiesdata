@@ -62,14 +62,14 @@ defmodule Forklift.Event.EventHandler do
     |> add_event_count(author, data.id)
 
     Forklift.Datasets.update(data)
-    init_result = Forklift.DataWriter.init(
-      [
+
+    init_result =
+      Forklift.DataWriter.init(
         table: data.technical.systemName,
         schema: data.technical.schema,
         json_partitions: ["_extraction_start_time", "_ingestion_id"],
         main_partitions: ["_ingestion_id"]
-      ]
-    )
+      )
 
     event_data = %SmartCity.EventLog{
       title: "Table Created",
