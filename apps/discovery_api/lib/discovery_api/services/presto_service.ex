@@ -7,8 +7,10 @@ defmodule DiscoveryApi.Services.PrestoService do
   ]
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
+    sql_statement = "select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}"
+
     session
-    |> Prestige.query!("select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.query!(sql_statement)
     |> Prestige.Result.as_maps()
     |> map_prestige_results_to_schema(schema)
   end
@@ -212,7 +214,11 @@ defmodule DiscoveryApi.Services.PrestoService do
       false ->
         Enum.map(schema, fn col ->
           case_sensitive_name = Map.get(col, :name)
-          "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
+          sql_column_name = String.downcase(case_sensitive_name)
+          formatted_sql_column_name = String.replace(sql_column_name, "-", "_")
+          display_name = "\"#{case_sensitive_name}\""
+
+          "#{formatted_sql_column_name} as #{display_name}"
         end)
         |> Enum.join(", ")
     end

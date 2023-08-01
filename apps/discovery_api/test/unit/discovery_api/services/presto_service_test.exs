@@ -35,6 +35,35 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     assert list_of_maps == result
   end
 
+  test "preview should convert all hyphens to underscores to match table creation logic and sql constraints" do
+    dataset = "some_test_dataset"
+
+    schema = [
+      %{name: "some_thing"},
+      %{name: "other-thing"},
+      %{name: "some-thing-else"}
+    ]
+
+    list_of_maps = [
+      %{"id" => Faker.UUID.v4(), name: "some_thing"},
+      %{"id" => Faker.UUID.v4(), name: "other-thing"},
+      %{"id" => Faker.UUID.v4(), name: "some-thing-else"}
+    ]
+
+    allow(
+      Prestige.query!(
+        :connection,
+        "select some_thing as \"some_thing\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
+      ),
+      return: :result
+    )
+
+    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+
+    result = PrestoService.preview(:connection, dataset, schema)
+    assert list_of_maps == result
+  end
+
   test "preview should query presto for given table with nested data and map case based on schema" do
     dataset = "nested_dataset"
 
