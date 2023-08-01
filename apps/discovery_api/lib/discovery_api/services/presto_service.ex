@@ -7,7 +7,6 @@ defmodule DiscoveryApi.Services.PrestoService do
   ]
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
-
     sql_statement = "select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}"
 
     session

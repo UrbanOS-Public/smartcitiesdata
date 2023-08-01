@@ -50,7 +50,11 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       %{"id" => Faker.UUID.v4(), name: "some-thing-else"}
     ]
 
-    allow(Prestige.query!(:connection, "select some_thing as \"some_thing\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"),
+    allow(
+      Prestige.query!(
+        :connection,
+        "select some_thing as \"some_thing\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
+      ),
       return: :result
     )
 
