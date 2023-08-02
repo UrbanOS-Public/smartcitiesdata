@@ -447,11 +447,12 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
         }
       ]
 
-      schema = config([
-        %{name: "some-id", type: "integer"},
-        %{name: "some_other-name", type: "string"},
-        %{name: "pay_load", type: "json"}
-      ])
+      schema =
+        config([
+          %{name: "some-id", type: "integer"},
+          %{name: "some_other-name", type: "string"},
+          %{name: "pay_load", type: "json"}
+        ])
 
       result = Statement.insert(schema, data)
 
