@@ -3,6 +3,7 @@ defmodule Forklift.Event.EventHandler do
   use Brook.Event.Handler
   alias SmartCity.Dataset
   alias SmartCity.Ingestion
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   require Logger
 
   import SmartCity.Event,
@@ -63,27 +64,28 @@ defmodule Forklift.Event.EventHandler do
 
     Forklift.Datasets.update(data)
 
-    init_result =
-      Forklift.DataWriter.init(
-        table: data.technical.systemName,
-        schema: data.technical.schema,
-        json_partitions: ["_extraction_start_time", "_ingestion_id"],
-        main_partitions: ["_ingestion_id"]
-      )
+    if !PrestigeHelper.table_exists?(data.technical.systemName) do
+      init_result =
+        Forklift.DataWriter.init(
+          table: data.technical.systemName,
+          schema: data.technical.schema,
+          json_partitions: ["_extraction_start_time", "_ingestion_id"],
+          main_partitions: ["_ingestion_id"]
+        )
 
-    event_data = %SmartCity.EventLog{
-      title: "Table Created",
-      timestamp: DateTime.utc_now() |> DateTime.to_string(),
-      source: "Forklift",
-      description: "Successfully created initial table",
-      dataset_id: data.id
-    }
+      event_data = %SmartCity.EventLog{
+        title: "Table Created",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Forklift",
+        description: "Successfully created initial table",
+        dataset_id: data.id
+      }
 
-    case init_result do
-      :ok -> Brook.Event.send(@instance_name, table_created(), :forklift, event_data)
-      {:error, reason} -> raise reason
+      case init_result do
+        :ok -> Brook.Event.send(@instance_name, table_created(), :forklift, event_data)
+        {:error, reason} -> raise reason
+      end
     end
-
     :discard
   rescue
     error ->
