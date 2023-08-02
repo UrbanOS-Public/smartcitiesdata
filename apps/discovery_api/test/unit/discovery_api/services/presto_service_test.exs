@@ -39,21 +39,52 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     dataset = "some_test_dataset"
 
     schema = [
-      %{name: "some_thing"},
+      %{
+        name: "nested-hyphen",
+        subSchema: [
+          %{
+            name: "inner-hyphen"
+          },
+          %{
+            name: "another_inner-hyphen"
+          }
+        ]
+      },
       %{name: "other-thing"},
       %{name: "some-thing-else"}
     ]
 
+    # List Of Maps is what comes back from Presto, which will always be underscores
     list_of_maps = [
-      %{"id" => Faker.UUID.v4(), name: "some_thing"},
-      %{"id" => Faker.UUID.v4(), name: "other-thing"},
-      %{"id" => Faker.UUID.v4(), name: "some-thing-else"}
+      %{
+        "nested_hyphen" => %{"inner_hyphen" => 1, "another_inner_hyphen" => 2},
+        "other_thing" => "some value",
+        "some_thing_else" => "another value"
+      },
+      %{
+        "nested_hyphen" => %{"inner_hyphen" => 2, "another_inner_hyphen" => 3},
+        "other_thing" => "next value",
+        "some_thing_else" => "next next value"
+      }
+    ]
+
+    expected = [
+      %{
+        "nested-hyphen" => %{"inner-hyphen" => 1, "another_inner-hyphen" => 2},
+        "other-thing" => "some value",
+        "some-thing-else" => "another value"
+      },
+      %{
+        "nested-hyphen" => %{"inner-hyphen" => 2, "another_inner-hyphen" => 3},
+        "other-thing" => "next value",
+        "some-thing-else" => "next next value"
+      }
     ]
 
     allow(
       Prestige.query!(
         :connection,
-        "select some_thing as \"some_thing\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
+        "select nested_hyphen as \"nested-hyphen\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
       ),
       return: :result
     )
@@ -61,7 +92,7 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     expect(Prestige.Result.as_maps(:result), return: list_of_maps)
 
     result = PrestoService.preview(:connection, dataset, schema)
-    assert list_of_maps == result
+    assert expected == result
   end
 
   test "preview should query presto for given table with nested data and map case based on schema" do
