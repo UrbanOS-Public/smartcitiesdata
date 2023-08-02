@@ -438,6 +438,29 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
       assert result == expected_result
     end
 
+    test "replaces dashes in col names to underscores" do
+      data = [
+        %{
+          "some-id" => 1,
+          "some_other-name" => "Fred",
+          "pay_load" => "{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin's\"}}"
+        }
+      ]
+
+      schema = config([
+        %{name: "some-id", type: "integer"},
+        %{name: "some_other-name", type: "string"},
+        %{name: "pay_load", type: "json"}
+      ])
+
+      result = Statement.insert(schema, data)
+
+      expected_result =
+        ~s|insert into "rivers" ("some_id","some_other_name","pay_load") values row(1,'Fred','{\"parent\":{\"children\":[[-35.123,123.456]],\"id\":\"daID\", \"name\": \"Chiggin''s\"}}')|
+
+      assert result == expected_result
+    end
+
     test "treats empty string as varchar" do
       data = [%{"id" => 1, "name" => "Fred", "payload" => ""}]
 
