@@ -60,30 +60,31 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
           </button>
         </div>
       </div>
+      <div class="form-section">
+        <div class="component-edit-section--<%= @visibility %>">
+          <div class="event_log_table">
+            <table class="datasets-table" title="Event Log">
+              <thead>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "timestamp", "unsorted") %>" phx-click="order-by" phx-value-field="timestamp">Timestamp</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "source", "unsorted") %>" phx-click="order-by" phx-value-field="source">Source</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "title", "unsorted") %>" phx-click="order-by" phx-value-field="title">Title</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "dataset_id", "unsorted") %>" phx-click="order-by" phx-value-field="dataset_id">Dataset ID</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "ingestion_id", "unsorted") %>" phx-click="order-by" phx-value-field="ingestion_id">Ingestion ID</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "description", "unsorted") %>" phx-click="order-by" phx-value-field="description">Description</th>
+              </thead>
 
-      <div class="component-edit-section--<%= @visibility %>">
-        <div class="event_log_table">
-          <table class="datasets-table" title="Event Log">
-            <thead>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "timestamp", "unsorted") %>" phx-click="order-by" phx-value-field="timestamp">Timestamp</th>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "source", "unsorted") %>" phx-click="order-by" phx-value-field="source">Source</th>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "title", "unsorted") %>" phx-click="order-by" phx-value-field="title">Title</th>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "dataset_id", "unsorted") %>" phx-click="order-by" phx-value-field="dataset_id">Dataset ID</th>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "ingestion_id", "unsorted") %>" phx-click="order-by" phx-value-field="ingestion_id">Ingestion ID</th>
-              <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "description", "unsorted") %>" phx-click="order-by" phx-value-field="description">Description</th>
-            </thead>
-
-            <%= for event <- @event_log do %>
-              <tr class="datasets-table__tr">
-                <td class="datasets-table__cell datasets-table__cell"><%= event["timestamp"] %></td>
-                <td class="datasets-table__cell datasets-table__cell--break"><%= event["source"] %></td>
-                <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= event["title"] %></td>
-                <td class="datasets-table__cell datasets-table__cell"><%= event["dataset_id"] %></td>
-                <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= event["ingestion_id"] %></td>
-                <td class="datasets-table__cell datasets-table__cell--break"><%= event["description"] %></td>
-              </tr>
-            <% end %>
-          </table>
+              <%= for event <- @event_log do %>
+                <tr class="datasets-table__tr">
+                  <td class="datasets-table__cell datasets-table__cell"><%= event["timestamp"] %></td>
+                  <td class="datasets-table__cell datasets-table__cell--break"><%= event["source"] %></td>
+                  <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= event["title"] %></td>
+                  <td class="datasets-table__cell datasets-table__cell"><%= event["dataset_id"] %></td>
+                  <td class="datasets-table__cell datasets-table__cell--break datasets-table__data-title-cell"><%= event["ingestion_id"] %></td>
+                  <td class="datasets-table__cell datasets-table__cell--break"><%= event["description"] %></td>
+                </tr>
+              <% end %>
+            </table>
+          </div>
         </div>
       </div>
     </div>
