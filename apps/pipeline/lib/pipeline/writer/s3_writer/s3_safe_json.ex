@@ -6,12 +6,12 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJson do
 
   defp format_columns(columns, row) do
     Enum.map(columns, fn %{name: name} = column ->
-      data =
-        row
-        |> Map.get(to_string(name))
+      sql_safe_column_name = String.replace(to_string(name), "-", "_")
+
+      data = Map.get(row, sql_safe_column_name, Map.get(row, name))
         |> format_data(column)
 
-      {name, data}
+      {sql_safe_column_name, data}
     end)
     |> Enum.into(%{})
   end

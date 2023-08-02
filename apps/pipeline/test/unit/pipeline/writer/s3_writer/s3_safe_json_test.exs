@@ -122,5 +122,29 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJsonTest do
 
       assert result == expected_data
     end
+
+    test "handles converting from json hyphen data into sql safe safe underscored data" do
+      data = %{
+        "some-hyphen" => "aValue",
+        "nested-hyphen" => %{"inner-hyphen" => 1, "other-inner_hyphen" => 2}
+      }
+
+      expected_data = %{
+        "some_hyphen" => "aValue",
+        "nested_hyphen" => %{"inner_hyphen" => 1, "other_inner_hyphen" => 2}
+      }
+
+      schema = [
+        %{name: "some-hyphen", type: "string"},
+        %{name: "nested-hyphen", type: "map", subSchema: [
+            %{name: "inner-hyphen", type: "integer"},
+            %{name: "other-inner_hyphen", type: "integer"},
+          ]},
+      ]
+
+      result = S3SafeJson.build(data, schema)
+
+      assert result == expected_data
+    end
   end
 end

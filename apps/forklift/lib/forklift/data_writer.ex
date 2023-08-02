@@ -147,6 +147,7 @@ defmodule Forklift.DataWriter do
       ingestion_status =
         IngestionProgress.new_messages(Enum.count(data), ingestion_id, dataset.id, extraction_start_time)
 
+
       if ingestion_status == :ingestion_complete do
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
       end
