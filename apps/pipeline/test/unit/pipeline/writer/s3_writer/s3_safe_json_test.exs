@@ -136,10 +136,14 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJsonTest do
 
       schema = [
         %{name: "some-hyphen", type: "string"},
-        %{name: "nested-hyphen", type: "map", subSchema: [
+        %{
+          name: "nested-hyphen",
+          type: "map",
+          subSchema: [
             %{name: "inner-hyphen", type: "integer"},
-            %{name: "other-inner_hyphen", type: "integer"},
-          ]},
+            %{name: "other-inner_hyphen", type: "integer"}
+          ]
+        }
       ]
 
       result = S3SafeJson.build(data, schema)

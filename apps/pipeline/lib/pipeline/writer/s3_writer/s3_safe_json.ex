@@ -8,7 +8,8 @@ defmodule Pipeline.Writer.S3Writer.S3SafeJson do
     Enum.map(columns, fn %{name: name} = column ->
       sql_safe_column_name = String.replace(to_string(name), "-", "_")
 
-      data = Map.get(row, sql_safe_column_name, Map.get(row, name))
+      data =
+        Map.get(row, sql_safe_column_name, Map.get(row, name))
         |> format_data(column)
 
       {sql_safe_column_name, data}

@@ -47,21 +47,38 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
           },
           %{
             name: "another_inner-hyphen"
-          },
-        ]},
+          }
+        ]
+      },
       %{name: "other-thing"},
       %{name: "some-thing-else"}
     ]
 
-    #List Of Maps is what comes back from Presto, which will always be underscores
+    # List Of Maps is what comes back from Presto, which will always be underscores
     list_of_maps = [
-      %{"nested_hyphen" => %{"inner_hyphen" => 1, "another_inner_hyphen" => 2}, "other_thing" => "some value", "some_thing_else" => "another value"},
-      %{"nested_hyphen" => %{"inner_hyphen" => 2, "another_inner_hyphen" => 3}, "other_thing" => "next value", "some_thing_else" => "next next value"},
+      %{
+        "nested_hyphen" => %{"inner_hyphen" => 1, "another_inner_hyphen" => 2},
+        "other_thing" => "some value",
+        "some_thing_else" => "another value"
+      },
+      %{
+        "nested_hyphen" => %{"inner_hyphen" => 2, "another_inner_hyphen" => 3},
+        "other_thing" => "next value",
+        "some_thing_else" => "next next value"
+      }
     ]
 
     expected = [
-      %{"nested-hyphen" => %{"inner-hyphen" => 1, "another_inner-hyphen" => 2}, "other-thing" => "some value", "some-thing-else" => "another value"},
-      %{"nested-hyphen" => %{"inner-hyphen" => 2, "another_inner-hyphen" => 3}, "other-thing" => "next value", "some-thing-else" => "next next value"},
+      %{
+        "nested-hyphen" => %{"inner-hyphen" => 1, "another_inner-hyphen" => 2},
+        "other-thing" => "some value",
+        "some-thing-else" => "another value"
+      },
+      %{
+        "nested-hyphen" => %{"inner-hyphen" => 2, "another_inner-hyphen" => 3},
+        "other-thing" => "next value",
+        "some-thing-else" => "next next value"
+      }
     ]
 
     allow(

@@ -8,6 +8,7 @@ defmodule DiscoveryApi.Services.PrestoService do
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
     sql_statement = "select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}"
+
     session
     |> Prestige.query!(sql_statement)
     |> Prestige.Result.as_maps()
@@ -278,11 +279,12 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   defp get_schema_part(schema, key) do
-    schema_part_for_key = Enum.filter(schema, fn s ->
-      sql_safe_schema = String.replace(Map.get(s, :name), "-", "_")
-      sql_safe_key = String.replace(key, "-", "_")
-      String.downcase(sql_safe_schema) == String.downcase(sql_safe_key)
-    end)
+    schema_part_for_key =
+      Enum.filter(schema, fn s ->
+        sql_safe_schema = String.replace(Map.get(s, :name), "-", "_")
+        sql_safe_key = String.replace(key, "-", "_")
+        String.downcase(sql_safe_schema) == String.downcase(sql_safe_key)
+      end)
 
     if is_list(schema_part_for_key) and length(schema_part_for_key) > 0 do
       hd(schema_part_for_key)
