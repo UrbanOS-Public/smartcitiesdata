@@ -603,7 +603,7 @@ defmodule Andi.Event.EventHandlerTest do
     end
   end
 
-  describe "#{table_created()}" do
+  describe "#{event_log_published()}" do
     test "The event log is persisted to the postgres table" do
       my_time = DateTime.to_iso8601(DateTime.utc_now())
 
@@ -616,7 +616,7 @@ defmodule Andi.Event.EventHandlerTest do
         ingestion_id: UUID.uuid4()
       }
 
-      Brook.Event.send(@instance_name, table_created(), __MODULE__, event_log)
+      Brook.Event.send(@instance_name, event_log_published(), __MODULE__, event_log)
 
       {:ok, event_log_datetime, _} = DateTime.from_iso8601(event_log.timestamp)
       expected_timestamp = DateTime.truncate(event_log_datetime, :second)

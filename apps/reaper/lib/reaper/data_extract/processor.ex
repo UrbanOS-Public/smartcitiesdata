@@ -6,7 +6,7 @@ defmodule Reaper.DataExtract.Processor do
 
   import SmartCity.Event,
     only: [
-      data_retrieved: 0
+      event_log_published: 0
     ]
 
   require Logger
@@ -63,7 +63,7 @@ defmodule Reaper.DataExtract.Processor do
         dataset_id: dataset_id
       }
 
-      Brook.Event.send(@instance_name, data_retrieved(), :reaper, event_data)
+      Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
     Persistence.remove_last_processed_index(ingestion.id)
