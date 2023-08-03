@@ -6,7 +6,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   import SmartCity.Event,
     only: [
-      data_retrieved: 0
+      event_log_published: 0
     ]
 
   alias Reaper.{Cache, Persistence}
@@ -444,8 +444,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         dataset_id: second_dataset_id
       }
 
-      first_event_log = capture(1, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
-      second_event_log = capture(2, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
+      first_event_log = capture(1, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+      second_event_log = capture(2, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
 
       assert first_event_log == first_expected_event_log
       assert second_event_log == second_expected_event_log
@@ -494,11 +494,11 @@ defmodule Reaper.DataExtract.ProcessorTest do
       end
 
       assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
-        capture(1, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
+        capture(1, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
       end
 
       assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
-        capture(2, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
+        capture(2, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
       end
     end
   end
