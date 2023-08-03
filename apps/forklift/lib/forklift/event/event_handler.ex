@@ -86,6 +86,7 @@ defmodule Forklift.Event.EventHandler do
         {:error, reason} -> raise reason
       end
     end
+
     :discard
   rescue
     error ->
