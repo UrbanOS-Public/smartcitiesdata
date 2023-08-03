@@ -5,9 +5,9 @@ defmodule Reaper.DataExtract.Processor do
   use Properties, otp_app: :reaper
 
   import SmartCity.Event,
-  only: [
-    data_retrieved: 0
-  ]
+    only: [
+      data_retrieved: 0
+    ]
 
   require Logger
 
@@ -17,7 +17,6 @@ defmodule Reaper.DataExtract.Processor do
     UrlBuilder,
     Persistence
   }
-
 
   alias Reaper.DataExtract.{ValidationStage, SchemaStage, LoadStage, ExtractStep}
   alias Reaper.Cache.MsgCountCache

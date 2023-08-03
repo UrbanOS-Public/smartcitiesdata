@@ -3,10 +3,11 @@ defmodule Reaper.DataExtract.ProcessorTest do
   use Placebo
   import ExUnit.CaptureLog
   import Mox
+
   import SmartCity.Event,
-  only: [
-    data_retrieved: 0
-  ]
+    only: [
+      data_retrieved: 0
+    ]
 
   alias Reaper.{Cache, Persistence}
   alias Reaper.DataExtract.Processor
@@ -386,7 +387,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert expected == get_payloads(messages)
     end
 
-    test "process/2 should send an EventLog for each dataset once data has successfully been writtent to the data pipeline", %{bypass: bypass, sourceUrl: sourceUrl} do
+    test "process/2 should send an EventLog for each dataset once data has successfully been writtent to the data pipeline",
+         %{bypass: bypass, sourceUrl: sourceUrl} do
       ingestion_id = "prov-ingestion-1234"
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
@@ -404,7 +406,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
           targetDatasets: [first_dataset_id, second_dataset_id],
           cadence: 100,
           schema: [
-            %{name: "a", type: "string"},
+            %{name: "a", type: "string"}
           ],
           extractSteps: [
             %{
@@ -467,7 +469,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
           targetDatasets: [first_dataset_id, second_dataset_id],
           cadence: 100,
           schema: [
-            %{name: "a", type: "string"},
+            %{name: "a", type: "string"}
           ],
           extractSteps: [
             %{
@@ -487,9 +489,17 @@ defmodule Reaper.DataExtract.ProcessorTest do
           allow_duplicates: false
         })
 
-      assert_raise RuntimeError, ~r/.+Fake Error.+/, fn -> Processor.process(provisioned_ingestion, DateTime.utc_now()) end
-      assert_raise RuntimeError, "Unable to find capture: :not_found", fn -> capture(1, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4) end
-      assert_raise RuntimeError, "Unable to find capture: :not_found", fn -> capture(2, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4) end
+      assert_raise RuntimeError, ~r/.+Fake Error.+/, fn ->
+        Processor.process(provisioned_ingestion, DateTime.utc_now())
+      end
+
+      assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
+        capture(1, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
+      end
+
+      assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
+        capture(2, Brook.Event.send(any(), data_retrieved(), :reaper, any()), 4)
+      end
     end
   end
 
