@@ -31,10 +31,12 @@ services:
       DATABASE_NAME: metastore
   postgres:
     image: smartcitiesdata/postgres-testo:0.9.12
+    platform: linux/amd64
     ports:
       - "5455:5432"
   ecto-postgres:
     image: postgres:14.4-alpine
+    platform: linux/amd64
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
