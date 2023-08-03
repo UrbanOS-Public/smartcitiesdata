@@ -5,7 +5,14 @@ defmodule Forklift.Event.EventHandlingTest do
   import Mox
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, dataset_update: 0, data_ingest_end: 0, dataset_delete: 0, data_extract_end: 0]
+    only: [
+      data_ingest_start: 0,
+      dataset_update: 0,
+      data_ingest_end: 0,
+      dataset_delete: 0,
+      data_extract_end: 0,
+      event_log_published: 0
+    ]
 
   alias Forklift.Event.EventHandler
   alias SmartCity.TestDataGenerator, as: TDG
@@ -41,7 +48,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
     test "sends dataset_update event when table creation succeeds" do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      expect(Brook.Event.send(@instance_name, "table:created", :forklift, any()), return: :ok)
+      expect(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), return: :ok)
       allow(Forklift.DataWriter.init(any()), return: :ok)
 
       dataset = TDG.create_dataset(%{})
@@ -55,7 +62,7 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
       allow(Forklift.DataWriter.init(any()), return: :ok)
       allow(PrestigeHelper.table_exists?(any()), return: true)
-      allow(Brook.Event.send(@instance_name, "table:created", :forklift, any()), return: :ok)
+      allow(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), return: :ok)
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
@@ -63,7 +70,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
       Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
 
-      assert_called(Brook.Event.send(@instance_name, "table:created", :forklift, any()), times(0))
+      assert_called(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), times(0))
     end
 
     test "does not create table for non-ingestible dataset" do
