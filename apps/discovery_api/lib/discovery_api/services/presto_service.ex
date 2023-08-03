@@ -7,8 +7,10 @@ defmodule DiscoveryApi.Services.PrestoService do
   ]
 
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
+    sql_statement = "select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}"
+
     session
-    |> Prestige.query!("select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}")
+    |> Prestige.query!(sql_statement)
     |> Prestige.Result.as_maps()
     |> map_prestige_results_to_schema(schema)
   end
@@ -212,7 +214,11 @@ defmodule DiscoveryApi.Services.PrestoService do
       false ->
         Enum.map(schema, fn col ->
           case_sensitive_name = Map.get(col, :name)
-          "#{String.downcase(case_sensitive_name)} as \"#{case_sensitive_name}\""
+          sql_column_name = String.downcase(case_sensitive_name)
+          formatted_sql_column_name = String.replace(sql_column_name, "-", "_")
+          display_name = "\"#{case_sensitive_name}\""
+
+          "#{formatted_sql_column_name} as #{display_name}"
         end)
         |> Enum.join(", ")
     end
@@ -273,7 +279,12 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   defp get_schema_part(schema, key) do
-    schema_part_for_key = Enum.filter(schema, fn s -> String.downcase(Map.get(s, :name)) == String.downcase(key) end)
+    schema_part_for_key =
+      Enum.filter(schema, fn s ->
+        sql_safe_schema = String.replace(Map.get(s, :name), "-", "_")
+        sql_safe_key = String.replace(key, "-", "_")
+        String.downcase(sql_safe_schema) == String.downcase(sql_safe_key)
+      end)
 
     if is_list(schema_part_for_key) and length(schema_part_for_key) > 0 do
       hd(schema_part_for_key)
