@@ -9,6 +9,7 @@ defmodule Forklift.Event.EventHandlingTest do
 
   alias Forklift.Event.EventHandler
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
   @instance_name Forklift.instance_name()
 
@@ -36,6 +37,33 @@ defmodule Forklift.Event.EventHandlingTest do
                      schema: ^schema,
                      json_partitions: ["_extraction_start_time", "_ingestion_id"],
                      main_partitions: ["_ingestion_id"]
+    end
+
+    test "sends dataset_update event when table creation succeeds" do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      expect(Brook.Event.send(@instance_name, "table:created", :forklift, any()), return: :ok)
+      allow(Forklift.DataWriter.init(any()), return: :ok)
+
+      dataset = TDG.create_dataset(%{})
+      table_name = dataset.technical.systemName
+      schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
+
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+    end
+
+    test "does not send dataset_update event when table already exists" do
+      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      allow(Forklift.DataWriter.init(any()), return: :ok)
+      allow(PrestigeHelper.table_exists?(any()), return: true)
+      allow(Brook.Event.send(@instance_name, "table:created", :forklift, any()), return: :ok)
+
+      dataset = TDG.create_dataset(%{})
+      table_name = dataset.technical.systemName
+      schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
+
+      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+
+      assert_called(Brook.Event.send(@instance_name, "table:created", :forklift, any()), times(0))
     end
 
     test "does not create table for non-ingestible dataset" do
