@@ -18,7 +18,7 @@ defmodule Forklift.Event.EventHandler do
       data_extract_end: 0,
       ingestion_delete: 0,
       ingestion_update: 0,
-      table_created: 0
+      event_log_published: 0
     ]
 
   import Brook.ViewState
@@ -82,7 +82,7 @@ defmodule Forklift.Event.EventHandler do
       }
 
       case init_result do
-        :ok -> Brook.Event.send(@instance_name, table_created(), :forklift, event_data)
+        :ok -> Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
         {:error, reason} -> raise reason
       end
     end

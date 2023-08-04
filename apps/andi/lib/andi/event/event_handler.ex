@@ -19,7 +19,7 @@ defmodule Andi.Event.EventHandler do
       user_login: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      table_created: 0
+      event_log_published: 0
     ]
 
   alias SmartCity.{Dataset, Organization, Ingestion, EventLog}
@@ -59,10 +59,10 @@ defmodule Andi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: table_created(), data: %SmartCity.EventLog{} = event_log, author: author}) do
-    Logger.info("Dataset: #{event_log.dataset_id} - Received table_created event from #{author}")
-
-    table_created()
+  def handle_event(%Brook.Event{type: event_log_published(), data: %SmartCity.EventLog{} = event_log, author: author}) do
+    Logger.info("Dataset: #{event_log.dataset_id} - Received event_log_published event from #{author}")
+    IO.inspect(event_log, label: "event log")
+    event_log_published()
     |> add_event_count(author, event_log.dataset_id)
 
     EventLogs.update(event_log)
