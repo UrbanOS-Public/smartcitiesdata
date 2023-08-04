@@ -4,6 +4,11 @@ defmodule Reaper.DataExtract.Processor do
   """
   use Properties, otp_app: :reaper
 
+  import SmartCity.Event,
+    only: [
+      event_log_published: 0
+    ]
+
   require Logger
 
   alias Reaper.{
@@ -48,6 +53,18 @@ defmodule Reaper.DataExtract.Processor do
     GenStage.sync_subscribe(validation_stage, to: producer_stage, min_demand: @min_demand, max_demand: @max_demand)
 
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
+
+    Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
+      event_data = %SmartCity.EventLog{
+        title: "Data Retrieved",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Reaper",
+        description: "Successfully downloaded data and placed on data pipeline to begin processing.",
+        dataset_id: dataset_id
+      }
+
+      Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
+    end)
 
     Persistence.remove_last_processed_index(ingestion.id)
 
