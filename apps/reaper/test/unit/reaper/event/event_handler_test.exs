@@ -12,14 +12,12 @@ defmodule Reaper.Event.EventHandlerTest do
       data_extract_end: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      error_ingestion_update: 0,
-      event_log_published: 0
+      error_ingestion_update: 0
     ]
 
   import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.TestDataGenerator, as: TDG
   alias Reaper.Event.Handlers.IngestionDelete
-  alias Reaper.Collections.Extractions
 
   @instance_name Reaper.instance_name()
 
@@ -136,53 +134,6 @@ defmodule Reaper.Event.EventHandlerTest do
 
       refute_receive {:brook_event, %Brook.Event{type: "data:ingest:start", data: ^ingestion}},
                      1_000
-    end
-
-    test "sends event_log_published event when ingestion begins" do
-      ingestion = TDG.create_ingestion(%{id: "testId"})
-
-      allow(DateTime.utc_now(), return: ~U[2023-01-01 00:00:00Z])
-
-      event_data = %SmartCity.EventLog{
-        title: "Ingestion Started",
-        timestamp: "2023-01-01 00:00:00Z",
-        source: "Reaper",
-        description: "Ingestion has started",
-        ingestion_id: ingestion.id
-      }
-
-      allow(Extractions.is_enabled?(any()), return: true)
-      allow(Reaper.Horde.Supervisor.start_data_extract(any()), return: :ok)
-      allow(Extractions.should_send_data_ingest_start?(any()), return: true)
-      allow(Brook.Event.send(@instance_name, data_ingest_start(), :reaper, any()), return: :ok)
-
-      Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
-
-      assert_called(Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data), times(1))
-    end
-
-    test "should not send event_log_published event when extraction not enabled" do
-      ingestion = TDG.create_ingestion(%{id: "testId"})
-
-      allow(Extractions.is_enabled?("testId"), return: false)
-      allow(Brook.Event.send(@instance_name, data_ingest_start(), :reaper, any()), return: :ok)
-
-      Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
-
-      assert_called(Brook.Event.send(@instance_name, event_log_published(), :reaper, any()), times(0))
-    end
-
-    test "should not send event_log_published event for streaming data past the first event" do
-      ingestion = TDG.create_ingestion(%{id: "testId"})
-
-      allow(Extractions.is_enabled?(any()), return: true)
-      allow(Reaper.Horde.Supervisor.start_data_extract(any()), return: :ok)
-      allow(Extractions.should_send_data_ingest_start?(any()), return: false)
-      allow(Brook.Event.send(@instance_name, data_ingest_start(), :reaper, any()), return: :ok)
-
-      Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
-
-      assert_called(Brook.Event.send(@instance_name, event_log_published(), :reaper, any()), times(0))
     end
 
     test "should send #{data_extract_end()} when processor is completed" do
