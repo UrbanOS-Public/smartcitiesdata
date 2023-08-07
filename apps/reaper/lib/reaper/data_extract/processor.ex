@@ -75,6 +75,7 @@ defmodule Reaper.DataExtract.Processor do
         timestamp: DateTime.utc_now() |> DateTime.to_string(),
         source: "Reaper",
         description: "Successfully downloaded data and placed on data pipeline to begin processing.",
+        ingestion_id: unprovisioned_ingestion.id,
         dataset_id: dataset_id
       }
 

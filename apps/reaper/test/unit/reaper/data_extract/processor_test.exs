@@ -499,7 +499,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         timestamp: DateTime.utc_now() |> DateTime.to_string(),
         source: "Reaper",
         description: "Successfully downloaded data and placed on data pipeline to begin processing.",
-        dataset_id: first_dataset_id
+        dataset_id: first_dataset_id,
+        ingestion_id: ingestion_id
       }
 
       second_expected_event_log = %SmartCity.EventLog{
@@ -507,7 +508,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         timestamp: DateTime.utc_now() |> DateTime.to_string(),
         source: "Reaper",
         description: "Successfully downloaded data and placed on data pipeline to begin processing.",
-        dataset_id: second_dataset_id
+        dataset_id: second_dataset_id,
+        ingestion_id: ingestion_id
       }
 
       first_event_log = capture(3, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
