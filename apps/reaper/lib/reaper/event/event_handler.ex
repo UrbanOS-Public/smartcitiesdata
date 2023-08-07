@@ -10,7 +10,8 @@ defmodule Reaper.Event.EventHandler do
       data_extract_end: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      error_ingestion_update: 0
+      error_ingestion_update: 0,
+      event_log_published: 0
     ]
 
   alias Reaper.Collections.Extractions

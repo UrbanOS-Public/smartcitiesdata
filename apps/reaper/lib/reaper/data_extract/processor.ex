@@ -4,6 +4,11 @@ defmodule Reaper.DataExtract.Processor do
   """
   use Properties, otp_app: :reaper
 
+  import SmartCity.Event,
+    only: [
+      event_log_published: 0
+    ]
+
   require Logger
 
   alias Reaper.{
@@ -20,6 +25,8 @@ defmodule Reaper.DataExtract.Processor do
 
   @min_demand 500
   @max_demand 1_000
+
+  @instance_name Reaper.instance_name()
 
   @doc """
   Downloads, decodes, and sends data to a topic
@@ -38,6 +45,19 @@ defmodule Reaper.DataExtract.Processor do
     validate_destination(ingestion)
     validate_cache(ingestion)
 
+    Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
+      event_data = %SmartCity.EventLog{
+        title: "Ingestion Started",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Reaper",
+        description: "Ingestion has started",
+        ingestion_id: unprovisioned_ingestion.id,
+        dataset_id: dataset_id
+      }
+
+      Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
+    end)
+
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion)
@@ -48,6 +68,19 @@ defmodule Reaper.DataExtract.Processor do
     GenStage.sync_subscribe(validation_stage, to: producer_stage, min_demand: @min_demand, max_demand: @max_demand)
 
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
+
+    Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
+      event_data = %SmartCity.EventLog{
+        title: "Data Retrieved",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Reaper",
+        description: "Successfully downloaded data and placed on data pipeline to begin processing.",
+        ingestion_id: unprovisioned_ingestion.id,
+        dataset_id: dataset_id
+      }
+
+      Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
+    end)
 
     Persistence.remove_last_processed_index(ingestion.id)
 
