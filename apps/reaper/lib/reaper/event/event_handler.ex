@@ -76,16 +76,6 @@ defmodule Reaper.Event.EventHandler do
 
       if Extractions.should_send_data_ingest_start?(data) do
         Brook.Event.send(@instance_name, data_ingest_start(), :reaper, data)
-
-        event_data = %SmartCity.EventLog{
-          title: "Ingestion Started",
-          timestamp: DateTime.utc_now() |> DateTime.to_string(),
-          source: "Reaper",
-          description: "Ingestion has started",
-          ingestion_id: data.id
-        }
-
-        Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
       end
 
       Extractions.update_started_timestamp(data.id)

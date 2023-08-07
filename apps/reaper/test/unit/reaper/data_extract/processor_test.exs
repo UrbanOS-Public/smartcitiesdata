@@ -387,7 +387,73 @@ defmodule Reaper.DataExtract.ProcessorTest do
       assert expected == get_payloads(messages)
     end
 
-    test "process/2 should send an EventLog for each dataset once data has successfully been writtent to the data pipeline",
+    test "process/2 should send an EventLog for each dataset before the processor processes the ingestion",
+         %{bypass: bypass, sourceUrl: sourceUrl} do
+      ingestion_id = "prov-ingestion-1234"
+      first_dataset_id = Faker.UUID.v4()
+      second_dataset_id = Faker.UUID.v4()
+
+      allow Elsa.produce(any(), any(), any(), any()), return: :ok
+      allow Persistence.remove_last_processed_index(ingestion_id), return: :ok
+      allow Persistence.get_last_processed_index(ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(ingestion_id, any()), return: "OK"
+      allow DateTime.to_string(any()), return: "2023-08-03 16:31:47.899763Z"
+
+      provisioned_ingestion =
+        TDG.create_ingestion(%{
+          id: "prov-ingestion-1234",
+          sourceFormat: "csv",
+          targetDatasets: [first_dataset_id, second_dataset_id],
+          cadence: 100,
+          schema: [
+            %{name: "a", type: "string"}
+          ],
+          extractSteps: [
+            %{
+              assigns: %{},
+              context: %{
+                action: "GET",
+                body: "",
+                headers: [],
+                protocol: nil,
+                queryParams: [],
+                url: "http://localhost:#{bypass.port}/api/csv"
+              },
+              sequence: 13033,
+              type: "http"
+            }
+          ],
+          allow_duplicates: false
+        })
+
+      Processor.process(provisioned_ingestion, DateTime.utc_now())
+
+      first_expected_event_log = %SmartCity.EventLog{
+        title: "Ingestion Started",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Reaper",
+        description: "Ingestion has started",
+        ingestion_id: ingestion_id,
+        dataset_id: first_dataset_id
+      }
+
+      second_expected_event_log = %SmartCity.EventLog{
+        title: "Ingestion Started",
+        timestamp: DateTime.utc_now() |> DateTime.to_string(),
+        source: "Reaper",
+        description: "Ingestion has started",
+        ingestion_id: ingestion_id,
+        dataset_id: second_dataset_id
+      }
+
+      first_event_log = capture(1, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+      second_event_log = capture(2, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+
+      assert first_event_log == first_expected_event_log
+      assert second_event_log == second_expected_event_log
+    end
+
+    test "process/2 should send an EventLog for each dataset once data has successfully been written to the data pipeline",
          %{bypass: bypass, sourceUrl: sourceUrl} do
       ingestion_id = "prov-ingestion-1234"
       first_dataset_id = Faker.UUID.v4()
@@ -444,8 +510,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
         dataset_id: second_dataset_id
       }
 
-      first_event_log = capture(1, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
-      second_event_log = capture(2, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+      first_event_log = capture(3, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+      second_event_log = capture(4, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
 
       assert first_event_log == first_expected_event_log
       assert second_event_log == second_expected_event_log
@@ -494,11 +560,11 @@ defmodule Reaper.DataExtract.ProcessorTest do
       end
 
       assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
-        capture(1, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+        capture(3, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
       end
 
       assert_raise RuntimeError, "Unable to find capture: :not_found", fn ->
-        capture(2, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
+        capture(4, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
       end
     end
   end
