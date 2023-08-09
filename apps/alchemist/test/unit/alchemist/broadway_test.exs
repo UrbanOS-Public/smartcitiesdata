@@ -6,7 +6,14 @@ defmodule Alchemist.BroadwayTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
+  import Mox
+  import ExUnit.CaptureLog
   import SmartCity.TestHelper, only: [eventually: 1]
+
+  import SmartCity.Event,
+    only: [
+      event_log_published: 0
+    ]
 
   @ingestion_id "ingestion1"
   @dataset_id "ds1"
@@ -63,13 +70,15 @@ defmodule Alchemist.BroadwayTest do
           ]
         )
 
+      IO.inspect("after start")
+
       on_exit(fn ->
         ref = Process.monitor(broadway)
         Process.exit(broadway, :normal)
         assert_receive {:DOWN, ^ref, _, _, _}, 2_000
       end)
 
-      [broadway: broadway]
+      [broadway: broadway, ingestion: ingestion]
     end
 
     test "should run with nested lists", %{broadway: broadway} do
@@ -105,6 +114,51 @@ defmodule Alchemist.BroadwayTest do
       assert Map.get(payload, "first_letter") == "N"
       assert Map.get(payload, "string_list") == [["one", "two"], ["three", "four"]]
       assert Map.get(payload, "number_list") == [[1, 3], [5, 7]]
+    end
+
+    test "should send event log on successful transformation", %{broadway: broadway, ingestion: ingestion} do
+      dateTime = ~U[2023-01-01 00:00:00Z]
+      allow(DateTime.utc_now(), return: dateTime)
+
+      first_expected_event_log = %SmartCity.EventLog{
+        title: "Transformations Complete",
+        timestamp: dateTime |> DateTime.to_string(),
+        source: "Alchemist",
+        description: "All transformations have been completed.",
+        ingestion_id: ingestion.id,
+        dataset_id: @dataset_id
+      }
+
+      second_expected_event_log = %SmartCity.EventLog{
+        title: "Transformations Complete",
+        timestamp: dateTime |> DateTime.to_string(),
+        source: "Alchemist",
+        description: "All transformations have been completed.",
+        ingestion_id: ingestion.id,
+        dataset_id: @dataset_id
+      }
+
+      expect(Brook.Event.send(any(), event_log_published(), :alchemist, first_expected_event_log), return: :ok)
+      expect(Brook.Event.send(any(), event_log_published(), :alchemist, second_expected_event_log), return: :ok)
+
+      data =
+        TDG.create_data(
+          dataset_id: @dataset_id,
+          payload: %{
+            "phone" => "(555) 8675309",
+            "first_name" => "Nicole",
+            "string_list" => [["one", "two"], ["three", "four"]],
+            "number_list" => [[1, 3], [5, 7]]
+          }
+        )
+
+      kafka_message = %{value: Jason.encode!(data)}
+
+      Broadway.test_batch(broadway, [kafka_message])
+
+      assert_receive {:ack, _ref, messages, _}, 5_000
+
+      assert 1 == length(messages)
     end
 
     test "should run with nested, nested lists", %{broadway: broadway} do
