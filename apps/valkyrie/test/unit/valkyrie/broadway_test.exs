@@ -67,7 +67,14 @@ defmodule Valkyrie.BroadwayTest do
 
   test "should send event log on successful transformation", %{broadway: broadway} do
     ingestion_id = "testIngestionId"
-    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], ingestion_id: ingestion_id, payload: %{"name" => "johnny", "age" => "21"})
+
+    data =
+      TDG.create_data(
+        dataset_ids: [@dataset_id, @dataset_id2],
+        ingestion_id: ingestion_id,
+        payload: %{"name" => "johnny", "age" => "21"}
+      )
+
     kafka_message = %{value: Jason.encode!(data)}
 
     dateTime = ~U[2023-01-01 00:00:00Z]
