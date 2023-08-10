@@ -84,15 +84,7 @@ defmodule Valkyrie.Broadway do
       target_datasets = decoded_message_data["dataset_ids"]
 
       Enum.each(target_datasets, fn dataset_id ->
-        event_data = %SmartCity.EventLog{
-          title: "Validations Complete",
-          timestamp: DateTime.utc_now() |> DateTime.to_string(),
-          source: "Valkyrie",
-          description: "Validations have been completed.",
-          ingestion_id: ingestion_id,
-          dataset_id: dataset_id
-        }
-
+        event_data = create_event_log(dataset_id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :valkyrie, event_data)
       end)
 
@@ -155,5 +147,16 @@ defmodule Valkyrie.Broadway do
 
   defp create_timing(start_time) do
     Data.Timing.new("valkyrie", "timing", start_time, Data.Timing.current_time())
+  end
+
+  defp create_event_log(dataset_id, ingestion_id) do
+    %SmartCity.EventLog{
+      title: "Validations Complete",
+      timestamp: DateTime.utc_now() |> DateTime.to_string(),
+      source: "Valkyrie",
+      description: "Validations have been completed.",
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id
+    }
   end
 end
