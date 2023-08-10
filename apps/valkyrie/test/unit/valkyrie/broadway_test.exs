@@ -6,7 +6,7 @@ defmodule Valkyrie.BroadwayTest do
   alias SmartCity.Data
 
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0]
+  import SmartCity.Event, only: [data_standardization_end: 0, event_log_published: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @dataset_id "ds1"
@@ -51,6 +51,48 @@ defmodule Valkyrie.BroadwayTest do
   test "should return transformed data", %{broadway: broadway} do
     data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], payload: %{"name" => "johnny", "age" => "21"})
     kafka_message = %{value: Jason.encode!(data)}
+
+    Broadway.test_batch(broadway, [kafka_message])
+
+    assert_receive {:ack, _ref, messages, _}, 5_000
+
+    payloads =
+      messages
+      |> Enum.map(fn message -> Data.new(message.data.value) end)
+      |> Enum.map(fn {:ok, data} -> data end)
+      |> Enum.map(fn data -> data.payload end)
+
+    assert payloads == [%{"name" => "johnny", "age" => 21, "alias" => "johnny"}]
+  end
+
+  test "should send event log on successful transformation", %{broadway: broadway} do
+    ingestion_id = "testIngestionId"
+    data = TDG.create_data(dataset_ids: [@dataset_id, @dataset_id2], ingestion_id: ingestion_id, payload: %{"name" => "johnny", "age" => "21"})
+    kafka_message = %{value: Jason.encode!(data)}
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+    allow(DateTime.utc_now(), return: dateTime)
+
+    first_expected_event_log = %SmartCity.EventLog{
+      title: "Validations Complete",
+      timestamp: dateTime |> DateTime.to_string(),
+      source: "Valkyrie",
+      description: "Validations have been completed.",
+      ingestion_id: ingestion_id,
+      dataset_id: @dataset_id
+    }
+
+    second_expected_event_log = %SmartCity.EventLog{
+      title: "Validations Complete",
+      timestamp: dateTime |> DateTime.to_string(),
+      source: "Valkyrie",
+      description: "Validations have been completed.",
+      ingestion_id: ingestion_id,
+      dataset_id: @dataset_id2
+    }
+
+    expect(Brook.Event.send(any(), event_log_published(), :valkyrie, first_expected_event_log), return: :ok)
+    expect(Brook.Event.send(any(), event_log_published(), :valkyrie, second_expected_event_log), return: :ok)
 
     Broadway.test_batch(broadway, [kafka_message])
 
