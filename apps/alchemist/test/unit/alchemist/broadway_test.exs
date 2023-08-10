@@ -70,8 +70,6 @@ defmodule Alchemist.BroadwayTest do
           ]
         )
 
-      IO.inspect("after start")
-
       on_exit(fn ->
         ref = Process.monitor(broadway)
         Process.exit(broadway, :normal)
@@ -135,7 +133,7 @@ defmodule Alchemist.BroadwayTest do
         source: "Alchemist",
         description: "All transformations have been completed.",
         ingestion_id: ingestion.id,
-        dataset_id: @dataset_id
+        dataset_id: @dataset_id2
       }
 
       expect(Brook.Event.send(any(), event_log_published(), :alchemist, first_expected_event_log), return: :ok)
