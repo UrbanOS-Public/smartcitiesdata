@@ -6,6 +6,8 @@ defmodule Forklift.DataWriterTest do
   alias Forklift.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
   import Mox
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0]
 
   getter(:elsa_brokers, generic: true)
   getter(:input_topic_prefix, generic: true)
@@ -68,6 +70,95 @@ defmodule Forklift.DataWriterTest do
       dataset: expected_dataset,
       ingestion_id: "1234-abcd",
       extraction_start_time: 1_662_175_490
+    )
+  end
+
+  test "should not sent data write complete event log when data is not finished writing to the table" do
+    ingestion_status = :in_progress
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    fake_data = [TDG.create_data(%{}), end_of_data()]
+
+    ingestion_id = "testIngestionId"
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+
+    allow(DateTime.utc_now(), return: dateTime)
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
+      return: ingestion_status
+    )
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
+    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, any()), return: :ok)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    first_expected_event_log = %SmartCity.EventLog{
+      title: "Data Write Complete",
+      timestamp: dateTime |> DateTime.to_string(),
+      source: "Forklift",
+      description: "All data has been written to table.",
+      ingestion_id: ingestion_id,
+      dataset_id: dataset.id
+    }
+
+    assert_called(Brook.Event.send(any(), event_log_published(), :forklift, any()), times(0))
+
+    DataWriter.write(fake_data,
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
+    )
+  end
+
+  test "should sent data write complete event log when data is finished writing to the table" do
+    ingestion_status = :ingestion_complete
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    fake_data = [TDG.create_data(%{}), end_of_data()]
+
+    ingestion_id = "testIngestionId"
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+
+    allow(DateTime.utc_now(), return: dateTime)
+    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
+      return: ingestion_status
+    )
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    first_expected_event_log = %SmartCity.EventLog{
+      title: "Data Write Complete",
+      timestamp: dateTime |> DateTime.to_string(),
+      source: "Forklift",
+      description: "All data has been written to table.",
+      ingestion_id: ingestion_id,
+      dataset_id: dataset.id
+    }
+
+    expect(Brook.Event.send(any(), event_log_published(), :forklift, first_expected_event_log), return: :ok)
+
+    DataWriter.write(fake_data,
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
     )
   end
 
