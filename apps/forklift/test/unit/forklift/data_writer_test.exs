@@ -89,9 +89,11 @@ defmodule Forklift.DataWriterTest do
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
+
     allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
       return: ingestion_status
     )
+
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, any()), return: :ok)
@@ -134,9 +136,11 @@ defmodule Forklift.DataWriterTest do
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
+
     allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
       return: ingestion_status
     )
+
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
 
