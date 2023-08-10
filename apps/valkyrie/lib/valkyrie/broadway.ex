@@ -11,7 +11,7 @@ defmodule Valkyrie.Broadway do
   use Properties, otp_app: :valkyrie
 
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0]
+  import SmartCity.Event, only: [data_standardization_end: 0, event_log_published: 0]
 
   alias Broadway.Message
   alias SmartCity.Data
@@ -79,6 +79,23 @@ defmodule Valkyrie.Broadway do
          smart_city_data <- %{smart_city_data | payload: standardized_payload},
          smart_city_data <- add_timing(smart_city_data, start_time),
          {:ok, json_data} <- Jason.encode(smart_city_data) do
+      decoded_message_data = Jason.decode!(message_data.value)
+      ingestion_id = decoded_message_data["ingestion_id"]
+      target_datasets = decoded_message_data["dataset_ids"]
+
+      Enum.each(target_datasets, fn dataset_id ->
+        event_data = %SmartCity.EventLog{
+          title: "Validations Complete",
+          timestamp: DateTime.utc_now() |> DateTime.to_string(),
+          source: "Valkyrie",
+          description: "Validations have been completed.",
+          ingestion_id: ingestion_id,
+          dataset_id: dataset_id
+        }
+
+        Brook.Event.send(@instance_name, event_log_published(), :valkyrie, event_data)
+      end)
+
       %{message | data: %{message.data | value: json_data}}
     else
       {:failed_schema_validation, reason} ->
