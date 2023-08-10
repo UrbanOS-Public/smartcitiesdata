@@ -10,11 +10,17 @@ defmodule Alchemist.Broadway do
   use Broadway
   use Properties, otp_app: :alchemist
 
+  import SmartCity.Event,
+    only: [
+      event_log_published: 0
+    ]
+
   alias Broadway.Message
 
   require Logger
 
   @app_name "Alchemist"
+  @instance_name Alchemist.instance_name()
 
   getter(:processor_stages, generic: true, default: 1)
   getter(:batch_stages, generic: true, default: 1)
@@ -69,6 +75,19 @@ defmodule Alchemist.Broadway do
          {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
+      Enum.each(ingestion.targetDatasets, fn dataset_id ->
+        event_data = %SmartCity.EventLog{
+          title: "Transformations Complete",
+          timestamp: DateTime.utc_now() |> DateTime.to_string(),
+          source: "Alchemist",
+          description: "All transformations have been completed.",
+          ingestion_id: ingestion.id,
+          dataset_id: dataset_id
+        }
+
+        Brook.Event.send(@instance_name, event_log_published(), :alchemist, event_data)
+      end)
+
       %{message | data: %{message.data | value: json_data}}
     else
       {:error, reason} ->
