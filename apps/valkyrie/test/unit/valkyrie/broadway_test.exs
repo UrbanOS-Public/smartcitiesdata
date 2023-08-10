@@ -2,6 +2,7 @@ defmodule Valkyrie.BroadwayTest do
   use ExUnit.Case
   use Placebo
 
+
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
