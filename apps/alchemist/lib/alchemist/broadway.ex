@@ -76,15 +76,7 @@ defmodule Alchemist.Broadway do
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
       Enum.each(ingestion.targetDatasets, fn dataset_id ->
-        event_data = %SmartCity.EventLog{
-          title: "Transformations Complete",
-          timestamp: DateTime.utc_now() |> DateTime.to_string(),
-          source: "Alchemist",
-          description: "All transformations have been completed.",
-          ingestion_id: ingestion.id,
-          dataset_id: dataset_id
-        }
-
+        event_data = create_event_log_data(dataset_id, ingestion.id)
         Brook.Event.send(@instance_name, event_log_published(), :alchemist, event_data)
       end)
 
@@ -106,5 +98,16 @@ defmodule Alchemist.Broadway do
     data_messages = messages |> Enum.map(fn message -> message.data.value end)
     Enum.each(context.output_topics, fn topic -> Elsa.produce(context.producer, topic, data_messages, partition: 0) end)
     messages
+  end
+
+  defp create_event_log_data(dataset_id, ingestion_id) do
+    %SmartCity.EventLog{
+      title: "Transformations Complete",
+      timestamp: DateTime.utc_now() |> DateTime.to_string(),
+      source: "Alchemist",
+      description: "All transformations have been completed.",
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id
+    }
   end
 end

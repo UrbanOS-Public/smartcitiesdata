@@ -73,13 +73,7 @@ defmodule Forklift.Event.EventHandler do
           main_partitions: ["_ingestion_id"]
         )
 
-      event_data = %SmartCity.EventLog{
-        title: "Table Created",
-        timestamp: DateTime.utc_now() |> DateTime.to_string(),
-        source: "Forklift",
-        description: "Successfully created initial table",
-        dataset_id: data.id
-      }
+      event_data = create_event_log_data(data.id)
 
       case init_result do
         :ok -> Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
@@ -257,5 +251,15 @@ defmodule Forklift.Event.EventHandler do
       event_type: event_type
     ]
     |> TelemetryEvent.add_event_metrics([:events_handled])
+  end
+
+  defp create_event_log_data(dataset_id) do
+    %SmartCity.EventLog{
+      title: "Table Created",
+      timestamp: DateTime.utc_now() |> DateTime.to_string(),
+      source: "Forklift",
+      description: "Successfully created initial table",
+      dataset_id: dataset_id
+    }
   end
 end
