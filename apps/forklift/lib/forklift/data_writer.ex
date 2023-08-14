@@ -14,7 +14,7 @@ defmodule Forklift.DataWriter do
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0]
 
   @instance_name Forklift.instance_name()
 
@@ -71,6 +71,9 @@ defmodule Forklift.DataWriter do
           Enum.reverse(batch_data)
           |> do_write(dataset, ingestion_id, extraction_start_time)
 
+        event_data = create_event_log_data(dataset.id, ingestion_id)
+
+        Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
         Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset)
 
         results
@@ -226,5 +229,16 @@ defmodule Forklift.DataWriter do
       retry_count: retry_count(),
       retry_delay: retry_initial_delay()
     ]
+  end
+
+  defp create_event_log_data(dataset_id, ingestion_id) do
+    %SmartCity.EventLog{
+      title: "Data Write Complete",
+      timestamp: DateTime.utc_now() |> DateTime.to_string(),
+      source: "Forklift",
+      description: "All data has been written to table.",
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id
+    }
   end
 end
