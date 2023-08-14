@@ -97,21 +97,20 @@ defmodule Transformers.RegexReplaceTest do
              "Regex Replace Transformation Error: %{\"replacement\" => \"Not a string or list\"}"
   end
 
-  test "if source field is not a string, return error" do
+  test "if source field is not a string, convert to string" do
     payload = %{
       "something" => 123
     }
 
     parameters = %{
       "sourceField" => "something",
-      "regex" => "123",
+      "regex" => "(12)",
       "replacement" => "abc"
     }
 
-    {:error, reason} = RegexReplace.transform(payload, parameters)
+    {:ok, result} = RegexReplace.transform(payload, parameters)
 
-    assert reason ==
-             "Regex Replace Transformation Error: \"Value of field something is not a string: 123\""
+    assert result == %{"something" => "abc3"}
   end
 
   test "if no regex match, payload is unchanged" do
