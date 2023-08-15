@@ -65,6 +65,7 @@ defmodule Andi.Event.EventHandler do
     event_log_published()
     |> add_event_count(author, event_log.dataset_id)
 
+    EventLogs.delete_all_before_date(7, "day")
     EventLogs.update(event_log)
 
     :ok
