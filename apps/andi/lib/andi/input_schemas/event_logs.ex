@@ -29,12 +29,13 @@ defmodule Andi.InputSchemas.EventLogs do
   end
 
   def get_all_with_limit_for_dataset_id(dataset_id, limit) do
-    query = from(
-      eventlog in EventLog,
-      where: eventlog.dataset_id == ^dataset_id,
-      limit: ^limit,
-      order_by: [desc: eventlog.timestamp]
-    )
+    query =
+      from(
+        eventlog in EventLog,
+        where: eventlog.dataset_id == ^dataset_id,
+        limit: ^limit,
+        order_by: [desc: eventlog.timestamp]
+      )
 
     Repo.all(query)
   end
@@ -52,12 +53,13 @@ defmodule Andi.InputSchemas.EventLogs do
   end
 
   def delete_all_before_date(value, unit) do
-    query = from(
-      eventlog in EventLog,
-      where: eventlog.timestamp < ago(^value, ^unit)
-    )
+    query =
+      from(
+        eventlog in EventLog,
+        where: eventlog.timestamp < ago(^value, ^unit)
+      )
+
     Repo.all(query) |> IO.inspect(label: "query")
     Repo.delete_all(query)
   end
 end
-

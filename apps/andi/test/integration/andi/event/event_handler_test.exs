@@ -633,8 +633,15 @@ defmodule Andi.Event.EventHandlerTest do
     end
 
     test "Event Log Published event handler deletes records older than 7 days" do
-      old_time = DateTime.to_iso8601(DateTime.add(DateTime.utc_now(), -9
-      * 3600 * 24, :second))
+      old_time =
+        DateTime.to_iso8601(
+          DateTime.add(
+            DateTime.utc_now(),
+            -9 *
+              3600 * 24,
+            :second
+          )
+        )
 
       old_event_log = %SmartCity.EventLog{
         title: "someTitle",
@@ -657,6 +664,7 @@ defmodule Andi.Event.EventHandlerTest do
       expected_timestamp = DateTime.truncate(event_log_datetime, :second)
 
       Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
+
       eventually(fn ->
         all_datasets = Andi.InputSchemas.EventLogs.get_all()
         assert length(all_datasets) == 1
@@ -667,8 +675,15 @@ defmodule Andi.Event.EventHandlerTest do
     end
 
     test "Event Log Published event handler does not delete records from 7 days or newer" do
-      old_time = DateTime.to_iso8601(DateTime.add(DateTime.utc_now(), -7
-      * 3600 * 24, :second))
+      old_time =
+        DateTime.to_iso8601(
+          DateTime.add(
+            DateTime.utc_now(),
+            -7 *
+              3600 * 24,
+            :second
+          )
+        )
 
       old_event_log = %SmartCity.EventLog{
         title: "someTitle",
@@ -691,6 +706,7 @@ defmodule Andi.Event.EventHandlerTest do
       expected_timestamp = DateTime.truncate(event_log_datetime, :second)
 
       Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
+
       eventually(fn ->
         all_datasets = Andi.InputSchemas.EventLogs.get_all()
         assert length(all_datasets) == 1
@@ -698,7 +714,6 @@ defmodule Andi.Event.EventHandlerTest do
         assert persisted_event_log.dataset_id == new_event_log.dataset_id
         assert persisted_event_log.description == new_event_log.description
       end)
-
     end
   end
 end
