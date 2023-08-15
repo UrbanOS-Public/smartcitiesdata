@@ -59,7 +59,6 @@ defmodule Andi.InputSchemas.EventLogs do
         where: eventlog.timestamp < ago(^value, ^unit)
       )
 
-    Repo.all(query) |> IO.inspect(label: "query")
     Repo.delete_all(query)
   end
 end
