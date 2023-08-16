@@ -56,6 +56,10 @@ defmodule AndiWeb.EditLiveView do
         <div class="datasets-data-dictionary">
           <%= live_render(@socket, AndiWeb.EditLiveView.DataDictionaryForm, id: :data_dictionary_form_editor, session: %{"dataset" => @dataset, "is_curator" => @is_curator, "order" => "2"}) %>
         </div>
+
+        <div>
+          <%= live_render(@socket, AndiWeb.EditLiveView.EventLogForm, id: :event_log_form, session: %{"dataset" => @dataset, "is_curator" => @is_curator, "order" => "3"}) %>
+        </div>
       </form>
 
 

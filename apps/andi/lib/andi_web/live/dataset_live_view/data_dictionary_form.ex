@@ -61,7 +61,7 @@ defmodule AndiWeb.EditLiveView.DataDictionaryForm do
     published? = assigns.dataset.submission_status == :published
 
     ~L"""
-    <div id="data-dictionary-form" class="form-component form-end">
+    <div id="data-dictionary-form" class="form-component">
       <div class="component-header" phx-click="toggle-component-visibility" phx-value-component="data_dictionary_form">
         <div class="section-number">
           <div class="component-number component-number--<%= @validation_status %>"><%= @order %></div>

@@ -10,6 +10,7 @@ defmodule Pipeline.Writer.TableWriter.Statement.Insert do
       columns
       |> Enum.map(&Map.get(&1, :name))
       |> Enum.map(&to_string/1)
+      |> Enum.map(&hyphen_to_underscore/1)
       |> Enum.map(&~s|"#{&1}"|)
       |> Enum.join(",")
 
@@ -24,6 +25,10 @@ defmodule Pipeline.Writer.TableWriter.Statement.Insert do
     e ->
       Logger.error("Unhandled Statement Builder error: #{inspect(e)}")
       {:error, e}
+  end
+
+  defp hyphen_to_underscore(column_name) do
+    String.replace(column_name, "-", "_")
   end
 
   defp format_columns(columns, row) do

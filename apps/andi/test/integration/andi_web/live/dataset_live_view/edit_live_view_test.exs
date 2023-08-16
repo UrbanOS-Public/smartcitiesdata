@@ -679,4 +679,51 @@ defmodule AndiWeb.EditLiveViewTest do
       assert Enum.empty?(get_attributes(html, "#data_dictionary_field_editor__use-default", "disabled"))
     end
   end
+
+  describe "Event Log Section" do
+    setup do
+      published_dataset =
+        TDG.create_dataset(%{
+          technical: %{
+            schema: [
+              %{name: "my_list", type: "list", itemType: "boolean"},
+              %{name: "my_int", type: "integer"},
+              %{name: "my_string", type: "string"},
+              %{format: "{ISO:Extended:Z}", name: "my_date", type: "date"},
+              %{name: "my_float", type: "float"},
+              %{name: "my_boolean", type: "boolean"}
+            ]
+          }
+        })
+        |> Map.put(:submission_status, :published)
+
+      {:ok, _} = Datasets.update(published_dataset)
+
+      [published_dataset: published_dataset]
+    end
+
+    test "Event Log Section exists", %{
+      conn: conn,
+      published_dataset: published_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      refute Enum.empty?(find_elements(html, "#event_log"))
+    end
+
+    test "Event Log table has no rows when no events have been logged", %{
+      conn: conn,
+      published_dataset: published_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      assert Enum.empty?(find_elements(html, ".event_element"))
+    end
+
+    test "Event Log table has equal rows after events have been logged", %{
+      conn: conn,
+      published_dataset: published_dataset
+    } do
+      assert {:ok, view, html} = live(conn, @url_path <> published_dataset.id)
+      assert Enum.empty?(find_elements(html, ".event_element"))
+    end
+  end
 end
