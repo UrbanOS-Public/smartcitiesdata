@@ -19,13 +19,17 @@ defmodule Transformers.DateTime do
     with {:ok, true} <- Conditions.check(payload, parameters),
          {:ok, [source_field, source_format, target_field, target_format]} <-
            validate(parameters),
-         {:ok, payload_source_value} <- FieldFetcher.fetch_value(payload, source_field),
+         {:ok, payload_source_value} when payload_source_value != nil <-
+           FieldFetcher.fetch_value(payload, source_field),
          {:ok, source_datetime} <-
            string_to_datetime("#{payload_source_value}", source_format, source_field),
          {:ok, transformed_datetime} <- format_datetime(source_datetime, target_format) do
       {:ok, payload |> Map.put(target_field, transformed_datetime)}
     else
       {:ok, false} ->
+        {:ok, payload}
+
+      {:ok, nil} ->
         {:ok, payload}
 
       {:error, reason} ->

@@ -25,6 +25,21 @@ defmodule Transformers.RegexReplaceTest do
     where(parameter: ["sourceField", "regex", "replacement"])
   end
 
+  test "skips transformation when source field is nil" do
+    params = %{
+      "sourceField" => "status",
+      "targetField" => "vendor",
+      "replacement" => "replace",
+      "regex" => "^\\((\\d{3})\\)"
+    }
+
+    message_payload = %{"status" => nil, "vendor" => "vendorname"}
+
+    {:ok, transformed_payload} = Transformers.RegexReplace.transform(message_payload, params)
+
+    assert message_payload == transformed_payload
+  end
+
   data_test "returns error when #{parameter} ends in ." do
     payload = %{
       "something" => "abc"
