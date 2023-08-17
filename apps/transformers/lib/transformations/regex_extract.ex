@@ -18,7 +18,7 @@ defmodule Transformers.RegexExtract do
          {:ok, value} when value != nil <-
            FieldFetcher.fetch_value(payload, source_field) do
       try do
-        case Regex.run(regex, value, capture: :all_but_first) do
+        case Regex.run(regex, to_string(value), capture: :all_but_first) do
           nil ->
             transformed_payload = Map.put(payload, target_field, nil)
             {:ok, transformed_payload}
