@@ -25,7 +25,6 @@ defmodule Transformers.RegexReplaceTest do
     where(parameter: ["sourceField", "regex", "replacement"])
   end
 
-
   test "skips transformation when source field is nil" do
     params = %{
       "sourceField" => "status",

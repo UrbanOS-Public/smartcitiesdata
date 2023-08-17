@@ -20,12 +20,11 @@ defmodule Transformers.DateTimeTest do
     assert actual_transformed_field == "February 28, 2022 4:53 PM"
   end
 
-
   test "skips transformation when source field is nil" do
     params = %{
       "sourceField" => "date1",
       "targetField" => "date2",
-      "sourceFormat" =>  "{YYYY}-{M}-{D}",
+      "sourceFormat" => "{YYYY}-{M}-{D}",
       "targetFormat" => "{YYYY}-{M}-{D}"
     }
 
@@ -35,8 +34,6 @@ defmodule Transformers.DateTimeTest do
 
     assert message_payload == transformed_payload
   end
-
-
 
   test "parses time since epoch" do
     params = %{

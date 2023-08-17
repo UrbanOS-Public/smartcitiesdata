@@ -22,7 +22,6 @@ defmodule Transformers.Concatenation do
       {:ok, transformed}
     else
       {:ok, false} -> {:ok, payload}
-      
       {:error, reason} -> {:error, "Concatenation Transformation Error: #{inspect(reason)}"}
     end
   end
