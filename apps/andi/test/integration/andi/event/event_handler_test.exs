@@ -631,5 +631,89 @@ defmodule Andi.Event.EventHandlerTest do
         assert persisted_event_log.description == event_log.description
       end)
     end
+
+    test "Event Log Published event handler deletes records older than 7 days" do
+      old_time =
+        DateTime.to_iso8601(
+          DateTime.add(
+            DateTime.utc_now(),
+            -9 *
+              3600 * 24,
+            :second
+          )
+        )
+
+      old_event_log = %SmartCity.EventLog{
+        title: "someTitle",
+        timestamp: old_time,
+        description: "someStuff",
+        source: "fromATest",
+        dataset_id: UUID.uuid4(),
+        ingestion_id: UUID.uuid4()
+      }
+
+      Brook.Event.send(@instance_name, event_log_published(), __MODULE__, old_event_log)
+
+      eventually(fn ->
+        assert 1 == length(Andi.InputSchemas.EventLogs.get_all())
+      end)
+
+      new_event_log = %{old_event_log | timestamp: DateTime.to_iso8601(DateTime.utc_now()), description: "someOtherStuff"}
+
+      {:ok, event_log_datetime, _} = DateTime.from_iso8601(new_event_log.timestamp)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+
+      Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
+
+      eventually(fn ->
+        all_datasets = Andi.InputSchemas.EventLogs.get_all()
+        assert length(all_datasets) == 1
+        [persisted_event_log | tail] = all_datasets
+        assert persisted_event_log.dataset_id == new_event_log.dataset_id
+        assert persisted_event_log.description == new_event_log.description
+      end)
+    end
+
+    test "Event Log Published event handler does not delete records from 7 days or newer" do
+      old_time =
+        DateTime.to_iso8601(
+          DateTime.add(
+            DateTime.utc_now(),
+            -7 *
+              3600 * 24,
+            :second
+          )
+        )
+
+      old_event_log = %SmartCity.EventLog{
+        title: "someTitle",
+        timestamp: old_time,
+        description: "someStuff",
+        source: "fromATest",
+        dataset_id: UUID.uuid4(),
+        ingestion_id: UUID.uuid4()
+      }
+
+      Brook.Event.send(@instance_name, event_log_published(), __MODULE__, old_event_log)
+
+      eventually(fn ->
+        assert 1 == length(Andi.InputSchemas.EventLogs.get_all())
+      end)
+
+      new_event_log = %{old_event_log | timestamp: DateTime.to_iso8601(DateTime.utc_now()), description: "someOtherStuff"}
+
+      {:ok, event_log_datetime, _} = DateTime.from_iso8601(new_event_log.timestamp)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+
+      Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
+
+      eventually(fn ->
+        all_datasets = Andi.InputSchemas.EventLogs.get_all()
+        assert length(all_datasets) == 1
+        [persisted_event_log | tail] = all_datasets
+        assert persisted_event_log.dataset_id == new_event_log.dataset_id
+        assert persisted_event_log.description == new_event_log.description
+      end)
+    end
   end
 end

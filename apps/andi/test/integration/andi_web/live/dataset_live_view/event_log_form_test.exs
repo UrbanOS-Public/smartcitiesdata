@@ -97,7 +97,7 @@ defmodule AndiWeb.EventLogFormTest do
         }
       ]
 
-      allow(Andi.InputSchemas.EventLogs.get_all_for_dataset_id(dataset.id), return: event_logs)
+      allow(Andi.InputSchemas.EventLogs.get_all_with_limit_for_dataset_id(dataset.id, 50), return: event_logs)
       assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
       event_log_view = find_live_child(view, "event_log_form")

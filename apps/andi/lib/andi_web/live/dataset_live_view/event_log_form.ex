@@ -16,11 +16,13 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
   alias Andi.InputSchemas.InputConverter
   alias Ecto.Changeset
 
+  @limit 50
+
   def mount(_, %{"dataset" => dataset, "order" => order}, socket) do
     AndiWeb.Endpoint.subscribe("toggle-visibility")
 
     event_log =
-      Andi.InputSchemas.EventLogs.get_all_for_dataset_id(dataset.id)
+      Andi.InputSchemas.EventLogs.get_all_with_limit_for_dataset_id(dataset.id, @limit)
       |> convert_to_string_keys
       |> sort_list_by_field(:timestamp, "asc")
 

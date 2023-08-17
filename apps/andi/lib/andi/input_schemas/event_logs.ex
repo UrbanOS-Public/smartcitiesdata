@@ -28,6 +28,18 @@ defmodule Andi.InputSchemas.EventLogs do
     Repo.all(query)
   end
 
+  def get_all_with_limit_for_dataset_id(dataset_id, limit) do
+    query =
+      from(
+        eventlog in EventLog,
+        where: eventlog.dataset_id == ^dataset_id,
+        limit: ^limit,
+        order_by: [desc: eventlog.timestamp]
+      )
+
+    Repo.all(query)
+  end
+
   def update(%SmartCity.EventLog{} = event_log) do
     EventLog.changeset(event_log)
     |> Repo.insert_or_update()
@@ -38,5 +50,15 @@ defmodule Andi.InputSchemas.EventLogs do
   rescue
     _e in Ecto.StaleEntryError ->
       {:error, "attempted to remove an eventlog: #{inspect(event_log)} that does not exist."}
+  end
+
+  def delete_all_before_date(value, unit) do
+    query =
+      from(
+        eventlog in EventLog,
+        where: eventlog.timestamp < ago(^value, ^unit)
+      )
+
+    Repo.delete_all(query)
   end
 end

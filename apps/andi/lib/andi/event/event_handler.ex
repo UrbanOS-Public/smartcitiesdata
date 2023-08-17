@@ -37,6 +37,7 @@ defmodule Andi.Event.EventHandler do
   alias Andi.Services.IngestionStore
 
   @instance_name Andi.instance_name()
+  @event_log_retention 7
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     Logger.info("Dataset: #{data.id} - Received dataset_update event from #{author}")
@@ -65,6 +66,7 @@ defmodule Andi.Event.EventHandler do
     event_log_published()
     |> add_event_count(author, event_log.dataset_id)
 
+    EventLogs.delete_all_before_date(@event_log_retention, "day")
     EventLogs.update(event_log)
 
     :ok
