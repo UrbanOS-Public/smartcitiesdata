@@ -17,7 +17,6 @@ defmodule Transformers.RegexReplace do
          {:ok, [source_field, replacement, regex]} <- validate(parameters),
          {:ok, value} when value != nil <-
            FieldFetcher.fetch_value(payload, source_field),
-         :ok <- abort_if_not_string(value, source_field),
          :ok <- abort_if_not_string(replacement, @replacement) do
       transformed_value = Regex.replace(regex, to_string(value), replacement)
       transformed_payload = Map.put(payload, source_field, transformed_value)
