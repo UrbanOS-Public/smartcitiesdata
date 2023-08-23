@@ -2,6 +2,9 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :logger,
+  level: :info
+
 config :alchemist,
   retry_count: 10,
   retry_initial_delay: 100,

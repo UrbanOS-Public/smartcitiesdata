@@ -1,5 +1,8 @@
 use Mix.Config
 
+config :logger,
+  level: :info
+  
 config :valkyrie,
   elsa_brokers: [localhost: 9092],
   retry_count: 5,

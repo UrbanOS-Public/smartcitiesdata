@@ -1,5 +1,6 @@
 use Mix.Config
 
+
 host =
   case System.get_env("HOST_IP") do
     nil -> "127.0.0.1"
@@ -11,6 +12,9 @@ endpoints = [{to_charlist(host), 9092}]
 
 output_topic = "streaming-persisted"
 bucket_name = "trino-hive-storage"
+
+config :logger,
+  level: :info
 
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,

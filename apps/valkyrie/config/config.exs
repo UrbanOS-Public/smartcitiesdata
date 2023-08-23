@@ -2,7 +2,11 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :logger,
+  level: :info
+  
 config :valkyrie,
+  env: Mix.env(),
   retry_count: 10,
   retry_initial_delay: 100,
   max_outgoing_bytes: 900_000,
