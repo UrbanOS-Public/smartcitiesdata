@@ -4,6 +4,7 @@ config :logger,
   level: :info
 
 config :reaper,
+  env: Mix.env(),
   produce_retries: 10,
   produce_timeout: 100
 

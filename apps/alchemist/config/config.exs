@@ -6,6 +6,7 @@ config :logger,
   level: :info
 
 config :alchemist,
+  env: Mix.env(),
   retry_count: 10,
   retry_initial_delay: 100,
   max_outgoing_bytes: 900_000,

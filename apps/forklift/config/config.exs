@@ -3,6 +3,7 @@ use Mix.Config
 input_topic_prefix = "transformed"
 
 config :forklift,
+  env: Mix.env(),
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,
   table_writer: Pipeline.Writer.S3Writer,
