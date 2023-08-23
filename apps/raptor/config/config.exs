@@ -2,7 +2,7 @@ use Mix.Config
 
 config :logger,
   level: :info
-  
+
 config :raptor, RaptorWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "EkTifp9BP1V1Mr1QPj9WU05X709LxaHj+2LbqDp6pHjz4XlKPVe/bh9aFq0dxtnx",

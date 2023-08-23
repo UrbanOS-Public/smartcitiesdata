@@ -4,7 +4,7 @@ use Mix.Config
 
 config :logger,
   level: :info
-  
+
 config :valkyrie,
   env: Mix.env(),
   retry_count: 10,
