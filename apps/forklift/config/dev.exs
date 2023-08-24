@@ -1,5 +1,8 @@
 use Mix.Config
 
+config :logger,
+  level: :info
+
 config :forklift,
   topic_writer: MockTopic,
   table_writer: MockTable,

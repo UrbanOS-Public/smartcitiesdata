@@ -12,6 +12,9 @@ endpoints = [{to_charlist(host), 9092}]
 output_topic = "streaming-persisted"
 bucket_name = "trino-hive-storage"
 
+config :logger,
+  level: :info
+
 config :forklift,
   data_reader: Pipeline.Reader.DatasetTopicReader,
   topic_writer: Pipeline.Writer.TopicWriter,

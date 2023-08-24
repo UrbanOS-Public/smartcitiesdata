@@ -8,3 +8,6 @@ config :ex_aws,
   debug_requests: false
 
 config :tzdata, :data_dir, "./tzdata"
+
+config :logger,
+  level: :info

@@ -5,7 +5,7 @@ defmodule Forklift.IngestionTimerTest do
   import Mock
 
   setup do
-    [ingestion_id: Faker.UUID.v4(), extract_time: Timex.now() |> Timex.to_unix(), dataset: %{}]
+    [ingestion_id: Faker.UUID.v4(), extract_time: Timex.now() |> Timex.to_unix(), dataset: %{id: Faker.UUID.v4()}]
   end
 
   describe "IngestionTimerTest" do
