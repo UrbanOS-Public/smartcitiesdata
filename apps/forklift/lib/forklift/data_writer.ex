@@ -9,7 +9,6 @@ defmodule Forklift.DataWriter do
   use Properties, otp_app: :forklift
 
   alias SmartCity.Data
-  alias Forklift.IngestionProgress
   alias Forklift.Jobs.DataMigration
 
   require Logger
@@ -61,23 +60,8 @@ defmodule Forklift.DataWriter do
     ingestion_id = Keyword.fetch!(opts, :ingestion_id)
     extraction_start_time = Keyword.fetch!(opts, :extraction_start_time)
 
-    case ingest_status(data) do
-      {:ok, batch_data} ->
-        Enum.reverse(batch_data)
-        |> do_write(dataset, ingestion_id, extraction_start_time)
-
-      {:final, batch_data} ->
-        results =
-          Enum.reverse(batch_data)
-          |> do_write(dataset, ingestion_id, extraction_start_time)
-
-        event_data = create_event_log_data(dataset.id, ingestion_id)
-
-        Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
-        Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset)
-
-        results
-    end
+    Enum.reverse(data)
+      |> do_write(dataset, ingestion_id, extraction_start_time)
   end
 
   @impl Pipeline.Writer
@@ -107,18 +91,6 @@ defmodule Forklift.DataWriter do
     end
   end
 
-  defp ingest_status(data) do
-    Enum.reduce_while(data, {:_, []}, &handle_eod/2)
-  end
-
-  defp handle_eod(end_of_data(), {_, acc}) do
-    {:halt, {:final, acc}}
-  end
-
-  defp handle_eod(message, {_, acc}) do
-    {:cont, {:ok, [message | acc]}}
-  end
-
   defp do_write(data, dataset, ingestion_id, extraction_start_time) do
     started_data = Enum.map(data, &add_start_time/1)
     ingestion_info_data = Enum.map(started_data, &add_ingestion_info/1)
@@ -134,9 +106,12 @@ defmodule Forklift.DataWriter do
   end
 
   defp write_to_table(data, %{technical: technical} = dataset, ingestion_id, extraction_start_time) do
+    {eod_list, data_to_write} = Enum.split_with(data, fn msg -> msg.payload == end_of_data() end)
+    ingestion_complete? = eod_list != []
+
     with write_start <- Data.Timing.current_time(),
          :ok <-
-           table_writer().write(data,
+           table_writer().write(data_to_write,
              table: technical.systemName,
              schema: add_ingestion_metadata_to_schema(technical.schema),
              bucket: s3_writer_bucket(),
@@ -147,11 +122,12 @@ defmodule Forklift.DataWriter do
          write_end <- Data.Timing.current_time(),
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
-      ingestion_status =
-        IngestionProgress.new_messages(Enum.count(data), ingestion_id, dataset.id, extraction_start_time)
 
-      if ingestion_status == :ingestion_complete do
+      if ingestion_complete? do
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
+
+        event_data = create_event_log_data(dataset.id, ingestion_id)
+        Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
       end
 
       {:ok, write_timing}
@@ -189,9 +165,11 @@ defmodule Forklift.DataWriter do
     datum |> Forklift.Util.add_to_metadata(:forklift_start_time, Data.Timing.current_time())
   end
 
-  defp add_ingestion_info(data) do
-    payload = Map.get(data, :payload, %{})
+  defp add_ingestion_info(%{payload: payload} = data) when not is_map(payload) do
+    data
+  end
 
+  defp add_ingestion_info(%{payload: payload} = data) do
     ingestion_info_payload =
       Map.merge(payload, %{
         "_extraction_start_time" => data.extraction_start_time,

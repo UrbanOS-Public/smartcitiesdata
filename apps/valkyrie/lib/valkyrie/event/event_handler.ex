@@ -39,6 +39,7 @@ defmodule Valkyrie.Event.EventHandler do
       :discard
   end
 
+  # TODO: Potentially outdated handler, should be inspected for potential removal/redesign
   def handle_event(%Brook.Event{
         type: data_standardization_end(),
         data: %{"dataset_id" => dataset_id} = data,

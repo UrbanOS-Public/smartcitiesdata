@@ -4,6 +4,7 @@ defmodule Reaper.DataExtract.Processor do
   """
   use Properties, otp_app: :reaper
 
+  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event,
     only: [
       event_log_published: 0
@@ -50,10 +51,12 @@ defmodule Reaper.DataExtract.Processor do
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
+
     {:ok, producer_stage} = create_producer_stage(ingestion)
-    {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion)
-    {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: extract_time)
+    {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: cache_name, ingestion: ingestion)
+    {:ok, load_stage} = LoadStage.start_link(cache: cache_name, ingestion: ingestion, start_time: extract_time)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -68,7 +71,7 @@ defmodule Reaper.DataExtract.Processor do
 
     Persistence.remove_last_processed_index(ingestion.id)
 
-    messages_processed_count(ingestion.id)
+    messages_processed_count(cache_name)
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
@@ -89,8 +92,14 @@ defmodule Reaper.DataExtract.Processor do
 
     output_file
     |> Decoder.decode(ingestion)
+    |> add_eod()
     |> Stream.with_index()
     |> GenStage.from_enumerable()
+  end
+
+  defp add_eod(messages) do
+    [end_of_data() | Enum.reverse(messages)]
+    |> Enum.reverse()
   end
 
   defp validate_destination(ingestion) do
@@ -142,13 +151,13 @@ defmodule Reaper.DataExtract.Processor do
     Elsa.Producer.ready?(connection_name)
   end
 
-  defp messages_processed_count(ingestion_id) do
-    case MsgCountCache.get(ingestion_id) do
+  defp messages_processed_count(cache_name) do
+    case MsgCountCache.get(cache_name) do
       {:ok, count} ->
         count
 
       {:error, error} ->
-        raise "Unable to retrieve messages processed count ingestion #{ingestion_id} with error #{inspect(error)}"
+        raise "Unable to retrieve messages processed count ingestion #{cache_name} with error #{inspect(error)}"
     end
   end
 
