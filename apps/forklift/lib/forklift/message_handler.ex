@@ -23,6 +23,7 @@ defmodule Forklift.MessageHandler do
   """
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
     IO.inspect(length(messages), label: "count of messages")
+
     timed_messages =
       messages
       |> Enum.map(&parse/1)

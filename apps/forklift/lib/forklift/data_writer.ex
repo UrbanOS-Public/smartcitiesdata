@@ -61,7 +61,7 @@ defmodule Forklift.DataWriter do
     extraction_start_time = Keyword.fetch!(opts, :extraction_start_time)
 
     Enum.reverse(data)
-      |> do_write(dataset, ingestion_id, extraction_start_time)
+    |> do_write(dataset, ingestion_id, extraction_start_time)
   end
 
   @impl Pipeline.Writer
@@ -122,7 +122,6 @@ defmodule Forklift.DataWriter do
          write_end <- Data.Timing.current_time(),
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
-
       if ingestion_complete? do
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
