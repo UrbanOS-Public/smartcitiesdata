@@ -64,12 +64,12 @@ defmodule Valkyrie.Broadway do
   def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
     start_time = Data.Timing.current_time()
 
-    with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <- SmartCity.Data.new(message_data.value),
+    with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <-
+           SmartCity.Data.new(message_data.value),
          {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
          smart_city_data <- %{smart_city_data | payload: standardized_payload},
          smart_city_data <- add_timing(smart_city_data, start_time),
          {:ok, json_data} <- Jason.encode(smart_city_data) do
-
       %{message | data: %{message.data | value: json_data}}
     else
       {:ok, %{payload: end_of_data()} = smart_city_data} ->
