@@ -11,7 +11,7 @@ redix_args = [host: host]
 endpoints = [{String.to_atom(host), 9092}]
 
 config :logger,
-  level: :warn
+  level: :info
 
 config :valkyrie,
   elsa_brokers: endpoints,

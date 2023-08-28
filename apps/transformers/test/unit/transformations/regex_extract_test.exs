@@ -20,6 +20,35 @@ defmodule Transformers.RegexExtractTest do
       assert actual_target_field == "555"
     end
 
+    test "Converts to a string before parsing" do
+      params = %{
+        "sourceField" => "phone_number",
+        "targetField" => "area_code",
+        "regex" => "(.*)"
+      }
+
+      message_payload = %{"phone_number" => 133}
+
+      {:ok, transformed_payload} = Transformers.RegexExtract.transform(message_payload, params)
+
+      {:ok, actual_target_field} = Map.fetch(transformed_payload, "area_code")
+      assert actual_target_field == "133"
+    end
+
+    test "skips transformation when source field is nil" do
+      params = %{
+        "sourceField" => "status",
+        "targetField" => "vendor",
+        "regex" => "^\\((\\d{3})\\)"
+      }
+
+      message_payload = %{"status" => nil, "vendor" => "vendorname"}
+
+      {:ok, transformed_payload} = Transformers.RegexExtract.transform(message_payload, params)
+
+      assert message_payload == transformed_payload
+    end
+
     test "returns payload with null value in target field if no regex match" do
       params = %{
         "sourceField" => "phone_number",
