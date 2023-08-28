@@ -5,6 +5,7 @@ defmodule Reaper.DataExtract.Processor do
   use Properties, otp_app: :reaper
 
   import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       event_log_published: 0

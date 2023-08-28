@@ -12,6 +12,7 @@ defmodule Reaper.FullTest do
   import SmartCity.TestHelper
 
   import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
@@ -624,7 +625,6 @@ defmodule Reaper.FullTest do
                  "id" => "3",
                  end_of_data()
                }
-
       end)
     end
   end

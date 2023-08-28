@@ -11,6 +11,7 @@ defmodule Alchemist.Broadway do
   use Properties, otp_app: :alchemist
 
   import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       event_log_published: 0
@@ -72,11 +73,11 @@ defmodule Alchemist.Broadway do
         ingestion: ingestion,
         transformations: transformations
       }) do
-    with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <- SmartCity.Data.new(message_data.value),
+    with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <-
+           SmartCity.Data.new(message_data.value),
          {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
-
       %{message | data: %{message.data | value: json_data}}
     else
       {:ok, %{payload: end_of_data()} = smart_city_data} ->

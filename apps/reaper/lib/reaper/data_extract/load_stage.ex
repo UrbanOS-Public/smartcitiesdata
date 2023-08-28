@@ -96,7 +96,6 @@ defmodule Reaper.DataExtract.LoadStage do
 
   defp cache_message_count(%{ingestion: ingestion, batch: batch, last_message: true, cache: cache}) do
     MsgCountCache.increment(cache, length(batch) - 1)
-
   end
 
   defp cache_message_count(%{ingestion: ingestion, batch: batch, cache: cache}) do
