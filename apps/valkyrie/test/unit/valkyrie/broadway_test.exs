@@ -75,6 +75,7 @@ defmodule Valkyrie.BroadwayTest do
         ingestion_id: ingestion_id,
         payload: %{"name" => "johnny", "age" => "21"}
       )
+
     end_of_data =
       TDG.create_data(
         dataset_ids: [@dataset_id, @dataset_id2],
