@@ -11,6 +11,7 @@ defmodule Reaper.FullTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
 
+  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
@@ -602,7 +603,7 @@ defmodule Reaper.FullTest do
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
-        assert 3 == length(results)
+        assert 4 == length(results)
 
         assert Enum.at(results, 0).payload == %{
                  "id" => nil,
@@ -618,6 +619,12 @@ defmodule Reaper.FullTest do
                  "id" => "3",
                  "grandParent" => %{"parentMap" => %{"fieldA" => "Joe", "fieldB" => nil}}
                }
+
+        assert Enum.at(results, 3).payload == %{
+                 "id" => "3",
+                 end_of_data()
+               }
+
       end)
     end
   end
