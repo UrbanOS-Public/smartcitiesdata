@@ -166,14 +166,12 @@ defmodule Forklift.Event.EventHandlingTest do
       dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream"})
       dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream"})
       ingestion_id = Faker.UUID.v4()
-      msg_target = 5
       extract_start = Timex.now() |> Timex.to_unix()
 
       fake_extract_end_msg = %{
         "dataset_ids" => [dataset.id, dataset2.id],
         "extract_start_unix" => extract_start,
-        "ingestion_id" => ingestion_id,
-        "msgs_extracted" => msg_target
+        "ingestion_id" => ingestion_id
       }
 
       [
@@ -181,105 +179,8 @@ defmodule Forklift.Event.EventHandlingTest do
         dataset2: dataset2,
         ingestion_id: ingestion_id,
         extract_start: extract_start,
-        msg_target: msg_target,
         fake_extract_end_msg: fake_extract_end_msg
       ]
-    end
-
-    test "stores ingestion_progress target message count", %{
-      dataset: dataset,
-      dataset2: dataset2,
-      ingestion_id: ingestion_id,
-      extract_start: extract_start,
-      msg_target: msg_target,
-      fake_extract_end_msg: fake_extract_end_msg
-    } do
-      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
-        return: :in_progress
-      )
-
-      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
-        return: :in_progress
-      )
-
-      expect(Forklift.Datasets.get!(dataset.id), return: dataset)
-      expect(Forklift.Datasets.get!(dataset2.id), return: dataset2)
-
-      Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(
-          Brook.Event.new(
-            type: data_extract_end(),
-            data: fake_extract_end_msg,
-            author: :author
-          )
-        )
-      end)
-    end
-
-    test "kicks off compaction if ingestion_progress is complete", %{
-      dataset: dataset,
-      dataset2: dataset2,
-      ingestion_id: ingestion_id,
-      extract_start: extract_start,
-      msg_target: msg_target,
-      fake_extract_end_msg: fake_extract_end_msg
-    } do
-      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
-        return: :ingestion_complete
-      )
-
-      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
-        return: :ingestion_complete
-      )
-
-      expect(Forklift.Datasets.get!(dataset.id), return: dataset)
-      expect(Forklift.Datasets.get!(dataset2.id), return: dataset2)
-      expect(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
-      expect(Forklift.Jobs.DataMigration.compact(dataset2, ingestion_id, extract_start), return: {:ok, dataset2.id})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(
-          Brook.Event.new(
-            type: data_extract_end(),
-            data: fake_extract_end_msg,
-            author: :author
-          )
-        )
-      end)
-    end
-
-    test "*does not* kick off compaction if ingestion_progress is not complete", %{
-      dataset: dataset,
-      dataset2: dataset2,
-      ingestion_id: ingestion_id,
-      extract_start: extract_start,
-      msg_target: msg_target,
-      fake_extract_end_msg: fake_extract_end_msg
-    } do
-      expect(Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start),
-        return: :in_progress
-      )
-
-      expect(Forklift.IngestionProgress.store_target(dataset2, msg_target, ingestion_id, extract_start),
-        return: :in_progress
-      )
-
-      allow(Forklift.Datasets.get!(dataset.id), return: dataset)
-      allow(Forklift.Datasets.get!(dataset2.id), return: dataset2)
-      allow(Forklift.Jobs.DataMigration.compact(dataset, any(), any()), return: {:ok, dataset.id})
-      allow(Forklift.Jobs.DataMigration.compact(dataset2, any(), any()), return: {:ok, dataset2.id})
-
-      Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(
-          Brook.Event.new(
-            type: data_extract_end(),
-            data: fake_extract_end_msg,
-            author: :author
-          )
-        )
-      end)
-
-      refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
     end
   end
 end

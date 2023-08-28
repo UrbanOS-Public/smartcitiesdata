@@ -15,7 +15,6 @@ defmodule Forklift.Event.EventHandler do
       error_dataset_update: 0,
       error_ingestion_update: 0,
       dataset_delete: 0,
-      data_extract_end: 0,
       ingestion_delete: 0,
       ingestion_update: 0,
       event_log_published: 0

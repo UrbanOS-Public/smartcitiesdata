@@ -16,11 +16,6 @@ defmodule Forklift.DataWriterTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
-  setup do
-    allow(Forklift.IngestionProgress.new_messages(any(), any(), any(), any()), return: :in_progress)
-    :ok
-  end
-
   test "should delete table and topic when delete is called" do
     expected_dataset =
       TDG.create_dataset(%{
@@ -82,17 +77,19 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{}), end_of_data()]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
     ingestion_id = "testIngestionId"
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
-
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
@@ -129,17 +126,19 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{}), end_of_data()]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
     ingestion_id = "testIngestionId"
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
-
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
@@ -179,10 +178,6 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
-
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
     stub(MockTable, :write, fn _data, _params ->
@@ -211,10 +206,6 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
-
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
     stub(MockTable, :write, fn _data, _params ->
@@ -226,14 +217,6 @@ defmodule Forklift.DataWriterTest do
       ingestion_id: ingestion_id,
       extraction_start_time: extract_start
     )
-
-    assert_called Forklift.IngestionProgress.new_messages(
-                    Enum.count(fake_data),
-                    ingestion_id,
-                    dataset.id,
-                    extract_start
-                  ),
-                  once()
 
     refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
@@ -249,12 +232,15 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{})]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
+    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
     stub(MockTable, :write, fn _data, _params ->
@@ -266,14 +252,6 @@ defmodule Forklift.DataWriterTest do
       ingestion_id: ingestion_id,
       extraction_start_time: extract_start
     )
-
-    assert_called Forklift.IngestionProgress.new_messages(
-                    Enum.count(fake_data),
-                    ingestion_id,
-                    dataset.id,
-                    extract_start
-                  ),
-                  once()
 
     assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
   end
