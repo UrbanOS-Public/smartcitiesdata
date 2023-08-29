@@ -4,6 +4,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
   import ExUnit.CaptureLog
   import Mox
 
+  import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       event_log_published: 0
@@ -65,6 +67,9 @@ defmodule Reaper.DataExtract.ProcessorTest do
         allow_duplicates: false
       })
 
+    unix_time = 1_672_552_800
+
+    allow DateTime.to_unix(any()), return: unix_time
     allow Elsa.create_topic(any(), any()), return: :ok
     allow Elsa.Supervisor.start_link(any()), return: {:ok, :pid}
     allow Elsa.topic?(any(), any()), return: true
@@ -74,7 +79,11 @@ defmodule Reaper.DataExtract.ProcessorTest do
     Cachex.start(MsgCountCache.cache_name())
     Cachex.clear(MsgCountCache.cache_name())
 
-    [bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl]
+    extract_time = DateTime.utc_now()
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
+
+    [bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl, extract_time: extract_time]
   end
 
   describe "process/2 happy path" do
@@ -89,17 +98,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
       :ok
     end
 
-    test "parses csv into data messages and sends to kafka", %{ingestion: ingestion} do
+    test "parses csv into data messages and sends to kafka", %{ingestion: ingestion, extract_time: extract_time} do
       allow Persistence.get_last_processed_index(@ingestion_id), return: -1
       allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
 
-      Processor.process(ingestion, DateTime.utc_now())
+      Processor.process(ingestion, extract_time)
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
-        %{"a" => "four", "b" => "five", "c" => "six"}
+        %{"a" => "four", "b" => "five", "c" => "six"},
+        end_of_data()
       ]
 
       assert expected == get_payloads(messages)
@@ -125,13 +135,16 @@ defmodule Reaper.DataExtract.ProcessorTest do
     test "eliminates duplicates before sending to kafka", %{ingestion: ingestion} do
       allow Persistence.get_last_processed_index(@ingestion_id), return: -1
       allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
-      Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: ingestion.id})
-      Cache.cache(ingestion.id, %{"a" => "one", "b" => "two", "c" => "three"})
 
-      Processor.process(ingestion, DateTime.utc_now())
+      extract_time = DateTime.utc_now()
+      cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
+      Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
+      Cache.cache(cache_name, %{"a" => "one", "b" => "two", "c" => "three"})
+
+      Processor.process(ingestion, extract_time)
 
       messages = capture(1, Elsa.produce(any(), any(), any(), any()), 3)
-      assert [%{"a" => "four", "b" => "five", "c" => "six"}] == get_payloads(messages)
+      assert [%{"a" => "four", "b" => "five", "c" => "six"}, end_of_data()] == get_payloads(messages)
       assert_called Elsa.produce(any(), any(), any(), any()), once()
 
       assert_called Persistence.record_last_processed_index(any(), any()), once()
@@ -223,7 +236,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
-        %{"a" => "four", "b" => "five", "c" => "six"}
+        %{"a" => "four", "b" => "five", "c" => "six"},
+        end_of_data()
       ]
 
       assert expected == get_payloads(messages)
@@ -278,7 +292,8 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
-        %{"a" => "four", "b" => "five", "c" => "six"}
+        %{"a" => "four", "b" => "five", "c" => "six"},
+        end_of_data()
       ]
 
       assert expected == get_payloads(messages)
@@ -329,18 +344,17 @@ defmodule Reaper.DataExtract.ProcessorTest do
     end
 
     test "process/2 should execute providers prior to processing", %{bypass: bypass, sourceUrl: sourceUrl} do
-      ingestion_id = "prov-ingestion-1234"
       allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow Persistence.remove_last_processed_index(ingestion_id), return: :ok
-      allow Persistence.get_last_processed_index(ingestion_id), return: -1
-      allow Persistence.record_last_processed_index(ingestion_id, any()), return: "OK"
+      allow Persistence.remove_last_processed_index(@ingestion_id), return: :ok
+      allow Persistence.get_last_processed_index(@ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
 
       Providers.Echo
       |> expect(:provide, 2, fn _, %{value: value} -> value end)
 
       provisioned_ingestion =
         TDG.create_ingestion(%{
-          id: "prov-ingestion-1234",
+          id: @ingestion_id,
           sourceFormat: "csv",
           cadence: 100,
           schema: [
@@ -381,27 +395,27 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three", "p" => "six of six"},
-        %{"a" => "four", "b" => "five", "c" => "six", "p" => "six of six"}
+        %{"a" => "four", "b" => "five", "c" => "six", "p" => "six of six"},
+        end_of_data()
       ]
 
       assert expected == get_payloads(messages)
     end
 
     test "process/2 should send an EventLog for each dataset before the processor processes the ingestion",
-         %{bypass: bypass, sourceUrl: sourceUrl} do
-      ingestion_id = "prov-ingestion-1234"
+         %{bypass: bypass, sourceUrl: sourceUrl, extract_time: extract_time} do
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
 
       allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow Persistence.remove_last_processed_index(ingestion_id), return: :ok
-      allow Persistence.get_last_processed_index(ingestion_id), return: -1
-      allow Persistence.record_last_processed_index(ingestion_id, any()), return: "OK"
+      allow Persistence.remove_last_processed_index(@ingestion_id), return: :ok
+      allow Persistence.get_last_processed_index(@ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
       allow DateTime.to_string(any()), return: "2023-08-03 16:31:47.899763Z"
 
       provisioned_ingestion =
         TDG.create_ingestion(%{
-          id: "prov-ingestion-1234",
+          id: @ingestion_id,
           sourceFormat: "csv",
           targetDatasets: [first_dataset_id, second_dataset_id],
           cadence: 100,
@@ -426,14 +440,14 @@ defmodule Reaper.DataExtract.ProcessorTest do
           allow_duplicates: false
         })
 
-      Processor.process(provisioned_ingestion, DateTime.utc_now())
+      Processor.process(provisioned_ingestion, extract_time)
 
       first_expected_event_log = %SmartCity.EventLog{
         title: "Ingestion Started",
         timestamp: DateTime.utc_now() |> DateTime.to_string(),
         source: "Reaper",
         description: "Ingestion has started",
-        ingestion_id: ingestion_id,
+        ingestion_id: @ingestion_id,
         dataset_id: first_dataset_id
       }
 
@@ -442,7 +456,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         timestamp: DateTime.utc_now() |> DateTime.to_string(),
         source: "Reaper",
         description: "Ingestion has started",
-        ingestion_id: ingestion_id,
+        ingestion_id: @ingestion_id,
         dataset_id: second_dataset_id
       }
 
@@ -455,19 +469,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
     test "process/2 should send an EventLog for each dataset once data has successfully been written to the data pipeline",
          %{bypass: bypass, sourceUrl: sourceUrl} do
-      ingestion_id = "prov-ingestion-1234"
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
 
       allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow Persistence.remove_last_processed_index(ingestion_id), return: :ok
-      allow Persistence.get_last_processed_index(ingestion_id), return: -1
-      allow Persistence.record_last_processed_index(ingestion_id, any()), return: "OK"
+      allow Persistence.remove_last_processed_index(@ingestion_id), return: :ok
+      allow Persistence.get_last_processed_index(@ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
       allow DateTime.to_string(any()), return: "2023-08-03 16:31:47.899763Z"
 
       provisioned_ingestion =
         TDG.create_ingestion(%{
-          id: "prov-ingestion-1234",
+          id: @ingestion_id,
           sourceFormat: "csv",
           targetDatasets: [first_dataset_id, second_dataset_id],
           cadence: 100,
@@ -500,7 +513,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         source: "Reaper",
         description: "Successfully downloaded data and placed on data pipeline to begin processing.",
         dataset_id: first_dataset_id,
-        ingestion_id: ingestion_id
+        ingestion_id: @ingestion_id
       }
 
       second_expected_event_log = %SmartCity.EventLog{
@@ -509,7 +522,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
         source: "Reaper",
         description: "Successfully downloaded data and placed on data pipeline to begin processing.",
         dataset_id: second_dataset_id,
-        ingestion_id: ingestion_id
+        ingestion_id: @ingestion_id
       }
 
       first_event_log = capture(3, Brook.Event.send(any(), event_log_published(), :reaper, any()), 4)
@@ -520,19 +533,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
     end
 
     test "process/2 should not send an EventLog if stages do not complete", %{bypass: bypass, sourceUrl: sourceUrl} do
-      ingestion_id = "prov-ingestion-1234"
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
 
       allow Elsa.produce(any(), any(), any(), any()), exec: fn _, _, _, _ -> raise "Fake Error" end
-      allow Persistence.remove_last_processed_index(ingestion_id), return: :ok
-      allow Persistence.get_last_processed_index(ingestion_id), return: -1
-      allow Persistence.record_last_processed_index(ingestion_id, any()), return: "OK"
+      allow Persistence.remove_last_processed_index(@ingestion_id), return: :ok
+      allow Persistence.get_last_processed_index(@ingestion_id), return: -1
+      allow Persistence.record_last_processed_index(@ingestion_id, any()), return: "OK"
       allow DateTime.to_string(any()), return: "2023-08-03 16:31:47.899763Z"
 
       provisioned_ingestion =
         TDG.create_ingestion(%{
-          id: "prov-ingestion-1234",
+          id: @ingestion_id,
           sourceFormat: "csv",
           targetDatasets: [first_dataset_id, second_dataset_id],
           cadence: 100,

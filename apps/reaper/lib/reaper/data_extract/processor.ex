@@ -39,21 +39,26 @@ defmodule Reaper.DataExtract.Processor do
   @spec process(SmartCity.Ingestion.t(), DateTime.t()) :: Redix.Protocol.redis_value() | no_return()
   def process(%SmartCity.Ingestion{} = unprovisioned_ingestion, extract_time) do
     Process.flag(:trap_exit, true)
+    IO.inspect("1")
 
     ingestion =
       unprovisioned_ingestion
       |> Providers.Helpers.Provisioner.provision()
 
+    IO.inspect("2")
     validate_destination(ingestion)
+    IO.inspect("3")
     validate_cache(ingestion)
+    IO.inspect("4")
 
     Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
       event_data = create_ingestion_started_event_log(dataset_id, unprovisioned_ingestion.id)
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
+    IO.inspect("5")
     cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
-
+    IO.inspect("6")
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: cache_name, ingestion: ingestion)
