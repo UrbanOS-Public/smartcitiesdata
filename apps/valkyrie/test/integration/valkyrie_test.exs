@@ -7,6 +7,7 @@ defmodule ValkyrieTest do
 
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.TestHelper
+
   import SmartCity.Event,
     only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0, dataset_delete: 0]
 

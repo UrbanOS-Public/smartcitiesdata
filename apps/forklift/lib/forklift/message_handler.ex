@@ -6,7 +6,6 @@ defmodule Forklift.MessageHandler do
   require Logger
   use Elsa.Consumer.MessageHandler
 
-  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_write_complete: 0, event_log_published: 0]
   alias SmartCity.DataWriteComplete
   alias Forklift.Util
@@ -22,8 +21,6 @@ defmodule Forklift.MessageHandler do
   Handle each kafka message.
   """
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
-    IO.inspect(length(messages), label: "count of messages")
-
     timed_messages =
       messages
       |> Enum.map(&parse/1)
