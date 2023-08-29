@@ -7,7 +7,7 @@ defmodule Valkyrie.Event.EventHandler do
   use Brook.Event.Handler
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
+    only: [data_ingest_start: 0, dataset_delete: 0, dataset_update: 0]
 
   require Logger
   @instance_name Valkyrie.instance_name()
@@ -36,27 +36,6 @@ defmodule Valkyrie.Event.EventHandler do
     error ->
       Logger.error("data_ingest_start failed to process: #{inspect(error)}")
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
-      :discard
-  end
-
-  # TODO: Potentially outdated handler, should be inspected for potential removal/redesign
-  def handle_event(%Brook.Event{
-        type: data_standardization_end(),
-        data: %{"dataset_id" => dataset_id} = data,
-        author: author
-      }) do
-    Logger.info("Dataset: #{dataset_id} - Received data_standardization_end event from #{author}")
-
-    data_standardization_end()
-    |> add_event_count(author, dataset_id)
-
-    Valkyrie.DatasetProcessor.stop(dataset_id)
-    Logger.debug("#{__MODULE__}: Standardization finished for dataset: #{dataset_id}")
-    delete(:datasets, dataset_id)
-  rescue
-    error ->
-      Logger.error("data_standardization_end failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

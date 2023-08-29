@@ -9,7 +9,7 @@ defmodule ValkyrieTest do
   import SmartCity.TestHelper
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0, dataset_delete: 0]
+    only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
 
   alias TelemetryEvent.Helper.TelemetryEventHelper
 
@@ -301,12 +301,6 @@ defmodule ValkyrieTest do
 
     eventually fn ->
       assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == true
-    end
-
-    Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
-
-    eventually fn ->
-      assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == false
     end
 
     Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)

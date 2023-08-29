@@ -6,7 +6,7 @@ defmodule Valkyrie.BroadwayTest do
   alias SmartCity.Data
 
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0, event_log_published: 0]
+  import SmartCity.Event, only: [event_log_published: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @dataset_id "ds1"

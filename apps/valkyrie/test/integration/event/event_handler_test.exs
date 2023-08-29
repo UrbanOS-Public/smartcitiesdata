@@ -66,7 +66,6 @@ defmodule Valkyrie.Event.EventHandlerTest do
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
       allow(Valkyrie.DatasetProcessor.stop(id_for_invalid_data), exec: fn _ -> raise "nope" end)
 
-      Brook.Event.send(@instance_name, data_standardization_end(), __MODULE__, data)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
 
       eventually(fn ->
