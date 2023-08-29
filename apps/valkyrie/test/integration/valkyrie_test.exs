@@ -4,8 +4,9 @@ defmodule ValkyrieTest do
   use Properties, otp_app: :valkyrie
 
   alias SmartCity.TestDataGenerator, as: TDG
-  import SmartCity.TestHelper
 
+  import SmartCity.Data, only: [end_of_data: 0]
+  import SmartCity.TestHelper
   import SmartCity.Event,
     only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0, dataset_delete: 0]
 
@@ -241,12 +242,20 @@ defmodule ValkyrieTest do
         dataset_id: dataset.id
       })
 
+    end_of_data =
+      TestHelpers.create_data(
+        dataset_ids: [@dataset_id, @dataset_id2],
+        ingestion_id: ingestion.id,
+        payload: end_of_data()
+      )
+
     messages = [
       invalid_message,
       TestHelpers.create_data(%{
         payload: %{"name" => "Will Turner", "alignment" => "good", "age" => 25},
         dataset_id: dataset.id
-      })
+      }),
+      end_of_data
     ]
 
     eventually fn ->
