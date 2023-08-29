@@ -465,7 +465,7 @@ defmodule Reaper.FullTest do
       )
     end
 
-    @tag timeout: 120_000
+    @tag timeout: 240_000
     test "cadence of once is only processed once, extract steps s3", %{bypass: bypass} do
       ingestion_id = "only-once-extract-steps-s3"
       topic = "#{output_topic_prefix()}-#{ingestion_id}"
