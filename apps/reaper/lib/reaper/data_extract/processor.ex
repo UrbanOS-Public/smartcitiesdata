@@ -53,7 +53,6 @@ defmodule Reaper.DataExtract.Processor do
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
-
     IO.inspect("Hello how are you")
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)

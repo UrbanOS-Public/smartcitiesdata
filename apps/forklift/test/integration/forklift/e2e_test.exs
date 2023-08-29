@@ -5,6 +5,7 @@ defmodule Forklift.E2ETest do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
   import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
