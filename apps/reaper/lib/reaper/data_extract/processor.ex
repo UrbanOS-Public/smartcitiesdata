@@ -39,26 +39,22 @@ defmodule Reaper.DataExtract.Processor do
   @spec process(SmartCity.Ingestion.t(), DateTime.t()) :: Redix.Protocol.redis_value() | no_return()
   def process(%SmartCity.Ingestion{} = unprovisioned_ingestion, extract_time) do
     Process.flag(:trap_exit, true)
-    IO.inspect("1")
 
     ingestion =
       unprovisioned_ingestion
       |> Providers.Helpers.Provisioner.provision()
 
-    IO.inspect("2")
     validate_destination(ingestion)
-    IO.inspect("3")
-    validate_cache(ingestion)
-    IO.inspect("4")
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
+    validate_cache(ingestion, cache_name)
 
     Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
       event_data = create_ingestion_started_event_log(dataset_id, unprovisioned_ingestion.id)
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
-    IO.inspect("5")
-    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
-    IO.inspect("6")
+
+    IO.inspect("Hello how are you")
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: cache_name, ingestion: ingestion)
@@ -114,8 +110,8 @@ defmodule Reaper.DataExtract.Processor do
     start_topic_producer(topic)
   end
 
-  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false, id: id}) do
-    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
+  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false}, cache_name) do
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
   end
 
   defp validate_cache(_ingestion), do: nil

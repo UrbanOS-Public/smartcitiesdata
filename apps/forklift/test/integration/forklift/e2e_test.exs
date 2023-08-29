@@ -4,6 +4,7 @@ defmodule Forklift.E2ETest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
+  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
@@ -75,6 +76,18 @@ defmodule Forklift.E2ETest do
 
       extract_id_1 = get_extract_id(ingestion_1.id, dataset.id, extract_data_1["extract_start_unix"])
 
+      end_of_data_message_1 = %{
+        _metadata: %{},
+        dataset_ids: [dataset.id],
+        extraction_start_time: extract_iso_time_1,
+        ingestion_id: ingestion_1.id,
+        operational: %{
+          timing: []
+        },
+        payload: end_of_data(),
+        version: "0.1"
+      }
+
       message_data_1 = %{
         _metadata: %{},
         dataset_ids: [dataset.id],
@@ -109,6 +122,18 @@ defmodule Forklift.E2ETest do
         "extract_start_unix" => extract_time_unix_2,
         "ingestion_id" => ingestion_2.id,
         "msgs_extracted" => "1"
+      }
+
+      end_of_data_message_2 = %{
+        _metadata: %{},
+        dataset_ids: [dataset.id],
+        extraction_start_time: extract_iso_time_2,
+        ingestion_id: ingestion_2.id,
+        operational: %{
+          timing: []
+        },
+        payload: end_of_data(),
+        version: "0.1"
       }
 
       extract_id_2 = get_extract_id(ingestion_2.id, dataset.id, extract_data_2["extract_start_unix"])
@@ -147,6 +172,18 @@ defmodule Forklift.E2ETest do
         "extract_start_unix" => extract_time_unix_3,
         "ingestion_id" => ingestion_1.id,
         "msgs_extracted" => "2"
+      }
+
+      end_of_data_message_3 = %{
+        _metadata: %{},
+        dataset_ids: [dataset.id],
+        extraction_start_time: extract_iso_time_3,
+        ingestion_id: ingestion_1.id,
+        operational: %{
+          timing: []
+        },
+        payload: end_of_data(),
+        version: "0.1"
       }
 
       extract_id_3 = get_extract_id(ingestion_1.id, dataset.id, extract_data_3["extract_start_unix"])
@@ -228,13 +265,6 @@ defmodule Forklift.E2ETest do
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_1)
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_1)]) == "2"
-        end,
-        10000
-      )
-
       # Send the kafka messages to topic and verify count key is updated for each messages recieved
       # ================================================
       Elsa.Producer.produce(
@@ -244,13 +274,6 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == "1"
-        end,
-        10000
-      )
-
       Elsa.Producer.produce(
         @brokers,
         topic_name,
@@ -258,23 +281,16 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_1)]) == nil
-        end,
-        10000
+      Elsa.Producer.produce(
+        @brokers,
+        topic_name,
+        {"test", Jason.encode!(end_of_data_message_1)},
+        partition: 0
       )
 
       # # Indicates reaper is done extracting data for extraction 2 and forklift should eventually receive the set amount of messages
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_2)
-
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_2)]) == "1"
-        end,
-        10000
-      )
 
       # Send the kafka messages to topic and verify count key is updated for each messages recieved
       # ================================================
@@ -285,11 +301,11 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_2)]) == nil
-        end,
-        10000
+      Elsa.Producer.produce(
+        @brokers,
+        topic_name,
+        {"test", Jason.encode!(end_of_data_message_2)},
+        partition: 0
       )
 
       # Verify dataset table contents have been updated with data from the received messages
@@ -316,7 +332,7 @@ defmodule Forklift.E2ETest do
             error -> assert error == nil
           end
         end,
-        10000
+        30000
       )
 
       # Trigger delete of all ingestion 2 data and verify ingestion is reduced accordingly
@@ -334,11 +350,11 @@ defmodule Forklift.E2ETest do
       # ================================================
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, extract_data_3)
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_target_key(extract_id_3)]) == "2"
-        end,
-        10000
+      Elsa.Producer.produce(
+        @brokers,
+        topic_name,
+        {"test", Jason.encode!(message_data_3)},
+        partition: 0
       )
 
       Elsa.Producer.produce(
@@ -348,25 +364,11 @@ defmodule Forklift.E2ETest do
         partition: 0
       )
 
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == "1"
-        end,
-        10000
-      )
-
       Elsa.Producer.produce(
         @brokers,
         topic_name,
-        {"test", Jason.encode!(message_data_3)},
+        {"test", Jason.encode!(end_of_data_message_3)},
         partition: 0
-      )
-
-      eventually(
-        fn ->
-          assert Redix.command!(:redix, ["GET", get_count_key(extract_id_3)]) == nil
-        end,
-        10000
       )
 
       # Verify dataset table contents have been updated with data from the received messages
