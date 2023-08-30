@@ -7,7 +7,13 @@ defmodule Valkyrie.Event.EventHandler do
   use Brook.Event.Handler
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
+    only: [
+      data_extract_start: 0,
+      data_ingest_start: 0,
+      data_standardization_end: 0,
+      dataset_delete: 0,
+      dataset_update: 0
+    ]
 
   require Logger
   @instance_name Valkyrie.instance_name()
@@ -35,6 +41,34 @@ defmodule Valkyrie.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_start failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: data_extract_start(),
+        data: %Ingestion{targetDatasets: target_dataset_ids} = data,
+        author: author
+      }) do
+    Logger.info("Ingestion: #{data.id} - Received data_extract_start event from #{author}")
+
+    Enum.each(target_dataset_ids, fn target_dataset_id ->
+      add_event_count(data_ingest_start(), author, target_dataset_id)
+      dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
+
+      if dataset != nil do
+        if not Valkyrie.DatasetSupervisor.is_started?(target_dataset_id) do
+          Valkyrie.DatasetProcessor.start(dataset)
+        end
+      else
+        Logger.error("Could not find dataset_id: #{target_dataset_id} in ingestion: #{data.id}")
+      end
+    end)
+
+    :ok
+  rescue
+    error ->
+      Logger.error("data_extract_start failed to process: #{inspect(error)}")
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
