@@ -61,7 +61,7 @@ defmodule Valkyrie.Event.EventHandler do
           Valkyrie.DatasetProcessor.start(dataset)
         end
       else
-        Logger.debug("Could not find dataset_id: #{target_dataset_id} in ingestion: #{data.id}")
+        Logger.error("Could not find dataset_id: #{target_dataset_id} in ingestion: #{data.id}")
       end
     end)
 
