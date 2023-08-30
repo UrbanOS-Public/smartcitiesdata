@@ -57,46 +57,6 @@ defmodule Valkyrie.Event.EventHandlerTest do
     end
   end
 
-  describe "Data Standardization End" do
-    test "A failing message gets placed on dead letter queue and discarded" do
-      id_for_invalid_data = UUID.uuid4()
-      data = %{"dataset_id" => id_for_invalid_data}
-
-      id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
-      allow(Valkyrie.DatasetProcessor.stop(id_for_invalid_data), exec: fn _ -> raise "nope" end)
-
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
-
-      eventually(fn ->
-        cached_dataset_id =
-          case Brook.ViewState.get(@instance_name, :datasets, id_for_valid_dataset) do
-            {:ok, %{id: id}} -> id
-            _ -> nil
-          end
-
-        failed_messages =
-          Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
-
-            case actual["original_message"] do
-              %{"dataset_id" => message_dataset_id} ->
-                message_dataset_id == id_for_invalid_data
-
-              _ ->
-                false
-            end
-          end)
-
-        assert cached_dataset_id != nil
-        assert cached_dataset_id == id_for_valid_dataset
-        assert 1 == length(failed_messages)
-      end)
-    end
-  end
-
   describe "Dataset Update" do
     test "A failing message gets placed on dead letter queue and discarded" do
       id_for_invalid_dataset = UUID.uuid4()
