@@ -179,7 +179,7 @@ defmodule Valkyrie.Event.EventHandlerTest do
       end)
     end
   end
-  
+
   describe "Data Extract Start" do
     test "Starts a dataset processor for each target dataset in the ingestion" do
       first_dataset = TDG.create_dataset(%{id: UUID.uuid4()})

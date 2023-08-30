@@ -55,9 +55,9 @@ defmodule Alchemist.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{
-    type: data_extract_start(),
-    data: %Ingestion{} = data
-  }) do
+        type: data_extract_start(),
+        data: %Ingestion{} = data
+      }) do
     Logger.info("Ingestion: #{data.id} - Received data_extract_start event")
 
     if not Alchemist.IngestionSupervisor.is_started?(data.id) and not Enum.empty?(data.targetDatasets) do

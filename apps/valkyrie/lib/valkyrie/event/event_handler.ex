@@ -12,7 +12,7 @@ defmodule Valkyrie.Event.EventHandler do
       data_ingest_start: 0,
       data_standardization_end: 0,
       dataset_delete: 0,
-      dataset_update: 0,
+      dataset_update: 0
     ]
 
   require Logger
@@ -46,10 +46,10 @@ defmodule Valkyrie.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{
-    type: data_extract_start(),
-    data: %Ingestion{targetDatasets: target_dataset_ids} = data,
-    author: author
-  }) do
+        type: data_extract_start(),
+        data: %Ingestion{targetDatasets: target_dataset_ids} = data,
+        author: author
+      }) do
     Logger.info("Ingestion: #{data.id} - Received data_extract_start event from #{author}")
 
     Enum.each(target_dataset_ids, fn target_dataset_id ->
