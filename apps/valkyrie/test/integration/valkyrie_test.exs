@@ -303,6 +303,8 @@ defmodule ValkyrieTest do
       assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == true
     end
 
+    Valkyrie.DatasetProcessor.stop(dataset.id)
+
     Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
 
     eventually fn ->
