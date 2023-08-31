@@ -6,7 +6,7 @@ defmodule Alchemist.Event.EventHandler do
   use Brook.Event.Handler
 
   import SmartCity.Event,
-    only: [ingestion_update: 0, ingestion_delete: 0]
+    only: [ingestion_update: 0, ingestion_delete: 0, data_extract_start: 0]
 
   require Logger
 
@@ -50,6 +50,24 @@ defmodule Alchemist.Event.EventHandler do
   rescue
     error ->
       Logger.error("ingestion_delete failed to process: #{inspect(error)}")
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: data_extract_start(),
+        data: %Ingestion{} = data
+      }) do
+    Logger.info("Ingestion: #{data.id} - Received data_extract_start event")
+
+    if not Alchemist.IngestionSupervisor.is_started?(data.id) and not Enum.empty?(data.targetDatasets) do
+      Alchemist.IngestionProcessor.start(data)
+    end
+
+    :ok
+  rescue
+    error ->
+      Logger.error("data_extract_start failed to process: #{inspect(error)}")
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
