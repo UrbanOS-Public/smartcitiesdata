@@ -350,10 +350,12 @@ defmodule E2ETest do
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
     test "is written by reaper", %{ingestion: ingestion} do
+      IO.inspect(ingestion, label: "ingestion oooo")
+      allow(Reaper.Cache.cache(any(), any()), exec: fn _, _ -> Process.sleep(30000) end)
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
-        {:ok, _, [message]} = Elsa.fetch(@brokers, topic)
+        {:ok, _, [message, end_of_data_message]} = Elsa.fetch(@brokers, topic) |> IO.inspect(label: "brokers")
         {:ok, data} = SmartCity.Data.new(message.value)
 
         assert %{"one" => "true", "two" => "foobar", "three" => "10"} ==
@@ -372,8 +374,8 @@ defmodule E2ETest do
         "#{Application.get_env(:alchemist, :output_topic_prefix)}-#{second_dataset["id"]}"
 
       eventually(fn ->
-        {:ok, _, [first_message]} = Elsa.fetch(@brokers, first_topic)
-        {:ok, _, [second_message]} = Elsa.fetch(@brokers, second_topic)
+        {:ok, _, [first_message, eod_message]} = Elsa.fetch(@brokers, first_topic)
+        {:ok, _, [second_message, eod_message]} = Elsa.fetch(@brokers, second_topic)
         {:ok, first_data} = SmartCity.Data.new(first_message.value)
         {:ok, second_data} = SmartCity.Data.new(second_message.value)
 
@@ -396,8 +398,8 @@ defmodule E2ETest do
         "#{Application.get_env(:valkyrie, :output_topic_prefix)}-#{second_dataset["id"]}"
 
       eventually(fn ->
-        {:ok, _, [first_message]} = Elsa.fetch(@brokers, first_topic)
-        {:ok, _, [second_message]} = Elsa.fetch(@brokers, second_topic)
+        {:ok, _, [first_message, eod_message]} = Elsa.fetch(@brokers, first_topic)
+        {:ok, _, [second_message, eod_message]} = Elsa.fetch(@brokers, second_topic)
         {:ok, first_data} = SmartCity.Data.new(first_message.value)
         {:ok, second_data} = SmartCity.Data.new(second_message.value)
 
