@@ -355,7 +355,9 @@ defmodule E2ETest do
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
-        {:ok, _, [message, end_of_data_message]} = Elsa.fetch(@brokers, topic) |> IO.inspect(label: "brokers")
+        {:ok, _, [message, end_of_data_message]} =
+          Elsa.fetch(@brokers, topic) |> IO.inspect(label: "brokers")
+
         {:ok, data} = SmartCity.Data.new(message.value)
 
         assert %{"one" => "true", "two" => "foobar", "three" => "10"} ==
