@@ -772,7 +772,8 @@ defmodule Reaper.FullTest do
     end)
   end
 
-  test "should delete the ingestion and the view state when delete event is called" do
+  @tag timeout: 120_000
+  test "should delete the ingestion and the view state when delete event is called", %{bypass: bypass} do
     ingestion_id = Faker.UUID.v4()
     output_topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
@@ -780,21 +781,45 @@ defmodule Reaper.FullTest do
       TDG.create_ingestion(%{
         id: ingestion_id,
         allow_duplicates: false,
-        cadence: "*/5 * * * * * *",
-        targetDatasets: ["ds1"]
+        cadence: "*/30 * * * * *",
+        targetDatasets: ["ds1"],
+        sourceFormat: "csv",
+        schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: "",
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+            },
+            type: "http"
+          }
+        ],
+        topLevelSelector: nil
       })
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+
+    allow(DateTime.utc_now(), return: dateTime)
+    allow(Reaper.Cache.cache(any(), any()), exec: fn _, _ -> Process.sleep(30000) end)
+
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(dateTime))
 
     Brook.Event.send(@instance_name, ingestion_update(), :author, ingestion)
 
     eventually(
       fn ->
         assert String.to_atom(ingestion_id) == find_quantum_job(ingestion_id)
-        assert nil != Reaper.Horde.Registry.lookup(ingestion_id)
-        assert nil != Reaper.Cache.Registry.lookup(ingestion_id)
+        assert nil != Reaper.Horde.Registry.lookup(ingestion.id)
+        assert nil != Reaper.Cache.Registry.lookup(cache_name)
         assert ingestion == Extractions.get_ingestion!(ingestion.id)
         assert true == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
-      2_000,
+      5_000,
       10
     )
 

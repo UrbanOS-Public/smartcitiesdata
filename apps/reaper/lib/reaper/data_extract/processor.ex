@@ -53,7 +53,6 @@ defmodule Reaper.DataExtract.Processor do
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
     end)
 
-    IO.inspect("Hello how are you")
     {:ok, producer_stage} = create_producer_stage(ingestion)
     {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)
     {:ok, schema_stage} = SchemaStage.start_link(cache: cache_name, ingestion: ingestion)
@@ -113,7 +112,7 @@ defmodule Reaper.DataExtract.Processor do
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
   end
 
-  defp validate_cache(_ingestion), do: nil
+  defp validate_cache(_ingestion, _), do: nil
 
   defp wait_for_completion([]), do: true
 
