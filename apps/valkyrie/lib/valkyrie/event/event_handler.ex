@@ -10,6 +10,7 @@ defmodule Valkyrie.Event.EventHandler do
     only: [
       data_extract_start: 0,
       data_ingest_start: 0,
+      data_standardization_end: 0,
       dataset_delete: 0,
       dataset_update: 0
     ]
