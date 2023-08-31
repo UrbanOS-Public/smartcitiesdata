@@ -674,10 +674,10 @@ defmodule Reaper.FullTest do
       topic = "#{output_topic_prefix()}-#{@pre_existing_ingestion_id}"
 
       eventually(fn ->
-        [results | eod] = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
-        last_one = List.last(results)
+        [result1, result2, eod] = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
-        assert expected == last_one
+        assert expected == result2
+        assert end_of_data() == eod.payload
       end)
     end
   end
