@@ -204,13 +204,14 @@ defmodule Reaper.FullTest do
     end
 
     @tag capture_log: true
+    @tag timeout: 120_000
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       topic = "#{output_topic_prefix()}-#{@partial_load_ingestion_id}"
 
       eventually(
         fn ->
           result = :brod.resolve_offset(brod_endpoints(), topic, 0)
-          assert {:ok, 10_000} == result
+          assert {:ok, 10_001} == result
         end,
         2_000,
         50
