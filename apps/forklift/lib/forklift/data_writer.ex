@@ -164,7 +164,7 @@ defmodule Forklift.DataWriter do
     datum |> Forklift.Util.add_to_metadata(:forklift_start_time, Data.Timing.current_time())
   end
 
-  defp add_ingestion_info(%{payload: payload} = data) when not is_map(payload) do
+  defp add_ingestion_info(%{payload: end_of_data()} = data) do
     data
   end
 
