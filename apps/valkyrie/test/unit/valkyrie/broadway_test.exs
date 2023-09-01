@@ -6,10 +6,11 @@ defmodule Valkyrie.BroadwayTest do
   alias SmartCity.Data
 
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_standardization_end: 0, event_log_published: 0]
+  import SmartCity.Event, only: [event_log_published: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   @dataset_id "ds1"
+  @dataset_id2 "ds2"
   @topic "raw-ds1"
   @producer :ds1_producer
   @current_time "2019-07-17T14:45:06.123456Z"
@@ -75,7 +76,15 @@ defmodule Valkyrie.BroadwayTest do
         payload: %{"name" => "johnny", "age" => "21"}
       )
 
+    end_of_data =
+      TDG.create_data(
+        dataset_ids: [@dataset_id, @dataset_id2],
+        ingestion_id: ingestion_id,
+        payload: end_of_data()
+      )
+
     kafka_message = %{value: Jason.encode!(data)}
+    eod_message = %{value: Jason.encode!(end_of_data)}
 
     dateTime = ~U[2023-01-01 00:00:00Z]
     allow(DateTime.utc_now(), return: dateTime)
@@ -101,7 +110,7 @@ defmodule Valkyrie.BroadwayTest do
     expect(Brook.Event.send(any(), event_log_published(), :valkyrie, first_expected_event_log), return: :ok)
     expect(Brook.Event.send(any(), event_log_published(), :valkyrie, second_expected_event_log), return: :ok)
 
-    Broadway.test_batch(broadway, [kafka_message])
+    Broadway.test_batch(broadway, [kafka_message, eod_message])
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
@@ -111,7 +120,7 @@ defmodule Valkyrie.BroadwayTest do
       |> Enum.map(fn {:ok, data} -> data end)
       |> Enum.map(fn data -> data.payload end)
 
-    assert payloads == [%{"name" => "johnny", "age" => 21, "alias" => "johnny"}]
+    assert payloads == [%{"name" => "johnny", "age" => 21, "alias" => "johnny"}, end_of_data()]
   end
 
   test "applies valkyrie message timing", %{broadway: broadway} do
@@ -205,16 +214,19 @@ defmodule Valkyrie.BroadwayTest do
   test "should send the messages to the output kafka topic", %{broadway: broadway} do
     data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "johnny", "age" => 21})
     data2 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "carl", "age" => 33})
-    kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}]
+    end_of_data = TDG.create_data(dataset_id: @dataset_id, payload: end_of_data())
+
+    eod_message = %{value: Jason.encode!(end_of_data)}
+    kafka_messages = [%{value: Jason.encode!(data1)}, %{value: Jason.encode!(data2)}, eod_message]
 
     Broadway.test_batch(broadway, kafka_messages)
 
     assert_receive {:ack, _ref, messages, _}, 5_000
-    assert 2 == length(messages)
+    assert 3 == length(messages)
 
     captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
 
-    assert 2 = length(captured_messages)
+    assert 3 = length(captured_messages)
 
     assert Enum.at(captured_messages, 0) |> Jason.decode!() |> Map.get("payload") == %{
              "age" => 21,
@@ -227,25 +239,6 @@ defmodule Valkyrie.BroadwayTest do
              "name" => "carl",
              "alias" => "carl"
            }
-  end
-
-  test "should emit a data standarization end event when END_OF_DATA message is recieved", %{broadway: broadway} do
-    allow(Brook.Event.send(any(), any(), any(), any()), return: :does_not_matter)
-    data1 = TDG.create_data(dataset_id: @dataset_id, payload: %{"name" => "lou cang", "age" => "921"})
-
-    kafka_messages = [%{value: Jason.encode!(data1)}, %{value: end_of_data()}]
-
-    Broadway.test_batch(broadway, kafka_messages)
-    assert_receive {:ack, _ref, messages, _}, 5_000
-
-    captured_messages = capture(Elsa.produce(:"#{@dataset_id}_producer", :output_topic, any(), partition: 0), 3)
-
-    assert 2 = length(captured_messages)
-    assert end_of_data() in captured_messages
-
-    assert_called(
-      Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => @dataset_id})
-    )
   end
 end
 

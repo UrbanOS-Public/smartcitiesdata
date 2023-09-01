@@ -204,49 +204,4 @@ defmodule Forklift.Event.EventHandlerTest do
       end)
     end
   end
-
-  describe "Data Extract End" do
-    test "A failing message gets placed on dead letter queue and discarded" do
-      invalid_dataset_id = UUID.uuid4()
-      invalid_dataset_id2 = UUID.uuid4()
-      ids_for_invalid_dataset = [invalid_dataset_id, invalid_dataset_id2]
-
-      invalid_data = %{
-        "dataset_ids" => ids_for_invalid_dataset,
-        "extract_start_unix" => "",
-        "ingestion_id" => "",
-        "msgs_extracted" => ""
-      }
-
-      id_for_valid_dataset = UUID.uuid4()
-      valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.Datasets.get!(invalid_dataset_id), exec: fn _ -> raise "nope" end)
-
-      Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, invalid_data)
-      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
-
-      eventually(fn ->
-        cached_dataset = Forklift.Datasets.get!(id_for_valid_dataset)
-
-        failed_messages =
-          Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
-          |> elem(2)
-          |> Enum.filter(fn message ->
-            actual = Jason.decode!(message.value)
-
-            case actual["original_message"] do
-              %{"dataset_ids" => message_dataset_ids} ->
-                Enum.member?(message_dataset_ids, invalid_dataset_id)
-
-              _ ->
-                false
-            end
-          end)
-
-        assert cached_dataset != nil
-        assert cached_dataset.id == id_for_valid_dataset
-        assert 1 == length(failed_messages)
-      end)
-    end
-  end
 end

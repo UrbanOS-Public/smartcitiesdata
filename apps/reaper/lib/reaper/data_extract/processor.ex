@@ -4,6 +4,8 @@ defmodule Reaper.DataExtract.Processor do
   """
   use Properties, otp_app: :reaper
 
+  import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       event_log_published: 0
@@ -43,7 +45,8 @@ defmodule Reaper.DataExtract.Processor do
       |> Providers.Helpers.Provisioner.provision()
 
     validate_destination(ingestion)
-    validate_cache(ingestion)
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
+    validate_cache(ingestion, cache_name)
 
     Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
       event_data = create_ingestion_started_event_log(dataset_id, unprovisioned_ingestion.id)
@@ -51,9 +54,9 @@ defmodule Reaper.DataExtract.Processor do
     end)
 
     {:ok, producer_stage} = create_producer_stage(ingestion)
-    {:ok, validation_stage} = ValidationStage.start_link(cache: ingestion.id, ingestion: ingestion)
-    {:ok, schema_stage} = SchemaStage.start_link(cache: ingestion.id, ingestion: ingestion)
-    {:ok, load_stage} = LoadStage.start_link(cache: ingestion.id, ingestion: ingestion, start_time: extract_time)
+    {:ok, validation_stage} = ValidationStage.start_link(cache: cache_name, ingestion: ingestion)
+    {:ok, schema_stage} = SchemaStage.start_link(cache: cache_name, ingestion: ingestion)
+    {:ok, load_stage} = LoadStage.start_link(cache: cache_name, ingestion: ingestion, start_time: extract_time)
 
     GenStage.sync_subscribe(load_stage, to: schema_stage, min_demand: @min_demand, max_demand: @max_demand)
     GenStage.sync_subscribe(schema_stage, to: validation_stage, min_demand: @min_demand, max_demand: @max_demand)
@@ -68,7 +71,7 @@ defmodule Reaper.DataExtract.Processor do
 
     Persistence.remove_last_processed_index(ingestion.id)
 
-    messages_processed_count(ingestion.id)
+    messages_processed_count(cache_name)
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
@@ -89,8 +92,14 @@ defmodule Reaper.DataExtract.Processor do
 
     output_file
     |> Decoder.decode(ingestion)
+    |> add_eod()
     |> Stream.with_index()
     |> GenStage.from_enumerable()
+  end
+
+  defp add_eod(messages) do
+    [end_of_data() | Enum.reverse(messages)]
+    |> Enum.reverse()
   end
 
   defp validate_destination(ingestion) do
@@ -99,11 +108,11 @@ defmodule Reaper.DataExtract.Processor do
     start_topic_producer(topic)
   end
 
-  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false, id: id}) do
-    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: id})
+  defp validate_cache(%SmartCity.Ingestion{allow_duplicates: false}, cache_name) do
+    Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
   end
 
-  defp validate_cache(_ingestion), do: nil
+  defp validate_cache(_ingestion, _), do: nil
 
   defp wait_for_completion([]), do: true
 
@@ -142,13 +151,13 @@ defmodule Reaper.DataExtract.Processor do
     Elsa.Producer.ready?(connection_name)
   end
 
-  defp messages_processed_count(ingestion_id) do
-    case MsgCountCache.get(ingestion_id) do
+  defp messages_processed_count(cache_name) do
+    case MsgCountCache.get(cache_name) do
       {:ok, count} ->
         count
 
       {:error, error} ->
-        raise "Unable to retrieve messages processed count ingestion #{ingestion_id} with error #{inspect(error)}"
+        raise "Unable to retrieve messages processed count ingestion #{cache_name} with error #{inspect(error)}"
     end
   end
 

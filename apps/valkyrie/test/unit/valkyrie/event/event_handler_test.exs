@@ -5,7 +5,7 @@ defmodule Valkyrie.Event.EventHandlerTest do
   import Checkov
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, data_standardization_end: 0, dataset_delete: 0, dataset_update: 0]
+    only: [data_ingest_start: 0, dataset_delete: 0, dataset_update: 0]
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Valkyrie.Event.EventHandler
@@ -51,36 +51,6 @@ defmodule Valkyrie.Event.EventHandlerTest do
       end)
 
       assert Brook.get!(@instance_name, :datasets, dataset.id) == dataset
-    end
-
-    test "Deletes dataset from viewstate when data:standarization:end event fires" do
-      Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(
-          Brook.Event.new(
-            type: data_standardization_end(),
-            data: %{"dataset_id" => "ds1"},
-            author: :author
-          )
-        )
-      end)
-
-      assert Brook.get!(@instance_name, :datasets, "ds1") == nil
-    end
-
-    test "Calls DatasetProcessor.stop when data:standardization:end event fires" do
-      allow(DatasetProcessor.stop("ds1"), return: :does_not_matter)
-
-      Brook.Test.with_event(@instance_name, fn ->
-        EventHandler.handle_event(
-          Brook.Event.new(
-            type: data_standardization_end(),
-            data: %{"dataset_id" => "ds1"},
-            author: :author
-          )
-        )
-      end)
-
-      assert_called(DatasetProcessor.stop("ds1"))
     end
 
     test "should delete dataset when dataset:delete event fires" do

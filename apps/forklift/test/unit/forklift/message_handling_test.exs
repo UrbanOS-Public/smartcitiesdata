@@ -14,7 +14,6 @@ defmodule Forklift.MessageHandlingTest do
 
   setup do
     Brook.Test.register(@instance_name)
-    allow(Forklift.IngestionProgress.new_messages(any(), any(), any(), any()), return: :in_progress)
     :ok
   end
 
@@ -157,27 +156,6 @@ defmodule Forklift.MessageHandlingTest do
 
     assert [] == Jason.decode!(msg)["operational"]["timing"]
     wait_for_mox()
-  end
-
-  describe "on receiving end-of-data message" do
-    test "shuts down dataset reader" do
-      Application.put_env(:forklift, :profiling_enabled, false)
-      expect(MockTable, :write, 3, fn _, _ -> :ok end)
-      expect(MockTopic, :write, fn _, _ -> :ok end)
-
-      dataset = TDG.create_dataset(%{})
-
-      datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
-      datum2 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foz" => "baz"}})
-
-      message1 = %Elsa.Message{key: "one", value: Jason.encode!(datum1)}
-      message2 = %Elsa.Message{key: "two", value: Jason.encode!(datum2)}
-
-      allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
-      expect Brook.Event.send(@instance_name, data_ingest_end(), :forklift, dataset), return: :ok
-      Forklift.MessageHandler.handle_messages([message1, message2, end_of_data()], %{dataset: dataset})
-      wait_for_mox()
-    end
   end
 
   defp wait_for_mox do

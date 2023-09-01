@@ -41,7 +41,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
         batch: [],
         bytes: 0,
         originals: [],
-        start_time: DateTime.utc_now()
+        start_time: DateTime.utc_now(),
+        last_message: false
       }
 
       [message | _] = create_data_messages(?a..?a, ["ds1", "ds2"], state.ingestion, state.start_time)
@@ -98,7 +99,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
         batch: [],
         bytes: 0,
         originals: [],
-        start_time: DateTime.utc_now()
+        start_time: DateTime.utc_now(),
+        last_message: false
       }
 
       incoming_events = ?a..?z |> create_messages() |> Enum.with_index()
@@ -123,7 +125,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
       batch: [],
       bytes: 0,
       originals: [],
-      start_time: DateTime.utc_now()
+      start_time: DateTime.utc_now(),
+      last_message: false
     }
 
     incoming_events = ?a..?c |> create_messages() |> Enum.with_index()

@@ -6,8 +6,7 @@ defmodule Forklift.MessageHandler do
   require Logger
   use Elsa.Consumer.MessageHandler
 
-  import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_write_complete: 0]
+  import SmartCity.Event, only: [data_write_complete: 0, event_log_published: 0]
   alias SmartCity.DataWriteComplete
   alias Forklift.Util
 
@@ -27,7 +26,6 @@ defmodule Forklift.MessageHandler do
       |> Enum.map(&parse/1)
       |> Enum.map(&yeet_error/1)
       |> Enum.reject(&error_tuple?/1)
-      |> Enum.reject(fn msg -> filter_end_of_data(msg, dataset) end)
       |> group_by_each_extraction()
       |> Enum.map(fn {%{ingestion_id: i, extraction_start_time: e}, msgs} ->
         Forklift.DataWriter.write(msgs, dataset: dataset, ingestion_id: i, extraction_start_time: e)
@@ -50,23 +48,10 @@ defmodule Forklift.MessageHandler do
     {:ack, %{dataset: dataset}}
   end
 
-  defp parse(end_of_data() = message), do: message
-
   defp parse(%{key: key, value: value} = message) do
     case SmartCity.Data.new(value) do
       {:ok, datum} -> Util.add_to_metadata(datum, :kafka_key, key)
       {:error, reason} -> {:error, reason, message}
-    end
-  end
-
-  defp filter_end_of_data(msg, dataset) do
-    case msg do
-      end_of_data() ->
-        Forklift.DataWriter.write([msg], dataset: dataset, ingestion_id: nil, extraction_start_time: nil)
-        true
-
-      _ ->
-        false
     end
   end
 

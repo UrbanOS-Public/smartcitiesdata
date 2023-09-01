@@ -15,7 +15,6 @@ defmodule Forklift.Event.EventHandler do
       error_dataset_update: 0,
       error_ingestion_update: 0,
       dataset_delete: 0,
-      data_extract_end: 0,
       ingestion_delete: 0,
       ingestion_update: 0,
       event_log_published: 0
@@ -197,41 +196,6 @@ defmodule Forklift.Event.EventHandler do
         reason: inspect(error)
       )
 
-      :discard
-  end
-
-  def handle_event(%Brook.Event{
-        type: data_extract_end(),
-        data:
-          %{
-            "dataset_ids" => dataset_ids,
-            "extract_start_unix" => extract_start,
-            "ingestion_id" => ingestion_id,
-            "msgs_extracted" => msg_target
-          } = data,
-        author: author
-      }) do
-    Logger.info(
-      "Ingestion: #{ingestion_id} Datasets: #{inspect(dataset_ids)} - Received data_extract_end event from #{author}"
-    )
-
-    Enum.each(dataset_ids, fn dataset_id ->
-      data_extract_end() |> add_event_count(author, dataset_id)
-
-      dataset = Forklift.Datasets.get!(dataset_id)
-
-      ingestion_status = Forklift.IngestionProgress.store_target(dataset, msg_target, ingestion_id, extract_start)
-
-      if ingestion_status == :ingestion_complete do
-        Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start)
-      end
-    end)
-
-    :discard
-  rescue
-    error ->
-      Logger.error("data_extract_end failed to process. #{inspect(error)}")
-      DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

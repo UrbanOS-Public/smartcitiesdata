@@ -11,6 +11,8 @@ defmodule Reaper.FullTest do
   alias SmartCity.TestDataGenerator, as: TDG
   import SmartCity.TestHelper
 
+  import SmartCity.Data, only: [end_of_data: 0]
+
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
@@ -132,9 +134,16 @@ defmodule Reaper.FullTest do
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
-        last_one = List.last(results)
 
-        assert expected == last_one
+        assert length(results) != 0
+        assert List.last(results).payload == end_of_data()
+
+        assert expected ==
+                 results
+                 |> Enum.reverse()
+                 |> tl()
+                 |> Enum.reverse()
+                 |> List.last()
       end)
     end
   end
@@ -195,13 +204,14 @@ defmodule Reaper.FullTest do
     end
 
     @tag capture_log: true
+    @tag timeout: 120_000
     test "configures and ingests a csv datasource that was partially loaded before reaper restarted", %{bypass: _bypass} do
       topic = "#{output_topic_prefix()}-#{@partial_load_ingestion_id}"
 
       eventually(
         fn ->
           result = :brod.resolve_offset(brod_endpoints(), topic, 0)
-          assert {:ok, 10_000} == result
+          assert {:ok, 10_001} == result
         end,
         2_000,
         50
@@ -462,7 +472,7 @@ defmodule Reaper.FullTest do
       )
     end
 
-    @tag timeout: 120_000
+    @tag timeout: 240_000
     test "cadence of once is only processed once, extract steps s3", %{bypass: bypass} do
       ingestion_id = "only-once-extract-steps-s3"
       topic = "#{output_topic_prefix()}-#{ingestion_id}"
@@ -602,7 +612,7 @@ defmodule Reaper.FullTest do
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
-        assert 3 == length(results)
+        assert 4 == length(results)
 
         assert Enum.at(results, 0).payload == %{
                  "id" => nil,
@@ -618,6 +628,8 @@ defmodule Reaper.FullTest do
                  "id" => "3",
                  "grandParent" => %{"parentMap" => %{"fieldA" => "Joe", "fieldB" => nil}}
                }
+
+        assert Enum.at(results, 3).payload == end_of_data()
       end)
     end
   end
@@ -671,9 +683,16 @@ defmodule Reaper.FullTest do
 
       eventually(fn ->
         results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
-        last_one = List.last(results)
 
-        assert expected == last_one
+        assert length(results) != 0
+        assert List.last(results).payload == end_of_data()
+
+        assert expected ==
+                 results
+                 |> Enum.reverse()
+                 |> tl()
+                 |> Enum.reverse()
+                 |> List.last()
       end)
     end
   end
@@ -767,7 +786,8 @@ defmodule Reaper.FullTest do
     end)
   end
 
-  test "should delete the ingestion and the view state when delete event is called" do
+  @tag timeout: 120_000
+  test "should delete the ingestion and the view state when delete event is called", %{bypass: bypass} do
     ingestion_id = Faker.UUID.v4()
     output_topic = "#{output_topic_prefix()}-#{ingestion_id}"
 
@@ -775,21 +795,45 @@ defmodule Reaper.FullTest do
       TDG.create_ingestion(%{
         id: ingestion_id,
         allow_duplicates: false,
-        cadence: "*/5 * * * * * *",
-        targetDatasets: ["ds1"]
+        cadence: "*/30 * * * * *",
+        targetDatasets: ["ds1"],
+        sourceFormat: "csv",
+        schema: [%{name: "id"}, %{name: "name"}, %{name: "pet"}],
+        extractSteps: [
+          %{
+            assigns: %{},
+            context: %{
+              action: "GET",
+              body: "",
+              headers: [],
+              protocol: nil,
+              queryParams: [],
+              url: "http://localhost:#{bypass.port}/#{@csv_file_name}"
+            },
+            type: "http"
+          }
+        ],
+        topLevelSelector: nil
       })
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+
+    allow(DateTime.utc_now(), return: dateTime)
+    allow(Reaper.Cache.cache(any(), any()), exec: fn _, _ -> Process.sleep(30000) end)
+
+    cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(dateTime))
 
     Brook.Event.send(@instance_name, ingestion_update(), :author, ingestion)
 
     eventually(
       fn ->
         assert String.to_atom(ingestion_id) == find_quantum_job(ingestion_id)
-        assert nil != Reaper.Horde.Registry.lookup(ingestion_id)
-        assert nil != Reaper.Cache.Registry.lookup(ingestion_id)
+        assert nil != Reaper.Horde.Registry.lookup(ingestion.id)
+        assert nil != Reaper.Cache.Registry.lookup(cache_name)
         assert ingestion == Extractions.get_ingestion!(ingestion.id)
         assert true == Elsa.Topic.exists?(elsa_brokers(), output_topic)
       end,
-      2_000,
+      5_000,
       10
     )
 

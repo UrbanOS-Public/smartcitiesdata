@@ -24,10 +24,11 @@ defmodule Reaper.DataExtract.LoadStage do
       batch: [],
       bytes: 0,
       originals: [],
-      start_time: Keyword.fetch!(args, :start_time)
+      start_time: Keyword.fetch!(args, :start_time),
+      last_message: false
     }
 
-    MsgCountCache.reset(state.ingestion.id)
+    MsgCountCache.reset(state.cache)
     {:consumer, state}
   end
 
@@ -42,7 +43,11 @@ defmodule Reaper.DataExtract.LoadStage do
     reason
   end
 
-  defp process_event({message, _index} = original, state) do
+  defp process_event({"END_OF_DATA" = message, _index} = original, state) do
+    process_event(original, state, true)
+  end
+
+  defp process_event({message, _index} = original, state, last_message? \\ false) do
     {:ok, data_message} = convert_to_data_message(message, state)
 
     encoded_message = Jason.encode!(data_message)
@@ -56,7 +61,8 @@ defmodule Reaper.DataExtract.LoadStage do
           state
           | batch: [encoded_message],
             bytes: bytes,
-            originals: [original]
+            originals: [original],
+            last_message: last_message?
         }
 
       true ->
@@ -64,7 +70,8 @@ defmodule Reaper.DataExtract.LoadStage do
           state
           | batch: [encoded_message | state.batch],
             bytes: bytes + state.bytes,
-            originals: [original | state.originals]
+            originals: [original | state.originals],
+            last_message: last_message?
         }
     end
   end
@@ -87,8 +94,12 @@ defmodule Reaper.DataExtract.LoadStage do
     :ok = Elsa.produce(:"#{topic}_producer", topic, Enum.reverse(batch), partition: 0)
   end
 
-  defp cache_message_count(%{ingestion: ingestion, batch: batch}) do
-    MsgCountCache.increment(ingestion.id, length(batch))
+  defp cache_message_count(%{ingestion: ingestion, batch: batch, last_message: true, cache: cache}) do
+    MsgCountCache.increment(cache, length(batch) - 1)
+  end
+
+  defp cache_message_count(%{ingestion: ingestion, batch: batch, cache: cache}) do
+    MsgCountCache.increment(cache, length(batch))
   end
 
   defp mark_batch_processed(%{ingestion: ingestion, originals: originals}) do

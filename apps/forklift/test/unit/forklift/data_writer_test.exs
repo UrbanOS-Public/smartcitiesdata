@@ -16,11 +16,6 @@ defmodule Forklift.DataWriterTest do
   setup :set_mox_global
   setup :verify_on_exit!
 
-  setup do
-    allow(Forklift.IngestionProgress.new_messages(any(), any(), any(), any()), return: :in_progress)
-    :ok
-  end
-
   test "should delete table and topic when delete is called" do
     expected_dataset =
       TDG.create_dataset(%{
@@ -74,7 +69,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should not sent data write complete event log when data is not finished writing to the table" do
-    ingestion_status = :in_progress
     extract_start = 1_662_175_490
 
     dataset =
@@ -82,17 +76,19 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{}), end_of_data()]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
     ingestion_id = "testIngestionId"
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
-
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
@@ -121,7 +117,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should sent data write complete event log when data is finished writing to the table" do
-    ingestion_status = :ingestion_complete
     extract_start = 1_662_175_490
 
     dataset =
@@ -129,17 +124,19 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{}), end_of_data()]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
     ingestion_id = "testIngestionId"
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
     allow(DateTime.utc_now(), return: dateTime)
-
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
@@ -167,8 +164,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should raise exception when writer fails" do
-    ingestion_status = :in_progress
-
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
@@ -178,10 +173,6 @@ defmodule Forklift.DataWriterTest do
       })
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
-
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
@@ -198,9 +189,7 @@ defmodule Forklift.DataWriterTest do
     end
   end
 
-  test "compaction *is not* kicked off if ingestion_progress reports \"in progress\"" do
-    ingestion_status = :in_progress
-
+  test "*does not* kick off compaction if end_of_data message is not received" do
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
@@ -211,10 +200,6 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
-
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
     stub(MockTable, :write, fn _data, _params ->
@@ -227,20 +212,10 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    assert_called Forklift.IngestionProgress.new_messages(
-                    Enum.count(fake_data),
-                    ingestion_id,
-                    dataset.id,
-                    extract_start
-                  ),
-                  once()
-
     refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
 
-  test "compaction *is* kicked off if ingestion_progress reports \"ingestion_complete\"" do
-    ingestion_status = :ingestion_complete
-
+  test "compaction *is* kicked off if end_of_data message is received" do
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
@@ -249,12 +224,15 @@ defmodule Forklift.DataWriterTest do
         technical: %{systemName: "some_system_name"}
       })
 
-    fake_data = [TDG.create_data(%{})]
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
 
-    allow(Forklift.IngestionProgress.new_messages(Enum.count(fake_data), ingestion_id, dataset.id, extract_start),
-      return: ingestion_status
-    )
+    fake_data = [TDG.create_data(%{}), end_of_data]
 
+    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
 
     stub(MockTable, :write, fn _data, _params ->
@@ -266,14 +244,6 @@ defmodule Forklift.DataWriterTest do
       ingestion_id: ingestion_id,
       extraction_start_time: extract_start
     )
-
-    assert_called Forklift.IngestionProgress.new_messages(
-                    Enum.count(fake_data),
-                    ingestion_id,
-                    dataset.id,
-                    extract_start
-                  ),
-                  once()
 
     assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
   end

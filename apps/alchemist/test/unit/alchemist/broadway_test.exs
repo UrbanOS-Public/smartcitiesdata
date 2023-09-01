@@ -8,6 +8,7 @@ defmodule Alchemist.BroadwayTest do
 
   import Mox
   import ExUnit.CaptureLog
+  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
 
   import SmartCity.Event,
@@ -150,13 +151,20 @@ defmodule Alchemist.BroadwayTest do
           }
         )
 
-      kafka_message = %{value: Jason.encode!(data)}
+      end_of_data =
+        TDG.create_data(
+          dataset_id: @dataset_id,
+          payload: end_of_data()
+        )
 
-      Broadway.test_batch(broadway, [kafka_message])
+      kafka_message = %{value: Jason.encode!(data)}
+      eod_message = %{value: Jason.encode!(end_of_data)}
+
+      Broadway.test_batch(broadway, [kafka_message, eod_message])
 
       assert_receive {:ack, _ref, messages, _}, 5_000
 
-      assert 1 == length(messages)
+      assert 2 == length(messages)
     end
 
     test "should run with nested, nested lists", %{broadway: broadway} do

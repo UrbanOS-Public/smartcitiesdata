@@ -4,10 +4,12 @@ defmodule ValkyrieTest do
   use Properties, otp_app: :valkyrie
 
   alias SmartCity.TestDataGenerator, as: TDG
+
+  import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.TestHelper
 
   import SmartCity.Event,
-    only: [data_ingest_start: 0, dataset_update: 0, data_standardization_end: 0, dataset_delete: 0]
+    only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
 
   alias TelemetryEvent.Helper.TelemetryEventHelper
 
@@ -241,12 +243,20 @@ defmodule ValkyrieTest do
         dataset_id: dataset.id
       })
 
+    end_of_data =
+      TestHelpers.create_data(
+        dataset_ids: [@dataset_id, @dataset_id2],
+        ingestion_id: ingestion.id,
+        payload: end_of_data()
+      )
+
     messages = [
       invalid_message,
       TestHelpers.create_data(%{
         payload: %{"name" => "Will Turner", "alignment" => "good", "age" => 25},
         dataset_id: dataset.id
-      })
+      }),
+      end_of_data
     ]
 
     eventually fn ->
@@ -293,11 +303,7 @@ defmodule ValkyrieTest do
       assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == true
     end
 
-    Brook.Event.send(@instance_name, data_standardization_end(), :valkyrie, %{"dataset_id" => dataset.id})
-
-    eventually fn ->
-      assert Valkyrie.DatasetSupervisor.is_started?(dataset.id) == false
-    end
+    Valkyrie.DatasetProcessor.stop(dataset.id)
 
     Brook.Event.send(@instance_name, dataset_update(), :valkyrie, dataset)
 
