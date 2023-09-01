@@ -69,7 +69,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should not sent data write complete event log when data is not finished writing to the table" do
-    ingestion_status = :in_progress
     extract_start = 1_662_175_490
 
     dataset =
@@ -118,7 +117,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should sent data write complete event log when data is finished writing to the table" do
-    ingestion_status = :ingestion_complete
     extract_start = 1_662_175_490
 
     dataset =
@@ -166,8 +164,6 @@ defmodule Forklift.DataWriterTest do
   end
 
   test "should raise exception when writer fails" do
-    ingestion_status = :in_progress
-
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
@@ -193,9 +189,7 @@ defmodule Forklift.DataWriterTest do
     end
   end
 
-  test "compaction *is not* kicked off if ingestion_progress reports \"in progress\"" do
-    ingestion_status = :in_progress
-
+  test "*does not* kick off compaction if end_of_data message is not received" do
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
@@ -221,9 +215,7 @@ defmodule Forklift.DataWriterTest do
     refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
   end
 
-  test "compaction *is* kicked off if ingestion_progress reports \"ingestion_complete\"" do
-    ingestion_status = :ingestion_complete
-
+  test "compaction *is* kicked off if end_of_data message is received" do
     ingestion_id = "1234-abcd"
     extract_start = 1_662_175_490
 
