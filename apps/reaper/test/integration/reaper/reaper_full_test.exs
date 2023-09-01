@@ -137,6 +137,7 @@ defmodule Reaper.FullTest do
 
         assert length(results) != 0
         assert List.last(results).payload == end_of_data()
+
         assert expected ==
                  results
                  |> Enum.reverse()
@@ -684,6 +685,7 @@ defmodule Reaper.FullTest do
 
         assert length(results) != 0
         assert List.last(results).payload == end_of_data()
+
         assert expected ==
                  results
                  |> Enum.reverse()
