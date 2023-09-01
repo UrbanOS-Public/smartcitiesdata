@@ -133,10 +133,16 @@ defmodule Reaper.FullTest do
       topic = "#{output_topic_prefix()}-#{@pre_existing_ingestion_id}"
 
       eventually(fn ->
-        [result1, result2, result3, eod] = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
-        assert expected == result3
-        assert eod.payload == end_of_data()
+        assert length(results) != 0
+        assert List.last(results).payload == end_of_data()
+        assert expected ==
+                 results
+                 |> Enum.reverse()
+                 |> tl()
+                 |> Enum.reverse()
+                 |> List.last()
       end)
     end
   end
@@ -674,10 +680,16 @@ defmodule Reaper.FullTest do
       topic = "#{output_topic_prefix()}-#{@pre_existing_ingestion_id}"
 
       eventually(fn ->
-        [result1, result2, eod] = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
+        results = TestUtils.get_data_messages_from_kafka(topic, elsa_brokers())
 
-        assert expected == result2
-        assert end_of_data() == eod.payload
+        assert length(results) != 0
+        assert List.last(results).payload == end_of_data()
+        assert expected ==
+                 results
+                 |> Enum.reverse()
+                 |> tl()
+                 |> Enum.reverse()
+                 |> List.last()
       end)
     end
   end
