@@ -15,7 +15,7 @@ RUN apk upgrade && apk update && \
       inotify-tools \
       nodejs \
       npm && \
-      npm install npm -g --no-progress && \
+      npm install npm@8.10.0 -g --no-progress && \
     rm -rf /var/cache/**/*
 
 RUN curl -L \
