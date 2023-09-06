@@ -84,7 +84,6 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationForm do
       check_form_data(form_data, "conditionOperation", "Is Equal To") ||
         check_form_data(form_data, "conditionOperation", "Is Not Equal To")
 
-
     transformation = Transformation.changeset(socket.assigns.transformation_changeset, form_data)
 
     AndiWeb.IngestionLiveView.Transformations.TransformationsStep.update_transformation(transformation, socket.assigns.id)
