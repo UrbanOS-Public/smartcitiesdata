@@ -23,6 +23,7 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
 
     event_log =
       Andi.InputSchemas.EventLogs.get_all_with_limit_for_dataset_id(dataset.id, @limit)
+      |> truncate_datetime_to_milliseconds
       |> convert_to_string_keys
       |> sort_list_by_field(:timestamp, "asc")
 
@@ -147,6 +148,10 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
       "collapsed" -> "EDIT"
       "expanded" -> "MINIMIZE"
     end
+  end
+
+  defp truncate_datetime_to_milliseconds(event_logs) do
+    Enum.map(event_logs, fn event_log -> %{event_log | timestamp: DateTime.truncate(event_log.timestamp, :millisecond)} end)
   end
 
   defp convert_to_string_keys(event_logs) do
