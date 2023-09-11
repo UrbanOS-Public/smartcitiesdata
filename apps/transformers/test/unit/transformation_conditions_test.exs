@@ -149,7 +149,7 @@ defmodule Transformers.ConditionsTest do
         "newValue" => "new value",
         "condition" => "true",
         "conditionCompareTo" => "Null or Empty",
-        "conditionDataType" => value_type,
+        "conditionDataType" => condition_data_type,
         "sourceConditionField" => "testField",
         "conditionOperation" => operation,
         "targetConditionField" => nil,
@@ -164,7 +164,7 @@ defmodule Transformers.ConditionsTest do
       assert result == {:ok, expected_result}
 
       where([
-        [:value_type, :operation, :expected_result, :test_field],
+        [:condition_data_type, :operation, :expected_result, :test_field],
         ["String", "=", true, nil],
         ["String", "=", false, "asdf"],
         ["String", "!=", false, nil],
