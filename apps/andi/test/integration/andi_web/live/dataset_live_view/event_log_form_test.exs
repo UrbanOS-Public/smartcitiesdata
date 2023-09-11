@@ -78,6 +78,7 @@ defmodule AndiWeb.EventLogFormTest do
     test "Event Log Form shows populated row for each event log", %{curator_conn: conn, curator: curator} do
       dataset = Datasets.create(curator)
       timestamp = ~U[2023-01-01 00:00:00Z]
+      timestamp2 = ~U[2023-01-01 00:00:01Z]
 
       event_logs = [
         %{
@@ -93,7 +94,7 @@ defmodule AndiWeb.EventLogFormTest do
           description: "testDescription2",
           ingestion_id: "testIngestionId2",
           source: "testSource2",
-          timestamp: timestamp,
+          timestamp: timestamp2,
           title: "testTitle2"
         }
       ]
@@ -116,14 +117,14 @@ defmodule AndiWeb.EventLogFormTest do
       assert Enum.member?(row_values, "testSource")
       assert Enum.member?(row_values, "testDatasetId")
       assert Enum.member?(row_values, "testIngestionId")
-      assert Enum.member?(row_values, timestamp)
+      assert Enum.member?(row_values, DateTime.to_string(timestamp))
       assert Enum.member?(row_values, "testTitle")
 
       assert Enum.member?(row_values, "testTitle2")
       assert Enum.member?(row_values, "testSource2")
       assert Enum.member?(row_values, "testDatasetId2")
       assert Enum.member?(row_values, "testIngestionId2")
-      assert Enum.member?(row_values, timestamp)
+      assert Enum.member?(row_values, DateTime.to_string(timestamp2))
       assert Enum.member?(row_values, "testTitle2")
     end
   end
