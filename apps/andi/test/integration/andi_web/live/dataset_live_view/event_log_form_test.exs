@@ -84,7 +84,7 @@ defmodule AndiWeb.EventLogFormTest do
           description: "testDescription",
           ingestion_id: "testIngestionId",
           source: "testSource",
-          timestamp: "testTimestamp",
+          timestamp: ~U[2023-01-01 00:00:00Z],
           title: "testTitle"
         },
         %{
@@ -92,7 +92,7 @@ defmodule AndiWeb.EventLogFormTest do
           description: "testDescription2",
           ingestion_id: "testIngestionId2",
           source: "testSource2",
-          timestamp: "testTimestamp2",
+          timestamp: ~U[2023-01-01 00:00:00Z],
           title: "testTitle2"
         }
       ]
