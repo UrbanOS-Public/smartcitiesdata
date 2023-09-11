@@ -202,7 +202,7 @@ defmodule Andi.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{type: dataset_harvest_end(), data: data}) do
-    Logger.info("Dataset: #{data.id} - Received dataset_harvest_end event")
+    Logger.info("Dataset: #{data["datasetId"]} - Received dataset_harvest_end event")
 
     Organizations.update_harvested_dataset(data)
     :discard
