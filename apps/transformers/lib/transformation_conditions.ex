@@ -66,7 +66,6 @@ defmodule Transformers.Conditions do
       %ValidationStatus{}
       |> NotBlank.check(parameters, @condition_compare_to)
       |> NotBlank.check(parameters, @data_type)
-      |> check_datetime(parameters)
       |> NotBlank.check(parameters, @operation_field)
       |> NotBlank.check(parameters, @source_field)
       |> NotBlank.check_nested(parameters, @source_field)
@@ -76,12 +75,15 @@ defmodule Transformers.Conditions do
     valid_status =
       case comp_val do
         "Static Value" ->
-          valid_status |> NotBlank.check(parameters, @target_value)
+          valid_status
+          |> NotBlank.check(parameters, @target_value)
+          |> check_datetime(parameters)
 
         "Target Field" ->
           valid_status
           |> NotBlank.check(parameters, @target_field)
           |> NotBlank.check_nested(parameters, @target_field)
+          |> check_datetime(parameters)
 
         _ ->
           valid_status
