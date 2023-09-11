@@ -69,7 +69,7 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
             <table class="datasets-table" title="Event Log">
               <thead>
                 <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "timestamp", "unsorted") %>" phx-click="order-by" phx-value-field="timestamp">Timestamp</th>
-                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "source", "unsorted") %>" phx-click="order-by" phx-value-field="source">Source</th>
+                <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "source", "unsorted") %>" style="width:13%" phx-click="order-by" phx-value-field="source">Source</th>
                 <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "title", "unsorted") %>" phx-click="order-by" phx-value-field="title">Title</th>
                 <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "dataset_id", "unsorted") %>" phx-click="order-by" phx-value-field="dataset_id">Dataset ID</th>
                 <th class="datasets-table__th datasets-table__cell datasets-table__th--sortable datasets-table__th--<%= Map.get(@event_log_order, "ingestion_id", "unsorted") %>" phx-click="order-by" phx-value-field="ingestion_id">Ingestion ID</th>
