@@ -619,7 +619,7 @@ defmodule Andi.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, event_log_published(), __MODULE__, event_log)
 
       {:ok, event_log_datetime, _} = DateTime.from_iso8601(event_log.timestamp)
-      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :microsecond)
 
       eventually(fn ->
         [persisted_event_log | tail] = Andi.InputSchemas.EventLogs.get_all_for_dataset_id(event_log.dataset_id)
@@ -661,7 +661,7 @@ defmodule Andi.Event.EventHandlerTest do
       new_event_log = %{old_event_log | timestamp: DateTime.to_iso8601(DateTime.utc_now()), description: "someOtherStuff"}
 
       {:ok, event_log_datetime, _} = DateTime.from_iso8601(new_event_log.timestamp)
-      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :microsecond)
 
       Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
 
@@ -703,7 +703,7 @@ defmodule Andi.Event.EventHandlerTest do
       new_event_log = %{old_event_log | timestamp: DateTime.to_iso8601(DateTime.utc_now()), description: "someOtherStuff"}
 
       {:ok, event_log_datetime, _} = DateTime.from_iso8601(new_event_log.timestamp)
-      expected_timestamp = DateTime.truncate(event_log_datetime, :second)
+      expected_timestamp = DateTime.truncate(event_log_datetime, :microsecond)
 
       Brook.Event.send(@instance_name, event_log_published(), __MODULE__, new_event_log)
 

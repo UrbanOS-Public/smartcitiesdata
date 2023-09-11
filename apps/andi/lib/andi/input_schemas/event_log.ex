@@ -11,7 +11,7 @@ defmodule Andi.InputSchemas.EventLog do
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "event_log" do
     field(:title, :string)
-    field(:timestamp, :utc_datetime)
+    field(:timestamp, :utc_datetime_usec)
     field(:source, :string)
     field(:description, :string)
     field(:ingestion_id, Ecto.UUID)
