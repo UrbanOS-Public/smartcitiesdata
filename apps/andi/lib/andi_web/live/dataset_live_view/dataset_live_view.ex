@@ -216,7 +216,8 @@ defmodule AndiWeb.DatasetLiveView do
   defp status(dataset), do: ingest_status(dataset)
 
   defp ingest_status(dataset) do
-    case has_recent_dlq_message?(dataset.dlq_message) do
+    errors = Andi.InputSchemas.MessageCounts.get_errors_in_last_seven_days(dataset.id) |> IO.inspect(label: "errors in last seven days")
+    case length(errors) > 0 do
       true -> "Error"
       _ -> "Success"
     end

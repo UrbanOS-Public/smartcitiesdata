@@ -129,6 +129,33 @@ defmodule Andi.Event.EventHandler do
     error ->
       Logger.error("Dataset ID: #{data_retrieved_count_message["dataset_id"]}; Failed to write message count to message count table: #{inspect(error)}")
       DeadLetter.process([data_retrieved_count_message["dataset_id"]], nil, data_retrieved_count_message, Atom.to_string(@instance_name), reason: inspect(error))
+      Logger.error("Dataset ID: #{event_log["dataset_id"]}; Failed to write event to event log table: #{inspect(error)}")
+      DeadLetter.process([event_log["dataset_id"]], nil, event_log, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{type: "extraction:count", data: extraction_count_data, author: author}) do
+    Logger.info("Dataset: #{extraction_count_data["dataset_id"]} - Received ingestion_complete event from #{author}")
+
+    #    ingestion_complete_data = create_ingestion_complete_data(dataset.id, ingestion_id, length(data_to_write))
+    #    Brook.Event.send(@instance_name, "ingestion:complete", :forklift, ingestion_complete_data)
+
+    IO.inspect(extraction_count_data, label: "extraction count data")
+    "ingestion:complete"
+    |> add_event_count(author, extraction_count_data["dataset_id"])
+
+    IO.inspect(extraction_count_data, label: "ingestions complete data")
+    MessageCounts.delete_all_before_date(@message_count_retention, "day")
+    MessageCounts.update(extraction_count_data) |> IO.inspect(label: "post save")
+
+    #    EventLogs.delete_all_before_date(@event_log_retention, "day")
+    #    EventLogs.update(event_log)
+
+    :ok
+  rescue
+    error ->
+      Logger.error("Dataset ID: #{extraction_count_data["dataset_id"]}; Failed to write message count to message count table: #{inspect(error)}")
+      DeadLetter.process([extraction_count_data["dataset_id"]], nil, extraction_count_data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

@@ -106,6 +106,7 @@ defmodule Forklift.DataWriter do
   end
 
   defp write_to_table(data, %{technical: technical} = dataset, ingestion_id, extraction_start_time) do
+    IO.inspect(data, label: "data")
     {eod_list, data_to_write} = Enum.split_with(data, fn msg -> msg.payload == end_of_data() end)
     ingestion_complete? = eod_list != []
 
@@ -123,6 +124,7 @@ defmodule Forklift.DataWriter do
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       if ingestion_complete? do
+        IO.inspect(label: "compacting")
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
