@@ -64,14 +64,20 @@ defmodule Reaper.DataExtract.Processor do
 
     wait_for_completion([producer_stage, validation_stage, schema_stage, load_stage])
 
+    messages_processed_count = messages_processed_count(cache_name)
+
     Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
       event_data = create_data_retrieved_event_log(dataset_id, unprovisioned_ingestion.id)
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
+
+      IO.inspect(extract_time, label: "extract time")
+      data_retrieved_count_message = create_data_retrieved_count_message(dataset_id, ingestion.id, messages_processed_count, DateTime.truncate(extract_time, :millisecond))
+      Brook.Event.send(@instance_name, "data:retrieved", :reaper, data_retrieved_count_message)
     end)
 
     Persistence.remove_last_processed_index(ingestion.id)
 
-    messages_processed_count(cache_name)
+    messages_processed_count
   rescue
     error ->
       Logger.error(Exception.format_stacktrace(__STACKTRACE__))
@@ -180,6 +186,16 @@ defmodule Reaper.DataExtract.Processor do
       description: "Successfully downloaded data and placed on data pipeline to begin processing.",
       ingestion_id: ingestion_id,
       dataset_id: dataset_id
+    }
+  end
+
+  defp create_data_retrieved_count_message(dataset_id, ingestion_id, expected_message_count, extraction_start_time) do
+    %{
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id,
+      actual_message_count: 0,
+      expected_message_count: expected_message_count,
+      extraction_start_time: extraction_start_time
     }
   end
 end

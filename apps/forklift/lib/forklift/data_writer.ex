@@ -59,7 +59,7 @@ defmodule Forklift.DataWriter do
     dataset = Keyword.fetch!(opts, :dataset)
     ingestion_id = Keyword.fetch!(opts, :ingestion_id)
     extraction_start_time = Keyword.fetch!(opts, :extraction_start_time)
-
+    IO.inspect(extraction_start_time, label: "initial extraction start time")
     Enum.reverse(data)
     |> do_write(dataset, ingestion_id, extraction_start_time)
   end
@@ -127,6 +127,11 @@ defmodule Forklift.DataWriter do
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
+
+        IO.inspect(length(data_to_write), label: "actual_message_count")
+        IO.inspect(DateTime.from_unix!(extraction_start_time), label: "extraction_start time")
+        ingestion_complete_data = create_ingestion_complete_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
+        Brook.Event.send(@instance_name, "ingestion:complete", :forklift, ingestion_complete_data)
       end
 
       {:ok, write_timing}
@@ -216,6 +221,15 @@ defmodule Forklift.DataWriter do
       description: "All data has been written to table.",
       ingestion_id: ingestion_id,
       dataset_id: dataset_id
+    }
+  end
+
+  defp create_ingestion_complete_data(dataset_id, ingestion_id, messages_written, extraction_start_time) do
+    %{
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id,
+      actual_message_count: messages_written,
+      extraction_start_time: DateTime.from_unix!(extraction_start_time)
     }
   end
 end
