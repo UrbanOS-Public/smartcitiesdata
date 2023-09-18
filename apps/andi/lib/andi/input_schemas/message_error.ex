@@ -10,26 +10,29 @@ defmodule Andi.InputSchemas.MessageCount do
 
   @primary_key false
   schema "message_count" do
-    field(:actual_message_count, :integer)
-    field(:expected_message_count, :integer)
-    field(:extraction_start_time, :utc_datetime, primary_key: true)
     field(:ingestion_id, Ecto.UUID, primary_key: true)
     field(:dataset_id, Ecto.UUID)
-  end
+    field(:has_current_error, :boolean)
+    field(:last_error_time, :utc_datetime, primary_key: true)
 
+  end
+  add(:dataset_id, :uuid, primary_key: true)
+  add(:ingestion_id, :uuid, primary_key: true)
+  add(:has_current_error, :boolean)
+  add(:last_error_time, :utc_datetime, primary_key: true)
   use Accessible
 
   @cast_fields [
-    :actual_message_count,
-    :expected_message_count,
-    :extraction_start_time,
+    :dataset_id,
     :ingestion_id,
-    :dataset_id
+    :has_current_error,
+    :last_error_time
   ]
 
   @required_fields [
-    :extraction_start_time,
-    :dataset_id
+    :ingestion_id,
+    :dataset_id,
+    :last_error_time
   ]
 
   def changeset(%{} = changes) do

@@ -22,11 +22,11 @@ defmodule Andi.InputSchemas.MessageCounts do
     Repo.all(query)
   end
 
-  def get_errors_in_last_seven_days(dataset_id) do
+  def get_most_recent_error_time(dataset_id, ingestion_id) do
     query = from(
       messageCount in MessageCount,
       where: messageCount.dataset_id == ^dataset_id,
-      where: messageCount.actual_message_count != messageCount.expected_message_count,
+      where: messageCount.ingestion_id == ^ingestion_id,
       where: messageCount.extraction_start_time > ago(2, "minute")
     )
 
