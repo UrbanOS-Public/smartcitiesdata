@@ -59,7 +59,7 @@ defmodule Forklift.DataWriter do
     dataset = Keyword.fetch!(opts, :dataset)
     ingestion_id = Keyword.fetch!(opts, :ingestion_id)
     extraction_start_time = Keyword.fetch!(opts, :extraction_start_time)
-    IO.inspect(extraction_start_time, label: "initial extraction start time")
+
     Enum.reverse(data)
     |> do_write(dataset, ingestion_id, extraction_start_time)
   end
@@ -106,7 +106,6 @@ defmodule Forklift.DataWriter do
   end
 
   defp write_to_table(data, %{technical: technical} = dataset, ingestion_id, extraction_start_time) do
-    IO.inspect(data, label: "data")
     {eod_list, data_to_write} = Enum.split_with(data, fn msg -> msg.payload == end_of_data() end)
     ingestion_complete? = eod_list != []
 
@@ -124,16 +123,13 @@ defmodule Forklift.DataWriter do
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       if ingestion_complete? do
-        IO.inspect(label: "compacting")
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
 
-        IO.inspect(length(data_to_write), label: "actual_message_count")
-        IO.inspect(DateTime.from_unix!(extraction_start_time), label: "extraction_start time")
-        ingestion_complete_data = create_ingestion_complete_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
-        Brook.Event.send(@instance_name, "ingestion:complete", :forklift, ingestion_complete_data)
+        extraction_count_data = create_extraction_count_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
+        Brook.Event.send(@instance_name, "extraction:count", :forklift, extraction_count_data)
       end
 
       {:ok, write_timing}
@@ -232,6 +228,18 @@ defmodule Forklift.DataWriter do
       dataset_id: dataset_id,
       actual_message_count: messages_written,
       extraction_start_time: DateTime.from_unix!(extraction_start_time)
+    }
+  end
+
+  defp create_extraction_count_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
+#    expected_message_count = Redix.command!(:redix, ["GET", ingestion_id])
+
+    %{
+      ingestion_id: ingestion_id,
+      dataset_id: dataset_id,
+      expected_message_count: 3,
+      actual_message_count: actual_message_count,
+      extraction_start_time: DateTime.from_unix!(extract_time)
     }
   end
 end

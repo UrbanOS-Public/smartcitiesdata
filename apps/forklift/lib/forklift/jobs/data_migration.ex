@@ -10,8 +10,6 @@ defmodule Forklift.Jobs.DataMigration do
   require Logger
   import Forklift.Jobs.JobUtils
 
-  @instance_name Forklift.instance_name()
-
   @spec compact(SmartCity.Dataset.t(), String.t(), Integer.t()) ::
           {:abort, any} | {:error, any} | {:ok, any}
   def compact(%{id: id, technical: %{systemName: system_name}} = dataset, ingestion_id, extract_time) do
@@ -31,33 +29,28 @@ defmodule Forklift.Jobs.DataMigration do
                extract_time
              })"
            ),
-         {:ok, _} <- refit_to_partitioned(system_name, original_count) |> IO.inspect(label: "1"),
-         {:ok, _} <- check_for_data_to_migrate(extraction_count) |> IO.inspect(label: "2"),
+         {:ok, _} <- refit_to_partitioned(system_name, original_count),
+         {:ok, _} <- check_for_data_to_migrate(extraction_count),
          {:ok, _} <-
-           drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time) |> IO.inspect(label: "3"),
+           drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
-           insert_partitioned_data(json_table, system_name, ingestion_id, extract_time) |> IO.inspect(label: "4"),
-         {:ok, actual_count} <- get_actual_count_in_table(system_name, ingestion_id, extract_time) |> IO.inspect(label: "actual count"),
-         :ok <- send_extraction_count_message(system_name, id, ingestion_id, extraction_count, actual_count, extract_time) |> IO.inspect(label: "send message"),
+           insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
              system_name,
              ingestion_id,
              extract_time,
              extraction_count,
-             actual_count,
              "main table includes all messages related to the extraction from the json table"
-           ) |> IO.inspect(label: "verify"),
+           ),
          {:ok, _} <-
            remove_extraction_from_table(json_table, ingestion_id, extract_time),
-         {:ok, actual_count} <- get_actual_count_in_table(json_table, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
              json_table,
              ingestion_id,
              extract_time,
              0,
-             actual_count,
              "json table was cleared of the compacted extraction"
            ),
          {:ok, _} <- remove_deleted_ingestions_if_overwrite(overwrite_mode, system_name, id) do
@@ -214,18 +207,4 @@ defmodule Forklift.Jobs.DataMigration do
 
   defp check_for_data_to_migrate(0), do: {:abort, "No data found to migrate"}
   defp check_for_data_to_migrate(_count), do: {:ok, :data_found}
-
-  defp send_extraction_count_message(table, dataset_id, ingestion_id, expected_message_count, actual_message_count, extract_time) do
-    extraction_count_data = %{
-      ingestion_id: ingestion_id,
-      dataset_id: dataset_id,
-      expected_message_count: expected_message_count,
-      actual_message_count: actual_message_count,
-      extraction_start_time: DateTime.from_unix!(extract_time)
-    }
-
-    Brook.Event.send(@instance_name, "extraction:count", :forklift, extraction_count_data)
-
-    :ok
-  end
 end
