@@ -216,10 +216,18 @@ defmodule AndiWeb.DatasetLiveView do
   defp status(dataset), do: ingest_status(dataset)
 
   defp ingest_status(dataset) do
-    errors = Andi.InputSchemas.MessageCounts.get_errors_in_last_seven_days(dataset.id) |> IO.inspect(label: "errors in last seven days")
-    case length(errors) > 0 do
-      true -> "Error"
-      _ -> "Success"
+    latest_error = Andi.InputSchemas.MessageErrors.get_latest_error(dataset.id)
+
+    cond do
+      latest_error && latest_error.has_current_error ->
+        "Error"
+
+      latest_error && !latest_error.has_current_error &&
+          DateTime.compare(latest_error.last_error_time, DateTime.add(DateTime.utc_now(), -600, :second)) == :gt ->
+        "Partial-Success"
+
+      true ->
+        "Success"
     end
   end
 

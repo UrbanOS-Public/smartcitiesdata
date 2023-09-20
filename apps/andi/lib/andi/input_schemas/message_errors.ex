@@ -1,60 +1,65 @@
-defmodule Andi.InputSchemas.MessageCounts do
+defmodule Andi.InputSchemas.MessageErrors do
   @moduledoc false
   alias Andi.Repo
   alias Ecto.Changeset
-  alias Andi.InputSchemas.MessageCount
+  alias Andi.InputSchemas.MessageError
 
   use Properties, otp_app: :andi
 
-  import Ecto.Query
+  import Ecto.Query, only: [from: 1, from: 2]
 
   require Logger
 
   def get(nil), do: nil
 
-  def get_by(extraction_start_time, ingestion_id) do
-    Repo.get_by(MessageCount, %{ingestion_id: ingestion_id, extraction_start_time: extraction_start_time})
-  end
-
   def get_all() do
-    query = from(messageCount in MessageCount)
+    query = from(messageError in MessageError)
 
     Repo.all(query)
   end
 
-  def get_most_recent_error_time(dataset_id, ingestion_id) do
-    query = from(
-      messageCount in MessageCount,
-      where: messageCount.dataset_id == ^dataset_id,
-      where: messageCount.ingestion_id == ^ingestion_id,
-      where: messageCount.extraction_start_time > ago(2, "minute")
-    )
-
-    Repo.all(query)
+  def get_latest_error(dataset_id) do
+    case Repo.get_by(MessageError, %{dataset_id: dataset_id}) do
+      nil -> get_default(dataset_id)
+      message_error -> message_error
+    end
   end
 
-  def update(%{} = message_count) do
-    MessageCount.changeset(message_count) |> IO.inspect(label: "changeset")
+  def get_default(dataset_id) do
+    %MessageError{
+      dataset_id: dataset_id,
+      last_error_time: DateTime.from_unix!(0),
+      has_current_error: false
+    }
+  end
+
+  def update(%{} = changes) do
+    original_message_error = get_latest_error(changes.dataset_id)
+
+    update(original_message_error, changes)
+  end
+
+  def update(%MessageError{} = existing_message_error, %{} = changes) do
+    MessageError.changeset(existing_message_error, changes)
     |> Repo.insert_or_update()
   end
 
-  def update(%{} = message_count, changes) do
-    MessageCount.changeset(message_count, changes) |> IO.inspect(label: "changeset")
-    |> Repo.insert_or_update()
+  def update(nil, %{} = changes) do
+    update(changes)
   end
 
-  def delete(%MessageCount{} = message_count) do
-    Repo.delete(message_count)
+  def delete(%MessageError{} = message_error) do
+    Repo.delete(message_error)
   rescue
     _e in Ecto.StaleEntryError ->
-      {:error, "attempted to remove a message_count: #{inspect(message_count)} that does not exist."}
+      {:error, "attempted to remove a message_count: #{inspect(message_error)} that does not exist."}
   end
 
   def delete_all_before_date(value, unit) do
     query =
       from(
-        messageCount in MessageCount,
-        where: messageCount.extraction_start_time < ago(^value, ^unit)
+        messageError in MessageError,
+        where: messageError.last_error_time < ago(^value, ^unit)
       )
 
     Repo.delete_all(query)
