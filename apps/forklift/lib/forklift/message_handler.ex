@@ -21,7 +21,6 @@ defmodule Forklift.MessageHandler do
   Handle each kafka message.
   """
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
-    IO.inspect(messages, label: "messages")
     timed_messages =
       messages
       |> Enum.map(&parse/1)

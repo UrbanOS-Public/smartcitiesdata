@@ -13,7 +13,7 @@ defmodule Forklift.DataWriter do
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
 
   @instance_name Forklift.instance_name()
 
@@ -128,8 +128,10 @@ defmodule Forklift.DataWriter do
         event_data = create_event_log_data(dataset.id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
 
-        extraction_count_data = create_extraction_count_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
-        Brook.Event.send(@instance_name, "extraction:count", :forklift, extraction_count_data)
+        extraction_count_data =
+          create_extraction_count_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
+
+        Brook.Event.send(@instance_name, ingestion_complete(), :forklift, extraction_count_data)
       end
 
       {:ok, write_timing}
@@ -232,12 +234,14 @@ defmodule Forklift.DataWriter do
   end
 
   defp create_extraction_count_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
-#    expected_message_count = Redix.command!(:redix, ["GET", ingestion_id])
+    {expected_message_count, _} =
+      Redix.command!(:redix, ["GET", ingestion_id])
+      |> Integer.parse()
 
     %{
       ingestion_id: ingestion_id,
       dataset_id: dataset_id,
-      expected_message_count: 3,
+      expected_message_count: expected_message_count,
       actual_message_count: actual_message_count,
       extraction_start_time: DateTime.from_unix!(extract_time)
     }

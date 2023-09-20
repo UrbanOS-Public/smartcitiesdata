@@ -132,18 +132,18 @@ defmodule Forklift.Event.EventHandler do
   end
 
   def handle_event(%Brook.Event{
-    type: data_extract_end(),
-    data:
-      %{
-        "dataset_ids" => dataset_ids,
-        "extract_start_unix" => extract_start,
-        "ingestion_id" => ingestion_id,
-        "msgs_extracted" => msg_target
-      } = data
-  }) do
+        type: data_extract_end(),
+        data:
+          %{
+            "dataset_ids" => dataset_ids,
+            "extract_start_unix" => extract_start,
+            "ingestion_id" => ingestion_id,
+            "msgs_extracted" => msg_target
+          } = data
+      }) do
     Logger.info("Ingestion: #{ingestion_id} - Received data_extract_end event")
 
-#    Redix.command!(:redix, ["SET", ingestion_id, msg_target])
+    Redix.command!(:redix, ["SET", ingestion_id, msg_target])
 
     :ok
   rescue
