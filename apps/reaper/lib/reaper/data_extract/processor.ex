@@ -69,10 +69,6 @@ defmodule Reaper.DataExtract.Processor do
     Enum.each(unprovisioned_ingestion.targetDatasets, fn dataset_id ->
       event_data = create_data_retrieved_event_log(dataset_id, unprovisioned_ingestion.id)
       Brook.Event.send(@instance_name, event_log_published(), :reaper, event_data)
-
-      IO.inspect(extract_time, label: "extract time")
-      data_retrieved_count_message = create_data_retrieved_count_message(dataset_id, ingestion.id, messages_processed_count, DateTime.truncate(extract_time, :millisecond))
-      Brook.Event.send(@instance_name, "data:retrieved", :reaper, data_retrieved_count_message)
     end)
 
     Persistence.remove_last_processed_index(ingestion.id)

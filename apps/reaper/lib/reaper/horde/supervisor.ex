@@ -37,7 +37,6 @@ defmodule Reaper.Horde.Supervisor do
     Logger.debug(fn -> "#{__MODULE__} Start data extract process for ingestion #{ingestion.id}" end)
 
     extract_start = DateTime.utc_now()
-    IO.inspect(extract_start, label: "start data extract")
 
     send_extract_complete_event = fn processor_result ->
       message = %{
