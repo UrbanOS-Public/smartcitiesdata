@@ -99,6 +99,8 @@ defmodule Andi.Event.EventHandler do
     ingestion_complete()
     |> add_event_count(author, extraction_count_data["dataset_id"])
 
+    MessageErrors.delete_all_before_date(@message_count_retention, "day")
+
     latest_error = MessageErrors.get_latest_error(dataset_id)
     has_new_error = actual_message_count != expected_message_count
 

@@ -19,6 +19,8 @@ defmodule AndiWeb.DatasetLiveView do
     only_submitted: false
   ]
 
+  @dataset_error_threshold -604800 # -7 days * 24 hours * 3600 seconds
+
   def render(assigns) do
     ~L"""
     <div class="content">
@@ -219,11 +221,11 @@ defmodule AndiWeb.DatasetLiveView do
     latest_error = Andi.InputSchemas.MessageErrors.get_latest_error(dataset.id)
 
     cond do
-      latest_error && latest_error.has_current_error ->
+      latest_error.has_current_error ->
         "Error"
 
-      latest_error && !latest_error.has_current_error &&
-          DateTime.compare(latest_error.last_error_time, DateTime.add(DateTime.utc_now(), -600, :second)) == :gt ->
+      !latest_error.has_current_error &&
+          DateTime.compare(latest_error.last_error_time, DateTime.add(DateTime.utc_now(), @dataset_error_threshold, :second)) == :gt ->
         "Partial-Success"
 
       true ->
