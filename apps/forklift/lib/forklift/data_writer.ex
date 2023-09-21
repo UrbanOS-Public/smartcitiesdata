@@ -224,15 +224,6 @@ defmodule Forklift.DataWriter do
     }
   end
 
-  defp create_ingestion_complete_data(dataset_id, ingestion_id, messages_written, extraction_start_time) do
-    %{
-      ingestion_id: ingestion_id,
-      dataset_id: dataset_id,
-      actual_message_count: messages_written,
-      extraction_start_time: DateTime.from_unix!(extraction_start_time)
-    }
-  end
-
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     {expected_message_count, _} =
       Redix.command!(:redix, ["GET", ingestion_id])
