@@ -123,15 +123,17 @@ defmodule Forklift.DataWriter do
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       if ingestion_complete? do
+
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
-
-        extraction_count_data =
-          create_extraction_count_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
-
-        Brook.Event.send(@instance_name, ingestion_complete(), :forklift, extraction_count_data)
+        IO.inspect("test test")
+        ingestion_complete_data =
+          create_ingestion_complete_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
+        IO.inspect(ingestion_complete_data, label: "extraction count")
+        Brook.Event.send(@instance_name, ingestion_complete(), :forklift, ingestion_complete_data)
+        IO.inspect("huh")
       end
 
       {:ok, write_timing}
@@ -233,7 +235,7 @@ defmodule Forklift.DataWriter do
     }
   end
 
-  defp create_extraction_count_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
+  defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     {expected_message_count, _} =
       Redix.command!(:redix, ["GET", ingestion_id])
       |> Integer.parse()

@@ -19,7 +19,8 @@ defmodule AndiWeb.DatasetLiveView do
     only_submitted: false
   ]
 
-  @dataset_error_threshold -604800 # -7 days * 24 hours * 3600 seconds
+  # -7 days * 24 hours * 3600 seconds
+  @dataset_error_threshold -604_800
 
   def render(assigns) do
     ~L"""

@@ -131,6 +131,28 @@ defmodule Forklift.Event.EventHandlerTest do
     end
   end
 
+  describe "Dataset Extract End" do
+    test "Caches the expected number of messages" do
+      dataset_id = UUID.uuid4()
+      extract_start = DateTime.utc_now()
+      ingestion_id = UUID.uuid4()
+      msg_target = 3
+
+      data_extract_end = %{
+        "dataset_ids" => [dataset_id],
+        "extract_start_unix" => extract_start,
+        "ingestion_id" => ingestion_id,
+        "msgs_extracted" => msg_target
+      }
+
+      Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, data_extract_end)
+
+      eventually(fn ->
+        assert Redix.command!(:redix, ["GET", ingestion_id]) == msg_target
+      end)
+    end
+  end
+
   #
   describe "Migration Last Insert Date Start" do
     test "A failing message gets placed on dead letter queue and discarded" do

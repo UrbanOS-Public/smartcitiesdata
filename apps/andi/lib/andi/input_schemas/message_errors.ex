@@ -10,8 +10,6 @@ defmodule Andi.InputSchemas.MessageErrors do
 
   require Logger
 
-  def get(nil), do: nil
-
   def get_all() do
     query = from(messageError in MessageError)
 
@@ -23,14 +21,6 @@ defmodule Andi.InputSchemas.MessageErrors do
       nil -> get_default(dataset_id)
       message_error -> message_error
     end
-  end
-
-  def get_default(dataset_id) do
-    %MessageError{
-      dataset_id: dataset_id,
-      last_error_time: DateTime.from_unix!(0),
-      has_current_error: false
-    }
   end
 
   def update(%{} = changes) do
@@ -63,5 +53,13 @@ defmodule Andi.InputSchemas.MessageErrors do
       )
 
     Repo.delete_all(query)
+  end
+
+  defp get_default(dataset_id) do
+    %MessageError{
+      dataset_id: dataset_id,
+      last_error_time: DateTime.from_unix!(0),
+      has_current_error: false
+    }
   end
 end
