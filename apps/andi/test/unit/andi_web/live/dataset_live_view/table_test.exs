@@ -2,6 +2,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
   use Placebo
   alias Andi.Schemas.User
+  alias Andi.InputSchemas.MessageErrors
 
   import Phoenix.LiveViewTest
 
@@ -44,6 +45,11 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
     allow(Andi.Repo.all(any()), return: [dataset_a, dataset_b, dataset_c, dataset_d])
+
+    allow(MessageErrors.get_latest_error(dataset_a.id), return: create_message_error(dataset_a.id))
+    allow(MessageErrors.get_latest_error(dataset_b.id), return: create_message_error(dataset_b.id))
+    allow(MessageErrors.get_latest_error(dataset_c.id), return: create_message_error(dataset_c.id))
+    allow(MessageErrors.get_latest_error(dataset_d.id), return: create_message_error(dataset_d.id))
 
     {:ok, view, _} =
       get(conn, @url_path)
@@ -164,5 +170,13 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         Floki.text(children)
       end)
     end)
+  end
+
+  defp create_message_error(dataset_id) do
+    %{
+      dataset_id: dataset_id,
+      has_current_error: false,
+      last_error_time: DateTime.from_unix!(0)
+    }
   end
 end
