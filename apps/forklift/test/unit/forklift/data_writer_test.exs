@@ -193,7 +193,7 @@ defmodule Forklift.DataWriterTest do
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
-    allow(Redix.command!(:redix, ["GET", ingestion_id]), return: {:ok, expected_message_count})
+    allow(Redix.command!(:redix, ["GET", ingestion_id]), return: expected_message_count)
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
 
     stub(MockTable, :write, fn _data, _params ->
