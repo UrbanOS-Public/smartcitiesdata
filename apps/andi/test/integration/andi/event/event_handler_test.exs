@@ -754,7 +754,7 @@ defmodule Andi.Event.EventHandlerTest do
             DateTime.utc_now(),
             -9 * 3600 * 24,
             :second
-            ),
+          ),
           :second
         )
 

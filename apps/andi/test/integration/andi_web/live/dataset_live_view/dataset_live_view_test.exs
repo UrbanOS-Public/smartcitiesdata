@@ -141,7 +141,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
-    test "shows partial success when there is not a current message error on the dataset and there is an error in the last 7 days", %{conn: conn} do
+    test "shows partial success when there is not a current message error on the dataset and there is an error in the last 7 days", %{
+      conn: conn
+    } do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
