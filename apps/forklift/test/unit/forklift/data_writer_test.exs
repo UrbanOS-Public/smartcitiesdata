@@ -93,6 +93,8 @@ defmodule Forklift.DataWriterTest do
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, any()), return: :ok)
+    allow(Redix.command!(:redix, ["GET", ingestion_id]), return: Integer.to_string(1))
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -140,6 +142,8 @@ defmodule Forklift.DataWriterTest do
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
+    allow(Redix.command!(:redix, ["GET", ingestion_id]), return: Integer.to_string(1))
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -286,6 +290,8 @@ defmodule Forklift.DataWriterTest do
 
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    allow(Redix.command!(:redix, ["GET", ingestion_id]), return: Integer.to_string(1))
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
