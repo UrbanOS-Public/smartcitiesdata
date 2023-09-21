@@ -179,8 +179,7 @@ defmodule Forklift.DataWriterTest do
         payload: end_of_data()
       )
 
-    fake_data =
-      [TDG.create_data(%{"test1" => "test1Data"}), TDG.create_data(%{"test2" => "test2Data"}), end_of_data]
+    fake_data = [TDG.create_data(%{"test1" => "test1Data"}), TDG.create_data(%{"test2" => "test2Data"}), end_of_data]
 
     message_count = length(fake_data) - 1
 
