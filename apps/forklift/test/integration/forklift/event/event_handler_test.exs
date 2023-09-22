@@ -148,7 +148,7 @@ defmodule Forklift.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, data_extract_end)
 
       eventually(fn ->
-        assert Redix.command!(:redix, ["GET", ingestion_id]) == msg_target
+        assert Redix.command!(:redix, ["GET", ingestion_id]) == Integer.to_string(msg_target)
       end)
     end
   end
