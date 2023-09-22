@@ -241,7 +241,8 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       assert capture_log(fn ->
                Brook.Event.process(@instance_name, Brook.Event.new(type: dataset_delete(), data: dataset, author: :author))
-             end) =~ ~r/Dataset: #{dataset.id}; dataset_delete failed to process: %RuntimeError{message: \"ERR value is not an integer or out of range\"}/
+             end) =~
+               ~r/Dataset: #{dataset.id}; dataset_delete failed to process: %RuntimeError{message: \"ERR value is not an integer or out of range\"}/
     end
   end
 
