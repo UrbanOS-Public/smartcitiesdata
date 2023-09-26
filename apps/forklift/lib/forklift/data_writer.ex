@@ -10,6 +10,7 @@ defmodule Forklift.DataWriter do
 
   alias SmartCity.Data
   alias Forklift.Jobs.DataMigration
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
@@ -123,13 +124,15 @@ defmodule Forklift.DataWriter do
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       if ingestion_complete? do
+        extraction_count = get_extraction_count(technical.systemName, ingestion_id, extraction_start_time)
+
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
         Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
 
         ingestion_complete_data =
-          create_ingestion_complete_data(dataset.id, ingestion_id, length(data_to_write), extraction_start_time)
+          create_ingestion_complete_data(dataset.id, ingestion_id, extraction_count, extraction_start_time)
 
         Brook.Event.send(@instance_name, ingestion_complete(), :forklift, ingestion_complete_data)
       end
@@ -226,7 +229,7 @@ defmodule Forklift.DataWriter do
 
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     {expected_message_count, _} =
-      Redix.command!(:redix, ["GET", ingestion_id])
+      Redix.command!(:redix, ["GET", ingestion_id <> extract_time])
       |> Integer.parse()
 
     %{
@@ -236,5 +239,13 @@ defmodule Forklift.DataWriter do
       actual_message_count: actual_message_count,
       extraction_start_time: DateTime.from_unix!(extract_time)
     }
+  end
+
+  defp get_extraction_count(system_name, ingestion_id, extraction_start_time) do
+    PrestigeHelper.count_query(
+      "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
+        extraction_start_time
+      })"
+    )
   end
 end

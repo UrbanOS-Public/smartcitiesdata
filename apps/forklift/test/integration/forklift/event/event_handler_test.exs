@@ -134,7 +134,7 @@ defmodule Forklift.Event.EventHandlerTest do
   describe "Dataset Extract End" do
     test "Caches the expected number of messages" do
       dataset_id = UUID.uuid4()
-      extract_start = DateTime.utc_now()
+      extract_start = DateTime.to_unix(DateTime.utc_now())
       ingestion_id = UUID.uuid4()
       msg_target = 3
 
@@ -148,7 +148,7 @@ defmodule Forklift.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, data_extract_end(), __MODULE__, data_extract_end)
 
       eventually(fn ->
-        assert Redix.command!(:redix, ["GET", ingestion_id]) == Integer.to_string(msg_target)
+        assert Redix.command!(:redix, ["GET", ingestion_id <> extract_start]) == Integer.to_string(msg_target)
       end)
     end
   end

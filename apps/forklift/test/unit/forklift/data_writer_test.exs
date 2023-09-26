@@ -5,6 +5,8 @@ defmodule Forklift.DataWriterTest do
 
   alias Forklift.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+
   import Mox
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
@@ -197,6 +199,7 @@ defmodule Forklift.DataWriterTest do
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
     allow(Redix.command!(:redix, ["GET", ingestion_id]), return: Integer.to_string(expected_message_count))
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
+    allow(PrestigeHelper.count_query(any()), return: 2)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
