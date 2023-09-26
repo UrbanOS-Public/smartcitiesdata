@@ -21,8 +21,8 @@ defmodule AndiWeb.DatasetLiveView.Table do
           <tr><td class="datasets-table__cell" colspan="100%" headers="dataset-name">No Datasets Found!</td></tr>
         <% else %>
           <%= for dataset <- @datasets do %>
-            <% status = dataset["status"] %>
-            <% status_modifier = get_status_class(status) %>
+            <% status = get_status(dataset["status"]) %>
+            <% status_modifier = get_status_class(dataset["status"]) %>
 
             <tr class="datasets-table__tr">
               <td class="datasets-table__cell datasets-table__cell dataset__status dataset__status--<%= status_modifier %>">
@@ -41,6 +41,10 @@ defmodule AndiWeb.DatasetLiveView.Table do
     </div>
     """
   end
+
+  defp get_status(nil), do: "unset"
+  defp get_status("Partial-Success"), do: "Success"
+  defp get_status(status), do: status
 
   defp get_status_class(nil), do: "unset"
   defp get_status_class(status), do: String.downcase(status)

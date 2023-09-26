@@ -17,9 +17,11 @@ defmodule Andi.Event.EventHandler do
       dataset_harvest_start: 0,
       dataset_harvest_end: 0,
       user_login: 0,
+      ingestion_complete: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      event_log_published: 0
+      event_log_published: 0,
+      data_extract_end: 0
     ]
 
   alias SmartCity.{Dataset, Organization, Ingestion, EventLog}
@@ -34,10 +36,13 @@ defmodule Andi.Event.EventHandler do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.EventLogs
+  alias Andi.InputSchemas.MessageError
+  alias Andi.InputSchemas.MessageErrors
   alias Andi.Services.IngestionStore
 
   @instance_name Andi.instance_name()
   @event_log_retention 7
+  @message_count_retention 7
 
   def handle_event(%Brook.Event{type: dataset_update(), data: %Dataset{} = data, author: author}) do
     Logger.info("Dataset: #{data.id} - Received dataset_update event from #{author}")
@@ -72,8 +77,61 @@ defmodule Andi.Event.EventHandler do
     :ok
   rescue
     error ->
-      Logger.error("Dataset ID: #{event_log.dataset_id}; Failed to write event to event log table: #{inspect(error)}")
-      DeadLetter.process([event_log.dataset_id], nil, event_log, Atom.to_string(@instance_name), reason: inspect(error))
+      Logger.error("Dataset ID: #{event_log["dataset_id"]}; Failed to write event to event log table: #{inspect(error)}")
+      DeadLetter.process([event_log["dataset_id"]], nil, event_log, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: ingestion_complete(),
+        data:
+          %{
+            "ingestion_id" => ingestion_id,
+            "dataset_id" => dataset_id,
+            "expected_message_count" => expected_message_count,
+            "actual_message_count" => actual_message_count,
+            "extraction_start_time" => extraction_start_time
+          } = extraction_count_data,
+        author: author
+      }) do
+    Logger.info("Dataset: #{extraction_count_data["dataset_id"]} - Received extraction_count event from #{author}")
+
+    ingestion_complete()
+    |> add_event_count(author, extraction_count_data["dataset_id"])
+
+    MessageErrors.delete_all_before_date(@message_count_retention, "day")
+
+    latest_error = MessageErrors.get_latest_error(dataset_id)
+    has_new_error = actual_message_count != expected_message_count
+
+    if has_new_error || latest_error.has_current_error do
+      new_error_time =
+        cond do
+          !has_new_error -> latest_error.last_error_time
+          true -> extraction_start_time
+        end
+
+      changes = %{
+        ingestion_id: ingestion_id,
+        dataset_id: dataset_id,
+        has_current_error: has_new_error,
+        last_error_time: new_error_time
+      }
+
+      MessageErrors.update(latest_error, changes)
+    end
+
+    :ok
+  rescue
+    error ->
+      Logger.error(
+        "Dataset ID: #{extraction_count_data["dataset_id"]}; Failed to write message count to message count table: #{inspect(error)}"
+      )
+
+      DeadLetter.process([extraction_count_data["dataset_id"]], nil, extraction_count_data, Atom.to_string(@instance_name),
+        reason: inspect(error)
+      )
+
       :discard
   end
 

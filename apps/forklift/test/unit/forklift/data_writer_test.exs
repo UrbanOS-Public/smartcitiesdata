@@ -5,9 +5,11 @@ defmodule Forklift.DataWriterTest do
 
   alias Forklift.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
+  alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
+
   import Mox
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
 
   getter(:elsa_brokers, generic: true)
   getter(:input_topic_prefix, generic: true)
@@ -93,6 +95,9 @@ defmodule Forklift.DataWriterTest do
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, any()), return: :ok)
+    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
+    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -140,6 +145,9 @@ defmodule Forklift.DataWriterTest do
 
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
     allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
+    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
+    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -155,6 +163,58 @@ defmodule Forklift.DataWriterTest do
     }
 
     expect(Brook.Event.send(any(), event_log_published(), :forklift, first_expected_event_log), return: :ok)
+
+    DataWriter.write(fake_data,
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
+    )
+  end
+
+  test "should sent ingestion_complete event when data is finished writing to the table" do
+    extract_start = 1_662_175_490
+    actual_messages = [TDG.create_data(%{"test1" => "test1Data"}), TDG.create_data(%{"test2" => "test2Data"})]
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{"test1" => "test1Data"}), TDG.create_data(%{"test2" => "test2Data"}), end_of_data]
+
+    message_count = length(fake_data) - 1
+
+    ingestion_id = "testIngestionId"
+
+    dateTime = ~U[2023-01-01 00:00:00Z]
+
+    allow(DateTime.utc_now(), return: dateTime)
+
+    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
+    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "2")
+    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
+    allow(PrestigeHelper.count_query(any()), return: {:ok, length(actual_messages)})
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    expected_ingestion_complete = %{
+      ingestion_id: ingestion_id,
+      dataset_id: dataset.id,
+      expected_message_count: length(actual_messages),
+      actual_message_count: message_count,
+      extraction_start_time: DateTime.from_unix!(extract_start)
+    }
+
+    expect(Brook.Event.send(any(), ingestion_complete(), :forklift, expected_ingestion_complete), return: :ok)
 
     DataWriter.write(fake_data,
       dataset: dataset,
@@ -234,6 +294,9 @@ defmodule Forklift.DataWriterTest do
 
     allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
     allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
+    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
+    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
