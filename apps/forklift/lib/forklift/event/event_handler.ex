@@ -143,7 +143,7 @@ defmodule Forklift.Event.EventHandler do
       }) do
     Logger.info("Ingestion: #{ingestion_id} - Received data_extract_end event")
 
-    Redix.command!(:redix, ["SET", ingestion_id <> extract_start, msg_target])
+    Redix.command!(:redix, ["SET", "#{ingestion_id}" <> "#{extract_start}", msg_target])
 
     :ok
   rescue

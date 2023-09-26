@@ -124,7 +124,7 @@ defmodule Forklift.DataWriter do
          write_timing <-
            Data.Timing.new(@instance_name, "presto_insert_time", write_start, write_end) do
       if ingestion_complete? do
-        extraction_count = get_extraction_count(technical.systemName, ingestion_id, extraction_start_time)
+        {:ok, extraction_count} = get_extraction_count(technical.systemName, ingestion_id, extraction_start_time)
 
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
@@ -229,7 +229,7 @@ defmodule Forklift.DataWriter do
 
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     {expected_message_count, _} =
-      Redix.command!(:redix, ["GET", ingestion_id <> extract_time])
+      Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"])
       |> Integer.parse()
 
     %{
