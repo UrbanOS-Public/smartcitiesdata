@@ -17,6 +17,7 @@ defmodule Andi.Event.EventHandlerTest do
   alias Andi.DatasetCache
   alias DeadLetter
   alias Andi.InputSchemas.Ingestions
+  alias Andi.InputSchemas.MessageErrors
   alias Andi.Services.IngestionStore
   alias Andi.Services.DatasetStore
   alias Andi.Services.OrgStore
@@ -713,6 +714,90 @@ defmodule Andi.Event.EventHandlerTest do
         [persisted_event_log | tail] = all_datasets
         assert persisted_event_log.dataset_id == new_event_log.dataset_id
         assert persisted_event_log.description == new_event_log.description
+      end)
+    end
+  end
+
+  describe "#{ingestion_complete()}" do
+    test "The ingestion_complete event is transformed into a message error struct and persisted to the postgres table" do
+      dataset_id = UUID.uuid4()
+      ingestion_id = UUID.uuid4()
+      extraction_start_time = DateTime.truncate(DateTime.utc_now(), :second)
+
+      ingestion_complete_event = %{
+        "ingestion_id" => ingestion_id,
+        "dataset_id" => dataset_id,
+        "expected_message_count" => 3,
+        "actual_message_count" => 0,
+        "extraction_start_time" => extraction_start_time
+      }
+
+      Brook.Event.send(@instance_name, ingestion_complete(), __MODULE__, ingestion_complete_event)
+
+      eventually(fn ->
+        message_error = Andi.InputSchemas.MessageErrors.get_latest_error(dataset_id)
+        assert message_error.dataset_id == dataset_id
+        assert message_error.ingestion_id == ingestion_id
+        assert message_error.has_current_error == true
+        assert message_error.last_error_time == extraction_start_time
+      end)
+    end
+
+    test "ingestion_complete event handler deletes records older than 7 days" do
+      old_dataset_id = UUID.uuid4()
+      new_dataset_id = UUID.uuid4()
+      ingestion_id = UUID.uuid4()
+
+      old_time =
+        DateTime.truncate(
+          DateTime.add(
+            DateTime.utc_now(),
+            -9 * 3600 * 24,
+            :second
+          ),
+          :second
+        )
+
+      new_time =
+        DateTime.add(
+          DateTime.utc_now(),
+          -7 *
+            3600 * 24,
+          :second
+        )
+
+      old_message_error = %{
+        ingestion_id: ingestion_id,
+        dataset_id: old_dataset_id,
+        has_current_error: true,
+        last_error_time: old_time
+      }
+
+      MessageErrors.update(old_message_error)
+
+      current_error = MessageErrors.get_latest_error(old_dataset_id)
+      assert current_error.dataset_id == old_dataset_id
+      assert current_error.ingestion_id == ingestion_id
+      assert current_error.has_current_error == true
+      assert current_error.last_error_time == old_time
+
+      ingestion_complete_event = %{
+        "ingestion_id" => ingestion_id,
+        "dataset_id" => new_dataset_id,
+        "expected_message_count" => 3,
+        "actual_message_count" => 0,
+        "extraction_start_time" => new_time
+      }
+
+      Brook.Event.send(@instance_name, ingestion_complete(), __MODULE__, ingestion_complete_event)
+
+      eventually(fn ->
+        current_error = MessageErrors.get_latest_error(old_dataset_id)
+        # returns default values
+        assert current_error.dataset_id == old_dataset_id
+        assert current_error.ingestion_id == nil
+        assert current_error.has_current_error == false
+        assert current_error.last_error_time == DateTime.from_unix!(0)
       end)
     end
   end

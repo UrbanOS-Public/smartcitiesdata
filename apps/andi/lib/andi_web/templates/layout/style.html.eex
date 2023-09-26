@@ -87,7 +87,7 @@
   }
 
   /* Success colors */
-  .dataset__status--success {
+  .dataset__status--success .dataset__status--partial-success {
     color: <%= get_success_color() %>;
   }
   .component-number--valid {

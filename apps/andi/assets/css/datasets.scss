@@ -117,6 +117,7 @@
 }
 
 $icon-width: 30px;
+$icon-margin: 4px;
 
 .dataset__status {
   display: flex;
@@ -131,6 +132,7 @@ $icon-width: 30px;
   .status__icon {
     height: $icon-width;
     width: $icon-width;
+    margin-right: $icon-margin;
   }
 }
 
@@ -144,24 +146,37 @@ $icon-width: 30px;
   }
 }
 
-$error-icon-width: 16px;
-$error-icon-margin: (
-  $icon-width - 16px) / 2;
+$partial-success-success-icon-width: 30px;
+$partial-success-error-icon-width: 10px;
+
+.dataset__status--partial-success {
+  color: $color-success;
+
+  .status__icon {
+    background-image: url('/static/images/check.svg'), url('/static/images/X.svg');
+    background-position: center, right bottom;
+    background-repeat: no-repeat, no-repeat;
+    background-size: $partial-success-success-icon-width, $partial-success-error-icon-width;
+    height: $icon-width;
+    width: $icon-width;
+    margin-right: $icon-margin;
+  }
+}
+
+$error-icon-width: 30px;
 
 .dataset__status--error,
 .dataset__status--rejected {
   color: $color-error;
 
   .status__icon {
-    background-image: url('/static/images/X.svg'
-    );
-  height: $error-icon-width;
-  width: $error-icon-width;
-  margin-left: $error-icon-margin;
-  margin-right: $error-icon-margin;
+    background-image: url('/static/images/X.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    height: $error-icon-width;
+    width: $error-icon-width;
+  }
 }
-}
-
 
 .datasets-table__cell--break {
   word-break: break-word;

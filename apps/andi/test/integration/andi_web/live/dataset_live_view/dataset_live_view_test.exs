@@ -22,6 +22,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
+  alias Andi.InputSchemas.MessageErrors
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
@@ -117,29 +118,21 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--draft"))
     end
 
-    test "ingest status overrides submission status", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, andi_dataset} = Datasets.update(dataset)
-      Datasets.update_submission_status(dataset.id, :rejected)
-
-      current_time = DateTime.utc_now()
-      Datasets.update_ingested_time(dataset.id, current_time)
-
-      assert {:ok, view, html} = live(conn, @url_path)
-
-      assert andi_dataset.dlq_message == nil
-      table_row = get_dataset_table_row(html, dataset)
-
-      refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
-    end
-
-    test "shows success when there is no dlq message stored for a dataset", %{conn: conn} do
+    test "shows success when there is not a current message error on the dataset and no error in the last 7 days", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, andi_dataset} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
       Datasets.update_submission_status(dataset.id, :approved)
 
+      message_error = %{
+        dataset_id: dataset.id,
+        has_current_error: false,
+        last_error_time: DateTime.add(current_time, -7 * 24 * 3600)
+      }
+
+      MessageErrors.update(message_error)
+
       assert {:ok, view, html} = live(conn, @url_path)
 
       assert andi_dataset.dlq_message == nil
@@ -148,51 +141,50 @@ defmodule AndiWeb.DatasetLiveViewTest do
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
 
-    test "shows error when there is a dlq message stored for a dataset", %{conn: conn} do
+    test "shows partial success when there is not a current message error on the dataset and there is an error in the last 7 days", %{
+      conn: conn
+    } do
+      dataset = TDG.create_dataset(%{})
+      {:ok, andi_dataset} = Datasets.update(dataset)
+      current_time = DateTime.utc_now()
+      Datasets.update_ingested_time(dataset.id, current_time)
+      Datasets.update_submission_status(dataset.id, :approved)
+
+      message_error = %{
+        dataset_id: dataset.id,
+        has_current_error: false,
+        last_error_time: DateTime.add(current_time, -6 * 24 * 3600)
+      }
+
+      MessageErrors.update(message_error)
+
+      assert {:ok, view, html} = live(conn, @url_path)
+
+      assert andi_dataset.dlq_message == nil
+      table_row = get_dataset_table_row(html, dataset)
+
+      refute Enum.empty?(Floki.find(table_row, ".dataset__status--partial-success"))
+    end
+
+    test "shows error when there is a current message error on the dataset", %{conn: conn} do
       dataset = TDG.create_dataset(%{})
       {:ok, _} = Datasets.update(dataset)
       current_time = DateTime.utc_now()
       Datasets.update_ingested_time(dataset.id, current_time)
       Datasets.update_submission_status(dataset.id, :approved)
 
-      dlq_time = DateTime.utc_now() |> Timex.shift(days: -3) |> DateTime.to_iso8601()
-      dlq_message = %{"dataset_ids" => [dataset.id], "timestamp" => dlq_time}
-      Datasets.update_latest_dlq_message(dataset.id, dlq_message)
+      message_error = %{
+        dataset_id: dataset.id,
+        has_current_error: true,
+        last_error_time: current_time
+      }
 
-      eventually(fn ->
-        dlq_message =
-          dataset.id
-          |> Datasets.get()
-          |> Map.get(:dlq_message)
-
-        assert dlq_message != nil
-      end)
+      MessageErrors.update(message_error)
 
       assert {:ok, view, html} = live(conn, @url_path)
       table_row = get_dataset_table_row(html, dataset)
 
       refute Enum.empty?(Floki.find(table_row, ".dataset__status--error"))
-    end
-
-    test "shows success when the latest dlq message is older than seven days", %{conn: conn} do
-      dataset = TDG.create_dataset(%{})
-      {:ok, _} = Datasets.update(dataset)
-      current_time = DateTime.utc_now()
-      Datasets.update_ingested_time(dataset.id, current_time)
-      Datasets.update_submission_status(dataset.id, :approved)
-
-      old_time = current_time |> Timex.shift(days: -8) |> DateTime.to_iso8601()
-      dlq_message = %{"dataset_ids" => [dataset.id], "timestamp" => old_time}
-      Datasets.update_latest_dlq_message(dataset.id, dlq_message)
-
-      eventually(fn ->
-        assert %{"dataset_ids" => [dataset.id], "timestamp" => old_time} == Datasets.get(dataset.id) |> Map.get(:dlq_message)
-      end)
-
-      assert {:ok, view, html} = live(conn, @url_path)
-      table_row = get_dataset_table_row(html, dataset)
-
-      refute Enum.empty?(Floki.find(table_row, ".dataset__status--success"))
     end
   end
 

@@ -17,7 +17,8 @@ defmodule Forklift.Event.EventHandler do
       dataset_delete: 0,
       ingestion_delete: 0,
       ingestion_update: 0,
-      event_log_published: 0
+      event_log_published: 0,
+      data_extract_end: 0
     ]
 
   import Brook.ViewState
@@ -127,6 +128,28 @@ defmodule Forklift.Event.EventHandler do
     error ->
       Logger.error("data_ingest_end failed to process.")
       DeadLetter.process([data.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: data_extract_end(),
+        data:
+          %{
+            "dataset_ids" => dataset_ids,
+            "extract_start_unix" => extract_start,
+            "ingestion_id" => ingestion_id,
+            "msgs_extracted" => msg_target
+          } = data
+      }) do
+    Logger.info("Ingestion: #{ingestion_id} - Received data_extract_end event")
+
+    Redix.command!(:redix, ["SET", "#{ingestion_id}" <> "#{extract_start}", msg_target])
+
+    :ok
+  rescue
+    error ->
+      Logger.error("data_extract_end failed to process: #{inspect(error)}")
+      DeadLetter.process(dataset_ids, ingestion_id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
