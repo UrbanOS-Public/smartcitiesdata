@@ -161,6 +161,12 @@ defmodule Transformers.Conditions do
         "<" ->
           {:ok, left_value < right_value}
 
+        ">=" ->
+          {:ok, left_value >= right_value}
+
+        "<=" ->
+          {:ok, left_value <= right_value}
+
         _ ->
           {:error, "unsupported condition operation"}
       end
@@ -199,6 +205,8 @@ defmodule Transformers.Conditions do
       "Is Not Equal To" -> "!="
       "Is Greater Than" -> ">"
       "Is Less Than" -> "<"
+      "Is Greater Than or Equal to" -> ">="
+      "Is Less Than or Equal to" -> "<="
       _ -> value
     end
   end
