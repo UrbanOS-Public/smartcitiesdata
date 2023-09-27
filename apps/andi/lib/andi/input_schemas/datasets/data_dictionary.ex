@@ -102,7 +102,8 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> format_ingestion_sync()
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_format(:name, ~r/^[^.\[\]]+$/)
+    |> validate_format(:ingestion_field_selector, ~r/^[^.\[\]]+$/)
     |> validate_format()
   end
 
@@ -117,7 +118,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:parent_id)
     |> validate_required(@required_fields, message: "is required")
     |> validate_item_type()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_format(:name, ~r/^[^.\[\]]+$/)
     |> validate_format()
     |> validate_selector(source_format)
   end
@@ -132,7 +133,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:technical_id)
     |> foreign_key_constraint(:parent_id)
     |> add_default_format()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_format(:name, ~r/^[^.\[\]]+$/)
     |> validate_required(@required_fields, message: "is required")
   end
 
@@ -145,7 +146,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     |> foreign_key_constraint(:ingestion_id)
     |> foreign_key_constraint(:parent_id)
     |> add_default_format()
-    |> validate_format(:name, ~r/^[[:print:]]+$/)
+    |> validate_format(:name, ~r/^[^.\[\]]+$/)
     |> validate_required(@required_fields, message: "is required")
   end
 
@@ -166,6 +167,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     dictionary
     |> cast(changes_with_id, @cast_fields_for_ingestion, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_draft_ingestion/2)
+    |> validate_format(:name, ~r/^[^.\[\]]+$/)
     |> foreign_key_constraint(:ingestion_id)
   end
 
