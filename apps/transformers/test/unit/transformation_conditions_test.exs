@@ -798,7 +798,7 @@ defmodule Transformers.ConditionsTest do
         "testField" => 2
       }
 
-      condition_opertion = Conditions.check(payload, parameters)
+      condition_operation = Conditions.check(payload, parameters)
 
       assert condition_operation ==
                {:error, "unsupported condition operation #{condition_operation}"}
