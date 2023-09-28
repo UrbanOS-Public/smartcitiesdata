@@ -801,7 +801,7 @@ defmodule Transformers.ConditionsTest do
       condition_operation = Conditions.check(payload, parameters)
 
       assert condition_operation ==
-               {:error, "unsupported condition operation #{condition_operation}"}
+               {:error, "unsupported condition operation !"}
     end
 
     test "returns error when source field is not present in payload" do
