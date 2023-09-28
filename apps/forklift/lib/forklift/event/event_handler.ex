@@ -59,7 +59,7 @@ defmodule Forklift.Event.EventHandler do
     Logger.info("Ingestion: #{data.id} - Received data_extract_start event from #{author}")
 
     Enum.each(target_dataset_ids, fn target_dataset_id ->
-      add_event_count(data_ingest_start(), author, target_dataset_id)
+      add_event_count(data_extract_start(), author, target_dataset_id)
       dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
 
       if dataset != nil do
