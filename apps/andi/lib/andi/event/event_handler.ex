@@ -102,7 +102,10 @@ defmodule Andi.Event.EventHandler do
     MessageErrors.delete_all_before_date(@message_count_retention, "day")
 
     latest_error = MessageErrors.get_latest_error(dataset_id)
-    has_new_error = actual_message_count != expected_message_count
+
+    # Checking specifically actual < expected
+    # We've seen a possible duplication bug in previous sections of the pipeline which results in doubled-up message counts
+    has_new_error = actual_message_count < expected_message_count
 
     if has_new_error || latest_error.has_current_error do
       new_error_time =
