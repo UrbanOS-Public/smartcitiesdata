@@ -180,6 +180,8 @@ defmodule AndiWeb.EditLiveView.PublicDataDictionaryFieldEditorTest do
         ["spaces spaces ", true],
         ["dash-dash_underscore", true],
         ["!#$$()", true],
+        ["[]", false],
+        [".", false],
         [~s(control \t \n characters), false]
       ])
     end

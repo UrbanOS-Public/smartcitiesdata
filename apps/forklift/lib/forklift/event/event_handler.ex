@@ -9,6 +9,7 @@ defmodule Forklift.Event.EventHandler do
   import SmartCity.Event,
     only: [
       data_ingest_start: 0,
+      data_extract_start: 0,
       dataset_update: 0,
       data_ingest_end: 0,
       data_write_complete: 0,
@@ -47,6 +48,32 @@ defmodule Forklift.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_start failed to process. #{inspect(error)}")
+      DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      :discard
+  end
+
+  def handle_event(%Brook.Event{
+        type: data_extract_start(),
+        data: %Ingestion{targetDatasets: target_dataset_ids} = data,
+        author: author
+      }) do
+    Logger.info("Ingestion: #{data.id} - Received data_extract_start event from #{author}")
+
+    Enum.each(target_dataset_ids, fn target_dataset_id ->
+      add_event_count(data_extract_start(), author, target_dataset_id)
+      dataset = Brook.get!(@instance_name, :datasets, target_dataset_id)
+
+      if dataset != nil do
+        :ok = Forklift.DataReaderHelper.init(dataset)
+      else
+        Logger.error("Could not find dataset_id: #{target_dataset_id} in ingestion: #{data.id}")
+      end
+    end)
+
+    :ok
+  rescue
+    error ->
+      Logger.error("data_extract_start failed to process: #{inspect(error)}")
       DeadLetter.process(data.targetDatasets, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
