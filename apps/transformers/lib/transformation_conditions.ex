@@ -167,8 +167,8 @@ defmodule Transformers.Conditions do
         "<=" ->
           {:ok, left_value <= right_value}
 
-        _ ->
-          {:error, "unsupported condition operation"}
+        condition_operation ->
+          {:error, "unsupported condition operation #{condition_operation}"}
       end
     rescue
       error -> {:error, error}
@@ -200,13 +200,13 @@ defmodule Transformers.Conditions do
   end
 
   def map_operation(value) do
-    case value do
-      "Is Equal To" -> "="
-      "Is Not Equal To" -> "!="
-      "Is Greater Than" -> ">"
-      "Is Less Than" -> "<"
-      "Is Greater Than or Equal to" -> ">="
-      "Is Less Than or Equal to" -> "<="
+    case String.downcase(value) do
+      "is equal to" -> "="
+      "is not equal to" -> "!="
+      "is greater than" -> ">"
+      "is less than" -> "<"
+      "is greater than or equal to" -> ">="
+      "is less than or equal to" -> "<="
       _ -> value
     end
   end
