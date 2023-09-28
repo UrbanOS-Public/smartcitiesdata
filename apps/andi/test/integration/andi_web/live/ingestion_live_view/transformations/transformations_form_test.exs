@@ -238,10 +238,11 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     refute has_element?(view, "#transformation_condition_#{transformation.id}__targetDateFormat")
   end
 
-  test "in the condition form, selecting 'static value' will allow equals, not equals, greater than, or less than comparisons", %{
-    view: view,
-    ingestion: ingestion
-  } do
+  test "in the condition form, selecting 'static value' will allow equals, not equals, greater than, greater than or equal to, less than or equal to, or less than comparisons",
+       %{
+         view: view,
+         ingestion: ingestion
+       } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
@@ -260,13 +261,16 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Is Equal To"
     assert options_html =~ "Is Not Equal To"
     assert options_html =~ "Is Greater Than"
+    assert options_html =~ "Is Greater Than Or Equal To"
     assert options_html =~ "Is Less Than"
+    assert options_html =~ "Is Less Than Or Equal To"
   end
 
-  test "in the condition form, selecting 'target field' will allow equals, not equals, greater than, or less than comparisons", %{
-    view: view,
-    ingestion: ingestion
-  } do
+  test "in the condition form, selecting 'target field' will allow equals, not equals, greater than, greater than or equal to, less than or equal to, or less than comparisons",
+       %{
+         view: view,
+         ingestion: ingestion
+       } do
     transformation = Enum.find(ingestion.transformations, fn transformation -> transformation.type == "constant" end)
 
     view
@@ -285,7 +289,9 @@ defmodule AndiWeb.IngestionLiveView.Transformations.TransformationFormTest do
     assert options_html =~ "Is Equal To"
     assert options_html =~ "Is Not Equal To"
     assert options_html =~ "Is Greater Than"
+    assert options_html =~ "Is Greater Than Or Equal To"
     assert options_html =~ "Is Less Than"
+    assert options_html =~ "Is Less Than Or Equal To"
   end
 
   test "in the condition form, selecting 'Null or Empty' will allow equals and not equals comparisons", %{view: view, ingestion: ingestion} do

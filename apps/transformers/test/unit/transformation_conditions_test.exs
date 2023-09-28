@@ -420,92 +420,182 @@ defmodule Transformers.ConditionsTest do
       result = Conditions.check(payload, parameters)
       assert result == {:ok, true}
     end
+  end
 
-    test "returns false when source field value is less than static target value " do
+  describe "greater than or equal to" do
+    test "returns true when source field value is equal to static target value" do
       parameters = %{
         "targetField" => "testField",
         "newValue" => "new value",
+        "valueType" => "string",
         "condition" => "true",
         "conditionCompareTo" => "Static Value",
         "conditionDataType" => "number",
         "sourceConditionField" => "testField",
-        "conditionOperation" => ">",
-        "targetConditionField" => nil,
-        "targetConditionValue" => "3"
-      }
-
-      payload = %{
-        "testField" => 2
-      }
-
-      result = Conditions.check(payload, parameters)
-      assert result == {:ok, false}
-    end
-
-    test "returns true when source field value is greater than target field value" do
-      parameters = %{
-        "targetField" => "testField",
-        "newValue" => "new value",
-        "condition" => "true",
-        "conditionCompareTo" => "Target Field",
-        "conditionDataType" => "number",
-        "sourceConditionField" => "testField",
-        "conditionOperation" => ">",
-        "targetConditionField" => "compareField",
-        "targetConditionValue" => nil
-      }
-
-      payload = %{
-        "testField" => 2,
-        "compareField" => 1
-      }
-
-      result = Conditions.check(payload, parameters)
-      assert result == {:ok, true}
-    end
-
-    test "returns false when source field value is less than target field value" do
-      parameters = %{
-        "targetField" => "testField",
-        "newValue" => "new value",
-        "condition" => "true",
-        "conditionCompareTo" => "Target Field",
-        "conditionDataType" => "number",
-        "sourceConditionField" => "testField",
-        "conditionOperation" => ">",
-        "targetConditionField" => "compareField",
-        "targetConditionValue" => nil
-      }
-
-      payload = %{
-        "testField" => 2,
-        "compareField" => 3
-      }
-
-      result = Conditions.check(payload, parameters)
-      assert result == {:ok, false}
-    end
-
-    test "maps operation string 'Is Greater Than'" do
-      parameters = %{
-        "targetField" => "testField",
-        "newValue" => "new value",
-        "condition" => "true",
-        "conditionCompareTo" => "Static Value",
-        "conditionDataType" => "number",
-        "sourceConditionField" => "testField",
-        "conditionOperation" => "Is Greater Than",
+        "conditionOperation" => ">=",
         "targetConditionField" => nil,
         "targetConditionValue" => "1"
       }
 
       payload = %{
+        "testField" => 1
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+
+    test "returns true when source field value is greater than or equal to static target value 2" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => ">=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "2"
+      }
+
+      payload = %{
         "testField" => 2
       }
 
       result = Conditions.check(payload, parameters)
       assert result == {:ok, true}
     end
+
+    test "returns true when source field value is less than static target value" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "2"
+      }
+
+      payload = %{
+        "testField" => 1
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+
+    test "returns true when source field value is less than or 'equal to' static target value 1" do
+      parameters = %{
+        "targetField" => "testField",
+        "newValue" => "new value",
+        "valueType" => "string",
+        "condition" => "true",
+        "conditionCompareTo" => "Static Value",
+        "conditionDataType" => "number",
+        "sourceConditionField" => "testField",
+        "conditionOperation" => "<=",
+        "targetConditionField" => nil,
+        "targetConditionValue" => "1"
+      }
+
+      payload = %{
+        "testField" => 1
+      }
+
+      result = Conditions.check(payload, parameters)
+      assert result == {:ok, true}
+    end
+  end
+
+  test "returns false when source field value is less than static target value " do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "testField",
+      "conditionOperation" => ">",
+      "targetConditionField" => nil,
+      "targetConditionValue" => "3"
+    }
+
+    payload = %{
+      "testField" => 2
+    }
+
+    result = Conditions.check(payload, parameters)
+    assert result == {:ok, false}
+  end
+
+  test "returns true when source field value is greater than target field value" do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "condition" => "true",
+      "conditionCompareTo" => "Target Field",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "testField",
+      "conditionOperation" => ">",
+      "targetConditionField" => "compareField",
+      "targetConditionValue" => nil
+    }
+
+    payload = %{
+      "testField" => 2,
+      "compareField" => 1
+    }
+
+    result = Conditions.check(payload, parameters)
+    assert result == {:ok, true}
+  end
+
+  test "returns false when source field value is less than target field value" do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "condition" => "true",
+      "conditionCompareTo" => "Target Field",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "testField",
+      "conditionOperation" => ">",
+      "targetConditionField" => "compareField",
+      "targetConditionValue" => nil
+    }
+
+    payload = %{
+      "testField" => 2,
+      "compareField" => 3
+    }
+
+    result = Conditions.check(payload, parameters)
+    assert result == {:ok, false}
+  end
+
+  test "maps operation string 'Is Greater Than'" do
+    parameters = %{
+      "targetField" => "testField",
+      "newValue" => "new value",
+      "condition" => "true",
+      "conditionCompareTo" => "Static Value",
+      "conditionDataType" => "number",
+      "sourceConditionField" => "testField",
+      "conditionOperation" => "Is Greater Than",
+      "targetConditionField" => nil,
+      "targetConditionValue" => "1"
+    }
+
+    payload = %{
+      "testField" => 2
+    }
+
+    result = Conditions.check(payload, parameters)
+    assert result == {:ok, true}
   end
 
   describe "less than" do
@@ -708,8 +798,10 @@ defmodule Transformers.ConditionsTest do
         "testField" => 2
       }
 
-      result = Conditions.check(payload, parameters)
-      assert result == {:error, "unsupported condition operation"}
+      condition_operation = Conditions.check(payload, parameters)
+
+      assert condition_operation ==
+               {:error, "unsupported condition operation !"}
     end
 
     test "returns error when source field is not present in payload" do
