@@ -12,9 +12,9 @@
   "devDependencies": {
     "acorn": "^7.1.1",
     "es-check": "^5.1.0",
-    "jest": "^26.6.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "minimist": "^1.2.6",
     "yargs-parser": ">=18.1.2"
-  },
-  "dependencies": {}
+  }
 }
