@@ -1,1 +1,5 @@
-// jest wants this
+const config = {
+    testEnvironment: 'jsdom'
+};
+
+module.exports = config;
