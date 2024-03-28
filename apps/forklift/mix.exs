@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "0.19.26",
+      version: "0.19.27",
       elixir: "~> 1.10",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
