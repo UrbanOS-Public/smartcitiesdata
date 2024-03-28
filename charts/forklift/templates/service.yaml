@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "helm.name" . }}
+  annotations:
+    prometheus.io/port:  "{{ .Values.monitoring.targetPort }}"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "helm.name" . }}
+  ports:
+  - name: erlang-vm
+    protocol: TCP
+    port: 9001
+    targetPort: 9001
+  - name: epmd
+    protocol: TCP
+    port: 4369
+    targetPort: 4369
+  type: {{ .Values.service.type }}

@@ -1,0 +1,269 @@
+global:
+  auth:
+    jwt_issuer: ""
+    auth0_domain: ""
+    raptor_url: ""
+  buckets:
+    # -- S3 Bucket region. Ignored when using Minio
+    region: "us-west-2"
+    # -- Required. Bucket to store Host type datasets. *Note*: Bucket names are globally unique in S3 or cluster unique in Minio
+    hostedFileBucket: ""
+    # -- Required. Bucket that extracted data is written to. *Note*: Bucket names are globally unique in S3 or cluster unique in Minio
+    hiveStorageBucket: ""
+  kafka:
+    # -- This is the default url for the kafka cluster deployed with the chart. Override this if you are using an external kafka cluster.
+    brokers: pipeline-kafka-bootstrap:9092
+  presto:
+    # -- This is the default url that presto is deployed to with the chart. Override this if you are using an external presto cluster.
+    url: http://kubernetes-data-platform-presto:8080
+  # -- Determines whether a user is required to log in in order to see public data in the discovery suite
+  require_api_key: false
+  require_admin_api_key: false
+  redis:
+    # -- The url to a Redis instance. *Note*: Most apps in the platform require access to a Redis instance, and one is not currently included in the chart.
+    host: redis.external-services
+    password: ""
+  vault:
+    # -- A url to a vault instance. Reaper and Andi use vault to read and store secrets for dataset ingestion. *Note*: Currently, only the provided vault chart works with UrbanOS
+    endpoint: vault:8200
+  # -- Common ingress configuration
+  ingress:
+    # -- Domain name for the platform
+    dnsZone: "localhost"
+    # -- Root domain name for the platform. Often the same as `dnsZone`
+    rootDnsZone: "localhost"
+  # -- Connection info for connecting to s3 for the persistence layer
+  objectStore:
+    host: ""
+    port: 80
+    accessKey: []
+    accessSecret: []
+    hiveStoragePath: ""
+  subdomains:
+    andi: "andi"
+    share: "sharedata"
+    discoveryApi: "data"
+    discoveryUi: "discovery"
+    raptor: "raptor"
+
+
+# -- See dependent chart for configuration details
+alchemist:
+  enabled: true
+
+
+# -- See dependent chart for configuration details
+andi:
+  fullnameOverride: andi
+  enabled: true
+
+
+# -- See dependent chart for configuration details
+discovery-api:
+  enabled: true
+  elasticsearch:
+    # -- This is the default location of the chart-provided elasticsearch instance
+    host: elasticsearch-master:9200
+    # -- Set this to true to require the api to connect to elasticsearch via https.
+    # TLS must be configured on the elasticsearch cluster
+    tls: false
+
+
+# -- See dependent chart for configuration details
+discovery-streams:
+  enabled: true
+
+
+# -- See dependent chart for configuration details
+discovery-ui:
+  enabled: true
+
+
+# -- By default, the urbanOS chart stands up its own elasticsearch instance.
+# Disable this if you plan to provide your own.
+# TLS will be disabled by default, but can be configured using the chart
+#   documentation below
+# https://github.com/elastic/helm-charts/tree/master/elasticsearch#configuration
+elasticsearch:
+  enabled: true
+  replicas: 2
+
+
+# -- See dependent chart for configuration details
+forklift:
+  fullnameOverride: forklift
+  enabled: true
+
+
+kafka:
+  enabled: true
+
+
+kubernetes-data-platform:
+  enabled: false
+  presto:
+    workers: 2
+    jvm:
+      # -- Heap size for the presto workers, should be relative to available resources
+      maxHeapSize: 1536M
+    deploy:
+      container:
+        # -- Resource configuration for the presto workers
+        resources:
+          limits:
+            memory: 2Gi
+            cpu: 2
+          requests:
+            memory: 2Gi
+            cpu: 1
+    task:
+      writerCount: 1
+    deployPrometheusExporter: true
+    useJmxExporter: true
+  metastore:
+    allowDropTable: true
+    timeout: 360m
+  postgres:
+    # -- Include in-cluster postgres for the metastore
+    enable: false
+    db:
+      name: metastore
+      user: metastore
+    tls:
+      enable: true
+      mode: verify-full
+      rootCertPath: /etc/ssl/certs/ca-certificates.crt
+  minio:
+    # -- Minio is an experimental way to gain platform independence from S3
+    enable: false
+
+
+minio-operator:
+  enabled: true
+  operator:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+        ephemeral-storage: 500Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+        ephemeral-storage: 500Mi
+
+minio-tenant:
+  enabled: true
+  tenant:
+    env:
+      - name: MINIO_BROWSER_LOGIN_ANIMATION
+        value: "off"
+    name: minio1
+    configuration:
+      name: minio1-env-configuration
+    buckets:
+      - name: "presto-hive-storage"
+    exposeServices:
+      console: true
+      minio: true
+    pools:
+      - affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: v1.min.io/tenant
+                    operator: In
+                    values:
+                      - minio1
+                  - key: v1.min.io/pool
+                    operator: In
+                    values:
+                      - pool-0
+              topologyKey: kubernetes.io/hostname
+        name: pool-0
+        servers: 1
+        storageClassName: standard
+        volumesPerServer: 4
+        resources:
+          limits:
+            memory: 2Gi
+            cpu: 500m
+          requests:
+            memory: 2Gi
+            cpu: 500m
+    certificate:
+      requestAutoCert: false
+    users:
+    - name: tenant-user-0
+
+# -- By default monitoring is disabled as it is optional,
+# but we recommend it be enabled for production deployments
+monitoring:
+  enabled: false
+
+
+persistence:
+  enabled: true
+
+
+# -- See dependent chart for configuration details
+raptor:
+  fullnameOverride: raptor
+  enabled: true
+
+
+# -- See dependent chart for configuration details
+reaper:
+  fullnameOverride: reaper
+  enabled: true
+
+
+secrets:
+  minio:
+    base64UserAccessKey: "inject-during-deployment"
+    base64UserSecretKey: "inject-during-deployment"
+    rootUserName: "inject-during-deployment"
+    rootPassword: "inject-during-deployment"
+
+
+vault:
+  global:
+    openshift: true
+
+  server:
+    resources:
+      limits:
+        memory: 256Mi
+        cpu: 250m
+      requests:
+        memory: 256Mi
+        cpu: 250m
+
+    ha:
+      enabled: true
+      raft:
+        enabled: true
+
+  injector:
+    resources:
+      limits:
+        memory: 256Mi
+        cpu: 250m
+      requests:
+        memory: 256Mi
+        cpu: 250m
+
+
+# -- See dependent chart for configuration details
+valkyrie:
+  fullnameOverride: valkyrie
+  enabled: true
+  replicaCount: 1
+
+performancetesting:
+  enabled: false
+  endpoints:
+    ANDI_URL: ""
+    DISCOVERY_URL: ""
+    API_KEY: ""

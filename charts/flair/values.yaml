@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: smartcitiesdata/flair
+  tag: development
+  pullPolicy: Always
+
+localstack:
+  enabled: false
+
+kafka:
+  #comma delimited list of kafka seed brokers
+  brokers: data-broker:9092
+  strimziCluster: streaming-service # http://strimzi.io/docs/0.4.0/#_topic_configmap
+
+nameOverride: ""
+fullnameOverride: ""
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+flair:
+  dlq_topic: streaming-dead-letters
+  data_topic: streaming-persisted
+
+presto:
+  user: "flair"
+  url: http://presto-endpoint:8080
+
+redis:
+  host: flair-redis-master

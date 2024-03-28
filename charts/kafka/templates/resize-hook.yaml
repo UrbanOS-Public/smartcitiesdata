@@ -1,0 +1,36 @@
+{{- if .Values.resizeHook.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{.Release.Name}}"
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}"
+      labels:
+        app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+        app.kubernetes.io/instance: {{.Release.Name | quote }}
+        helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      restartPolicy: Never
+      serviceAccount: kafka-patcher
+      containers:
+      - name: post-install-job
+        image: "bitnami/kubectl:1.12.7"
+        command:
+        - /bin/bash
+        - -c
+        args:
+        # This iterates over the pvcs generated for Kafka and patches them with a new size if applicable.
+        - "seq 0 $(expr {{ .Values.kafka.defaultReplicas }} - 1) | xargs -n1 -I \"{}\" kubectl patch pvc data-pipeline-kafka-{} -p '{\"spec\":{\"resources\":{\"requests\":{\"storage\":\"{{ .Values.kafka.storageSize }}\"}}}}'"
+{{- end }}

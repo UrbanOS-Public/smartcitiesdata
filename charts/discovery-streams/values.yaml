@@ -1,0 +1,51 @@
+global:
+  kafka:
+    brokers: pipeline-kafka-bootstrap:9092
+  require_api_key: false  
+  redis:
+    host: redis.external-services
+    password: ""
+    passwordSecret: ""
+    port: 6379
+    sslEnabled: false
+  ingress:
+    dnsZone: ""
+    rootDnsZone: ""
+  auth:
+    raptor_url: "http://raptor/api"
+
+dashboard:
+  title: "Dashboard Metrics"
+
+image:
+  repository: smartcitiesdata/discovery_streams
+  tag: development
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+replicaCount: 1
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: "1"
+  requests:
+    memory: 512Mi
+    cpu: "1"
+
+monitoring:
+  targetPort: 9002
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 4000
+
+ingress:
+  enabled: true
+  annotations:
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true

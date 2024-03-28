@@ -1,0 +1,18 @@
+namespace: dev
+schedule: "0 1 * * 1" #It runs At 1:00 every Monday
+image:
+  repository: quay.io/urbanos/perfomancetesting
+  pullPolicy: Always #This parameter is set "Always" due to the updates of the image
+  tag: development
+resources: #jar file is running with a flag -Xmx1024m
+  requests:
+    memory: 512Mi
+    cpu: 300m
+  limits:
+    memory: 1Gi
+    cpu: 500m
+endpoints:
+  ANDI_URL: ""
+  DISCOVERY_URL: ""
+  API_KEY: ""
+restartPolicy: Never

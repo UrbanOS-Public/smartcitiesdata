@@ -1,0 +1,15 @@
+apiVersion: v2
+appVersion: "1.0"
+description: "A combination of the community Prometheus and Grafana charts."
+name: monitoring
+version: 1.1.8
+
+dependencies:
+  - name: prometheus
+    version: 19.6.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+  - name: grafana
+    version: 6.50.8
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled

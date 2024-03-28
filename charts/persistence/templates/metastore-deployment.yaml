@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hive-metastore
+  labels:
+    app: hive-metastore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hive-metastore
+  template:
+    metadata:
+      labels:
+        app: hive-metastore
+    spec:
+      {{- if .Values.metastore.rbac.enabled }}
+      serviceAccountName: hive-metastore
+      {{- end }}
+      containers:
+      - name: hive-metastore
+        image: {{ .Values.metastore.image.repository }}:{{ .Values.metastore.image.tag }}
+        ports:
+        - containerPort: 8000
+        env:
+        - name: HOSTNAME
+          value: hive-metastore
+        - name: HIVE_LOGLEVEL
+          value: DEBUG
+          {{- with .Values.global.objectStore }}
+        - name: S3_HOST
+          value: {{ .host }}
+        - name: S3_PORT
+          value: {{ quote .port }}
+        - name: S3_ACCESS_KEY
+          value: {{ .accessKey }}
+        - name: S3_SECRET
+          value: {{ .accessSecret }}
+        - name: S3_BUCKET_PATH
+          value: {{ .hiveStoragePath }}
+          {{- end }}
+        - name: S3_BUCKET_NAME
+          value: {{ .Values.global.buckets.hiveStorageBucket }}
+          {{- with .Values.metastore.postgres }}
+        - name: DATABASE_USER
+          value: {{ .user }}
+        - name: DATABASE_PASSWORD
+          {{- if .passwordSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .passwordSecret }}
+              key: {{ .passwordSecretKey }}
+          {{- else }}
+          value: {{ .password }}
+          {{- end }}
+        - name: POSTGRES_SQL_SERVICE_HOST
+          value: {{ .host }}
+        - name: POSTGRES_SQL_SERVICE_PORT
+          value: {{ quote .port }}
+        - name: DATABASE_NAME
+          value: {{ .name }}
+          {{- end }}
+        resources:
+{{ toYaml .Values.metastore.resources | indent 10 }}

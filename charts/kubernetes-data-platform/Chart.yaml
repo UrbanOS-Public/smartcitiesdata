@@ -1,0 +1,15 @@
+name: kubernetes-data-platform
+apiVersion: v1
+description: Hadoop-less data platform for the Smart City OS
+version: 1.7.5
+keywords:
+  - presto
+  - hive-metastore
+  - cloud-object-store
+  - minio
+sources:
+  - https://github.com/UrbanOS-Public/kdp
+  - https://github.com/prestodb/presto
+  - https://github.com/apache/hive
+  - https://github.com/minio/minio
+  - https://github.com/helm/helm

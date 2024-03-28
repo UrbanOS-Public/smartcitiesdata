@@ -1,0 +1,55 @@
+global:
+  buckets:
+    region: us-west-2
+    hostedFileBucket: "example-file-bucket"
+    hiveStorageBucket: "example-hive-bucket"
+  kafka:
+    brokers: streaming-service-kafka-bootstrap:9092
+  redis:
+    host: redis.external-services
+    port: 6379
+    password: ""
+    passwordSecret: ""
+    sslEnabled: false
+  vault:
+    # Should match the format {Release Name}-vault:8200
+    endpoint: "urban-os-vault:8200"
+
+outputTopicPrefix: raw
+dlqTopic: streaming-dead-letters
+replicaCount: 1
+metadata:
+  labels:
+image:
+  repository: smartcitiesdata/reaper
+  tag: 1.0.1
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+service:
+  port: 9092
+  type: ClusterIP
+
+profiling_enabled: false
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true
+
+resources:
+  limits:
+    memory: 1Gi
+    cpu: 300m
+    ephemeral-storage: 15G
+  requests:
+    memory: 1Gi
+    cpu: 300m
+    ephemeral-storage: 15G
+
+monitoring:
+  targetPort: 9002
+
+aws:
+  accessKeyId: ""
+  accessKeySecret: ""

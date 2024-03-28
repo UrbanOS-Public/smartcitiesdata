@@ -1,0 +1,85 @@
+apiVersion: v2
+appVersion: "1.0"
+description: Master chart that deploys the UrbanOS platform. See the individual dependency readmes for configuration options.
+name: urban-os
+version: 1.13.59
+
+dependencies:
+  - name: alchemist
+    repository: file://../alchemist
+    condition: alchemist.enabled
+    version: ">= 1.0.0"
+  - name: andi
+    repository: file://../andi
+    condition: andi.enabled
+    version: ">= 1.0.0"
+  - name: discovery-api
+    repository: file://../discovery-api
+    condition: discovery-api.enabled
+    version: ">= 1.0.0"
+  - name: discovery-streams
+    repository: file://../discovery-streams
+    condition: discovery-streams.enabled
+    version: ">= 1.0.0"
+  - name: discovery-ui
+    repository: file://../discovery-ui
+    condition: discovery-ui.enabled
+    version: ">= 1.0.0"
+  - name: elasticsearch
+    version: 7.17.3
+    repository: https://helm.elastic.co
+    condition: elasticsearch.enabled
+  - name: external-services
+    repository: file://../external-services
+    condition: external-services.enabled
+    version: ">= 1.0.0"
+  - name: forklift
+    repository: file://../forklift
+    condition: forklift.enabled
+    version: ">= 1.0.0"
+  - name: kafka
+    repository: file://../kafka
+    condition: kafka.enabled
+    version: ">= 1.0.0"
+  - name: kubernetes-data-platform
+    repository: file://../kubernetes-data-platform
+    condition: kubernetes-data-platform.enabled
+    version: ">= 1.0.0"
+  - name: persistence
+    repository: file://../persistence
+    condition: persistence.enabled
+    version: ">= 1.0.0"
+  - name: monitoring
+    repository: file://../monitoring
+    condition: monitoring.enabled
+    version: ">= 1.0.0"
+  - name: raptor
+    repository: file://../raptor
+    condition: raptor.enabled
+    version: ">= 1.0.0"
+  - name: reaper
+    repository: file://../reaper
+    condition: reaper.enabled
+    version: ">= 1.0.0"
+  - name: valkyrie
+    repository: file://../valkyrie
+    condition: valkyrie.enabled
+    version: ">= 1.0.0"
+  - name: vault
+    repository: https://helm.releases.hashicorp.com
+    condition: vault.enabled
+    version: "0.27.0"
+  - name: operator
+    version: 5.0.12
+    repository: https://operator.min.io/
+    condition: minio-operator.enabled
+    alias: minio-operator
+  - name: tenant
+    version: 5.0.12
+    repository: https://operator.min.io/
+    condition: minio-tenant.enabled
+    alias: minio-tenant
+  - name: performancetesting
+    version: ">= 0.0.0"
+    repository: file://../performancetesting
+    condition: performancetesting.enabled

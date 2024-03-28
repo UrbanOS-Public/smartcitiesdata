@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Chart.Name }}-cron
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: performancetest
+spec:
+  schedule: "{{ .Values.schedule }}"
+  concurrencyPolicy: Forbid
+  suspend: false
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ .Chart.Name }}-cron
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            resources:
+              requests:
+                memory: {{ .Values.resources.requests.memory }}
+                cpu: {{ .Values.resources.requests.cpu }}
+              limits:
+                memory: {{ .Values.resources.limits.memory }}
+                cpu: {{ .Values.resources.limits.cpu }}
+            env:
+            - name: ANDI_URL
+              value: {{ .Values.endpoints.ANDI_URL }}
+            - name: DISCOVERY_URL
+              value: {{ .Values.endpoints.DISCOVERY_URL }}
+            - name: API_KEY
+              value: {{ .Values.endpoints.API_KEY }}
+            volumeMounts:
+            - mountPath: /app/results
+              name: pvc-cron
+          restartPolicy: {{ .Values.restartPolicy }}
+          volumes:
+          - name: pvc-cron
+            persistentVolumeClaim:
+              claimName: pvc-performancetesting

@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: discovery-ui-configs
+data:
+  config.js: |
+    {{ if .Values.env.contribute_host }}
+    window.CONTRIBUTE_HOST = '{{.Values.env.contribute_host}}'
+    {{ end -}}
+    window.GTM_ID = '{{.Values.env.gtm_id}}'
+    window.DISC_API_URL = '{{.Values.env.disc_api_url}}'
+    window.DISC_STREAMS_URL = '{{.Values.env.disc_streams_url}}'
+    window.DISC_UI_URL = '{{.Values.env.disc_ui_url}}'
+    window.STREETS_TILE_LAYER_URL = '{{.Values.env.streets_tile_layer_url}}'
+    window.MAPBOX_ACCESS_TOKEN = '{{.Values.env.mapbox_access_token}}'
+    window.LOGO_URL = '{{.Values.env.logo_url}}'
+    window.CUSTOM_FAV_ICON_URL = '{{.Values.env.custom_favicon_url}}'
+    window.FOOTER_LEFT_SIDE_TEXT = '{{.Values.env.footer_left_side_text}}'
+    window.FOOTER_LEFT_SIDE_LINK = '{{.Values.env.footer_left_side_link}}'
+    window.FOOTER_RIGHT_LINKS = '{{.Values.env.footer_right_links}}'
+    window.HEADER_TITLE = '{{.Values.env.header_title}}'
+    window.AUTH0_DOMAIN = '{{.Values.global.auth.auth0_domain}}'
+    window.DISCOVERY_AUTH0_CLIENT_ID = '{{.Values.env.discovery_auth0_client_id}}'
+    window.AUTH0_AUDIENCE = '{{.Values.env.auth0_audience}}'
+    window.PRIMARY_COLOR = '{{.Values.env.primary_color}}'
+    window.REQUIRE_API_KEY = '{{.Values.global.require_api_key}}'
+    window.REGENERATE_API_KEY_FF = '{{.Values.env.regenerate_api_key_ff}}'
+    window.DISABLE_VISUALIZATIONS = '{{.Values.env.disable_visualizations}}'
+  nginx-csps.conf: |
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' *.googletagmanager.com *.google-analytics.com; style-src 'self' 'unsafe-inline'; frame-src *.auth0.com; img-src 'self' *.amazonaws.com *.mapbox.com *.openstreetmap.org {{ .Values.env.additional_csp_hosts }} *.google-analytics.com *.google.com *.doubleclick.net data: blob:; connect-src 'self' {{ .Values.env.additional_csp_hosts }} *.auth0.com *.mapbox.com *.openstreetmap.org *.plot.ly http://localhost:*; worker-src blob:;";

@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kdp.presto.fullname" . }}-coord
+  labels:
+    component: presto
+    role: coordinator
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      component: presto
+      role: coordinator
+{{ include "kdp.labels" . | indent 6 }}
+  replicas: {{ .Values.presto.deploy.replicas }}
+  strategy:
+{{ toYaml .Values.presto.deploy.updateStrategy | trim | indent 4 }}
+  template:
+    metadata:
+      annotations:
+        checksum/coordinator-configmap: {{ include (print $.Template.BasePath "/presto/coordinator-config.yaml") . | sha256sum }}
+        checksum/common-configmap: {{ include (print $.Template.BasePath "/presto/presto-configs.yaml") . | sha256sum }}
+        checksum/core-site-configmap: {{ include (print $.Template.BasePath "/shared-configs/core-site.yaml") . | sha256sum }}
+        prometheus.io/port: "8181"
+        prometheus.io/scrape: "true"
+      labels:
+        component: presto
+        role: coordinator
+{{ include "kdp.labels" . | indent 8 }}
+    spec:
+      containers:
+      - name: presto-coordinator
+        image: {{ .Values.presto.deploy.container.image }}:{{ .Values.presto.deploy.container.tag }}
+        imagePullPolicy: {{ .Values.presto.deploy.container.pullPolicy }}
+        volumeMounts:
+        - mountPath: /presto/etc/node.properties
+          name: presto-configs
+          subPath: node.properties
+        - mountPath: /presto/etc/jvm.config
+          name: presto-configs
+          subPath: jvm.config
+        - mountPath: /presto/etc/config.properties
+          name: coordinator-config
+          subPath: config.properties
+        - mountPath: /presto/etc/log.properties
+          name: presto-configs
+          subPath: log.properties
+        - mountPath: /presto/etc/catalog/hive.properties
+          name: presto-configs
+          subPath: hive.properties
+        - mountPath: /etc/hadoop/conf/core-site.xml
+          name: core-site
+          subPath: core-site.xml
+        - mountPath: /presto/etc/jmx_exporter_config.yaml
+          name: presto-configs
+          subPath: jmx_exporter_config.yaml
+        ports:
+        - name: http-coord
+          containerPort: {{ .Values.presto.service.port }}
+        - name: jmx-exporter
+          containerPort: 8181
+        livenessProbe:
+          httpGet:
+            path: /v1/cluster
+            port: http-coord
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /v1/cluster
+            port: http-coord
+        resources:
+{{ toYaml .Values.presto.deploy.container.resources | indent 10 }}
+{{- if .Values.presto.deploy.deployPrometheusExporter }}
+      - name: presto-exporter
+        image: yahoojapan/presto-exporter:master
+        imagePullPolicy: {{ .Values.presto.deploy.container.pullPolicy }}
+        ports:
+          - name: metric-port
+            containerPort: 9483
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: metric-port
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metric-port
+{{- end }}
+      volumes:
+      - name: presto-configs
+        configMap:
+          name: {{ template "kdp.presto.fullname" . }}-configs
+      - name: coordinator-config
+        configMap:
+          name: {{ template "kdp.presto.fullname" . }}-coordinator
+      - name: core-site
+        configMap:
+          name: {{ template "kdp.name" . }}-core-site

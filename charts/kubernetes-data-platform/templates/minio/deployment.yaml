@@ -1,0 +1,68 @@
+{{- if .Values.minio.enable -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kdp.minio.fullname" . }}
+  labels:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      component: minio
+{{ include "kdp.labels" . | indent 6 }}
+  replicas: {{ .Values.minio.deploy.replicas }}
+  strategy:
+{{ toYaml .Values.minio.deploy.updateStrategy | trim | indent 4 }}
+  template:
+    metadata:
+      labels:
+        component: minio
+{{ include "kdp.labels" . | indent 8 }}
+    spec:
+      containers:
+        - name: minio
+          image: {{ .Values.minio.deploy.container.image }}:{{ .Values.minio.deploy.container.tag }}
+          imagePullPolicy: {{ .Values.minio.deploy.container.pullPolicy }}
+          command:
+          - minio
+          args:
+          {{ if .Values.minio.gateway.enable }}
+          - gateway
+          - {{ .Values.minio.gateway.type }}
+          {{ else }}
+          - server
+          - /data
+          {{ end }}
+          env:
+          - name: MINIO_ACCESS_KEY
+            value: {{ .Values.global.objectStore.accessKey }}
+          - name: MINIO_SECRET_KEY
+            value: {{ .Values.global.objectStore.accessSecret }}
+          {{ if eq .Values.minio.gateway.type "gcs" }}
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /data/config.json
+          {{ end }}
+          ports:
+          - containerPort: {{ .Values.minio.service.port }}
+            name: minio
+          {{ if eq .Values.minio.gateway.type "gcs" }}
+          volumeMounts:
+          - mountPath: /data/config.json
+            name: google-credentials
+            subPath: config.json
+      volumes:
+        - name: google-credentials
+          configMap:
+            name: google-credentials
+          {{ end }}
+          {{ if not .Values.minio.gateway.enable }}
+          volumeMounts:
+          - mountPath: /data
+            name: cloud-storage
+      volumes:
+        - name: cloud-storage
+          persistentVolumeClaim:
+            claimName: {{ template "kdp.minio.fullname" . }}-storage
+          {{- end }}
+{{- end }}

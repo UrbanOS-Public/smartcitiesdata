@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.image.majorPin .Values.image.minorPin }}
+  annotations:
+    {{- if .Values.image.majorPin }}
+    docker.major: "{{ .Values.image.majorPin }}"
+    {{- end }}
+    {{- if .Values.image.minorPin }}
+    docker.minor: "{{ .Values.image.minorPin }}"
+    {{- end }}
+  {{- end }}
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Chart.Name }}
+      {{- end }}
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: KAFKA_BROKERS
+          value: {{ .Values.global.kafka.brokers | default (include "kafka.brokerservice" .) }}
+        - name: REDIS_HOST
+          value: {{ .Values.global.redis.host }}
+        - name: REDIS_SSL
+          value: {{ quote .Values.global.redis.sslEnabled }}
+{{- if .Values.global.redis.port }}
+        - name: REDIS_PORT
+          value: {{ quote .Values.global.redis.port }}
+{{- end }}
+        - name: REDIS_PASSWORD
+{{- if .Values.global.redis.passwordSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ quote .Values.global.redis.passwordSecret }}
+              key: {{ .Values.global.redis.passwordSecretKey | default .Values.global.redis.passwordSecret | quote }}
+{{- else }}
+          value: {{ .Values.global.redis.password }}
+{{- end }}
+        - name: RUN_IN_KUBERNETES
+          value: "true"
+        - name: RAPTOR_URL
+          value: {{ quote .Values.global.auth.raptor_url }}
+        - name: REQUIRE_API_KEY
+          value: {{ quote .Values.global.require_api_key }}
+        - name: METRICS_PORT
+          value: {{ quote .Values.monitoring.targetPort }}
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP

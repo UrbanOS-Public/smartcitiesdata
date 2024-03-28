@@ -1,0 +1,108 @@
+global:
+  auth:
+    jwt_issuer: ""
+    auth0_domain: ""
+    raptor_url: "http://raptor/api"
+  buckets:
+    region: us-west-2
+    hostedFileBucket: "dataset-bucket"
+  kafka:
+    brokers: pipeline-kafka-bootstrap:9092
+  presto:
+    url: http://platform-kubernetes-data-platform-presto:8080
+  require_api_key: false  
+  redis:
+    host: redis.external-services
+    port: 6379
+    password: ""
+    passwordSecret: ""
+    sslEnabled: false
+  vault:
+    endpoint: vault.vault:8200
+  ingress:
+    rootDnsZone: localhost
+    dnsZone: localhost
+  objectStore:
+    accessSecret: ""
+    accessKey: ""
+  subdomains:
+    discoveryApi: ""
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 1
+  requests:
+    memory: 512Mi
+    cpu: 1
+
+replicaCount: 1
+
+ingress:
+  enabled: true
+  annotations:
+
+service:
+  name: discovery-api
+  type: NodePort
+  port: 80
+  auth_string: ""
+
+image:
+  repository: smartcitiesdata/discovery_api
+  tag: development
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+monitoring:
+  targetPort: 9002
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+presto:
+  catalog: "hive"
+  schema: "default"
+
+ldap:
+  host: "ldap.example.com"
+  base: "dc=example,dc=com"
+  user: "binduser"
+  account:
+    subdn: "cn=users,cn=accounts"
+
+postgres:
+  host: "example.com"
+  port: "5432"
+  dbname: "postgres"
+  user: "postgres"
+  password: "password"
+  verifySNI: true
+
+elasticsearch:
+  host: "es.example.com"
+  tls: true
+
+auth:
+  client_id: "1234"
+  redirect_base_url: "http://localhost"
+  jwks_endpoint: "https://example.com/.well-known/jwks.json"
+  user_info_endpoint: "https://example.com/userinfo"
+
+secrets:
+  discoveryApiPresignKey: ""
+  guardianSecretKey: ""
+
+aws:
+  # Overriden by global.objectStore.accessKey if present
+  accessKeyId: ""
+  # Overriden by global.objectStore.accessSecret if present
+  accessKeySecret: ""
+  s3HostName: null
+  s3Port: null
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true

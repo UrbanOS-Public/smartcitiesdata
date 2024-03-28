@@ -1,0 +1,12 @@
+{{ if .Values.enabled }}
+{{- range $service := .Values.services }}
+kind: "Service"
+apiVersion: "v1"
+metadata:
+  name: {{ $service.name }}
+spec:
+  type: ExternalName
+  externalName: {{ $service.hostname }}
+---
+{{- end }}
+{{- end }}

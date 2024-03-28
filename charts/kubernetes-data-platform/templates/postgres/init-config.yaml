@@ -1,0 +1,14 @@
+{{- if .Values.postgres.enable -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.postgres.fullname" . }}-init
+  labels:
+    component: postgres
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  init.sql: |-
+    CREATE DATABASE {{ .Values.postgres.db.name }};
+    CREATE USER {{ .Values.postgres.db.user }} WITH PASSWORD '{{ .Values.postgres.db.password }}';
+    GRANT ALL PRIVILEGES ON DATABASE {{ .Values.postgres.db.name }} TO {{ .Values.postgres.db.user }};
+{{- end }}

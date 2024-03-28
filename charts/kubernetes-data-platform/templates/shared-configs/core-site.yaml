@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.name" . }}-core-site
+  labels:
+    component: hadoop
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  core-site.xml: |-
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+
+      <property>
+        <name>fs.defaultFS</name>
+        <value>s3a://{{ .Values.global.buckets.hiveStorageBucket }}</value>
+        <final>true</final>
+      </property>
+
+{{- if .Values.minio.enable -}}
+      <property>
+        <name>fs.s3a.endpoint</name>
+        <value>http://{{ template "kdp.minio.fullname" . }}:{{ .Values.minio.service.port }}</value>
+      </property>
+{{- else if .Values.minio.externalMinio }}
+      <property>
+        <name>fs.s3a.endpoint</name>
+        <value>http://{{ .Values.minio.service.name }}:{{ .Values.minio.service.port }}</value>
+      </property>
+{{- end }}
+
+{{- if and .Values.global.objectStore.accessKey .Values.global.objectStore.accessSecret }}
+      <property>
+        <name>fs.s3a.access.key</name>
+        <value>{{ .Values.global.objectStore.accessKey }}</value>
+      </property>
+      <property>
+        <name>fs.s3a.secret.key</name>
+        <value>{{ .Values.global.objectStore.accessSecret }}</value>
+      </property>
+{{- else }}
+      <property>
+        <name>fs.s3a.aws.credentials.provider</name>
+        <value>
+        com.amazonaws.auth.InstanceProfileCredentialsProvider
+        </value>
+      </property>
+{{- end }}
+
+      <property>
+        <name>fs.s3a.impl</name>
+        <value>org.apache.hadoop.fs.s3a.S3AFileSystem</value>
+      </property>
+
+      <property>
+        <name>fs.AbstractFileSystem.s3a.imp</name>
+        <value>org.apache.hadoop.fs.s3a.S3A</value>
+      </property>
+
+      <property>
+        <name>fs.trash.interval</name>
+        <value>4320</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.fast.upload</name>
+        <value>true</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.fast.upload.buffer</name>
+        <value>disk</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.multipart.size</name>
+        <value>67108864</value>
+      </property>
+
+      <property>
+        <name>fs.s3a.path.style.access</name>
+        <value>true</value>
+      </property>
+
+    </configuration>

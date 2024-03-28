@@ -1,0 +1,20 @@
+{{- if and .Values.minio.enable (not .Values.minio.gateway.enable) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.minio.fullname" . }}-init
+  labels:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  create_bucket.sh: |
+    #!/bin/sh
+
+    wget https://dl.minio.io/client/mc/release/linux-amd64/mc -P /usr/bin/
+    chmod a+x /usr/bin/mc
+
+    sleep 10
+    mc config host add kdp http://{{ template "kdp.minio.fullname" . }}:{{ .Values.minio.service.port }} {{ .Values.global.objectStore.accessKey }} {{ .Values.global.objectStore.accessSecret }}
+    mc mb kdp/{{ .Values.global.buckets.hiveStorageBucket }}
+    mc policy public kdp/{{ .Values.global.buckets.hiveStorageBucket }}
+{{- end }}

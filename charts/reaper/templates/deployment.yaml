@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.image.majorPin .Values.image.minorPin }}
+  annotations:
+    {{- if .Values.image.majorPin }}
+    docker.major: "{{ .Values.image.majorPin }}"
+    {{- end }}
+    {{- if .Values.image.minorPin }}
+    docker.minor: "{{ .Values.image.minorPin }}"
+    {{- end }}
+  {{- end }}
+  labels:
+    helm.sh/chart: {{ include "reaper.chart" . }}
+    app.kubernetes.io/name: {{ include "reaper.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "reaper.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "reaper.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Chart.Name }}
+      {{- end }}
+      imagePullSecrets:
+      - name: regcred
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        ports:
+        - containerPort: 9001
+        - containerPort: 4369
+        volumeMounts:
+        - mountPath: /downloads
+          name: download-dir
+        env:
+        - name: OUTPUT_TOPIC_PREFIX
+          value: {{ .Values.outputTopicPrefix }}
+        - name: DLQ_TOPIC
+          value: {{ .Values.dlqTopic }}
+        - name: KAFKA_BROKERS
+          value: {{ .Values.global.kafka.brokers | default (include "kafka.brokerservice" .) }}
+        - name: RUN_IN_KUBERNETES
+          value: "true"
+        - name: REDIS_HOST
+          value: {{ .Values.global.redis.host }}
+        - name: REDIS_PORT
+          value: {{ quote .Values.global.redis.port }}
+        - name: REDIS_PASSWORD
+{{- if .Values.global.redis.passwordSecret }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ quote .Values.global.redis.passwordSecret }}
+              key: {{ .Values.global.redis.passwordSecretKey | default .Values.global.redis.passwordSecret | quote }}
+{{- else }}
+          value: {{ .Values.global.redis.password }}
+{{- end }}
+        - name: REDIS_SSL
+          value: {{ quote .Values.global.redis.sslEnabled }}
+        - name: SECRETS_ENDPOINT
+          value: {{ .Values.global.vault.endpoint }}
+        - name: HOSTED_FILE_BUCKET
+          value: {{ .Values.global.buckets.hostedFileBucket }}
+        - name: AWS_REGION
+          value: {{ .Values.global.buckets.region }}
+        - name: PROFILING_ENABLED
+          value: {{ .Values.profiling_enabled | quote }}
+        - name: METRICS_PORT
+          value: {{ quote .Values.monitoring.targetPort }}
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-reaper-aws-credentials
+              key: aws_access_key_id
+        - name: AWS_ACCESS_KEY_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-reaper-aws-credentials
+              key: aws_access_key_secret
+      volumes:
+      - name: download-dir
+        emptyDir: {}

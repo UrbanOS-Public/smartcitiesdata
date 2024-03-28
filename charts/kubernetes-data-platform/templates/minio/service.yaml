@@ -1,0 +1,18 @@
+{{- if .Values.minio.enable -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "kdp.minio.fullname" . }}
+  labels:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.minio.service.type }}
+  ports:
+  - port: {{ .Values.minio.service.port }}
+    targetPort: minio
+    name: minio
+  selector:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+{{- end }}

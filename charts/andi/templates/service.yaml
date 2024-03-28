@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helm.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "helm.fullname" . }}
+  annotations:
+    prometheus.io/port:  "{{ .Values.monitoring.targetPort }}"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "helm.fullname" . }}
+  ports:
+  - name: http
+    protocol: TCP
+    port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+  type: {{ .Values.service.type }}

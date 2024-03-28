@@ -1,0 +1,59 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: pipeline
+spec:
+  kafka:
+    version: {{ .Values.kafka.version }}
+    replicas: {{ .Values.kafka.defaultReplicas }}
+    listeners:
+    - name: plain
+      port: 9092
+      type: internal
+      tls: false
+    config:
+      num.partitions: 30
+      default.replication.factor: {{ .Values.kafka.defaultReplicas }}
+      offsets.topic.replication.factor: {{ .Values.kafka.defaultReplicas }}
+      transaction.state.log.replication.factor: {{ .Values.kafka.defaultReplicas }}
+      transaction.state.log.min.isr: {{ .Values.kafka.defaultReplicas }}
+      auto.create.topics.enable: false
+    storage:
+      type: persistent-claim
+      size: {{ .Values.kafka.storageSize }}
+      deleteClaim: false
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 45
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 45
+    resources:
+{{ toYaml .Values.kafka.resources | indent 6 }}
+    rack:
+      topologyKey: "kubernetes.io/hostname"
+  zookeeper:
+    replicas: {{ .Values.kafka.defaultReplicas }}
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 45
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 45
+    storage:
+      type: persistent-claim
+      size: 1Gi
+      deleteClaim: false
+    resources:
+{{ toYaml .Values.zookeeper.resources | indent 6 }}
+  entityOperator:
+    topicOperator:
+      resources:
+        requests:
+          cpu: "200m"
+          memory: 512Mi
+        limits:
+          cpu: "200m"
+          memory: 512Mi
+    tlsSidecar:
+{{ toYaml .Values.tlsSidecar | indent 6 }}

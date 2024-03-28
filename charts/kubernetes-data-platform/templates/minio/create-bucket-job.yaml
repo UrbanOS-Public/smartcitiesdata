@@ -1,0 +1,35 @@
+{{- if and .Values.minio.enable (not .Values.minio.gateway.enable) -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "kdp.minio.fullname" . }}-init
+  labels:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        component: minio
+{{ include "kdp.labels" . | indent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: create-bucket-job
+        image: "{{ .Values.hook.container.image }}:{{ .Values.hook.container.tag }}"
+        command:
+        - "/bin/sh"
+        args:
+        - "/create_bucket.sh"
+        volumeMounts:
+        - mountPath: /create_bucket.sh
+          name: create-bucket
+          subPath: create_bucket.sh
+      volumes:
+      - name: create-bucket
+        configMap:
+          name: {{ template "kdp.minio.fullname" . }}-init
+{{- end }}

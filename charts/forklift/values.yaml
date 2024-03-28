@@ -1,0 +1,65 @@
+global:
+  kafka:
+    brokers: streaming-service-kafka-bootstrap:9092
+  presto:
+    url: http://platform-kubernetes-data-platform-presto:8080
+  redis:
+    port: 6379
+    host: redis.external-services
+    password: ""
+    passwordSecret: ""
+    sslEnabled: false
+  objectStore:
+    accessKey: null
+    accessSecret: null
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+replicaCount: 1
+
+image:
+  repository: smartcitiesdata/forklift
+  tag: development
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+service:
+  type: ClusterIP
+
+kafka:
+  #comma delimited list of kafka seed brokers
+  dataTopicPrefix: "transformed"
+  outputTopic: "streaming-persisted"
+
+aws:
+  s3HostName: null
+  s3Port: null
+
+nameOverride: ""
+fullnameOverride: ""
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+kdp:
+  user: "forklift"
+
+monitoring:
+  targetPort: 9002
+
+profiling_enabled: false
+
+# When enabled, forklift doesn't retain any past records for a dataset.
+# New records replace what was previously stored.
+overwrite_mode: false
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true

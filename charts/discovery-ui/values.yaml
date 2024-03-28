@@ -1,0 +1,63 @@
+global:
+  auth:
+    auth0_domain: ""
+  ingress:
+    rootDnsZone: localhost
+    dnsZone: localhost
+  require_api_key: false
+
+service:
+  name: discovery-ui
+  type: NodePort
+  port: 80
+
+image:
+  name: smartcitiesdata/discovery_ui
+  tag: development
+  environment: "local"
+  pullPolicy: Always
+
+env:
+  # Optional: location for an associated public Andi deployment
+  # Ex: https://andi.example.com
+  contribute_host: ""
+  # Optional: Google Tag Manager ID
+  gtm_id: ""
+  disc_ui_url: "https://www.example.com"
+  disc_api_url: "https://data.example.com"
+  disc_streams_url: "https://streams.example.com"
+  streets_tile_layer_url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  logo_url: null
+  header_title: "UrbanOS Data Discovery"
+  footer_left_side_text: "© 2023 UrbanOS. All rights reserved."
+  footer_left_side_link: "https://github.com/UrbanOS-Public/smartcitiesdata"
+  footer_right_links: '[{"linkText":"UrbanOS", "url":"https://github.com/UrbanOS-Public/smartcitiesdata"}]'
+  primary_color: "#0F64B3"
+  # url string for the favicon (optional).  If used, it is a base64-encoded gzipped version of the icon
+  custom_favicon_url: null   
+  # omitting mapbox will default plot.ly to use openstreetmap.org
+  mapbox_access_token: ""
+  auth0_domain: ""
+  discovery_auth0_client_id: ""
+  auth0_audience: ""
+  additional_csp_hosts: ""
+  regenerate_api_key_ff: true
+  disable_visualizations: false
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+resources:
+  limits:
+    memory: 1028Mi
+    cpu: 500m
+  requests:
+    memory: 1028Mi
+    cpu: 500m
+
+ingress:
+  enabled: true
+  annotations:

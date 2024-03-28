@@ -1,0 +1,19 @@
+{{- if .Values.kafkaExporter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-exporter
+  labels:
+    app.kubernetes.io/name: kafka-exporter
+  annotations:
+    prometheus.io/port:  "9308"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    app.kubernetes.io/name: kafka-exporter
+  ports:
+  - name: http
+    port: 9308
+    protocol: TCP
+  type: NodePort
+{{- end }}

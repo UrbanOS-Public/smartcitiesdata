@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.metastore.fullname" . }}-config
+  labels:
+    component: metastore
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  metastore-site.xml: |-
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>metastore.thrift.uris</name>
+        <value>thrift://{{ template "kdp.metastore.fullname" . }}:{{ .Values.metastore.service.port }}</value>
+      </property>
+      <property>
+        <name>metastore.warehouse.dir</name>
+        <value>s3a://{{ .Values.global.buckets.hiveStorageBucket }}/{{ .Values.metastore.warehouseDir }}</value>
+      </property>
+      <property>
+        <name>metastore.task.threads.always</name>
+        <value>org.apache.hadoop.hive.metastore.events.EventCleanerTask,org.apache.hadoop.hive.metastore.MaterializationsCacheCleanerTask</value>
+      </property>
+      <property>
+        <name>metastore.expression.proxy</name>
+        <value>org.apache.hadoop.hive.metastore.DefaultPartitionExpressionProxy</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        {{- $fullname := include "kdp.postgres.fullname" . -}}
+        {{- $hostname := default $fullname .Values.postgres.service.externalAddress -}}
+        <value>jdbc:postgresql://{{ $hostname }}/{{ .Values.postgres.db.name }}?ssl={{ .Values.postgres.tls.enable }}&amp;sslmode={{ .Values.postgres.tls.mode }}&amp;sslrootcert={{ .Values.postgres.tls.rootCertPath }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>org.postgresql.Driver</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>{{ .Values.postgres.db.user }}</value>
+      </property>
+      <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>{{ .Values.postgres.db.password }}</value>
+      </property>
+      <property>
+        <name>metastore.metastore.event.db.notification.api.auth</name>
+        <value>false</value>
+      </property>
+    </configuration>

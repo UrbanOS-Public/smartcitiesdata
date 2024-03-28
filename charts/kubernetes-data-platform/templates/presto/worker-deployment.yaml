@@ -1,0 +1,91 @@
+{{- if gt (int .Values.presto.workers) 0 -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kdp.presto.fullname" . }}-worker
+  labels:
+    component: presto
+    role: worker
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      component: presto
+      role: worker
+{{ include "kdp.labels" . | indent 6 }}
+  replicas: {{ .Values.presto.workers }}
+  strategy:
+{{ toYaml .Values.presto.deploy.updateStrategy | trim | indent 4 }}
+  template:
+    metadata:
+      annotations:
+        checksum/worker-configmap: {{ include (print $.Template.BasePath "/presto/worker-config.yaml") . | sha256sum }}
+        checksum/common-configmap: {{ include (print $.Template.BasePath "/presto/presto-configs.yaml") . | sha256sum }}
+        checksum/core-site-configmap: {{ include (print $.Template.BasePath "/shared-configs/core-site.yaml") . | sha256sum }}
+        prometheus.io/port: "8181"
+        prometheus.io/scrape: "true"
+      labels:
+        component: presto
+        role: worker
+{{ include "kdp.labels" . | indent 8 }}
+    spec:
+      containers:
+      - name: presto-worker
+        image: {{ .Values.presto.deploy.container.image }}:{{ .Values.presto.deploy.container.tag }}
+        imagePullPolicy: {{ .Values.presto.deploy.container.pullPolicy }}
+        volumeMounts:
+        - mountPath: /presto/etc/node.properties
+          name: presto-configs
+          subPath: node.properties
+        - mountPath: /presto/etc/jvm.config
+          name: presto-configs
+          subPath: jvm.config
+        - mountPath: /presto/etc/jmx_exporter_config.yaml
+          name: presto-configs
+          subPath: jmx_exporter_config.yaml
+        - mountPath: /presto/etc/config.properties
+          name: worker-config
+          subPath: config.properties
+        - mountPath: /presto/etc/log.properties
+          name: presto-configs
+          subPath: log.properties
+        - mountPath: /presto/etc/health_check.sh
+          name: worker-config
+          subPath: health_check.sh
+        - mountPath: /presto/etc/catalog/hive.properties
+          name: presto-configs
+          subPath: hive.properties
+        - mountPath: /etc/hadoop/conf/core-site.xml
+          name: core-site
+          subPath: core-site.xml
+        ports:
+        - name: jmx-exporter
+          containerPort: 8181
+        livenessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - /presto/etc/health_check.sh
+          initialDelaySeconds: 10
+          periodSeconds: 25
+          failureThreshold: 12
+        readinessProbe:
+          exec:
+            command:
+              - /bin/bash
+              - /presto/etc/health_check.sh
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+{{ toYaml .Values.presto.deploy.container.resources | indent 10 }}
+      volumes:
+      - name: presto-configs
+        configMap:
+          name: {{ template "kdp.presto.fullname" . }}-configs
+      - name: worker-config
+        configMap:
+          name: {{ template "kdp.presto.fullname" . }}-worker
+      - name: core-site
+        configMap:
+          name: {{ template "kdp.name" . }}-core-site
+{{- end }}

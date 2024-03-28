@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth0-config
+data:
+  auth0.config: |
+    {
+        "domain": {{ quote .Values.global.auth.auth0_domain }},
+        "clientId": {{ quote .Values.global.auth.auth0_management_client_id }},
+        "clients": {
+            "Discovery": {
+                {{- $localhost := "http://localhost:9001" -}}
+                {{- $localhost_two := "http://localhost:9002" -}}
+                {{- $uiInternal := print "https://" .Values.global.subdomains.discoveryUi "." .Values.global.ingress.dnsZone -}}
+                {{- $uiExternal := print "https://" .Values.global.subdomains.discoveryUi "." .Values.global.ingress.rootDnsZone -}}
+                {{- $apiInternal := print "https://" .Values.global.subdomains.discoveryApi "." .Values.global.ingress.dnsZone -}}
+                {{- $apiExternal := print "https://" .Values.global.subdomains.discoveryApi "." .Values.global.ingress.rootDnsZone -}}
+                "callbacks": "[\"{{ $localhost }}/oauth\", \"{{ $localhost_two }}/oauth\", \"{{ $uiInternal }}/oauth\", \"{{ $uiExternal }}/oauth\", \"{{ $apiInternal }}/tableau/connector.html\", \"{{ $apiExternal }}/tableau/connector.html\"]",
+                "allowedLogoutUrls": "[\"{{ $localhost }}/oauth\", \"{{ $localhost_two }}/oauth\", \"{{ $uiInternal }}/oauth\", \"{{ $uiExternal }}/oauth\"]",
+                "allowedOrigins": "[\"{{ $localhost }}\", \"{{ $localhost_two }}\", \"{{ $uiInternal }}\", \"{{ $uiExternal }}\",\"{{ $apiInternal }}\", \"{{ $apiExternal }}\"]",
+                "webOrigins": "[\"{{ $localhost }}\", \"{{ $localhost_two }}\", \"{{ $uiInternal }}\", \"{{ $uiExternal }}\", \"{{ $apiInternal }}\", \"{{ $apiExternal }}\"]",
+                "name": "UrbanOS",
+                "type": "spa"
+            },
+            "ANDI": {
+                {{- $andiProtocol := ternary "https://" "http://" .Values.andi.ingress.tls -}}
+                {{- $nipio := "https://127.0.0.1.nip.io:4443" -}}
+                {{- $andiInternal := print $andiProtocol .Values.global.subdomains.andi "." .Values.global.ingress.dnsZone -}}
+                {{- $andiExternal := print $andiProtocol .Values.global.subdomains.andi "." .Values.global.ingress.rootDnsZone -}}
+                {{- $shareDataInternal := print $andiProtocol .Values.global.subdomains.share "." .Values.global.ingress.dnsZone -}}
+                {{- $shareDataExternal := print $andiProtocol .Values.global.subdomains.share "." .Values.global.ingress.rootDnsZone -}}
+                "callbacks": "[\"{{ $nipio }}/auth/auth0/callback\", \"{{ $andiInternal }}/auth/auth0/callback\", \"{{ $andiExternal }}/auth/auth0/callback\", \"{{ $shareDataInternal }}/auth/auth0/callback\", \"{{ $shareDataExternal }}/auth/auth0/callback\"]",
+                "allowedLogoutUrls": "[\"{{ $nipio }}/auth/auth0\", \"{{ $andiInternal }}/auth/auth0\", \"{{ $andiExternal }}/auth/auth0\", \"{{ $shareDataInternal }}/auth/auth0\", \"{{ $shareDataExternal }}/auth/auth0\"]",
+                "allowedOrigins": "[\"{{ $nipio }}\", \"{{ $andiInternal }}\", \"{{ $andiExternal }}\", \"{{ $shareDataInternal }}\", \"{{ $shareDataExternal }}\"]",
+                "webOrigins": "[\"{{ $nipio }}\", \"{{ $andiInternal }}\", \"{{ $andiExternal }}\", \"{{ $shareDataInternal }}\", \"{{ $shareDataExternal }}\"]",
+                "name": "ANDI",
+                "type": "regular_web"
+            },
+            "Raptor": {
+                {{- $localhost := "http://localhost:4002" -}}
+                {{- $raptorInternal := print "https://" .Values.global.subdomains.raptor "." .Values.global.ingress.dnsZone -}}
+                {{- $raptorExternal := print "https://" .Values.global.subdomains.raptor "." .Values.global.ingress.rootDnsZone -}}
+                "name": "Raptor",
+                "type": "non_interactive",
+                "allowedOrigins": "[\"{{ $localhost }}\", \"{{ $raptorInternal }}\", \"{{ $raptorExternal }}\"]",
+                "webOrigins": "[\"{{ $localhost }}\", \"{{ $raptorInternal }}\", \"{{ $raptorExternal }}\"]"
+            }
+        },
+        "errorUrl": "{{ $uiExternal }}/oauth/error",
+        "enabledClients": ["UrbanOS", "ANDI Dev", "Auth0 Management"]
+    }

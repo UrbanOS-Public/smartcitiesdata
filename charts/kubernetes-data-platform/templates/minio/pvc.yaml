@@ -1,0 +1,17 @@
+{{- if .Values.minio.enable -}}
+{{ if not .Values.minio.gateway.enable }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "kdp.minio.fullname" . }}-storage
+  labels:
+    component: minio
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  accessModes:
+  - {{ .Values.minio.storage.mode }}
+  resources:
+    requests:
+      storage: {{ .Values.minio.storage.size }}
+{{ end }}
+{{- end}}

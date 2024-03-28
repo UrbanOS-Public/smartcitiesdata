@@ -1,0 +1,180 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}
+  {{- if or .Values.image.majorPin .Values.image.minorPin }}
+  annotations:
+    {{- if .Values.image.majorPin }}
+    docker.major: "{{ .Values.image.majorPin }}"
+    {{- end }}
+    {{- if .Values.image.minorPin }}
+    docker.minor: "{{ .Values.image.minorPin }}"
+    {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "helm.fullname" . }}
+    helm.sh/chart: {{ include "helm.chart" . }}
+    app.kubernetes.io/instance: {{ include "helm.fullname" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "helm.fullname" .  }}
+      app.kubernetes.io/instance: {{ include "helm.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "helm.fullname" . }}
+        app.kubernetes.io/instance: {{ include "helm.fullname" . }}
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ include "helm.fullname" . }}
+      {{- end }}
+      containers:
+        - name: {{ include "helm.fullname" . }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          ports:
+            - containerPort: 80
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 4000
+              scheme: HTTP
+            initialDelaySeconds: 100
+            timeoutSeconds: 5
+            periodSeconds: 100
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+          - name: REDIS_HOST
+            value: {{ .Values.global.redis.host }}
+          - name: REDIS_PORT
+            value: {{ quote .Values.global.redis.port }}
+          - name: REDIS_PASSWORD
+{{- if .Values.global.redis.passwordSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ quote .Values.global.redis.passwordSecret }}
+                key: {{ .Values.global.redis.passwordSecretKey | default .Values.global.redis.passwordSecret | quote }}
+{{- else }}
+            value: {{ .Values.global.redis.password }}
+{{- end }}
+          - name: REDIS_SSL
+            value: {{ quote .Values.global.redis.sslEnabled }}
+          - name: KAFKA_BROKERS
+            value: {{ .Values.global.kafka.brokers | default (include "kafka.brokerservice" .) }}
+          - name: METRICS_PORT
+            value: {{ quote .Values.monitoring.targetPort }}
+          - name: RUN_IN_KUBERNETES
+            value: "true"
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: NODE_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: LIVEVIEW_SALT
+            valueFrom:
+              secretKeyRef:
+                name: andi-lv-salt
+                key: salt
+          - name: POSTGRES_HOST
+            value: {{ .Values.postgres.host }}
+          - name: POSTGRES_DBNAME
+            value: {{ .Values.postgres.dbname }}
+          - name: POSTGRES_USER
+            value: {{ .Values.postgres.user }}
+          - name: POSTGRES_PASSWORD
+            {{- if .Values.postgres.passwordSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgres.passwordSecret }}
+                key: {{ .Values.postgres.passwordSecretKey }}
+            {{- else }}
+            value: {{ squote .Values.postgres.password }}
+            {{- end }}
+          - name: POSTGRES_PORT
+            value: {{ quote .Values.postgres.port }}
+          - name: POSTGRES_VERIFY_SNI
+            value: {{ quote .Values.postgres.verifySNI }}
+          - name: SECRETS_ENDPOINT
+            value: {{ .Values.global.vault.endpoint }}
+          - name: AUTH0_DOMAIN
+            value: {{ quote .Values.global.auth.auth0_domain }}
+          - name: ANDI_AUTH0_CLIENT_ID
+            value: {{ quote .Values.auth.andi_auth0_client_id }}
+          - name: AUTH_JWT_ISSUER
+            value: {{ quote .Values.global.auth.jwt_issuer }}
+          - name: DOCUMENTATION_ROOT
+            value: {{ quote .Values.documentationRoot }}
+          - name: ACCESS_LEVEL
+            value: {{ quote .Values.accessLevel }}
+          - name: VAULT_ROLE
+            value: {{ quote .Values.vaultRole | default "andi-role" }}
+          - name: HOSTED_FILE_BUCKET
+            value: {{ .Values.s3.hostedFileBucket }}
+          - name: HOSTED_FILE_REGION
+            value: {{ .Values.s3.hostedFileRegion }}
+          - name: AUTH0_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-andi-auth0-client-secret
+                key: auth0_client_secret
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-andi-aws-credentials
+                key: aws_access_key_id
+          - name: AWS_ACCESS_KEY_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-andi-aws-credentials
+                key: aws_access_key_secret
+          - name: ANDI_LOGO_URL
+            value: '{{  .Values.theme.logo }}'
+          - name: ANDI_HEADER_TEXT
+            value: '{{  .Values.theme.headerText }}'
+          - name: ANDI_PRIMARY_COLOR
+            value: '{{  .Values.theme.primaryColor }}'
+          - name: ANDI_SECONDARY_COLOR
+            value: '{{  .Values.theme.secondaryColor }}'
+          - name: ANDI_SUCCESS_COLOR
+            value: '{{  .Values.theme.successColor }}'
+          - name: ANDI_ERROR_COLOR
+            value: '{{  .Values.theme.errorColor }}'
+          - name: ANDI_FOOTER_LEFT_SIDE_TEXT
+            value: '{{  .Values.footer.leftSideText }}'
+          - name: ANDI_FOOTER_LEFT_SIDE_LINK
+            value: '{{  .Values.footer.leftSideLink }}'
+          - name: ANDI_FOOTER_RIGHT_LINKS
+            value: '{{  .Values.footer.rightLinks }}'
+          - name: CUSTOM_FAV_ICON_URL
+            value: '{{  .Values.theme.customFavIconUrl }}'
+          - name: SECURE_COOKIE
+            value: {{ quote .Values.secureCookie }}
+          {{ if .Values.aws.s3HostName }}
+          - name: S3_HOST_NAME
+            value: {{ .Values.aws.s3HostName }}
+          - name: S3_PORT
+            value: {{ quote .Values.aws.s3Port }}
+          - name: ALLOWED_ORIGIN
+            value: "{{ .Values.ingress.tls | ternary "https" "http" }}://*.{{ .Values.global.ingress.dnsZone }}"
+          - name: RAPTOR_URL
+            value: {{ quote .Values.global.auth.raptor_url }}
+          - name: REQUIRE_ADMIN_API_KEY
+            value: {{ quote .Values.global.require_admin_api_key }}
+          {{ end -}}
+{{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

@@ -29,7 +29,7 @@ To run ANDI locally, take the following steps:
 3.  Run the command `npm install` in the assets folder.
 4.  Move to the root ANDI folder by running the command `cd ..`. (You should now be in the same directory as this README.)
 5.  Run `MIX_ENV=integration mix docker.start` to start docker for ANDI local development. If this command times out and you see an error message like 'patiently gave up waiting for...', re-run the command. 
-6.  Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="<auth_client_secret>" MIX_ENV=integration iex -S mix start`. Use the auth_client_secret that you obtained in the Auth0 requirements steps above.
+6.  Start Phoenix endpoint locally with `AUTH0_CLIENT_SECRET="8z_q5nB-8s44duzGc1NzjasvAjGbASk9X8hzRuIq0YbntNb1mbzE2Q3PXEpWnkxo" MIX_ENV=integration iex -S mix start`. Use the auth_client_secret that you obtained in the Auth0 requirements steps above.
 7.  Congratulations! ANDI is now running locally. Because Auth0 requires `https`, you can visit paths like `localhost` by using `https://127.0.0.1.nip.io:4443/datasets`
 
 NOTES:

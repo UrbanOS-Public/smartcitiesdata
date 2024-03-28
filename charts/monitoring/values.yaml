@@ -1,0 +1,399 @@
+# optional annotation overrides
+global:
+  ingress:
+    annotations: {}
+
+# A place to define a healthcheck path or other grafana specific annotations
+grafanaIngress:
+  annotations: {}
+
+# A place to define a healthcheck path or other prometheus specific
+# annotations
+prometheusIngress:
+  annotations: {}
+
+# Adds the CulsterRole needed for prometheus to the deploment. See clusterrole.yaml. Can disable this and have an admin create the resources in templates/clusterole.yaml
+adminDeploy: true
+
+grafana:
+  fullnameOverride: monitoring-grafana
+  admin:
+    existingSecret: "manual-grafana-secrets"
+    userKey: grafana-admin-username
+    passwordKey: grafana-admin-password
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://monitoring-prometheus-server
+          access: proxy
+          isDefault: true
+  rbac:
+    namespaced: true
+  serviceAccount:
+    create: false
+    name: default
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  service:
+    enabled: true
+    type: NodePort
+  sidecar:
+    dashboards:
+      enabled: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: "default"
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+        - name: "kube"
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/kube
+        - name: "urbanos"
+          orgId: 1
+          folder: ""
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/urbanos
+  dashboards:
+    kube:
+      kube-prometheus:
+        gnetId: 2
+        revision: 2
+        datasource: Prometheus
+      kube-namespace:
+        gnetId: 6876
+        revision: 2
+        datasource: Prometheus
+      kube-cluster:
+        gnetId: 6873
+        revision: 2
+        datasource: Prometheus
+      kube-pods:
+        gnetId: 6879
+        revision: 1
+        datasource: Prometheus
+    urbanos:
+      urban-os-pipeline-health:
+        gnetId: 14805
+        revision: 1
+        datasource: Prometheus
+      urban-os-overview:
+        gnetId: 14806
+        revision: 1
+        datasource: Prometheus
+      urban-os-kube-all-nodes:
+        gnetId: 14810
+        revision: 1
+        datasource: Prometheus
+      urban-os-kafka-exporter:
+        gnetId: 14809
+        revision: 1
+        datasource: Prometheus
+      urban-os-phoenix-api-metrics:
+        gnetId: 14811
+        revision: 1
+        datasource: Prometheus
+    # Additional deployment specific dashboards may be
+    # added under the "default" provider:
+    # default:
+    #   custom-dashboard-name:
+    #     gnetId: 14811 (dashboard id from https://grafana.com/grafana/dashboards)
+    #     revision: 1
+    #     datasource: Prometheus
+
+prometheus:
+  serviceAccounts:
+    server:
+      create: false
+      name: default
+
+  server:
+    namespaces:
+      -  #enter namespace here to limit prometheus from searching all namespaces
+    useExistingClusterRoleName: prometheus-admin-cluster-role
+    fullnameOverride: monitoring-prometheus-server
+    securityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+      fsGroup: 1000
+    resources:
+      limits:
+        memory: 1Gi
+        cpu: 500m
+      requests:
+        memory: 500Mi
+        cpu: 250m
+
+  serverFiles:
+    #
+    # Below is the urban-os recommended prometheus.yml file (updated March 8th, 2023)
+    # It limits the scrape jobs to just the microservices, rather than getting more kubernetes metadata.
+    # By default, prometheus will locate far more endpoints. If that fits your needs / memory constraits, feel free to leave it. However, if getting OOM errors, consider using this config instead.
+    #
+    # BE SURE TO POPULATE REQUIRED NAMESPACE IF USING THIS CONFIG.
+    #
+    # prometheus.yml:
+    #   scrape_configs:
+    #     - job_name: prometheus
+    #       static_configs:
+    #         - targets:
+    #             - localhost:9090
+
+    #     - job_name: "kubernetes-service-endpoints"
+    #       honor_labels: true
+
+    #       kubernetes_sd_configs:
+    #         - role: endpoints
+
+    #       relabel_configs:
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+    #           action: keep
+    #           regex: true
+    #         - source_labels:
+    #             [
+    #               __meta_kubernetes_service_annotation_prometheus_io_scrape_slow,
+    #             ]
+    #           action: drop
+    #           regex: true
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+    #           action: replace
+    #           target_label: __scheme__
+    #           regex: (https?)
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_path]
+    #           action: replace
+    #           target_label: __metrics_path__
+    #           regex: (.+)
+    #         - source_labels:
+    #             [
+    #               __address__,
+    #               __meta_kubernetes_service_annotation_prometheus_io_port,
+    #             ]
+    #           action: replace
+    #           target_label: __address__
+    #           regex: (.+?)(?::\d+)?;(\d+)
+    #           replacement: $1:$2
+    #         - action: labelmap
+    #           regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+    #           replacement: __param_$1
+    #         - action: labelmap
+    #           regex: __meta_kubernetes_service_label_(.+)
+    #         - source_labels: [__meta_kubernetes_namespace]
+    #           action: keep
+    #           regex: dev #namespace
+    #           target_label: namespace
+    #         - source_labels: [__meta_kubernetes_service_name]
+    #           action: replace
+    #           target_label: service
+    #         - source_labels: [__meta_kubernetes_pod_node_name]
+    #           action: replace
+    #           target_label: node
+
+    #     - job_name: "kubernetes-service-endpoints-slow"
+    #       honor_labels: true
+
+    #       scrape_interval: 5m
+    #       scrape_timeout: 30s
+
+    #       kubernetes_sd_configs:
+    #         - role: endpoints
+
+    #       relabel_configs:
+    #         - source_labels:
+    #             [
+    #               __meta_kubernetes_service_annotation_prometheus_io_scrape_slow,
+    #             ]
+    #           action: keep
+    #           regex: true
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+    #           action: replace
+    #           target_label: __scheme__
+    #           regex: (https?)
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_path]
+    #           action: replace
+    #           target_label: __metrics_path__
+    #           regex: (.+)
+    #         - source_labels:
+    #             [
+    #               __address__,
+    #               __meta_kubernetes_service_annotation_prometheus_io_port,
+    #             ]
+    #           action: replace
+    #           target_label: __address__
+    #           regex: (.+?)(?::\d+)?;(\d+)
+    #           replacement: $1:$2
+    #         - action: labelmap
+    #           regex: __meta_kubernetes_service_annotation_prometheus_io_param_(.+)
+    #           replacement: __param_$1
+    #         - action: labelmap
+    #           regex: __meta_kubernetes_service_label_(.+)
+    #         - source_labels: [__meta_kubernetes_namespace]
+    #           action: keep
+    #           regex: dev #namespace
+    #           target_label: namespace
+    #         - source_labels: [__meta_kubernetes_service_name]
+    #           action: replace
+    #           target_label: service
+    #         - source_labels: [__meta_kubernetes_pod_node_name]
+    #           action: replace
+    #           target_label: node
+
+    #     - job_name: "kubernetes-services"
+    #       honor_labels: true
+
+    #       metrics_path: /probe
+    #       params:
+    #         module: [http_2xx]
+
+    #       kubernetes_sd_configs:
+    #         - role: service
+
+    #       relabel_configs:
+    #         - source_labels:
+    #             [__meta_kubernetes_service_annotation_prometheus_io_probe]
+    #           action: keep
+    #           regex: true
+    #         - source_labels: [__address__]
+    #           target_label: __param_target
+    #         - target_label: __address__
+    #           replacement: blackbox
+    #         - source_labels: [__param_target]
+    #           target_label: instance
+    #         - action: labelmap
+    #           regex: __meta_kubernetes_service_label_(.+)
+    #         - source_labels: [__meta_kubernetes_namespace]
+    #           action: keep
+    #           regex: dev #namespace
+    #           target_label: namespace
+    #         - source_labels: [__meta_kubernetes_service_name]
+    #           target_label: service
+
+    alerting_rules.yml:
+      groups:
+        # Blackbox probe
+        - name: Sites
+          rules:
+            - alert: SiteDown
+              expr: probe_success == 0
+              for: 2m
+              labels:
+                severity: error
+              annotations:
+                description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+                summary: "Instance {{ $labels.instance }} down"
+        - name: api_status
+          rules:
+            - alert: APIStatusDown
+              expr: probe_success == 0
+              for: 1m
+              labels:
+                severity: error
+              annotations:
+                description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
+                summary: "Instance {{ $labels.instance }} down"
+        - name: api_response
+          rules:
+            - alert: APIResponseTime
+              expr: probe_duration_seconds > 3
+              for: 1m
+              labels:
+                severity: error
+              annotations:
+                description: "{{ $labels.instance }} of job {{ $labels.job }} is taking more than 3 seconds."
+                summary: "Instance {{ $labels.instance }} is taking longer response time"
+        - name: K8S_Nodes
+          rules:
+            - alert: LowMemory
+              expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100) < 20
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                description: "{{ $labels.instance }} has {{ $value }} percent memory left."
+                summary: "Low Memory on Instance {{ $labels.instance }}"
+            - alert: LowDisk
+              expr: (node_filesystem_avail_bytes{device=~"/dev/.*"} / node_filesystem_size_bytes{device=~"/dev/.*"} * 100) < 15
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                description: "{{ $labels.instance }} has {{ $value }} percent disk left."
+                summary: "Low Disk on Instance {{ $labels.instance }}"
+            - alert: LowClusterCPU
+              expr: (cluster:capacity_cpu:sum - cluster:guarantees_cpu:sum) < 1
+              labels:
+                severity: warning
+              annotations:
+                description: "Kubernetes cluster has {{ $value }} cores left. New deployments and cron jobs may fail to launch."
+                summary: "Kubernetes cluster low on CPU cores"
+            - alert: LowClusterMemory
+              expr: (cluster:capacity_memory_bytes:sum - cluster:guarantees_memory_bytes:sum) < 1000000000 #1GB
+              labels:
+                severity: warning
+              annotations:
+                description: "Kubernetes cluster has {{ $value | humanize }} memory left. New deployments and cron jobs may fail to launch."
+                summary: "Kubernetes cluster has less than {{ 1000000000.0 | humanize }} memory available"
+            - alert: NotReady
+              annotations:
+                description: "{{ $labels.node }} is not ready"
+                summary: "Status not Ready on Node {{ $labels.node }}"
+              expr: kube_node_status_condition{condition="Ready", status="true"} != 1
+              labels:
+                severity: error
+        - name: consumer_group_event_stream_lag
+          rules:
+            - alert: ConsumerGroupEventStreamLag
+              expr: pipeline:event_stream:lag > 10000
+              labels:
+                severity: warning
+              annotations:
+                summary: "Consumer Group lag for topic {{ $labels.topic }} is greater than 10,000"
+                description: "The lag for consumer group {{ $labels.consumergroup }} is {{ humanize $value }}."
+        - name: low_disk_space
+          rules:
+            - alert: LowDiskSpace
+              expr: (kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100)  < 15
+              labels:
+                severity: warning
+              annotations:
+                summary: "Server disk space is below 15%"
+                description: 'Low disk space for Server {{ $labels.persistentvolumeclaim }}, only {{ $value | printf "%.2f" }}% space is left.'
+        - name: rule_failure
+          rules:
+            - alert: RuleFailure
+              expr: rate(prometheus_rule_evaluation_failures_total{rule_group=~".*rules.*"}[2m]) > 0
+              labels:
+                severity: warning
+              annotations:
+                summary: "Prometheus has failed to precalculate one or more metrics"
+                description: "One of the recording rules defined in Prometheus has failed to execute. This is often due to issues with info metrics, but may have other causes. Look at the rules section of the Prometheus interface for more info."
+
+  prometheus-pushgateway:
+    enabled: false
+
+  kube-state-metrics:
+    enabled: false

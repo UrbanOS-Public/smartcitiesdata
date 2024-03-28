@@ -1,0 +1,38 @@
+{{- if .Values.scraper.enabled }}
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: kafka-scraper-cron
+spec:
+  schedule: "{{ .Values.scraper.cron }}"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          restartPolicy: Never
+          serviceAccount: "{{ .Values.scraper.serviceAccount }}"
+          containers:
+            - name: kafka-scraper
+              image: "{{ .Values.scraper.image }}"
+              imagePullPolicy: Always
+              resources:
+                limits:
+                  memory: 100Mi
+                  cpu: 100m
+                requests:
+                  memory: 100Mi
+                  cpu: 100m
+              command:
+                - "wget"
+                - "-qO-"
+                - "{{ .Values.scraper.endpoint }}"
+
+{{- end }}

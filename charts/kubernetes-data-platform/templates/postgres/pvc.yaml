@@ -1,0 +1,17 @@
+{{- if .Values.postgres.enable -}}
+{{- if .Values.postgres.storage.persist -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "kdp.postgres.fullname" . }}-storage
+  labels:
+    component: postgres
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  accessModes:
+  - {{ .Values.postgres.storage.mode }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.storage.size }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.presto.fullname" . }}-configs
+  labels:
+    component: presto
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  node.properties: |
+    node.environment=production
+    node.data-dir=/presto/etc/data
+
+  jvm.config: |
+    -server
+    -Xmx{{ .Values.presto.jvm.maxHeapSize }}
+    -XX:+{{ .Values.presto.jvm.gcMethod.type }}
+    -XX:G1HeapRegionSize={{ .Values.presto.jvm.gcMethod.g1.heapRegionSize }}
+    -XX:+UseGCOverheadLimit
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+ExitOnOutOfMemoryError
+{{- if .Values.presto.deploy.useJmxExporter }}
+    -javaagent:/presto/jmx_exporter.jar=8181:/presto/etc/jmx_exporter_config.yaml
+{{- end }}
+  jmx_exporter_config.yaml: |
+    {}
+
+  log.properties: |
+    com.facebook.presto={{ .Values.presto.logLevel }}
+
+  hive.properties: |
+    connector.name=hive-hadoop2
+    hive.metastore.uri=thrift://{{ template "kdp.metastore.fullname" . }}:{{ .Values.metastore.service.port }}
+    hive.metastore.username={{ .Values.postgres.db.user }}
+    hive.config.resources=/etc/hadoop/conf/core-site.xml
+    hive.metastore-timeout={{ .Values.metastore.timeout }}
+    hive.allow-drop-table={{ .Values.metastore.allowDropTable }}
+    hive.allow-rename-table={{ .Values.metastore.allowDropTable }}
+    hive.allow-drop-column={{ .Values.metastore.allowDropTable }}
+    hive.allow-rename-column={{ .Values.metastore.allowDropTable }}
+    hive.allow-add-column={{ .Values.metastore.allowDropTable }}
+{{- if and .Values.global.objectStore.accessKey .Values.global.objectStore.accessSecret }}
+    hive.s3.aws-access-key={{ .Values.global.objectStore.accessKey }}
+    hive.s3.aws-secret-key={{ .Values.global.objectStore.accessSecret }}
+{{- end }}
+    hive.s3.path-style-access=true
+{{- if .Values.minio.enable }}
+    hive.s3.endpoint=http://{{ template "kdp.minio.fullname" . }}:{{ .Values.minio.service.port }}
+    hive.s3.ssl.enabled=false
+{{- else if .Values.minio.externalMinio }}
+    hive.s3.endpoint=http://{{ .Values.minio.service.name }}:{{ .Values.minio.service.port }}
+    hive.s3.ssl.enabled=false
+{{- end }}

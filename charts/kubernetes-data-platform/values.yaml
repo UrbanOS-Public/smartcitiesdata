@@ -1,0 +1,152 @@
+presto:
+  workers: 0
+  service:
+    type: NodePort
+    port: 8080
+  logLevel: INFO
+  environment: production
+  query:
+    maxMemory: 1GB
+    maxMemoryPerNode: 0.5GB
+    maxTotalMemoryPerNode: 0.6GB
+    heapHeadroomPerNode: 0.75GB
+  task:
+    writerCount: 1
+  jvm:
+    maxHeapSize: 1536M # look for environment specific values
+    gcMethod:
+      type: UseG1GC
+      g1:
+        heapRegionSize: 32M
+  deploy:
+    replicas: 1
+    container:
+      image: smartcitiesdata/presto
+      tag: 0.11.3
+      pullPolicy: Always
+      resources:
+        limits:
+          memory: 2Gi # look for environment specific values
+          cpu: 2 # look for environment specific values
+        requests:
+          memory: 2Gi # look for environment specific values
+          cpu: 1 # look for environment specific values
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+    deployPrometheusExporter: false
+    useJmxExporter: false
+  ingress:
+    enable: false
+    annotations:
+      alb.ingress.kubernetes.io/healthcheck-path: /v1/cluster
+
+metastore:
+  jvm:
+    maxHeapSize: 768M
+    gcMethod:
+      type: UseG1GC
+      g1:
+        heapRegionSize: 32M
+  allowDropTable: false
+  timeout: 1m
+  service:
+    type: ClusterIP
+    port: 9083
+  warehouseDir: hive-s3
+  deploy:
+    replicas: 1
+    container:
+      image: smartcitiesdata/metastore
+      tag: 0.11.1
+      pullPolicy: Always
+      resources:
+        limits:
+          memory: 1.5Gi
+          cpu: 2
+        requests:
+          memory: 1.5Gi
+          cpu: 2
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+postgres:
+  enable: true
+  db:
+    name: metastore
+    user: hive
+    password: password123
+  tls:
+    enable: false
+    mode: verify-full
+    rootCertPath: /etc/ssl/certs/ca-certificates.crt
+  service:
+    type: ClusterIP
+    port: 5432
+  storage:
+    persist: false
+    size: 5Gi
+    mode: ReadWriteOnce
+  deploy:
+    replicas: 1
+    container:
+      image: postgres
+      tag: 11.1-alpine
+      pullPolicy: IfNotPresent
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+
+minio:
+  enable: true
+  externalMinio: false
+  gateway:
+    enable: false
+    type: azure
+  googleCredentials:
+    project_id: ''
+    private_key_id: ''
+    private_key: ''
+    client_email: ''
+    client_id: ''
+    client_x509_cert_url: ''
+  storage:
+    mode: ReadWriteOnce
+    size: 5Gi
+  service:
+    type: NodePort
+    port: 9000
+  deploy:
+    replicas: 1
+    container:
+      image: minio/minio
+      tag: RELEASE.2019-01-16T21-44-08Z
+      pullPolicy: IfNotPresent
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+  ingress:
+    enable: true
+
+hook:
+  container:
+    image: alpine
+    tag: '3.8'
+
+global:
+  ingress:
+    annotations: {}
+  environment: sandbox
+  objectStore:
+    accessKey: accessKey
+    accessSecret: accessSecret
+  buckets:
+    hiveStorageBucket: placeholderName

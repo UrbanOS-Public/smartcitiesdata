@@ -1,0 +1,11 @@
+name: persistence
+apiVersion: v2
+description: Data persistence for UrbanOS using Trino and the Hive Metastore
+version: 1.0.10
+sources:
+  - https://github.com/trinodb/trino
+  - https://github.com/minio/operator
+dependencies:
+  - name: trino
+    version: 0.8.0
+    repository: https://trinodb.github.io/charts/

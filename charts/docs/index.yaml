@@ -1,0 +1,2281 @@
+apiVersion: v1
+entries:
+  andi:
+  - apiVersion: v1
+    created: "2021-07-26T13:19:25.912759-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 3dc354952206f101120cefde186b092fe3041342d400c6c0cf63fb12c6b11075
+    name: andi
+    urls:
+    - andi-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v1
+    created: "2021-07-19T10:41:28.200088-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 38742bfbdbe7c158f56f3378671e5be58c308d06b80dde025264f16d9484e7b9
+    name: andi
+    urls:
+    - andi-2.0.2.tgz
+    version: 2.0.2
+  - apiVersion: v1
+    created: "2021-07-09T14:17:35.769905-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 16e86407dbe7971263b5a8cc950b865f54d49ac6e77486b6096b80c43b3bce09
+    name: andi
+    urls:
+    - andi-2.0.1.tgz
+    version: 2.0.1
+  - apiVersion: v1
+    created: "2021-06-02T13:51:20.790811-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 3c904bceff7de5931f68ba2b4c9150430b708c1e96e3ebf71c265b23b977de17
+    name: andi
+    urls:
+    - andi-2.0.0.tgz
+    version: 2.0.0
+  - apiVersion: v1
+    created: "2021-05-11T16:13:07.32087-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 1cd051fb09b1b02dc566c2be699cedc539721e3690df9a7671003e4d1c8b35ca
+    name: andi
+    urls:
+    - andi-1.8.4.tgz
+    version: 1.8.4
+  - apiVersion: v1
+    created: "2021-04-08T14:04:06.470958-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 4398708efcdb877779d2a6441edf1390513d712c83ed3bc8fdf68298f469d533
+    name: andi
+    urls:
+    - andi-1.8.3.tgz
+    version: 1.8.3
+  - apiVersion: v1
+    created: "2021-01-07T13:42:10.158723-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 7bb53331d022fa73b1e861861ee78c405cdcc5671b2fb584c307350595d4bac3
+    name: andi
+    urls:
+    - andi-1.8.2.tgz
+    version: 1.8.2
+  - apiVersion: v1
+    created: "2020-12-08T09:55:07.813034-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 13ec6e1096053c564a8e11cc08498e718abfd7d32d778c3ac0b945d43e20bb15
+    name: andi
+    urls:
+    - andi-1.8.1.tgz
+    version: 1.8.1
+  - apiVersion: v1
+    created: "2020-12-07T11:48:53.549878-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: a506658c3b379d6dfde91593fa996232d53167aba6f2011d244c02c5a5716e09
+    name: andi
+    urls:
+    - andi-1.8.0.tgz
+    version: 1.8.0
+  - apiVersion: v1
+    created: "2020-12-03T08:24:52.232098-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 0ec20e50f60a187d23dc2136620e6eda3d25fcf27067838bb7d9f37237c3cd3e
+    name: andi
+    urls:
+    - andi-1.7.0.tgz
+    version: 1.7.0
+  - apiVersion: v1
+    created: "2020-12-01T08:30:09.562321-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 5331a7ae034ed7f2e739251914599bc3a7744d8dcb19eac6b455e506bdf711b9
+    name: andi
+    urls:
+    - andi-1.6.0.tgz
+    version: 1.6.0
+  - apiVersion: v1
+    created: "2020-10-22T11:40:17.171415-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 90e55b284bb5f21d81198b70c7b15833f07019f6c76b8afba019f6000e8cc062
+    name: andi
+    urls:
+    - andi-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v1
+    created: "2020-10-02T13:46:20.303327-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 4eae7dff0100b891e02fe38cd5b0fc4b04d1ce22758d2472456be6b74e2b7bb6
+    name: andi
+    urls:
+    - andi-1.4.6.tgz
+    version: 1.4.6
+  - apiVersion: v1
+    created: "2020-09-15T15:52:59.314284-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 4dc98e2d99d5c08d054932af9ac8de4bfb4d19932cfc57fe9a25cba3577588a3
+    name: andi
+    urls:
+    - andi-1.4.5.tgz
+    version: 1.4.5
+  - apiVersion: v1
+    created: "2020-09-15T15:17:15.838649-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: fdf01181f066b205767464a7f61074dd107f3e104fc4c8905f86f6db73e255b3
+    name: andi
+    urls:
+    - andi-1.4.4.tgz
+    version: 1.4.4
+  - apiVersion: v1
+    created: "2020-09-15T14:19:34.016799-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: f39e4fa53ca870f333e7bf8944ce63515cf0551906e20d8dbf16c7780fc8c9d6
+    name: andi
+    urls:
+    - andi-1.4.3.tgz
+    version: 1.4.3
+  - apiVersion: v1
+    created: "2020-06-12T09:38:53.479842423-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: a7d7d7d0a5c22e43e87ecd47d18b99eb3325603a141e8bc72f5630e288532a3e
+    name: andi
+    urls:
+    - andi-1.4.2.tgz
+    version: 1.4.2
+  - apiVersion: v1
+    created: "2020-06-11T14:15:17.721790163-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: e98bce4112775a3e63671f705415af7263bad8323ecc3b57fcf16063d2326f54
+    name: andi
+    urls:
+    - andi-1.4.1.tgz
+    version: 1.4.1
+  - apiVersion: v1
+    created: "2020-06-10T15:49:47.360800089-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 83532b8401b45a12c2451367ee39351c00f6674bae64b8bed9bc899bdb025518
+    name: andi
+    urls:
+    - andi-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v1
+    created: "2020-06-02T14:32:54.431214085-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 78eac628bba52b9751f7d687cc438633024c86b6e82f9bb10c71fff4831c79d1
+    name: andi
+    urls:
+    - andi-1.3.1.tgz
+    version: 1.3.1
+  - apiVersion: v1
+    created: "2020-04-15T12:04:37.691153-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 49e8ac708330aaed41c1574f9c93c1d2101f0dd2ff80a40bd958fd1c55da4d41
+    name: andi
+    urls:
+    - andi-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v1
+    created: "2020-02-10T14:56:12.182537-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 6dc9dbb7f65a24b78d41a9ad3e1c0ea3548ef0501fdb32490115fc43b38a0d33
+    name: andi
+    urls:
+    - andi-1.2.3.tgz
+    version: 1.2.3
+  - apiVersion: v1
+    created: "2020-01-27T11:21:27.398806-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 1fc9d330a0f0d4adfdd0ea66a59ba6c4229271ddf9a6ec317c84cfca1e00d25b
+    name: andi
+    urls:
+    - andi-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v1
+    created: "2020-01-24T14:30:32.642748-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 7493c8ef27b5ef054ba720559af59d04337eaf7a8124909d4cbb3d259ebd534f
+    name: andi
+    urls:
+    - andi-1.2.1.tgz
+    version: 1.2.1
+  - apiVersion: v1
+    created: "2020-01-24T09:38:16.136295-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: ddd796ead5bbc03fc8aa3402731a8771e2b0064477007492bd6e2ab4417edeb5
+    name: andi
+    urls:
+    - andi-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v1
+    created: "2019-10-31T10:40:40.773138-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 89965919b438c3d79bf3020d4d820bf9b0138340eeffadbfe11ddb186d6ee946
+    name: andi
+    urls:
+    - andi-1.1.3.tgz
+    version: 1.1.3
+  - apiVersion: v1
+    created: "2019-11-19T16:18:41.444293-05:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: ba9b4c8b9d2597f8ee3ed8e930f94cc98ac54d2576692c13f4ebff4ce3d3ce4f
+    name: andi
+    urls:
+    - andi-1.1.2.tgz
+    version: 1.1.2
+  - apiVersion: v1
+    created: "2019-10-24T16:17:25.765506-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: fd12957f7b9374d7938592492312520f348e411f5c576749267619c52721a26b
+    name: andi
+    urls:
+    - andi-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v1
+    created: "2019-08-06T10:25:46.176264-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 5aa94c38e83912cda418215e6ae8f7a263d887851db66a83812379c1ccb7d5e9
+    name: andi
+    urls:
+    - andi-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T08:43:03.913273417-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 95d51c3a76f115ccb53e2cd2e37694c60ee92e728a24593b16f44aaf962fc106
+    name: andi
+    urls:
+    - andi-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T08:43:03.912184586-04:00"
+    description: REST API to allow for dataset definition ingestion
+    digest: 87a558e09dc5ee07fbe8182060aa40e43d2ed1d6055280007cbc372a6d7f1a56
+    name: andi
+    urls:
+    - andi-1.0.0.tgz
+    version: 1.0.0
+  carpenter:
+  - apiVersion: v1
+    created: "2019-08-08T10:17:35.904303738-04:00"
+    description: Creates tables for the SmartCitiesData platform
+    digest: 85da6bf15e5efa208739d3d083b9c87fdae2029d915ef2e0bea39556b510e8fd
+    name: carpenter
+    urls:
+    - carpenter-1.0.0.tgz
+    version: 1.0.0
+  discovery-api:
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2021-08-16T16:19:47.380419-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 298ac91a04cef348e348c81b4184dad9d7c1fc0e2e5ea546bb194ecf6527f752
+    name: discovery-api
+    urls:
+    - discovery-api-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2021-07-26T13:20:02.490527-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 7cebc018ff08e2743be6d81729a80227f90425fc7db05696acf700988e64da68
+    name: discovery-api
+    urls:
+    - discovery-api-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2021-07-09T14:15:06.904083-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: cf978d6c6238d1e7a7659504f7d8daa6c96f145ac886e3df2937f8bd95768519
+    name: discovery-api
+    urls:
+    - discovery-api-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2021-04-12T11:57:52.646119-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 507542b27f859d91cc336d21a8d20f635d6420780a99f63387f6800d17d8f2ee
+    name: discovery-api
+    urls:
+    - discovery-api-0.10.2.tgz
+    version: 0.10.2
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-06-03T10:32:23.798414574-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 7b714f8b95deabf2dc7517b5fb70f9368bf8eb2f154515d91f5edb6630414ed7
+    name: discovery-api
+    urls:
+    - discovery-api-0.10.1.tgz
+    version: 0.10.1
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-04-27T13:20:55.978787-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 84282d41e93fa4f18074889c564c457db6511064de3fbb39b45b0ede5c33a5b7
+    name: discovery-api
+    urls:
+    - discovery-api-0.10.0.tgz
+    version: 0.10.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-03-24T09:37:11.365062699-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 763d9a31db23f6f39689262afb75cde9a2c3ac0af0ecf774d4516612ac09ca6f
+    name: discovery-api
+    urls:
+    - discovery-api-0.9.0.tgz
+    version: 0.9.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-03-10T14:59:26.649868-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 2687cd5a2abcc0e5a652e38d6b6a6b3823060f5c8acd22b16dcacd4a78922dd6
+    name: discovery-api
+    urls:
+    - discovery-api-0.8.2.tgz
+    version: 0.8.2
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-03-10T14:25:57.046463-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: f1d56ba7aa5e6684268cd2641d1769166a2cbe5207f10bf62524d3cb73a2c8af
+    name: discovery-api
+    urls:
+    - discovery-api-0.8.1.tgz
+    version: 0.8.1
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-03-04T10:00:30.581678-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: d974708643dfd024f9362eba48760f9ded602474980090649dca8b54c12ce70d
+    name: discovery-api
+    urls:
+    - discovery-api-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-02-10T12:37:45.57104-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 7aa9cbc1feb4cd92e7d0495244efa22ea8266eaf98abed0bfa85889e016b5ee8
+    name: discovery-api
+    urls:
+    - discovery-api-0.7.0.tgz
+    version: 0.7.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2020-02-10T10:40:44.635631-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: bc12b6f3d300b63ec1a864533a24e5ff72f127d6840676458aef397c02e32afa
+    name: discovery-api
+    urls:
+    - discovery-api-0.6.0.tgz
+    version: 0.6.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-12-03T10:30:22.898932-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: a0d20a5ceedf024c91a5409de25df462ee9be1ca30c68327702123f49f8f46ba
+    name: discovery-api
+    urls:
+    - discovery-api-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-11-11T09:30:24.953952-05:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 6a8c4c78dd7c395cb7f3f2fab3c735fee1ea8a93eb0be5086106f91b9e4e3cd8
+    name: discovery-api
+    urls:
+    - discovery-api-0.4.3.tgz
+    version: 0.4.3
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-10-14T11:51:58.694727525-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 52f1312abd3eb97055d7a80704ebcbdabb409b77bb25eb3a22fad5e35c7c494e
+    name: discovery-api
+    urls:
+    - discovery-api-0.4.2.tgz
+    version: 0.4.2
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-09-25T14:05:59.69468-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: c3ea0b7c95c074d3442a7e1b698cd65339cc852fa9fb85df9271821f7cbbfc58
+    name: discovery-api
+    urls:
+    - discovery-api-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-09-23T12:51:16.119341-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: d6cb46980abec0d0f30c5b8173f79c600a0d405525f681d41cd79855fe07e5e4
+    name: discovery-api
+    urls:
+    - discovery-api-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-09-23T12:50:36.885011-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: cdc9727e69c8cfc1f920c888fe7bf3b23db62da41db022d98ed0436652e1150e
+    name: discovery-api
+    urls:
+    - discovery-api-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-08-06T10:57:54.46772333-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 2929f38815547b1c87969eb9aafe60bf122c8c8844a3e57ca0109f8b71abef51
+    name: discovery-api
+    urls:
+    - discovery-api-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-07-16T16:23:37.699742476-04:00"
+    description: A middleware layer to connect data consumers with the data sources
+    digest: 42a1507eeeb6d7773d568189b84cdba87f8f821e58f983643682f225cf0c508e
+    name: discovery-api
+    urls:
+    - discovery-api-0.2.0.tgz
+    version: 0.2.0
+  discovery-streams:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-09T14:17:28.826869-05:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 670ada337c00b6feb3533aaec3babbdccef0483d7fc32f035f8a2bc9d8108c0c
+    name: discovery-streams
+    urls:
+    - discovery-streams-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-04-08T12:18:00.01316-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: d66ba890e5f009d6205cd32995f8960adc0fd7d34eda2d0beb9d9c5fbda2bc14
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-09-14T15:14:19.627932-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 67689d9240803ff58112e39806c13d18456dde0db9c0e1fef09b3697356b2f60
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-06-03T10:32:30.492805045-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 2cacb4478de063771042da803aeb52b2b17ad4fa2c30422fa8a8aaf74c5c1c9b
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-16T10:35:33.701193-05:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: a486adda7ca32422b1eff5269a8fc1aecc51cca129bf678527090c950b711286
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-12-12T14:56:44.062504-05:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 0357c54697a3ec4439f7e9731845e60cf8dc001053f8e645a1ef99e20303e169
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-18T08:56:42.388497-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 21f17d1bed83cd9af7c30bc6b0d3bde85818c9c8e727420d715d2659f71a93b3
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.1.4.tgz
+    version: 0.1.4
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-16T14:02:09.143635-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: f503a31c002392f28aa908bf19831d4a262694582dc52e09822133992b5a9831
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T08:43:03.926899729-04:00"
+    description: Dynamically find kafka topics and makes available corresponding channels on a public websocket
+    digest: 63bf4e84bf6193da9a87f37e8878f3ac0ee49e693a1bd96f29e8fcdfed8fbef9
+    name: discovery-streams
+    urls:
+    - discovery-streams-0.1.2.tgz
+    version: 0.1.2
+  discovery-ui:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-09T14:17:23.611954-05:00"
+    description: A helm chart for the discovery ui
+    digest: 999f47d7bfedd37eea3767b334cdf6138152ebde932d098367e8e1c47479c1f0
+    name: discovery-ui
+    urls:
+    - discovery-ui-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-04-12T11:57:55.362115-04:00"
+    description: A helm chart for the discovery ui
+    digest: 2a89c51765535edf52c9c4ca15488042e8a0e74756cf83dcf4772063a3653129
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.4.3.tgz
+    version: 0.4.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-01-21T09:29:58.940207-05:00"
+    description: A helm chart for the discovery ui
+    digest: be63766b23346f47567150970474d349c25f01e44305ea8a0c873849f18b15c3
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.4.2.tgz
+    version: 0.4.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-12-03T08:27:46.292595-05:00"
+    description: A helm chart for the discovery ui
+    digest: 059105cd22f51d654d903970425100c95a450e8839665ad0067911c5f0e5ff9e
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-09-15T15:38:49.208668-04:00"
+    description: A helm chart for the discovery ui
+    digest: 5eafe140674cf8b9b3c89621b431636ec82be8616a8913bb9dca270ed923340a
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-31T09:38:05.698386-05:00"
+    description: A helm chart for the discovery ui
+    digest: 89be95c485faad09553798070f6b0d6d2d079d15bd653c67c0895a3cefb335ad
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.3.2.tgz
+    version: 0.3.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-16T10:35:40.206062-05:00"
+    description: A helm chart for the discovery ui
+    digest: 44951989f60899deba97f1b4b7cbd3cf5ea4efe63c2b9b0e60d3ce02323dd48a
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-10T10:30:11.851206-05:00"
+    description: A helm chart for the discovery ui
+    digest: e63095d6b093d5c3a2ed9c524d76cbfa0fc07d4d2a8d34d2c4d3beb7712c1496
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-26T14:50:26.254629-04:00"
+    description: A helm chart for the discovery ui
+    digest: 8aac23502d772964f7487968e992a97797bc9f3441775a265992348dde8841b4
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-12T10:18:25.831987-04:00"
+    description: A helm chart for the discovery ui
+    digest: 03e4e5a101456b27a264dfa040b62b70bd178329c72a3c127096afc31eb4be9e
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-04T08:56:46.165049-04:00"
+    description: A helm chart for the discovery ui
+    digest: 02cb36319d2abb9e61e1b7d1d9113b1f012bbccb460efe368865ef43650fd1ea
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-27T12:11:25.402154708-04:00"
+    description: A helm chart for the discovery ui
+    digest: dc21382df0f2bed0ead62580f0663f2c9d6d0b6d841be3aa8e8321e146fa5fee
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-09T11:28:38.037045495-04:00"
+    description: A helm chart for the discovery ui
+    digest: e255e5b95b31d22e2bdc5593913a81dc1baae7a0803918a22c527ad065c2cac7
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T09:43:08.720755994-04:00"
+    description: A helm chart for the discovery ui
+    digest: 60730467df1df1b2b6f78038b1e37c1ed0c1330acf1f2d57ebc26b322ba32b6b
+    name: discovery-ui
+    urls:
+    - discovery-ui-0.1.1.tgz
+    version: 0.1.1
+  estuary:
+  - apiVersion: v1
+    created: "2021-04-08T14:04:18.745342-04:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 7b7a070fb515d7653466f5667d49a5b69cb0ab8add781f4da917ead1400b8669
+    name: estuary
+    urls:
+    - estuary-0.5.2.tgz
+    version: 0.5.2
+  - apiVersion: v1
+    created: "2020-01-30T11:24:34.104351-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 3ec89b76de70abaac924726db749d7b6b3ea0c8c42747df6ca91b13f1e391d74
+    name: estuary
+    urls:
+    - estuary-0.5.1.tgz
+    version: 0.5.1
+  - apiVersion: v1
+    created: "2020-01-29T10:03:13.646471-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 780c3478e01855e5fa8d0f6c389d1a4efbcd0f62848b096fa8ce7d01016ac986
+    name: estuary
+    urls:
+    - estuary-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v1
+    created: "2020-01-13T17:19:06.899283422-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: dedcfeb9f6f0a9dea3d7610c8e5a2fbc3606d79cd0bfc261e18b7ba0463c0750
+    name: estuary
+    urls:
+    - estuary-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v1
+    created: "2020-01-13T15:13:02.838163-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 8f8a12335c13b5005f5fa77cf54dd3113dd7192157e2874eee88c08dc1e53bda
+    name: estuary
+    urls:
+    - estuary-0.4.0.tgz
+    version: 0.4.0
+  - apiVersion: v1
+    created: "2020-01-10T10:25:16.53450892-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 5548136e38ff6397e1e3db84043d36a1374fafd13c196395522a9f4a7e27b069
+    name: estuary
+    urls:
+    - estuary-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v1
+    created: "2020-01-10T09:45:31.826799466-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 7bf7c66c8c53ea3c368d44ad3f2a4cba46d7ab41e6e8250d61d85cd4a7c1d2bd
+    name: estuary
+    urls:
+    - estuary-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    created: "2020-01-10T09:45:07.389007747-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 713a3b8981fd6a4c36cc5f8cd2a97f019c9d898662be3cf14f05f86692870502
+    name: estuary
+    urls:
+    - estuary-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v1
+    created: "2019-12-17T11:24:20.048038-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 32e05bbb8ee22346f13f6e5fee73e5aac75b34519cf18c8575f1075e28080cfe
+    name: estuary
+    urls:
+    - estuary-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v1
+    created: "2019-12-09T13:29:02.622137-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 43b73f23be5b12cd357051664b948e9e4d9aef141bfbef04688ee5260dd78ca0
+    name: estuary
+    urls:
+    - estuary-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v1
+    created: "2019-12-09T13:12:36.723214-05:00"
+    description: Reads the event stream and stores them in to event_stream table
+    digest: 532deedfa985b87bd5c378839f41a0ef3ae5849ee6da3381541fd2655c3c2724
+    name: estuary
+    urls:
+    - estuary-0.1.0.tgz
+    version: 0.1.0
+  external-services:
+  - apiVersion: v1
+    appVersion: 1.0.0
+    created: "2019-09-27T10:15:50.10791-04:00"
+    description: Helm chart for external services
+    digest: fb24917c26b0edfe54c390c6b516f902546cd37e5fd18a650013cf6591ea65ba
+    name: external-services
+    urls:
+    - external-services-1.0.0.tgz
+    version: 1.0.0
+  flair:
+  - apiVersion: v1
+    appVersion: 1.0.0-static
+    created: "2019-07-17T12:43:29.135195026-04:00"
+    description: Watches data on the validated topic and does profiling on its path through the data pipeline.
+    digest: c859e0c0f26db7c835a94de2a6a998169a117d093a3bbabc11015b8e208ddf70
+    name: flair
+    urls:
+    - flair-2.1.0.tgz
+    version: 2.1.0
+  forklift:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-22T14:18:29.517276-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 74b4f53d59a8f61056251d0265118f685f7f85698aaaf038436b9052fc5f00f3
+    name: forklift
+    urls:
+    - forklift-3.1.1.tgz
+    version: 3.1.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-21T14:42:51.941008-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 61eb167551ecdde734fc2bcc08c73ec39e2b480a71461ceb36df022e1eb73903
+    name: forklift
+    urls:
+    - forklift-3.1.0.tgz
+    version: 3.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-14T09:45:07.444299-05:00"
+    description: Loads data from the transformed topic into Presto
+    digest: ecd00f477225666a038168a52182d27a60a33a4f1e6d1cd6c95e5940820e36b3
+    name: forklift
+    urls:
+    - forklift-3.0.1.tgz
+    version: 3.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-03T13:46:31.716938-05:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 987f529e4e9e708e36901dfc22831aca2d0851962ea80d45fb31e26e8a704a3a
+    name: forklift
+    urls:
+    - forklift-3.0.0.tgz
+    version: 3.0.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-09-24T14:51:00.947689-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 5b0c677861d047ea676bd619769bea17ccd87fa6d34a9781f5febcfcd4b62b9d
+    name: forklift
+    urls:
+    - forklift-2.8.0.tgz
+    version: 2.8.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-08-07T13:35:05.098065206-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 2463585ec0f7768a5d494cbbdd4969501543c56c305e9422f8a361adff0ea1ae
+    name: forklift
+    urls:
+    - forklift-2.7.0.tgz
+    version: 2.7.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-04-06T16:18:15.045175293-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 2cb2721d1981576f34b52bf2dfb528a6eaedc12e7fb032023ff353e16fb9dd9c
+    name: forklift
+    urls:
+    - forklift-2.6.0.tgz
+    version: 2.6.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-02-13T11:01:44.385428-05:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 2da955fb72333a9f728d6452ff5789a4c2409f6a80cdbd1941cfc7b4b33a4ca1
+    name: forklift
+    urls:
+    - forklift-2.5.0.tgz
+    version: 2.5.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-30T15:31:41.177188754-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 4d1829b3a54ba603385caea8297d21b42f1d97c4413e8802b9a45dbd77352460
+    name: forklift
+    urls:
+    - forklift-2.4.0.tgz
+    version: 2.4.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-21T16:12:26.503173486-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 5f63bba1add04b38c5345c70d9f24d0a68d2e06d3aebea0a14ee1cb3b8ecabf5
+    name: forklift
+    urls:
+    - forklift-2.3.0.tgz
+    version: 2.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-02T18:29:31.571774822-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 8fc8269f5cc64bd1dba93e150ddb07b7a01f69f624c0ead3601097907c8c14fd
+    name: forklift
+    urls:
+    - forklift-2.2.1.tgz
+    version: 2.2.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-26T10:36:03.83234085-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: d63a4469b796afb6515ccfcce26ed5886c7972646f26d5b56c1c6bb9a61e91c8
+    name: forklift
+    urls:
+    - forklift-2.1.1.tgz
+    version: 2.1.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-25T15:04:18.185072769-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: fcd99b18e45289c20c57505e35620cc9517db9fa388cc1adec53dd9e86f32e24
+    name: forklift
+    urls:
+    - forklift-2.1.0.tgz
+    version: 2.1.0
+  genesis:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T10:55:43.822821076-04:00"
+    description: Loads data from the transformed topic into Presto
+    digest: 3666b3dcf5aec92c96b64e3d78c6b12264aa038ce72a9f72f38a09293501b53e
+    name: genesis
+    urls:
+    - genesis-2.0.1.tgz
+    version: 2.0.1
+  kafka:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-21T14:43:06.430655-04:00"
+    description: A Helm chart for deploying kafka via strimzi
+    digest: b22177056787aba635c00843e15d9c0e07c03452831523f224020719dcf65fdf
+    name: kafka
+    urls:
+    - kafka-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-14T15:01:40.714136-05:00"
+    description: A Helm chart for deploying kafka via strimzi
+    digest: c53324bcf5e4a43788c597f2c7b54e29885c34934b9fc0a375dfbf6e87f92605
+    name: kafka
+    urls:
+    - kafka-1.0.0.tgz
+    version: 1.0.0
+  kubernetes-data-platform:
+  - apiVersion: v1
+    created: "2021-06-21T14:43:12.777301-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 2e82a1f9eef9dd83a8a79d0fb84da3287c89ae39c74ee6c4fa8c378c217495dd
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.6.0.tgz
+    version: 1.6.0
+  - apiVersion: v1
+    created: "2021-04-08T14:04:23.275322-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: c7b819ac364bf9ce2f99cf289faa4da8ec07bf43c67ccd2b04d779a0dff1db8d
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.5.4.tgz
+    version: 1.5.4
+  - apiVersion: v1
+    created: "2020-09-14T10:50:16.704485-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 5323987d2f2562e1b9cfb6e458fd4ce02ff054a48d60e61c2bba47eae42a768e
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.5.3.tgz
+    version: 1.5.3
+  - apiVersion: v1
+    created: "2020-07-27T13:39:00.157308-06:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 032e7e91caf60bdf890ef34384eb2214414a91a6dfdf4893f0e19ec869e6e1a6
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.5.2.tgz
+    version: 1.5.2
+  - apiVersion: v1
+    created: "2020-07-17T15:24:26.033739-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 5e72c66a76f9675490dedaf25b98fde2b3c24e2765b6d2b1dda6cec57351d46b
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.5.1.tgz
+    version: 1.5.1
+  - apiVersion: v1
+    created: "2020-07-17T14:30:52.938554-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 9fbe4b292946ff62ca803a149887287a7b9310549cd592c63dc6e86233c0c7ed
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v1
+    created: "2020-07-15T14:17:40.227463776-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: d242b7c9758bbad67f3b537e85c68ed3cc9b7d4f90a452058fda646b72e4fcfd
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v1
+    created: "2020-07-15T14:17:20.711435181-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 31f7e1ccf880c1259bbc8de324cb730f7b2d867cbdf266a729d68ee80d0c7a6b
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    tillerVersion: '>=2.8.0'
+    urls:
+    - kubernetes-data-platform-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v1
+    created: "2019-12-18T09:47:55.912918-05:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 71f91fa7576f63440477405b4068da7fbd83c8f87b985d2f52dce70242e1db85
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.2.2.tgz
+    version: 1.2.2
+  - apiVersion: v1
+    created: "2019-12-16T15:14:40.556726-05:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: d7d2b59537a3c3646505fe4cab6bf697934cf611aa4e584902f29c8ea8a545c4
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.2.1.tgz
+    version: 1.2.1
+  - apiVersion: v1
+    created: "2019-12-16T14:42:56.815633-05:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: 0914ea146e3b18b0d26a06e09c3d2814615e27852f8aeda017983379648b4774
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v1
+    created: "2019-11-08T22:33:39.564976281-05:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: bf9e5696039bbb5bfd03cf032bf05cb95ab935730f09926c7890388fc93f83c2
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    created: "2019-07-17T08:43:03.938291188-04:00"
+    description: Hadoop-less data platform for the Smart City OS
+    digest: ba465d7bd1dccb7823dfa860001e9f8b459059d40669441583aeca064b8b0e76
+    keywords:
+    - presto
+    - hive-metastore
+    - cloud-object-store
+    - minio
+    name: kubernetes-data-platform
+    sources:
+    - https://github.com/prestodb/presto
+    - https://github.com/apache/hive
+    - https://github.com/minio/minio
+    - https://github.com/helm/helm
+    urls:
+    - kubernetes-data-platform-1.0.0.tgz
+    version: 1.0.0
+  micro-service-watchinator:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-12T12:03:48.752879-04:00"
+    description: Cron job to watch microservices and make sure they are alive
+    digest: 680913defb49080c868173b858140c354de0379a88f46f145e38658107c9d4ef
+    name: micro-service-watchinator
+    urls:
+    - micro-service-watchinator-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-10-02T11:05:06.739733-04:00"
+    description: Cron job to watch microservices and make sure they are alive
+    digest: 693486943a95d02cbc8fedef22e22c96b62120ceda5b21d5399dc3a617fbb6de
+    name: micro-service-watchinator
+    urls:
+    - micro-service-watchinator-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-30T14:26:18.692253-04:00"
+    description: Cron job to watch microservices and make sure they are alive
+    digest: 467f16b997754485cd2a2392b20d91dea94e350be75d4f55a30a0527030cb1b2
+    name: micro-service-watchinator
+    urls:
+    - micro-service-watchinator-1.0.0.tgz
+    version: 1.0.0
+  monitoring:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-06T13:56:53.286709-05:00"
+    dependencies:
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 14.4.1
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 6.14.1
+    description: A combination of the community Prometheus and Grafana charts.
+    digest: 1625618c4fb1e6874897aa6dc471e802e88b5faa913f84fd7b2478776b074849
+    name: monitoring
+    urls:
+    - monitoring-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-05T09:10:24.830973-05:00"
+    dependencies:
+    - condition: prometheus.enabled
+      name: prometheus
+      repository: https://prometheus-community.github.io/helm-charts
+      version: 14.4.1
+    - condition: grafana.enabled
+      name: grafana
+      repository: https://grafana.github.io/helm-charts
+      version: 6.14.1
+    description: A combination of the community Prometheus and Grafana charts.
+    digest: d0fe88d22f9f927551107f73123dfaf25acb632bd31e22900cdbae88256e2cb9
+    name: monitoring
+    urls:
+    - monitoring-1.0.0.tgz
+    version: 1.0.0
+  odo:
+  - apiVersion: v1
+    created: "2021-07-26T13:19:50.253962-04:00"
+    description: shapeshifting service
+    digest: 4d09bf1830264cf91dd6a0e2122a4b59bb3f48fe5117c11988141415f2c7f4f7
+    name: odo
+    urls:
+    - odo-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    created: "2021-07-08T15:56:30.868265-05:00"
+    description: shapeshifting service
+    digest: b2256fd68dd4b59856214d20562860d5c89d1d1e60b00caf3c431d95b046cf6e
+    name: odo
+    urls:
+    - odo-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    created: "2021-06-02T13:51:34.077798-05:00"
+    description: shapeshifting service
+    digest: 33f7e8c8794806ffc5e4e578bbc53579b13b2a34615ec62d21b53d105a5cb123
+    name: odo
+    urls:
+    - odo-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v1
+    created: "2020-08-20T10:23:03.897210957-04:00"
+    description: shapeshifting service
+    digest: 70b76123cc5ae1a45aa0d9d284fccb7cbc0d65b13aba6111be70f51992b13ae8
+    name: odo
+    urls:
+    - odo-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    created: "2020-01-27T14:29:22.756013-05:00"
+    description: shapeshifting service
+    digest: 62dfa63a2f0c9e36e1226ffcddaf59fa0688c231c9cde062c1444a542517c038
+    name: odo
+    urls:
+    - odo-0.2.3.tgz
+    version: 0.2.3
+  - apiVersion: v1
+    created: "2019-09-09T09:27:22.125262-04:00"
+    description: shapeshifting service
+    digest: 11d4b056256eb6270bab8e3703ee382e25f0868352bced164cf9759c429920bd
+    name: odo
+    urls:
+    - odo-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v1
+    created: "2019-09-04T14:53:52.231640834-04:00"
+    description: shapeshifting service
+    digest: 90a827bb72c85010dbaad2af0b2edd332df6918d8e5d1c625a71281aaf2aac41
+    name: odo
+    urls:
+    - odo-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v1
+    created: "2019-08-19T17:33:52.314652-04:00"
+    description: shapeshifting service
+    digest: 84899232e6a9a4d2f9ec5d1081c579e58ece6e79e7da9c04a7b9e7ea3ac805da
+    name: odo
+    urls:
+    - odo-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-25T15:21:03.919055773-04:00"
+    description: shapeshifting service
+    digest: baa1be8a7cc099d617620ef0c9dd9e65b6da3dec39ddae839611b77f439aba95
+    name: odo
+    urls:
+    - odo-0.1.0.tgz
+    version: 0.1.0
+  platform:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-16T12:37:55.017592-05:00"
+    description: Master chart that deploys the data platform.
+    digest: b46931ea37efbce0355297cc380e574d4fcd5488dfed8db74fabd60fb9ea21f5
+    name: platform
+    urls:
+    - platform-0.0.4.tgz
+    version: 0.0.4
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-11-21T10:56:28.447042-05:00"
+    description: Master chart that deploys the data platform.
+    digest: 564927370c2200bcd620263db77a4f0bf1e8af766dcfcb0f6d19c1a0f82add90
+    name: platform
+    urls:
+    - platform-0.0.3.tgz
+    version: 0.0.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-11-11T15:20:39.134892-05:00"
+    description: Master chart that deploys the data platform.
+    digest: 871b42df72b19a6cebb9b03eba9b70c7a18ce611c51291228ad200882fcaee1f
+    name: platform
+    urls:
+    - platform-0.0.2.tgz
+    version: 0.0.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-10-31T11:38:16.303037-04:00"
+    description: Master chart that deploys the OS. Targets minikube
+    digest: 60b6a620f908f88bd1a0a0232809546c63c0e4817659b5a48588b9c1204048b1
+    name: platform
+    urls:
+    - platform-0.0.1.tgz
+    version: 0.0.1
+  raptor:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-09-09T16:25:16.375279-04:00"
+    description: Authenticate and authorize API users
+    digest: b0290d5df780457d7b3db3d1ee40ba130ca4a62d6d64db96fbe30e21e0e6b6b4
+    name: raptor
+    urls:
+    - raptor-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-08-24T14:49:36.513428-04:00"
+    description: Authenticate and authorize API users
+    digest: 4f85873db15f868922a3af482cc4eb1a65482697c8bc0aae3bbefb907d0ee6f7
+    name: raptor
+    urls:
+    - raptor-1.0.0.tgz
+    version: 1.0.0
+  reaper:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-26T13:19:45.722092-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 4eafbcff0fe859bc528f601d275a38f89ff5f4cbf14ae58913b05580700d6a7c
+    name: reaper
+    urls:
+    - reaper-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-08T15:56:26.573952-05:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 608c6fd19d75bb55fe2807278e36963190a88b019feb3785607731490a149fd2
+    name: reaper
+    urls:
+    - reaper-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-03T15:18:05.785703-05:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: b3f7c435ed0a6780ee6405d01cfaa6c48bd47239104963bd9b6bb3c1befaecfa
+    name: reaper
+    urls:
+    - reaper-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-12T15:52:29.838611-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 02c0aa5d54ec8976af17d3325dca3296b3d108083405d9a54c3e6f61676c7413
+    name: reaper
+    urls:
+    - reaper-0.3.3.tgz
+    version: 0.3.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-06-24T16:26:59.480650577-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 981a3b28217f87d52e9bc6e33813ce8ac8696cb6969d05008937445f3cb343b0
+    name: reaper
+    urls:
+    - reaper-0.3.2.tgz
+    version: 0.3.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-06-24T15:56:34.185855504-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 1d3a8d44611c945506a99dc51bc5afcbb2a3633aed593327bd78ec6e2a04216c
+    name: reaper
+    urls:
+    - reaper-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-06-22T22:23:47.227419432-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: d19b3dd8baad163a28d3995811bb5782048bacda237a4626e0244ad85d84f86a
+    name: reaper
+    urls:
+    - reaper-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-04-02T11:49:31.802477054-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 7db122721f012fd9a2b7e8bac2a9478c39c2744858af08552defd60fdcbf0d0a
+    name: reaper
+    urls:
+    - reaper-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-20T16:09:06.768775-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 5239150ec8dfad6320f78f6c03247e42f5ff8f0de2b6eced78f20b6b5a664388
+    name: reaper
+    urls:
+    - reaper-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-01-27T13:15:25.851969-05:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 539395dcac2791b36b16d9761033a898c3b5a054d978c933c3f797a0bc81e2da
+    name: reaper
+    urls:
+    - reaper-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-11-19T15:46:47.610453-05:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: e76492a7868c67261bf4a08beae9bf971d016ada1aee58398f4a44d0a90f254e
+    name: reaper
+    urls:
+    - reaper-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T08:43:03.93962147-04:00"
+    description: Elixir producer-consumer. Retrieves streamed data, and loads it onto a Kafka topic
+    digest: 0a4e1e99fe4980d431c29b78920b97bd13d889887927b0a9d3bd7f0c289ad69c
+    name: reaper
+    urls:
+    - reaper-0.1.0.tgz
+    version: 0.1.0
+  streisand:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-17T08:43:03.942124097-04:00"
+    description: Publishes public streaming data to the public kafka cluster
+    digest: 0d32486a6f57df65470d16e4a4d93038ae58cceeba91ea40e5c33ad216d99e78
+    name: streisand
+    urls:
+    - streisand-1.0.0.tgz
+    version: 1.0.0
+  urban-os:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-17T15:35:13.278254-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.1.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.2.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.3.0
+    - condition: monitoring.enabled
+      name: monitoring
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://helm.elastic.co
+      version: 7.14.0
+    description: Master chart that deploys the data platform.
+    digest: b627b1a02871f7584b5461f5d864265d0762a365498b3f42a6c761ae2bb43a34
+    name: urban-os
+    urls:
+    - urban-os-1.8.0.tgz
+    version: 1.8.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-11T14:07:52.310735-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.1.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.3.0
+    - condition: monitoring.enabled
+      name: monitoring
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    description: Master chart that deploys the data platform.
+    digest: 45c72d536a8e01e6a7ce736444f04dcbf11465bc3165cb2e5082cfd76f3d56f8
+    name: urban-os
+    urls:
+    - urban-os-1.7.0.tgz
+    version: 1.7.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-06T14:09:37.653055-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.1.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.2.0
+    - condition: monitoring.enabled
+      name: monitoring
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    description: Master chart that deploys the data platform.
+    digest: 3b072bcf1177a4a35e9f4f5a49f2d2aa8dd8ecb1078b7fc8bef93b7aaeaa1cee
+    name: urban-os
+    urls:
+    - urban-os-1.6.1.tgz
+    version: 1.6.1
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-08-05T10:45:45.384557-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.1.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.2.0
+    - condition: monitoring.enabled
+      name: monitoring
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    description: Master chart that deploys the data platform.
+    digest: 9e2df529862395e4a76c83a9b7c0a39330ea7c083e89b5980605c57704aaf02a
+    name: urban-os
+    urls:
+    - urban-os-1.6.0.tgz
+    version: 1.6.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-07-26T15:37:34.885381-04:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.1.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.1.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.2.0
+    description: Master chart that deploys the data platform.
+    digest: c1fa59c264612070cf41258359cd6521aeefd1709da4f0f627c546b7a7886ea1
+    name: urban-os
+    urls:
+    - urban-os-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-07-22T08:12:21.498216-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.2
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: vault.enabled
+      name: vault
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.2.0
+    description: Master chart that deploys the data platform.
+    digest: 83bb9dead651ca930d21a293d891b94adbb6c1bbdc66bc78b79f78b56891c507
+    name: urban-os
+    urls:
+    - urban-os-1.4.0.tgz
+    version: 1.4.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-07-19T14:36:22.223238-04:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.2
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    description: Master chart that deploys the data platform.
+    digest: c0302e97a4809ec377a218b3d8ce7cd3f847ee78938400aba7a0e2be2f74fa20
+    name: urban-os
+    urls:
+    - urban-os-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-07-09T14:44:12.824144-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.1
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    - condition: discovery-api.enabled
+      name: discovery-api
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-ui.enabled
+      name: discovery-ui
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: discovery-streams.enabled
+      name: discovery-streams
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    description: Master chart that deploys the data platform.
+    digest: ab2f05adb3f662d55dfd3a58c0dfce375855675beed5f1f36445f1a5591cfc37
+    name: urban-os
+    urls:
+    - urban-os-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-06-22T16:24:16.55227-04:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.1
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    description: Master chart that deploys the data platform.
+    digest: 3b7ab2a303bde326fda1bb957ab0b51b6e2e656489a06fe734a158c13c9afef9
+    name: urban-os
+    urls:
+    - urban-os-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-06-21T15:52:00.076553-04:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.1.0
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.1
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.1
+    - condition: kubernetes-data-platform.enabled
+      name: kubernetes-data-platform
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.6.0
+    description: Master chart that deploys the data platform.
+    digest: 0f4c7251a8d269497286dccf470f82f7e587a84814260948cc11f8a4a0f4e130
+    name: urban-os
+    urls:
+    - urban-os-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-06-14T15:07:35.973107-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.0.1
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.1
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: kafka.enabled
+      name: kafka
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    description: Master chart that deploys the data platform.
+    digest: 888ba2d9ec45896a17237c322e22b8027fb93f747a4d531e7b8d74d4a22f82dc
+    name: urban-os
+    urls:
+    - urban-os-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-03T15:16:27.400379-05:00"
+    dependencies:
+    - condition: forklift.enabled
+      name: forklift
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 3.0.0
+    - condition: odo.enabled
+      name: odo
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: reaper.enabled
+      name: reaper
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    - condition: valkyrie.enabled
+      name: valkyrie
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.6.0
+    - condition: andi.enabled
+      name: andi
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 2.0.0
+    - condition: external-services.enabled
+      name: external-services
+      repository: https://UrbanOS-Public.github.io/charts
+      version: 1.0.0
+    description: Master chart that deploys the data platform.
+    digest: 9a41a2a9d65c41e17b78749dd44335eb9f7e36905cecd08c08d5ae1f1351d819
+    name: urban-os
+    urls:
+    - urban-os-1.0.0.tgz
+    version: 1.0.0
+  valkyrie:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-06-14T09:44:55.658944-05:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: d559a0ec071ef4b2aeb539a233876a9988496c349b11d9680b03e9c460bc2929
+    name: valkyrie
+    urls:
+    - valkyrie-2.6.1.tgz
+    version: 2.6.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-07-08T14:29:22.763404038-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: b134742ccb9a89e604ed85c0b21437312bb619ef99be45e879ce4d8682bd2f45
+    name: valkyrie
+    urls:
+    - valkyrie-2.6.0.tgz
+    version: 2.6.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-31T14:37:43.165749398-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 5653565f9891c333d618db402752378ba6ac7961ee9169dd53edbcefa9d7ab03
+    name: valkyrie
+    urls:
+    - valkyrie-2.5.2.tgz
+    version: 2.5.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-31T12:28:50.718812641-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 0acf1dcbee87ab192de53b138da6c9d92477be64a8fda0d3f2322e7f6daa6c56
+    name: valkyrie
+    urls:
+    - valkyrie-2.5.1.tgz
+    version: 2.5.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-31T08:51:29.941919545-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 7e563674344ff9a620193cf687f93a1ebf531d695a27b5400536cde7c393328e
+    name: valkyrie
+    urls:
+    - valkyrie-2.5.0.tgz
+    version: 2.5.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-03-20T16:09:13.087005-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 6d82cd68e17b608ef80e291e7ac8864e1694c79b4e8238b53dfe02d464ef6914
+    name: valkyrie
+    urls:
+    - valkyrie-2.4.1.tgz
+    version: 2.4.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-30T11:22:56.361093-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 986fc4774801840a7df64001e82e9b1943bed3584512517667e268ae2535a7cf
+    name: valkyrie
+    urls:
+    - valkyrie-2.4.0.tgz
+    version: 2.4.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-22T11:04:47.954927127-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 943eecba980d1cb5e894dc1faa0487348bb02d353953e17592f495abe08335d4
+    name: valkyrie
+    urls:
+    - valkyrie-2.3.0.tgz
+    version: 2.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-22T09:56:39.376352971-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 088b3642af4d4d04759a5c474375852b8e22716e36fda05132e7f6f4a87a72a5
+    name: valkyrie
+    urls:
+    - valkyrie-2.2.0.tgz
+    version: 2.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-31T15:26:27.195485663-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: 15b81735af8ccb405d9e1435c6c1134a7c404f9cccf38d2b598cfc435c8a1e66
+    name: valkyrie
+    urls:
+    - valkyrie-2.1.0.tgz
+    version: 2.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-07-30T13:28:16.421453-04:00"
+    description: Validates data from raw topic and writes it to validated topic
+    digest: e0a0ed33cd14032aa44ad8cba3c7d70447f49ae06aa5c9094af0e892c4378231
+    name: valkyrie
+    urls:
+    - valkyrie-2.0.1.tgz
+    version: 2.0.1
+  vault:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-08-11T14:01:42.93525-05:00"
+    description: Vault Secret Management
+    digest: 4f520c3c83041cca3cb56e1cb7e8bf083bec8074d9ef0d312609f3ddd815c1e9
+    name: vault
+    urls:
+    - vault-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-22T08:05:47.269674-05:00"
+    description: Vault Secret Management
+    digest: 75454c8e1c00fba4c54c4d70539e15dc512968db216196743ff660a37aac2487
+    name: vault
+    urls:
+    - vault-1.2.0.tgz
+    version: 1.2.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-07-21T13:23:30.037261-05:00"
+    description: Vault Secret Management
+    digest: 92526b0e8b6377ebc2938a08d3eda838fbc8a1dfc144de3ea1d0cf33812f6464
+    name: vault
+    urls:
+    - vault-1.1.3.tgz
+    version: 1.1.3
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-12T13:25:13.080439-04:00"
+    description: Vault Secret Management
+    digest: 22bc6d525e418977204dd1871a05c3dd16fdb8d14c5023b22193dcd37964ecd9
+    name: vault
+    urls:
+    - vault-1.1.2.tgz
+    version: 1.1.2
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-06T13:38:06.73573-04:00"
+    description: Vault Secret Management
+    digest: 1a3c5ba2fcf7f83a1a2e0af26c79bc608feb06e142a226c404f880f988b4ce8b
+    name: vault
+    urls:
+    - vault-1.1.1.tgz
+    version: 1.1.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2021-05-05T09:44:22.74534-04:00"
+    description: Vault Secret Management
+    digest: d1387c72eeee4e06bdfa1bc7d92ac08274180041aa242d43110b134983359547
+    name: vault
+    urls:
+    - vault-1.1.0.tgz
+    version: 1.1.0
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2020-11-11T15:59:38.913819-05:00"
+    description: Vault Secret Management
+    digest: 938fd0d675d8cb106539c3a762bfeecb779321f84572b735843893ced275c51b
+    name: vault
+    urls:
+    - vault-1.0.1.tgz
+    version: 1.0.1
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-09-30T15:32:48.16673-04:00"
+    description: Vault Secret Management
+    digest: 27002611f441cbf53027edce80c8d113834f8699da9b8ff92f377975909ba66d
+    name: vault
+    urls:
+    - vault-1.0.0.tgz
+    version: 1.0.0
+  voltron:
+  - apiVersion: v1
+    appVersion: "1.0"
+    created: "2019-08-07T10:39:53.470155604-04:00"
+    description: Data transformation service
+    digest: 576583de8380dfd0fece1eb0adc46eadb302ccce65915c7d604649279d3672c8
+    name: voltron
+    urls:
+    - voltron-1.0.0.tgz
+    version: 1.0.0
+generated: "2021-09-09T16:25:16.373784-04:00"

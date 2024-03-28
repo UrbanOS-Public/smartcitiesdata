@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "helm.fullname" . }}-rds
+  labels:
+    component: postgres
+spec:
+  type: ExternalName
+  externalName: {{ .Values.postgres.host }}

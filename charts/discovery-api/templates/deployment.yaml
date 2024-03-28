@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-api
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.image.majorPin .Values.image.minorPin }}
+  annotations:
+    {{- if .Values.image.majorPin }}
+    docker.major: "{{ .Values.image.majorPin }}"
+    {{- end }}
+    {{- if .Values.image.minorPin }}
+    docker.minor: "{{ .Values.image.minorPin }}"
+    {{- end }}
+  {{- end }}
+  labels:
+    app: discovery-api
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: discovery-api
+  template:
+    metadata:
+      labels:
+        app: discovery-api
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: discovery-api
+      {{- end }}
+      containers:
+      - name: discovery-api
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 4000
+            scheme: HTTP
+          initialDelaySeconds: 100
+          timeoutSeconds: 5
+          periodSeconds: 100
+          successThreshold: 1
+          failureThreshold: 3      
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+          - name: KAFKA_BROKERS
+            value: {{ .Values.global.kafka.brokers }}
+          - name: REDIS_HOST
+            value: {{ .Values.global.redis.host }}
+          - name: REDIS_PORT
+            value: {{ quote .Values.global.redis.port }}
+          - name: REDIS_PASSWORD
+{{- if .Values.global.redis.passwordSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ quote .Values.global.redis.passwordSecret }}
+                key: {{ .Values.global.redis.passwordSecretKey | default .Values.global.redis.passwordSecret | quote }}
+{{- else }}
+            value: {{ .Values.global.redis.password }}
+{{- end }}
+          - name: REDIS_SSL
+            value: {{ quote .Values.global.redis.sslEnabled }}
+          - name: PRESTO_URL
+            value: {{ .Values.global.presto.url }}
+          - name: PRESTO_CATALOG
+            value: {{ .Values.presto.catalog }}
+          - name: PRESTO_SCHEMA
+            value: {{ .Values.presto.schema }}
+          - name: HOST
+            value: {{ .Values.global.subdomains.discoveryApi }}.{{ .Values.global.ingress.rootDnsZone }}
+          - name: ALLOWED_ORIGINS
+            value: {{ .Values.global.ingress.rootDnsZone }},{{ .Values.global.ingress.dnsZone }}
+          - name: PRESIGN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: discovery-api-presign-key
+                key: discovery-api-presign-key
+          - name: GUARDIAN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: guardian-secret-key
+                key: guardian-secret-key
+          - name: HOSTED_FILE_BUCKET
+            value: {{ .Values.global.buckets.hostedFileBucket }}
+          - name: HOSTED_FILE_REGION
+            value: {{ .Values.global.buckets.region }}
+          - name: POSTGRES_HOST
+            value: {{ .Values.postgres.host }}
+          - name: POSTGRES_DBNAME
+            value: {{ .Values.postgres.dbname }}
+          - name: POSTGRES_USER
+            value: {{ .Values.postgres.user }}
+          - name: POSTGRES_PASSWORD
+            {{- if .Values.postgres.passwordSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.postgres.passwordSecret }}
+                key: {{ .Values.postgres.passwordSecretKey }}
+            {{- else }}
+            value: {{ quote .Values.postgres.password }}
+            {{- end }}
+          - name: POSTGRES_PORT
+            value: {{ quote .Values.postgres.port }}
+          - name: POSTGRES_VERIFY_SNI
+            value: {{ quote .Values.postgres.verifySNI }}
+          - name: AUTH_JWT_ISSUER
+            value: {{ quote .Values.global.auth.jwt_issuer }}
+          - name: AUTH_JWKS_ENDPOINT
+            value: {{ quote .Values.auth.jwks_endpoint }}
+          - name: AUTH_USER_INFO_ENDPOINT
+            value: {{ quote .Values.auth.user_info_endpoint }}
+          - name: AUTH_DOMAIN
+            value: {{ quote .Values.global.auth.auth0_domain }}
+          - name: AUTH_CLIENT_ID
+            value: {{ quote .Values.auth.client_id }}
+          - name: AUTH_REDIRECT_BASE_URL
+            value: {{ quote .Values.auth.redirect_base_url }}
+          - name: ELASTICSEARCH_HOST
+            value: {{ .Values.elasticsearch.host }}
+          - name: ELASTICSEARCH_TLS_ENABLED
+            value: {{ quote .Values.elasticsearch.tls }}
+          - name: METRICS_PORT
+            value: {{ quote .Values.monitoring.targetPort }}
+          - name: RAPTOR_URL
+            value: {{ quote .Values.global.auth.raptor_url }}
+          - name: REQUIRE_API_KEY
+            value: {{ quote .Values.global.require_api_key }}
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-discovery-api-aws-credentials
+                key: aws_access_key_id
+          - name: AWS_ACCESS_KEY_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-discovery-api-aws-credentials
+                key: aws_access_key_secret
+          {{ if .Values.aws.s3HostName }}
+          - name: S3_HOST_NAME
+            value: {{ .Values.aws.s3HostName }}
+          - name: S3_PORT
+            value: {{ quote .Values.aws.s3Port }}
+          {{ end -}}

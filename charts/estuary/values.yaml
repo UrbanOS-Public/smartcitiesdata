@@ -1,0 +1,50 @@
+presto:
+  user: "estuary"
+  url: "http://kdp-kubernetes-data-platform-presto.kdp:8080"
+  table_name: event_stream
+
+kafka:
+  #comma delimited list of kafka seed brokers
+  brokers: streaming-service-kafka-bootstrap.streaming-prime:9092
+
+estuary:
+  data_topic: event-stream
+  dlq_topic: streaming-dead-letters
+
+image:
+  repository: smartcitiesdata/estuary
+  tag: development
+  pullPolicy: Always
+
+# defaults to be overridden by user
+replicaCount: 1
+nameOverride: ""
+fullnameOverride: ""
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Dataset compaction is off by default. If it is needed, set compactionSchedule to a valid cron string such as "00 01 * * *" (This will run compaction nightly at 1:00am)
+compactionSchedule: null
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 4000
+
+secrets:
+  live_view:
+    enable: true
+    value: "devonlyenablefalseanddefineoutofsourceinprod"
+
+ingress:
+  enabled: false
+  scheme: ""
+  subnets: ""
+  securityGroups: ""
+  certificateARN: ""
+  dnsZone: "localhost"

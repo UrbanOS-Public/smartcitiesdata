@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: discovery-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: discovery-ui
+  template:
+    metadata:
+      labels:
+        app: discovery-ui
+    spec:
+      imagePullSecrets:
+      - name: regcred
+      volumes:
+      - name: discovery-ui-configs
+        configMap:
+          name: discovery-ui-configs
+      containers:
+      - name: discovery-ui
+        image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html/config.js
+          name: discovery-ui-configs
+          subPath: config.js
+        - mountPath: /etc/nginx/conf.d/nginx-csps.conf
+          name: discovery-ui-configs
+          subPath: nginx-csps.conf
+{{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}

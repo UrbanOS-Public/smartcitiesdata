@@ -1,0 +1,277 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sauron-commands
+data:
+  image_patch_update_script.sh: |
+    #!/bin/bash
+    
+    image_auto_update() {
+      APP_NAME=$1
+      echo "APP_NAME:"
+      printf "%s \n\n" "$APP_NAME"
+    
+      REPOSITORY=smartcitiesdata/$APP_NAME
+      echo "REPOSITORY:"
+      printf "%s \n\n" "$REPOSITORY"
+    
+      TOKEN=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=repository:$REPOSITORY:pull" | jq -r .token)
+      printf "TOKEN Length: %s \n\n" "${#TOKEN}"
+    
+      # Replace _ with - to conform to kubernetes standards
+      KUBERNETES_FORMATTED_APP_NAME=${APP_NAME//_/-}
+      
+      POD_NAME=$(kubectl get pods | grep -m1 "$KUBERNETES_FORMATTED_APP_NAME" | cut -d ' ' -f 1)
+      echo "POD_NAME:"
+      printf "%s \n\n" "$POD_NAME"
+    
+      POD_IMAGE_TAG=$(kubectl get pod --namespace="$NAMESPACE" "$POD_NAME" -o json | jq '.status.containerStatuses[] | .image ' | cut -d ':' -f 2 | sed 's/"//g' | tr -d '[:space:]')
+      echo "POD_IMAGE_TAG:"
+      printf "%s \n\n" "$POD_IMAGE_TAG"
+    
+      if [[ $POD_IMAGE_TAG == "development" ]]; then
+      
+        ALL_TAGS=$(curl --location --request GET "https://hub.docker.com/v2/namespaces/smartcitiesdata/repositories/$APP_NAME/tags" | jq '.results | map(.name)')
+        echo "ALL TAGS:"
+        printf "%s \n\n" "$ALL_TAGS"
+    
+        DEPLOYMENT_NAME=$(kubectl get deployments | grep -m1 "$KUBERNETES_FORMATTED_APP_NAME" | cut -d ' ' -f 1)
+        echo "DEPLOYMENT_NAME:"
+        echo "$DEPLOYMENT_NAME"
+
+        MAJOR=$(kubectl get deployment $DEPLOYMENT_NAME -o jsonpath='{.metadata.annotations}' | jq '."docker.major"' | sed 's/"//g')
+        echo "MAJOR:"
+        printf "%s \n\n" "$MAJOR"
+
+        MINOR=$(kubectl get deployment $DEPLOYMENT_NAME -o jsonpath='{.metadata.annotations}' | jq '."docker.minor"' | sed 's/"//g')
+        echo "MINOR:"
+        printf "%s \n\n" "$MINOR"
+        
+        MATCHED_TAGS=$(echo "$ALL_TAGS" | jq "map(match(\"$MAJOR\\\.$MINOR\\\.([0-9]+)\"))")
+        VALID_TAGS=$(echo "$MATCHED_TAGS" | jq "map(.string)")
+        echo "VALID_TAGS:"
+        printf "%s \n\n" "$VALID_TAGS"
+        
+        LATEST_PATCH_VERSION=$(echo "$MATCHED_TAGS" | jq "map(.captures) | flatten(1) | map(.string | tonumber) | max")
+        echo "LATEST_PATCH_VERSION:"
+        printf "%s \n\n" "$LATEST_PATCH_VERSION"
+    
+        TARGET_REMOTE_DIGEST=$(curl -s -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://index.docker.io/v2/$REPOSITORY/manifests/$MAJOR.$MINOR.$LATEST_PATCH_VERSION | grep docker-content-digest | cut -d ' ' -f 2 | tr -d '[:space:]')
+        echo "TARGET_REMOTE_DIGEST:"
+        echo "$TARGET_REMOTE_DIGEST"
+        TARGET_REMOTE_DIGEST_LENGTH=${#TARGET_REMOTE_DIGEST}
+        printf "Length: %s \n\n" "$TARGET_REMOTE_DIGEST_LENGTH"
+        if [[ $TARGET_REMOTE_DIGEST_LENGTH != 71 ]]; then
+          echo "TARGET_REMOTE_DIGEST is not valid. Skipping this repo."
+          printf "\n\n\n\n\n"
+          return
+        fi
+        
+        DEVELOPMENT_REMOTE_DIGEST=$(curl -s -D - -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://index.docker.io/v2/$REPOSITORY/manifests/development | grep docker-content-digest | cut -d ' ' -f 2 | tr -d '[:space:]')
+        echo "DEVELOPMENT_REMOTE_DIGEST:"
+        echo "$DEVELOPMENT_REMOTE_DIGEST"
+        DEVELOPMENT_REMOTE_DIGEST_LENGTH=${#DEVELOPMENT_REMOTE_DIGEST}
+        
+        printf "Length: %s \n\n" "$DEVELOPMENT_REMOTE_DIGEST_LENGTH"
+        if [[ $DEVELOPMENT_REMOTE_DIGEST_LENGTH != 71 ]]; then
+          echo "DEVELOPMENT_REMOTE_DIGEST is not valid. Skipping this repo."
+          printf "\n\n\n\n\n"
+          return
+        fi
+        
+        CURRENT_DIGEST=$(kubectl get pod --namespace="$NAMESPACE" $POD_NAME -o json | jq '.status.containerStatuses[] | .imageID ' | cut -d '@' -f 2 | sed 's/"//g' | tr -d '[:space:]')
+        echo "CURRENT_DIGEST:"
+        echo "$CURRENT_DIGEST"
+        CURRENT_DIGEST_LENGTH=${#CURRENT_DIGEST}
+        printf "Length: %s \n\n" "$CURRENT_DIGEST_LENGTH"
+        if [[ $CURRENT_DIGEST_LENGTH != 71 ]]; then
+          echo "CURRENT_DIGEST is invalid. Skipping this repo."
+          printf "\n\n\n\n\n"
+          return
+        fi
+        
+        if [[ $CURRENT_DIGEST != "$DEVELOPMENT_REMOTE_DIGEST" ]]; then
+          echo "Pod $POD_NAME is not up-to-date."
+          if [[ $TARGET_REMOTE_DIGEST == "$DEVELOPMENT_REMOTE_DIGEST" ]]; then
+            echo "Newest patch of this Major/Minor matches development. Restarting deployment to trigger update"
+            
+            kubectl rollout restart "deployment/$DEPLOYMENT_NAME"
+            printf "\n\n\n\n\n"
+          else
+            echo "Latest patch version does not match development. This most likely means development has had a major/minor version update."
+            echo "Major/Minor updates indicate a chart value change. Please adjust your deployment manually and update the Major/Minor for this auto-updater pod."
+            echo "Skipping deployment restart."
+            printf "\n\n\n\n\n"
+          fi
+        else
+          echo "Pod $POD_NAME is already updated to development."
+          echo "Skipping deployment restart."
+          printf "\n\n\n\n\n"
+        fi
+      
+      else
+        echo "Pod $POD_NAME is not running development tag. Skipping docker image auto-updates."
+        printf "\n\n\n\n\n"
+      fi
+    }
+    
+    image_auto_update alchemist
+    image_auto_update andi
+    image_auto_update discovery_api
+    image_auto_update discovery_streams
+    image_auto_update forklift
+    image_auto_update raptor
+    image_auto_update reaper
+    image_auto_update valkyrie
+
+  deployment_update_script.sh: |
+    #!/bin/bash
+    
+    HOME=/home
+    
+    re="^https:\/\/github.com\/(.+)\/(.+).git*$"
+    
+    if [[ "$GIT_HTTPS_CLONE_URL" =~ $re ]]; then
+      USER=${BASH_REMATCH[1]}
+      echo "User: $USER"
+      printf "\n\n"
+    
+      REPO=${BASH_REMATCH[2]}
+      echo "Repo: $REPO"
+      printf "\n\n"
+    fi
+    
+    echo "Target Branch: $TARGET_BRANCH"
+    printf "\n\n"
+    TARGET_DEPLOYMENT_SHA=$(curl \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: Bearer $SAURON_PROXY_PAT" \
+        "https://api.github.com/repos/$USER/$REPO/branches/$TARGET_BRANCH" | jq '.commit.sha' | sed 's/"//g' )
+    printf "TARGET_DEPLOYMENT_SHA: %s \n\n" "$TARGET_DEPLOYMENT_SHA"
+    
+    if [[ $TARGET_DEPLOYMENT_SHA == null ]]; then
+      echo "Target Deployment Sha is not valid. Exiting.
+      exit 0
+    fi
+    
+    if [[ $TARGET_DEPLOYMENT_SHA == "" ]]; then
+      echo "Target Deployment Sha is not valid. Exiting.
+      exit 0
+    fi
+    
+    touch /sauron/current_deployment_sha.txt
+    CURRENT_DEPLOYMENT_SHA=$(cat /sauron/current_deployment_sha.txt)
+    printf "CURRENT_DEPLOYMENT_SHA: %s \n\n" "$CURRENT_DEPLOYMENT_SHA"
+    
+    if [[ $CURRENT_DEPLOYMENT_SHA != "$TARGET_DEPLOYMENT_SHA" ]]; then
+      echo "Github SHA used for the current deployment does not match the SHA of the configured target branch."
+      echo "Deploying with content from configured target branch."
+      printf "gitHttpsCloneUrl: %s" "$GIT_HTTPS_CLONE_URL"
+      printf "Target branch: %s" "$TARGET_BRANCH"
+    
+      echo "Moving to /home in order to have user permissions for github."
+      cd /home
+      pwd
+    
+      echo "Cloning github repo. This uses the provided proxy account pat."
+      echo "The proxy account pat needs to have permissions to read/write to the remote deployment repo"
+      printf "\n\n"
+      git clone "https://${SAURON_PROXY_PAT}:x-oauth-basic@github.com/${USER}/${REPO}.git"
+      cd "$REPO" || exit 0
+      git checkout "$TARGET_BRANCH"
+      printf "\n\n"
+    
+      {{ if .Values.remoteDeployment.secrets.persistence.trino.enabled }}
+      # the below secrets were unable to be templated in properly through
+      # just the values file, due to errors with string quotes,
+      # so this is a workaround to apply them as their own file, skipping template
+      # parsing.
+      echo "Creating hive_catalog.yaml patch file. Will list the folder post-creation for verification."
+      cat << EOT > hive_catalog.yaml
+    persistence:
+      trino:
+        additionalCatalogs:
+          hive: |
+            connector.name=hive-hadoop2
+            hive.metastore.uri=thrift://hive-metastore:8000
+            hive.metastore.username=padmin
+            hive.metastore-timeout=360m
+            hive.allow-drop-table=true
+            hive.allow-rename-table=true
+            hive.allow-drop-column=true
+            hive.allow-rename-column=true
+            hive.allow-add-column=true
+            hive.s3.aws-access-key=$GLOBAL_OBJECTSTORE_ACCESSKEY
+            hive.s3.aws-secret-key=$GLOBAL_OBJECTSTORE_ACCESSSECRET
+            hive.s3.path-style-access=true
+            hive.s3.endpoint=$MINIO_ENDPOINT
+            hive.s3.ssl.enabled=false
+    EOT
+      {{ end -}}
+      ls -lh
+    
+      if [[ -s "$VALUES_FILE_FROM_REPO_ROOT" ]]; then
+        echo "Adding urbanos repo to helm charts"
+        printf "\n\n"
+        helm repo add urbanos https://urbanos-public.github.io/charts/
+        helm repo update
+        helm search repo urbanos
+    
+        echo "Performing a helm deployment with the following values:"
+        printf "Namespace: %s \n" "$NAMESPACE"
+        printf "Values file location: %s \n" "$(realpath $VALUES_FILE_FROM_REPO_ROOT)"
+        printf "\n\n"
+    
+        cat << EOT > secrets.yaml
+    global:
+      objectStore:
+        accessKey: "{{ if .Values.global.objectStore.accessKey }}$GLOBAL_OBJECTSTORE_ACCESSKEY{{ end }}"
+        accessSecret: "{{ if .Values.global.objectStore.accessSecret }}$GLOBAL_OBJECTSTORE_ACCESSSECRET{{ end }}" 
+    andi:
+      auth:
+        auth0_client_secret: "{{ if .Values.remoteDeployment.secrets.andi.auth.auth0_client_secret }}$ANDI_AUTH0_CLIENT_SECRET{{ end }}"
+      postgres:
+        password: "{{ if .Values.remoteDeployment.secrets.andi.postgres.password }}$ANDI_POSTGRES_PASSWORD{{ end }}"
+    discovery-api:
+      secrets:
+        discoveryApiPresignKey: "{{ if index .Values.remoteDeployment.secrets "discovery-api" "secrets" "discoveryApiPresignKey" }}$DISCOVERY_API_PRESIGN_KEY{{ end }}"
+        guardianSecretKey: "{{ if index .Values.remoteDeployment.secrets "discovery-api" "secrets" "guardianSecretKey" }}$DISCOVERY_API_GUARDIAN_KEY{{ end }}"
+      postgres:
+        password: "{{ if index .Values.remoteDeployment.secrets "discovery-api" "postgres" "password" }}$DISCOVERY_API_POSTGRES_PASSWORD{{ end }}"
+    persistence:
+      metastore:
+        postgres:
+          password: "{{ if .Values.remoteDeployment.secrets.persistence.metastore.postgres.password }}$PERSISTENCE_POSTGRES_PASSWORD{{ end }}"
+    raptor:
+      auth:
+        auth0_client_secret: "{{ if .Values.remoteDeployment.secrets.raptor.auth.auth0_client_secret }}$RAPTOR_AUTH0_CLIENT_SECRET{{ end }}"
+    secrets:
+      minio: 
+        base64UserAccessKey: "{{ if .Values.global.objectStore.accessKey }}$GLOBAL_OBJECTSTORE_ACCESSKEY{{ end }}"
+        base64UserSecretKey: "{{ if .Values.global.objectStore.accessSecret }}$GLOBAL_OBJECTSTORE_ACCESSSECRET{{ end }}"
+        rootUserName: "{{ if .Values.remoteDeployment.secrets.minio.rootUserName }}$MINIO_ROOT_USERNAME{{ end }}"
+        rootPassword: "{{ if .Values.remoteDeployment.secrets.minio.rootPassword }}$MINIO_ROOT_PASSWORD{{ end }}"
+    EOT
+        
+        echo "Updating sauron state to new deployment SHA"
+        echo $TARGET_DEPLOYMENT_SHA > /sauron/current_deployment_sha.txt
+    
+        printf "Using post-renderer from remoteDeployment repo root relative path: %s" "$POST_RENDERER_FROM_REPO_ROOT"
+        
+        echo "Deploying urban-os charts"
+        helm upgrade --install $MANAGED_RELEASE_NAME urbanos/urban-os --namespace="$NAMESPACE" --values="$VALUES_FILE_FROM_REPO_ROOT" --values=secrets.yaml {{ if .Values.remoteDeployment.secrets.persistence.trino.enabled }}--values=hive_catalog.yaml {{ end }}{{ if .Values.remoteDeployment.postRendererFromRepoRoot }}--post-renderer=$POST_RENDERER_FROM_REPO_ROOT {{ end }}
+    
+      else
+        echo "Values file could not be found or is empty. Skipping deployment."
+        printf "Configured file path from repo root: %s \n\n\n" "$VALUES_FILE_FROM_REPO_ROOT" 
+      fi
+      
+    else
+      echo "Current deployment SHA matches the SHA of the configured target branch. Skipping deployment."
+    fi
+
+
+
+
+
+

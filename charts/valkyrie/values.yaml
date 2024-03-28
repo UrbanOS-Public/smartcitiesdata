@@ -1,0 +1,62 @@
+global:
+  kafka:
+    brokers: streaming-service-kafka-bootstrap:9092
+  redis:
+    host: redis.external-services
+    port: 6379
+    password: ""
+    passwordSecret: ""
+    sslEnabled: false
+
+replicaCount: 2
+
+image:
+  repository: smartcitiesdata/valkyrie
+  tag: development
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+service:
+  type: ClusterIP
+
+# monitoring:
+# targetPort: 4000
+# If running locally on Minikube, set to true to deploy an AWS localstack instance
+# https://github.com/localstack/localstack
+localstack:
+  enabled: false
+
+kafka:
+  #comma delimited list of kafka seed brokersß
+  inputTopicPrefix: "raw"
+  outputTopicPrefix: "transformed"
+  dlqTopic: "streaming-dead-letters"
+
+nameOverride: ""
+fullnameOverride: ""
+
+processor_stages: 1
+
+profiling_enabled: false
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 300m
+    memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+monitoring:
+  targetPort: 9002
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true

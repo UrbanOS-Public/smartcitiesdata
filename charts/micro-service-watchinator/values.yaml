@@ -1,0 +1,13 @@
+replicaCount: 1
+CONSUMER_URI: ""
+metrics:
+  port: 4002
+resourceLimits:
+  cpu: 100m
+  memory: 128Mi
+
+namespace: watchinator
+image:
+  repository: smartcitiesdata/micro-service-watchinator
+  tag: latest
+  pullPolicy: Always

@@ -1,0 +1,19 @@
+{{- range $topic := .Values.kafka.topics }}
+---
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: {{ $topic.name }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    strimzi.io/cluster: pipeline
+spec:
+  partitions: {{ $topic.partitions | default $.Values.kafka.defaultPartitions }}
+  replicas: {{ $topic.replicas | default $.Values.kafka.defaultReplicas }}
+{{- if $topic.config }}
+  config:
+{{ toYaml $topic.config | indent 4 }}
+{{- else }}
+  config: {}
+{{- end }}
+{{- end }}

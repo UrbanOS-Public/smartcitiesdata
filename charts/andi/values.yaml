@@ -1,0 +1,137 @@
+global:
+  auth:
+    jwt_issuer: ""
+    auth0_domain: ""
+    raptor_url: ""
+  kafka:
+    brokers: streaming-service-kafka-bootstrap:9092
+  presto:
+    url: http://platform-kubernetes-data-platform-presto:8080
+  redis:
+    host: redis.external-services
+    port: 6379
+    passwordSecret: ""
+    password: ""
+    sslEnabled: false
+  require_admin_api_key: false
+  vault:
+    # Should match the format {Release Name}-vault:8200
+    endpoint: "urban-os-vault:8200"
+  ingress:
+    rootDnsZone: localhost
+    dnsZone: localhost
+  objectStore:
+    accessKey: null
+    accessSecret: null
+
+replicaCount: 1
+
+image:
+  repository: smartcitiesdata/andi
+  tag: development
+  pullPolicy: Always
+  majorPin: ""
+  minorPin: ""
+
+monitoring:
+  targetPort: 9002
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 4000
+
+secrets:
+  live_view:
+    enable: true
+    value: "devonlyenablefalseanddefineoutofsourceinprod"
+
+resources:
+  limits:
+    memory: 256Mi
+    cpu: 150m
+  requests:
+    memory: 256Mi
+    cpu: 150m
+
+postgres:
+  host: "example.com"
+  port: "5432"
+  dbname: "postgres"
+  user: "postgres"
+  password: "password"
+  verifySNI: true
+
+auth:
+  andi_auth0_client_id: ""
+  # if left empty, no secret will be created
+  # and {{ .Release.Name }}-andi-auth0-client-secret will be referenced
+  auth0_client_secret: ""
+
+aws:
+  #################
+  # If these are left empty, no secret will be created.
+  # An existing {{ .Release.Name }}-andi-aws-credentials secret will be
+  #   referenced instead of utilizing accessKeyId and accessKeySecret to create
+  #   a secret.
+  #################
+  # Overriden by global.objectStore.accessKey if present
+  accessKeyId: ""
+  # Overriden by global.objectStore.accessSecret if present
+  accessKeySecret: ""
+  #################
+  s3HostName: null
+  s3Port: null
+
+# The root at which documentation pdfs and other artifacts can be found
+documentationRoot: ""
+
+# This flag controls whether Andi is deployed in Public mode or not.
+# Public mode prevents all access to Curator features for security reasons.
+# Can be "private" or "public"
+accessLevel: "private"
+
+theme:
+  # url for the header bar logo
+  logo: "/images/UrbanOS.svg"
+  # header bar text
+  headerText: "Data Submission Tool"
+  # Color can be any valid css. Examples - "#101010", "rgb(0,0,0)", "red"
+  primaryColor: "#0F64B3"
+  secondaryColor: "#1176D4"
+  successColor: "#008000"
+  errorColor: "#B80000"
+  customFavIconUrl: 
+
+footer:
+  # footer text on left side with links on right side
+  leftSideText: "© 2023 UrbanOS. All rights reserved."
+  leftSideLink: "https://github.com/UrbanOS-Public/smartcitiesdata"
+  rightLinks: '[{"linkText":"Discovery UI", "url":"https://discovery.dev.apps.hsrqs9l3.eastus.aroapp.io/"}, {"linkText":"UrbanOS", "url":"https://github.com/UrbanOS-Public/smartcitiesdata"}]'
+
+tolerations:
+  - key: example.run.public-worker
+    operator: Equal
+    value: "true"
+    effect: NoExecute
+
+s3:
+  hostedFileBucket: "andi-public-sample-datasets"
+  hostedFileRegion: "us-west-2"
+
+# This is the name of the role that ANDI must have to access vault
+vaultRole: "andi-role"
+
+ingress:
+  tls: true
+  enabled: true
+  annotations:
+
+secureCookie: "false"

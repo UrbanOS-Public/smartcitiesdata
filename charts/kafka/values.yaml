@@ -1,0 +1,73 @@
+kafka:
+  version: 2.6.2
+  broker: pipeline-kafka-bootstrap:9092
+  storageSize: 100Gi
+  defaultPartitions: 1
+  # Adjusting defaultReplicas: https://github.com/Datastillery/charts/issues/312
+  defaultReplicas: 3
+  topics:
+    - name: streaming-persisted
+    - name: streaming-dead-letters
+    - name: event-stream
+  resources:
+    requests:
+      cpu: 1400m
+      memory: 12500M
+    limits:
+      cpu: 1400m
+      memory: 12500M
+
+scraper:
+  enabled: false
+  cron: "*/10 * * * *"
+  image: "alpine:latest"
+  endpoint: kafka-exporter:9308/metrics
+  serviceAccount: default
+
+zookeeper:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 100m
+      memory: 512Mi
+
+# https://github.com/strimzi/strimzi-kafka-operator/blob/main/helm-charts/helm3/strimzi-kafka-operator/values.yaml
+# This installs the strimzi operator, which requires CRDs to be manually installed
+# to function. https://github.com/strimzi/strimzi-kafka-operator/issues/7147#issuecomment-1270844173
+strimzi-kafka-operator:
+  enabled: true
+  resources:
+    limits:
+      cpu: 500m
+    requests:
+      cpu: 100m
+
+tlsSidecar:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+tolerations: []
+
+affinity: {}
+
+rbac:
+  # Create a ServiceAccount or use default ServiceAccount if set as false
+  enabled: true
+
+resizeHook:
+  # Create a Job to auto scale kafka sizes after initial install
+  enabled: true
+
+limitRange:
+  # Create a custom limit range
+  enabled: true
+
+kafkaExporter:
+  enabled: true

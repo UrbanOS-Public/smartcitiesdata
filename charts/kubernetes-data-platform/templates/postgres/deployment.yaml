@@ -1,0 +1,50 @@
+{{- if .Values.postgres.enable -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kdp.postgres.fullname" . }}
+  labels:
+    component: postgres
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      component: postgres
+{{ include "kdp.labels" . | indent 6 }}
+  replicas: {{ .Values.postgres.deploy.replicas }}
+  strategy:
+{{ toYaml .Values.postgres.deploy.updateStrategy | trim | indent 4 }}
+  template:
+    metadata:
+      labels:
+        component: postgres
+{{ include "kdp.labels" . | indent 8 }}
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.deploy.container.image }}:{{ .Values.postgres.deploy.container.tag }}
+          imagePullPolicy: {{ .Values.postgres.deploy.container.pullPolicy }}
+          env:
+          - name: POSTGRES_PASSWORD
+            value: {{ .Values.postgres.db.password }}
+          ports:
+          - containerPort: {{ .Values.postgres.service.port }}
+            name: postgres
+          volumeMounts:
+          - mountPath: /docker-entrypoint-initdb.d/init.sql
+            name: postgres-init
+            subPath: init.sql
+{{- if .Values.postgres.storage.persist }}
+          - mountPath: /var/lib/postgres/data
+            name: postgres-data
+{{- end }}
+      volumes:
+      - name: postgres-init
+        configMap:
+          name: {{ template "kdp.postgres.fullname" . }}-init
+{{- if .Values.postgres.storage.persist }}
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: {{ template "kdp.postgres.fullname" . }}-storage
+{{- end }}
+{{- end }}

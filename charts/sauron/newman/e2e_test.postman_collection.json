@@ -1,0 +1,429 @@
+{
+	"info": {
+		"_postman_id": "dc4e428d-baea-4c40-85bc-f10fb7dd3257",
+		"name": "e2e_test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Organization - Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// no-op since an org could have been created before this test run.",
+							"// This is because, at time of writing, there is not a way to delete orgs. So this call either makes the org or 500s",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"ingestion_id\")",
+							"pm.collectionVariables.unset(\"dataset_id\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n        \"dataJsonUrl\": \"\",\n        \"description\": \"An organization created to test from ANDI to Discovery\",\n        \"dn\": null,\n        \"homepage\": \"\",\n        \"id\": \"8189cca2-7288-11ed-a1eb-0242ac120003\",\n        \"logoUrl\": \"\",\n        \"orgName\": \"urbanos_end_to_end_testing_org\",\n        \"orgTitle\": \"UrbanOS End To End Testing Org\",\n        \"version\": \"0.1\"\n}"
+				},
+				"url": {
+					"raw": "{{andi_url}}/api/v1/organization",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"organization"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dataset - Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Dataset create returns 201\", function() {",
+							"    response_body = pm.response.json()",
+							"    pm.expect(pm.response, `Did not have status 201. Status: ${pm.response.status}, Body: ${JSON.stringify(response_body)}`).to.have.status(201);",
+							"    pm.expect(response_body[\"id\"]).to.exist;",
+							"    pm.collectionVariables.set(\"dataset_id\", response_body[\"id\"])",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 2000)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "    {\n        \"business\": {\n            \"authorEmail\": null,\n            \"authorName\": null,\n            \"benefitRating\": 1.0,\n            \"categories\": null,\n            \"conformsToUri\": null,\n            \"contactEmail\": \"test@urbanos.test\",\n            \"contactName\": \"Test Name\",\n            \"dataTitle\": \"End-to-End Testing Dataset\",\n            \"describedByMimeType\": null,\n            \"describedByUrl\": null,\n            \"description\": \"A dataset created by End to End testing\",\n            \"homepage\": \"\",\n            \"issuedDate\": \"2020-10-01T02:01:39.213382Z\",\n            \"keywords\": [],\n            \"language\": null,\n            \"license\": \"https://creativecommons.org/licenses/by/4.0/\",\n            \"modifiedDate\": \"2021-08-25T10:01:08.540140Z\",\n            \"orgTitle\": \"UrbanOS End To End Testing Org\",\n            \"parentDataset\": null,\n            \"publishFrequency\": \"Monthly\",\n            \"referenceUrls\": null,\n            \"rights\": \"\",\n            \"riskRating\": 0.0,\n            \"spatial\": null,\n            \"temporal\": null\n        },\n        \"technical\": {\n            \"allow_duplicates\": true,\n            \"authBody\": {},\n            \"authBodyEncodeMethod\": null,\n            \"authHeaders\": {},\n            \"authUrl\": null,\n            \"cadence\": \"never\",\n            \"credentials\": false,\n            \"dataName\": \"endtoenddata\",\n            \"orgId\": \"8189cca2-7288-11ed-a1eb-0242ac120003\",\n            \"orgName\": \"urbanos_end_to_end_testing_org\",\n            \"private\": false,\n            \"protocol\": null,\n            \"schema\": [\n                {\n                    \"name\": \"status\",\n                    \"type\": \"string\"\n                }\n            ],\n            \"sourceHeaders\": {},\n            \"sourceQueryParams\": {},\n            \"sourceType\": \"ingest\",\n            \"sourceUrl\": \"\",\n            \"systemName\": \"\"\n        },\n        \"version\": \"0.6\"\n    }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{andi_url}}/api/v1/dataset",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"dataset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ingestion - Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ingestion create returns 201\", function() {",
+							"    response_body = pm.response.json()",
+							"    pm.expect(pm.response, `Did not have status 201. Status: ${pm.response.status}, Body: ${JSON.stringify(response_body)}`).to.have.status(201);",
+							"",
+							"    pm.expect(response_body[\"id\"]).to.exist;",
+							"    pm.collectionVariables.set(\"ingestion_id\", response_body[\"id\"])",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 2000)",
+							"",
+							"pm.expect(pm.collectionVariables.get(\"dataset_id\"), \"Could not obtain dataset_id from collection variables\").to.exist;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"End To End Testing Ingestion\",\n    \"allow_duplicates\": true,\n    \"cadence\": \"*/15 * * * * *\",\n    \"extractSteps\": [\n        {\n            \"assigns\": {},\n            \"context\": {\n                \"action\": \"GET\",\n                \"body\": {},\n                \"headers\": {},\n                \"protocol\": null,\n                \"queryParams\": {},\n                \"url\": \"https://raw.githubusercontent.com/bmitchinson/json-endpoint/main/meters_ingestionA.json\"\n            },\n            \"sequence\": 2,\n            \"type\": \"http\"\n        }\n    ],\n    \"schema\": [\n        {\n            \"biased\": \"No\",\n            \"demographic\": \"None\",\n            \"description\": \"\",\n            \"masked\": \"N/A\",\n            \"name\": \"status\",\n            \"pii\": \"None\",\n            \"sequence\": 5,\n            \"subSchema\": [],\n            \"type\": \"string\"\n        }\n    ],\n    \"sourceFormat\": \"application/json\",\n    \"targetDataset\": \"{{dataset_id}}\",\n    \"topLevelSelector\": null,\n    \"transformations\": []\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{andi_url}}/api/v1/ingestion",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"ingestion"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ingestion - Publish",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ingestion Publish returns 200\", function() {",
+							"    pm.expect(pm.response, `Did not have status 200. Status: ${pm.response.status}, Body: ${JSON.stringify(response_body)}`).to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 2000)",
+							"",
+							"pm.expect(pm.collectionVariables.get(\"ingestion_id\"), \"Ingestion ID is not set.\").to.exist;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{andi_url}}/api/v1/ingestion/publish?id={{ingestion_id}}",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"ingestion",
+						"publish"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{ingestion_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Discovery API Result",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Fetching Discovery API data returns 200\", function() {",
+							"    pm.expect(pm.response, `Did not have status 200. Response: ${JSON.stringify(pm.response)}`).to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Discovery API returns info for a parking meter\", function() {",
+							"    pm.expect(pm.response.json()[0].status).to.exist;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 150000)",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api_key",
+						"value": "{{api_key}}",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "{{discovery_url}}/api/v1/organization/urbanos_end_to_end_testing_org/dataset/endtoenddata/query?limit=1&_format=json",
+					"host": [
+						"{{discovery_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"organization",
+						"urbanos_end_to_end_testing_org",
+						"dataset",
+						"endtoenddata",
+						"query"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "1"
+						},
+						{
+							"key": "_format",
+							"value": "json"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ingestion - Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ingestion Delete returns 200\", function() {",
+							"    response_body = pm.response.json()",
+							"    pm.expect(pm.response, `Did not have status 200. Status: ${pm.response.status}, Body: ${JSON.stringify(response_body)}`).to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 1000)",
+							"",
+							"pm.expect(pm.collectionVariables.get(\"ingestion_id\"), \"Ingestion ID is not set.\").to.exist;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{andi_url}}/api/v1/ingestion/delete?id={{ingestion_id}}",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"ingestion",
+						"delete"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{ingestion_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Dataset - Delete",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Dataset Delete returns 200\", function() {",
+							"    response_body = pm.response.json()",
+							"    pm.expect(pm.response, `Did not have status 200. Status: ${pm.response.status}, Body: ${JSON.stringify(response_body)}`).to.have.status(200);",
+							"});",
+							"",
+							"pm.collectionVariables.unset(\"ingestion_id\")",
+							"pm.collectionVariables.unset(\"dataset_id\")"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(() => {}, 1000)",
+							"",
+							"pm.expect(pm.collectionVariables.get(\"dataset_id\"), \"Could not obtain dataset_id from collection variables\").to.exist;"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{andi_url}}/api/v1/dataset/delete?id={{dataset_id}}",
+					"host": [
+						"{{andi_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"dataset",
+						"delete"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "{{dataset_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"const uuid = require('uuid')",
+					"",
+					"if(!pm.collectionVariables.has(\"ingestion_id\")) {",
+					"    pm.collectionVariables.set(\"ingestion_id\", uuid.v4())",
+					"}",
+					"",
+					"if(!pm.collectionVariables.has(\"dataset_id\")) {",
+					"    pm.collectionVariables.set(\"dataset_id\", uuid.v4())",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "ingestion_id",
+			"value": ""
+		},
+		{
+			"key": "dataset_id",
+			"value": ""
+		}
+	]
+}

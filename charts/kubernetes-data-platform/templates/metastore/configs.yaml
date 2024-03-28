@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp.metastore.fullname" . }}-metastore-configs
+  labels:
+    component: presto
+{{ include "kdp.labels" . | indent 4 }}
+data:
+  jmx_exporter_config.yaml: |
+    {}

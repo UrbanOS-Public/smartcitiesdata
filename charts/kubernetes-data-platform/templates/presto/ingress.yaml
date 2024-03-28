@@ -1,0 +1,29 @@
+{{- if .Values.presto.ingress.enable -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+{{- if .Values.presto.ingress.annotations }}
+{{ toYaml .Values.presto.ingress.annotations | trim | indent 4 }}
+{{- end }}
+{{- if .Values.global.ingress.annotations }}
+{{ toYaml .Values.global.ingress.annotations | trim | indent 4 }}
+{{- end }}
+  name: {{ template "kdp.presto.fullname" . }}
+  labels:
+    component: presto
+    role: coordinator
+{{ include "kdp.labels" . | indent 4 }}
+spec:
+  rules:
+  - host: presto.{{ .Release.Namespace }}.{{ .Values.global.ingress.dnsZone }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "kdp.presto.fullname" . }}
+            port:
+              number: {{ .Values.presto.service.port }}
+{{- end }}

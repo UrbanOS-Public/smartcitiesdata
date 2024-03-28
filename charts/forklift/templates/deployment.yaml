@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "helm.fullname" . }}
+  {{- if or .Values.image.majorPin .Values.image.minorPin }}
+  annotations:
+    {{- if .Values.image.majorPin }}
+    docker.major: "{{ .Values.image.majorPin }}"
+    {{- end }}
+    {{- if .Values.image.minorPin }}
+    docker.minor: "{{ .Values.image.minorPin }}"
+    {{- end }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "helm.name" . }}
+    helm.sh/chart: {{ include "helm.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "helm.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "helm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- if .Values.rbac.enabled }}
+      serviceAccountName: {{ .Chart.Name }}
+      {{- end }}      
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - containerPort: 9001
+          - containerPort: 4369
+          env:
+          - name: KAFKA_BROKERS
+            value: {{ .Values.global.kafka.brokers }}
+          - name: PRESTO_URL
+            value: {{ .Values.global.presto.url }}
+          - name: RUN_IN_KUBERNETES
+            value: "true"
+          - name: REDIS_HOST
+            value: {{ .Values.global.redis.host }}
+          - name: REDIS_PORT
+            value: {{ quote .Values.global.redis.port }}
+          - name: REDIS_PASSWORD
+{{- if .Values.global.redis.passwordSecret }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ quote .Values.global.redis.passwordSecret }}
+                key: {{ .Values.global.redis.passwordSecretKey | default .Values.global.redis.passwordSecret | quote }}
+{{- else }}
+            value: {{ .Values.global.redis.password }}
+{{- end }}
+          - name: REDIS_SSL
+            value: {{ quote .Values.global.redis.sslEnabled }}
+          - name: DATA_TOPIC_PREFIX
+            value: {{.Values.kafka.dataTopicPrefix}}
+          - name: OUTPUT_TOPIC
+            value: {{.Values.kafka.outputTopic}}
+          - name: PRESTO_USER
+            value: {{.Values.kdp.user}}
+          - name: METRICS_PORT
+            value: {{ quote .Values.monitoring.targetPort }}
+          - name: PROFILING_ENABLED
+            value: {{ .Values.profiling_enabled | quote }}
+          - name: OVERWRITE_MODE
+            value: {{ .Values.overwrite_mode | quote }}
+          {{ if .Values.global.objectStore.accessKey }}
+          - name: AWS_ACCESS_KEY_ID
+            value: {{ .Values.global.objectStore.accessKey }}
+          {{ end -}}
+          {{ if .Values.global.objectStore.accessSecret }}
+          - name: AWS_SECRET_ACCESS_KEY
+            value: {{ .Values.global.objectStore.accessSecret }}
+          {{ end -}}
+          {{ if .Values.aws.s3HostName }}
+          - name: S3_HOST_NAME
+            value: {{ .Values.aws.s3HostName }}
+          - name: S3_PORT
+            value: {{ .Values.aws.s3Port | quote }}
+          {{ end -}}
+          {{ if .Values.global.buckets.hiveStorageBucket }}
+          - name: S3_WRITER_BUCKET
+            value: {{ .Values.global.buckets.hiveStorageBucket }}
+          {{ end -}}
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: NODE_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: NODE_ID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

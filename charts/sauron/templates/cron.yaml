@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Chart.Name }}-cron
+spec:
+  schedule: "{{ .Values.config.cron }}"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          restartPolicy: Never
+          serviceAccount: updater-cron
+          containers:
+            - name: {{ .Chart.Name }}
+              image: {{ .Values.config.image }}
+              imagePullPolicy: Always
+              resources:
+                limits:
+                  memory: 1Gi
+                  cpu: 500m
+                requests:
+                  memory: 512Mi
+                  cpu: 300m
+              env:
+                - name: GIT_HTTPS_CLONE_URL
+                  value: {{ .Values.remoteDeployment.gitHttpsCloneUrl }}
+                - name: TARGET_BRANCH
+                  value: {{ .Values.remoteDeployment.targetBranch }}
+                - name: RELEASE_NAME
+                  value: {{ .Release.Name }}
+                - name: NAMESPACE
+                  value: {{ .Release.Namespace }}
+                - name: VALUES_FILE_FROM_REPO_ROOT
+                  value: {{ .Values.remoteDeployment.valuesFileFromRepoRoot }}
+                - name: POST_RENDERER_FROM_REPO_ROOT
+                  value: {{ .Values.remoteDeployment.postRendererFromRepoRoot }}
+                - name: MANAGED_RELEASE_NAME
+                  value: {{ .Values.config.managedReleaseName }}
+                {{ if .Values.global.objectStore.accessKey -}}
+                - name: GLOBAL_OBJECTSTORE_ACCESSKEY
+                  value: "{{ .Values.global.objectStore.accessKey }}"
+                {{ end -}}
+                {{- if .Values.global.objectStore.accessSecret -}}
+                - name: GLOBAL_OBJECTSTORE_ACCESSSECRET
+                  value: "{{ .Values.global.objectStore.accessSecret }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.raptor.auth.auth0_client_secret -}}
+                - name: RAPTOR_AUTH0_CLIENT_SECRET
+                  value: "{{ .Values.remoteDeployment.secrets.raptor.auth.auth0_client_secret }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.andi.postgres.password -}}
+                - name: ANDI_POSTGRES_PASSWORD
+                  value: "{{ .Values.remoteDeployment.secrets.andi.postgres.password }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.andi.auth.auth0_client_secret -}}
+                - name: ANDI_AUTH0_CLIENT_SECRET
+                  value: "{{ .Values.remoteDeployment.secrets.andi.auth.auth0_client_secret }}"
+                {{ end -}}
+                {{- if index .Values.remoteDeployment.secrets "discovery-api" "secrets" "discoveryApiPresignKey" -}}
+                - name: DISCOVERY_API_PRESIGN_KEY
+                  value: "{{ index .Values.remoteDeployment.secrets "discovery-api" "secrets" "discoveryApiPresignKey" }}"
+                {{ end -}}
+                {{- if index .Values.remoteDeployment.secrets "discovery-api" "secrets" "guardianSecretKey" -}}
+                - name: DISCOVERY_API_GUARDIAN_KEY
+                  value: "{{ index .Values.remoteDeployment.secrets "discovery-api" "secrets" "guardianSecretKey" }}"
+                {{ end -}}
+                {{- if index .Values.remoteDeployment.secrets "discovery-api" "postgres" "password" -}}
+                - name: DISCOVERY_API_POSTGRES_PASSWORD
+                  value: "{{ index .Values.remoteDeployment.secrets "discovery-api" "postgres" "password" }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.persistence.metastore.postgres.password -}}
+                - name: PERSISTENCE_POSTGRES_PASSWORD
+                  value: "{{ .Values.remoteDeployment.secrets.persistence.metastore.postgres.password }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.proxyAccountPAT -}}
+                - name: SAURON_PROXY_PAT
+                  value: "{{ .Values.remoteDeployment.proxyAccountPAT }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.minio.endpoint -}}
+                - name: MINIO_ENDPOINT
+                  value: "{{ .Values.remoteDeployment.secrets.minio.endpoint }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.minio.rootUserName -}}
+                - name: MINIO_ROOT_USERNAME
+                  value: "{{ .Values.remoteDeployment.secrets.minio.rootUserName }}"
+                {{ end -}}
+                {{- if .Values.remoteDeployment.secrets.minio.rootPassword -}}
+                - name: MINIO_ROOT_PASSWORD
+                  value: "{{ .Values.remoteDeployment.secrets.minio.rootPassword }}"
+                {{ end }}
+              command:
+                - "/bin/bash"
+                - "-c"
+                - "/usr/local/bin/image_patch_update_script.sh && /usr/local/bin/deployment_update_script.sh"
+              volumeMounts:
+                - mountPath: /usr/local/bin/image_patch_update_script.sh
+                  name: sauron-commands
+                  subPath: image_patch_update_script.sh
+                - mountPath: /usr/local/bin/deployment_update_script.sh
+                  name: sauron-commands
+                  subPath: deployment_update_script.sh
+                - mountPath: /home
+                  name: home
+                - name: sauron-state
+                  mountPath: /sauron
+          volumes:
+          - name: sauron-commands
+            configMap:
+              name: sauron-commands
+              defaultMode: 0777
+          - name: home
+            emptyDir: { }
+          - name: sauron-state
+            persistentVolumeClaim:
+              claimName: {{ .Release.Name }}-{{ .Chart.Name }}
