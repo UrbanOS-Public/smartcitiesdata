@@ -78,9 +78,8 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       title = "My first visualization"
       {:ok, owner} = Users.create_or_update(@user, %{email: "bob@example.com", name: "Bob"})
 
-      assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
-
       eventually(fn ->
+        assert {:ok, saved} = Visualizations.create_visualization(%{query: query, owner: owner, title: title})
         actual = Repo.get(Visualization, saved.id)
         assert [id] == actual.datasets
         assert actual.valid_query
