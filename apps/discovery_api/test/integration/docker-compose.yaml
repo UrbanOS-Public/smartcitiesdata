@@ -77,7 +77,7 @@ services:
 
   zookeeper:
     platform: linux/amd64
-    image: wurstmeister/zookeeper
+    image: zookeeper:3.4.13
     ports:
     - "2181:2181"
   kafka:

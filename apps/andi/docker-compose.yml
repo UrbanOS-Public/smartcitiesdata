@@ -28,7 +28,7 @@ services:
     ports:
       - "5456:5432"
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: zookeeper:3.4.13
     platform: linux/amd64
     ports:
     - "2181:2181"
