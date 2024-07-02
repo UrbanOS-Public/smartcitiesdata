@@ -64,7 +64,7 @@ services:
       - ${PWD}/test/integration/hive.properties:/etc/trino/catalog/hive.properties
 
   zookeeper:
-    image: wurstmeister/zookeeper
+    image: zookeeper:3.4.13
     platform: linux/amd64
     ports:
     - "2181:2181"
