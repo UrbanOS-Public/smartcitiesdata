@@ -311,7 +311,7 @@ defmodule DiscoveryApi.Data.QueryTest do
 
       assert %{
                "message" =>
-	         "Syntax Error: Error 400 Bad Request: Invalid X-Trino-Prepared-Statement header: line 1:43: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FETCH', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'OFFSET', 'ORDER', 'UNION', 'WHERE', 'WINDOW', <EOF>"
+                 "Syntax Error: Error 400 Bad Request: Invalid X-Trino-Prepared-Statement header: line 1:43: mismatched input 'FORM'. Expecting: ',', 'EXCEPT', 'FETCH', 'FROM', 'GROUP', 'HAVING', 'INTERSECT', 'LIMIT', 'OFFSET', 'ORDER', 'UNION', 'WHERE', 'WINDOW', <EOF>"
              } ==
                plain_text_post(conn, "/api/v1/query", request_body)
                |> response(400)
