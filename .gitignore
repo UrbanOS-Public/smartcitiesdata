@@ -34,4 +34,8 @@ node_modules/
 
 compaction-test-fixtures/
 
+# emacs editor files
+*~
+[#]*[#]
+
 apps/reaper/12345-6789

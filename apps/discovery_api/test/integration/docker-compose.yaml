@@ -64,7 +64,7 @@ services:
     - metastore
     - minio
     platform: linux/amd64
-    image: trinodb/trino:389
+    image: quay.io/urbanos/ubi-trino:468-015
     ports:
     - "8080:8080"
     healthcheck:
