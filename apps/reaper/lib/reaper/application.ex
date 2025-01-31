@@ -35,6 +35,7 @@ defmodule Reaper.Application do
     fetch_and_set_hosted_file_credentials()
 
     opts = [strategy: :one_for_one, name: Reaper.Supervisor]
+    Logger.info("Yo, reaper is about to reap.")
     Supervisor.start_link(children, opts)
   end
 
