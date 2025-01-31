@@ -31,6 +31,7 @@ defmodule Forklift.Application do
     end
 
     opts = [strategy: :one_for_one, name: Forklift.Supervisor]
+    Logger.info("Starting forklift to fork or lift.")
     Supervisor.start_link(children, opts)
   end
 
