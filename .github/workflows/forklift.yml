@@ -20,8 +20,8 @@ on:
 jobs:
   ci:
     if: github.event.pull_request.draft == false
-    name: Verify Application
-    runs-on: ubuntu-20.04
+    name: Verify the Application
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
