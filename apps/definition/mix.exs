@@ -32,6 +32,7 @@ defmodule Definition.MixProject do
       # Def/Test Dependencies
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:mock, "~> 0.3", only: [:dev, :test]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:stream_data, "~> 0.5", only: [:dev, :test]},
       {:checkov, "~> 1.0", only: [:test]},
       {:credo, "~> 1.7", only: [:dev]}

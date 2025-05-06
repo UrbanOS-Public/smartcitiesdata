@@ -65,6 +65,7 @@ defmodule DiscoveryApi.Mixfile do
       {:jason, "~> 1.2"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:patiently, "~> 0.2"},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14.1"},
       {:phoenix_pubsub, "~> 2.0"},

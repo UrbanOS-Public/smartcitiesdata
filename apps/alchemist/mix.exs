@@ -53,6 +53,7 @@ defmodule Alchemist.MixProject do
       {:observer_cli, "~> 1.7.4"},
       {:off_broadway_kafka_pipeline, "~> 2.0.0"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.15"},
       {:smart_city, "~> 5.4.0"},

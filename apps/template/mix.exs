@@ -34,6 +34,7 @@ defmodule Template.MixProject do
       {:phoenix_html, "~> 2.14"},
       {:phoenix_pubsub, "~> 2.0"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 1.0"},
       {:properties, in_umbrella: true},
       {:redix, "~> 1.2"},

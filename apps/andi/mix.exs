@@ -80,6 +80,7 @@ defmodule Andi.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: [:dev, :integration]},
       {:phoenix_live_view, "~>0.14"},
       {:phoenix_pubsub, "~> 2.0"},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.6"},
       {:postgrex, "~> 0.17"},
       {:prestige, "~> 3.0.0"},

@@ -45,6 +45,7 @@ defmodule Forklift.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:observer_cli, "~> 1.5"},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:poison, "~> 5.0", override: true},
       {:prestige, "~> 3.0.0"},
       {:properties, in_umbrella: true},

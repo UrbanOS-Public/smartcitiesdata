@@ -61,6 +61,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:phoenix_html, "~> 2.14"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:properties, in_umbrella: true},
+      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.6"},
       {:raptor_service, in_umbrella: true},
       {:redix, "~> 1.2"},
