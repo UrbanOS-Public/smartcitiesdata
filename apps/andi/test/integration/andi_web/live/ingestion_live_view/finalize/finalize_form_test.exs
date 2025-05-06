@@ -2,13 +2,11 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Placebo
-  import Checkov
 
+  import Checkov
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
-
   import FlokiHelpers,
     only: [
       get_text: 2,

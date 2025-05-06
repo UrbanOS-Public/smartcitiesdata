@@ -1,7 +1,7 @@
 defmodule Andi.Schemas.AccessGroupTest do
   use ExUnit.Case
+
   import Checkov
-  use Placebo
 
   alias Andi.InputSchemas.AccessGroup
 

@@ -5,12 +5,12 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "1.3.4",
+      version: "2.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: test_paths(Mix.env()),
@@ -28,25 +28,26 @@ defmodule Raptor.MixProject do
 
   defp deps do
     [
+      {:brod, "~> 3.16", override: true},
       {:atomic_map, "~> 0.9"},
-      {:brook, "== 0.4.9"},
-      {:cowlib, "== 2.9.1", override: true},
-      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
+      {:brook_stream, "~> 1.0"},
+      {:cowlib, "== 2.12.1", override: true},
+      {:divo, "~> 2.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
-      {:phoenix_html, "~> 2.14.1"},
+      {:phoenix_html, "~> 2.14"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:plug_heartbeat, "~> 0.2.0"},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
+      {:plug_heartbeat, "~> 1.0"},
       {:properties, in_umbrella: true},
-      {:redix, "~> 0.10"},
-      {:smart_city, "~> 5.4.0"},
+      {:redix, "~> 1.2"},
+      {:smart_city, "~>  5.4.0"},
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:tesla, "~> 1.3"},
-      {:ueberauth_auth0, "~> 0.8.1"},
+      {:ueberauth_auth0, "~> 2.1"},
       {:distillery, "~> 2.1"},
-      {:httpoison, "~> 1.5"}
+      {:httpoison, "~> 2.1"}
     ]
   end
 

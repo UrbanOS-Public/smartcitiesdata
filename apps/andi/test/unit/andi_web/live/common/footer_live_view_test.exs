@@ -1,6 +1,5 @@
 defmodule AndiWeb.FooterLiveViewTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
 
   describe "Footer Live View" do
     test "Should get links" do

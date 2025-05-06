@@ -5,7 +5,6 @@ defmodule AndiWeb.UserLiveViewTest do
 
   @moduletag shared_data_connection: true
 
-  import Placebo
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1]
 

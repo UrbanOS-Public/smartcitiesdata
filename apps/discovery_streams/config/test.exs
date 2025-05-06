@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 System.put_env("REQUIRE_API_KEY", "false")
 
 host = "127.0.0.1"

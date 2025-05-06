@@ -4,12 +4,12 @@ defmodule TelemetryEvent.MixProject do
   def project do
     [
       app: :telemetry_event,
-      version: "1.0.1",
+      version: "2.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       elixir_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,

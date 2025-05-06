@@ -4,12 +4,12 @@ defmodule RaptorService.MixProject do
   def project do
     [
       app: :raptor_service,
-      version: "0.1.5",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_paths: ["test/unit"]
@@ -26,10 +26,10 @@ defmodule RaptorService.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.3", only: [:dev]},
-      {:httpoison, "~> 1.5"},
+      {:credo, "~> 1.7", only: [:dev]},
+      {:httpoison, "~> 2.1"},
       {:jason, "~> 1.2", override: true},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true}
     ]
   end

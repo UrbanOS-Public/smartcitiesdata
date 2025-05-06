@@ -1,7 +1,6 @@
 defmodule Andi.Harvest.HarvesterTest do
   use ExUnit.Case
   use Andi.DataCase
-  use Placebo
 
   @moduletag shared_data_connection: true
 

@@ -8,7 +8,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
 
-  use Placebo
+  import Mock
 
   describe "ingestion conversions" do
     test "prepare_smrt_ingestion_for_casting/1 passes through the extract step body if it is json encoded" do
@@ -90,9 +90,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
   end
 
   describe "main conversions" do
-    setup do
-      allow(Datasets.is_unique?(any(), any(), any()), return: true)
-
+    setup_with_mocks([
+      {Datasets, [], [is_unique?: fn(_, _, _) -> true end]}
+    ]) do
       :ok
     end
 
@@ -387,9 +387,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
   }
 
   describe "form_data_to_ui_changeset/1" do
-    setup do
-      allow(Datasets.is_unique?(any(), any(), any()), return: false)
-
+    setup_with_mocks([
+      {Datasets, [], [is_unique?: fn(_, _, _) -> false end]}
+    ]) do
       :ok
     end
 
@@ -446,9 +446,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
   end
 
   describe "form_data_to_full_ui_changeset/1" do
-    setup do
-      allow(Datasets.is_unique?(any(), any(), any()), return: false)
-
+    setup_with_mocks([
+      {Datasets, [], [is_unique?: fn(_, _, _) -> false end]}
+    ]) do
       :ok
     end
 
@@ -465,9 +465,9 @@ defmodule Andi.InputSchemas.InputConverterTest do
   end
 
   describe "form_data_to_full_changeset/2" do
-    setup do
-      allow(Datasets.is_unique?(any(), any(), any()), return: true)
-
+    setup_with_mocks([
+      {Datasets, [], [is_unique?: fn(_, _, _) -> true end]}
+    ]) do
       :ok
     end
 

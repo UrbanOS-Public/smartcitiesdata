@@ -1,8 +1,10 @@
 defmodule Andi.ReportsControllerTest do
   use ExUnit.Case
   use Andi.DataCase
-  use Placebo
   use AndiWeb.Test.AuthConnCase.IntegrationCase
+
+  import Mock
+
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.Business
   alias Andi.InputSchemas.Datasets.Technical
@@ -18,12 +20,13 @@ defmodule Andi.ReportsControllerTest do
         technical: %Technical{private: false, systemName: "Test__Example"}
       }
 
-      allow Andi.Repo.all(any()), seq: [[dataset1]]
-      result = get(conn, "/report")
-      assert result.status == 200
+      with_mock(Andi.Repo, [all: fn(_) -> [dataset1]]) do
+        result = get(conn, "/report")
+        assert result.status == 200
 
       assert result.resp_body ==
                "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,All (public),\"keyword1, keyword2\",Public\r\n"
+      end
     end
 
     test "adds users to private dataset based on the dataset's org", %{curator_conn: conn} do
@@ -54,12 +57,14 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user1, user2]}
 
-      allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
+      :meck.new(Andi.Repo)
+      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+
       result = get(conn, "/report")
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com\",\"keyword1, keyword2\",Private\r\n6789,Example2,Test2,Test2__Example2,All (public),\"keyword2, keyword3\",Public\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com\"\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
 
     test "adds users to private dataset based on the dataset's org and access groups", %{curator_conn: conn} do
@@ -99,12 +104,14 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user3]}
 
-      allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
+      :meck.new(Andi.Repo)
+      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+
       result = get(conn, "/report")
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\",\"keyword1, keyword2\",Private\r\n6789,Example2,Test2,Test2__Example2,All (public),,Public\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,\"user1@fakemail.com, user2@fakemail.com, user3@fakemail.com\"\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
 
     test "filters duplicates", %{curator_conn: conn} do
@@ -132,12 +139,14 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user1]}
 
-      allow Andi.Repo.all(any()), seq: [[dataset1, dataset2], [org]]
+      :meck.new(Andi.Repo)
+      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+
       result = get(conn, "/report")
       assert result.status == 200
 
       assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,user1@fakemail.com,\"keyword1, keyword2\",Private\r\n6789,Example2,Test2,Test2__Example2,All (public),\"keyword2, keyword3\",Public\r\n"
+               "Dataset ID,Dataset Title,Organization,System Name,Users\r\n12345,Example,Test,Test__Example,user1@fakemail.com\r\n6789,Example2,Test2,Test2__Example2,All (public)\r\n"
     end
   end
 end

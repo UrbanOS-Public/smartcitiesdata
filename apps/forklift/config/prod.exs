@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :forklift,
   compaction_retries: 100,

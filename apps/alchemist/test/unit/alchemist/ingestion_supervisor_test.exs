@@ -1,18 +1,18 @@
 defmodule Alchemist.IngestionSupervisorTest do
   use ExUnit.Case
-  use Placebo
+
+  import Mock
 
   alias Alchemist.IngestionSupervisor
   alias SmartCity.TestDataGenerator, as: TDG
 
-  describe "ensure_started/1" do
-    setup %{} do
-      ingestion = TDG.create_ingestion(%{})
+  @ingestion_id "ingestion_id"
 
-      allow(DynamicSupervisor.start_child(any(), any()),
-        exec: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{ingestion.id}_supervisor") end,
-        meck_options: [:passthrough]
-      )
+  describe "ensure_started/1" do
+    setup_with_mocks([
+      {DynamicSupervisor, [], [start_child: fn(_, _) -> Agent.start(fn -> 36 end, name: :"#{@ingestion_id}_supervisor") end]}
+    ]) do
+      ingestion = TDG.create_ingestion(%{id: @ingestion_id})
 
       start_options = [
         ingestion: ingestion,
@@ -29,6 +29,8 @@ defmodule Alchemist.IngestionSupervisorTest do
       assert_called(
         DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options})
       )
+
+      Agent.stop(:"#{@ingestion_id}_supervisor")
     end
 
     test "should not restart a running ingestion process", %{start_options: start_options} do
@@ -36,10 +38,12 @@ defmodule Alchemist.IngestionSupervisorTest do
 
       assert {:ok, ^first_pid} = IngestionSupervisor.ensure_started(start_options)
 
-      assert_called(
+      assert_called_exactly(
         DynamicSupervisor.start_child(Alchemist.Dynamic.Supervisor, {Alchemist.IngestionSupervisor, start_options}),
-        once()
+        1
       )
+
+      Agent.stop(:"#{@ingestion_id}_supervisor")
     end
   end
 end

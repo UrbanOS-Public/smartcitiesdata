@@ -1,36 +1,48 @@
 defmodule Andi.Services.IngestionStoreTest do
   use ExUnit.Case
-  use Placebo
+
+  import Mock
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Andi.Services.IngestionStore
 
   describe "update/1" do
     test "gets ingestion event from Brook" do
-      ingestion = TDG.create_ingestion(%{id: "ingestion-id"})
-      allow(Brook.ViewState.merge(:ingestion, ingestion.id, ingestion), return: :ok)
-      assert :ok == IngestionStore.update(ingestion)
+      %{id: id} = ingestion = TDG.create_ingestion(%{})
+
+      with_mock(Brook.ViewState, [merge: fn(:ingestion, id, ingestion) -> :ok end]) do
+        assert :ok == IngestionStore.update(ingestion)
+      end
     end
 
     test "returns an error when brook returns an error" do
       expected_error = {:error, "bad things"}
-      ingestion = TDG.create_ingestion(%{id: "ingestion-id"})
-      allow(Brook.ViewState.merge(:ingestion, ingestion.id, ingestion), return: expected_error)
-      assert expected_error == IngestionStore.update(ingestion)
+      %{id: id} = ingestion = TDG.create_ingestion(%{})
+
+      with_mock(Brook.ViewState, [merge: fn(:ingestion, id, ingestion) -> expected_error end]) do
+        assert expected_error == IngestionStore.update(ingestion)
+      end
     end
   end
 
   describe "get/1" do
     test "gets ingestion event from Brook" do
-      expected_ingestion = TDG.create_ingestion(%{id: "ingestion-id"})
-      allow(Brook.get(Andi.instance_name(), :ingestion, expected_ingestion.id), return: expected_ingestion)
-      assert expected_ingestion == IngestionStore.get(expected_ingestion.id)
+      id = "ingestion-id"
+      expected_ingestion = TDG.create_ingestion(%{id: id})
+      instance_name = Andi.instance_name()
+
+      with_mock(Brook, [get: fn(instance_name, :ingestion, id) -> expected_ingestion end]) do
+        assert expected_ingestion == IngestionStore.get(expected_ingestion.id)
+      end
     end
 
     test "returns an error when brook returns an error" do
       expected_error = {:error, "bad things"}
-      allow(Brook.get(Andi.instance_name(), :ingestion, "some-id"), return: expected_error)
-      assert expected_error == IngestionStore.get("some-id")
+      instance_name = Andi.instance_name()
+
+      with_mock(Brook, [get: fn(instance_name, :ingestion, "some-id") -> expected_error end]) do
+        assert expected_error == IngestionStore.get("some-id")
+      end
     end
   end
 
@@ -39,35 +51,47 @@ defmodule Andi.Services.IngestionStoreTest do
       ingestion1 = TDG.create_ingestion(%{})
       ingestion2 = TDG.create_ingestion(%{})
       expected_ingestions = {:ok, [ingestion1, ingestion2]}
-      allow(Brook.get_all_values(Andi.instance_name(), :ingestion), return: expected_ingestions)
-      assert expected_ingestions == IngestionStore.get_all()
+      instance_name = Andi.instance_name()
+
+      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_ingestions end]) do
+        assert expected_ingestions == IngestionStore.get_all()
+      end
     end
 
     test "returns an error when brook returns an error" do
       expected_error = {:error, "bad things"}
-      allow(Brook.get_all_values(Andi.instance_name(), :ingestion), return: expected_error)
-      assert expected_error == IngestionStore.get_all()
+      instance_name = Andi.instance_name()
+
+      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_error end]) do
+        assert expected_error == IngestionStore.get_all()
+      end
     end
   end
 
   describe "get_all!/0" do
     test "raises the error returned by brook" do
       expected_error = "bad things"
-      allow(Brook.get_all_values!(Andi.instance_name(), :ingestion), return: expected_error)
-      assert expected_error == IngestionStore.get_all!()
+      instance_name = Andi.instance_name()
+
+      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_error end]) do
+        assert expected_error == IngestionStore.get_all!()
+      end
     end
   end
 
   describe "delete/1" do
     test "deletes ingestion event from Brook" do
-      allow(Brook.ViewState.delete(:ingestion, "some-id"), return: :ok)
-      assert :ok == IngestionStore.delete("some-id")
+      with_mock(Brook.ViewState, [delete: fn(:ingestion, "some-id") -> :ok end]) do
+        assert :ok == IngestionStore.delete("some-id")
+      end
     end
 
     test "returns an error when brook returns an error" do
       expected_error = {:error, "bad things"}
-      allow(Brook.ViewState.delete(:ingestion, "some-id"), return: expected_error)
-      assert expected_error == IngestionStore.delete("some-id")
+
+      with_mock(Brook.ViewState, [delete: fn(:ingestion, "some-id") -> expected_error end]) do
+        assert expected_error == IngestionStore.delete("some-id")
+      end
     end
   end
 end

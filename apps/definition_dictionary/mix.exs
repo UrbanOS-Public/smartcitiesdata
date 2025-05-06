@@ -4,12 +4,12 @@ defmodule DefinitionDictionary.MixProject do
   def project do
     [
       app: :definition_dictionary,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       test_paths: test_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -30,7 +30,7 @@ defmodule DefinitionDictionary.MixProject do
       {:json_serde, "~> 1.0"},
       {:timex, "~> 3.6"},
       {:checkov, "~> 1.0", only: [:test]},
-      {:credo, "~> 1.0", only: [:dev]}
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 

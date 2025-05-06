@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :flair,
   topic_reader: Pipeline.Reader.TopicReader,
@@ -12,4 +12,4 @@ config :prestige, :session_opts,
   catalog: "hive",
   schema: "default"
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

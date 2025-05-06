@@ -14,7 +14,7 @@ defmodule Forklift.DataWriter do
 
   require Logger
   import SmartCity.Data, only: [end_of_data: 0]
-  import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
+  import SmartCity.Event, only: [data_ingest_end: 0, ingestion_complete: 0]
 
   @instance_name Forklift.instance_name()
 
@@ -129,7 +129,7 @@ defmodule Forklift.DataWriter do
         DataMigration.compact(dataset, ingestion_id, extraction_start_time)
 
         event_data = create_event_log_data(dataset.id, ingestion_id)
-        Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
+        Brook.Event.send(@instance_name, data_ingest_end(), :forklift, event_data)
 
         ingestion_complete_data =
           create_ingestion_complete_data(dataset.id, ingestion_id, extraction_count, extraction_start_time)

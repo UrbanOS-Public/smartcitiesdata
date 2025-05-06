@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :pipeline,
   elsa_brokers: [{:localhost, 9092}],

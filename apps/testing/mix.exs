@@ -4,12 +4,12 @@ defmodule Testing.MixProject do
   def project do
     [
       app: :testing,
-      version: "0.1.2",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,11 +23,11 @@ defmodule Testing.MixProject do
 
   defp deps do
     [
-      {:cowlib, "== 2.9.1", override: true},
+      {:cowlib, "== 2.12.1", override: true},
       {:protocol_source, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
       {:protocol_decoder, in_umbrella: true},
-      {:credo, "~> 1.0", only: [:dev]}
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 end

@@ -1,7 +1,7 @@
 defmodule Andi.InputSchemas.Datasets.DatasetTest do
   use ExUnit.Case
+
   import Checkov
-  use Placebo
 
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets

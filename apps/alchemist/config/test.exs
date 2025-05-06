@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :alchemist,
   elsa_brokers: [localhost: 9092],

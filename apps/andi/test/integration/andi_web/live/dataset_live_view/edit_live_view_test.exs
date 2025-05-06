@@ -2,8 +2,9 @@ defmodule AndiWeb.EditLiveViewTest do
   use ExUnit.Case
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Placebo
+
   import Checkov
+  import Mock
 
   alias Andi.Services.DatasetStore
 
@@ -163,27 +164,28 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "valid dataset's submission status is updated on publish", %{conn: conn} do
-      allow(AndiWeb.Endpoint.broadcast(any(), any(), any()), return: :ok, meck_options: [:passthrough])
-      smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
+      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast: fn(_, _, _) -> :ok end]) do
+        smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
-      {:ok, dataset} = Datasets.update(smrt_dataset)
-      Datasets.update_submission_status(dataset.id, :approved)
+        {:ok, dataset} = Datasets.update(smrt_dataset)
+        Datasets.update_submission_status(dataset.id, :approved)
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
-      metadata_view = find_live_child(view, "metadata_form_editor")
-      form_data = %{"dataTitle" => "new data"}
+        assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+        metadata_view = find_live_child(view, "metadata_form_editor")
+        form_data = %{"dataTitle" => "new data"}
 
-      render_change(metadata_view, :validate, %{"form_data" => form_data})
-      render_change(view, :publish)
+        render_change(metadata_view, :validate, %{"form_data" => form_data})
+        render_change(view, :publish)
 
-      eventually(
-        fn ->
-          assert %{submission_status: :published} = Datasets.get(dataset.id)
-          assert [%AuditEvent{event: smrt_dataset}] = AuditEvents.get_all_of_type(dataset_update())
-        end,
-        10,
-        1_000
-      )
+        eventually(
+          fn ->
+            assert %{submission_status: :published} = Datasets.get(dataset.id)
+            assert [%AuditEvent{event: smrt_dataset}] = AuditEvents.get_all_of_type(dataset_update())
+          end,
+          10,
+          1_000
+        )
+      end
     end
 
     test "invalid dataset's submission status is not updated on publish", %{conn: conn} do
@@ -250,19 +252,22 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "saving form as draft does not send brook event", %{conn: conn} do
-      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
-      allow(Brook.Event.send(any(), any(), any(), any()), return: :ok)
-      smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
+      with_mocks([
+        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]}
+        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+      ]) do
+        smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
 
-      {:ok, dataset} =
-        InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
-        |> Datasets.save()
+        {:ok, dataset} =
+          InputConverter.smrt_dataset_to_draft_changeset(smrt_dataset)
+          |> Datasets.save()
 
-      assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
+        assert {:ok, view, html} = live(conn, @url_path <> dataset.id)
 
-      render_change(view, :save, %{})
+        render_change(view, :save, %{})
 
-      refute_called Brook.Event.send(any(), any(), any(), any())
+        assert_not_called Brook.Event.send(:_, :_, :_, :_)
+      end
     end
 
     test "saving form as draft with invalid changes warns user", %{conn: conn} do

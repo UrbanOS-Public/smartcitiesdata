@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :raptor, RaptorWeb.Endpoint,
   http: [port: {:system, "PORT"}],

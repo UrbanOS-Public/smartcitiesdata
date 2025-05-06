@@ -4,12 +4,12 @@ defmodule Ok.MixProject do
   def project do
     [
       app: :ok,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,8 +23,8 @@ defmodule Ok.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.0", only: [:dev]},
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
+      {:credo, "~> 1.7", only: [:dev]},
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
     ]
   end
 end

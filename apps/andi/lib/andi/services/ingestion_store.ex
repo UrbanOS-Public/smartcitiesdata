@@ -18,7 +18,7 @@ defmodule Andi.Services.IngestionStore do
   end
 
   def get_all() do
-    Brook.get_all_values(@instance_name, @collection)
+    Brook.get_all_values!(@instance_name, @collection)
   end
 
   def get_all!() do

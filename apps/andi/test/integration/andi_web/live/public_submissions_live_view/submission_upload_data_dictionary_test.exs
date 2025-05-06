@@ -3,7 +3,6 @@ defmodule AndiWeb.SubmissionUploadDataDictionaryTest do
   use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Placebo
 
   @moduletag shared_data_connection: true
 

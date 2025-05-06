@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :telemetry_event,
   init_server: false,

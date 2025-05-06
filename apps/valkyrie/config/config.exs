@@ -1,6 +1,6 @@
 # This file is responsible for configuring your application
 # and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
+import Config
 
 config :logger,
   level: :info
@@ -22,4 +22,4 @@ config :valkyrie,
     prefetch_bytes: 100_000_000
   ]
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

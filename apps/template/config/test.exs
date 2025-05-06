@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :template, TemplateWeb.Endpoint,
   url: [scheme: "https", host: "data.integrationtests.example.com", port: 443],

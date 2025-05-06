@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :dead_letter,
   divo: [

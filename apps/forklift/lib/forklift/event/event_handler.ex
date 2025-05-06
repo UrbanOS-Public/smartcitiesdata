@@ -18,7 +18,6 @@ defmodule Forklift.Event.EventHandler do
       dataset_delete: 0,
       ingestion_delete: 0,
       ingestion_update: 0,
-      event_log_published: 0,
       data_extract_end: 0
     ]
 
@@ -103,7 +102,7 @@ defmodule Forklift.Event.EventHandler do
       event_data = create_event_log_data(data.id)
 
       case init_result do
-        :ok -> Brook.Event.send(@instance_name, event_log_published(), :forklift, event_data)
+        :ok -> Brook.Event.send(@instance_name, data_ingest_start(), :forklift, event_data)
         {:error, reason} -> raise reason
       end
     end

@@ -4,12 +4,12 @@ defmodule ProtocolSource.MixProject do
   def project do
     [
       app: :protocol_source,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -26,7 +26,7 @@ defmodule ProtocolSource.MixProject do
       {:definition_deadletter, in_umbrella: true},
       {:definition_dictionary, in_umbrella: true},
       {:ok, in_umbrella: true},
-      {:credo, "~> 1.0", only: [:dev]}
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 end

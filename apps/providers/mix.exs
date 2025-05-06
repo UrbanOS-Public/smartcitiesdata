@@ -4,12 +4,12 @@ defmodule Providers.MixProject do
   def project do
     [
       app: :providers,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -27,7 +27,7 @@ defmodule Providers.MixProject do
   defp deps do
     [
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
-      {:credo, "~> 1.0", only: [:dev, :test, :integration], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test, :integration], runtime: false},
       {:timex, "~> 3.6"}
     ]
   end

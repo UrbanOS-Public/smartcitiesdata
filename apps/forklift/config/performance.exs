@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 local_bucket = "trino-hive-storage"
 local_presto = "http://localhost:8080"

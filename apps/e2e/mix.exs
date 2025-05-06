@@ -4,12 +4,12 @@ defmodule E2E.MixProject do
   def project do
     [
       app: :e2e,
-      version: "0.1.19",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
@@ -27,7 +27,7 @@ defmodule E2E.MixProject do
     [
       {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
-      {:cowlib, "== 2.9.1", override: true},
+      {:cowlib, "== 2.12.1", override: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},
@@ -35,8 +35,8 @@ defmodule E2E.MixProject do
       {:estuary, in_umbrella: true, only: [:integration]},
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
-      {:divo, "~> 1.3", only: [:dev, :test, :integration]},
-      {:ranch, "~> 1.7.1", override: true},
+      {:divo, "~> 2.0", only: [:dev, :test, :integration]},
+      {:ranch, "~> 1.8", override: true},
       {:smart_city, "~> 5.4.0"},
       {:jason, "~> 1.2", override: true}
     ]

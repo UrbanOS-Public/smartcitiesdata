@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 host = "localhost"
 endpoints = [{to_charlist(host), 9092}]

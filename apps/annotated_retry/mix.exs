@@ -4,12 +4,12 @@ defmodule AnnotatedRetry.MixProject do
   def project do
     [
       app: :annotated_retry,
-      version: "0.1.0",
+      version: "1.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,8 +23,8 @@ defmodule AnnotatedRetry.MixProject do
 
   defp deps do
     [
-      {:retry, "~> 0.14.0"},
-      {:credo, "~> 1.0", only: [:dev]}
+      {:retry, "~> 0.15"},
+      {:credo, "~> 1.7", only: [:dev]}
     ]
   end
 end

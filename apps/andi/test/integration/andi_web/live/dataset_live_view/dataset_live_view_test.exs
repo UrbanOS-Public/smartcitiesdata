@@ -3,8 +3,8 @@ defmodule AndiWeb.DatasetLiveViewTest do
   use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
   use AndiWeb.Test.AuthConnCase.IntegrationCase
-  use Placebo
 
+  import Mock
   import Checkov
 
   @moduletag shared_data_connection: true
@@ -200,24 +200,24 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
-      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]) do
+        {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
+        assert {:ok, view, _html} = live(conn, @url_path)
 
-      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
-      assert {:ok, view, _html} = live(conn, @url_path)
+        {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
-      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+        assert {:ok, view, html} = live(conn, edit_page)
+        metadata_view = find_live_child(view, "metadata_form_editor")
 
-      assert {:ok, view, html} = live(conn, edit_page)
-      metadata_view = find_live_child(view, "metadata_form_editor")
+        assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-      assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
+        assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+                get_value(html, "#form_data_dataName")
 
-      assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-               get_value(html, "#form_data_dataName")
+        html = render_change(metadata_view, :save)
 
-      html = render_change(metadata_view, :save)
-
-      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+        refute Enum.empty?(find_elements(html, "#description-error-msg"))
+      end
     end
 
     test "add dataset button creates a dataset with the owner as the currently logged in user", %{
@@ -281,24 +281,24 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "add dataset button for non-curator" do
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{public_conn: conn, public_subject: subject} do
-      allow(AndiWeb.Endpoint.broadcast_from(any(), any(), any(), any()), return: :ok, meck_options: [:passthrough])
+      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]) do
+        {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
+        assert {:ok, view, _html} = live(conn, @url_path)
 
-      {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
-      assert {:ok, view, _html} = live(conn, @url_path)
+        {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
 
-      {:error, {:live_redirect, %{kind: :push, to: edit_page}}} = render_click(view, "add-dataset")
+        assert {:ok, view, html} = live(conn, edit_page)
+        metadata_view = find_live_child(view, "metadata_form_editor")
 
-      assert {:ok, view, html} = live(conn, edit_page)
-      metadata_view = find_live_child(view, "metadata_form_editor")
+        assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
-      assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
+        assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
+                get_value(html, "#form_data_dataName")
 
-      assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-               get_value(html, "#form_data_dataName")
+        html = render_change(metadata_view, :save)
 
-      html = render_change(metadata_view, :save)
-
-      refute Enum.empty?(find_elements(html, "#description-error-msg"))
+        refute Enum.empty?(find_elements(html, "#description-error-msg"))
+      end
     end
 
     test "add dataset button creates a dataset with the owner as the currently logged in user", %{

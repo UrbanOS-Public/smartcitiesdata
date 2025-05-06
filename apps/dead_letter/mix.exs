@@ -4,12 +4,12 @@ defmodule DeadLetter.MixProject do
   def project do
     [
       app: :dead_letter,
-      version: "1.1.4",
+      version: "2.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.10",
+      elixir: "~> 1.14",
       elixir_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
@@ -27,15 +27,15 @@ defmodule DeadLetter.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.0", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: :dev, runtime: false},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:credo, "~> 1.7", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.3", only: :dev, runtime: false},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
-      {:elsa, "~> 0.12"},
-      {:divo, "~> 1.3", only: [:dev, :integration]},
-      {:divo_kafka, "~> 0.1.5", only: [:integration]},
-      {:assertions, "~> 0.14", only: [:test, :integration]},
+      {:elsa_kafka, "~> 2.0"},
+      {:divo, "~> 2.0", only: [:dev, :integration]},
+      {:divo_kafka, "~> 1.0", only: [:integration]},
+      {:assertions, "~> 0.19", only: [:test, :integration]},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true}
     ]

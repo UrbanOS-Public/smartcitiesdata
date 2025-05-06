@@ -2,7 +2,6 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchemaTest do
   @moduledoc false
 
   use ExUnit.Case
-  use Placebo
 
   alias AndiWeb.InputSchemas.IngestionMetadataFormSchema
   alias Andi.InputSchemas.Ingestion
