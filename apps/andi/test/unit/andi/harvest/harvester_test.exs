@@ -29,9 +29,9 @@ defmodule Andi.Harvest.HarvesterTest do
         })
 
       with_mocks([
-        {Brook.Event, [], [send: fn(@instance_name, dataset_harvest_start(), :andi, _) -> :ok end]},
-        {OrgStore, [], [get_all: fn() -> {:ok, [org_1]} end]},
-        {Organizations, [], [get_harvested_dataset: fn(_) -> %{include: true} end]}
+        {Brook.Event, [], [send: fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end]},
+        {OrgStore, [], [get_all: fn -> {:ok, [org_1]} end]},
+        {Organizations, [], [get_harvested_dataset: fn _ -> %{include: true} end]}
       ]) do
         Harvester.start_harvesting()
 
@@ -49,12 +49,12 @@ defmodule Andi.Harvest.HarvesterTest do
         })
 
       with_mocks([
-        {Brook.Event, [:passthrough], [send: fn(@instance_name, dataset_harvest_start(), :andi, _) -> :ok end]},
-        {OrgStore, [:passthrough], [get_all: fn() -> [org_1] end]}
+        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end]},
+        {OrgStore, [:passthrough], [get_all: fn -> [org_1] end]}
       ]) do
         Harvester.start_harvesting()
 
-        assert_not_called Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, :_)
+        assert_not_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, :_))
       end
     end
 
@@ -87,8 +87,8 @@ defmodule Andi.Harvest.HarvesterTest do
 
     test "dataset_update/1", %{data_json: data_json, org: org} do
       with_mocks([
-        {Brook.Event, [:passthrough], [send: fn(@instance_name, dataset_update(), :andi, _) -> :ok end]},
-        {Organizations, [], [get_harvested_dataset: fn(_) -> %{include: true} end]}
+        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_update(), :andi, _ -> :ok end]},
+        {Organizations, [], [get_harvested_dataset: fn _ -> %{include: true} end]}
       ]) do
         {:ok, data_json} = Jason.decode(data_json)
         datasets = Harvester.map_data_json_to_dataset(data_json, org)
@@ -101,8 +101,8 @@ defmodule Andi.Harvest.HarvesterTest do
 
     test "harvested_dataset_update/1", %{data_json: data_json, org: org} do
       with_mocks([
-        {Brook.Event, [:passthrough], [send: fn(@instance_name, dataset_harvest_end(), :andi, _) -> :ok end]},
-        {Organizations, [:passthrough], [get_harvested_dataset: fn(_) -> %{include: true} end]}
+        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_harvest_end(), :andi, _ -> :ok end]},
+        {Organizations, [:passthrough], [get_harvested_dataset: fn _ -> %{include: true} end]}
       ]) do
         {:ok, data_json} = Jason.decode(data_json)
         harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)

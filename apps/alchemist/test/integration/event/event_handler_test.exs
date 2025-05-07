@@ -25,7 +25,7 @@ defmodule Alchemist.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, invalid_ingestion)
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
-      with_mock(Alchemist.IngestionProcessor, [start: fn(invalid_ingestion) -> raise "nope" end]) do
+      with_mock(Alchemist.IngestionProcessor, start: fn invalid_ingestion -> raise "nope" end) do
         eventually(fn ->
           failed_messages =
             Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")
@@ -59,7 +59,7 @@ defmodule Alchemist.Event.EventHandlerTest do
       Brook.Event.send(@instance_name, ingestion_delete(), __MODULE__, invalid_ingestion)
       Brook.Event.send(@instance_name, ingestion_update(), __MODULE__, valid_ingestion)
 
-      with_mock(Alchemist.IngestionProcessor, [delete: fn(invalid_ingestion) -> raise "nope" end]) do
+      with_mock(Alchemist.IngestionProcessor, delete: fn invalid_ingestion -> raise "nope" end) do
         eventually(fn ->
           failed_messages =
             Elsa.Fetch.fetch(elsa_brokers(), "dead-letters")

@@ -8,8 +8,8 @@ defmodule AndiWeb.API.AuthControllerTest do
 
   test "creates user", %{conn: conn} do
     with_mocks([
-      {User, [], [create_or_update: fn(_, _) -> {:ok, %{}} end]},
-      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+      {User, [], [create_or_update: fn _, _ -> {:ok, %{}} end]},
+      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
     ]) do
       auth = %{
         uid: "000-000",

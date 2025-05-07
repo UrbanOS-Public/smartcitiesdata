@@ -7,6 +7,7 @@ defmodule AndiWeb.IngestionLiveView.FinalizeFormTest do
   import Phoenix.LiveViewTest
   import SmartCity.Event, only: [ingestion_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1]
+
   import FlokiHelpers,
     only: [
       get_text: 2,

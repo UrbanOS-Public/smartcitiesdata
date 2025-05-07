@@ -18,9 +18,8 @@ defmodule Andi.OrganizationControllerTest do
 
   describe "failure to send new organization to event stream" do
     setup_with_mocks([
-      {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> {:error, :reason} end]}
+      {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> {:error, :reason} end]}
     ]) do
-
       org = organization(%{orgName: "unhappyPath"})
       {:ok, response} = create(org)
       [unhappy_path: org, response: response]

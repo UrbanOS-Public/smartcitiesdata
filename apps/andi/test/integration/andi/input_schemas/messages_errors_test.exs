@@ -256,9 +256,7 @@ defmodule Andi.InputSchemas.MessageErrorsTest do
 
       assert result ==
                {:error,
-                "attempted to remove a message_count: %Andi.InputSchemas.MessageError{__meta__: #Ecto.Schema.Metadata<:built, \"message_error\">, dataset_id: \"#{
-                  dataset_id
-                }\", has_current_error: false, ingestion_id: \"#{ingestion_id}\", last_error_time: ~U[1970-01-01 00:00:00Z]} that does not exist."}
+                "attempted to remove a message_count: %Andi.InputSchemas.MessageError{__meta__: #Ecto.Schema.Metadata<:built, \"message_error\">, dataset_id: \"#{dataset_id}\", has_current_error: false, ingestion_id: \"#{ingestion_id}\", last_error_time: ~U[1970-01-01 00:00:00Z]} that does not exist."}
     end
   end
 

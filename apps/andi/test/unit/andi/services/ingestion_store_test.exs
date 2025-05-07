@@ -10,7 +10,7 @@ defmodule Andi.Services.IngestionStoreTest do
     test "gets ingestion event from Brook" do
       %{id: id} = ingestion = TDG.create_ingestion(%{})
 
-      with_mock(Brook.ViewState, [merge: fn(:ingestion, id, ingestion) -> :ok end]) do
+      with_mock(Brook.ViewState, merge: fn :ingestion, id, ingestion -> :ok end) do
         assert :ok == IngestionStore.update(ingestion)
       end
     end
@@ -19,7 +19,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_error = {:error, "bad things"}
       %{id: id} = ingestion = TDG.create_ingestion(%{})
 
-      with_mock(Brook.ViewState, [merge: fn(:ingestion, id, ingestion) -> expected_error end]) do
+      with_mock(Brook.ViewState, merge: fn :ingestion, id, ingestion -> expected_error end) do
         assert expected_error == IngestionStore.update(ingestion)
       end
     end
@@ -31,7 +31,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_ingestion = TDG.create_ingestion(%{id: id})
       instance_name = Andi.instance_name()
 
-      with_mock(Brook, [get: fn(instance_name, :ingestion, id) -> expected_ingestion end]) do
+      with_mock(Brook, get: fn instance_name, :ingestion, id -> expected_ingestion end) do
         assert expected_ingestion == IngestionStore.get(expected_ingestion.id)
       end
     end
@@ -40,7 +40,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_error = {:error, "bad things"}
       instance_name = Andi.instance_name()
 
-      with_mock(Brook, [get: fn(instance_name, :ingestion, "some-id") -> expected_error end]) do
+      with_mock(Brook, get: fn instance_name, :ingestion, "some-id" -> expected_error end) do
         assert expected_error == IngestionStore.get("some-id")
       end
     end
@@ -53,7 +53,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_ingestions = {:ok, [ingestion1, ingestion2]}
       instance_name = Andi.instance_name()
 
-      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_ingestions end]) do
+      with_mock(Brook, get_all_values!: fn instance_name, :ingestion -> expected_ingestions end) do
         assert expected_ingestions == IngestionStore.get_all()
       end
     end
@@ -62,7 +62,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_error = {:error, "bad things"}
       instance_name = Andi.instance_name()
 
-      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_error end]) do
+      with_mock(Brook, get_all_values!: fn instance_name, :ingestion -> expected_error end) do
         assert expected_error == IngestionStore.get_all()
       end
     end
@@ -73,7 +73,7 @@ defmodule Andi.Services.IngestionStoreTest do
       expected_error = "bad things"
       instance_name = Andi.instance_name()
 
-      with_mock(Brook, [get_all_values!: fn(instance_name, :ingestion) -> expected_error end]) do
+      with_mock(Brook, get_all_values!: fn instance_name, :ingestion -> expected_error end) do
         assert expected_error == IngestionStore.get_all!()
       end
     end
@@ -81,7 +81,7 @@ defmodule Andi.Services.IngestionStoreTest do
 
   describe "delete/1" do
     test "deletes ingestion event from Brook" do
-      with_mock(Brook.ViewState, [delete: fn(:ingestion, "some-id") -> :ok end]) do
+      with_mock(Brook.ViewState, delete: fn :ingestion, "some-id" -> :ok end) do
         assert :ok == IngestionStore.delete("some-id")
       end
     end
@@ -89,7 +89,7 @@ defmodule Andi.Services.IngestionStoreTest do
     test "returns an error when brook returns an error" do
       expected_error = {:error, "bad things"}
 
-      with_mock(Brook.ViewState, [delete: fn(:ingestion, "some-id") -> expected_error end]) do
+      with_mock(Brook.ViewState, delete: fn :ingestion, "some-id" -> expected_error end) do
         assert expected_error == IngestionStore.delete("some-id")
       end
     end

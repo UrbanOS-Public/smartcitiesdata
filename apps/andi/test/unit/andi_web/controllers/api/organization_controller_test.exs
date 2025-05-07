@@ -16,10 +16,11 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   @get_orgs_route "/api/v1/organizations"
 
   setup_with_mocks([
-    {OrgStore, [:passthrough], [
-      get: fn(_) -> {:ok, nil} end
-    ]},
-    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn(_, _, _) -> %{} end]},
+    {OrgStore, [:passthrough],
+     [
+       get: fn _ -> {:ok, nil} end
+     ]},
+    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn _, _, _ -> %{} end]}
   ]) do
     request = %{
       "orgName" => "myOrg",
@@ -39,14 +40,17 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   end
 
   describe "post /api/ with valid data" do
-    setup_with_mocks([
-      {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> :ok end]},
-      {Organizations, [], [
-        get: fn(_) -> nil end,
-        is_unique?: fn(_, _) -> true end
-      ]}
-    ],
-    %{conn: conn, request: request}) do
+    setup_with_mocks(
+      [
+        {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> :ok end]},
+        {Organizations, [],
+         [
+           get: fn _ -> nil end,
+           is_unique?: fn _, _ -> true end
+         ]}
+      ],
+      %{conn: conn, request: request}
+    ) do
       [conn: post(conn, @route, request)]
     end
 
@@ -67,15 +71,19 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   end
 
   describe "post /api/ with valid data and imported id" do
-    setup_with_mocks([
-      {Organizations, [], [
-        get: fn(_) -> nil end,
-        update: fn(_) -> :ok end,
-        update: fn(_, _) -> :ok end,
-        is_unique?: fn(_, _) -> true end
-      ]},
-      {OrgStore, [], [update: fn(_) -> :ok end]}
-    ], %{conn: conn}) do
+    setup_with_mocks(
+      [
+        {Organizations, [],
+         [
+           get: fn _ -> nil end,
+           update: fn _ -> :ok end,
+           update: fn _, _ -> :ok end,
+           is_unique?: fn _, _ -> true end
+         ]},
+        {OrgStore, [], [update: fn _ -> :ok end]}
+      ],
+      %{conn: conn}
+    ) do
       req_with_id = %{
         "id" => "123",
         "orgName" => "yourOrg",
@@ -95,10 +103,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ without data returns 500", %{conn: conn} do
-    with_mock(Organizations, [
-      get: fn(_) -> nil end,
-      is_unique?: fn(_, _) -> true end
-    ]) do
+    with_mock(Organizations,
+      get: fn _ -> nil end,
+      is_unique?: fn _, _ -> true end
+    ) do
       conn = post(conn, @route)
       assert json_response(conn, 500) =~ "Unable to process your request"
     end
@@ -106,10 +114,10 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   @tag capture_log: true
   test "post /api/ with improperly shaped data returns 500", %{conn: conn} do
-    with_mock(Organizations, [
-      get: fn(_) -> nil end,
-      is_unique?: fn(_, _) -> true end
-    ]) do
+    with_mock(Organizations,
+      get: fn _ -> nil end,
+      is_unique?: fn _, _ -> true end
+    ) do
       conn = post(conn, @route, %{"invalidData" => 2})
       assert json_response(conn, 500) =~ "Unable to process your request"
     end
@@ -118,13 +126,13 @@ defmodule AndiWeb.API.OrganizationControllerTest do
   @tag capture_log: true
   test "post /api/ with blank id should create org with generated id", %{conn: conn} do
     with_mocks([
-      {Organizations, [], [
-        get: fn(_) -> nil end,
-        update: fn(_) -> :ok end,
-        is_unique?: fn(_, _) -> true end
-        ]
-      },
-      {OrgStore, [], [update: fn(_) -> :ok end]}
+      {Organizations, [],
+       [
+         get: fn _ -> nil end,
+         update: fn _ -> :ok end,
+         is_unique?: fn _, _ -> true end
+       ]},
+      {OrgStore, [], [update: fn _ -> :ok end]}
     ]) do
       conn = post(conn, @route, %{"id" => "", "orgName" => "blankIDOrg", "orgTitle" => "Blank ID Org Title"})
 
@@ -137,13 +145,13 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "id already exists" do
     setup_with_mocks([
-      {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> :ok end]},
-      {OrgStore, [:passthrough], [get: fn(_) -> {:ok, %Organization{}} end]},
-      {Organizations, [], [
-        get: fn(_) -> %{} end,
-        is_unique?: fn(_, _) -> true end
-        ]
-      }
+      {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> :ok end]},
+      {OrgStore, [:passthrough], [get: fn _ -> {:ok, %Organization{}} end]},
+      {Organizations, [],
+       [
+         get: fn _ -> %{} end,
+         is_unique?: fn _, _ -> true end
+       ]}
     ]) do
       :ok
     end
@@ -157,8 +165,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
   describe "GET orgs from /api/v1/organization" do
     test "returns a 200", %{conn: conn, expected_orgs: expected_orgs} do
-      with_mock(OrgStore, [:passthrough], [get_all: fn() -> {:ok, expected_orgs} end]) do
-
+      with_mock(OrgStore, [:passthrough], get_all: fn -> {:ok, expected_orgs} end) do
         actual_orgs =
           conn
           |> get(@get_orgs_route)
@@ -174,8 +181,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     @org TDG.create_organization(%{id: @org_id})
 
     setup_with_mocks([
-      {OrgStore, [:passthrough], [get: fn(@org_id) -> {:ok, @org} end]},
-      {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> :ok end]}
+      {OrgStore, [:passthrough], [get: fn @org_id -> {:ok, @org} end]},
+      {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> :ok end]}
     ]) do
       users = %{"users" => [1, 2]}
 
@@ -183,7 +190,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 200", %{conn: conn, org: org, users: users} do
-      with_mock(Andi.Schemas.User, [get_by_subject_id: fn(_) -> %{subject_id: "N/A", email: "example.com"} end]) do
+      with_mock(Andi.Schemas.User, get_by_subject_id: fn _ -> %{subject_id: "N/A", email: "example.com"} end) do
         actual =
           conn
           |> post("/api/v1/organization/#{org.id}/users/add", users)
@@ -195,8 +202,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
       with_mocks([
-        {Andi.Schemas.User, [], [get_by_subject_id: fn(_) -> %{subject_id: "N/A", email: "example.com"} end]},
-        {OrgStore, [:passthrough], [get: fn(_) -> {:ok, nil} end]}
+        {Andi.Schemas.User, [], [get_by_subject_id: fn _ -> %{subject_id: "N/A", email: "example.com"} end]},
+        {OrgStore, [:passthrough], [get: fn _ -> {:ok, nil} end]}
       ]) do
         org_id = 111
 
@@ -211,15 +218,18 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "sends a user:organization:associate event", %{conn: conn, org: org, users: users} do
-      {:ok, %{subject_id: expected_1_subject_id, email: expected_1_email} = expected_1} = UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
-      {:ok, %{subject_id: expected_2_subject_id, email: expected_2_email} = expected_2} = UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+      {:ok, %{subject_id: expected_1_subject_id, email: expected_1_email} = expected_1} =
+        UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
 
-      with_mock(Andi.Schemas.User, [
+      {:ok, %{subject_id: expected_2_subject_id, email: expected_2_email} = expected_2} =
+        UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+
+      with_mock(Andi.Schemas.User,
         get_by_subject_id: fn
-          (^expected_1_subject_id) -> %{subject_id: expected_1_subject_id, email: expected_1_email}
-          (^expected_2_subject_id) -> %{subject_id: expected_2_subject_id, email: expected_2_email}
+          ^expected_1_subject_id -> %{subject_id: expected_1_subject_id, email: expected_1_email}
+          ^expected_2_subject_id -> %{subject_id: expected_2_subject_id, email: expected_2_email}
         end
-      ]) do
+      ) do
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
         |> json_response(200)
@@ -232,15 +242,18 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns 400 if a user is not found", %{conn: conn, org: org, users: users} do
-      {:ok, %{subject_id: expected_1_subject_id, email: expected_1_email} = expected_1} = UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
-      {:ok, %{subject_id: expected_2_subject_id, email: expected_2_email} = expected_2} = UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+      {:ok, %{subject_id: expected_1_subject_id, email: expected_1_email} = expected_1} =
+        UserOrganizationAssociate.new(%{subject_id: 1, org_id: org.id, email: "bob@bob.com"})
 
-      with_mock(Andi.Schemas.User, [
+      {:ok, %{subject_id: expected_2_subject_id, email: expected_2_email} = expected_2} =
+        UserOrganizationAssociate.new(%{subject_id: 2, org_id: org.id, email: "bob2@bob.com"})
+
+      with_mock(Andi.Schemas.User,
         get_by_subject_id: fn
-          (^expected_1_subject_id) -> nil
-          (^expected_2_subject_id) -> %{subject_id: expected_2_subject_id, email: expected_1_email}
+          ^expected_1_subject_id -> nil
+          ^expected_2_subject_id -> %{subject_id: expected_2_subject_id, email: expected_1_email}
         end
-      ]) do
+      ) do
         conn
         |> post("/api/v1/organization/#{org.id}/users/add", users)
         |> json_response(400)
@@ -253,8 +266,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     @tag capture_log: true
     test "returns a 500 if unable to get organizations through Brook", %{conn: conn} do
       with_mocks([
-        {Andi.Schemas.User, [], [get_by_subject_id: fn(_) -> %{subject_id: "N/A", email: "example.com"} end]},
-        {OrgStore, [:passthrough], [get: fn(_) -> {:error, "bad stuff happened"} end]}
+        {Andi.Schemas.User, [], [get_by_subject_id: fn _ -> %{subject_id: "N/A", email: "example.com"} end]},
+        {OrgStore, [:passthrough], [get: fn _ -> {:error, "bad stuff happened"} end]}
       ]) do
         actual =
           conn
@@ -269,8 +282,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     @tag capture_log: true
     test "returns a 500 if unable to send events", %{conn: conn, org: org} do
       with_mocks([
-        {Andi.Schemas.User, [], [get_by_subject_id: fn(_) -> %{subject_id: "N/A", email: "example.com"} end]},
-        {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> {:error, "unable to send event"} end]}
+        {Andi.Schemas.User, [], [get_by_subject_id: fn _ -> %{subject_id: "N/A", email: "example.com"} end]},
+        {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> {:error, "unable to send event"} end]}
       ]) do
         actual =
           conn

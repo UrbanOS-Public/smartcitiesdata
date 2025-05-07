@@ -103,9 +103,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
         DiscoveryApi.prestige_opts()
         |> Prestige.new_session()
         |> Prestige.stream!(
-          "select #{if format == "json" or format == "geojson", do: PrestoService.format_select_statement_from_schema(schema), else: "*"} from #{
-            dataset_name
-          }"
+          "select #{if format == "json" or format == "geojson", do: PrestoService.format_select_statement_from_schema(schema), else: "*"} from #{dataset_name}"
         )
         |> Stream.flat_map(&Prestige.Result.as_maps/1)
         |> map_schema?(schema, format)

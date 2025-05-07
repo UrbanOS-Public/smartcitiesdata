@@ -52,9 +52,7 @@ defmodule Application.Initializer do
         else
           _ ->
             {:error,
-             "Process #{inspect(state.monitor)} was not alive after retrying for #{
-               state.max_retries * state.retry_delay
-             }"}
+             "Process #{inspect(state.monitor)} was not alive after retrying for #{state.max_retries * state.retry_delay}"}
         end
       end
 

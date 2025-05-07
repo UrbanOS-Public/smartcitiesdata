@@ -25,9 +25,7 @@ defmodule Forklift.Jobs.DataMigration do
            PrestigeHelper.count(system_name),
          {:ok, extraction_count} <-
            PrestigeHelper.count_query(
-             "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
-               extract_time
-             })"
+             "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
            ),
          {:ok, _} <- refit_to_partitioned(system_name, original_count),
          {:ok, _} <- check_for_data_to_migrate(extraction_count),
@@ -55,9 +53,7 @@ defmodule Forklift.Jobs.DataMigration do
            ),
          {:ok, _} <- remove_deleted_ingestions_if_overwrite(overwrite_mode, system_name, id) do
       Logger.debug(
-        "Successful data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{
-          extract_time
-        }"
+        "Successful data migration for dataset #{id} #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}"
       )
 
       update_migration_status(id, :ok)
@@ -65,9 +61,8 @@ defmodule Forklift.Jobs.DataMigration do
     else
       {:error, error} ->
         Logger.error(
-          "Error migrating records for dataset #{id}: #{system_name}, ingestion: #{ingestion_id}, extract: #{
-            extract_time
-          }" <> inspect(error)
+          "Error migrating records for dataset #{id}: #{system_name}, ingestion: #{ingestion_id}, extract: #{extract_time}" <>
+            inspect(error)
         )
 
         update_migration_status(id, :error)
@@ -131,9 +126,7 @@ defmodule Forklift.Jobs.DataMigration do
   defp create_partitioned_table(table) do
     Logger.debug("Table #{table} needs to be partitioned")
 
-    "create table #{table}__partitioned with (partitioned_by = ARRAY['_ingestion_id', 'os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{
-      table
-    })"
+    "create table #{table}__partitioned with (partitioned_by = ARRAY['_ingestion_id', 'os_partition'], format = 'ORC') as (select *, cast('pre_partitioned' as varchar) as os_partition from #{table})"
     |> PrestigeHelper.execute_query()
   end
 
@@ -144,9 +137,7 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp insert_partitioned_data(source, target, ingestion_id, extract_time) do
-    "insert into #{target} select *, date_format(now(), '%Y_%m') as os_partition from #{source} where (_ingestion_id = '#{
-      ingestion_id
-    }' and _extraction_start_time = #{extract_time})"
+    "insert into #{target} select *, date_format(now(), '%Y_%m') as os_partition from #{source} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
   end
 
@@ -161,17 +152,13 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp filter_unmatched_ingestion_ids_from_table(ingestion_ids, table) do
-    "delete from #{table} where _ingestion_id not in (#{
-      Enum.map(ingestion_ids, fn id -> "\'" <> id <> "\'" end) |> Enum.join(",")
-    })"
+    "delete from #{table} where _ingestion_id not in (#{Enum.map(ingestion_ids, fn id -> "\'" <> id <> "\'" end) |> Enum.join(",")})"
     |> PrestigeHelper.execute_query()
   end
 
   defp table_contains_more_recent_data(table, ingestion_id, extract_start) do
     count_newer_extractions =
-      "select count(1) from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time > #{
-        extract_start
-      })"
+      "select count(1) from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time > #{extract_start})"
 
     case PrestigeHelper.count_query(count_newer_extractions) do
       {:ok, 0} ->

@@ -6,7 +6,7 @@ defmodule Andi.Event.EventHandlerTest do
   import SmartCity.TestHelper
   import SmartCity.Event
   import Mock
-  
+
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
   alias SmartCity.EventLog
@@ -33,7 +33,7 @@ defmodule Andi.Event.EventHandlerTest do
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
-      with_mock(DatasetCache, [add_dataset_info: fn(_) -> raise "nope" end]) do
+      with_mock(DatasetCache, add_dataset_info: fn _ -> raise "nope" end) do
         id = UUID.uuid4()
         valid_dataset = TDG.create_dataset(%{id: id})
 
@@ -76,7 +76,7 @@ defmodule Andi.Event.EventHandlerTest do
       id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
 
-      with_mock(IngestionStore, [update: fn(invalid_ingestion) -> raise "nope" end]) do
+      with_mock(IngestionStore, update: fn invalid_ingestion -> raise "nope" end) do
         id = UUID.uuid4()
         valid_ingestion = TDG.create_ingestion(%{id: id, targetDatasets: [dataset.id]})
 
@@ -113,7 +113,7 @@ defmodule Andi.Event.EventHandlerTest do
       id_for_invalid_ingestion = UUID.uuid4()
       invalid_ingestion = TDG.create_ingestion(%{id: id_for_invalid_ingestion})
 
-      with_mock(IngestionStore, [delete: fn(id_for_invalid_ingestion) -> raise "nope" end]) do
+      with_mock(IngestionStore, delete: fn id_for_invalid_ingestion -> raise "nope" end) do
         Brook.Event.send(@instance_name, ingestion_delete(), __MODULE__, invalid_ingestion)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -144,7 +144,7 @@ defmodule Andi.Event.EventHandlerTest do
       id_for_org = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: id_for_org})
 
-      with_mock(OrgStore, [update: fn(invalid_org) -> raise "nope" end]) do
+      with_mock(OrgStore, update: fn invalid_org -> raise "nope" end) do
         Brook.Event.send(@instance_name, organization_update(), __MODULE__, invalid_org)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -256,7 +256,7 @@ defmodule Andi.Event.EventHandlerTest do
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
 
-      with_mock(User, [associate_with_organization: fn(_, _) -> raise "nope" end]) do
+      with_mock(User, associate_with_organization: fn _, _ -> raise "nope" end) do
         association = %UserOrganizationAssociate{org_id: org_id, subject_id: subject_id, email: "blah@blah.com"}
 
         Brook.Event.send(@instance_name, user_organization_associate(), __MODULE__, association)
@@ -297,7 +297,7 @@ defmodule Andi.Event.EventHandlerTest do
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
 
-      with_mock(User, [disassociate_with_organization: fn(_, _) -> raise "nope" end]) do
+      with_mock(User, disassociate_with_organization: fn _, _ -> raise "nope" end) do
         disassociation = %UserOrganizationDisassociate{org_id: org_id, subject_id: subject_id}
 
         Brook.Event.send(@instance_name, user_organization_disassociate(), __MODULE__, disassociation)
@@ -337,7 +337,11 @@ defmodule Andi.Event.EventHandlerTest do
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
 
-      with_mock(TelemetryEvent, [add_event_metrics: fn([app: "andi", author: _, dataset_id: _, event_type: dataset_harvest_start()], [:events_handled]) -> raise "nope" end]) do
+      with_mock(TelemetryEvent,
+        add_event_metrics: fn [app: "andi", author: _, dataset_id: _, event_type: dataset_harvest_start()], [:events_handled] ->
+          raise "nope"
+        end
+      ) do
         Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -375,7 +379,7 @@ defmodule Andi.Event.EventHandlerTest do
       fake_id = UUID.uuid4()
       fake_harvested_dataset = %{fake: fake_id}
 
-      with_mock(Organizations, [update_harvested_dataset: fn(_) -> raise "nope" end]) do
+      with_mock(Organizations, update_harvested_dataset: fn _ -> raise "nope" end) do
         Brook.Event.send(@instance_name, dataset_harvest_end(), __MODULE__, fake_harvested_dataset)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -426,7 +430,7 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      with_mock(Andi.Migration.ModifiedDateMigration, [do_migration: fn() -> raise "nope" end]) do
+      with_mock(Andi.Migration.ModifiedDateMigration, do_migration: fn -> raise "nope" end) do
         Brook.Event.send(@instance_name, "migration:modified_date:start", __MODULE__, %{})
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -461,7 +465,9 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      with_mock(TelemetryEvent, [add_event_metrics: fn([app: _, author: _, dataset_id: _, event_type: data_ingest_end()], [:events_handled]) -> raise "nope" end]) do
+      with_mock(TelemetryEvent,
+        add_event_metrics: fn [app: _, author: _, dataset_id: _, event_type: data_ingest_end()], [:events_handled] -> raise "nope" end
+      ) do
         Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, dataset)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -496,7 +502,7 @@ defmodule Andi.Event.EventHandlerTest do
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      with_mock(DatasetStore, [delete: fn(dataset_id) -> raise "nope" end]) do
+      with_mock(DatasetStore, delete: fn dataset_id -> raise "nope" end) do
         Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, dataset)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
@@ -575,7 +581,7 @@ defmodule Andi.Event.EventHandlerTest do
       subject_id = UUID.uuid4()
       {:ok, user} = %{subject_id: subject_id, email: "abc", name: "abc"} |> SmartCity.User.new()
 
-      with_mock(User, [get_by_subject_id: fn(subject_id) -> raise "nope" end]) do
+      with_mock(User, get_by_subject_id: fn subject_id -> raise "nope" end) do
         Brook.Event.send(@instance_name, user_login(), __MODULE__, user)
         Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 

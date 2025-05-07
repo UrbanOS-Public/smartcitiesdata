@@ -64,9 +64,7 @@ defmodule Transformers.DateTime do
     else
       {:error, timexReason} ->
         {:error,
-         "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{
-           timexReason
-         }"}
+         "Unable to parse datetime from \"#{source_field}\" in format \"#{date_format}\": #{timexReason}"}
     end
   end
 

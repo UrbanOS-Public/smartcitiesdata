@@ -42,7 +42,7 @@ defmodule Reaper.MixProject do
   defp deps do
     [
       {:atomic_map, "~> 0.9"},
-      {:brod, "~> 3.16", override: true},      
+      {:brod, "~> 3.16", override: true},
       {:brook_stream, "~> 1.0"},
       {:cachex, "~> 3.4"},
       {:castore, "~> 0.1"},

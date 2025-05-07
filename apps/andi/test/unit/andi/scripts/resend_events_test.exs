@@ -16,8 +16,8 @@ defmodule Andi.Scripts.ResendEventsTest do
       expected_datasets = {:ok, [dataset1, dataset2]}
 
       with_mocks([
-        {DatasetStore, [], [get_all: fn() -> expected_datasets end]},
-        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+        {DatasetStore, [], [get_all: fn -> expected_datasets end]},
+        {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
         Andi.Scripts.ResendEvents.resend_dataset_events()
 
@@ -62,8 +62,8 @@ defmodule Andi.Scripts.ResendEventsTest do
       ]
 
       with_mocks([
-        {User, [], [get_all: fn() -> users end]},
-        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+        {User, [], [get_all: fn -> users end]},
+        {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
         Andi.Scripts.ResendEvents.resend_user_org_assoc_events()
 

@@ -31,9 +31,9 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
       |> SmartCity.Dataset.new()
 
     with_mocks([
-      {Brook, [], [get_all_values!: fn(:andi, :dataset) -> [dataset] end]},
-      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]},
-      {Brook.ViewState, [], [merge: fn(:dataset, _, _) -> :ok end]}
+      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
+      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
+      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
     ]) do
       Andi.Migration.ModifiedDateMigration.do_migration()
 
@@ -50,14 +50,14 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
       )
 
     with_mocks([
-      {Brook, [], [get_all_values!: fn(:andi, :dataset) -> [dataset] end]},
-      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]},
-      {Brook.ViewState, [], [merge: fn(:dataset, _, _) -> :ok end]}
+      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
+      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
+      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
     ]) do
       Andi.Migration.ModifiedDateMigration.do_migration()
 
-      assert_not_called Brook.Event.send(@instance_name, dataset_update(), :andi, dataset)
-      assert_not_called Brook.ViewState.merge(:dataset, dataset.id, :_)
+      assert_not_called(Brook.Event.send(@instance_name, dataset_update(), :andi, dataset))
+      assert_not_called(Brook.ViewState.merge(:dataset, dataset.id, :_))
     end
   end
 
@@ -70,9 +70,9 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
       )
 
     with_mocks([
-      {Brook, [], [get_all_values!: fn(:andi, :dataset) -> [dataset] end]},
-      {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]},
-      {Brook.ViewState, [], [merge: fn(:dataset, _, _) -> :ok end]}
+      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
+      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
+      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
     ]) do
       expected = "[abc1234] unable to parse business.modifiedDate '\"not an actual date\"' in modified_date_migration"
 

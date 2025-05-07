@@ -91,7 +91,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   describe "main conversions" do
     setup_with_mocks([
-      {Datasets, [], [is_unique?: fn(_, _, _) -> true end]}
+      {Datasets, [], [is_unique?: fn _, _, _ -> true end]}
     ]) do
       :ok
     end
@@ -388,7 +388,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   describe "form_data_to_ui_changeset/1" do
     setup_with_mocks([
-      {Datasets, [], [is_unique?: fn(_, _, _) -> false end]}
+      {Datasets, [], [is_unique?: fn _, _, _ -> false end]}
     ]) do
       :ok
     end
@@ -447,7 +447,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   describe "form_data_to_full_ui_changeset/1" do
     setup_with_mocks([
-      {Datasets, [], [is_unique?: fn(_, _, _) -> false end]}
+      {Datasets, [], [is_unique?: fn _, _, _ -> false end]}
     ]) do
       :ok
     end
@@ -466,7 +466,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
   describe "form_data_to_full_changeset/2" do
     setup_with_mocks([
-      {Datasets, [], [is_unique?: fn(_, _, _) -> true end]}
+      {Datasets, [], [is_unique?: fn _, _, _ -> true end]}
     ]) do
       :ok
     end

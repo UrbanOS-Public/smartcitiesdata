@@ -240,7 +240,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "cadence should be valid: #{inspect(cadence_under_test)}" do
-      with_mock(Datasets, [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]) do
+      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
         changes =
           @valid_changes
           |> put_in([:cadence], cadence_under_test)
@@ -268,7 +268,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "cadence should not be valid: #{inspect(cadence_under_test)}" do
-      with_mock(Datasets, [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]) do
+      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
         changes =
           @valid_changes
           |> put_in([:cadence], cadence_under_test)
@@ -293,7 +293,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "extract steps are valid when http step is last" do
-      with_mock(Datasets, [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]) do
+      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
         extract_steps = [
           %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
           %{type: "http", context: %{action: "GET", url: "http://example.com"}}
@@ -316,7 +316,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "extract steps are valid when s3 step is last" do
-      with_mock(Datasets, [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]) do
+      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
         extract_steps = [
           %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
           %{type: "s3", context: %{url: "something"}}
@@ -339,7 +339,7 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "extract steps are not valid when http or s3 step is not last" do
-      with_mock(Datasets, [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]) do
+      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
         extract_steps = [
           %{type: "s3", context: %{url: "something"}},
           %{type: "http", context: %{action: "GET", url: "http://example.com"}},

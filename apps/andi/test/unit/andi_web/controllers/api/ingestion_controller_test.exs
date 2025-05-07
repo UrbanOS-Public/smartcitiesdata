@@ -13,9 +13,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
   @get_ingestions_route "/api/v1/ingestions"
 
   setup_with_mocks([
-    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn(_, _, _) -> %{} end]},
-    {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> :ok end]},
-    {DatasetStore, [], [get: fn("dataset_id") -> {:ok, %{id: "dataset_id"}} end]}
+    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn _, _, _ -> %{} end]},
+    {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> :ok end]},
+    {DatasetStore, [], [get: fn "dataset_id" -> {:ok, %{id: "dataset_id"}} end]}
   ]) do
     uuid = Faker.UUID.v4()
 
@@ -39,10 +39,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
   describe "GET /ingestions" do
     @tag capture_log: true
     test "returns a 200", %{conn: conn, example_ingestions: example_ingestions} do
-      with_mock(IngestionStore, [:passthrough], [get_all: fn() -> {:ok, example_ingestions} end]) do
+      with_mock(IngestionStore, [:passthrough], get_all: fn -> {:ok, example_ingestions} end) do
         response =
-
-        actual_ingestions =
+          actual_ingestions =
           conn
           |> get(@get_ingestions_route)
           |> json_response(200)
@@ -52,7 +51,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
     end
 
     test "returns a 404", %{conn: conn} do
-      with_mock(IngestionStore, [:passthrough], [get_all: fn() -> {:error, "this was an error"} end]) do
+      with_mock(IngestionStore, [:passthrough], get_all: fn -> {:error, "this was an error"} end) do
         response = get(conn, @get_ingestions_route)
 
         parsed_response =
@@ -69,7 +68,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
     test "returns a 200", %{conn: conn} do
       %{id: id} = ingestion = TDG.create_ingestion(%{})
 
-      with_mock(IngestionStore, [], [get: fn(^id) -> {:ok, ingestion} end]) do
+      with_mock(IngestionStore, [], get: fn ^id -> {:ok, ingestion} end) do
         conn = get(conn, "/api/v1/ingestion/#{id}")
 
         response = conn |> json_response(200)
@@ -80,7 +79,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
     test "returns a 404", %{conn: conn} do
       %{id: id} = TDG.create_ingestion(%{})
 
-      with_mock(IngestionStore, [], [get: fn(^id) -> {:ok, nil} end]) do
+      with_mock(IngestionStore, [], get: fn ^id -> {:ok, nil} end) do
         conn = get(conn, "/api/v1/ingestion/#{id}")
 
         response = conn |> json_response(404)
@@ -90,7 +89,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
     end
 
     test "returns a 404 when an error is thrown by the IngestionStore", %{conn: conn} do
-      with_mock(IngestionStore, [:passthrough], [get_all: fn() -> {:error, "this was an error"} end]) do
+      with_mock(IngestionStore, [:passthrough], get_all: fn -> {:error, "this was an error"} end) do
         response = get(conn, @get_ingestions_route)
 
         parsed_response =
@@ -110,8 +109,8 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
     test "should send ingestion:delete event", %{conn: conn, ingestion: ingestion} do
       with_mocks([
-        {IngestionStore, [], [get: fn(_) -> {:ok, ingestion} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {IngestionStore, [], [get: fn _ -> {:ok, ingestion} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: ingestion.id})
         |> json_response(200)
@@ -128,8 +127,8 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion: ingestion
     } do
       with_mocks([
-        {IngestionStore, [], [get: fn(_) -> {:ok, nil} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {IngestionStore, [], [get: fn _ -> {:ok, nil} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: ingestion.id})
         |> json_response(404)
@@ -141,8 +140,8 @@ defmodule AndiWeb.API.IngestionControllerTest do
     @tag capture_log: true
     test "handles error", %{conn: conn, ingestion: ingestion} do
       with_mocks([
-        {IngestionStore, [], [get: fn(_) -> {:ok, ingestion} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> {:error, "Mistakes were made"} end]}
+        {IngestionStore, [], [get: fn _ -> {:ok, ingestion} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: ingestion.id})
         |> json_response(500)
@@ -156,9 +155,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
 
       with_mocks([
-        {Andi.InputSchemas.Datasets, [], [get: fn(_) -> %{technical: %{sourceType: "ingest"}} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]},
-        {DatasetStore, [], [get: fn(_) -> {:ok, %{}} end]}
+        {Andi.InputSchemas.Datasets, [], [get: fn _ -> %{technical: %{sourceType: "ingest"}} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]},
+        {DatasetStore, [], [get: fn _ -> {:ok, %{}} end]}
       ]) do
         conn = put(conn, @route, ingestion_without_id)
 
@@ -177,9 +176,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       with_mocks([
-        {IngestionStore, [], [get: fn(^id) -> {:ok, nil} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]},
-        {DatasetStore, [], [get: fn(_) -> {:ok, %{}} end]}
+        {IngestionStore, [], [get: fn ^id -> {:ok, nil} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]},
+        {DatasetStore, [], [get: fn _ -> {:ok, %{}} end]}
       ]) do
         conn = put(conn, @route, ingestion)
         body = json_response(conn, 400)
@@ -192,9 +191,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       with_mocks([
-        {IngestionStore, [], [get: fn(^id) -> {:ok, ingestion} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]},
-        {DatasetStore, [], [get: fn(_) -> {:ok, %{}} end]}
+        {IngestionStore, [], [get: fn ^id -> {:ok, ingestion} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]},
+        {DatasetStore, [], [get: fn _ -> {:ok, %{}} end]}
       ]) do
         conn = put(conn, @route, ingestion)
 
@@ -223,9 +222,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
 
       with_mocks([
-        {IngestionStore, [], [get: fn(_) -> {:ok, nil} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]},
-        {DatasetStore, [], [get: fn("nonexistent_dataset") -> {:ok, nil} end]}
+        {IngestionStore, [], [get: fn _ -> {:ok, nil} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]},
+        {DatasetStore, [], [get: fn "nonexistent_dataset" -> {:ok, nil} end]}
       ]) do
         conn = put(conn, @route, ingestion_without_id)
         body = json_response(conn, 400)
@@ -238,9 +237,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       ingestion = smrt_ingestion |> struct_to_map_with_string_keys()
 
       with_mocks([
-        {IngestionStore, [], [get: fn(^id) -> {:ok, ingestion} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]},
-        {DatasetStore, [], [get: fn("error_dataset") -> {:error, "error reason"} end]}
+        {IngestionStore, [], [get: fn ^id -> {:ok, ingestion} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]},
+        {DatasetStore, [], [get: fn "error_dataset" -> {:error, "error reason"} end]}
       ]) do
         conn = put(conn, @route, ingestion)
         body = json_response(conn, 400)

@@ -162,7 +162,7 @@ defmodule AndiWeb.Helpers.FormToolsTest do
     test "updating the orgId updates the orgName" do
       org = TDG.create_organization(%{orgTitle: "Existing Org Title", orgName: "existing_org_name", id: "existing_org_id"})
 
-      with_mock(OrgStore, [get: fn(_) -> {:ok, org} end]) do
+      with_mock(OrgStore, get: fn _ -> {:ok, org} end) do
         current_form_data = %{
           "orgTitle" => "Another Org Title",
           "dataName" => "another_data_title",

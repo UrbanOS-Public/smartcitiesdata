@@ -10,7 +10,8 @@ defmodule Alchemist.IngestionSupervisorTest do
 
   describe "ensure_started/1" do
     setup_with_mocks([
-      {DynamicSupervisor, [], [start_child: fn(_, _) -> Agent.start(fn -> 36 end, name: :"#{@ingestion_id}_supervisor") end]}
+      {DynamicSupervisor, [],
+       [start_child: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{@ingestion_id}_supervisor") end]}
     ]) do
       ingestion = TDG.create_ingestion(%{id: @ingestion_id})
 

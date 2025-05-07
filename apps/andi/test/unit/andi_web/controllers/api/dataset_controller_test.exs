@@ -13,8 +13,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
   @get_datasets_route "/api/v1/datasets"
 
   setup_with_mocks([
-    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn(_, _, _) -> %{} end]},
-    {Brook.Event, [:passthrough], [send: fn(@instance_name, _, :andi, _) -> :ok end]}
+    {Andi.Schemas.AuditEvents, [], [log_audit_event: fn _, _, _ -> %{} end]},
+    {Brook.Event, [:passthrough], [send: fn @instance_name, _, :andi, _ -> :ok end]}
   ]) do
     {:ok, example_datasets: get_example_datasets()}
   end
@@ -27,8 +27,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     test "should send dataset:disable event", %{conn: conn, dataset: dataset} do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, dataset} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, dataset} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/disable", %{id: dataset.id})
         |> json_response(200)
@@ -43,8 +43,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       dataset: dataset
     } do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, nil} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, nil} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/disable", %{id: dataset.id})
         |> json_response(404)
@@ -56,8 +56,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, dataset} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> {:error, "Mistakes were made"} end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, dataset} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end]}
       ]) do
         post(conn, "#{@route}/disable", %{id: dataset.id})
         |> json_response(500)
@@ -73,8 +73,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     test "should send dataset:delete event", %{conn: conn, dataset: dataset} do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, dataset} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, dataset} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: dataset.id})
         |> json_response(200)
@@ -91,8 +91,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
       dataset: dataset
     } do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, nil} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, nil} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: dataset.id})
         |> json_response(404)
@@ -106,8 +106,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
     @tag capture_log: true
     test "handles error", %{conn: conn, dataset: dataset} do
       with_mocks([
-        {DatasetStore, [], [get: fn(_) -> {:ok, dataset} end]},
-        {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> {:error, "Mistakes were made"} end]}
+        {DatasetStore, [], [get: fn _ -> {:ok, dataset} end]},
+        {Brook.Event, [], [send: fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end]}
       ]) do
         post(conn, "#{@route}/delete", %{id: dataset.id})
         |> json_response(500)
@@ -133,8 +133,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
     {_, dataset_without_id} = dataset |> Map.pop("id")
 
     with_mocks([
-      {InputConverter, [], [smrt_dataset_to_full_changeset: fn(_) -> %{valid?: true} end]},
-      {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+      {InputConverter, [], [smrt_dataset_to_full_changeset: fn _ -> %{valid?: true} end]},
+      {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
     ]) do
       conn = put(conn, @route, dataset_without_id)
 
@@ -152,8 +152,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
     dataset = TDG.create_dataset(%{}) |> struct_to_map_with_string_keys()
 
     with_mocks([
-      {InputConverter, [], [smrt_dataset_to_full_changeset: fn(_) -> %{valid?: true} end]},
-      {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+      {InputConverter, [], [smrt_dataset_to_full_changeset: fn _ -> %{valid?: true} end]},
+      {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
     ]) do
       conn = put(conn, @route, dataset)
 
@@ -169,9 +169,9 @@ defmodule AndiWeb.API.DatasetControllerTest do
     %{"id" => id} = dataset = smrt_dataset |> struct_to_map_with_string_keys()
 
     with_mocks([
-      {DatasetStore, [], [get: fn(id) -> {:ok, dataset} end]},
-      {InputConverter, [], [smrt_dataset_to_full_changeset: fn(_) -> %{valid?: true} end]},
-      {Brook.Event, [], [send: fn(@instance_name, _, _, _) -> :ok end]}
+      {DatasetStore, [], [get: fn id -> {:ok, dataset} end]},
+      {InputConverter, [], [smrt_dataset_to_full_changeset: fn _ -> %{valid?: true} end]},
+      {Brook.Event, [], [send: fn @instance_name, _, _, _ -> :ok end]}
     ]) do
       conn = put(conn, @route, dataset)
 
@@ -185,7 +185,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   describe "GET dataset definitions from /api/dataset/" do
     @tag capture_log: true
     test "returns a 200", %{conn: conn, example_datasets: example_datasets} do
-      with_mock(DatasetStore, [:passthrough], [get_all: fn() -> {:ok, example_datasets} end]) do
+      with_mock(DatasetStore, [:passthrough], get_all: fn -> {:ok, example_datasets} end) do
         actual_datasets =
           get(conn, @get_datasets_route)
           |> json_response(200)
@@ -198,7 +198,8 @@ defmodule AndiWeb.API.DatasetControllerTest do
   describe "GET /api/dataset/:dataset_id" do
     test "should return a given dataset when it exists", %{conn: conn} do
       %{id: id} = dataset = TDG.create_dataset(%{})
-      with_mock(DatasetStore, [get: fn(id) -> {:ok, dataset} end]) do
+
+      with_mock(DatasetStore, get: fn id -> {:ok, dataset} end) do
         conn = get(conn, "/api/v1/dataset/#{id}")
 
         response = conn |> json_response(200)
@@ -207,7 +208,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
     end
 
     test "should return a 404 when requested dataset does not exist", %{conn: conn} do
-      with_mock(DatasetStore, [get: fn(_) -> {:ok, nil} end]) do
+      with_mock(DatasetStore, get: fn _ -> {:ok, nil} end) do
         conn = get(conn, "/api/v1/dataset/123")
 
         assert 404 == conn.status

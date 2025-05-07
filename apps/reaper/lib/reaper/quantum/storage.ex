@@ -102,9 +102,7 @@ defmodule Reaper.Quantum.Storage do
     else
       e ->
         Logger.error(
-          "#{__MODULE__} : Timeout limit reached talking to redis, killing Reaper.Scheduler.Supervisor, reason: #{
-            inspect(e)
-          }"
+          "#{__MODULE__} : Timeout limit reached talking to redis, killing Reaper.Scheduler.Supervisor, reason: #{inspect(e)}"
         )
 
         Supervisor.stop(Reaper.Scheduler.Supervisor, :timeout_limit_reached)

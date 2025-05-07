@@ -52,9 +52,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
     case length(matching_entries) do
       0 ->
         Logger.warn(
-          "No dataset access group relations exist with dataset_id #{dataset_id} and access_group_id #{
-            access_group_id
-          }"
+          "No dataset access group relations exist with dataset_id #{dataset_id} and access_group_id #{access_group_id}"
         )
 
         %{}
@@ -79,9 +77,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
           Redix.Protocol.redis_value() | no_return()
   def persist(%DatasetAccessGroupRelation{} = dataset_access_group_relation) do
     key =
-      "#{dataset_access_group_relation.dataset_id}:#{
-        dataset_access_group_relation.access_group_id
-      }"
+      "#{dataset_access_group_relation.dataset_id}:#{dataset_access_group_relation.access_group_id}"
 
     dataset_access_group_relation
     |> Map.from_struct()
@@ -98,9 +94,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
           Redix.Protocol.redis_value() | no_return()
   def delete(%DatasetAccessGroupRelation{} = dataset_access_group_relation) do
     key =
-      "#{dataset_access_group_relation.dataset_id}:#{
-        dataset_access_group_relation.access_group_id
-      }"
+      "#{dataset_access_group_relation.dataset_id}:#{dataset_access_group_relation.access_group_id}"
 
     Redix.command!(@redix, ["DEL", @namespace <> key])
   end

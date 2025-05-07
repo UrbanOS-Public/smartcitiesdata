@@ -17,12 +17,13 @@ defmodule AndiWeb.HeaderLiveViewTest do
     end
 
     test "Displays provided logo" do
-      with_mock(Application, [
+      with_mock(Application,
         get_env: fn
-          (:andi, :logo_url) -> "/images/RuralOS.svg"
-          (app, env) -> passthrough([app, env]) end,
-        get_env: fn(app, env, opts) -> passthrough([app, env, opts]) end
-      ]) do
+          :andi, :logo_url -> "/images/RuralOS.svg"
+          app, env -> passthrough([app, env])
+        end,
+        get_env: fn app, env, opts -> passthrough([app, env, opts]) end
+      ) do
         html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
         header_logo =
@@ -47,12 +48,13 @@ defmodule AndiWeb.HeaderLiveViewTest do
     end
 
     test "Displays provided header text" do
-      with_mock(Application, [
+      with_mock(Application,
         get_env: fn
-          (:andi, :header_text) -> "Definitely Not Data Submission Tool"
-          (app, env) -> passthrough([app, env]) end,
-        get_env: fn(app, env, opts) -> passthrough([app, env, opts]) end
-        ]) do
+          :andi, :header_text -> "Definitely Not Data Submission Tool"
+          app, env -> passthrough([app, env])
+        end,
+        get_env: fn app, env, opts -> passthrough([app, env, opts]) end
+      ) do
         html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
         header_text =

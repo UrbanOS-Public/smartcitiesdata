@@ -6,6 +6,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
   import Phoenix.LiveViewTest
   import Mock
+
   import FlokiHelpers,
     only: [
       get_attributes: 3
@@ -19,18 +20,23 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   @ingested_time_b DateTime.from_iso8601("2020-11-01T00:00:00Z") |> elem(1)
   @dataset_a DatasetHelpers.create_dataset(business: %{orgTitle: "org_d", dataTitle: "data_a"}) |> Map.put(:ingestedTime, @ingested_time_a)
   @dataset_b DatasetHelpers.create_dataset(business: %{orgTitle: "org_c", dataTitle: "data_b"}) |> Map.put(:ingestedTime, @ingested_time_b)
-  @dataset_c DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_c"}) |> Map.put(:ingestedTime, nil) |> Map.put(:submission_status, :rejected)
-  @dataset_d DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_d"}) |> Map.put(:ingestedTime, nil) |> Map.put(:submission_status, :approved)
+  @dataset_c DatasetHelpers.create_dataset(business: %{orgTitle: "org_b", dataTitle: "data_c"})
+             |> Map.put(:ingestedTime, nil)
+             |> Map.put(:submission_status, :rejected)
+  @dataset_d DatasetHelpers.create_dataset(business: %{orgTitle: "org_a", dataTitle: "data_d"})
+             |> Map.put(:ingestedTime, nil)
+             |> Map.put(:submission_status, :approved)
 
   setup_with_mocks [
-    {User, [], [
-      get_all: fn() -> [@user] end,
-      get_by_subject_id: fn(_) -> @user end
-    ]},
-    {Andi.Repo, [], [all: fn(_) -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end]},
-    {Guardian.DB.Token, [], [find_by_claims: fn(_) -> nil end]}
-  ], %{conn: conn} do
-
+                     {User, [],
+                      [
+                        get_all: fn -> [@user] end,
+                        get_by_subject_id: fn _ -> @user end
+                      ]},
+                     {Andi.Repo, [], [all: fn _ -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end]},
+                     {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
+                   ],
+                   %{conn: conn} do
     DatasetHelpers.replace_all_datasets_in_repo([@dataset_a, @dataset_b])
 
     allow(MessageErrors.get_latest_error(dataset_a.id), return: create_message_error(dataset_a.id))
@@ -139,7 +145,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     test "edit buttons link to dataset edit", %{conn: conn} do
       dataset = DatasetHelpers.create_dataset(%{})
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset] end) do
         DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
         {:ok, _view, html} = live(conn, @url_path)

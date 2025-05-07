@@ -243,9 +243,7 @@ defmodule Forklift.DataWriter do
 
   defp get_extraction_count(system_name, ingestion_id, extraction_start_time) do
     PrestigeHelper.count_query(
-      "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
-        extraction_start_time
-      })"
+      "select count(1) from #{system_name}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extraction_start_time})"
     )
   end
 end

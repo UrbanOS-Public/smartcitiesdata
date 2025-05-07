@@ -60,9 +60,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{
-        author
-      }"
+      "User: #{association.subject_id}; Organization: #{association.org_id} - Received user_organization_associate event from #{author}"
     )
 
     {:ok, user_org_assoc} = UserOrgAssoc.from_associate_event(association)
@@ -85,9 +83,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{
-        author
-      }"
+      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{author}"
     )
 
     {:ok, user_org_assoc} = UserOrgAssoc.from_disassociate_event(disassociation)
@@ -110,9 +106,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "User: #{association.subject_id}; Access Group: #{association.access_group_id} - Received user_access_group_associate event from #{
-        author
-      }"
+      "User: #{association.subject_id}; Access Group: #{association.access_group_id} - Received user_access_group_associate event from #{author}"
     )
 
     {:ok, user_access_group_assoc} =
@@ -137,9 +131,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "User: #{disassociation.subject_id}; Access Group: #{disassociation.access_group_id} - Received user_access_group_associate event from #{
-        author
-      }"
+      "User: #{disassociation.subject_id}; Access Group: #{disassociation.access_group_id} - Received user_access_group_associate event from #{author}"
     )
 
     {:ok, user_access_group_disassoc} =
@@ -164,9 +156,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "Dataset: #{association.dataset_id}; Access Group: #{association.access_group_id} - Received dataset_access_group_associate event from #{
-        author
-      }"
+      "Dataset: #{association.dataset_id}; Access Group: #{association.access_group_id} - Received dataset_access_group_associate event from #{author}"
     )
 
     {:ok, dataset_access_group_assoc} =
@@ -195,9 +185,7 @@ defmodule Raptor.Event.EventHandler do
         author: author
       }) do
     Logger.info(
-      "Dataset: #{disassociation.dataset_id}; Access Group: #{disassociation.access_group_id} - Received dataset_access_group_disassociate event from #{
-        author
-      }"
+      "Dataset: #{disassociation.dataset_id}; Access Group: #{disassociation.access_group_id} - Received dataset_access_group_disassociate event from #{author}"
     )
 
     {:ok, dataset_access_group_disassoc} =

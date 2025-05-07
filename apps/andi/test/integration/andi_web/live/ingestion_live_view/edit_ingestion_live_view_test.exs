@@ -10,6 +10,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
   import Phoenix.LiveViewTest
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
   import Mock
+
   import FlokiHelpers,
     only: [
       find_elements: 2,
@@ -221,8 +222,8 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
     test "saving form as draft does not send brook event", %{curator_conn: conn} do
       with_mocks([
-        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]}
-        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn _, _, _, _ -> :ok end]},
+        {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
         smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
@@ -234,12 +235,12 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
         render_change(view, :save, %{})
 
-        assert_not_called Brook.Event.send(:_, :_, :_, :_)
+        assert_not_called(Brook.Event.send(:_, :_, :_, :_))
       end
     end
 
     test "publishing a valid ingestion send an ingestion_update event", %{curator_conn: conn, ingestion: ingestion} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
         render_click(view, "publish")
 
@@ -248,7 +249,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "publishing a valid ingestion sets it's status to \"published\"", %{curator_conn: conn, ingestion: ingestion} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
         render_click(view, "publish")
 
@@ -258,7 +259,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "publishing a valid ingestion creates an audit log with corresponding email", %{curator_conn: conn, ingestion: ingestion} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
         render_click(view, "publish")
 
@@ -272,7 +273,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "ingestion form edits are included in publish event", %{curator_conn: conn, ingestion: ingestion} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
 
         new_name = "new_name"
@@ -289,7 +290,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
         {:ok, ingestion} =
@@ -300,12 +301,12 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
         render_click(view, "publish")
 
-        assert_not_called Brook.Event.send(:_, :_, :_, :_)
+        assert_not_called(Brook.Event.send(:_, :_, :_, :_))
       end
     end
 
     test "adding a transformation and cancelling prompts a confirmation", %{curator_conn: conn} do
-      with_mock(Brook.Event, [send: fn(_, _, _, _) -> :ok end]) do
+      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
         smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
         {:ok, ingestion} =
@@ -322,7 +323,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         |> render_click()
 
         assert element(view, ".unsaved-changes-modal--visible")
-              |> has_element?()
+               |> has_element?()
       end
     end
 

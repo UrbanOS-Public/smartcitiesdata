@@ -48,9 +48,7 @@ defmodule Helper do
   end
 
   def create_partitioned_table(table) do
-    "create table #{table} with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('2020-09' as varchar) as os_partition from #{
-      table
-    }__json) limit 0"
+    "create table #{table} with (partitioned_by = ARRAY['os_partition'], format = 'ORC') as (select *, cast('2020-09' as varchar) as os_partition from #{table}__json) limit 0"
     |> PrestigeHelper.execute_query()
   end
 

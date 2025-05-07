@@ -102,9 +102,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     |> PrestigeHelper.execute_query()
 
     message =
-      "Failed '#{orc_table}' compaction. New row count (#{inspect(new_count)}) did not match original count (#{
-        inspect(old_count)
-      })"
+      "Failed '#{orc_table}' compaction. New row count (#{inspect(new_count)}) did not match original count (#{inspect(old_count)})"
 
     Logger.error(message)
 
@@ -122,9 +120,7 @@ defmodule Pipeline.Writer.S3Writer.Compaction do
     else
       {:error, reason} ->
         raise RuntimeError,
-              "Aborting compaction. Unable to confirm new record count (#{target_count}) for #{table} due to: #{
-                inspect(reason)
-              }"
+              "Aborting compaction. Unable to confirm new record count (#{target_count}) for #{table} due to: #{inspect(reason)}"
     end
   end
 

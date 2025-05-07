@@ -97,9 +97,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     insert_query =
-      "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{
-        dataset.technical.systemName
-      }__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
+      "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
 
     allow(
       PrestigeHelper.execute_query(insert_query),
@@ -120,9 +118,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     write_json_records(dataset, expected_records, ingestion_id, extract_start)
 
     delete_query =
-      "delete from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{
-        extract_start
-      })"
+      "delete from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
 
     allow(
       PrestigeHelper.execute_query(delete_query),

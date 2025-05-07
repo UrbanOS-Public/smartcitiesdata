@@ -55,9 +55,7 @@ defmodule Reaper.Event.Handlers.IngestionUpdate do
     case Crontab.CronExpression.Parser.parse(cron_string, extended?) do
       {:error, reason} ->
         {:error,
-         "event(ingestion:update) unable to parse cadence(#{cron_string}) as cron expression, error reason: #{
-           inspect(reason)
-         }"}
+         "event(ingestion:update) unable to parse cadence(#{cron_string}) as cron expression, error reason: #{inspect(reason)}"}
 
       ok_result ->
         ok_result

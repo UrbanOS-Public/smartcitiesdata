@@ -33,7 +33,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
     end
 
     test "returns connection when Raptor service validates the auth0 role" do
-      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:ok, "\"has_role\": true"} end]) do
+      with_mock(RaptorService, check_auth0_role: fn _, _, _ -> {:ok, "\"has_role\": true"} end) do
         conn = build_conn(:get, "/doesnt/matter")
         result = APIRequireCurator.call(conn, [])
 
@@ -42,7 +42,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
     end
 
     test "returns invalid api key response when Raptor cannot validate api key" do
-      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:ok, "\"has_role\": false"} end]) do
+      with_mock(RaptorService, check_auth0_role: fn _, _, _ -> {:ok, "\"has_role\": false"} end) do
         conn = build_conn(:get, "/doesnt/matter")
         result = APIRequireCurator.call(conn, [])
 
@@ -51,7 +51,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
     end
 
     test "returns internal error when Raptor has internal error" do
-      with_mock(RaptorService, [check_auth0_role: fn(_, _, _) -> {:error, "doesntMatter", 500} end]) do
+      with_mock(RaptorService, check_auth0_role: fn _, _, _ -> {:error, "doesntMatter", 500} end) do
         conn = build_conn(:get, "/doesnt/matter")
         result = APIRequireCurator.call(conn, [])
 

@@ -45,7 +45,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   end
 
   test "get all audit logs", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
-    with_mock(AuditEvents, [get_all: fn() -> logs end]) do
+    with_mock(AuditEvents, get_all: fn -> logs end) do
       conn = get(conn, "#{@route}")
 
       assert_called(AuditEvents.get_all())
@@ -57,7 +57,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   test "get by audit id", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
     audit_id = "12345"
 
-    with_mock(AuditEvents, [get: fn(audit_id) -> logs end]) do
+    with_mock(AuditEvents, get: fn audit_id -> logs end) do
       conn = get(conn, "#{@route}?audit_id=#{audit_id}")
 
       assert_called(AuditEvents.get(audit_id))
@@ -69,7 +69,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   test "get by user id", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
     user_id = "user_id"
 
-    with_mock(AuditEvents, [get_all_for_user: fn(user_id) -> logs end]) do
+    with_mock(AuditEvents, get_all_for_user: fn user_id -> logs end) do
       conn = get(conn, "#{@route}?user_id=#{user_id}")
 
       assert_called(AuditEvents.get_all_for_user(user_id))
@@ -81,7 +81,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   test "get by type", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
     type = "some_type"
 
-    with_mock(AuditEvents, [get_all_of_type: fn(type) -> logs end]) do
+    with_mock(AuditEvents, get_all_of_type: fn type -> logs end) do
       conn = get(conn, "#{@route}?type=#{type}")
 
       assert_called(AuditEvents.get_all_of_type(type))
@@ -93,7 +93,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   test "get by event id", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
     event_id = "54321"
 
-    with_mock(AuditEvents, [get_all_by_event_id: fn(event_id) -> logs end]) do
+    with_mock(AuditEvents, get_all_by_event_id: fn event_id -> logs end) do
       conn = get(conn, "#{@route}?event_id=#{event_id}")
 
       assert_called(AuditEvents.get_all_by_event_id(event_id))
@@ -106,7 +106,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     {:ok, start_date_struct} = Date.new(2020, 6, 5)
     {:ok, end_date_struct} = Date.new(2020, 10, 9)
 
-    with_mock(AuditEvents, [get_all_in_range: fn(start_date_struct, end_date_struct) -> logs end]) do
+    with_mock(AuditEvents, get_all_in_range: fn start_date_struct, end_date_struct -> logs end) do
       conn = get(conn, "#{@route}?start_date=2020-06-05&end_date=2020-10-09")
 
       assert_called(AuditEvents.get_all_in_range(start_date_struct, end_date_struct))

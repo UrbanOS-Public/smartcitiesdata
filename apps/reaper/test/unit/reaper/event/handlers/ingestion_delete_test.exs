@@ -57,9 +57,7 @@ defmodule Reaper.Event.Handlers.IngestionDeleteTest do
       assert capture_log([level: :error], fn ->
                :ok = IngestionDelete.handle(ingestion)
              end) =~
-               "Elixir.Reaper.Event.Handlers.IngestionDelete: Error occurred while deleting the ingestion: #{
-                 ingestion.id
-               }, Reason: :error"
+               "Elixir.Reaper.Event.Handlers.IngestionDelete: Error occurred while deleting the ingestion: #{ingestion.id}, Reason: :error"
     end
   end
 end

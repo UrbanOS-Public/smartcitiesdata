@@ -200,7 +200,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{curator_conn: conn, curator_subject: subject} do
-      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]) do
+      with_mock(AndiWeb.Endpoint, [:passthrough], broadcast_from: fn _, _, _, _ -> :ok end) do
         {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
         assert {:ok, view, _html} = live(conn, @url_path)
 
@@ -212,7 +212,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
         assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-                get_value(html, "#form_data_dataName")
+                 get_value(html, "#form_data_dataName")
 
         html = render_change(metadata_view, :save)
 
@@ -281,7 +281,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "add dataset button for non-curator" do
     test "add dataset button creates a dataset with a default dataTitle and dataName", %{public_conn: conn, public_subject: subject} do
-      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]) do
+      with_mock(AndiWeb.Endpoint, [:passthrough], broadcast_from: fn _, _, _, _ -> :ok end) do
         {:ok, _user} = Andi.Schemas.User.create_or_update(subject, %{email: "bob@example.com", name: "Bob"})
         assert {:ok, view, _html} = live(conn, @url_path)
 
@@ -293,7 +293,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         assert "New Dataset - #{Date.utc_today()}" == get_value(html, "#form_data_dataTitle")
 
         assert "new_dataset_#{Date.utc_today() |> to_string() |> String.replace("-", "", global: true)}" ==
-                get_value(html, "#form_data_dataName")
+                 get_value(html, "#form_data_dataName")
 
         html = render_change(metadata_view, :save)
 

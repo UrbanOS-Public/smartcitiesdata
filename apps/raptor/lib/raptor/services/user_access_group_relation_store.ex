@@ -52,9 +52,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
     case length(matching_entries) do
       0 ->
         Logger.warn(
-          "No user access group relations exist with user_id #{user_id} and access_group_id #{
-            access_group_id
-          }"
+          "No user access group relations exist with user_id #{user_id} and access_group_id #{access_group_id}"
         )
 
         %{}

@@ -20,12 +20,12 @@ defmodule Andi.ReportsControllerTest do
         technical: %Technical{private: false, systemName: "Test__Example"}
       }
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset1]]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset1] end) do
         result = get(conn, "/report")
         assert result.status == 200
 
-      assert result.resp_body ==
-               "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,All (public),\"keyword1, keyword2\",Public\r\n"
+        assert result.resp_body ==
+                 "Dataset ID,Dataset Title,Organization,System Name,Users,Tags,Access Level\r\n12345,Example,Test,Test__Example,All (public),\"keyword1, keyword2\",Public\r\n"
       end
     end
 

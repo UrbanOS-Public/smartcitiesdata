@@ -98,9 +98,7 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
       assert capture_log([level: :warn], fn ->
                :ok = IngestionUpdate.handle(ingestion)
              end) =~
-               "event(ingestion:update) unable to parse cadence(once per minute) as cron expression, error reason: #{
-                 inspect(reason)
-               }"
+               "event(ingestion:update) unable to parse cadence(once per minute) as cron expression, error reason: #{inspect(reason)}"
     end
 
     test "discards ingestion event when cadence is never" do

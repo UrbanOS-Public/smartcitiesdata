@@ -63,9 +63,7 @@ defmodule RaptorWeb.ApiKeyController do
 
               {:error, reason} ->
                 Logger.error(
-                  "Raptor could not obtain roles for user: #{user_id} with reason: #{
-                    inspect(reason)
-                  }"
+                  "Raptor could not obtain roles for user: #{user_id} with reason: #{inspect(reason)}"
                 )
 
                 render_error(conn, 500, "Internal Server Error")

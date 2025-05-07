@@ -40,9 +40,7 @@ defmodule Performance.Kafka do
     producer_name = :"#{topic}_producer"
 
     Logger.info(
-      "Loading #{expected_count} messages into kafka with #{num_producers} producers for topic #{
-        topic
-      }"
+      "Loading #{expected_count} messages into kafka with #{num_producers} producers for topic #{topic}"
     )
 
     {:ok, producer_pid} =

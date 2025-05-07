@@ -12,10 +12,11 @@ defmodule Smartcitiesdata.MixProject do
     ]
   end
 
-  defp deps, do:
-    [
-    {:decimal, "~> 1.5 or ~> 2.0", [env: :prod, hex: "decimal", repo: "hexpm", optional: false, override: true]},
-    {:brod, "~> 3.16", override: true}
+  defp deps,
+    do: [
+      {:decimal, "~> 1.5 or ~> 2.0",
+       [env: :prod, hex: "decimal", repo: "hexpm", optional: false, override: true]},
+      {:brod, "~> 3.16", override: true}
     ]
 
   defp aliases do

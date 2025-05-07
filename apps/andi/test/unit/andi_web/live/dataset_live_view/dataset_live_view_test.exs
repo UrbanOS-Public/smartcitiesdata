@@ -12,14 +12,16 @@ defmodule AndiWeb.DatasetLiveViewTest do
   @user UserHelpers.create_user()
 
   setup_with_mocks([
-    {Andi.Repo, [], [
-      get_by: fn(Andi.Schemas.User, _) -> @user end
-    ]},
-    {User, [], [
-      get_all: fn() -> [@user] end,
-      get_by_subject_id: fn(_) -> @user end
-    ]},
-    {Guardian.DB.Token, [], [find_by_claims: fn(_) -> nil end]}
+    {Andi.Repo, [],
+     [
+       get_by: fn Andi.Schemas.User, _ -> @user end
+     ]},
+    {User, [],
+     [
+       get_all: fn -> [@user] end,
+       get_by_subject_id: fn _ -> @user end
+     ]},
+    {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
   ]) do
     :ok
   end
@@ -34,7 +36,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
           end
         )
 
-      with_mock(Andi.Repo, [all: fn(_) -> datasets end]) do
+      with_mock(Andi.Repo, all: fn _ -> datasets end) do
         DatasetHelpers.replace_all_datasets_in_repo(datasets)
 
         assert {:ok, _view, html} = live(conn, @url_path)
@@ -48,7 +50,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
     end
 
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
-      with_mock(Andi.Repo, [all: fn(_) -> [] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [] end) do
         DatasetHelpers.replace_all_datasets_in_repo([])
 
         assert {:ok, _view, html} = live(conn, @url_path)
@@ -61,7 +63,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "Live connection with search params in URL" do
     setup_with_mocks([
-      {Andi.Repo, [], [all: fn(_) -> [] end]}
+      {Andi.Repo, [], [all: fn _ -> [] end]}
     ]) do
       :ok
     end
@@ -87,7 +89,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form change executes search" do
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
-      with_mock(Andi.Repo, [all: fn(_) -> [] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [] end) do
         DatasetHelpers.replace_all_datasets_in_repo([])
 
         {:ok, view, _html} = live(conn, @url_path)
@@ -95,9 +97,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
         search_text = "Some search"
 
         assert [search_text] ==
-                view
-                |> render_change(:search, %{"search-value" => search_text})
-                |> get_values("input.datasets-index__search-input")
+                 view
+                 |> render_change(:search, %{"search-value" => search_text})
+                 |> get_values("input.datasets-index__search-input")
 
         assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
       end
@@ -106,7 +108,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form submit executes search" do
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
-      with_mock(Andi.Repo, [all: fn(_) -> [] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [] end) do
         DatasetHelpers.replace_all_datasets_in_repo([])
 
         {:ok, view, _html} = live(conn, @url_path)
@@ -114,9 +116,9 @@ defmodule AndiWeb.DatasetLiveViewTest do
         search_text = "Some text"
 
         assert [search_text] ==
-                view
-                |> render_submit(:search, %{"search-value" => search_text})
-                |> get_values("input.datasets-index__search-input")
+                 view
+                 |> render_submit(:search, %{"search-value" => search_text})
+                 |> get_values("input.datasets-index__search-input")
 
         assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
       end
@@ -128,7 +130,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset_a, dataset_b] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
         DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
         {:ok, _view, html} = live(conn, @url_path)
@@ -142,7 +144,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset_a, dataset_b] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
         DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
         {:ok, view, _html} = live(conn, @url_path)
@@ -165,7 +167,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         DatasetHelpers.create_dataset(%{})
         |> Map.put(:submission_status, :submitted)
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset_a, dataset_b] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
         DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
         {:ok, _view, html} = live(conn, @url_path)
@@ -184,7 +186,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         DatasetHelpers.create_dataset(%{})
         |> Map.put(:submission_status, :submitted)
 
-      with_mock(Andi.Repo, [all: fn(_) -> [dataset_a, dataset_b] end]) do
+      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
         DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
         {:ok, view, _html} = live(conn, @url_path)

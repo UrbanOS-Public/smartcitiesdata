@@ -10,8 +10,8 @@ defmodule Alchemist.InitTest do
       ingestion2 = {:id, "Ingestion Two"}
 
       with_mocks([
-        {Brook, [], [get_all_values!: fn(_, :ingestions) -> [ingestion1, ingestion2] end]},
-        {Alchemist.IngestionProcessor, [], [start: fn(_) -> :does_not_matter end]}
+        {Brook, [], [get_all_values!: fn _, :ingestions -> [ingestion1, ingestion2] end]},
+        {Alchemist.IngestionProcessor, [], [start: fn _ -> :does_not_matter end]}
       ]) do
         {:ok, _pid} = Alchemist.Init.start_link(monitor: self())
 

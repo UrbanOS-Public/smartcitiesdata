@@ -9,14 +9,16 @@ defmodule Alchemist.IngestionProcessorTest do
 
   describe "start/1" do
     setup_with_mocks([
-      {Alchemist.TopicManager, [], [
-        setup_topics: fn(_) -> @topics end,
-        delete_topics: fn(_) -> @topics end
-      ]},
-      {Alchemist.IngestionSupervisor, [], [
-        ensure_stopped: fn(_) -> :do_not_care end,
-        ensure_started: fn(_) -> :fake_process end
-      ]}
+      {Alchemist.TopicManager, [],
+       [
+         setup_topics: fn _ -> @topics end,
+         delete_topics: fn _ -> @topics end
+       ]},
+      {Alchemist.IngestionSupervisor, [],
+       [
+         ensure_stopped: fn _ -> :do_not_care end,
+         ensure_started: fn _ -> :fake_process end
+       ]}
     ]) do
       ingestion = TDG.create_ingestion(%{})
       %{ingestion: ingestion, input_topic: @topics.input_topic, output_topics: @topics.output_topics}

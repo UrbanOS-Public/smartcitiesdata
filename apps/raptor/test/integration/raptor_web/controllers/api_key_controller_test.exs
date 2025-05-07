@@ -111,9 +111,7 @@ defmodule Raptor.ApiKeyControllerTest do
           {:ok,
            %{
              body:
-               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{
-                 user_id
-               }\", \"blocked\": false}]"
+               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"
            }}
       )
 
@@ -142,9 +140,7 @@ defmodule Raptor.ApiKeyControllerTest do
           {:ok,
            %{
              body:
-               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{
-                 user_id
-               }\", \"blocked\": false}]"
+               "[{\"app_metadata\": {\"apiKey\": \"#{api_key}\"}, \"email_verified\": true, \"user_id\": \"#{user_id}\", \"blocked\": false}]"
            }}
       )
 

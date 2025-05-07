@@ -36,9 +36,7 @@ defmodule Forklift.MessageHandler do
       result = Forklift.DataWriter.write_to_topic(timed_messages)
 
       Logger.debug(fn ->
-        "Finished writing #{Enum.count(timed_messages)} timed messages for dataset #{dataset.id} with result #{
-          inspect(result)
-        }"
+        "Finished writing #{Enum.count(timed_messages)} timed messages for dataset #{dataset.id} with result #{inspect(result)}"
       end)
     end)
 

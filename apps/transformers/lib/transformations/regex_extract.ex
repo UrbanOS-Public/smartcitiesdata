@@ -30,9 +30,7 @@ defmodule Transformers.RegexExtract do
       rescue
         error ->
           {:error,
-           "Regex Extract Transformation Error: Failure to parse REGEX: #{inspect(regex)} from VALUE: #{
-             inspect(value)
-           } of SOURCE_FIELD: #{inspect(source_field)}"}
+           "Regex Extract Transformation Error: Failure to parse REGEX: #{inspect(regex)} from VALUE: #{inspect(value)} of SOURCE_FIELD: #{inspect(source_field)}"}
       end
     else
       {:ok, false} ->

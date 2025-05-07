@@ -1,6 +1,6 @@
 defmodule Andi.Schemas.UserTest do
   use ExUnit.Case
-  
+
   import Checkov
 
   alias Andi.Schemas.User

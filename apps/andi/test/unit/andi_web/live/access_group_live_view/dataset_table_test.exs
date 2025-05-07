@@ -15,12 +15,13 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
   @user UserHelpers.create_user()
 
   setup_with_mocks([
-    {Andi.Repo, [], [get_by: fn(Andi.Schemas.User, _) -> @user end]},
-    {User, [], [
-      get_all: fn() -> [@user] end,
-      get_by_subject_id: fn(_) -> @user end
-    ]},
-    {Guardian.DB.Token, [], [find_by_claims: fn(_) -> nil end]}
+    {Andi.Repo, [], [get_by: fn Andi.Schemas.User, _ -> @user end]},
+    {User, [],
+     [
+       get_all: fn -> [@user] end,
+       get_by_subject_id: fn _ -> @user end
+     ]},
+    {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
   ]) do
     []
   end
@@ -30,14 +31,16 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       access_group = TDG.create_access_group(%{})
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: access_group.id, name: access_group.name} end,
-          get: fn(_) -> %AccessGroup{id: access_group.id, name: access_group.name} end
-        ]},
-        {Andi.Repo, [], [
-          preload: fn(_, _) -> %{datasets: [], users: [], id: access_group.id} end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: access_group.id, name: access_group.name} end,
+           get: fn _ -> %AccessGroup{id: access_group.id, name: access_group.name} end
+         ]},
+        {Andi.Repo, [],
+         [
+           preload: fn _, _ -> %{datasets: [], users: [], id: access_group.id} end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end
+         ]}
       ]) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
 
@@ -50,15 +53,17 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       %{id: dataset_id} = dataset = TDG.create_dataset(%{})
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end,
-          get: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end
-        ]},
-        {Andi.Repo, [], [
-          preload: fn(_, _) -> %{datasets: [%{id: dataset_id}], users: [], id: access_group_id} end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end
-        ]},
-        {Andi.InputSchemas.Datasets, [], [get: fn(dataset_id) -> dataset end]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end,
+           get: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end
+         ]},
+        {Andi.Repo, [],
+         [
+           preload: fn _, _ -> %{datasets: [%{id: dataset_id}], users: [], id: access_group_id} end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end
+         ]},
+        {Andi.InputSchemas.Datasets, [], [get: fn dataset_id -> dataset end]}
       ]) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")
 
@@ -72,20 +77,23 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       %{id: dataset_2_id} = dataset_2 = TDG.create_dataset(%{})
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end,
-          get: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end
-        ]},
-        {Andi.Repo, [], [
-          preload: fn(_, _) -> %{datasets: [%{id: dataset_1_id}, %{id: dataset_2_id}], users: [], id: access_group_id} end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end
-        ]},
-        {Andi.InputSchemas.Datasets, [], [
-          get: fn
-            (^dataset_1_id) -> dataset_1
-            (^dataset_2_id) -> dataset_2
-          end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end,
+           get: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end
+         ]},
+        {Andi.Repo, [],
+         [
+           preload: fn _, _ -> %{datasets: [%{id: dataset_1_id}, %{id: dataset_2_id}], users: [], id: access_group_id} end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end
+         ]},
+        {Andi.InputSchemas.Datasets, [],
+         [
+           get: fn
+             ^dataset_1_id -> dataset_1
+             ^dataset_2_id -> dataset_2
+           end
+         ]}
       ]) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")
 
@@ -100,20 +108,23 @@ defmodule AndiWeb.AccessGroupLiveView.DatasetTableTest do
       %{id: dataset_2_id} = dataset_2 = TDG.create_dataset(%{})
 
       with_mocks([
-        {Andi.Repo, [], [
-          preload: fn(_, _) -> %{datasets: [%{id: dataset_1_id}, %{id: dataset_2_id}], users: [], id: access_group_id} end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end
-        ]},
-        {Andi.InputSchemas.Datasets, [], [
-          get: fn
-            (^dataset_1_id) -> dataset_1
-            (^dataset_2_id) -> dataset_2
-          end
-        ]},
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end,
-          get: fn(_) -> %AccessGroup{id: access_group_id, name: access_group_name} end
-        ]}
+        {Andi.Repo, [],
+         [
+           preload: fn _, _ -> %{datasets: [%{id: dataset_1_id}, %{id: dataset_2_id}], users: [], id: access_group_id} end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end
+         ]},
+        {Andi.InputSchemas.Datasets, [],
+         [
+           get: fn
+             ^dataset_1_id -> dataset_1
+             ^dataset_2_id -> dataset_2
+           end
+         ]},
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end,
+           get: fn _ -> %AccessGroup{id: access_group_id, name: access_group_name} end
+         ]}
       ]) do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")
         text = get_text(html, ".access-groups-sub-table__cell")

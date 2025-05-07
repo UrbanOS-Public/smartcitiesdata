@@ -20,9 +20,10 @@ defmodule Andi.Event.EventHandlerTest do
 
   test "should delete the view state and the postgres entry when ingestion delete event is called" do
     ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
+
     with_mocks([
-      {IngestionStore, [], [delete: fn(_) -> :ok end]},
-      {Ingestions, [], [delete: fn(_) -> {:ok, "good"} end]}
+      {IngestionStore, [], [delete: fn _ -> :ok end]},
+      {Ingestions, [], [delete: fn _ -> {:ok, "good"} end]}
     ]) do
       :meck.expect(TelemetryEvent, :add_event_metrics, [:_, [:events_handled]], return: :ok)
 
@@ -42,9 +43,9 @@ defmodule Andi.Event.EventHandlerTest do
       |> Map.put(:ingestedTime, DateTime.to_iso8601(current_time))
 
     with_mocks([
-      {IngestionStore, [], [update: fn(_) -> :ok end]},
-      {Ingestions, [], [update: fn(ingestion) -> {:ok, "good"} end]},
-      {DateTime, [:passthrough], [utc_now: fn() -> current_time end]}
+      {IngestionStore, [], [update: fn _ -> :ok end]},
+      {Ingestions, [], [update: fn ingestion -> {:ok, "good"} end]},
+      {DateTime, [:passthrough], [utc_now: fn -> current_time end]}
     ]) do
       :meck.expect(TelemetryEvent, :add_event_metrics, [:_, [:events_handled]], return: :ok)
 
@@ -58,19 +59,16 @@ defmodule Andi.Event.EventHandlerTest do
 
   test "should delete the view state when dataset delete event is called" do
     dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
-<<<<<<< HEAD
     allow(Brook.ViewState.delete(any(), any()), return: :ok)
     allow(Datasets.delete(any()), return: {:ok, "good"})
     allow(Organizations.delete_harvested_dataset(any()), return: any())
     allow(Ingestions.get_all(), return: [])
     expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-=======
->>>>>>> e0f8e73bdbd46b02183a7f15c4363fd6c2da5e9a
 
     with_mocks([
-      {Brook.ViewState, [], [delete: fn(_, _) -> :ok end]},
-      {Datasets, [], [delete: fn(_) -> {:ok, "good"} end]},
-      {Organizations, [], [delete_harvested_dataset: fn(_) -> "" end]}
+      {Brook.ViewState, [], [delete: fn _, _ -> :ok end]},
+      {Datasets, [], [delete: fn _ -> {:ok, "good"} end]},
+      {Organizations, [], [delete_harvested_dataset: fn _ -> "" end]}
     ]) do
       :meck.expect(TelemetryEvent, :add_event_metrics, [:_, [:events_handled]], return: :ok)
 
@@ -84,7 +82,7 @@ defmodule Andi.Event.EventHandlerTest do
   test "data_harvest_start event triggers harvesting" do
     org = TDG.create_organization(%{})
 
-    with_mock(Harvester, [start_harvesting: fn(_) -> :ok end]) do
+    with_mock(Harvester, start_harvesting: fn _ -> :ok end) do
       Brook.Test.send(@instance_name, dataset_harvest_start(), :andi, org)
 
       eventually(fn ->
@@ -94,15 +92,16 @@ defmodule Andi.Event.EventHandlerTest do
   end
 
   describe "data harvest event is triggered when organization is updated" do
-
     setup_with_mocks([
-      {Brook.Event, [:passthrough], [
-        send: fn
-          (@instance_name, dataset_harvest_start(), :andi, _) -> :ok
-          (@instance_name, type, :andi, message) -> passthrough([@instance_name, type, :andi, message]) end
-      ]},
-      {OrgStore, [], [update: fn(_) -> :ok end]},
-      {Organizations, [], [update: fn(_) -> :ok end]}
+      {Brook.Event, [:passthrough],
+       [
+         send: fn
+           @instance_name, dataset_harvest_start(), :andi, _ -> :ok
+           @instance_name, type, :andi, message -> passthrough([@instance_name, type, :andi, message])
+         end
+       ]},
+      {OrgStore, [], [update: fn _ -> :ok end]},
+      {Organizations, [], [update: fn _ -> :ok end]}
     ]) do
       :ok
     end

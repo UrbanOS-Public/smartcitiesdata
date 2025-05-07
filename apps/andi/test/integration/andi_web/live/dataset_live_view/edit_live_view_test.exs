@@ -164,7 +164,7 @@ defmodule AndiWeb.EditLiveViewTest do
     end
 
     test "valid dataset's submission status is updated on publish", %{conn: conn} do
-      with_mock(AndiWeb.Endpoint, [:passthrough], [broadcast: fn(_, _, _) -> :ok end]) do
+      with_mock(AndiWeb.Endpoint, [:passthrough], broadcast: fn _, _, _ -> :ok end) do
         smrt_dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
 
         {:ok, dataset} = Datasets.update(smrt_dataset)
@@ -253,8 +253,8 @@ defmodule AndiWeb.EditLiveViewTest do
 
     test "saving form as draft does not send brook event", %{conn: conn} do
       with_mocks([
-        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn(_, _, _, _) -> :ok end]}
-        {Brook.Event, [], [send: fn(_, _, _, _) -> :ok end]}
+        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn _, _, _, _ -> :ok end]},
+        {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
         smrt_dataset = TDG.create_dataset(%{business: %{issuedDate: nil}})
 
@@ -266,7 +266,7 @@ defmodule AndiWeb.EditLiveViewTest do
 
         render_change(view, :save, %{})
 
-        assert_not_called Brook.Event.send(:_, :_, :_, :_)
+        assert_not_called(Brook.Event.send(:_, :_, :_, :_))
       end
     end
 

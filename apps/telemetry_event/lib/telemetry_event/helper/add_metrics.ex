@@ -55,11 +55,7 @@ defmodule TelemetryEvent.Helper.AddMetrics do
   end
 
   defp app(conn) do
-    phoenix_endpoint =
-      "#{
-        Map.get(conn, :private)
-        |> Map.get(:phoenix_endpoint)
-      }"
+    phoenix_endpoint = "#{Map.get(conn, :private) |> Map.get(:phoenix_endpoint)}"
 
     Regex.replace(~r/[A-Z]/, phoenix_endpoint, fn elixir_app_name -> "_#{elixir_app_name}" end)
     |> String.replace_leading("_Elixir._", "")

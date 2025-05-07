@@ -117,7 +117,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
     end
 
     test "if an exception occurs, returns 404, not 500" do
-      with_mock(AndiWeb.Test.FailingController, [access_levels_supported: fn(_) -> raise "KABOOM!" end]) do
+      with_mock(AndiWeb.Test.FailingController, access_levels_supported: fn _ -> raise "KABOOM!" end) do
         conn =
           build_conn(:get, "/kaboom")
           |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router)

@@ -24,10 +24,9 @@ defmodule Alchemist.BroadwayTest do
 
   describe "with valid transformations" do
     setup_with_mocks([
-      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]},
-      {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
+      {Elsa, [], [produce: fn _, _, _, _ -> :ok end]},
+      {SmartCity.Data.Timing, [:passthrough], [current_time: fn -> @current_time end]}
     ]) do
-
       transform1 =
         TDG.create_transformation(%{
           type: "regex_extract",
@@ -264,10 +263,9 @@ defmodule Alchemist.BroadwayTest do
 
   describe "with invalid transformation" do
     setup_with_mocks([
-      {Elsa, [], [produce: fn(_, _, _, _) -> :ok end]},
-      {SmartCity.Data.Timing, [:passthrough], [current_time: fn() -> @current_time end]}
+      {Elsa, [], [produce: fn _, _, _, _ -> :ok end]},
+      {SmartCity.Data.Timing, [:passthrough], [current_time: fn -> @current_time end]}
     ]) do
-
       transform =
         TDG.create_transformation(%{
           type: "regex_extract",

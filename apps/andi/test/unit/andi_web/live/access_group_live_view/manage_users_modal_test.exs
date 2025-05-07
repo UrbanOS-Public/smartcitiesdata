@@ -18,7 +18,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
   @user UserHelpers.create_user()
 
   setup_with_mocks([
-    {Guardian.DB.Token, [], [find_by_claims: fn(_) -> nil end]}
+    {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
   ]) do
     []
   end
@@ -29,16 +29,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       org = %Organization{orgTitle: "123"}
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
-          get: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
-        ]},
-        {Andi.Repo, [], [
-          all: fn(_) -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end,
-          preload: fn(_, _) -> %{datasets: [], users: [], id: access_group_id} end,
-          get_by: fn(Andi.Schemas.User, _) -> @user end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
+           get: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
+         ]},
+        {Andi.Repo, [],
+         [
+           all: fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end,
+           preload: fn _, _ -> %{datasets: [], users: [], id: access_group_id} end,
+           get_by: fn Andi.Schemas.User, _ -> @user end
+         ]}
       ]) do
         access_group = create_access_group(access_group_id)
 
@@ -61,16 +63,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       org = %Organization{orgTitle: "123"}
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
-          get: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
-        ]},
-        {Andi.Repo, [], [
-          all: fn(_) -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end,
-          preload: fn(_, _) -> %{datasets: [], users: [], id: access_group_id} end,
-          get_by: fn(Andi.Schemas.User, _) -> @user end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
+           get: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
+         ]},
+        {Andi.Repo, [],
+         [
+           all: fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end,
+           preload: fn _, _ -> %{datasets: [], users: [], id: access_group_id} end,
+           get_by: fn Andi.Schemas.User, _ -> @user end
+         ]}
       ]) do
         access_group = create_access_group(access_group_id)
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group.id}")
@@ -87,16 +91,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       org = %Organization{orgTitle: "123"}
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
-          get: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
-        ]},
-        {Andi.Repo, [], [
-          all: fn(_) -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end,
-          preload: fn(_, _) -> %{datasets: [], users: [], id: access_group_id} end,
-          get_by: fn(Andi.Schemas.User, _) -> @user end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
+           get: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
+         ]},
+        {Andi.Repo, [],
+         [
+           all: fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end,
+           preload: fn _, _ -> %{datasets: [], users: [], id: access_group_id} end,
+           get_by: fn Andi.Schemas.User, _ -> @user end
+         ]}
       ]) do
         access_group = create_access_group(access_group_id)
 
@@ -113,21 +119,23 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       user = %User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
-          get: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
-        ]},
-        {Andi.Repo, [], [
-          all: fn(_) -> [user] end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end,
-          get_by: fn
-            (Andi.Schemas.User, _) -> user
-          end,
-          preload: fn
-            (_, [:datasets, :users]) -> %{datasets: [], users: [], id: access_group_id}
-            (_, [:datasets, :organizations]) -> %{datasets: [], users: [], id: access_group_id}
-          end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
+           get: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
+         ]},
+        {Andi.Repo, [],
+         [
+           all: fn _ -> [user] end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end,
+           get_by: fn
+             Andi.Schemas.User, _ -> user
+           end,
+           preload: fn
+             _, [:datasets, :users] -> %{datasets: [], users: [], id: access_group_id}
+             _, [:datasets, :organizations] -> %{datasets: [], users: [], id: access_group_id}
+           end
+         ]}
       ]) do
         access_group = create_access_group(access_group_id)
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")
@@ -152,21 +160,23 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       user_3 = %User{id: Ecto.UUID.generate(), name: "Alice", email: "completely_different@example.com", organizations: [org_zed]}
 
       with_mocks([
-        {AccessGroups, [], [
-          update: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
-          get: fn(_) -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
-        ]},
-        {Andi.Repo, [], [
-          all: fn(_) -> [user_1, user_2, user_3] end,
-          get: fn(Andi.InputSchemas.AccessGroup, _) -> [] end,
-          get_by: fn
-            (Andi.Schemas.User, _) -> user_1
-          end,
-          preload: fn
-            (_, [:datasets, :users]) -> %{datasets: [], users: [], id: access_group_id}
-            (_, [:datasets, :organizations]) -> %{datasets: [], users: [], id: access_group_id}
-          end
-        ]}
+        {AccessGroups, [],
+         [
+           update: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end,
+           get: fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end
+         ]},
+        {Andi.Repo, [],
+         [
+           all: fn _ -> [user_1, user_2, user_3] end,
+           get: fn Andi.InputSchemas.AccessGroup, _ -> [] end,
+           get_by: fn
+             Andi.Schemas.User, _ -> user_1
+           end,
+           preload: fn
+             _, [:datasets, :users] -> %{datasets: [], users: [], id: access_group_id}
+             _, [:datasets, :organizations] -> %{datasets: [], users: [], id: access_group_id}
+           end
+         ]}
       ]) do
         access_group = create_access_group(access_group_id)
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")

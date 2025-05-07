@@ -77,9 +77,7 @@ defmodule DiscoveryApi.Event.EventHandler do
         %Brook.Event{type: user_organization_disassociate(), data: %UserOrganizationDisassociate{} = disassociation, author: author} = event
       ) do
     Logger.info(
-      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{
-        author
-      }"
+      "User: #{disassociation.subject_id}; Organization: #{disassociation.org_id} - Received user_organization_disassociate event from #{author}"
     )
 
     user_organization_disassociate()
@@ -168,9 +166,7 @@ defmodule DiscoveryApi.Event.EventHandler do
 
   def handle_event(%Brook.Event{type: dataset_access_group_associate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
     Logger.info(
-      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_associate event from #{
-        author
-      }"
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_associate event from #{author}"
     )
 
     dataset_access_group_associate()
@@ -192,9 +188,7 @@ defmodule DiscoveryApi.Event.EventHandler do
 
   def handle_event(%Brook.Event{type: dataset_access_group_disassociate(), author: author, data: %DatasetAccessGroupRelation{} = relation}) do
     Logger.info(
-      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_disassociate event from #{
-        author
-      }"
+      "Dataset: #{relation.dataset_id}; Access Group: #{relation.access_group_id} - Received dataset_access_group_disassociate event from #{author}"
     )
 
     dataset_access_group_disassociate()

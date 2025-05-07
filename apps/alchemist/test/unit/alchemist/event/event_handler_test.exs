@@ -12,7 +12,7 @@ defmodule Alchemist.Event.EventHandlerTest do
   @instance_name Alchemist.instance_name()
 
   setup_with_mocks([
-    {Alchemist.IngestionProcessor, [:passthrough], [start: fn(_) -> :does_not_matter end]}
+    {Alchemist.IngestionProcessor, [:passthrough], [start: fn _ -> :does_not_matter end]}
   ]) do
     :ok
   end
@@ -25,7 +25,7 @@ defmodule Alchemist.Event.EventHandlerTest do
     test "should update an ingestion when ingestion_update event fires" do
       ingestion = TDG.create_ingestion(%{})
 
-      with_mock(IngestionProcessor, [start: fn(_) -> :ok end]) do
+      with_mock(IngestionProcessor, start: fn _ -> :ok end) do
         Brook.Test.with_event(@instance_name, fn ->
           EventHandler.handle_event(
             Brook.Event.new(
@@ -43,7 +43,7 @@ defmodule Alchemist.Event.EventHandlerTest do
     test "should delete ingestion when ingestion_delete event fires" do
       ingestion = TDG.create_ingestion(%{})
 
-      with_mock(IngestionProcessor, [delete: fn(_) -> :ok end]) do
+      with_mock(IngestionProcessor, delete: fn _ -> :ok end) do
         Brook.Test.with_event(@instance_name, fn ->
           EventHandler.handle_event(
             Brook.Event.new(
