@@ -55,7 +55,7 @@ defmodule Forklift.MixProject do
       {:smart_city, "~> 5.4.0 "},
       {:smart_city_test, "~> 2.4.0"},
       {:timex, "~> 3.6"},
-      {:distillery, "~> 2.1"},
+      # {:distillery, "~> 2.1"},
       {:tasks, in_umbrella: true, only: :dev},
       {:telemetry_event, in_umbrella: true},
       {:pipeline, in_umbrella: true},
