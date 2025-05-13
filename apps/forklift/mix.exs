@@ -30,7 +30,7 @@ defmodule Forklift.MixProject do
       {:brod, "~> 3.16", override: true},
       {:brook_stream, "~> 1.0"},
       {:checkov, "~> 1.0"},
-      {:cowlib, "== 2.12.1", override: true},
+      #{:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},

@@ -28,6 +28,7 @@ defmodule DeadLetter.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7", only: :dev, runtime: false},
+      #{:cowboy, "~> 2.14.0", override: true},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
