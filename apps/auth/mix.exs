@@ -25,7 +25,7 @@ defmodule Auth.MixProject do
 
   defp deps do
     [
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:jason, "~> 1.2"},
       {:guardian, "~> 2.0"},
       {:guardian_db, "~> 2.1"},

@@ -23,7 +23,7 @@ defmodule Testing.MixProject do
 
   defp deps do
     [
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:protocol_source, in_umbrella: true},
       {:protocol_destination, in_umbrella: true},
       {:protocol_decoder, in_umbrella: true},

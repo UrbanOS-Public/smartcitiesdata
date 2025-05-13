@@ -31,7 +31,7 @@ defmodule Raptor.MixProject do
       {:brod, "~> 3.16", override: true},
       {:atomic_map, "~> 0.9"},
       {:brook_stream, "~> 1.0"},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14"},

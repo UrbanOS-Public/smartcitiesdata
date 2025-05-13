@@ -29,7 +29,7 @@ defmodule Estuary.MixProject do
 
   defp deps do
     [
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},

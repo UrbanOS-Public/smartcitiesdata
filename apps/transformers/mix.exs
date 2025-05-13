@@ -27,7 +27,7 @@ defmodule Transformers.MixProject do
   defp deps do
     [
       {:checkov, "~> 1.0", only: [:test]},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},

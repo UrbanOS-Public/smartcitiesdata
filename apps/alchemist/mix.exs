@@ -36,7 +36,7 @@ defmodule Alchemist.MixProject do
       {:brook_stream, "~> 1.0"},
       {:cachex, "~> 3.6"},
       {:checkov, "~> 1.0", only: [:test]},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
       {:distillery, "~> 2.1"},

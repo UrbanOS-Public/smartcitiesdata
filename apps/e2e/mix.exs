@@ -27,7 +27,7 @@ defmodule E2E.MixProject do
     [
       {:alchemist, in_umbrella: true},
       {:andi, in_umbrella: true},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:raptor, in_umbrella: true},
       {:reaper, in_umbrella: true, only: [:integration]},
       {:valkyrie, in_umbrella: true},

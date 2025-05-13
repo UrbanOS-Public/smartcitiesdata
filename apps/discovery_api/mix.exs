@@ -47,7 +47,7 @@ defmodule DiscoveryApi.Mixfile do
       {:cachex, "~> 3.4"},
       {:corsica, "~> 1.0"},
       {:cowboy, "~> 2.10"},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:csv, "~> 3.0"},
       {:credo, "~> 1.7", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 1.0", only: [:test, :integration]},

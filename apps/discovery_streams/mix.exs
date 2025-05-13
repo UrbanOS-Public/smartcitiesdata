@@ -39,7 +39,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:test, :integration]},
-      {:cowlib, "== 2.12.1", override: true},
+      # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:definition_kafka, in_umbrella: true},
       {:divo_kafka, "~> 1.0", only: [:integration]},

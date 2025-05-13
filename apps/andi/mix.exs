@@ -41,7 +41,7 @@ defmodule Andi.MixProject do
       {:brook_stream, "~> 1.0"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:checkov, "~> 1.0", only: [:test, :integration]},
-      {:cowlib, "== 2.12.1", override: true},
+      #{:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", runtime: false},
       {:crontab, "~> 1.1"},
       {:css_colors, "~> 0.2.2"},
