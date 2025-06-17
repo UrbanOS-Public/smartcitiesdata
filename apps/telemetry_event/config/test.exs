@@ -3,6 +3,7 @@ import Config
 config :telemetry_event,
   init_server: false,
   add_poller: false,
+  implementation: TelemetryEvent.Mock,
   add_metrics: [:dead_letters_handled_count, :phoenix_endpoint_stop_duration, :dataset_total_count],
   metrics_options: [
     [

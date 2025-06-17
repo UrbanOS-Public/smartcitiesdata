@@ -43,6 +43,7 @@ defmodule Pipeline.MixProject do
       {:sweet_xml, "~> 0.6"},
       {:temp, "~> 0.4"},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
+      {:mox, "~> 1.1", only: [:dev, :test, :integration]},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:smart_city, "~> 5.4.0"},
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},

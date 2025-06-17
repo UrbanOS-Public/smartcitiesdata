@@ -72,6 +72,7 @@ defmodule Forklift.MessageHandlingTest do
     end
 
     test "sends 'dataset:write_complete event' with timestamp after writing records" do
+      IO.inspect(:ok, label: "RTD, you are here!")
       expect(MockTable, :write, 2, fn _, _ -> :ok end)
       expect(MockTopic, :write, fn _, _ -> :ok end)
 
@@ -99,6 +100,7 @@ defmodule Forklift.MessageHandlingTest do
     end
 
     test "handles errors gracefully" do
+      IO.inspect(@instance_name, label: "RTD handles errors gracefully")
       allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
 
       stub(MockTable, :write, fn _, _ -> {:error, :raisins} end)
@@ -121,6 +123,7 @@ defmodule Forklift.MessageHandlingTest do
 
     @tag :capture_log
     test "handles topic writer errors gracefully" do
+      IO.inspect(@instance_name, label: "RTD Value of @instance_name before allow")
       allow(Brook.Event.send(@instance_name, data_write_complete(), any(), any()), return: :whatever)
 
       stub(MockTable, :write, fn _, _ -> :ok end)

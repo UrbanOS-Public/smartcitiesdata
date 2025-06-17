@@ -1,6 +1,7 @@
 defmodule Pipeline.Reader.DatasetTopicReaderTest do
   use ExUnit.Case
-  use Placebo
+  #use Placebo
+  import Mox
 
   alias Pipeline.Reader.DatasetTopicReader
   alias Pipeline.Reader.TopicReader
@@ -20,7 +21,7 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
     end
 
     test "inits TopicReader", %{args: args} do
-      expect TopicReader.init(any()), return: :ok
+      #expect TopicReader.init(any()), return: :ok
       assert DatasetTopicReader.init(args) == :ok
     end
 

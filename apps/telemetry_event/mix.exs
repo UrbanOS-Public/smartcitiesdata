@@ -4,13 +4,13 @@ defmodule TelemetryEvent.MixProject do
   def project do
     [
       app: :telemetry_event,
-      version: "2.0.0",
+      version: "2.0.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
-      elixir_paths: elixirc_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: Mix.env() |> test_paths(),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -40,6 +40,6 @@ defmodule TelemetryEvent.MixProject do
   defp elixirc_paths(env) when env in [:test, :integration], do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp test_paths(:integration), do: ["test/integration"]
-  defp test_paths(_), do: ["test/unit"]
+  defp test_paths(:integration), do: ["test/integration", "test/support"]
+  defp test_paths(_), do: ["test/unit", "test/support"]
 end

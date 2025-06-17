@@ -27,7 +27,8 @@ defmodule Forklift.MessageHandlerTest do
 
     dataset = TDG.create_dataset(%{id: "ds1", technical: %{systemName: "system__name", schema: []}})
 
-    allow Elsa.produce(any(), any(), any()), return: :ok
+    # RTD TODO: find an alternative to Placebo allow
+    # allow Elsa.produce(any(), any(), any()), return: :ok
 
     MessageHandler.handle_messages([malformed_kafka_message], %{dataset: dataset})
 
