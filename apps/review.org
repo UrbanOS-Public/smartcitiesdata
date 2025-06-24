@@ -1,0 +1,40 @@
+# Review code
+
+## elixir apps [1/37] [2%]
+- [ ] alchemist
+- [ ] andi
+- [ ] annotated_retry
+- [ ] auth
+- [ ] dead_letter
+- [ ] definition
+- [ ] definition_deadletter
+- [ ] definition_dictionary
+- [ ] definition_kafka
+- [ ] discovery_api
+- [ ] discovery_streams
+- [ ] dlq
+- [ ] e2e
+- [ ] estuary
+- [ ] flair
+- [ ] forklift
+- [ ] initializer
+- [ ] management
+- [ ] ok
+- [X] performance
+- [ ] pipeline
+- [ ] properties
+- [ ] protocol_decoder
+- [ ] protocol_destination
+- [ ] protocol_source
+- [ ] providers
+- [ ] raptor
+- [ ] raptor_service
+- [ ] reaper
+- [ ] review.org
+- [ ] tasks
+- [ ] telemetry_event
+- [ ] template
+- [ ] testing
+- [ ] transformers
+- [ ] valkyrie
+- [ ] web

@@ -1,0 +1,39 @@
+
+= OTP25 tests [16/36] [44%] =
+
+- [X] alchemist
+- [ ] andi
+- [X] annotated_retry
+- [ ] auth
+- [ ] dead_letter
+- [ ] definition
+- [ ] definition_deadletter
+- [ ] definition_dictionary
+- [ ] definition_kafka
+- [ ] discovery_api
+- [ ] discovery_streams
+- [ ] dlq
+- [ ] e2e
+- [ ] estuary
+- [ ] flair
+- [ ] forklift
+- [X] initializer
+- [X] management
+- [X] ok
+- [X] performance
+- [ ] pipeline
+- [X] properties
+- [X] protocol_decoder
+- [X] protocol_destination
+- [X] protocol_source
+- [X] providers
+- [ ] raptor
+- [ ] raptor_service
+- [ ] reaper
+- [X] tasks
+- [X] telemetry_event
+- [X] template
+- [X] testing
+- [ ] transformers
+- [ ] valkyrie
+- [X] web

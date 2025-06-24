@@ -1,0 +1,10 @@
+= May 2025 erlang /elixir version upgrade [7/8] [87%]
+
+- [X] alchemist
+- [X] andi
+- [X] discovery_api
+- [X] discovery_streams
+- [X] forklift
+- [X] raptor
+- [X] reaper
+- [ ] valkyrie
