@@ -1,7 +1,7 @@
 defmodule Pipeline.Writer.TableWriterTest do
   use ExUnit.Case
   use Divo
-  use Placebo
+  import Mox
 
   alias Pipeline.Writer.TableWriter
   alias Pipeline.Writer.TableWriter.Compaction
@@ -31,7 +31,10 @@ defmodule Pipeline.Writer.TableWriterTest do
     }
   ]
 
+  setup :verify_on_exit!
+
   setup do
+    Mox.stub_with(CompactionMock, Pipeline.Writer.TableWriter.Compaction)
     session = PrestigeHelper.create_session()
     [session: session]
   end
@@ -232,7 +235,7 @@ defmodule Pipeline.Writer.TableWriterTest do
     end
 
     test "fails without altering state if it was going to change data", %{session: session} do
-      allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+      expect(CompactionMock, :measure, fn _, _ -> {6, 10} end)
 
       schema = [%{name: "abc", type: "string"}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})

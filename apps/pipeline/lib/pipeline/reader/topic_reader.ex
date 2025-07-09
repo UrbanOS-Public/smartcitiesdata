@@ -5,6 +5,7 @@ defmodule Pipeline.Reader.TopicReader do
 
   use Retry
   @behaviour Pipeline.Reader
+  @behaviour Pipeline.Reader.TopicReader.Behaviour
 
   @type init_args() :: [
           instance: atom(),

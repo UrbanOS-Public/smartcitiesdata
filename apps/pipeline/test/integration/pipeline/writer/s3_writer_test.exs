@@ -1,7 +1,7 @@
 defmodule Pipeline.Writer.S3WriterTest do
   use ExUnit.Case
   use Divo
-  use Placebo
+  import Mox
 
   alias Pipeline.Writer.S3Writer
   alias Pipeline.Writer.TableWriter
@@ -54,7 +54,10 @@ defmodule Pipeline.Writer.S3WriterTest do
     %{name: "six", type: "integer"}
   ]
 
+  setup :verify_on_exit!
+
   setup do
+    Mox.stub_with(S3CompactionMock, Pipeline.Writer.S3Writer.Compaction)
     session = PrestigeHelper.create_session()
     TestHandler.drop_all_tables()
     [session: session]
@@ -462,7 +465,7 @@ defmodule Pipeline.Writer.S3WriterTest do
     end
 
     test "fails without altering state if it was going to change data", %{session: session} do
-      allow Compaction.measure(any(), any()), return: {6, 10}, meck_options: [:passthrough]
+      expect(S3CompactionMock, :measure, fn _, _ -> {6, 10} end)
 
       schema = [%{name: "abc", type: "string"}]
       dataset = TDG.create_dataset(%{technical: %{schema: schema, systemName: "xyz"}})

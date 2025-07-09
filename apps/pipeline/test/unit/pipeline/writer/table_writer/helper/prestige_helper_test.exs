@@ -1,6 +1,6 @@
 defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
 
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
@@ -9,25 +9,32 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     "column_2" => "some column_2 data"
   }
 
+  setup :verify_on_exit!
+
+  setup do
+    Mox.stub_with(PrestigeMock, Prestige)
+    :ok
+  end
+
   @tag capture_log: true
   test "should return the data by executing the when the query statement is passed" do
-    allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.execute(:connection, any()), return: @expected_table_data)
+    expect(PrestigeMock, :new_session, fn _ -> :connection end)
+    expect(PrestigeMock, :execute, fn :connection, _ -> @expected_table_data end)
     assert @expected_table_data == PrestigeHelper.execute_query("whatever")
   end
 
   @tag capture_log: true
   test "should return error when error occurs while executing the query" do
     expected_error = {:error, "some error"}
-    allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.execute(:connection, any()), return: expected_error)
+    expect(PrestigeMock, :new_session, fn _ -> :connection end)
+    expect(PrestigeMock, :execute, fn :connection, _ -> expected_error end)
     assert expected_error == PrestigeHelper.execute_query("whatever")
   end
 
   @tag capture_log: true
   test "should attempt to execute query asynchronously" do
-    allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.execute(:connection, any()), return: @expected_table_data)
+    expect(PrestigeMock, :new_session, fn _ -> :connection end)
+    expect(PrestigeMock, :execute, fn :connection, _ -> @expected_table_data end)
 
     actual_table_data =
       PrestigeHelper.execute_async_query("whatever")
@@ -48,14 +55,14 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
       user: "some_user"
     }
 
-    allow(Prestige.new_session(any()), return: expected_session)
+    expect(PrestigeMock, :new_session, fn _ -> expected_session end)
     assert expected_session == PrestigeHelper.create_session()
   end
 
   describe "count!/1" do
     test "throws an exception if an error occurs" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:error, "some error"} end)
 
       assert_raise RuntimeError, fn ->
         PrestigeHelper.count!("some_table")
@@ -63,8 +70,8 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     end
 
     test "returns the count" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:ok, %{rows: [[10]]}} end)
 
       assert PrestigeHelper.count!("some_table") == 10
     end
@@ -72,15 +79,15 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
 
   describe "count/1" do
     test "returns an error tuple if an error occurs" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:error, "some error"} end)
 
       assert PrestigeHelper.count("some_table") == {:error, "some error"}
     end
 
     test "returns the count in an ok tuple" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:ok, %{rows: [[10]]}} end)
 
       assert PrestigeHelper.count("some_table") == {:ok, 10}
     end
@@ -88,8 +95,8 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
 
   describe "count_query!/1" do
     test "throws an exception if an error occurs" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:error, "some error"} end)
 
       assert_raise RuntimeError, fn ->
         PrestigeHelper.count!("select count(1) from some_table")
@@ -97,8 +104,8 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
     end
 
     test "returns the count" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:ok, %{rows: [[10]]}} end)
 
       assert PrestigeHelper.count!("select count(1) from some_table") == 10
     end
@@ -106,15 +113,15 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
 
   describe "count_query/1" do
     test "returns an error tuple if an error occurs" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:error, "some error"})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:error, "some error"} end)
 
       assert PrestigeHelper.count("select count(1) from some_table") == {:error, "some error"}
     end
 
     test "returns the count in an ok tuple" do
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.execute(:connection, any()), return: {:ok, %{rows: [[10]]}})
+      expect(PrestigeMock, :new_session, fn _ -> :connection end)
+      expect(PrestigeMock, :execute, fn :connection, _ -> {:ok, %{rows: [[10]]}} end)
 
       assert PrestigeHelper.count("select count(1) from some_table") == {:ok, 10}
     end

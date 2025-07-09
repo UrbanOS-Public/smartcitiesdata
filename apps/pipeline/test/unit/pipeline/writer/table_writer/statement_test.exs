@@ -1,6 +1,5 @@
 defmodule Pipeline.Writer.TableWriter.StatementTest do
   use ExUnit.Case
-  use Placebo
 
   alias Pipeline.Writer.TableWriter.Statement
 

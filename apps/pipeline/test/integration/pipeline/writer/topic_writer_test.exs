@@ -1,8 +1,7 @@
 defmodule Pipeline.Writer.TopicWriterTest do
   use ExUnit.Case
   use Divo
-  use Placebo
-
+  import Mox
   alias Pipeline.Writer.TopicWriter
   import SmartCity.TestHelper, only: [eventually: 1]
 
@@ -10,7 +9,11 @@ defmodule Pipeline.Writer.TopicWriterTest do
   @brokers Application.get_env(:pipeline, :elsa_brokers)
   @producer Application.get_env(:pipeline, :producer_name)
 
+  setup :verify_on_exit!
+
   setup do
+    Mox.stub_with(ElsaMock, Elsa)
+
     on_exit(fn ->
       DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
       |> Enum.map(&elem(&1, 1))
@@ -52,7 +55,7 @@ defmodule Pipeline.Writer.TopicWriterTest do
     end
 
     test "fails if it cannot connect to topic" do
-      allow Elsa.topic?(any(), any()), return: false, meck_options: [:passthrough]
+      expect(ElsaMock, :topic?, fn _, _ -> false end)
 
       config = [
         instance: :pipeline,

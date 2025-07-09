@@ -1,7 +1,7 @@
 defmodule Pipeline.Reader.TopicReaderTest do
   use ExUnit.Case
   use Divo
-  use Placebo
+  import Mox
 
   alias Pipeline.Reader.TopicReader
   alias SmartCity.TestDataGenerator, as: TDG
@@ -9,6 +9,8 @@ defmodule Pipeline.Reader.TopicReaderTest do
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   @brokers Application.get_env(:pipeline, :elsa_brokers)
+
+  setup :verify_on_exit!
 
   setup_all do
     {:ok, pid} = Registry.start_link(keys: :unique, name: Pipeline.TestRegistry)
@@ -22,6 +24,8 @@ defmodule Pipeline.Reader.TopicReaderTest do
 
   describe "init/1" do
     setup do
+      Mox.stub_with(ElsaMock, Elsa)
+
       on_exit(fn ->
         DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
         |> Enum.map(&elem(&1, 1))
@@ -88,6 +92,87 @@ defmodule Pipeline.Reader.TopicReaderTest do
       args = [
         instance: :pipeline,
         connection: :"foo-2",
+        endpoints: @brokers,
+        handler: Pipeline.TestHandler,
+        topic: "init-2",
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      :ok = TopicReader.init(args)
+
+      assert [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+
+      assert [{^pid, _}] = Registry.lookup(Pipeline.Registry, :"pipeline-init-2-pipeline-supervisor")
+    end
+
+    test "idempotently sets up reader infrastructure" do
+      args = [
+        instance: :pipeline,
+        connection: :"foo-3",
+        endpoints: @brokers,
+        handler: Pipeline.TestHandler,
+        topic: "init-3",
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      :ok = TopicReader.init(args)
+      [{:undefined, pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+
+      assert :ok = TopicReader.init(args)
+
+      assert [{:undefined, ^pid, _, _}] = DynamicSupervisor.which_children(Pipeline.DynamicSupervisor)
+
+      assert [{^pid, _}] = Registry.lookup(Pipeline.Registry, :"pipeline-init-3-pipeline-supervisor")
+    end
+
+    test "returns error tuple if topic not available" do
+      expect(ElsaMock, :create_topic, fn _, "init-fail" -> :ignore end)
+
+      args = [
+        instance: :pipeline,
+        connection: :"foo-fail",
+        endpoints: @brokers,
+        handler: Pipeline.TestHandler,
+        topic: "init-fail",
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      assert {:error, "Timed out waiting for init-fail to be available"} = TopicReader.init(args)
+    end
+  end
+
+  describe "terminate/1" do
+    test "tears down reader infrastructure" do
+      init_args = [
+        instance: :pipeline,
+        connection: :"bar-0",
+        endpoints: @brokers,
+        handler: Pipeline.TestHandler,
+        topic: "term-0",
+        retry_count: 10,
+        retry_delay: 1
+      ]
+
+      :ok = TopicReader.init(init_args)
+
+      eventually(fn -> assert Elsa.topic?(@brokers, "term-0") end)
+      [{pid, _}] = Registry.lookup(Pipeline.Registry, :"pipeline-term-0-pipeline-supervisor")
+      assert Process.alive?(pid)
+
+      TopicReader.terminate(instance: :pipeline, topic: "term-0")
+
+      refute Process.alive?(pid)
+      eventually(fn -> assert Registry.lookup(Pipeline.Registry, :"pipeline-term-0-pipeline-supervisor") == [] end)
+    end
+
+    test "returns error tuple if infrastructure cannot be torn down" do
+      assert {:error, "Cannot find pid to terminate: []"} = TopicReader.terminate(instance: :pipeline, topic: "foo")
+    end
+  end
+end
         endpoints: @brokers,
         handler: Pipeline.TestHandler,
         topic: "init-2",

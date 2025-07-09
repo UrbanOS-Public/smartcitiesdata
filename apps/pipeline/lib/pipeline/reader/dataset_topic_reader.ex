@@ -3,8 +3,10 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   Implementation of `Pipeline.Reader` for dataset Kafka topics.
   """
 
-  alias Pipeline.Reader.TopicReader
   @behaviour Pipeline.Reader
+
+  # Allow the topic_reader module to be configured for testing
+  @topic_reader Application.compile_env(:pipeline, :topic_reader, Pipeline.Reader.TopicReader)
 
   @type init_args() :: [
           instance: atom(),
@@ -23,18 +25,12 @@ defmodule Pipeline.Reader.DatasetTopicReader do
   @impl Pipeline.Reader
   @spec init(init_args()) :: :ok | {:error, term()}
   @doc """
-  Sets up infrastructure to consume messages off a dataset Kafka topic. Includes creating the
+  Sets up infrastructure to consume messages off a Kafka topic. Creates the
   topic if necessary.
-
-  Optional arguments:
-  * `handler_init_args` - Initial state passed to handler. Defaults to `[]`.
-  * `topic_subscriber_config` - Subscriber configuration passed to underlying libraries. Defaults to `[]`
-  * `retry_count` - Times to retry topic creation. Defaults to 10
-  * `retry_delay` - Milliseconds to initially wait before retrying. Defaults to 100
   """
   def init(args) do
     parse_init_args(args)
-    |> TopicReader.init()
+    |> @topic_reader.init()
   end
 
   @impl Pipeline.Reader
@@ -46,7 +42,7 @@ defmodule Pipeline.Reader.DatasetTopicReader do
     with instance <- Keyword.fetch!(args, :instance),
          dataset <- Keyword.fetch!(args, :dataset),
          topic <- "#{Keyword.fetch!(args, :input_topic_prefix)}-#{dataset.id}" do
-      TopicReader.terminate(instance: instance, topic: topic)
+      @topic_reader.terminate(instance: instance, topic: topic)
     end
   end
 

@@ -1,6 +1,5 @@
 defmodule Pipeline.Writer.S3Writer.S3SafeJsonTest do
   use ExUnit.Case
-  use Placebo
 
   alias Pipeline.Writer.S3Writer.S3SafeJson
 
