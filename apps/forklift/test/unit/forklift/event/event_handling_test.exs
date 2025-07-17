@@ -1,8 +1,11 @@
 defmodule Forklift.Event.EventHandlingTest do
   use ExUnit.Case
-  use Placebo
 
-  import Mox
+  Code.require_file "../../test_helper.exs", __DIR__
+
+  import Forklift.Test.DataWriterBehaviour
+  import Forklift.Test.PrestigeHelperBehaviour
+  import Forklift.Test.TelemetryEventBehaviour
 
   import SmartCity.Event,
     only: [
@@ -31,14 +34,15 @@ defmodule Forklift.Event.EventHandlingTest do
   describe "on dataset:update event" do
     test "ensures table exists for ingestible dataset" do
       test = self()
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
       expect(MockTable, :init, fn args -> send(test, args) end)
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
       schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
 
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset)
 
       assert_receive table: ^table_name,
                      schema: ^schema,
@@ -47,36 +51,38 @@ defmodule Forklift.Event.EventHandlingTest do
     end
 
     test "sends dataset_update event when table creation succeeds" do
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      expect(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), return: :ok)
-      allow(Forklift.DataWriter.init(any()), return: :ok)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
+      stub(DataWriterMock, :init, fn _ -> :ok end)
 
       dataset = TDG.create_dataset(%{})
       table_name = dataset.technical.systemName
       schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
 
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset)
     end
 
     test "does not send dataset_update event when table already exists" do
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
-      allow(Forklift.DataWriter.init(any()), return: :ok)
-      allow(PrestigeHelper.table_exists?(any()), return: true)
-      allow(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), return: :ok)
-
+      import Mox
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
+      stub(DataWriterMock, :init, fn _ -> :ok end)
+      stub(PrestigeHelperMock, :table_exists?, fn _ -> true end)
+      
       dataset = TDG.create_dataset(%{})
-      table_name = dataset.technical.systemName
-      schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
+      _table_name = dataset.technical.systemName
+      _schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
 
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset)
 
-      assert_called(Brook.Event.send(@instance_name, event_log_published(), :forklift, any()), times(0))
+      Mox.refute_called(&BrookEventMock.send/4)
     end
 
     test "does not create table for non-ingestible dataset" do
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
       expect(MockTable, :init, 0, fn _ -> :ok end)
       dataset = TDG.create_dataset(%{technical: %{sourceType: "remote"}})
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset)
     end
   end
 
@@ -84,15 +90,17 @@ defmodule Forklift.Event.EventHandlingTest do
     test "ensures event is handled gracefully if no dataset exists for the ingestion" do
       test = self()
 
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
 
       ingestion = TDG.create_ingestion(%{})
-      :ok = Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
+      :ok = BrookEventMock.send(@instance_name, data_ingest_start(), :author, ingestion)
     end
 
     test "ensures dataset topic exists" do
       test = self()
 
+      expect(BrookEventMock, :send, 3, fn _, _, _, _ -> :ok end)
       MockReader
       |> expect(:init, fn args ->
         send(test, Keyword.get(args, :dataset))
@@ -108,14 +116,14 @@ defmodule Forklift.Event.EventHandlingTest do
       expect(MockTable, :init, fn args -> send(test, args) end)
       expect(MockTable, :init, fn args -> send(test, args) end)
 
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
 
       dataset = TDG.create_dataset(%{id: "dataset-id"})
       dataset2 = TDG.create_dataset(%{id: "dataset-id2"})
       ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id, dataset2.id]})
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
-      Brook.Test.send(@instance_name, dataset_update(), :author, dataset2)
-      Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset)
+      BrookEventMock.send(@instance_name, dataset_update(), :author, dataset2)
+      BrookEventMock.send(@instance_name, data_ingest_start(), :author, ingestion)
 
       assert_receive %SmartCity.Dataset{id: "dataset-id"}
       assert_receive %SmartCity.Dataset{id: "dataset-id2"}
@@ -126,17 +134,18 @@ defmodule Forklift.Event.EventHandlingTest do
     test "tears reader infrastructure down" do
       test = self()
 
+      expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
       expect(MockReader, :terminate, fn args ->
         send(test, args[:dataset])
         :ok
       end)
 
-      expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+      stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
 
-      expect Forklift.Datasets.delete("terminate-id"), return: :ok
+      stub(DatasetsMock, :delete, fn "terminate-id" -> :ok end)
 
       dataset = TDG.create_dataset(%{id: "terminate-id"})
-      Brook.Test.send(@instance_name, data_ingest_end(), :author, dataset)
+      BrookEventMock.send(@instance_name, data_ingest_end(), :author, dataset)
 
       assert_receive %SmartCity.Dataset{id: "terminate-id"}
     end
@@ -147,18 +156,18 @@ defmodule Forklift.Event.EventHandlingTest do
     expect(MockReader, :terminate, fn _ -> :ok end)
     expect(MockTopic, :delete, fn _ -> :ok end)
     expect(MockTable, :delete, fn _ -> :ok end)
-    expect(Forklift.Datasets.delete(dataset.id), return: :ok)
-    expect(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+    stub(DatasetsMock, :delete, fn id when id == dataset.id -> :ok end)
+    stub(TelemetryEventMock, :add_event_metrics, fn _, _ -> :ok end)
 
-    Brook.Test.with_event(@instance_name, fn ->
-      EventHandler.handle_event(
-        Brook.Event.new(
-          type: dataset_delete(),
-          data: dataset,
-          author: :author
-        )
+    expect(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
+
+    EventHandler.handle_event(
+      Brook.Event.new(
+        type: dataset_delete(),
+        data: dataset,
+        author: :author
       )
-    end)
+    )
   end
 
   describe "on data:extract:end event" do
@@ -179,7 +188,7 @@ defmodule Forklift.Event.EventHandlingTest do
         dataset2: dataset2,
         ingestion_id: ingestion_id,
         extract_start: extract_start,
-        fake_extract_end_msg: fake_extract_end_msg
+        fake_extract_end__msg: fake_extract_end_msg
       ]
     end
   end

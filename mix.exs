@@ -16,7 +16,12 @@ defmodule Smartcitiesdata.MixProject do
     do: [
       {:decimal, "~> 1.5 or ~> 2.0",
        [env: :prod, hex: "decimal", repo: "hexpm", optional: false, override: true]},
-      {:brod, "~> 3.16", override: true}
+      {:brod, "~> 3.16.5", override: true},
+      {:kafka_protocol, "4.1.0", override: true},
+      {:nimble_csv, "~> 1.2.0", override: true},
+      {:elixir_uuid, "~> 1.2", override: true},
+      {:norm, "~> 0.8", override: true},
+      
     ]
 
   defp aliases do

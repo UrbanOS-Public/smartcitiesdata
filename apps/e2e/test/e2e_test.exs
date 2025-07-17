@@ -1,7 +1,7 @@
 defmodule E2ETest do
   use ExUnit.Case
   use Divo
-  use Placebo
+  import Mox
 
   @moduletag :e2e
   @moduletag capture_log: false
@@ -350,7 +350,7 @@ defmodule E2ETest do
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
     test "is written by reaper", %{ingestion: ingestion} do
-      allow(Reaper.Cache.cache(any(), any()), exec: fn _, _ -> Process.sleep(30000) end)
+      stub_with(Reaper.Cache, {:cache, fn _, _ -> Process.sleep(30000) end})
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->

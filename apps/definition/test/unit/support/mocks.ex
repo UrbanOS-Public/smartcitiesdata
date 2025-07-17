@@ -1,0 +1,1 @@
+Mox.defmock(IdGeneratorMock, for: IdGenerator)

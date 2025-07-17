@@ -30,7 +30,7 @@ defmodule RaptorService.MixProject do
       {:httpoison, "~> 2.1"},
       {:jason, "~> 1.2", override: true},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true}
     ]
   end

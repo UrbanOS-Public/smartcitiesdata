@@ -8,7 +8,10 @@ defmodule Forklift.Jobs.DataMigrationTest do
   alias Forklift.Jobs.JobUtils
   import Helper
 
-  use Placebo
+      import Mox
+
+  Mox.defmock(PrestigeHelperMock, for: Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
+
 
   import SmartCity.Event,
     only: [
@@ -99,11 +102,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     insert_query =
       "insert into #{dataset.technical.systemName} select *, date_format(now(), '%Y_%m') as os_partition from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
 
-    allow(
-      PrestigeHelper.execute_query(insert_query),
-      return: {:ok, :false_positive},
-      meck_options: [:passthrough]
-    )
+    stub(PrestigeHelperMock, :execute_query, fn ^insert_query -> {:ok, :false_positive} end)
 
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
     assert result == {:error, dataset.id}
@@ -120,11 +119,7 @@ defmodule Forklift.Jobs.DataMigrationTest do
     delete_query =
       "delete from #{dataset.technical.systemName}__json where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_start})"
 
-    allow(
-      PrestigeHelper.execute_query(delete_query),
-      return: {:ok, :false_positive},
-      meck_options: [:passthrough]
-    )
+    stub(PrestigeHelperMock, :execute_query, fn ^delete_query -> {:ok, :false_positive} end)
 
     result = DataMigration.compact(dataset, ingestion_id, extract_start)
     assert result == {:error, dataset.id}

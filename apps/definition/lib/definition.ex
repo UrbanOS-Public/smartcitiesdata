@@ -6,11 +6,11 @@ defmodule Definition do
   over the lifetime of a system.
   """
 
-  @callback new(map | keyword) :: {:ok, struct} | {:error, term}
-  @callback new!(map | keyword) :: struct
-  @callback from_json(String.t()) :: {:ok, struct} | {:error, term}
+  @callback new(map | keyword, term) :: {:ok, struct} | {:error, term}
+  @callback new!(map | keyword, term) :: struct
+  @callback from_json(String.t(), term) :: {:ok, struct} | {:error, term}
   @callback schema() :: %Norm.Core.Schema{}
-  @callback on_new(struct) :: {:ok, struct} | {:error, term}
+  @callback on_new(struct, term) :: {:ok, struct} | {:error, term}
   @callback migrate(struct) :: {:ok, struct} | {:error, term}
 
   @spec identifier(term) :: String.t()
@@ -35,45 +35,44 @@ defmodule Definition do
       @schema Keyword.fetch!(unquote(opts), :schema)
 
       @impl Definition
-      def new(%{} = input) do
+      def new(%{} = input, id_generator) do
         map =
           Enum.map(input, fn {key, val} -> {:"#{key}", val} end)
           |> Map.new()
-          |> Map.put_new_lazy(:id, &UUID.uuid4/0)
+          |> Map.put_new_lazy(:id, fn -> id_generator.uuid4() end)
 
         struct(__MODULE__, map)
-        |> on_new()
+        |> on_new(id_generator)
         |> Ok.map(&migrate/1)
         |> Ok.map(&Norm.conform(&1, @schema.s()))
       end
 
-      def new(input) when is_list(input) do
+      def new(input, id_generator) when is_list(input) do
         case Keyword.keyword?(input) do
           true ->
-            Map.new(input) |> new()
+            Map.new(input) |> new(id_generator)
 
           false ->
             {:error, InputError.exception(message: input)}
         end
       end
 
-      @impl Definition
-      def new!(input) do
-        case new(input) do
+      def new!(input, id_generator) do
+        case new(input, id_generator) do
           {:ok, value} -> value
           {:error, reason} -> raise reason
         end
       end
 
       @impl Definition
-      def on_new(input) do
+      def on_new(input, _id_generator) do
         {:ok, input}
       end
 
       @impl Definition
-      def from_json(input) when is_binary(input) do
+      def from_json(input, id_generator) when is_binary(input) do
         with {:ok, map} <- Jason.decode(input) do
-          new(map)
+          new(map, id_generator)
         end
       end
 
@@ -82,7 +81,7 @@ defmodule Definition do
         @schema.s()
       end
 
-      defoverridable on_new: 1
+      defoverridable on_new: 2
     end
   end
 

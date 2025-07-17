@@ -1,6 +1,6 @@
 defmodule ReaperTests do
   use ExUnit.Case
-  use Placebo
+  import Mox
 
   alias SmartCity.TestDataGenerator, as: TDG
 
@@ -9,7 +9,7 @@ defmodule ReaperTests do
   setup do
     TestHelper.start_horde()
     {:ok, scheduler} = Reaper.Scheduler.start_link()
-    allow Reaper.DataExtract.Processor.process(any(), any()), exec: fn _ingestion -> Process.sleep(10 * 60_000) end
+    stub_with(Reaper.DataExtract.Processor, {:process, fn _, _ -> Process.sleep(10 * 60_000) end})
     ingestion = TDG.create_ingestion(%{id: "ds-to-kill"})
 
     on_exit(fn ->

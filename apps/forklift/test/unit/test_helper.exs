@@ -1,6 +1,10 @@
 ExUnit.start(exclude: [:skip])
 Faker.start()
 
+# Load support files
+Code.require_file("#{__DIR__}/../support/elsa_behaviour.ex")
+Code.require_file("#{__DIR__}/../support/elsa_stub.ex")
+
 defmodule Helper do
   def make_kafka_message(value, topic) do
     %{

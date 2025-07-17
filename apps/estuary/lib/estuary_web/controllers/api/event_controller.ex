@@ -12,7 +12,7 @@ defmodule EstuaryWeb.API.EventController do
   Return all events stored in presto
   """
   def get_all(conn, _params) do
-    case EventRetrievalService.get_all() do
+    case event_retrieval_service().get_all() do
       {:ok, events} ->
         resp_as_stream(conn, 200, events)
 
@@ -57,4 +57,7 @@ defmodule EstuaryWeb.API.EventController do
       end
     end)
   end
+
+  defp event_retrieval_service,
+    do: Application.get_env(:estuary, :event_retrieval_service, EventRetrievalService)
 end

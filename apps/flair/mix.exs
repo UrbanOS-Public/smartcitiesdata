@@ -44,7 +44,7 @@ defmodule Flair.MixProject do
       {:excoveralls, "~> 0.16.1", only: :dev},
       {:ex_doc, "~> 0.21"},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:faker, "~> 0.12", only: [:test, :integration], override: true},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},

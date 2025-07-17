@@ -10,9 +10,10 @@ defmodule Definition.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
-      test_paths: test_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_paths: test_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -24,21 +25,23 @@ defmodule Definition.MixProject do
 
   defp deps do
     [
+      {:ex_json_schema, "~> 0.9"},
+      {:jason, "~> 1.2"},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
+      {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
+      {:norm, "~> 0.13", only: [:dev, :test, :integration]},
+      {:stream_data, "~> 0.6", only: [:dev, :test, :integration]},
       {:ok, in_umbrella: true},
-      {:norm, "~> 0.13"},
-      {:jason, "~> 1.1"},
-      {:elixir_uuid, "~> 1.1"},
-
-      # Def/Test Dependencies
-      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:mock, "~> 0.3", only: [:dev, :test]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
-      {:stream_data, "~> 0.5", only: [:dev, :test]},
-      {:checkov, "~> 1.0", only: [:test]},
-      {:credo, "~> 1.7", only: [:dev]}
+      {:elixir_uuid, "~> 1.2"},
+      
+      {:result, "~> 1.1"}
     ]
   end
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
+
+  defp elixirc_paths(:test), do: ["lib", "test/unit/support"]
+  defp elixirc_paths(:integration), do: ["lib", "test/integration/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end

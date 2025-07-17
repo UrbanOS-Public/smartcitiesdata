@@ -30,7 +30,7 @@ defmodule DeadLetter.MixProject do
       {:credo, "~> 1.7", only: :dev, runtime: false},
       # {:cowboy, "~> 2.14.0", override: true},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
-      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
       {:elsa_kafka, "~> 2.0"},

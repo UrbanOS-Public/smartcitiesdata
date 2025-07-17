@@ -1,9 +1,12 @@
 defmodule RaptorService do
   use Properties, otp_app: :raptor_service
+
+  defp http_client, do: Application.get_env(:raptor_service, :http_client, HTTPoison)
+
   require Logger
 
   def list_groups_by_user(raptor_url, user_id) do
-    case HTTPoison.get(list_url_with_user_params(raptor_url, user_id)) do
+    case http_client().get(list_url_with_user_params(raptor_url, user_id)) do
       {:ok, %{body: body}} ->
         {:ok, groups} = Jason.decode(body)
         %{
@@ -19,7 +22,7 @@ defmodule RaptorService do
   end
 
   def list_access_groups_by_dataset(raptor_url, dataset_id) do
-    case HTTPoison.get(list_url_with_dataset_params(raptor_url, dataset_id)) do
+    case http_client().get(list_url_with_dataset_params(raptor_url, dataset_id)) do
       {:ok, %{body: body}} ->
         {:ok, access_groups} = Jason.decode(body)
         %{ access_groups: access_groups["access_groups"] }
@@ -31,7 +34,7 @@ defmodule RaptorService do
   end
 
   def list_groups_by_api_key(raptor_url, api_key) do
-    case HTTPoison.get(list_url_with_api_key_params(raptor_url, api_key)) do
+    case http_client().get(list_url_with_api_key_params(raptor_url, api_key)) do
       {:ok, %{body: body}} ->
         {:ok, groups} = Jason.decode(body)
         %{
@@ -47,7 +50,7 @@ defmodule RaptorService do
 
 
   def is_authorized(raptor_url, api_key, system_name) do
-    case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name)) do
+    case http_client().get(raptor_url_with_params(raptor_url, api_key, system_name)) do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
@@ -59,7 +62,7 @@ defmodule RaptorService do
   end
 
   def is_authorized_by_user_id(raptor_url, user_id, system_name) do
-    case HTTPoison.get(raptor_url_with_user_params(raptor_url, user_id, system_name)) do
+    case http_client().get(raptor_url_with_user_params(raptor_url, user_id, system_name)) do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
@@ -71,7 +74,7 @@ defmodule RaptorService do
   end
 
   def regenerate_api_key_for_user(raptor_url, user_id) do
-    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), '') do
+    case http_client().patch(url_for_api_key_regeneration(raptor_url, user_id), "") do
       {:ok, %{body: body, status_code: status_code}} ->
         if (status_code >= 400) do
           {:error, body}
@@ -86,7 +89,7 @@ defmodule RaptorService do
   end
 
   def get_user_id_from_api_key(raptor_url, api_key) do
-    case HTTPoison.get(url_for_api_key_validation(raptor_url, api_key)) do
+    case http_client().get(url_for_api_key_validation(raptor_url, api_key)) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, get_user_id_from_response_body(body)}
 
@@ -102,7 +105,7 @@ defmodule RaptorService do
   end
 
   def check_auth0_role(raptor_url, api_key, role) do
-    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role)) do
+    case http_client().get(url_for_checking_role(raptor_url, api_key, role)) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, Jason.decode!(body)["has_role"]}
 

@@ -1,7 +1,12 @@
 defmodule Forklift.Event.EventHandlerTest do
   use ExUnit.Case
-  use Placebo
+    import Mox
   use Properties, otp_app: :forklift
+
+  Mox.defmock(DatasetsMock, for: Forklift.Datasets)
+  Mox.defmock(DataReaderHelperMock, for: Forklift.DataReaderHelper)
+  Mox.defmock(RedixMock, for: Redix)
+  Mox.defmock(BrookMock, for: Brook)
 
   import SmartCity.TestHelper
   import SmartCity.Event
@@ -27,7 +32,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.Datasets.get!(id_for_invalid_dataset), exec: fn _ -> raise "nope" end)
+      stub(DatasetsMock, :get!, fn ^id_for_invalid_dataset -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_ingest_start(), __MODULE__, invalid_ingestion)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -64,7 +69,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.Datasets.update(invalid_dataset), exec: fn _ -> raise "nope" end)
+      stub(DatasetsMock, :update, fn ^invalid_dataset -> raise "nope" end)
 
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, invalid_dataset)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -101,7 +106,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.DataReaderHelper.terminate(invalid_dataset), exec: fn _ -> raise "nope" end)
+      stub(DataReaderHelperMock, :terminate, fn ^invalid_dataset -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_ingest_end(), __MODULE__, invalid_dataset)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -160,7 +165,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Redix.command!(:redix, ["KEYS", "forklift:last_insert_date:*"]), exec: fn _ -> raise "nope" end)
+      stub(RedixMock, :command!, fn :redix, ["KEYS", "forklift:last_insert_date:*"] -> raise "nope" end)
 
       Brook.Event.send(@instance_name, "migration:last_insert_date:start", __MODULE__, %{fake_event: id_for_fake_event})
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -197,7 +202,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset, technical: %{sourceType: "ingest"}})
-      allow(Forklift.DataReaderHelper.terminate(invalid_dataset), exec: fn _ -> raise "nope" end)
+      stub(DataReaderHelperMock, :terminate, fn ^invalid_dataset -> raise "nope" end)
 
       Brook.Event.send(@instance_name, dataset_delete(), __MODULE__, invalid_dataset)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)
@@ -235,7 +240,7 @@ defmodule Forklift.Event.EventHandlerTest do
 
       id_for_valid_dataset = UUID.uuid4()
       valid_dataset = TDG.create_dataset(%{id: id_for_valid_dataset})
-      allow(Brook.get!(@instance_name, :datasets, id_for_target_dataset), exec: fn _, _, _ -> raise "nope" end)
+      stub(BrookMock, :get!, fn _, _, ^id_for_target_dataset -> raise "nope" end)
 
       Brook.Event.send(@instance_name, data_extract_start(), __MODULE__, invalid_ingestion)
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, valid_dataset)

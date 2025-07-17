@@ -33,8 +33,7 @@ defmodule Template.MixProject do
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14"},
       {:phoenix_pubsub, "~> 2.0"},
-      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:plug_heartbeat, "~> 1.0"},
       {:properties, in_umbrella: true},
       {:redix, "~> 1.2"},
@@ -49,8 +48,6 @@ defmodule Template.MixProject do
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
 
-  defp elixirc_paths(:test), do: ["test/utils", "test/unit/support", "lib"]
-  defp elixirc_paths(:integration), do: ["test/utils", "test/integration/support", "lib"]
   defp elixirc_paths(_), do: ["lib"]
 
   defp aliases() do

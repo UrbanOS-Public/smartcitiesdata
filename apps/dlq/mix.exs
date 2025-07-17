@@ -30,7 +30,7 @@ defmodule Dlq.MixProject do
       {:jason, "~> 1.2"},
       {:credo, "~> 1.7", only: [:dev]},
       {:mock, "~> 0.3", only: [:dev, :test, :integration]},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:testing, in_umbrella: true, only: [:test]}
     ]

@@ -1,4 +1,5 @@
 defmodule Estuary.Services.EventRetrievalService do
+  @behaviour Estuary.Services.EventRetrievalServiceBehaviour
   @moduledoc """
   Interface for retrieving events.
   """

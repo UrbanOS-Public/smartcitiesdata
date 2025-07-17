@@ -11,7 +11,7 @@ ExUnit.start(exclude: [:skip])
 
 defmodule TestHelper do
   use ExUnit.Case
-  use Placebo
+  import Mox
   require Logger
 
   def start_horde() do

@@ -1,4 +1,5 @@
 defmodule Estuary.MessageHandler do
+  @behaviour Estuary.MessageHandlerBehaviour
   @moduledoc """
   Estuary.MessageHandler reads events from the event stream and persists them.
   """

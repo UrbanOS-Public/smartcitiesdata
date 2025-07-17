@@ -1,6 +1,6 @@
 defmodule Estuary.Query.Helper.PrestigeHelperTest do
-  use ExUnit.Case
-  use Placebo
+  use ExUnit.Case, async: true
+  import Mox
 
   alias Estuary.Query.Helper.PrestigeHelper
 
@@ -13,12 +13,14 @@ defmodule Estuary.Query.Helper.PrestigeHelperTest do
       }
     ]
 
-    allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.stream!(any(), any()), return: [:result])
-
-    allow(Prestige.Result.as_maps(:result),
-      return: expected_table_data
-    )
+    expect(Prestige.Mock, :new_session, fn _ -> :connection end)
+    expect(Prestige.Mock, :stream!, 2, fn _, _ ->
+      {:ok,
+       %Prestige.Result{
+         columns: [%Prestige.ColumnDefinition{name: "column_1"}, %Prestige.ColumnDefinition{name: "column_2"}],
+         rows: [["any column_1 data", "any column_2 data"]]
+       }}
+    end)
 
     {:ok, returned_table_data} = PrestigeHelper.execute_query_stream("whatever")
     assert expected_table_data == Enum.to_list(returned_table_data)

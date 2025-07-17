@@ -1,6 +1,5 @@
 defmodule Template.Event.EventHandlerTest do
   use ExUnit.Case
-  use Placebo
 
   import SmartCity.Event,
     only: [

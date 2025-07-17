@@ -1,22 +1,27 @@
 defmodule Forklift.DataWriterTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :forklift
 
   alias Forklift.DataWriter
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
-  import Mox
+  Mox.defmock(MockTopic, for: Pipeline.Writer)
+  Mox.defmock(MockTable, for: Pipeline.Writer)
+  Mox.defmock(MockBrook, for: Brook.Event.Handler)
+  Mox.defmock(MockDateTime, for: Forklift.Test.DateTimeBehaviour)
+  Mox.defmock(MockDataMigration, for: Forklift.Test.DataMigrationBehaviour)
+  Mox.defmock(MockRedix, for: Forklift.Test.RedixBehaviour)
+  Mox.defmock(MockPrestigeHelper, for: Forklift.Test.PrestigeHelperBehaviour)
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
 
-  getter(:elsa_brokers, generic: true)
+  import Mox
+  setup :verify_on_exit!
+ 
+   getter(:elsa_brokers, generic: true)
   getter(:input_topic_prefix, generic: true)
   getter(:table_writer, generic: true)
-
-  setup :set_mox_global
-  setup :verify_on_exit!
 
   test "should delete table and topic when delete is called" do
     expected_dataset =
@@ -27,13 +32,13 @@ defmodule Forklift.DataWriterTest do
     expected_endpoints = elsa_brokers()
     expected_topic = "#{input_topic_prefix()}-#{expected_dataset.id}"
 
-    stub(MockTopic, :delete, fn [endpoints: actual_endpoints, topic: actual_topic] ->
+    expect(MockTopic, :delete, fn [endpoints: actual_endpoints, topic: actual_topic] ->
       assert expected_endpoints == actual_endpoints
       assert expected_topic == actual_topic
       :ok
     end)
 
-    stub(MockTable, :delete, fn [dataset: actual_dataset] ->
+    expect(MockTable, :delete, fn [dataset: actual_dataset] ->
       assert expected_dataset == actual_dataset
       :ok
     end)
@@ -90,14 +95,12 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    allow(DateTime.utc_now(), return: dateTime)
+    stub(MockDateTime, :utc_now, fn -> dateTime end)
 
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
-    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
-    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, any()), return: :ok)
-    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
-    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
-    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
+    stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
+    stub(MockBrook, :handle_event, fn _ -> :ok end)
+    stub(MockRedix, :command!, fn _, _ -> "1" end)
+    stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -112,13 +115,20 @@ defmodule Forklift.DataWriterTest do
       dataset_id: dataset.id
     }
 
-    assert_called(Brook.Event.send(any(), event_log_published(), :forklift, any()), times(0))
+    call_count = :atomics.new(1, [signed: false])
+
+    stub(MockBrook, :handle_event, fn _ ->
+      :atomics.add(call_count, 1, 1)
+      :ok
+    end)
 
     DataWriter.write(fake_data,
       dataset: dataset,
       ingestion_id: ingestion_id,
       extraction_start_time: extract_start
     )
+
+    assert :atomics.get(call_count, 1) == 1
   end
 
   test "should sent data write complete event log when data is finished writing to the table" do
@@ -141,13 +151,12 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    allow(DateTime.utc_now(), return: dateTime)
+    stub(MockDateTime, :utc_now, fn -> dateTime end)
 
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
-    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
-    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
-    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
-    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
+    stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
+    stub(MockBrook, :handle_event, fn _ -> :ok end)
+    stub(MockRedix, :command!, fn _, _ -> "1" end)
+    stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -162,7 +171,534 @@ defmodule Forklift.DataWriterTest do
       dataset_id: dataset.id
     }
 
-    expect(Brook.Event.send(any(), event_log_published(), :forklift, first_expected_event_log), return: :ok)
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    expect(MockBrook, :handle_event, fn event ->
+      assert event.data == first_expected_event_log
+      :ok
+    end)
 
     DataWriter.write(fake_data,
       dataset: dataset,
@@ -194,13 +730,12 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    allow(DateTime.utc_now(), return: dateTime)
+    stub(MockDateTime, :utc_now, fn -> dateTime end)
 
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
-    allow(Brook.Event.send(any(), data_ingest_end(), :forklift, dataset), return: :ok)
-    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "2")
-    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
-    allow(PrestigeHelper.count_query(any()), return: {:ok, length(actual_messages)})
+    stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
+    stub(MockBrook, :handle_event, fn _ -> :ok end)
+    stub(MockRedix, :command!, fn _, _ -> "2" end)
+    stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, length(actual_messages)} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -214,7 +749,534 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: DateTime.from_unix!(extract_start)
     }
 
-    expect(Brook.Event.send(any(), ingestion_complete(), :forklift, expected_ingestion_complete), return: :ok)
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    expect(MockBrook, :handle_event, fn event ->
+      assert event.data == expected_ingestion_complete
+      :ok
+    end)
 
     DataWriter.write(fake_data,
       dataset: dataset,
@@ -234,7 +1296,7 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :error
@@ -260,7 +1322,12 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
+    call_count = :atomics.new(1, [signed: false])
+
+    stub(MockDataMigration, :compact, fn _, _, _ ->
+      :atomics.add(call_count, 1, 1)
+      {:ok, dataset.id}
+    end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -272,7 +1339,7 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
 
-    refute_called Forklift.Jobs.DataMigration.compact(any(), any(), any())
+    assert :atomics.get(call_count, 1) == 1
   end
 
   test "compaction *is* kicked off if end_of_data message is received" do
@@ -292,22 +1359,545 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), end_of_data]
 
-    allow(Brook.Event.send(any(), event_log_published(), :forklift, any()), return: :ok)
-    allow(Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), return: {:ok, dataset.id})
-    allow(Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_start}"]), return: "1")
-    allow(Brook.Event.send(any(), ingestion_complete(), :forklift, any()), return: :ok)
-    allow(PrestigeHelper.count_query(any()), return: {:ok, 1})
+    stub(MockBrook, :handle_event, fn _ -> :ok end)
+    stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
+    stub(MockRedix, :command!, fn _, _ -> "1" end)
+    stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
     end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    stub(MockTable, :write, fn _data, _params ->
+      :ok
+    end)
+
+    expect(MockDataMigration, :compact, 1, fn ^dataset, ^ingestion_id, ^extract_start -> {:ok, dataset.id} end)
 
     DataWriter.write(fake_data,
       dataset: dataset,
       ingestion_id: ingestion_id,
       extraction_start_time: extract_start
     )
-
-    assert_called Forklift.Jobs.DataMigration.compact(dataset, ingestion_id, extract_start), once()
   end
 end

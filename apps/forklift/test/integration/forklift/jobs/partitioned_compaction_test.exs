@@ -4,7 +4,12 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Forklift.Jobs.PartitionedCompaction
   import Helper
-  use Placebo
+      import Mox
+
+  Mox.defmock(QuantumSchedulerMock, for: Forklift.Quantum.Scheduler)
+  Mox.defmock(DatasetsMock, for: Forklift.Datasets)
+  Mox.defmock(PrestigeHelperMock, for: Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
+
 
   @instance_name Forklift.instance_name()
   @batch_size 2
@@ -16,7 +21,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     ]
 
   setup do
-    Placebo.Server.clear()
+    
     delete_all_datasets()
 
     datasets =
@@ -33,8 +38,8 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     recreate_tables_with_partitions(datasets)
     wait_for_tables_to_be_created(datasets)
 
-    allow(Forklift.Quantum.Scheduler.deactivate_job(:data_migrator), return: :ok)
-    allow(Forklift.Quantum.Scheduler.activate_job(:data_migrator), return: :ok)
+    stub(QuantumSchedulerMock, :deactivate_job, fn :data_migrator -> :ok end)
+    stub(QuantumSchedulerMock, :activate_job, fn :data_migrator -> :ok end)
 
     current_partition = Timex.format!(DateTime.utc_now(), "{YYYY}_{0M}")
     [datasets: datasets, current_partition: current_partition]
@@ -47,7 +52,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     ok_dataset_one = Enum.at(datasets, 0)
     ok_dataset_two = Enum.at(datasets, 1)
     abort_dataset = %{id: "invalid_id", technical: %{systemName: "invalid_sys_name"}}
-    allow(Forklift.Datasets.get_all!(), return: [abort_dataset, ok_dataset_one, ok_dataset_two])
+    stub(DatasetsMock, :get_all!, fn -> [abort_dataset, ok_dataset_one, ok_dataset_two] end)
 
     partitions = [current_partition]
 
@@ -121,10 +126,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
-    allow(PrestigeHelper.count("#{error_dataset_compact_table}"),
-      return: {:ok, 0},
-      meck_options: [:passthrough]
-    )
+    stub(PrestigeHelperMock, :count, fn "#{error_dataset_compact_table}" -> {:ok, 0} end)
 
     partitions = ["2018_01", current_partition]
     expected_record_count = write_test_data(datasets, partitions, 2)
@@ -150,13 +152,7 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
-    allow(
-      PrestigeHelper.execute_query(
-        "insert into #{error_dataset.technical.systemName} select * from #{error_dataset_compact_table}"
-      ),
-      return: {:ok, :false_positive},
-      meck_options: [:passthrough]
-    )
+    stub(PrestigeHelperMock, :execute_query, fn "insert into #{error_dataset.technical.systemName} select * from #{error_dataset_compact_table}" -> {:ok, :false_positive} end)
 
     compaction_results = PartitionedCompaction.run()
 

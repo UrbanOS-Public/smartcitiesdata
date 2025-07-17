@@ -33,3 +33,5 @@ config :json_serde, :type_key, "__type__"
 
 config :phoenix,
   template_engines: [leex: Phoenix.LiveView.Engine]
+
+config :estuary, prestige: Prestige.Mock

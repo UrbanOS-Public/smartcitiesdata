@@ -7,6 +7,10 @@ defmodule Dlq.Server do
   getter(:endpoints, required: true)
   getter(:topic, required: true)
 
+  # Allow dependency injection for testing
+  @elsa_module Application.compile_env(:dlq, :elsa, Elsa)
+  @elsa_supervisor_module Application.compile_env(:dlq, :elsa_supervisor, Elsa.Supervisor)
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
@@ -33,21 +37,21 @@ defmodule Dlq.Server do
   def handle_cast({:write, dead_letters}, state) do
     messages = Enum.map(dead_letters, &Jason.encode!/1)
 
-    Elsa.produce(state.connection, state.topic, messages)
+    @elsa_module.produce(state.connection, state.topic, messages)
 
     {:noreply, state}
   end
 
   @retry with: constant_backoff(500) |> take(10)
   defp ensure_topic(state) do
-    unless Elsa.topic?(state.endpoints, state.topic) do
-      Elsa.create_topic(state.endpoints, state.topic)
+    unless @elsa_module.topic?(state.endpoints, state.topic) do
+      @elsa_module.create_topic(state.endpoints, state.topic)
     end
   end
 
   @retry with: constant_backoff(500) |> take(10)
   defp start_producer(state) do
-    Elsa.Supervisor.start_link(
+    @elsa_supervisor_module.start_link(
       endpoints: state.endpoints,
       connection: state.connection,
       producer: [

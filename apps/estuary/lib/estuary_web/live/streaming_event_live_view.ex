@@ -3,6 +3,7 @@ defmodule EstuaryWeb.StreamingEventLiveView do
   alias EstuaryWeb.Router.Helpers, as: Routes
   alias EstuaryWeb.EventLiveView.Table
   alias EstuaryWeb.LiveViewHelper
+  alias Estuary.MessageHandler
 
   @updated_event_stream "updated_event_stream"
 
@@ -77,4 +78,6 @@ defmodule EstuaryWeb.StreamingEventLiveView do
     |> Enum.take(1000)
     |> Enum.sort(&(&1["create_ts"] >= &2["create_ts"]))
   end
+
+  defp message_handler, do: Application.get_env(:estuary, :message_handler, MessageHandler)
 end

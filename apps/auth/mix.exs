@@ -34,7 +34,7 @@ defmodule Auth.MixProject do
       {:ecto, "== 3.10.1", override: true},
       {:ecto_sql, "== 3.10.1", override: true},
       {:plug, "~> 1.10"},
-      {:placebo, "~> 2.0.0-rc2", only: [:dev, :test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:postgrex, "~> 0.17"},
       {:ranch, "~> 1.8", override: true},
       {:bypass, "~> 2.0", only: [:test, :integration]},

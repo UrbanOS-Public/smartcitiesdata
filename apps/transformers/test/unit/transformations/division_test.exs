@@ -183,9 +183,9 @@ defmodule Transformers.DivisionTest do
 
       message_payload = %{}
 
-      {:error, reason} = Transformers.Division.transform(message_payload, params)
-
-      assert reason == "Division Transformation Error: \"divisor cannot be equal to 0\""
+      assert_raise(Decimal.Error, fn ->
+        Transformers.Division.transform(message_payload, params)
+      end)
     end
 
     test "performs transformation as normal when condition evaluates to true" do
