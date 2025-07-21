@@ -26,7 +26,7 @@ defmodule Transformers.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:checkov, "~> 1.0", only: [:test]},
+      {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},

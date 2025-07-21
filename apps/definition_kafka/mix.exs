@@ -19,7 +19,8 @@ defmodule DefinitionKafka.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :dlq],
+      applications: [:protocol_destination]
     ]
   end
 
@@ -37,8 +38,8 @@ defmodule DefinitionKafka.MixProject do
       {:credo, "~> 1.7", only: [:dev]},
       {:divo, "~> 2.0", only: [:dev, :integration]},
       {:divo_kafka, "~> 1.0", only: [:integration]},
-      {:mox, "~> 1.0", only: [:test]},
-      {:mock, "~> 0.3", only: [:dev, :test]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
+      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:testing, in_umbrella: true, only: [:test, :integration]}
     ]
   end

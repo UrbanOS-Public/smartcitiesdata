@@ -3,10 +3,10 @@ defmodule Kafka.TopicTest do
 
   test "can be serialized and deserialized by brook" do
     source =
-      Kafka.Topic.new!(
+      %Kafka.Topic{
         name: "topic",
         endpoints: [localhost: 9092]
-      )
+      }
 
     expected = %{
       "__type__" => "kafka_topic",

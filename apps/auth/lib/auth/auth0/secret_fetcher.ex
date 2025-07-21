@@ -2,6 +2,8 @@ defmodule Auth.Auth0.SecretFetcher do
   @moduledoc false
 
   use Guardian.Token.Jwt.SecretFetcher
+  @behaviour Auth.Auth0.SecretFetcher.Behaviour
+
 
   alias Auth.Auth0.CachedJWKS
 

@@ -35,7 +35,7 @@ defmodule Valkyrie.MixProject do
     [
       {:brook_stream, "~> 1.0"},
       {:cachex, "~> 3.4"},
-      {:checkov, "~> 1.0", only: [:test]},
+      {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},

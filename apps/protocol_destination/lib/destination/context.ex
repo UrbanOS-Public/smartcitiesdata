@@ -9,7 +9,6 @@ defmodule Destination.Context do
   `dataset_id` - Dataset identifier.
   `subset_id` - Dataset's subset identifier.
   """
-  use Definition, schema: Destination.Context.V1
 
   @type t :: %__MODULE__{
           dictionary: Dictionary.t(),
@@ -19,6 +18,12 @@ defmodule Destination.Context do
         }
 
   defstruct [:dictionary, :app_name, :dataset_id, :subset_id]
+
+  def new(params, schema_module) do
+    with {:ok, validated_params} <- Norm.conform(params, schema_module.s()) do
+      {:ok, struct(Destination.Context, validated_params)}
+    end
+  end
 end
 
 defmodule Destination.Context.V1 do

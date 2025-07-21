@@ -2,6 +2,8 @@ defmodule Auth.Auth0.CachedJWKS do
   @moduledoc false
 
   use Memoize
+  @behaviour Auth.Auth0.CachedJWKS.Behaviour
+
 
   def get(issuer) do
     case HTTPoison.get(issuer <> ".well-known/jwks.json") do

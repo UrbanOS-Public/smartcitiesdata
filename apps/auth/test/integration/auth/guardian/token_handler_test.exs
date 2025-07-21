@@ -7,8 +7,9 @@ defmodule Auth.Test.TokenHandlerExample do
 end
 
 defmodule Auth.Guardian.TokenHandlerTest do
-  use ExUnit.Case
-
+  use ExUnit.Case, async: true
+  Code.require_file("../../../test_helper.exs", __DIR__)
+  import Mox
   use Testing.DataCase,
     repo_module: Auth.Repo
 
