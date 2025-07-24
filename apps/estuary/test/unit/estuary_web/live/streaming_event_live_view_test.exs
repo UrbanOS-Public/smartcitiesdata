@@ -6,7 +6,6 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
 
   import FlokiHelpers, only: [get_text: 2]
 
-  alias Estuary.MessageHandler
 
   setup :set_mox_global
   setup :verify_on_exit!
@@ -20,8 +19,7 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
   }
 
   test "should show Waiting For The Events when there are no rows to show", %{conn: conn} do
-    expect(MessageHandler.Mock, :handle_messages, fn _ -> :ok end)
-    assert {:ok, _view, html} = live(conn, @url_path)
+    {:ok, _view, html} = live(conn, @url_path)
 
     assert get_text(html, ".events-index__title") =~ "All Streaming Events"
     assert get_text(html, ".events-index__table") =~ "Waiting For The Events"

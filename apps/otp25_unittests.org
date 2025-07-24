@@ -1,6 +1,6 @@
 # Review code
 
-## elixir apps [22/36] [61%]
+## elixir apps [23/36] [63%]
 - [X] protocol_decoder     - 41 lines
 - [ ] web                  - 59 lines
 - [X] protocol_destination - 87 lines
@@ -23,7 +23,7 @@
 - [X] auth                 - 831 lines
 - [X] definition_kafka     - 833 lines
 - [ ] flair                - 891 lines
-- [ ] estuary              - 1609 lines
+- [X] estuary              - 1609 lines
 - [ ] discovery_streams    - 1835 lines
 - [ ] alchemist            - 1903 lines
 - [ ] definition_dictionary - 2238 lines
