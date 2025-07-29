@@ -24,3 +24,15 @@ config :discovery_streams, :brook,
     module: Brook.Driver.Default,
     init_arg: []
   ]
+
+# Test module replacements
+config :discovery_streams,
+  stream_supervisor: StreamSupervisorMock,
+  topic_helper: TopicHelperMock,
+  raptor_service: RaptorServiceMock,
+  telemetry_event: TelemetryEventMock,
+  elsa: ElsaMock,
+  brook: BrookViewStateMock,
+  dead_letter: DeadLetterMock,
+  start_brook: false,
+  start_init: false

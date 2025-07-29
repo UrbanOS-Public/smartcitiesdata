@@ -9,6 +9,26 @@ defmodule DiscoveryStreams.Event.EventHandler do
   require Logger
 
   @instance_name DiscoveryStreams.instance_name()
+  
+  defp stream_supervisor() do
+    Application.get_env(:discovery_streams, :stream_supervisor, DiscoveryStreams.Stream.Supervisor)
+  end
+  
+  defp topic_helper() do
+    Application.get_env(:discovery_streams, :topic_helper, DiscoveryStreams.TopicHelper)
+  end
+  
+  defp telemetry_event() do
+    Application.get_env(:discovery_streams, :telemetry_event, TelemetryEvent)
+  end
+  
+  defp brook() do
+    Application.get_env(:discovery_streams, :brook, Brook)
+  end
+  
+  defp dead_letter() do
+    Application.get_env(:discovery_streams, :dead_letter, DeadLetter)
+  end
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
@@ -19,10 +39,10 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
     Enum.each(dataset_ids, fn dataset_id ->
       add_event_count(data_ingest_start(), author, dataset_id)
-      dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, dataset_id)
+      dataset_name = brook().get!(@instance_name, :streaming_datasets_by_id, dataset_id)
 
       if dataset_name != nil do
-        DiscoveryStreams.Stream.Supervisor.start_child(dataset_id)
+        stream_supervisor().start_child(dataset_id)
       end
     end)
 
@@ -30,7 +50,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_ingest_start failed to process: #{inspect(error)}")
-      DeadLetter.process(dataset_ids, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
+      dead_letter().process(dataset_ids, data.id, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -48,7 +68,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      dead_letter().process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -62,12 +82,12 @@ defmodule DiscoveryStreams.Event.EventHandler do
     add_event_count(dataset_update(), author, dataset.id)
 
     save_dataset_to_viewstate(dataset.id, system_name)
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
+    stream_supervisor().terminate_child(dataset.id)
     :ok
   rescue
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      dead_letter().process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -81,12 +101,12 @@ defmodule DiscoveryStreams.Event.EventHandler do
     add_event_count(dataset_delete(), author, id)
 
     delete_from_viewstate(id, system_name)
-    DiscoveryStreams.Stream.Supervisor.terminate_child(dataset.id)
-    DiscoveryStreams.TopicHelper.delete_input_topic(id)
+    stream_supervisor().terminate_child(dataset.id)
+    topic_helper().delete_input_topic(id)
   rescue
     error ->
       Logger.error("dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process([id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      dead_letter().process([id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -110,6 +130,6 @@ defmodule DiscoveryStreams.Event.EventHandler do
       dataset_id: dataset_id,
       event_type: event_type
     ]
-    |> TelemetryEvent.add_event_metrics([:events_handled])
+    |> telemetry_event().add_event_metrics([:events_handled])
   end
 end

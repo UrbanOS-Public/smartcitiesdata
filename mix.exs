@@ -14,6 +14,7 @@ defmodule Smartcitiesdata.MixProject do
 
   defp deps,
     do: [
+      {:brook, "~> 8.0"},
       {:decimal, "~> 1.5 or ~> 2.0",
        [env: :prod, hex: "decimal", repo: "hexpm", optional: false, override: true]},
       {:brod, "~> 3.16.5", override: true},

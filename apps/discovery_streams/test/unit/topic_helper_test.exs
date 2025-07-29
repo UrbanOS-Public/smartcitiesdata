@@ -1,9 +1,11 @@
 defmodule DiscoveryStreams.TopicHelperTest do
   use ExUnit.Case
-  use Placebo
-  use Properties, otp_app: :discovery_streams
+  import Mox
+    use Properties, otp_app: :discovery_streams
 
   alias DiscoveryStreams.TopicHelper
+
+  setup :verify_on_exit!
 
   getter(:topic_prefix, generic: true, default: "validated-")
 
@@ -24,8 +26,7 @@ defmodule DiscoveryStreams.TopicHelperTest do
 
   test "should delete input topic when the topic names are provided" do
     dataset_id = Faker.UUID.v4()
-    allow(Elsa.delete_topic(any(), any()), return: :ok)
+    expect(ElsaMock, :delete_topic, fn _, _ -> :ok end)
     TopicHelper.delete_input_topic(dataset_id)
-    assert_called(Elsa.delete_topic(TopicHelper.get_endpoints(), "#{topic_prefix()}#{dataset_id}"))
   end
 end

@@ -1,27 +1,25 @@
 defmodule DiscoveryStreamsWeb.StreamingChannelTest do
-  alias RaptorService
+  alias RaptorServiceMock
   use DiscoveryStreamsWeb.ChannelCase
-  use Placebo
+  import Mox
+  
+  setup :verify_on_exit!
 
   @dataset_1_id "d21d5af6-346c-43e5-891f-8c2c7f28e4ab"
 
   setup do
-    allow(Brook.get(any(), :streaming_datasets_by_system_name, any()),
-      return: {:error, "does_not_exist"}
-    )
-
-    allow(Brook.get(any(), :streaming_datasets_by_system_name, "shuttle-position"),
-      return: {:ok, @dataset_1_id}
-    )
-
-    allow(RaptorService.is_authorized(any(), any(), any()),
-      return: true
-    )
+    BrookViewStateMock
+    |> stub(:get, fn _, _, _ -> {:error, "does_not_exist"} end)
 
     :ok
   end
 
   test "filter events cause all subsequent messages to be pushed to cache through filter in channel" do
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
     {:ok, _, socket} =
       subscribe_and_join(
         socket(DiscoveryStreamsWeb.UserSocket),
@@ -40,6 +38,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filter fields on cache with multiple values causes non-matches to be filtered out in channel" do
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
     {:ok, _, socket} =
       subscribe_and_join(
         socket(DiscoveryStreamsWeb.UserSocket),
@@ -65,6 +68,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "filters with multiple keys must all match for message to get pushed" do
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
     {:ok, _, socket} =
       subscribe_and_join(
         socket(DiscoveryStreamsWeb.UserSocket),
@@ -87,6 +95,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "empty filter events cause all subsequent messages to be pushed" do
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
     {:ok, _, socket} =
       subscribe_and_join(
         socket(DiscoveryStreamsWeb.UserSocket),
@@ -115,9 +128,10 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   end
 
   test "joining unauthorized topic returns error tuple" do
-    allow(RaptorService.is_authorized(any(), any(), any()),
-      return: false
-    )
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> false end)
 
     assert {:error, %{reason: "Channel streaming:shuttle-position does not exist or you do not have access"}} ==
              subscribe_and_join(
@@ -130,13 +144,18 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
   test "API key and system name are passed to Raptor" do
     api_key = "abcdefg"
 
+    BrookViewStateMock
+    |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+    
+    expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
     DiscoveryStreamsWeb.StreamingChannel.join(
       "streaming:shuttle-position",
       %{"api_key" => api_key},
       socket(DiscoveryStreamsWeb.UserSocket)
     )
 
-    assert_called(RaptorService.is_authorized("raptor.url", api_key, "shuttle-position"))
+    verify!(RaptorServiceMock)
   end
 
   describe "REQUIRED_API_KEY" do
@@ -158,9 +177,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     end
 
     test "joining a application with api_key connects" do
-      allow(RaptorService.get_user_id_from_api_key(any(), any()),
-        return: {:ok, "user_id"}
-      )
+      BrookViewStateMock
+      |> expect(:get, fn _, _, "shuttle-position" -> {:ok, @dataset_1_id} end)
+      
+      expect(RaptorServiceMock, :get_user_id_from_api_key, fn _, _ -> {:ok, "user_id"} end)
+      expect(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
 
       {:ok, _, socket} =
         subscribe_and_join(
@@ -174,9 +195,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannelTest do
     end
 
     test "joining a application with invalid api_key returns an error" do
-      allow(RaptorService.get_user_id_from_api_key(any(), any()),
-        return: {:error, "reason", "500"}
-      )
+      expect(RaptorServiceMock, :get_user_id_from_api_key, fn _, _ -> {:error, "reason", "500"} end)
 
       assert {:error, %{reason: "Channel streaming:shuttle-position gave error code 500 with reason reason"}} ==
                subscribe_and_join(

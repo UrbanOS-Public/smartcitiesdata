@@ -12,6 +12,14 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   getter(:raptor_url, generic: true)
 
   @instance_name DiscoveryStreams.instance_name()
+  
+  defp raptor_service() do
+    Application.get_env(:discovery_streams, :raptor_service, RaptorService)
+  end
+  
+  defp brook() do
+    Application.get_env(:discovery_streams, :brook, Brook)
+  end
 
   @update_event "update"
   @filter_event "filter"
@@ -25,7 +33,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
           get_error_message(channel)
 
         api_key ->
-          case RaptorService.get_user_id_from_api_key(raptor_url(), api_key) do
+          case raptor_service().get_user_id_from_api_key(raptor_url(), api_key) do
             {:ok, _user_id} ->
               is_authorized(channel, params, socket)
 
@@ -41,14 +49,14 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   defp is_authorized(channel, params, socket) do
     system_name = determine_system_name(channel)
 
-    case Brook.get(@instance_name, :streaming_datasets_by_system_name, system_name) do
+    case brook().get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
         get_error_message(channel)
 
       {:ok, _dataset_id} ->
         api_key = params["api_key"]
 
-        if RaptorService.is_authorized(raptor_url(), api_key, system_name) do
+        if raptor_service().is_authorized(raptor_url(), api_key, system_name) do
           filter = Map.delete(params, "api_key")
           {:ok, assign(socket, :filter, create_filter_rules(filter))}
         else

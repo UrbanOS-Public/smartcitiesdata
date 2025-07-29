@@ -18,15 +18,31 @@ defmodule DiscoveryStreams.Application do
         {Phoenix.PubSub, [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2]},
         supervisor(DiscoveryStreamsWeb.Endpoint, []),
         libcluster(),
-        {Brook, brook()},
         DiscoveryStreams.Stream.Registry,
-        DiscoveryStreams.Stream.Supervisor,
-        DiscoveryStreams.Init
+        DiscoveryStreams.Stream.Supervisor
       ]
+      |> brook_child()
+      |> init_child()
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
     Supervisor.start_link(children, opts)
+  end
+
+  defp brook_child(children) do
+    if Application.get_env(:discovery_streams, :start_brook, true) do
+      children ++ [{Brook, brook()}]
+    else
+      children
+    end
+  end
+
+  defp init_child(children) do
+    if Application.get_env(:discovery_streams, :start_init, true) do
+      children ++ [DiscoveryStreams.Init]
+    else
+      children
+    end
   end
 
   defp libcluster do
