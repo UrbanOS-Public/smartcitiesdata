@@ -12,6 +12,7 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
   alias DiscoveryStreamsWeb.Endpoint
 
   getter(:dlq, default: Dlq)
+  getter(:telemetry_event, default: TelemetryEvent)
 
   def handle_message(message, context) do
     system_name = context.assigns.system_name
@@ -62,6 +63,6 @@ defmodule DiscoveryStreams.Stream.SourceHandler do
       PodHostname: pod_host_name,
       type: type
     ]
-    |> TelemetryEvent.add_event_metrics([:records], value: %{count: count})
+    |> telemetry_event().add_event_metrics([:records], value: %{count: count})
   end
 end

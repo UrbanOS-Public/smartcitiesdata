@@ -6,10 +6,7 @@ defmodule DiscoveryStreams.TopicHelper do
 
   getter(:endpoints, generic: true)
   getter(:topic_prefix, generic: true, default: "transformed-")
-  
-  defp elsa() do
-    Application.get_env(:discovery_streams, :elsa, Elsa)
-  end
+  getter(:elsa, default: Elsa)
 
   def topic_name(dataset_id) do
     "#{topic_prefix()}#{dataset_id}"
@@ -24,11 +21,12 @@ defmodule DiscoveryStreams.TopicHelper do
     endpoints()
   end
 
-  def delete_input_topic(dataset_id) do
+  def delete_input_topic(dataset_id, elsa_module \\ nil) do
     input_topic = input_topic(dataset_id)
     Logger.debug("#{__MODULE__}: Deleting Topic: #{input_topic}")
 
-    case elsa().delete_topic(get_endpoints(), input_topic) do
+    elsa_impl = elsa_module || elsa()
+    case elsa_impl.delete_topic(get_endpoints(), input_topic) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted topic: #{input_topic}")
 

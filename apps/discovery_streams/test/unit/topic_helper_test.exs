@@ -1,13 +1,21 @@
 defmodule DiscoveryStreams.TopicHelperTest do
   use ExUnit.Case
   import Mox
-    use Properties, otp_app: :discovery_streams
+  use Properties, otp_app: :discovery_streams
 
   alias DiscoveryStreams.TopicHelper
 
   setup :verify_on_exit!
 
   getter(:topic_prefix, generic: true, default: "validated-")
+
+  setup do
+    # Configure endpoints for testing
+    Application.put_env(:discovery_streams, :endpoints, [{"localhost", 9092}])
+    # Override Elsa for testing
+    Application.put_env(:discovery_streams, :elsa, ElsaMock)
+    :ok
+  end
 
   describe "topic_name/1" do
     test "should return given dataset_id prefixed with the topic prefix" do
@@ -27,6 +35,6 @@ defmodule DiscoveryStreams.TopicHelperTest do
   test "should delete input topic when the topic names are provided" do
     dataset_id = Faker.UUID.v4()
     expect(ElsaMock, :delete_topic, fn _, _ -> :ok end)
-    TopicHelper.delete_input_topic(dataset_id)
+    TopicHelper.delete_input_topic(dataset_id, ElsaMock)
   end
 end

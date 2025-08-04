@@ -1,38 +1,32 @@
 import Config
-System.put_env("REQUIRE_API_KEY", "false")
 
-host = "127.0.0.1"
-endpoints = [{String.to_atom(host), 9092}]
+config :discovery_api, ecto_repos: [DiscoveryApi.Repo]
 
-config :discovery_streams, DiscoveryStreamsWeb.Endpoint,
-  http: [port: 4001],
-  server: false
-
+# Mock configurations for testing
 config :discovery_streams,
-  raptor_url: "raptor.url"
+  raptor_service: RaptorServiceMock,
+  brook_view_state: BrookViewStateMock,
+  elsa: ElsaMock,
+  topic_helper: TopicHelperMock,
+  telemetry_event: DiscoveryStreamsTelemetryEventMock,
+  dead_letter: DeadLetterMock,
+  stream_supervisor: StreamSupervisorMock
 
-config :discovery_streams, endpoints: [localhost: 9092]
+# Mock TelemetryEvent at the application level to avoid conflicts
+config :telemetry_event,
+  implementation: DiscoveryStreamsTelemetryEventMock
 
+# Brook configuration for testing
 config :discovery_streams, :brook,
   instance: :discovery_streams,
+  driver: [
+    module: Brook.Driver.Test,
+    init_arg: []
+  ],
   handlers: [DiscoveryStreams.Event.EventHandler],
   storage: [
     module: Brook.Storage.Ets,
-    init_arg: []
-  ],
-  driver: [
-    module: Brook.Driver.Default,
-    init_arg: []
+    init_arg: [
+      namespace: "discovery_streams:view"
+    ]
   ]
-
-# Test module replacements
-config :discovery_streams,
-  stream_supervisor: StreamSupervisorMock,
-  topic_helper: TopicHelperMock,
-  raptor_service: RaptorServiceMock,
-  telemetry_event: TelemetryEventMock,
-  elsa: ElsaMock,
-  brook: BrookViewStateMock,
-  dead_letter: DeadLetterMock,
-  start_brook: false,
-  start_init: false

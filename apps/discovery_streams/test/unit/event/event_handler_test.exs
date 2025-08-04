@@ -15,13 +15,22 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
     # Register with Brook.Test for proper event context
     Brook.Test.register(@instance_name)
     
+    # Set up dependency injection through Application environment
+    Application.put_env(:discovery_streams, :telemetry_event, DiscoveryStreamsTelemetryEventMock)
+    Application.put_env(:discovery_streams, :dead_letter, DeadLetterMock)
+    Application.put_env(:discovery_streams, :stream_supervisor, StreamSupervisorMock)
+    Application.put_env(:discovery_streams, :topic_helper, TopicHelperMock)
+    
+    # Override TelemetryEvent at the application level to bypass the real TelemetryEvent.Mock
+    Application.put_env(:telemetry_event, :implementation, DiscoveryStreamsTelemetryEventMock)
+    
     # Set up DeadLetter mock - stub it to always return :ok
     DeadLetterMock
     |> stub(:process, fn _dataset_ids, _ingestion_id, _message, _app_name, _options -> :ok end)
     
     # Set up TelemetryEvent mock
-    TelemetryEventMock
-    |> stub(:add_event_metrics, fn _metrics, _tags -> :ok end)
+    DiscoveryStreamsTelemetryEventMock
+    |> stub(:add_event_metrics, fn _metrics, _tags, _measurements -> :ok end)
     
     # Set up StreamSupervisor mock
     StreamSupervisorMock
@@ -42,11 +51,11 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
-      [_dataset_id, _dataset_id2] = ingestion.targetDatasets
+      [dataset_id1, dataset_id2] = ingestion.targetDatasets
 
-      # Mock Brook.get!
+      # Mock Brook.get! for the EventHandler calls
       BrookViewStateMock
-      |> expect(:get!, 2, fn _instance, _collection, _key -> ingestion.id end)
+      |> stub(:get!, fn _instance, _collection, _key -> "fake_system_name" end)
 
       event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
       response = EventHandler.handle_event(event)
@@ -62,11 +71,11 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
-      [_dataset_id, _dataset_id2] = ingestion.targetDatasets
+      [dataset_id1, dataset_id2] = ingestion.targetDatasets
 
-      # Mock Brook.get!
+      # Mock Brook.get! to return nil for non-streaming datasets
       BrookViewStateMock
-      |> expect(:get!, 2, fn _instance, _collection, _key -> nil end)
+      |> stub(:get!, fn _instance, _collection, _key -> nil end)
 
       event = Brook.Event.new(type: data_ingest_start(), data: ingestion, author: :author)
       response = EventHandler.handle_event(event)
@@ -83,8 +92,10 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
     end
 
     test "should store dataset.id by dataset.technical.systemName and vice versa when the dataset has a sourceType of stream" do
-      TelemetryEventMock
-      |> expect(:add_event_metrics, fn _metrics, [:events_handled] -> :ok end)
+      # Use stub to allow multiple calls - allow any arguments
+      DiscoveryStreamsTelemetryEventMock
+      |> stub(:add_event_metrics, fn _, _ -> :ok end)
+      |> stub(:add_event_metrics, fn _, _, _ -> :ok end)
 
       dataset =
         TDG.create_dataset(
@@ -124,8 +135,10 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
     end
 
     test "should delete dataset when dataset:delete event fires" do
-      TelemetryEventMock
-      |> expect(:add_event_metrics, fn _metrics, [:events_handled] -> :ok end)
+      # Use stub to allow multiple calls - allow any arguments
+      DiscoveryStreamsTelemetryEventMock  
+      |> stub(:add_event_metrics, fn _, _ -> :ok end)
+      |> stub(:add_event_metrics, fn _, _, _ -> :ok end)
       
       system_name = Faker.UUID.v4()
       dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{systemName: system_name})

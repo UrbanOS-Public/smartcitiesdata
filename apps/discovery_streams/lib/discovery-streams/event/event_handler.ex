@@ -5,30 +5,16 @@ defmodule DiscoveryStreams.Event.EventHandler do
   alias SmartCity.Dataset
   alias SmartCity.Ingestion
   use Brook.Event.Handler
+  use Properties, otp_app: :discovery_streams
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
   require Logger
 
   @instance_name DiscoveryStreams.instance_name()
-  
-  defp stream_supervisor() do
-    Application.get_env(:discovery_streams, :stream_supervisor, DiscoveryStreams.Stream.Supervisor)
-  end
-  
-  defp topic_helper() do
-    Application.get_env(:discovery_streams, :topic_helper, DiscoveryStreams.TopicHelper)
-  end
-  
-  defp telemetry_event() do
-    Application.get_env(:discovery_streams, :telemetry_event, TelemetryEvent)
-  end
-  
-  defp brook() do
-    Application.get_env(:discovery_streams, :brook, Brook)
-  end
-  
-  defp dead_letter() do
-    Application.get_env(:discovery_streams, :dead_letter, DeadLetter)
-  end
+
+  getter(:telemetry_event, default: TelemetryEvent)
+  getter(:stream_supervisor, default: DiscoveryStreams.Stream.Supervisor)
+  getter(:topic_helper, default: DiscoveryStreams.TopicHelper)
+  getter(:dead_letter, default: DeadLetter)
 
   def handle_event(%Brook.Event{
         type: data_ingest_start(),
@@ -39,7 +25,7 @@ defmodule DiscoveryStreams.Event.EventHandler do
 
     Enum.each(dataset_ids, fn dataset_id ->
       add_event_count(data_ingest_start(), author, dataset_id)
-      dataset_name = brook().get!(@instance_name, :streaming_datasets_by_id, dataset_id)
+      dataset_name = Brook.get!(@instance_name, :streaming_datasets_by_id, dataset_id)
 
       if dataset_name != nil do
         stream_supervisor().start_child(dataset_id)

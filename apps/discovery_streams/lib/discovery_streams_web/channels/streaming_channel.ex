@@ -17,8 +17,8 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
     Application.get_env(:discovery_streams, :raptor_service, RaptorService)
   end
   
-  defp brook() do
-    Application.get_env(:discovery_streams, :brook, Brook)
+  defp brook_view_state() do
+    Application.get_env(:discovery_streams, :brook_view_state, Brook)
   end
 
   @update_event "update"
@@ -49,7 +49,7 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   defp is_authorized(channel, params, socket) do
     system_name = determine_system_name(channel)
 
-    case brook().get(@instance_name, :streaming_datasets_by_system_name, system_name) do
+    case brook_view_state().get(@instance_name, :streaming_datasets_by_system_name, system_name) do
       {:ok, nil} ->
         get_error_message(channel)
 

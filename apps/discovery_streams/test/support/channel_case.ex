@@ -1,11 +1,13 @@
 defmodule DiscoveryStreamsWeb.ChannelCase do
-  @moduledoc "false"
   use ExUnit.CaseTemplate
 
   using do
     quote do
+      # Import conveniences for testing with channels
       import Phoenix.ChannelTest
+      import DiscoveryStreamsWeb.Endpoint
 
+      # The default endpoint for testing
       @endpoint DiscoveryStreamsWeb.Endpoint
     end
   end
