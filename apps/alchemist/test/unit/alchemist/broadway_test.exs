@@ -8,10 +8,6 @@ defmodule Alchemist.BroadwayTest do
   import Mock
   import SmartCity.TestHelper, only: [eventually: 1]
 
-  import SmartCity.Event,
-    only: [
-      event_log_published: 0
-    ]
 
   @ingestion_id "ingestion1"
   @dataset_id "ds1"
