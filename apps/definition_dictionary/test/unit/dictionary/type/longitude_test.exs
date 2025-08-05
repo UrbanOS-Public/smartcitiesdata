@@ -19,7 +19,7 @@ defmodule Dictionary.Type.LongitudeTest do
   end
 
   test "can be decoded back into struct" do
-    longitude = Dictionary.Type.Longitude.new!(name: "name", description: "description")
+    longitude = Dictionary.Type.Longitude.new!([name: "name", description: "description"], IdGenerator.Impl)
     serialized = JsonSerde.serialize!(longitude)
 
     assert longitude == JsonSerde.deserialize!(serialized)

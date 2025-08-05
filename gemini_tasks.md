@@ -9,7 +9,7 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
 ## Pending Tasks
 
 
-- The apps/discovery_streams unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- The apps/definition_dictionary unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 = Analyze the changes staged for commit, summarize them into four sentences or less suitable as a git commit message.
 
 

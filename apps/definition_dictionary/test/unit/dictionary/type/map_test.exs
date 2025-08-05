@@ -29,14 +29,13 @@ defmodule Dictionary.Type.MapTest do
 
     map =
       Dictionary.Type.Map.new!(
-        name: "name",
+        [name: "name",
         description: "description",
         dictionary:
           Dictionary.from_list([
-            %Dictionary.Type.String{name: "name"},
-            %Dictionary.Type.Integer{name: "age"}
-          ])
-      )
+            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+          ])], IdGenerator.Impl)
 
     assert expected == JsonSerde.serialize!(map) |> Jason.decode!()
   end
@@ -44,14 +43,13 @@ defmodule Dictionary.Type.MapTest do
   test "can be decoded back into struct" do
     map =
       Dictionary.Type.Map.new!(
-        name: "name",
+        [name: "name",
         description: "description",
         dictionary:
           Dictionary.from_list([
-            Dictionary.Type.String.new!(name: "name"),
-            Dictionary.Type.Integer.new!(name: "age")
-          ])
-      )
+            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+          ])], IdGenerator.Impl)
 
     serialized = JsonSerde.serialize!(map)
 
@@ -66,12 +64,12 @@ defmodule Dictionary.Type.MapTest do
 
     field =
       Dictionary.Type.Map.new!(
-        name: "spouse",
-        dictionary: [
-          %Dictionary.Type.String{name: "name"},
-          %Dictionary.Type.Integer{name: "age"}
-        ]
-      )
+        [name: "spouse",
+        dictionary:
+          Dictionary.from_list([
+            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+          ])], IdGenerator.Impl)
 
     assert result == Dictionary.Type.Normalizer.normalize(field, value)
 
@@ -85,12 +83,12 @@ defmodule Dictionary.Type.MapTest do
   test "handles nil" do
     field =
       Dictionary.Type.Map.new!(
-        name: "spouse",
-        dictionary: [
-          %Dictionary.Type.String{name: "name"},
-          %Dictionary.Type.Integer{name: "age"}
-        ]
-      )
+        [name: "spouse",
+        dictionary:
+          Dictionary.from_list([
+            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+          ])], IdGenerator.Impl)
 
     assert {:ok, nil} == Dictionary.Type.Normalizer.normalize(field, nil)
   end

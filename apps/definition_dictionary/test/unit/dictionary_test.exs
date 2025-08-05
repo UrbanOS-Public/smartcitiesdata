@@ -6,52 +6,50 @@ defmodule DictionaryTest do
     setup do
       dictionary =
         Dictionary.from_list([
-          Dictionary.Type.String.new!(name: "name"),
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d")
+          Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl)
         ])
 
       [dictionary: dictionary]
     end
 
     test "get_field returns field by name", %{dictionary: dictionary} do
-      assert Dictionary.Type.String.new!(name: "name") == Dictionary.get_field(dictionary, "name")
+      assert Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl) == Dictionary.get_field(dictionary, "name")
     end
 
     data_test "get_by_type returns all fields with that type" do
       dictionary =
         Dictionary.from_list([
-          Dictionary.Type.String.new!(name: "name"),
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d"),
-          Dictionary.Type.String.new!(name: "nickname"),
+          Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl),
+          Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl),
           Dictionary.Type.Map.new!(
-            name: "spouse",
-            dictionary: [
-              Dictionary.Type.String.new!(name: "name"),
-              Dictionary.Type.Wkt.Point.new!(name: "location")
-            ]
-          ),
+            [name: "spouse",
+            dictionary:
+              Dictionary.from_list([
+                Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                Dictionary.Type.Wkt.Point.new!([name: "location"], IdGenerator.Impl)
+              ])], IdGenerator.Impl),
           Dictionary.Type.List.new!(
-            name: "friends",
+            [name: "friends",
             item_type:
               Dictionary.Type.Map.new!(
-                name: "in_list",
-                dictionary: [
-                  Dictionary.Type.String.new!(name: "name"),
-                  Dictionary.Type.Map.new!(
-                    name: "work",
-                    dictionary: [
-                      Dictionary.Type.Wkt.Point.new!(name: "location")
-                    ]
-                  )
-                ]
-              )
-          ),
+                [name: "in_list",
+                dictionary:
+                  Dictionary.from_list([
+                    Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                    Dictionary.Type.Map.new!(
+                      [name: "work",
+                      dictionary:
+                        Dictionary.from_list([
+                          Dictionary.Type.Wkt.Point.new!([name: "location"], IdGenerator.Impl)
+                        ])], IdGenerator.Impl)
+                  ])], IdGenerator.Impl)], IdGenerator.Impl),
           Dictionary.Type.List.new!(
-            name: "colors",
-            item_type: Dictionary.Type.String.new!(name: "in_list")
-          )
+            [name: "colors",
+            item_type: Dictionary.Type.String.new!([name: "in_list"], IdGenerator.Impl)], IdGenerator.Impl)
         ])
 
       result_from_list = Dictionary.get_by_type(dictionary, type)
@@ -78,10 +76,10 @@ defmodule DictionaryTest do
         Dictionary.update_field(
           dictionary,
           "name",
-          Dictionary.Type.String.new!(name: "full_name")
+          Dictionary.Type.String.new!([name: "full_name"], IdGenerator.Impl)
         )
 
-      assert Dictionary.Type.String.new!(name: "full_name") ==
+      assert Dictionary.Type.String.new!([name: "full_name"], IdGenerator.Impl) ==
                Dictionary.get_field(new_dictionary, "full_name")
 
       assert nil == Dictionary.get_field(new_dictionary, "name")
@@ -93,7 +91,7 @@ defmodule DictionaryTest do
           %{field | name: "full_name"}
         end)
 
-      assert Dictionary.Type.String.new!(name: "full_name") ==
+      assert Dictionary.Type.String.new!([name: "full_name"], IdGenerator.Impl) ==
                Dictionary.get_field(new_dictionary, "full_name")
 
       assert nil == Dictionary.get_field(new_dictionary, "name")
@@ -105,8 +103,8 @@ defmodule DictionaryTest do
       new_dictionary = Dictionary.delete_field(dictionary, "age")
 
       assert Enum.to_list(new_dictionary) == [
-               Dictionary.Type.String.new!(name: "name"),
-               Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d")
+               Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+               Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl)
              ]
     end
   end
@@ -148,15 +146,15 @@ defmodule DictionaryTest do
     test "reports all errors found during normalization" do
       dictionary =
         [
-          Dictionary.Type.String.new!(name: "name"),
-          Dictionary.Type.Integer.new!(name: "age"),
+          Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
           Dictionary.Type.Map.new!(
-            name: "spouse",
-            dictionary: [
-              %Dictionary.Type.String{name: "name"},
-              %Dictionary.Type.Integer{name: "age"}
-            ]
-          )
+            [name: "spouse",
+            dictionary:
+              Dictionary.from_list([
+                Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+              ])], IdGenerator.Impl)
         ]
         |> Dictionary.from_list()
 
@@ -183,17 +181,17 @@ defmodule DictionaryTest do
     setup do
       dictionary =
         Dictionary.from_list([
-          Dictionary.Type.String.new!(name: "name"),
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d"),
+          Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl),
           Dictionary.Type.Map.new!(
-            name: "spouse",
-            dictionary: [
-              Dictionary.Type.String.new!(name: "name"),
-              Dictionary.Type.Integer.new!(name: "age"),
-              Dictionary.Type.String.new!(name: "nickname")
-            ]
-          )
+            [name: "spouse",
+            dictionary:
+              Dictionary.from_list([
+                Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+                Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
+              ])], IdGenerator.Impl)
         ])
 
       [dictionary: dictionary]
@@ -208,7 +206,7 @@ defmodule DictionaryTest do
     end
 
     test "can add field to the dictionary", %{dictionary: dictionary} do
-      nickname = Dictionary.Type.String.new!(name: "nickname")
+      nickname = Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
       result = Dictionary.update_field(dictionary, "nickname", nickname)
 
       expected = Dictionary.from_list(Enum.to_list(dictionary) ++ [nickname])
@@ -223,7 +221,7 @@ defmodule DictionaryTest do
         end)
 
       assert Dictionary.get_field(result, "other_date") ==
-               Dictionary.Type.Date.new!(name: "other_date", format: "%Y-%m-%d")
+               Dictionary.Type.Date.new!([name: "other_date", format: "%Y-%m-%d"], IdGenerator.Impl)
     end
 
     test "can pop field in dictionary", %{dictionary: dictionary} do
@@ -235,7 +233,7 @@ defmodule DictionaryTest do
     test "can pop using get_and_update_in", %{dictionary: dictionary} do
       {field, result} = get_and_update_in(dictionary, ["birthdate"], fn _ -> :pop end)
 
-      assert field == Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d")
+      assert field == Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl)
 
       assert nil == Dictionary.get_field(result, "birthdate")
     end
@@ -244,8 +242,8 @@ defmodule DictionaryTest do
   test "dictionary can be serialized/deserialized" do
     dictionary =
       Dictionary.from_list([
-        Dictionary.Type.String.new!(name: "name"),
-        Dictionary.Type.Integer.new!(name: "age")
+        Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+        Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
       ])
 
     expected = %{

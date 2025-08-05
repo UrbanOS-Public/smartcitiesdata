@@ -23,14 +23,14 @@ defmodule Dictionary.Type.Map do
             dictionary: Dictionary.from_list([])
 
   @impl Definition
-  def on_new(%{dictionary: list} = map) when is_list(list) do
+  def on_new(%{dictionary: list} = map, _id_generator) when is_list(list) do
     dictionary = Dictionary.from_list(list)
 
     Map.put(map, :dictionary, dictionary)
     |> Ok.ok()
   end
 
-  def on_new(map) do
+  def on_new(map, _id_generator) do
     Ok.ok(map)
   end
 

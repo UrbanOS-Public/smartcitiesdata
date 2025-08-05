@@ -23,14 +23,14 @@ defmodule Dictionary.Type.TimestampTest do
 
   test "default format parses ISO8601 NaiveDateTime string" do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.to_iso8601()
-    timestamp = Dictionary.Type.Timestamp.new!(name: "foo")
+    timestamp = Dictionary.Type.Timestamp.new!([name: "foo"], IdGenerator.Impl)
 
     assert {:ok, _} = Timex.parse(now, timestamp.format, Timex.Parse.DateTime.Tokenizers.Strftime)
   end
 
   test "can be decoded back into struct" do
     timestamp =
-      Dictionary.Type.Timestamp.new!(name: "name", description: "description", format: "%Y")
+      Dictionary.Type.Timestamp.new!([name: "name", description: "description", format: "%Y"], IdGenerator.Impl)
 
     serialized = JsonSerde.serialize!(timestamp)
 
@@ -38,7 +38,7 @@ defmodule Dictionary.Type.TimestampTest do
   end
 
   data_test "validates dates - #{inspect(value)} tz #{timezone} --> #{inspect(result)}" do
-    field = Dictionary.Type.Timestamp.new!(name: "fake", format: format, timezone: timezone)
+    field = Dictionary.Type.Timestamp.new!([name: "fake", format: format, timezone: timezone], IdGenerator.Impl)
     assert result == Dictionary.Type.Normalizer.normalize(field, value)
 
     where [

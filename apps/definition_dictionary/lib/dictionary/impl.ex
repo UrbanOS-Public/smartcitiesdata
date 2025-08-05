@@ -150,7 +150,7 @@ defmodule Dictionary.Impl do
   defp struct?(_, _), do: false
 
   defp collapse_list(%{name: name, item_type: %{dictionary: dictionary}}) do
-    apply(Dictionary.Type.Map, :new!, [[name: name, dictionary: dictionary]])
+    apply(Dictionary.Type.Map, :new!, [[name: name, dictionary: dictionary], IdGenerator.Impl])
   end
 
   defp collapse_list(o), do: o

@@ -26,7 +26,7 @@ defmodule Dictionary.Type.BooleanTest do
       "__type__" => "dictionary_boolean"
     }
 
-    assert Dictionary.Type.Boolean.new!(name: "name", description: "do or do not") ==
+    assert Dictionary.Type.Boolean.new!([name: "name", description: "do or do not"], IdGenerator.Impl) ==
              Jason.encode!(input) |> JsonSerde.deserialize!()
   end
 

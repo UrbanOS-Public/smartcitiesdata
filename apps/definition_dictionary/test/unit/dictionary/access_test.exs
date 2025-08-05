@@ -7,29 +7,28 @@ defmodule Dictionary.AccessTest do
   setup do
     dictionary =
       Dictionary.from_list([
-        Dictionary.Type.String.new!(name: "name"),
-        Dictionary.Type.Integer.new!(name: "age"),
-        Dictionary.Type.Date.new!(name: "birthdate", format: "%Y-%m-%d"),
+        Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+        Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+        Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl),
         Dictionary.Type.Map.new!(
-          name: "spouse",
-          dictionary: [
-            Dictionary.Type.String.new!(name: "name"),
-            Dictionary.Type.Integer.new!(name: "age"),
-            Dictionary.Type.String.new!(name: "nickname")
-          ]
-        ),
+          [name: "spouse",
+          dictionary:
+            Dictionary.from_list([
+              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+              Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
+            ])], IdGenerator.Impl),
         Dictionary.Type.List.new!(
-          name: "friends",
+          [name: "friends",
           item_type:
             Dictionary.Type.Map.new!(
-              name: "in_list",
-              dictionary: [
-                Dictionary.Type.String.new!(name: "name"),
-                Dictionary.Type.Integer.new!(name: "age"),
-                Dictionary.Type.Integer.new!(name: "since")
-              ]
-            )
-        )
+              [name: "in_list",
+              dictionary:
+                Dictionary.from_list([
+                  Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                  Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+                  Dictionary.Type.Integer.new!([name: "since"], IdGenerator.Impl)
+                ])], IdGenerator.Impl)], IdGenerator.Impl)
       ])
 
     data = %{
@@ -58,9 +57,9 @@ defmodule Dictionary.AccessTest do
 
       where [
         [:path, :value],
-        [["hair"], Dictionary.Type.String.new!(name: "hair")],
-        [["spouse", "hair"], Dictionary.Type.String.new!(name: "hair")],
-        [["friends", "hair"], Dictionary.Type.String.new!(name: "hair")]
+        [["hair"], Dictionary.Type.String.new!([name: "hair"], IdGenerator.Impl)],
+        [["spouse", "hair"], Dictionary.Type.String.new!([name: "hair"], IdGenerator.Impl)],
+        [["friends", "hair"], Dictionary.Type.String.new!([name: "hair"], IdGenerator.Impl)]
       ]
     end
 
@@ -84,7 +83,7 @@ defmodule Dictionary.AccessTest do
     data_test "can remove field from dictionary", %{dictionary: dictionary} do
       keyed_path = Enum.map(path, &key/1)
       {popped, result} = pop_in(dictionary, keyed_path)
-      assert popped == Dictionary.Type.Integer.new!(name: "age")
+      assert popped == Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
       assert nil == get_in(result, keyed_path)
 
       where [
@@ -121,21 +120,21 @@ defmodule Dictionary.AccessTest do
         [:path, :function, :expected_get, :expected_update],
         [
           ["age"],
-          fn a -> {a, Dictionary.Type.String.new!(name: "age")} end,
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.String.new!(name: "age")
+          fn a -> {a, Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)} end,
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)
         ],
         [
           ["spouse", "age"],
-          fn a -> {a, Dictionary.Type.String.new!(name: "age")} end,
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.String.new!(name: "age")
+          fn a -> {a, Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)} end,
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)
         ],
         [
           ["friends", "age"],
-          fn a -> {a, Dictionary.Type.String.new!(name: "age")} end,
-          Dictionary.Type.Integer.new!(name: "age"),
-          Dictionary.Type.String.new!(name: "age")
+          fn a -> {a, Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)} end,
+          Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+          Dictionary.Type.String.new!([name: "age"], IdGenerator.Impl)
         ]
       ]
     end
@@ -168,19 +167,19 @@ defmodule Dictionary.AccessTest do
           ["age"],
           ["years_alive"],
           fn v -> Map.put(v, :name, "years_alive") end,
-          Dictionary.Type.Integer.new!(name: "years_alive")
+          Dictionary.Type.Integer.new!([name: "years_alive"], IdGenerator.Impl)
         ],
         [
           ["spouse", "nickname"],
           ["spouse", "goofy name"],
           fn v -> Map.put(v, :name, "goofy name") end,
-          Dictionary.Type.String.new!(name: "goofy name")
+          Dictionary.Type.String.new!([name: "goofy name"], IdGenerator.Impl)
         ],
         [
           ["friends", "since"],
           ["friends", "year"],
           fn v -> Map.put(v, :name, "year") end,
-          Dictionary.Type.Integer.new!(name: "year")
+          Dictionary.Type.Integer.new!([name: "year"], IdGenerator.Impl)
         ]
       ]
     end
@@ -207,9 +206,9 @@ defmodule Dictionary.AccessTest do
 
       where [
         [:path, :expected],
-        [["age"], Dictionary.Type.Integer.new!(name: "age")],
-        [["spouse", "nickname"], Dictionary.Type.String.new!(name: "nickname")],
-        [["friends", "since"], Dictionary.Type.Integer.new!(name: "since")]
+        [["age"], Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)],
+        [["spouse", "nickname"], Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)],
+        [["friends", "since"], Dictionary.Type.Integer.new!([name: "since"], IdGenerator.Impl)]
       ]
     end
 

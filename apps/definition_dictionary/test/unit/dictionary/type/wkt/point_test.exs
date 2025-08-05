@@ -19,7 +19,7 @@ defmodule Dictionary.Type.Wkt.PointTest do
   end
 
   test "can be decoded back into struct" do
-    point = Dictionary.Type.Wkt.Point.new!(name: "name", description: "description")
+    point = Dictionary.Type.Wkt.Point.new!([name: "name", description: "description"], IdGenerator.Impl)
     serialized = JsonSerde.serialize!(point)
 
     assert point == JsonSerde.deserialize!(serialized)

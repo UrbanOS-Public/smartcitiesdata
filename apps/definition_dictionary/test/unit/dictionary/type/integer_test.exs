@@ -26,7 +26,7 @@ defmodule Dictionary.Type.IntegerTest do
       "__type__" => "dictionary_integer"
     }
 
-    assert Dictionary.Type.Integer.new!(name: "name", description: "description") ==
+    assert Dictionary.Type.Integer.new!([name: "name", description: "description"], IdGenerator.Impl) ==
              Jason.encode!(input) |> JsonSerde.deserialize!()
   end
 

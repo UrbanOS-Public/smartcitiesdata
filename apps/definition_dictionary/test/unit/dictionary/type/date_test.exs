@@ -37,7 +37,7 @@ defmodule Dictionary.Type.DateTest do
   end
 
   data_test "validates dates - #{inspect(value)} --> #{inspect(result)}" do
-    field = Dictionary.Type.Date.new!(name: "fake", format: format)
+    field = Dictionary.Type.Date.new!([name: "fake", format: format], IdGenerator.Impl)
     assert result == Dictionary.Type.Normalizer.normalize(field, value)
 
     where [

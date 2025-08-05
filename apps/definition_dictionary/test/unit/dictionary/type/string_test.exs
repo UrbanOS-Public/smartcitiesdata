@@ -4,8 +4,8 @@ defmodule Dictionary.Type.StringTest do
 
   describe "new/1" do
     test "name gets lowercased" do
-      assert Dictionary.Type.String.new!(name: "name") ==
-               Dictionary.Type.String.new!(name: "Name")
+      assert Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl) ==
+               Dictionary.Type.String.new!([name: "Name"], IdGenerator.Impl)
     end
   end
 
@@ -35,7 +35,7 @@ defmodule Dictionary.Type.StringTest do
 
     field = input |> Jason.encode!() |> JsonSerde.deserialize!()
 
-    assert field == Dictionary.Type.String.new!(name: "name", description: "description")
+    assert field == Dictionary.Type.String.new!([name: "name", description: "description"], IdGenerator.Impl)
   end
 
   data_test "validates strings - #{inspect(value)} --> #{inspect(result)}" do
