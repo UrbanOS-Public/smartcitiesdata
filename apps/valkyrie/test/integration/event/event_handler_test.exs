@@ -1,7 +1,7 @@
 defmodule Valkyrie.Event.EventHandlerTest do
   use ExUnit.Case
   use Divo
-  use Placebo
+  import Mock
   use Properties, otp_app: :valkyrie
 
   import SmartCity.TestHelper

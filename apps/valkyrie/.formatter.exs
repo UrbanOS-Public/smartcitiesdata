@@ -2,6 +2,6 @@
 [
   inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}"],
   line_length: 120,
-  import_deps: [:placebo],
+  import_deps: [:mox],
   locals_without_parens: [eventually: :*]
 ]
