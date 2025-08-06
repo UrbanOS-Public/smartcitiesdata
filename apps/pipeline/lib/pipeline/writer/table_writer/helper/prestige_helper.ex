@@ -4,9 +4,13 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
 
   require Logger
 
+  defp prestige_module do
+    Application.get_env(:pipeline, :prestige, Prestige)
+  end
+
   def execute_query(query) do
     create_session()
-    |> Prestige.execute(query)
+    |> prestige_module().execute(query)
   rescue
     error -> error
   end
@@ -23,7 +27,7 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelper do
 
   def create_session() do
     Application.get_env(:prestige, :session_opts)
-    |> Prestige.new_session()
+    |> prestige_module().new_session()
   end
 
   def drop_table(%{"Table" => table_name}) do

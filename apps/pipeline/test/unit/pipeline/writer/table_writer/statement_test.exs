@@ -228,7 +228,7 @@ defmodule Pipeline.Writer.TableWriter.StatementTest do
     @tag capture_log: true
     test "returns error tuple when given invalid schema" do
       schema = [%{name: "my_field"}]
-      expected = "Unable to parse schema: %KeyError{key: :type, message: nil, term: %{name: \"my_field\"}}"
+      expected = "Unable to parse schema: %KeyError{key: :type, term: %{name: \"my_field\"}, message: nil}"
       assert {:error, ^expected} = Statement.create(%{table: "table_name", schema: schema})
     end
 

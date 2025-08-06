@@ -12,7 +12,6 @@ defmodule Pipeline.Writer.TableWriter.Helper.PrestigeHelperTest do
   setup :verify_on_exit!
 
   setup do
-    Mox.stub_with(PrestigeMock, Prestige)
     :ok
   end
 

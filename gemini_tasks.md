@@ -15,6 +15,7 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
 
 ## Deferred Tasks
 
+- apps/valkyrie unit tests have one failure. DeadLetter.Carrier.Test.receive() doesn't return the required message.
 - Replace Placebo component in unit tests with Mox and other components.
 - Fix all existing apps/forklift unit tests so they pass while preserving the essence of the tests.
 
@@ -34,3 +35,4 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
   I will try to fix this by adding protocol_destination to the list of applications in apps/definition_kafka/mix.exs. This will ensure that the protocol_destination application is started before the definition_kafka application, which should make the
 - The apps/estuary unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 - The apps/definition_dictionary unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- The apps/valkyrie unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
