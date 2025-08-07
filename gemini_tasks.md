@@ -8,7 +8,8 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
 
 ## Pending Tasks
 
-- The apps/valkyrie unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- The apps/raptor unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- Run the unit tests by "cd apps/raptor && mix test" and fix any failures.
 - Analyze the changes staged for commit, summarize them into four sentences or less suitable as a git commit message.
 
 
@@ -36,3 +37,4 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
 - The apps/estuary unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 - The apps/definition_dictionary unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 - The apps/valkyrie unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- The apps/pipeline unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.

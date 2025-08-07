@@ -24,3 +24,10 @@ config :raptor, :brook,
     module: Brook.Storage.Ets,
     init_arg: []
   ]
+
+config :raptor,
+  auth0_management: Auth0ManagementMock,
+  dataset_store: DatasetStoreMock,
+  user_org_assoc_store: UserOrgAssocStoreMock,
+  user_access_group_relation_store: UserAccessGroupRelationStoreMock,
+  dataset_access_group_relation_store: DatasetAccessGroupRelationStoreMock

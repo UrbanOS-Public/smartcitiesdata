@@ -7,18 +7,24 @@ defmodule RaptorWeb.AuthorizeController do
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Services.DatasetAccessGroupRelationStore
+  
+  defp auth0_management, do: Application.get_env(:raptor, :auth0_management, Auth0Management)
+  defp dataset_store, do: Application.get_env(:raptor, :dataset_store, DatasetStore)
+  defp user_org_assoc_store, do: Application.get_env(:raptor, :user_org_assoc_store, UserOrgAssocStore)
+  defp user_access_group_relation_store, do: Application.get_env(:raptor, :user_access_group_relation_store, UserAccessGroupRelationStore)
+  defp dataset_access_group_relation_store, do: Application.get_env(:raptor, :dataset_access_group_relation_store, DatasetAccessGroupRelationStore)
   require Logger
 
   plug(:accepts, ["json"])
 
   def is_user_in_org?(user_id, org_id) do
-    UserOrgAssocStore.get(user_id, org_id) != %{}
+    user_org_assoc_store().get(user_id, org_id) != %{}
   end
 
   @spec is_user_in_access_group?(binary, any) :: any
   def is_user_in_access_group?(user_id, dataset_id) do
-    user_access_groups = UserAccessGroupRelationStore.get_all_by_user(user_id)
-    dataset_access_groups = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
+    user_access_groups = user_access_group_relation_store().get_all_by_user(user_id)
+    dataset_access_groups = dataset_access_group_relation_store().get_all_by_dataset(dataset_id)
 
     Enum.any?(user_access_groups, fn user_access_group ->
       Enum.member?(dataset_access_groups, user_access_group)
@@ -45,7 +51,7 @@ defmodule RaptorWeb.AuthorizeController do
       1 ->
         user = user_list |> Enum.at(0)
 
-        if(Auth0Management.is_valid_user(user)) do
+        if(auth0_management().is_valid_user(user)) do
           check_user_association(user, dataset)
         else
           # Only users who have validated their email address and aren't blocked may make API calls
@@ -59,7 +65,7 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"auth0_user" => auth0_user, "systemName" => systemName}) do
-    dataset_associated_with_system_name = DatasetStore.get(systemName)
+    dataset_associated_with_system_name = dataset_store().get(systemName)
 
     if(is_valid_dataset?(dataset_associated_with_system_name)) do
       if dataset_associated_with_system_name.is_private do
@@ -77,11 +83,11 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"apiKey" => apiKey, "systemName" => systemName}) do
-    dataset_associated_with_system_name = DatasetStore.get(systemName)
+    dataset_associated_with_system_name = dataset_store().get(systemName)
 
     if(is_valid_dataset?(dataset_associated_with_system_name)) do
       if dataset_associated_with_system_name.is_private do
-        case Auth0Management.get_users_by_api_key(apiKey) do
+        case auth0_management().get_users_by_api_key(apiKey) do
           {:ok, user_list} ->
             render(conn, %{
               is_authorized: validate_user_list(user_list, dataset_associated_with_system_name)
@@ -107,10 +113,10 @@ defmodule RaptorWeb.AuthorizeController do
   end
 
   def authorize(conn, %{"systemName" => systemName}) do
-    dataset_associated_with_system_name = DatasetStore.get(systemName)
+    dataset_associated_with_system_name = dataset_store().get(systemName)
 
     if(is_valid_dataset?(dataset_associated_with_system_name)) do
-      if DatasetStore.get(systemName).is_private do
+      if dataset_associated_with_system_name.is_private do
         render_error(conn, 400, "apiKey is a required parameter to access private datasets.")
       else
         render(conn, %{is_authorized: true})

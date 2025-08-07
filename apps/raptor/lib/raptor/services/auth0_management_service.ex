@@ -1,4 +1,5 @@
 defmodule Raptor.Services.Auth0Management do
+  @behaviour Raptor.Services.Auth0ManagementBehaviour
   @moduledoc """
   Service to get a temporary access token for the auth0 managment api and interface with the api
   """

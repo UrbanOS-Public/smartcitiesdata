@@ -1,4 +1,5 @@
 defmodule Raptor.Services.DatasetStore do
+  @behaviour Raptor.Services.DatasetStoreBehaviour
   @moduledoc """
   This module provides functionality for interacting with Redis
   """

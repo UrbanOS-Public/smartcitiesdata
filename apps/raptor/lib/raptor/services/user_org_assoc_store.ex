@@ -1,4 +1,5 @@
 defmodule Raptor.Services.UserOrgAssocStore do
+  @behaviour Raptor.Services.UserOrgAssocStoreBehaviour
   @moduledoc """
   This module provides functionality for interacting with Redis
   """

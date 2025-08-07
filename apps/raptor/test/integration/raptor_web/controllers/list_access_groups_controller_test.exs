@@ -1,6 +1,6 @@
 defmodule Raptor.ListAccessGroupsControllerTest do
   use ExUnit.Case
-  use Placebo
+  import Mock
 
   use Tesla
   use Properties, otp_app: :raptor

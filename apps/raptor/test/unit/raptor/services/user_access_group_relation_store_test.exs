@@ -1,6 +1,6 @@
 defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
   use RaptorWeb.ConnCase
-  use Placebo
+  import Mock
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Schemas.UserAccessGroupRelation
 
@@ -9,11 +9,10 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
 
   describe "get_all/0" do
     test "returns empty list when no user access group relations in redis" do
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: [])
-
-      actualRelations = UserAccessGroupRelationStore.get_all()
-
-      assert [] == actualRelations
+      with_mock Redix, [command!: fn(_, ["KEYS", @namespace <> "*"]) -> [] end] do
+        actualRelations = UserAccessGroupRelationStore.get_all()
+        assert [] == actualRelations
+      end
     end
 
     test "returns list of user-access_group relations when they exist in redis" do
@@ -22,23 +21,23 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
         "raptor:user_access_group_relation:user_id1:access_group_id1"
       ]
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: keys)
-
-      allow(Redix.command!(@redix, ["MGET" | keys]),
-        return: [
-          "{\"user_id\":\"user_id\",\"access_group_id\":\"access_group_id\"}",
-          "{\"user_id\":\"user_id1\",\"access_group_id\":\"access_group_id1\"}"
-        ]
-      )
-
       expectedRelations = [
         %UserAccessGroupRelation{user_id: "user_id", access_group_id: "access_group_id"},
         %UserAccessGroupRelation{user_id: "user_id1", access_group_id: "access_group_id1"}
       ]
 
-      actualRelations = UserAccessGroupRelationStore.get_all()
-
-      assert expectedRelations == actualRelations
+      with_mock Redix, [
+        command!: fn
+          (_, ["KEYS", @namespace <> "*"]) -> keys
+          (_, ["MGET" | ^keys]) -> [
+            "{\"user_id\":\"user_id\",\"access_group_id\":\"access_group_id\"}",
+            "{\"user_id\":\"user_id1\",\"access_group_id\":\"access_group_id1\"}"
+          ]
+        end
+      ] do
+        actualRelations = UserAccessGroupRelationStore.get_all()
+        assert expectedRelations == actualRelations
+      end
     end
   end
 
@@ -47,55 +46,51 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
       user_id = "picard"
       access_group_id = "enterprise"
       key = "#{user_id}:#{access_group_id}"
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]), return: [])
-
-      actualRelation = UserAccessGroupRelationStore.get(user_id, access_group_id)
-
-      assert %{} == actualRelation
+      
+      with_mock Redix, [command!: fn(_, ["KEYS", @namespace <> ^key]) -> [] end] do
+        actualRelation = UserAccessGroupRelationStore.get(user_id, access_group_id)
+        assert %{} == actualRelation
+      end
     end
 
     test "a Raptor user access group assoc is returned when there is one entry in redis matching the user id and access group id" do
       user_id = "picard"
       access_group_id = "enterprise"
       key = "#{user_id}:#{access_group_id}"
-
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
-        return: ["raptor:user_access_group_relation:picard:enterprise"]
-      )
-
-      allow(
-        Redix.command!(@redix, ["MGET", "raptor:user_access_group_relation:picard:enterprise"]),
-        return: [
-          "{\"user_id\":\"picard\",\"access_group_id\":\"enterprise\"}"
-        ]
-      )
+      redis_key = "raptor:user_access_group_relation:picard:enterprise"
 
       expected_relation = %UserAccessGroupRelation{
         user_id: "picard",
         access_group_id: "enterprise"
       }
 
-      actual_relation = UserAccessGroupRelationStore.get(user_id, access_group_id)
-
-      assert expected_relation == actual_relation
+      with_mock Redix, [
+        command!: fn
+          (_, ["KEYS", @namespace <> ^key]) -> [redis_key]
+          (_, ["MGET", ^redis_key]) -> [
+            "{\"user_id\":\"picard\",\"access_group_id\":\"enterprise\"}"
+          ]
+        end
+      ] do
+        actual_relation = UserAccessGroupRelationStore.get(user_id, access_group_id)
+        assert expected_relation == actual_relation
+      end
     end
 
     test "an empty map is returned when there are multiple entries in redis matching the user id and access group id" do
       user_id = "picard"
       access_group_id = "enterprise"
+      key = "#{user_id}:#{access_group_id}"
 
       keys = [
         "raptor:user_access_group_relation:picard:enterprise",
         "raptor:user_access_group_relation:picard:enterprise"
       ]
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "#{user_id}:#{access_group_id}"]),
-        return: keys
-      )
-
-      actual_relation = UserAccessGroupRelationStore.get(user_id, access_group_id)
-
-      assert %{} == actual_relation
+      with_mock Redix, [command!: fn(_, ["KEYS", @namespace <> ^key]) -> keys end] do
+        actual_relation = UserAccessGroupRelationStore.get(user_id, access_group_id)
+        assert %{} == actual_relation
+      end
     end
   end
 
@@ -111,25 +106,23 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
 
       user_access_group_relation_json =
         "{\"access_group_id\":\"enterprise\",\"user_id\":\"picard\"}"
-
-      allow(
-        Redix.command!(@redix, [
+      
+      redis_key = @namespace <> "#{user_id}:#{access_group_id}"
+      
+      with_mock Redix, [
+        command!: fn(_, [
           "SET",
-          @namespace <> "#{user_id}:#{access_group_id}",
-          user_access_group_relation_json
-        ]),
-        return: :ok
-      )
-
-      UserAccessGroupRelationStore.persist(user_access_group_relation)
-
-      assert_called(
-        Redix.command!(@redix, [
+          ^redis_key,
+          ^user_access_group_relation_json
+        ]) -> :ok end
+      ] do
+        UserAccessGroupRelationStore.persist(user_access_group_relation)
+        assert called(Redix.command!(@redix, [
           "SET",
-          @namespace <> "#{user_id}:#{access_group_id}",
+          redis_key,
           user_access_group_relation_json
-        ])
-      )
+        ]))
+      end
     end
   end
 
@@ -143,15 +136,12 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
         access_group_id: "enterprise"
       }
 
-      allow(Redix.command!(@redix, ["DEL", @namespace <> "#{user_id}:#{access_group_id}"]),
-        return: :ok
-      )
-
-      UserAccessGroupRelationStore.delete(userAccessGroupRelation)
-
-      assert_called(
-        Redix.command!(@redix, ["DEL", @namespace <> "#{user_id}:#{access_group_id}"])
-      )
+      redis_key = @namespace <> "#{user_id}:#{access_group_id}"
+      
+      with_mock Redix, [command!: fn(_, ["DEL", ^redis_key]) -> :ok end] do
+        UserAccessGroupRelationStore.delete(userAccessGroupRelation)
+        assert called(Redix.command!(@redix, ["DEL", redis_key]))
+      end
     end
   end
 end

@@ -1,4 +1,5 @@
 defmodule Raptor.Services.UserAccessGroupRelationStore do
+  @behaviour Raptor.Services.UserAccessGroupRelationStoreBehaviour
   @moduledoc """
   This module provides functionality for interacting with Redis
   """

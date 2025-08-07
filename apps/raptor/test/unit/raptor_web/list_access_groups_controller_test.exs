@@ -1,6 +1,6 @@
 defmodule RaptorWeb.ListAccessGroupsControllerTest do
   use RaptorWeb.ConnCase
-  use Placebo
+  import Mock
   alias Raptor.Services.DatasetStore
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.DatasetAccessGroupRelationStore
@@ -15,24 +15,21 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
       api_key = "ap1K3Y"
       user_id = "auth0_user"
 
-      allow(Auth0Management.get_users_by_api_key(api_key),
-        return: {:ok, [%Auth0UserData{user_id: user_id}]}
-      )
+      with_mock Auth0Management, [get_users_by_api_key: fn(^api_key) -> {:ok, [%Auth0UserData{user_id: user_id}]} end] do
+        with_mock UserOrgAssocStore, [get_all_by_user: fn("auth0_user") -> [] end] do
+          with_mock UserAccessGroupRelationStore, [get_all_by_user: fn(^user_id) -> [] end] do
 
-      allow(UserOrgAssocStore.get_all_by_user("auth0_user"), return: [])
+            actual =
+              conn
+              |> get("/api/listAccessGroups?api_key=#{api_key}")
+              |> json_response(200)
 
-      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
-        return: []
-      )
+            expected = %{"access_groups" => [], "organizations" => []}
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?api_key=#{api_key}")
-        |> json_response(200)
-
-      expected = %{"access_groups" => [], "organizations" => []}
-
-      assert actual == expected
+            assert actual == expected
+          end
+        end
+      end
     end
 
     test "returns a list of access groups when there are access groups for the given apiKey", %{
@@ -41,24 +38,21 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
       api_key = "ap1K3Y"
       user_id = "auth0_user"
 
-      allow(Auth0Management.get_users_by_api_key(api_key),
-        return: {:ok, [%Auth0UserData{user_id: user_id}]}
-      )
+      with_mock Auth0Management, [get_users_by_api_key: fn(^api_key) -> {:ok, [%Auth0UserData{user_id: user_id}]} end] do
+        with_mock UserOrgAssocStore, [get_all_by_user: fn("auth0_user") -> [] end] do
+          with_mock UserAccessGroupRelationStore, [get_all_by_user: fn(^user_id) -> ["access_group1", "access_group2"] end] do
 
-      allow(UserOrgAssocStore.get_all_by_user("auth0_user"), return: [])
+            actual =
+              conn
+              |> get("/api/listAccessGroups?api_key=#{api_key}")
+              |> json_response(200)
 
-      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
-        return: ["access_group1", "access_group2"]
-      )
+            expected = %{"access_groups" => ["access_group1", "access_group2"], "organizations" => []}
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?api_key=#{api_key}")
-        |> json_response(200)
-
-      expected = %{"access_groups" => ["access_group1", "access_group2"], "organizations" => []}
-
-      assert actual == expected
+            assert actual == expected
+          end
+        end
+      end
     end
   end
 
@@ -68,18 +62,17 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
     } do
       dataset_id = "dataset-without-access-groups"
 
-      expect(DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id),
-        return: []
-      )
+      with_mock DatasetAccessGroupRelationStore, [get_all_by_dataset: fn(^dataset_id) -> [] end] do
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?dataset_id=#{dataset_id}")
-        |> json_response(200)
+        actual =
+          conn
+          |> get("/api/listAccessGroups?dataset_id=#{dataset_id}")
+          |> json_response(200)
 
-      expected = %{"access_groups" => []}
+        expected = %{"access_groups" => []}
 
-      assert actual == expected
+        assert actual == expected
+      end
     end
 
     test "returns a list of access groups when there are access groups for the given dataset", %{
@@ -87,58 +80,55 @@ defmodule RaptorWeb.ListAccessGroupsControllerTest do
     } do
       dataset_id = "dataset-without-access-groups"
 
-      expect(DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id),
-        return: ["access-group1", "access-group2"]
-      )
+      with_mock DatasetAccessGroupRelationStore, [get_all_by_dataset: fn(^dataset_id) -> ["access-group1", "access-group2"] end] do
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?dataset_id=#{dataset_id}")
-        |> json_response(200)
+        actual =
+          conn
+          |> get("/api/listAccessGroups?dataset_id=#{dataset_id}")
+          |> json_response(200)
 
-      expected = %{"access_groups" => ["access-group1", "access-group2"]}
+        expected = %{"access_groups" => ["access-group1", "access-group2"]}
 
-      assert actual == expected
+        assert actual == expected
+      end
     end
   end
 
   describe "retrieves access groups by user_id" do
     test "returns an empty list when there are no access groups for the given user", %{conn: conn} do
       user_id = "user-without-access-groups"
-      allow(UserOrgAssocStore.get_all_by_user(user_id), return: [])
+      with_mock UserOrgAssocStore, [get_all_by_user: fn(^user_id) -> [] end] do
+        with_mock UserAccessGroupRelationStore, [get_all_by_user: fn(^user_id) -> [] end] do
 
-      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
-        return: []
-      )
+          actual =
+            conn
+            |> get("/api/listAccessGroups?user_id=#{user_id}")
+            |> json_response(200)
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?user_id=#{user_id}")
-        |> json_response(200)
+          expected = %{"access_groups" => [], "organizations" => []}
 
-      expected = %{"access_groups" => [], "organizations" => []}
-
-      assert actual == expected
+          assert actual == expected
+        end
+      end
     end
 
     test "returns a list of access groups when there are access groups for the given user", %{
       conn: conn
     } do
       user_id = "user-with-access-groups"
-      allow(UserOrgAssocStore.get_all_by_user(user_id), return: [])
+      with_mock UserOrgAssocStore, [get_all_by_user: fn(^user_id) -> [] end] do
+        with_mock UserAccessGroupRelationStore, [get_all_by_user: fn(^user_id) -> ["access-group1", "access-group2"] end] do
 
-      expect(UserAccessGroupRelationStore.get_all_by_user(user_id),
-        return: ["access-group1", "access-group2"]
-      )
+          actual =
+            conn
+            |> get("/api/listAccessGroups?user_id=#{user_id}")
+            |> json_response(200)
 
-      actual =
-        conn
-        |> get("/api/listAccessGroups?user_id=#{user_id}")
-        |> json_response(200)
+          expected = %{"access_groups" => ["access-group1", "access-group2"], "organizations" => []}
 
-      expected = %{"access_groups" => ["access-group1", "access-group2"], "organizations" => []}
-
-      assert actual == expected
+          assert actual == expected
+        end
+      end
     end
   end
 
