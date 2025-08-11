@@ -1,13 +1,37 @@
+ExUnit.start(exclude: [:skip])
+
 Application.load(:reaper)
 
 Application.spec(:reaper, :applications)
 |> Enum.each(&Application.ensure_all_started/1)
 
 Mox.defmock(Providers.Echo, for: Providers.Provider)
+Mox.defmock(JasonMock, for: Reaper.JasonBehaviour)
+Mox.defmock(TransitRealtimeMock, for: Reaper.TransitRealtimeBehaviour)
+Mox.defmock(CsvDecoderMock, for: Reaper.CsvDecoderBehaviour)
+Mox.defmock(CacheMock, for: Reaper.CacheBehaviour)
+Mox.defmock(ElsaMock, for: Reaper.ElsaBehaviour)
+Mox.defmock(PersistenceMock, for: Reaper.PersistenceBehaviour)
+Mox.defmock(TelemetryEventMock, for: TelemetryEvent.Behaviour)
+Mox.defmock(ValkyrierTelemetryEventMock, for: TelemetryEvent.Behaviour)
+Mox.defmock(ExAwsMock, for: Reaper.ExAwsBehaviour)
+Mox.defmock(ExAwsS3Mock, for: Reaper.ExAwsS3Behaviour)
+Mox.defmock(FtpMock, for: Reaper.FtpBehaviour)
+Mox.defmock(DateTimeMock, for: Reaper.DateTimeBehaviour)
+Mox.defmock(BrookEventMock, for: Reaper.BrookEventBehaviour)
+Mox.defmock(TimexMock, for: Reaper.TimexBehaviour)
+Mox.defmock(RedixMock, for: Reaper.RedixBehaviour)
+Mox.defmock(ProcessorMock, for: Reaper.ProcessorBehaviour)
+Mox.defmock(HordeRegistryMock, for: Reaper.HordeRegistryBehaviour)
+Mox.defmock(SecretRetrieverMock, for: Reaper.SecretRetrieverBehaviour)
+Mox.defmock(MintHttpMock, for: Reaper.MintHttpBehaviour)
+Mox.defmock(DataSlurperS3Mock, for: Reaper.DataSlurperS3Behaviour)
+Mox.defmock(DataSlurperSftpMock, for: Reaper.DataSlurperSftpBehaviour)
+Mox.defmock(StopIngestionMock, for: Reaper.StopIngestionBehaviour)
+Mox.defmock(TopicManagerMock, for: Reaper.TopicManagerBehaviour)
 
 Application.ensure_all_started(:bypass)
-
-ExUnit.start(exclude: [:skip])
+{:ok, _} = TelemetryEvent.Mock.start_link()
 
 defmodule TestHelper do
   use ExUnit.Case

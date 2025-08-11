@@ -1,6 +1,5 @@
 defmodule Reaper.DataSlurper.SftpTest do
   use ExUnit.Case
-  use Placebo
 
   describe "DataSlurper.Sftp.slurp/2" do
     setup do

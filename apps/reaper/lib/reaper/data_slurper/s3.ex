@@ -6,6 +6,9 @@ defmodule Reaper.DataSlurper.S3 do
   alias ExAws.S3
   alias Reaper.DataSlurper
   require Logger
+  
+  @ex_aws Application.compile_env(:reaper, :ex_aws, ExAws)
+  @ex_aws_s3 Application.compile_env(:reaper, :ex_aws_s3, S3)
 
   @impl DataSlurper
   def handle?(url), do: String.starts_with?(url, "s3")
@@ -16,7 +19,7 @@ defmodule Reaper.DataSlurper.S3 do
     [bucket, key] = String.split(location, "/", parts: 2)
 
     bucket
-    |> S3.download_file(key, filename)
+    |> @ex_aws_s3.download_file(key, filename)
     |> download_s3_file_request(headers)
     |> case do
       {:ok, _} -> {:file, filename}
@@ -25,10 +28,10 @@ defmodule Reaper.DataSlurper.S3 do
   end
 
   def download_s3_file_request(s3_download_struct, %{"x-scos-amzn-s3-region": region}) do
-    ExAws.request(s3_download_struct, region: region)
+    @ex_aws.request(s3_download_struct, region: region)
   end
 
   def download_s3_file_request(s3_download_struct, _headers) do
-    ExAws.request(s3_download_struct)
+    @ex_aws.request(s3_download_struct)
   end
 end

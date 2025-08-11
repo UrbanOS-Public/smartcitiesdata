@@ -9,7 +9,7 @@ defmodule ReaperTests do
   setup do
     TestHelper.start_horde()
     {:ok, scheduler} = Reaper.Scheduler.start_link()
-    stub_with(Reaper.DataExtract.Processor, {:process, fn _, _ -> Process.sleep(10 * 60_000) end})
+    stub(ProcessorMock, :process, fn _, _ -> Process.sleep(10 * 60_000) end)
     ingestion = TDG.create_ingestion(%{id: "ds-to-kill"})
 
     on_exit(fn ->

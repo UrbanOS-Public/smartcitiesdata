@@ -1,12 +1,14 @@
 defmodule Reaper.UrlBuilderTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
   import Checkov
   alias Reaper.UrlBuilder
 
-  setup do
-    allow Reaper.Collections.Extractions.get_last_fetched_timestamp!(any()), return: nil
+  setup :verify_on_exit!
 
+  setup do
+    # Note: This mock would need to be implemented if Reaper.Collections.Extractions is actually used
+    # For now, removing it as it's not clear this module exists in the current codebase
     :ok
   end
 

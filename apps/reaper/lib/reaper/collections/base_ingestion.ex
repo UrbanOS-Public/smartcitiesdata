@@ -1,6 +1,8 @@
 defmodule Reaper.Collections.BaseIngestion do
   @moduledoc false
 
+  @date_time_impl Application.compile_env(:reaper, :date_time, DateTime)
+
   defmacro __using__(opts) do
     instance = Keyword.fetch!(opts, :instance)
     collection = Keyword.fetch!(opts, :collection)
@@ -12,12 +14,14 @@ defmodule Reaper.Collections.BaseIngestion do
         })
       end
 
-      def update_last_fetched_timestamp(id, fetched_time \\ DateTime.utc_now()) do
-        Brook.ViewState.merge(unquote(collection), id, %{"last_fetched_timestamp" => fetched_time})
+      def update_last_fetched_timestamp(id, fetched_time \\ nil) do
+        timestamp = fetched_time || unquote(@date_time_impl).utc_now()
+        Brook.ViewState.merge(unquote(collection), id, %{"last_fetched_timestamp" => timestamp})
       end
 
-      def update_started_timestamp(id, started_time \\ DateTime.utc_now()) do
-        Brook.ViewState.merge(unquote(collection), id, %{"started_timestamp" => started_time})
+      def update_started_timestamp(id, started_time \\ nil) do
+        timestamp = started_time || unquote(@date_time_impl).utc_now()
+        Brook.ViewState.merge(unquote(collection), id, %{"started_timestamp" => timestamp})
       end
 
       def delete_ingestion(ingestion_id) do

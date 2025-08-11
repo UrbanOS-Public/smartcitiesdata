@@ -1,6 +1,5 @@
 defmodule Reaper.Decoder.JsonTest do
   use ExUnit.Case
-  use Placebo
   alias Reaper.Decoder
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov

@@ -1,10 +1,10 @@
 defmodule Reaper.Event.Handlers.IngestionUpdateTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :reaper
 
   import Checkov
   import ExUnit.CaptureLog
+  import Mox
 
   alias Reaper.Event.Handlers.IngestionUpdate
   alias SmartCity.TestDataGenerator, as: TDG
@@ -20,9 +20,16 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
     {:ok, scheduler} = Reaper.Scheduler.start_link()
 
+    # Set up DateTimeMock stub for update_last_fetched_timestamp calls
+    # Set to global mode so it works across Brook processes
+    stub(DateTimeMock, :utc_now, fn -> DateTime.utc_now() end)
+    set_mox_global()
+
     on_exit(fn ->
       TestHelper.assert_down(scheduler)
       TestHelper.assert_down(brook)
+      # Reset Mox to private mode
+      set_mox_private()
     end)
 
     Brook.Test.register(@instance_name)
@@ -104,7 +111,7 @@ defmodule Reaper.Event.Handlers.IngestionUpdateTest do
     test "discards ingestion event when cadence is never" do
       ingestion = TDG.create_ingestion(%{cadence: "never"})
 
-      assert capture_log(fn ->
+      assert capture_log([level: :info], fn ->
                assert :ok == IngestionUpdate.handle(ingestion)
              end) == ""
     end

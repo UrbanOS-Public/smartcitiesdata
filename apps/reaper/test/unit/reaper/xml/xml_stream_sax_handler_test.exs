@@ -16,8 +16,8 @@ defmodule XMLStream.SaxHandlerTest do
       |> test_file_path()
       |> SaxHandler.start_stream(tag_path, make_test_emitter())
 
-    assert_received {:emit, {"stationData", [], [{"stationID", [], [characters: "1:41613"]} | _]}}
-    assert_received {:emit, {"stationData", [], [{"stationID", [], [characters: "1:111"]} | _]}}
+    assert_received {:emit, {"stationData", [], [{:characters, "\n        "}, {"stationID", [], [characters: "1:41613"]} | _]}}
+    assert_received {:emit, {"stationData", [], [{:characters, "\n        "}, {"stationID", [], [characters: "1:111"]} | _]}}
   end
 
   test "emits row data records in 'simple form' from a file with repeated tag names" do

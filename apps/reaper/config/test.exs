@@ -14,7 +14,24 @@ config :reaper,
   produce_timeout: 10,
   secrets_endpoint: "http://vault:8200",
   hosted_file_bucket: "hosted-dataset-files",
-  task_delay_on_failure: 1_000
+  task_delay_on_failure: 1_000,
+  json_encoder: JasonMock,
+  cache_module: CacheMock,
+  date_time: DateTimeMock,
+  processor: ProcessorMock,
+  elsa_brokers: [localhost: 9092],
+  
+  ex_aws: ExAwsMock,
+  ex_aws_s3: ExAwsS3Mock,
+  ftp: FtpMock,
+  redix_client: RedixMock,
+  timex: TimexMock,
+  secret_retriever: SecretRetrieverMock,
+  mint_http: MintHttpMock,
+  stop_ingestion: StopIngestionMock,
+  topic_manager: TopicManagerMock
+
+
 
 config :reaper, :brook,
   driver: [

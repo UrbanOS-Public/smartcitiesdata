@@ -1,6 +1,6 @@
 # Review code
 
-## elixir apps [28/36] [77%]
+## elixir apps [30/36] [83%]
 - [X] protocol_decoder     - 41 lines
 - [ ] web                  - 59 lines
 - [X] protocol_destination - 87 lines
@@ -32,8 +32,8 @@
 - [X] pipeline             - 3757 lines
 - [X] forklift
 - [X] raptor               - 4961 lines
-- [ ] transformers         - 8141 lines
-- [ ] reaper               - 11475 lines
+- [X] transformers         - 8141 lines
+- [X] reaper               - 11475 lines
 - [ ] discovery_api        - 25244 lines
 - [ ] andi                 - 40700 lines
 - [ ] e2e

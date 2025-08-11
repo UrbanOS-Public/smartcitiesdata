@@ -8,6 +8,7 @@ defmodule Reaper.Horde.Supervisor do
   import SmartCity.Event, only: [data_extract_end: 0, file_ingest_end: 0]
 
   @instance_name Reaper.instance_name()
+  @processor_impl Application.compile_env(:reaper, :processor, Reaper.DataExtract.Processor)
 
   def start_link(init_args \\ []) do
     Horde.DynamicSupervisor.start_link(__MODULE__, init_args, name: __MODULE__)
@@ -52,7 +53,7 @@ defmodule Reaper.Horde.Supervisor do
     start_child(
       {Reaper.RunTask,
        name: ingestion.id,
-       mfa: {Reaper.DataExtract.Processor, :process, [ingestion, extract_start]},
+       mfa: {unquote(@processor_impl), :process, [ingestion, extract_start]},
        completion_callback: send_extract_complete_event}
     )
   end

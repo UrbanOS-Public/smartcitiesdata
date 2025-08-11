@@ -1,7 +1,7 @@
 defmodule Reaper.DataExtract.LoadStageTest do
-  use ExUnit.Case
-  use Placebo
+  use ExUnit.Case, async: false
   use Properties, otp_app: :reaper
+  import Mox
 
   alias Reaper.DataExtract.LoadStage
   alias Reaper.{Cache, Persistence}
@@ -16,6 +16,35 @@ defmodule Reaper.DataExtract.LoadStageTest do
   getter(:profiling_enabled, generic: true)
 
   setup do
+    # Setup meck for external modules (don't mock Cache since we use real cache in tests)
+    modules_to_mock = [Elsa, Persistence]
+    
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.unload(module)
+      rescue
+        ErlangError -> :ok
+      end
+      :meck.new(module, [:non_strict])
+    end)
+    
+    # Mock DateTime with passthrough to only override specific functions
+    try do
+      :meck.unload(DateTime)
+    rescue
+      ErlangError -> :ok
+    end
+    :meck.new(DateTime, [:passthrough])
+    
+    on_exit(fn ->
+      Enum.each([DateTime | modules_to_mock], fn module ->
+        try do
+          :meck.unload(module)
+        rescue
+          ErlangError -> :ok
+        end
+      end)
+    end)
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
     {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
@@ -25,15 +54,20 @@ defmodule Reaper.DataExtract.LoadStageTest do
       kill(registry)
     end)
 
-    allow DateTime.to_iso8601(any()), return: @iso_output, meck_options: [:passthrough]
+    # Mock DateTime.to_iso8601 to return consistent output
+    :meck.expect(DateTime, :to_iso8601, fn _datetime -> @iso_output end)
+    
+    # Set up Jason mock for Cache operations
+    stub(JasonMock, :encode, fn value -> {:ok, Jason.encode!(value)} end)
+    
     :ok
   end
 
   describe "handle_events/3 check duplicates" do
     setup do
       Application.put_env(:reaper, :profiling_enabled, true)
-      allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow Persistence.record_last_processed_index(any(), any()), return: :ok
+      :meck.expect(Elsa, :produce, fn _producer, _topic, _batch, _opts -> :ok end)
+      :meck.expect(Persistence, :record_last_processed_index, fn _ingestion_id, _index -> :ok end)
 
       state = %{
         cache: @cache,
@@ -45,7 +79,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
         last_message: false
       }
 
-      [message | _] = create_data_messages(?a..?a, ["ds1", "ds2"], state.ingestion, state.start_time)
+      [_message | _] = create_data_messages(?a..?a, ["ds1", "ds2"], state.ingestion, state.start_time)
       incoming_events = ?a..?z |> create_messages() |> Enum.with_index()
 
       {:noreply, [], new_state} = LoadStage.handle_events(incoming_events, self(), state)
@@ -53,19 +87,11 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
 
     test "2 batches are sent to kafka", %{new_state: new_state} do
-      assert_called Elsa.produce(
-                      any(),
-                      "test-ingest1",
-                      create_data_messages(?a..?j, ["ds1", "ds2"], new_state.ingestion, new_state.start_time),
-                      any()
-                    )
-
-      assert_called Elsa.produce(
-                      any(),
-                      "test-ingest1",
-                      create_data_messages(?k..?t, ["ds1", "ds2"], new_state.ingestion, new_state.start_time),
-                      any()
-                    )
+      expected_batch1 = create_data_messages(?a..?j, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
+      expected_batch2 = create_data_messages(?k..?t, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
+      
+      assert :meck.called(Elsa, :produce, [:"test-ingest1_producer", "test-ingest1", expected_batch1, [partition: 0]])
+      assert :meck.called(Elsa, :produce, [:"test-ingest1_producer", "test-ingest1", expected_batch2, [partition: 0]])
     end
 
     test "remaining partial batch in sitting in state", %{new_state: new_state} do
@@ -74,8 +100,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
 
     test "the last processed index is recorded when batch is sent to kafka" do
-      assert_called Persistence.record_last_processed_index("ingest1", 9)
-      assert_called Persistence.record_last_processed_index("ingest1", 19)
+      assert :meck.called(Persistence, :record_last_processed_index, ["ingest1", 9])
+      assert :meck.called(Persistence, :record_last_processed_index, ["ingest1", 19])
     end
 
     test "all messages sent to kafka are cached" do
@@ -89,9 +115,8 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
   describe "handle_events/3 skip duplicate cache" do
     setup do
-      allow Elsa.produce(any(), any(), any(), any()), return: :ok
-      allow Persistence.record_last_processed_index(any(), any()), return: :ok
-      allow Cache.cache(any(), any()), return: :ok
+      :meck.expect(Elsa, :produce, fn _producer, _topic, _batch, _opts -> :ok end)
+      :meck.expect(Persistence, :record_last_processed_index, fn _ingestion_id, _index -> :ok end)
 
       state = %{
         cache: @cache,
@@ -110,14 +135,20 @@ defmodule Reaper.DataExtract.LoadStageTest do
     end
 
     test "messages are not cached" do
-      refute_called Cache.cache(@cache, any())
+      # Since allow_duplicates is true by default for TDG.create_ingestion(%{id: "ds2"}), 
+      # cache should not be called. We verify this by checking the cache is empty
+      ?a..?z
+      |> create_messages()
+      |> Enum.each(fn msg ->
+        assert {:ok, msg} == Cache.mark_duplicates(@cache, msg)
+      end)
     end
   end
 
   test "should return empty list of timing when profiling enabled is set to false" do
     Application.put_env(:reaper, :profiling_enabled, false)
-    allow Elsa.produce(any(), any(), any(), any()), return: :ok
-    allow Persistence.record_last_processed_index(any(), any()), return: :ok
+    :meck.expect(Elsa, :produce, fn _producer, _topic, _batch, _opts -> :ok end)
+    :meck.expect(Persistence, :record_last_processed_index, fn _ingestion_id, _index -> :ok end)
 
     state = %{
       cache: @cache,

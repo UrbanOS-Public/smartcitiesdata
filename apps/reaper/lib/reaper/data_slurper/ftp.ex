@@ -4,6 +4,8 @@ defmodule Reaper.DataSlurper.Ftp do
   """
   @behaviour Reaper.DataSlurper
   alias Reaper.DataSlurper
+  
+  @ftp Application.compile_env(:reaper, :ftp, :ftp)
 
   @ftp_errors %{
     eclosed: "The session is closed",
@@ -34,7 +36,7 @@ defmodule Reaper.DataSlurper.Ftp do
   end
 
   defp stream_file(pid, path, filename) do
-    case :ftp.recv(pid, ~c(#{path}), filename) do
+    case @ftp.recv(pid, ~c(#{path}), filename) do
       :ok ->
         {:file, filename}
 
@@ -44,8 +46,8 @@ defmodule Reaper.DataSlurper.Ftp do
   end
 
   defp connect(host, username, password, port, ingestion_id) do
-    with {:ok, pid} <- :ftp.open(to_charlist(host)),
-         :ok <- :ftp.user(pid, to_charlist(username), to_charlist(password)) do
+    with {:ok, pid} <- @ftp.open(to_charlist(host)),
+         :ok <- @ftp.user(pid, to_charlist(username), to_charlist(password)) do
       {:ok, pid}
     else
       {:error, reason} ->

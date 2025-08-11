@@ -1,6 +1,8 @@
 defmodule Reaper.DataSlurper.FtpTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
+
+  setup :verify_on_exit!
 
   describe "DataSlurper.Ftp.slurp/2" do
     setup do
@@ -20,11 +22,8 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles invalid ingestion credentials", map do
-      allow :ftp.open(any()),
-        return: {:ok, "pid"}
-
-      allow :ftp.user(any(), any(), any()),
-        return: {:error, :euser}
+      expect(FtpMock, :open, fn _host -> {:ok, "pid"} end)
+      expect(FtpMock, :user, fn "pid", _username, _password -> {:error, :euser} end)
 
       message = "Unable to establish FTP connection: Invalid username or password"
 
@@ -36,8 +35,7 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles closed session", map do
-      allow :ftp.open(any()),
-        return: {:error, :eclosed}
+      expect(FtpMock, :open, fn _host -> {:error, :eclosed} end)
 
       message = "Unable to establish FTP connection: The session is closed"
 
@@ -49,11 +47,8 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad connection", map do
-      allow :ftp.open(any()),
-        return: {:ok, "pid"}
-
-      allow :ftp.user(any(), any(), any()),
-        return: {:error, :econn}
+      expect(FtpMock, :open, fn _host -> {:ok, "pid"} end)
+      expect(FtpMock, :user, fn "pid", _username, _password -> {:error, :econn} end)
 
       message = "Unable to establish FTP connection: Connection to the remote server is prematurely closed"
 
@@ -65,8 +60,7 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad host", map do
-      allow :ftp.open(any()),
-        return: {:error, :ehost}
+      expect(FtpMock, :open, fn _host -> {:error, :ehost} end)
 
       message =
         "Unable to establish FTP connection: Host is not found, FTP server is not found, or connection is rejected by FTP server"
@@ -79,14 +73,9 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles bad file path", map do
-      allow :ftp.open(any()),
-        return: {:ok, "pid"}
-
-      allow :ftp.user(any(), any(), any()),
-        return: :ok
-
-      allow :ftp.recv(any(), any(), any()),
-        return: {:error, :epath}
+      expect(FtpMock, :open, fn _host -> {:ok, "pid"} end)
+      expect(FtpMock, :user, fn "pid", _username, _password -> :ok end)
+      expect(FtpMock, :recv, fn "pid", _path, _filename -> {:error, :epath} end)
 
       message = "No such file or directory, or directory already exists, or permission denied"
 
@@ -98,16 +87,11 @@ defmodule Reaper.DataSlurper.FtpTest do
     end
 
     test "handles successful file retrieval", map do
-      allow :ftp.open(any()),
-        return: {:ok, "pid"}
-
-      allow :ftp.user(any(), any(), any()),
-        return: :ok
-
-      allow :ftp.recv(any(), any(), map.ingestion_id),
-        return: :ok
-
-      message = "No such file or directory, or directory already exists, or permission denied"
+      expect(FtpMock, :open, fn _host -> {:ok, "pid"} end)
+      expect(FtpMock, :user, fn "pid", _username, _password -> :ok end)
+      expect(FtpMock, :recv, fn "pid", _path, filename -> 
+        if filename == map.ingestion_id, do: :ok, else: {:error, :epath}
+      end)
 
       assert {:file, map.ingestion_id} == Reaper.DataSlurper.Ftp.slurp(map.source_url, map.ingestion_id)
     end

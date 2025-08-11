@@ -3,6 +3,10 @@ defmodule Reaper.Cache do
   Cache module for rows of data before it is added to the raw topic
   """
   require Logger
+  
+  @behaviour Reaper.CacheBehaviour
+  
+  @json_encoder Application.compile_env(:reaper, :json_encoder, Jason)
 
   defmodule CacheError do
     defexception [:message]
@@ -56,7 +60,7 @@ defmodule Reaper.Cache do
   defp to_result({:error, _} = error, _value), do: error
 
   defp format_key(value) do
-    case Jason.encode(value) do
+    case @json_encoder.encode(value) do
       {:ok, value} -> {:ok, md5(value)}
       {:error, reason} -> {:error, {:json, reason}}
     end

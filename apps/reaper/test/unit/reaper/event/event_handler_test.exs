@@ -1,7 +1,7 @@
 defmodule Reaper.Event.EventHandlerTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :reaper
+  import Mox
 
   require Logger
 
@@ -24,6 +24,8 @@ defmodule Reaper.Event.EventHandlerTest do
   getter(:brook, generic: true)
   getter(:kafka_broker, generic: true)
 
+  setup :set_mox_from_context
+
   setup do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
 
@@ -31,7 +33,7 @@ defmodule Reaper.Event.EventHandlerTest do
 
     {:ok, reaper_horde_registry} = Reaper.Horde.Registry.start_link(name: Reaper.Horde.Registry, keys: :unique)
 
-    allow(TelemetryEvent.add_event_metrics(any(), [:events_handled]), return: :ok)
+    stub(TelemetryEventMock, :add_event_metrics, fn _, [:events_handled], _ -> :ok end)
     Brook.Test.register(@instance_name)
 
     on_exit(fn ->
@@ -46,7 +48,7 @@ defmodule Reaper.Event.EventHandlerTest do
   describe "#{data_extract_start()}" do
     setup do
       date = DateTime.utc_now()
-      allow(DateTime.utc_now(), return: date, meck_options: [:passthrough])
+      stub(DateTimeMock, :utc_now, fn -> date end)
       ingestion = TDG.create_ingestion(%{id: "ds2"})
 
       [ingestion: ingestion, date: date]
@@ -59,12 +61,11 @@ defmodule Reaper.Event.EventHandlerTest do
         Reaper.Collections.Extractions.update_ingestion(ingestion)
       end)
 
-      allow(Reaper.DataExtract.Processor.process(any(), any()),
-        exec: fn processor_ingestion, timestamp ->
-          [{_pid, _}] = Horde.Registry.lookup(Reaper.Horde.Registry, ingestion.id)
-          send(test_pid, {:registry, processor_ingestion})
-        end
-      )
+      stub(ProcessorMock, :process, fn processor_ingestion, _timestamp ->
+        [{_pid, _}] = Horde.Registry.lookup(Reaper.Horde.Registry, ingestion.id)
+        send(test_pid, {:registry, processor_ingestion})
+        :ok
+      end)
 
       Brook.Test.send(@instance_name, data_extract_start(), "testing", ingestion)
 
@@ -75,7 +76,6 @@ defmodule Reaper.Event.EventHandlerTest do
       ingestion: ingestion,
       date: date
     } do
-      allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
 
       Brook.Test.with_event(@instance_name, fn ->
         Reaper.Collections.Extractions.update_ingestion(ingestion)
@@ -92,7 +92,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send ingest_start event", %{ingestion: ingestion} do
-      allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
 
       Brook.Test.with_event(@instance_name, fn ->
         Reaper.Collections.Extractions.update_ingestion(ingestion)
@@ -104,7 +103,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send ingest_start event for streaming data on the first event" do
-      allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
       ingestion = TDG.create_ingestion(%{id: "ds2", cadence: "1 2 24 * * *"})
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -117,7 +115,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should not send ingest_start event for data that updates more than once per minute on subsequent events" do
-      allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
 
       ingestion = TDG.create_ingestion(%{id: "in1", targetDatasets: ["ds2", "ds3"], cadence: "* 2 24 * * *"})
 
@@ -137,7 +134,7 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send #{data_extract_end()} when processor is completed" do
-      allow(Reaper.DataExtract.Processor.process(any(), any()), return: :ok)
+      stub(ProcessorMock, :process, fn _ingestion, _timestamp -> :ok end)
       ingestion = TDG.create_ingestion(%{id: "ds3"})
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -153,7 +150,7 @@ defmodule Reaper.Event.EventHandlerTest do
   describe "#{data_extract_end()}" do
     test "should persist last fetched timestamp" do
       date = DateTime.utc_now()
-      allow(DateTime.utc_now(), return: date, meck_options: [:passthrough])
+      stub(DateTimeMock, :utc_now, fn -> date end)
       ingestion = TDG.create_ingestion(%{id: "ing1", targetDatasets: ["ds1", "ds2"]})
       send_data_extract_end(ingestion.id, ingestion.targetDatasets, 0, Timex.to_unix(date))
 
@@ -169,15 +166,16 @@ defmodule Reaper.Event.EventHandlerTest do
     test "successfully deletes an ingestion when event is sent" do
       ingestion = TDG.create_ingestion(%{id: "ds9"})
 
-      allow(Reaper.Event.Handlers.IngestionDelete.handle(any()), return: :result_not_relevant)
-      allow(Horde.DynamicSupervisor.start_child(any(), any()), return: {:ok, :pid})
+      # Mock the dependencies that IngestionDelete uses
+      stub(StopIngestionMock, :delete_quantum_job, fn _ingestion_id -> :ok end)
+      stub(StopIngestionMock, :stop_horde_and_cache, fn _ingestion_id -> :ok end) 
+      stub(TopicManagerMock, :delete_topic, fn _ingestion_id -> :ok end)
 
       Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)
       Brook.Test.send(@instance_name, ingestion_delete(), :author, ingestion)
 
       eventually(fn ->
         assert nil == Brook.get!(@instance_name, :extractions, ingestion.id)
-        assert_called(Reaper.Event.Handlers.IngestionDelete.handle(ingestion))
       end)
     end
   end

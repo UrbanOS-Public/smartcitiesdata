@@ -1,10 +1,13 @@
 defmodule Reaper.Quantum.Storage.Connection do
   @moduledoc false
   use GenServer
+  use Properties, otp_app: :reaper
   require Logger
 
   @conn :reaper_quantum_storage_redix
   @restart_delay 2_000
+
+  getter(:redix_client, default: Redix, generic: true)
 
   @redix_opts [
     name: @conn,
@@ -25,7 +28,7 @@ defmodule Reaper.Quantum.Storage.Connection do
 
     config = Keyword.merge(args, @redix_opts)
 
-    case Redix.start_link(config) do
+    case redix_client().start_link(config) do
       {:ok, pid} ->
         Logger.info("#{__MODULE__} : Redix successfully connected")
         {:ok, pid}

@@ -3,6 +3,8 @@ defmodule Reaper.DataExtract.ValidationStage do
   use GenStage
 
   alias Reaper.{Cache, Persistence}
+  
+  @cache_module Application.compile_env(:reaper, :cache_module, Cache)
 
   def start_link(opts) do
     GenStage.start_link(__MODULE__, opts)
@@ -49,7 +51,7 @@ defmodule Reaper.DataExtract.ValidationStage do
   defp check_cache(state, value) do
     case state.ingestion.allow_duplicates do
       true -> {:ok, value}
-      false -> Cache.mark_duplicates(state.cache, value)
+      false -> @cache_module.mark_duplicates(state.cache, value)
     end
   end
 end

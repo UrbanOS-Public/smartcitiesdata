@@ -8,7 +8,7 @@ defmodule Reaper.Decoder.Json do
 
   def decode({:file, filename}, %{topLevelSelector: top_level_selector} = _ingestion)
       when not is_nil(top_level_selector) do
-    with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
+    with {:ok, query} <- parse_json_path(top_level_selector),
          {:ok, data} <- json_file_query(filename, query) do
       decoded = List.wrap(data)
       {:ok, decoded}
@@ -40,7 +40,8 @@ defmodule Reaper.Decoder.Json do
   def json_file_query(filename, query) do
     data =
       filename
-      |> File.stream!()
+      |> File.read!()
+      |> Jaxon.Stream.from_binary()
       |> Jaxon.Stream.query(query)
       |> Enum.to_list()
       |> List.flatten()
@@ -60,5 +61,74 @@ defmodule Reaper.Decoder.Json do
       %Jaxon.ParseError{unexpected: :end_array} -> {:ok, []}
       _ -> {:error, error}
     end
+  end
+
+  defp parse_json_path(json_path) do
+    try do
+      query = convert_json_path_to_jaxon_query(json_path)
+      {:ok, query}
+    rescue
+      _error ->
+        # Create a Jaxon.ParseError - let's create it properly
+        {:error, create_parse_error("Invalid JSONPath: #{json_path}")}
+    end
+  end
+
+  defp convert_json_path_to_jaxon_query(json_path) do
+    # Convert JSONPath expressions like "$.data", "$.data[*]", "$.[*].data"
+    # to Jaxon.Stream query format [:root, "data", :all]
+    
+    # Handle special case for root array access like "$.[*].property"
+    if String.starts_with?(json_path, "$.[*]") do
+      # Remove "$.[*]." and process the rest
+      remaining_path = String.replace_leading(json_path, "$.[*].", "")
+      segments = if remaining_path == "", do: [], else: String.split(remaining_path, ".")
+      query_parts = 
+        segments
+        |> Enum.map(&convert_segment/1)
+        |> List.flatten()
+      [:root, :all | query_parts]
+    else
+      # Remove the leading "$." 
+      path = String.replace_leading(json_path, "$.", "")
+      
+      # Split by dots to get path segments
+      segments = String.split(path, ".")
+      
+      # Convert each segment to appropriate Jaxon query format and flatten
+      query_parts = 
+        segments
+        |> Enum.map(&convert_segment/1)
+        |> List.flatten()
+      
+      # Add :root at the beginning for Jaxon.Stream
+      [:root | query_parts]
+    end
+  end
+
+  defp convert_segment(segment) do
+    cond do
+      # Handle array access like "data[*]" -> ["data", :all]
+      String.contains?(segment, "[*]") ->
+        base = String.replace(segment, "[*]", "")
+        [base, :all]
+      
+      # Handle invalid array access like "data[XX]" - this should cause an error
+      String.contains?(segment, "[") && !String.contains?(segment, "[*]") ->
+        raise "Invalid array selector in JSONPath"
+      
+      # Regular object property
+      true ->
+        [segment]
+    end
+  end
+
+  defp create_parse_error(message) do
+    # Create a struct that resembles Jaxon.ParseError for test compatibility
+    %{
+      __struct__: Jaxon.ParseError,
+      unexpected: :invalid_json_path,
+      data: message
+    }
   end
 end

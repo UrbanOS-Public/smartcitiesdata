@@ -13,22 +13,28 @@ defmodule Reaper.Decoder do
               {:ok, Enumerable.t()} | {:error, data(), reason()}
   @callback handle?(format()) :: boolean()
 
-  @implementations [
-    Reaper.Decoder.Gtfs,
-    Reaper.Decoder.Json,
-    Reaper.Decoder.Csv,
-    Reaper.Decoder.Tsv,
-    Reaper.Decoder.Xml,
-    Reaper.Decoder.GeoJson,
-    Reaper.Decoder.Unknown
-  ]
+  defp default_implementations do
+    [
+      Reaper.Decoder.Gtfs,
+      Reaper.Decoder.Json,
+      Reaper.Decoder.Csv,
+      Reaper.Decoder.Tsv,
+      Reaper.Decoder.Xml,
+      Reaper.Decoder.GeoJson,
+      Reaper.Decoder.Unknown
+    ]
+  end
+  
+  defp implementations do
+    Application.get_env(:reaper, :decoder_implementations, default_implementations())
+  end
 
   @doc """
   Converts an ingestion into JSON based on it's `sourceFormat`
   """
   def decode({:file, filename}, %SmartCity.Ingestion{sourceFormat: source_format} = ingestion) do
     response =
-      @implementations
+      implementations()
       |> Enum.find(&handle?(&1, source_format))
       |> apply(:decode, [{:file, filename}, ingestion])
 

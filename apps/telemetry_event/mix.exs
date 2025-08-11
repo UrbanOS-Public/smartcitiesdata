@@ -27,7 +27,8 @@ defmodule TelemetryEvent.MixProject do
   defp deps do
     [
       {:telemetry_metrics_prometheus, "~> 0.6"},
-      {:telemetry_poller, "~> 0.4"}
+      {:telemetry_poller, "~> 0.4"},
+      {:mox, "~> 1.0", only: [:test, :integration]}
     ]
   end
 

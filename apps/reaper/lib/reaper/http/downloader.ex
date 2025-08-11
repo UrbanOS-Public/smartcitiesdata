@@ -4,6 +4,8 @@ defmodule Reaper.Http.Downloader do
   """
   alias Reaper.Util
   require Logger
+  
+  @mint_http Application.compile_env(:reaper, :mint_http, Mint.HTTP)
 
   @type url :: String.t()
   @type headers :: list()
@@ -69,7 +71,7 @@ defmodule Reaper.Http.Downloader do
       handle_status(response, evaluated_headers)
     else
       {:error, conn, error} ->
-        Mint.HTTP.close(conn)
+        @mint_http.close(conn)
         raise error
 
       error ->
@@ -84,10 +86,10 @@ defmodule Reaper.Http.Downloader do
 
     case protocol do
       nil ->
-        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+        @mint_http.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
 
       protocol ->
-        Mint.HTTP.connect(scheme, uri.host, uri.port,
+        @mint_http.connect(scheme, uri.host, uri.port,
           transport_opts: [timeout: connect_timeout],
           protocols: protocol
         )
@@ -101,7 +103,7 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp request(conn, method, uri, headers, body \\ "") do
-    Mint.HTTP.request(conn, method, "#{uri.path}?#{uri.query}", headers, body)
+    @mint_http.request(conn, method, "#{uri.path}?#{uri.query}", headers, body)
   end
 
   defp create_initial_response(conn, request_ref, url, opts) do
@@ -142,7 +144,7 @@ defmodule Reaper.Http.Downloader do
   defp receive_message(response, idle_timeout) do
     receive do
       message ->
-        Mint.HTTP.stream(response.conn, message)
+        @mint_http.stream(response.conn, message)
     after
       idle_timeout ->
         message = "Idle timeout was reached while attempting to download #{response.url}"
@@ -223,7 +225,7 @@ defmodule Reaper.Http.Downloader do
   end
 
   defp close_conn(response) do
-    {:ok, %{response | conn: Mint.HTTP.close(response.conn)}}
+    {:ok, %{response | conn: @mint_http.close(response.conn)}}
   end
 
   defp evaluate_headers(headers) do

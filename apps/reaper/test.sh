@@ -1,1 +1,1 @@
-mix test
+mix test # --max-failures=5

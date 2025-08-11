@@ -7,6 +7,9 @@ defmodule Reaper.DataExtract.ExtractStep do
   require Logger
   alias Reaper.DataSlurper
   alias Reaper.UrlBuilder
+  
+  @timex Application.compile_env(:reaper, :timex, Timex)
+  @secret_retriever Application.compile_env(:reaper, :secret_retriever, Reaper.SecretRetriever)
 
   def execute_extract_steps(ingestion, steps) do
     Enum.reduce(steps, %{}, fn step, acc ->
@@ -58,11 +61,11 @@ defmodule Reaper.DataExtract.ExtractStep do
     date =
       case step.context.deltaTimeUnit do
         nil ->
-          Timex.now()
+          @timex.now()
 
         _ ->
           unit = String.to_atom(step.context.deltaTimeUnit)
-          Timex.shift(Timex.now(), [{unit, step.context.deltaTimeValue}])
+          Timex.shift(@timex.now(), [{unit, step.context.deltaTimeValue}])
       end
 
     formatted_date = Timex.format!(date, step.context.format)
@@ -70,7 +73,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   end
 
   defp process_extract_step(_ingestion, %{type: "secret"} = step) do
-    {:ok, cred} = Reaper.SecretRetriever.retrieve_ingestion_credentials(step.context.key)
+    {:ok, cred} = @secret_retriever.retrieve_ingestion_credentials(step.context.key)
     secret = Map.get(cred, step.context.sub_key)
 
     Map.put(step.assigns, step.context.destination |> String.to_atom(), secret)

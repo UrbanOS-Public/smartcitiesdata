@@ -1,9 +1,9 @@
 defmodule Reaper.Collections.BaseIngestionTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :reaper
 
   require Logger
+  import Mox
 
   @instance_name Reaper.instance_name()
 
@@ -15,10 +15,17 @@ defmodule Reaper.Collections.BaseIngestionTest do
   setup do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
 
+    # Set up DateTimeMock stub for update_started_timestamp calls
+    # Set to global mode so it works across Brook processes
+    stub(DateTimeMock, :utc_now, fn -> DateTime.utc_now() end)
+    set_mox_global()
+
     Brook.Test.register(@instance_name)
 
     on_exit(fn ->
       kill(brook)
+      # Reset Mox to private mode
+      set_mox_private()
     end)
 
     :ok

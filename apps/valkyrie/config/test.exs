@@ -23,9 +23,7 @@ config :valkyrie, :mox, mox_test: self()
 
 # Mock configurations for testing
 config :valkyrie,
-  elsa: ElsaMock,
-  telemetry_event: ValkyrierTelemetryEventMock
+  elsa: ElsaMock
+  
 
-# Mock TelemetryEvent at the application level to avoid conflicts
-config :telemetry_event,
-  implementation: ValkyrierTelemetryEventMock
+

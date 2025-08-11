@@ -11,12 +11,16 @@ defmodule Reaper.Decoder.Gtfs do
     bytes = File.read!(filename)
 
     try do
-      message = FeedMessage.decode(bytes)
+      message = feed_message_decoder().decode(bytes)
       {:ok, message.entity}
     rescue
       error ->
         {:error, bytes, error}
     end
+  end
+  
+  defp feed_message_decoder do
+    Application.get_env(:reaper, :feed_message_decoder, FeedMessage)
   end
 
   @impl Reaper.Decoder

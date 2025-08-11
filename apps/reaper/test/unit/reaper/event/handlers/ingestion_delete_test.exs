@@ -1,6 +1,6 @@
 defmodule Reaper.Event.Handlers.IngestionDeleteTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
   use Properties, otp_app: :reaper
 
   import Checkov
@@ -18,6 +18,8 @@ defmodule Reaper.Event.Handlers.IngestionDeleteTest do
 
   getter(:brook, generic: true)
 
+  setup :verify_on_exit!
+  
   setup do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
     {:ok, scheduler} = Reaper.Scheduler.start_link()
@@ -36,23 +38,18 @@ defmodule Reaper.Event.Handlers.IngestionDeleteTest do
     test "successfully deletes ingestion" do
       ingestion = TDG.create_ingestion(%{cadence: "once"})
 
-      allow StopIngestion.delete_quantum_job(ingestion.id), return: :ok
-      allow StopIngestion.stop_horde_and_cache(ingestion.id), return: :ok
-      allow TopicManager.delete_topic(ingestion.id), return: :ok
+      expect(StopIngestionMock, :delete_quantum_job, fn id when id == ingestion.id -> :ok end)
+      expect(StopIngestionMock, :stop_horde_and_cache, fn id when id == ingestion.id -> :ok end)
+      expect(TopicManagerMock, :delete_topic, fn id when id == ingestion.id -> :ok end)
 
       assert :ok == IngestionDelete.handle(ingestion)
-
-      assert_called StopIngestion.delete_quantum_job(ingestion.id)
-      assert_called StopIngestion.stop_horde_and_cache(ingestion.id)
-      assert_called TopicManager.delete_topic(ingestion.id)
     end
 
     test "delete successfully handles errors" do
       ingestion = TDG.create_ingestion(%{cadence: "once"})
 
-      allow StopIngestion.delete_quantum_job(ingestion.id), return: :error
-      allow StopIngestion.stop_horde_and_cache(ingestion.id), return: :error
-      allow TopicManager.delete_topic(ingestion.id), return: :error
+      expect(StopIngestionMock, :delete_quantum_job, fn id when id == ingestion.id -> :error end)
+      # Note: The other mocks won't be called because the with statement fails on the first :error
 
       assert capture_log([level: :error], fn ->
                :ok = IngestionDelete.handle(ingestion)

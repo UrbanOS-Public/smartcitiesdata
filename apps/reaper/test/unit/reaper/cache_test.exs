@@ -1,15 +1,20 @@
 defmodule Reaper.CacheTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
   import Checkov
   alias Reaper.Cache
   alias Reaper.Cache.Server
 
   @cache :test_cache_1
 
+  setup :verify_on_exit!
+
   setup do
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
     {:ok, server} = Server.start_link(name: {:via, Horde.Registry, {Reaper.Cache.Registry, @cache}})
+
+    # Stub successful JSON encoding for normal test cases
+    stub(JasonMock, :encode, fn value -> Jason.encode(value) end)
 
     on_exit(fn ->
       kill(server)
@@ -34,7 +39,7 @@ defmodule Reaper.CacheTest do
     end
 
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
-      allow Jason.encode(any()), return: {:error, :some_reason}
+      expect(JasonMock, :encode, fn _ -> {:error, :some_reason} end)
       assert {:error, {:json, :some_reason}} == Cache.mark_duplicates(@cache, {:un, :encodable})
     end
   end
@@ -51,7 +56,7 @@ defmodule Reaper.CacheTest do
     end
 
     test "returns {:error, {:json, reason}} when Jason.encode! returns an error" do
-      allow Jason.encode(any()), return: {:error, :some_reason}
+      expect(JasonMock, :encode, fn _ -> {:error, :some_reason} end)
       assert {:error, {:json, :some_reason}} == Cache.cache(@cache, {:un, :encodable})
     end
   end

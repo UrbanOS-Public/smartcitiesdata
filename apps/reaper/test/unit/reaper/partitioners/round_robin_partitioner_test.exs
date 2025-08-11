@@ -2,12 +2,8 @@ defmodule Reaper.Partitioners.RoundRobinPartitionerTest do
   @moduledoc false
 
   use ExUnit.Case
-  use Placebo
   alias Reaper.Partitioners.RoundRobinPartitioner
 
-  setup do
-    on_exit(fn -> unstub() end)
-  end
 
   test "Successfully returns nil indicating round-robin with valid message" do
     message = ~s({"a": "1", "b": "2"})

@@ -1,6 +1,5 @@
 defmodule Reaper.DataExtract.SchemaStageTest do
   use ExUnit.Case
-  use Placebo
 
   alias Reaper.DataExtract.SchemaStage
   alias SmartCity.TestDataGenerator, as: TDG

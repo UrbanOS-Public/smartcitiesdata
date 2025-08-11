@@ -2,12 +2,8 @@ defmodule Reaper.Partitioners.SinglePartitionerTest do
   @moduledoc false
 
   use ExUnit.Case
-  use Placebo
   alias Reaper.Partitioners.SinglePartitioner
 
-  setup do
-    on_exit(fn -> unstub() end)
-  end
 
   test "Successfully produces Single for valid message" do
     message = ~s({"a": "1", "b": "2"})

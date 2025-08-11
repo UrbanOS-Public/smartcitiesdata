@@ -1,11 +1,13 @@
 defmodule Reaper.DataExtract.ValidationStageTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
 
   import SmartCity.TestHelper, only: [eventually: 1]
   alias Reaper.DataExtract.ValidationStage
   alias Reaper.Cache
   alias SmartCity.TestDataGenerator, as: TDG
+
+  setup :verify_on_exit!
 
   @cache :validation_stage_test
 
@@ -13,6 +15,9 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
     {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
+
+    # Stub JasonMock for normal JSON encoding operations
+    stub(JasonMock, :encode, fn value -> Jason.encode(value) end)
 
     on_exit(fn ->
       kill(horde_sup)
@@ -25,6 +30,10 @@ defmodule Reaper.DataExtract.ValidationStageTest do
   describe "handle_events/3" do
     test "will remove duplicates" do
       Cache.cache(@cache, %{one: 1, two: 2})
+
+      # Mock CacheMock.mark_duplicates calls for the validation stage
+      expect(CacheMock, :mark_duplicates, fn @cache, %{one: 1, two: 2} -> {:duplicate, %{one: 1, two: 2}} end)
+      expect(CacheMock, :mark_duplicates, fn @cache, %{three: 3, four: 4} -> {:ok, %{three: 3, four: 4}} end)
 
       incoming_events = [
         {%{one: 1, two: 2}, 1},
@@ -77,8 +86,11 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     end
 
     test "will yeet any errors marked during cache call" do
-      allow Cache.mark_duplicates(@cache, any()), exec: fn _, msg -> {:ok, msg} end
-      allow Cache.mark_duplicates(@cache, %{three: 3, four: 4}), return: {:error, "bad stuff"}
+      expect(CacheMock, :mark_duplicates, fn @cache, %{one: 1, two: 2} -> {:ok, %{one: 1, two: 2}} end)
+      expect(CacheMock, :mark_duplicates, fn @cache, %{three: 3, four: 4} -> {:error, "bad stuff"} end)
+      
+      # Allow telemetry calls for dead letter processing (may be called multiple times)
+      stub(ValkyrierTelemetryEventMock, :add_event_metrics, fn _event_metadata, _event_name, %{} -> :ok end)
 
       state = %{
         cache: @cache,

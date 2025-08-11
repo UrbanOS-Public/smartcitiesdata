@@ -2,12 +2,8 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
   @moduledoc false
 
   use ExUnit.Case
-  use Placebo
   alias Reaper.Partitioners.HashPartitioner
 
-  setup do
-    on_exit(fn -> unstub() end)
-  end
 
   test "Successfully produces hash for valid message" do
     message = %{a: "1", b: "2"}

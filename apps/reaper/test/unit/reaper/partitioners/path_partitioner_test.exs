@@ -6,12 +6,8 @@ defmodule Reaper.Partitioners.PathPartitionerTest do
   @moduledoc false
 
   use ExUnit.Case
-  use Placebo
   alias Reaper.Partitioners.PathPartitioner
 
-  setup do
-    on_exit(fn -> unstub() end)
-  end
 
   test "Successfully parses vehicle id from data message" do
     message = %{"a" => "1", "b" => "2"}

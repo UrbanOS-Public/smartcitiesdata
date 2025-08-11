@@ -7,15 +7,17 @@ defmodule Reaper.Decoder.GeoJson do
   alias Reaper.Decoder.Json
 
   @impl Reaper.Decoder
-  def decode({:file, filename}, %{topLevelSelector: top_level_selector} = _ingestion)
+  def decode({:file, filename}, %{topLevelSelector: top_level_selector} = ingestion)
       when not is_nil(top_level_selector) do
-    with {:ok, query} <- Jaxon.Path.parse(top_level_selector),
-         {:ok, data} <- Json.json_file_query(filename, query),
-         {:ok, features} <- List.first(data) |> extract_geojson_features() do
-      {:ok, features}
-    else
-      {:error, error} ->
-        {:error, truncate_file_for_logging(filename), error}
+    # Delegate to JSON decoder for path parsing, then extract GeoJSON features
+    case Json.decode({:file, filename}, ingestion) do
+      {:ok, data} ->
+        case List.first(data) |> extract_geojson_features() do
+          {:ok, features} -> {:ok, features}
+          {:error, error} -> {:error, truncate_file_for_logging(filename), error}
+        end
+      {:error, file_content, error} ->
+        {:error, file_content, error}
     end
   end
 
