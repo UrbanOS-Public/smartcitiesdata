@@ -7,7 +7,7 @@ defmodule DiscoveryApiWeb.Utilities.HmacToken do
   getter(:presign_key, generic: true)
 
   def create_hmac_token(dataset_id, expiration_timestamp) do
-    :crypto.hmac(:sha256, presign_key(), "#{dataset_id}/#{expiration_timestamp}") |> Base.encode16()
+    :crypto.mac(:hmac, :sha256, presign_key(), "#{dataset_id}/#{expiration_timestamp}") |> Base.encode16()
   end
 
   def valid_hmac_token(key, dataset_id, expiration_timestamp) do

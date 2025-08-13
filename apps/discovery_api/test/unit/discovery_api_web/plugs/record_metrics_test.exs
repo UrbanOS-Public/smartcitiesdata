@@ -1,14 +1,24 @@
 defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   import SmartCity.TestHelper
   alias DiscoveryApiWeb.Plugs.RecordMetrics
   alias DiscoveryApi.Services.MetricsService
   alias DiscoveryApi.Test.Helper
 
-  def run_test(allowed_origin, action, assertion) do
+  setup :verify_on_exit!
+  setup :set_mox_from_context
+
+  def run_test(allowed_origin, action, expected_label) do
     dataset_id = 1111
     model = Helper.sample_model(%{id: dataset_id})
+
+    # Set up expectation for the MetricsService call
+    expect(MetricsServiceMock, :record_api_hit, fn label, id ->
+      assert label == expected_label
+      assert id == dataset_id
+      :ok
+    end)
 
     conn =
       build_conn(:get, "/organization/:org_name/dataset/#{dataset_id}/download")
@@ -16,24 +26,23 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
       |> assign(:allowed_origin, allowed_origin)
       |> put_private(:phoenix_action, action)
 
-    allow(MetricsService.record_api_hit(any(), any()), return: conn)
-
     RecordMetrics.call(conn, fetch_file: "downloads", query: "queries")
-
-    eventually(assertion)
+    
+    # Give the Task time to complete
+    Process.sleep(100)
   end
 
   describe "call/2 records metrics" do
     test "when allowed origin is false" do
-      run_test(false, :fetch_file, fn -> assert_called(MetricsService.record_api_hit("downloads", any())) end)
+      run_test(false, :fetch_file, "downloads")
     end
 
     test "when allowed origin is nil" do
-      run_test(nil, :fetch_file, fn -> assert_called(MetricsService.record_api_hit("downloads", any())) end)
+      run_test(nil, :fetch_file, "downloads")
     end
 
     test "and converts query action to the label 'queries'" do
-      run_test(nil, :query, fn -> assert_called(MetricsService.record_api_hit("queries", any())) end)
+      run_test(nil, :query, "queries")
     end
   end
 
@@ -42,16 +51,21 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
       dataset_id = 1111
       model = Helper.sample_model(%{id: dataset_id})
 
+      # Don't set up any expectations - if MetricsService is called, Mox will fail
+      # No expectation means the call should not happen
+
       conn =
         build_conn(:get, "/organization/:org_name/dataset/#{dataset_id}/download")
         |> assign(:model, model)
         |> assign(:allowed_origin, true)
         |> put_private(:phoenix_action, :fetch_file)
 
-      allow(MetricsService.record_api_hit(any(), any()), return: conn)
-
-      Process.sleep(1_000)
-      refute_called MetricsService.record_api_hit(any(), any())
+      RecordMetrics.call(conn, fetch_file: "downloads", query: "queries")
+      
+      # Give time for any potential Task to complete
+      Process.sleep(100)
+      
+      # If we reach here without Mox failing, the test passes
     end
   end
 end

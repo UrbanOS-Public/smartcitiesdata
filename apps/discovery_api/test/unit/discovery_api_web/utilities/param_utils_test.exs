@@ -1,6 +1,5 @@
 defmodule DiscoveryApiWeb.Utilities.ParamUtilsTest do
   use ExUnit.Case
-  use Placebo
   alias DiscoveryApiWeb.Utilities.ParamUtils
 
   describe "safely_parse_int" do

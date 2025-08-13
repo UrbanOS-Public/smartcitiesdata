@@ -3,7 +3,8 @@ defmodule DiscoveryApi.Data.Model do
   utilities to persist and load discovery data models
   """
 
-  alias DiscoveryApi.Data.Persistence
+  # Allow configuring the persistence module for testing
+  @persistence_impl Application.compile_env(:discovery_api, :persistence, DiscoveryApi.Data.Persistence)
 
   @instance_name DiscoveryApi.instance_name()
 
@@ -112,8 +113,8 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def delete(id) do
-    Persistence.delete("#{@downloads_key}:#{id}")
-    Persistence.delete("#{@queries_key}:#{id}")
+    @persistence_impl.delete("#{@downloads_key}:#{id}")
+    @persistence_impl.delete("#{@queries_key}:#{id}")
 
     Brook.ViewState.delete(@collection, id)
   end
@@ -130,13 +131,13 @@ defmodule DiscoveryApi.Data.Model do
 
   # sobelow_skip ["DOS.StringToAtom"]
   def get_count_maps(dataset_id) do
-    case Persistence.get_keys("smart_registry:*:count:" <> dataset_id) do
+    case @persistence_impl.get_keys("smart_registry:*:count:" <> dataset_id) do
       [] ->
         %{}
 
       all_keys ->
         friendly_keys = Enum.map(all_keys, fn key -> String.to_atom(Enum.at(String.split(key, ":"), 1)) end)
-        all_values = Persistence.get_many(all_keys)
+        all_values = @persistence_impl.get_many(all_keys)
 
         Enum.into(0..(Enum.count(friendly_keys) - 1), %{}, fn friendly_key ->
           {Enum.at(friendly_keys, friendly_key), Enum.at(all_values, friendly_key)}
@@ -195,7 +196,7 @@ defmodule DiscoveryApi.Data.Model do
     redis_kv_results =
       Enum.map(models, &Map.get(&1, :id))
       |> get_all_keys()
-      |> Persistence.get_many_with_keys()
+      |> @persistence_impl.get_many_with_keys()
 
     Enum.map(models, fn model ->
       completeness = redis_kv_results["#{@stats_key}:#{model.id}"]

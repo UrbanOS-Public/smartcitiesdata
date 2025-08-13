@@ -1,64 +1,65 @@
 defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
-  use ExUnit.Case
-  use Placebo
+  use DiscoveryApiWeb.ConnCase
+  import Mox
 
-  alias RaptorService
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
-  alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.Test.Helper
-  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
+
+  # Increase timeout for tests that use Helper.sample_model which can be slow due to Faker/TDG data generation
+  @moduletag timeout: 5000
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @table "the__table"
   @org_id "the_org"
 
   describe "get_affected_models/1" do
     test "should allow queries to public tables" do
-      allow PrestoService.get_affected_tables(any(), any()), return: {:ok, [@table]}
-      allow PrestoService.is_select_statement?(any()), return: true
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, _b -> {:ok, [@table]} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
 
       model = Helper.sample_model(%{private: false, systemName: @table, organizationDetails: %{id: @org_id}})
-      allow Model.get_all(), return: [model]
+      stub(ModelMock, :get_all, fn -> [model] end)
 
-      assert {:ok, affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
+      assert {:ok, _affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
     end
 
     test "should allow queries to private tables if they are associated with the organization" do
-      allow PrestoService.get_affected_tables(any(), any()), return: {:ok, [@table]}
-      allow PrestoService.is_select_statement?(any()), return: true
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, _b -> {:ok, [@table]} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
 
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
-      allow Model.get_all(), return: [model]
+      stub(ModelMock, :get_all, fn -> [model] end)
 
-      assert {:ok, affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
+      assert {:ok, _affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
     end
 
     test "should not allow queries if the model is missing" do
-      allow PrestoService.get_affected_tables(any(), any()), return: {:ok, [@table]}
-      allow PrestoService.is_select_statement?(any()), return: true
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, _b -> {:ok, [@table]} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
 
-      allow Model.get_all(), return: []
+      stub(ModelMock, :get_all, fn -> [] end)
 
       {:error, "Query statement is invalid"} = QueryAccessUtils.get_affected_models("select * from #{@table}")
     end
 
     test "matches tables to models without case sensitivity" do
-      allow PrestoService.get_affected_tables(any(), any()), return: {:ok, [@table]}
-      allow PrestoService.is_select_statement?(any()), return: true
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, _b -> {:ok, [@table]} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
 
       model = Helper.sample_model(%{private: true, systemName: "tHe__TaBlE", organizationDetails: %{id: @org_id}})
-      allow Model.get_all(), return: [model]
+      stub(ModelMock, :get_all, fn -> [model] end)
 
-      assert {:ok, affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
+      assert {:ok, _affected_models} = QueryAccessUtils.get_affected_models("select * from #{@table}")
     end
 
     test "should not allow queries when the statement isn't a select statement" do
-      allow PrestoService.get_affected_tables(any(), any()), return: {:ok, [@table]}
-      allow PrestoService.is_select_statement?(any()), return: false
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, _b -> {:ok, [@table]} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> false end)
 
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
-      allow Model.get_all(), return: [model]
+      stub(ModelMock, :get_all, fn -> [model] end)
 
       assert {:error, "Query statement is invalid"} = QueryAccessUtils.get_affected_models("describe table blah;")
     end
@@ -66,7 +67,8 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
     test "should not allow queries when get affected tables fails" do
       statement = "INSERT INTO public__one SELECT * FROM public__two"
 
-      allow PrestoService.get_affected_tables(any(), statement), return: {:error, :does_not_matter}
+      stub(PrestoServiceMock, :is_select_statement?, fn ^statement -> true end)
+      stub(PrestoServiceMock, :get_affected_tables, fn _a, ^statement -> {:error, :does_not_matter} end)
 
       assert {:error, "Query statement is invalid"} = QueryAccessUtils.get_affected_models(statement)
     end
@@ -77,14 +79,14 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
         |> Map.put(:req_headers, [{"api_key", "sample_api_key"}])
 
       [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
 
-      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
-      allow RaptorService.is_authorized("raptor.url", expected_api_key, model[:systemName]), return: false
+      stub(ModelAccessUtilsMock, :has_access?, fn ^model, _user -> false end)
+      stub(RaptorServiceMock, :is_authorized, fn "raptor.url", ^expected_api_key, _system_name -> false end)
 
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
     end
@@ -93,10 +95,10 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
-      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
+      stub(ModelAccessUtilsMock, :has_access?, fn ^model, _user -> false end)
 
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
     end
@@ -105,28 +107,28 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
         |> Map.put(:req_headers, [{"api_key", "sample_api_key"}])
 
       [expected_api_key] = Plug.Conn.get_req_header(conn, "api_key")
 
-      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: false
-      allow RaptorService.is_authorized("raptor.url", expected_api_key, model[:systemName]), return: true
+      stub(ModelAccessUtilsMock, :has_access?, fn ^model, _user -> false end)
+      stub(RaptorServiceMock, :is_authorized, fn "raptor.url", ^expected_api_key, _system_name -> true end)
 
-      assert {:ok, authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
+      assert {:ok, _authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
     end
 
     test "should allow queries that include private tables if provided JWT has access" do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
-      allow ModelAccessUtils.has_access?(model, conn.assigns.current_user), return: true
+      stub(ModelAccessUtilsMock, :has_access?, fn ^model, _user -> true end)
 
-      assert {:ok, authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
+      assert {:ok, _authorized_session} = QueryAccessUtils.authorized_session(conn, [model])
     end
 
     test "should not allow queries that include private tables if user doesn't have JWT authorization" do
@@ -135,11 +137,13 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       public_model = Helper.sample_model(%{private: false, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
-      allow ModelAccessUtils.has_access?(private_model, conn.assigns.current_user), return: false
-      allow ModelAccessUtils.has_access?(public_model, conn.assigns.current_user), return: true
+      stub(ModelAccessUtilsMock, :has_access?, fn 
+        ^private_model, _user -> false
+        ^public_model, _user -> true
+      end)
 
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [private_model, public_model])
     end
@@ -148,10 +152,10 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       model = Helper.sample_model(%{private: true, systemName: @table, organizationDetails: %{id: @org_id}})
 
       conn =
-        Phoenix.ConnTest.build_conn()
+        build_conn()
         |> Map.put(:assigns, %{current_user: nil})
 
-      allow ModelAccessUtils.has_access?(model, nil), return: false
+      stub(ModelAccessUtilsMock, :has_access?, fn ^model, nil -> false end)
 
       assert {:error, "Session not authorized"} = QueryAccessUtils.authorized_session(conn, [model])
     end

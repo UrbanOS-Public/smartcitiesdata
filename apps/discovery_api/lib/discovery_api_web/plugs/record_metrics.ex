@@ -1,6 +1,8 @@
 defmodule DiscoveryApiWeb.Plugs.RecordMetrics do
   @moduledoc false
   alias DiscoveryApi.Services.MetricsService
+  
+  @metrics_service_impl Application.compile_env(:discovery_api, :metrics_service, MetricsService)
 
   def init(default), do: default
 
@@ -14,7 +16,7 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetrics do
         conn
 
       label ->
-        Task.start(fn -> MetricsService.record_api_hit(label, id) end)
+        Task.start(fn -> @metrics_service_impl.record_api_hit(label, id) end)
         conn
     end
   end

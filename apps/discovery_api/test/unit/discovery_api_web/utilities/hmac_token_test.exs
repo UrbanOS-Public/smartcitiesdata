@@ -1,6 +1,5 @@
 defmodule DiscoveryApiWeb.Utilities.HmacTokenTest do
   use ExUnit.Case
-  use Placebo
   use Properties, otp_app: :discovery_api
 
   alias DiscoveryApiWeb.Utilities.HmacToken
@@ -24,7 +23,7 @@ defmodule DiscoveryApiWeb.Utilities.HmacTokenTest do
 
     test "it returns false if hmac token is expired" do
       time_before_now = 1_578_675_735
-      expired_hmac_token = :crypto.hmac(:sha, presign_key(), "#{@dataset_id}/#{time_before_now}") |> Base.encode16()
+      expired_hmac_token = :crypto.mac(:hmac, :sha256, presign_key(), "#{@dataset_id}/#{time_before_now}") |> Base.encode16()
 
       assert false == HmacToken.valid_hmac_token(expired_hmac_token, @dataset_id, time_before_now)
     end

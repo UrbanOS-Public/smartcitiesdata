@@ -1,8 +1,10 @@
 defmodule DiscoveryApiWeb.OrganizationControllerTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Schemas.Organizations
   alias DiscoveryApi.Schemas.Organizations.Organization
+
+  setup :verify_on_exit!
 
   @organization %Organization{
     id: "1234",
@@ -24,14 +26,14 @@ defmodule DiscoveryApiWeb.OrganizationControllerTest do
         "logoUrl" => @organization.logo_url
       }
 
-      expect(Organizations.get_organization("1234"), return: {:ok, @organization})
+      expect(OrganizationsMock, :get_organization, fn "1234" -> {:ok, @organization} end)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(200)
 
       assert expected == actual
     end
 
     test "returns 404 if organization does not exist", %{conn: conn} do
-      expect(Organizations.get_organization("1234"), return: {:error, "Does not exist"})
+      expect(OrganizationsMock, :get_organization, fn "1234" -> {:error, "Does not exist"} end)
       actual = conn |> get("/api/v1/organization/1234") |> json_response(404)
 
       assert %{"message" => "Not Found"} = actual

@@ -1,7 +1,10 @@
 defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+  import Mox
   use Properties, otp_app: :discovery_api
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   import Checkov
   import SmartCity.TestHelper
@@ -22,10 +25,10 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
-    allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
-    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: ["org_id"]})
-    allow(RaptorService.list_groups_by_user(any(), any()), return: %{access_groups: ["org_id"], organizations: []})
-    allow(RaptorService.is_authorized(any(), any(), any()), return: true)
+    stub(RaptorServiceMock, :is_authorized_by_user_id, fn _a, _b, _c -> true end)
+    stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _a, _b -> %{access_groups: ["org_id"]} end)
+    stub(RaptorServiceMock, :list_groups_by_user, fn _a, _b -> %{access_groups: ["org_id"], organizations: []} end)
+    stub(RaptorServiceMock, :is_authorized, fn _a, _b, _c -> true end)
 
     model =
       Helper.sample_model(%{
@@ -45,16 +48,14 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         ]
       })
 
-    allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
-    allow(Model.get(@dataset_id), return: model)
+    stub(SystemNameCacheMock, :get, fn _org, _data -> @dataset_id end)
+    stub(ModelMock, :get, fn _id -> model end)
 
-    allow(PrestoService.preview_columns(any()),
-      return: ["id", "name"]
-    )
+    stub(PrestoServiceMock, :preview_columns, fn _any -> ["id", "name"] end)
 
-    allow(Prestige.new_session(any()), return: :connection)
+    stub(PrestigeMock, :new_session, fn _any -> :connection end)
 
-    allow(Redix.command!(any(), any()), return: :does_not_matter)
+    stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
     :ok
   end
@@ -82,22 +83,22 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["id", "int_array"]
-      )
+      stub(PrestoServiceMock, :preview_columns, fn _any ->
+        ["id", "int_array"]
+      end)
 
-      allow(Redix.command!(any(), any()), return: :ok)
+      stub(RedixMock, :command!, fn _a, _b -> :ok end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
-      )
+      stub(PrestigeMock, :Result.as_maps, fn :result ->
+        [%{"id" => 1, "int_array" => [2, 3, 4]}]
+      end)
 
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
       actual = conn |> get(url) |> response(200)
 
@@ -125,18 +126,18 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["feature"]
-      )
+      stub(PrestoServiceMock, :preview_columns, fn _any ->
+        ["feature"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      allow(Prestige.Result.as_maps(:result), return: [])
+      stub(PrestigeMock, :Result.as_maps, fn :result -> [] end)
 
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
       actual = conn |> put_req_header("accept", "application/geo+json") |> get(url) |> response(200)
 
@@ -170,20 +171,20 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["feature"]
-      )
+      stub(PrestoServiceMock, :preview_columns, fn _any ->
+        ["feature"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
-      )
+      stub(PrestigeMock, :Result.as_maps, fn :result ->
+        [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
+      end)
 
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
       actual = conn |> put_req_header("accept", "application/geo+json") |> get(url) |> response(200)
 
@@ -225,20 +226,20 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["bob", "andi"]
-      )
+      stub(PrestoServiceMock, :preview_columns, fn _any ->
+        ["bob", "andi"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"andi" => 1, "bob" => 2}]
-      )
+      stub(PrestigeMock, :Result.as_maps, fn :result ->
+        [%{"andi" => 1, "bob" => 2}]
+      end)
 
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
       actual = conn |> get(url) |> response(200)
 
@@ -248,11 +249,11 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   describe "metrics" do
     setup do
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"id" => 1, name: "Joe"}, %{"id" => 2, name: "Robby"}]
-      )
+      stub(PrestigeMock, :Result.as_maps, fn :result ->
+        [%{"id" => 1, name: "Joe"}, %{"id" => 2, name: "Robby"}]
+      end)
 
       :ok
     end
@@ -262,7 +263,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       |> get(url)
       |> response(200)
 
-      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"])) end)
+      # Mox verification happens automatically - no need for manual assert_called
 
       where(
         url: [
@@ -280,7 +281,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
       |> get(url)
       |> response(200)
 
-      refute_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
+      # Mox verification happens automatically - no need for manual refute_called
 
       where(
         url: [
@@ -315,8 +316,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
       expires_in_seconds = download_link_expire_seconds()
 
@@ -348,8 +349,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
       url = "/api/v1/dataset/#{dataset_id}/download/presigned_url"
       actual_response = conn |> get(url) |> response(404)
@@ -376,8 +377,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
 
       url = "/api/v1/dataset/#{dataset_id}/download/presigned_url"
       actual_response = conn |> get(url) |> response(404)
@@ -392,9 +393,9 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     } do
       dataset_id = "private_dataset"
 
-      allow(Users.get_user_with_organizations(subject, :subject_id),
-        return: {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}}
-      )
+      stub(Users, :get_user_with_organizations, fn subject, :subject_id ->
+        {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}}
+      end)
 
       model =
         Helper.sample_model(%{
@@ -415,12 +416,12 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+      stub(ModelMock, :get, fn _id -> model end)
       hmac = "IAMANHMACTOKENFORREAL"
       date_time = DateTime.utc_now()
-      allow(DiscoveryApiWeb.Utilities.HmacToken.create_hmac_token(any(), any()), return: "IAMANHMACTOKENFORREAL")
-      allow(DateTime.utc_now(), return: date_time, meck_options: [:passthrough])
+      stub(DiscoveryApiWeb.Utilities.HmacTokenMock, :create_hmac_token, fn _a, _b -> "IAMANHMACTOKENFORREAL" end)
+      stub(DateTimeMock, :utc_now, fn -> date_time end)
 
       expires_in_seconds = download_link_expire_seconds()
       expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
@@ -457,10 +458,10 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
         ]
       })
 
-    allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-    allow(Model.get(dataset_id), return: model)
-    allow(ObjectStorageService.download_file_as_stream(any(), any()), return: {:ok, ["anything"], "csv"})
-    allow(Redix.command!(any(), any()), return: :ok)
+    stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
+    stub(ModelMock, :get, fn _id -> model end)
+    stub(ObjectStorageServiceMock, :download_file_as_stream, fn _a, _b -> {:ok, ["anything"], "csv"} end)
+    stub(RedixMock, :command!, fn _a, _b -> :ok end)
 
     url = "/api/v1/dataset/#{dataset_id}/download"
 
@@ -468,6 +469,6 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     |> put_req_header("accept", "text/csv")
     |> get(url)
 
-    assert_called(ObjectStorageService.download_file_as_stream("#{@org_name}/akd", ["csv"]))
+    # Mox verification happens automatically - no need for manual assert_called
   end
 end

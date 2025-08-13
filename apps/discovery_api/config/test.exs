@@ -16,7 +16,17 @@ config :discovery_api,
   jwks_endpoint: "pretend-this-is-a-url/jwks",
   allowed_origins: ["tests.example.com"],
   test_mode: true,
-  hsts_enabled: false
+  hsts_enabled: false,
+  persistence: PersistenceMock,
+  raptor_service: RaptorServiceMock,
+  redix_module: RedixMock,
+  presto_service: PrestoServiceMock,
+  model: ModelMock,
+  model_access_utils: ModelAccessUtilsMock,
+  prestige: PrestigeMock,
+  prestige_result: PrestigeResultMock,
+  mapper: MapperMock,
+  metrics_service: MetricsServiceMock
 
 config :logger, level: :warn
 

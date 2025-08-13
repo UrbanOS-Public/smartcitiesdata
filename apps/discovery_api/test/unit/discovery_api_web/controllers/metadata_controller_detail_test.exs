@@ -1,10 +1,13 @@
 defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @dataset_id "123"
   @org_id "456"
@@ -12,6 +15,17 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   setup %{auth_conn_case: auth_conn_case} do
     auth_conn_case.disable_revocation_list.()
     :ok
+  end
+  
+  setup %{authorized_conn: conn} do
+    if conn do
+      # Manually set current_user for unit tests since Guardian middleware requires database
+      current_user = %{id: "test_user_id"}
+      updated_conn = Plug.Conn.assign(conn, :current_user, current_user)
+      [authorized_conn: updated_conn]
+    else
+      []
+    end
   end
 
   describe "fetch dataset detail" do
@@ -41,7 +55,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
         Helper.sample_model(%{id: @dataset_id})
         |> Map.put(:schema, schema)
 
-      allow(Model.get(@dataset_id), return: model)
+      :meck.expect(Model, :get, fn "123" -> model end)
 
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}") |> json_response(200)
 
@@ -95,7 +109,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     end
 
     test "returns 404", %{conn: conn} do
-      expect(Model.get(any()), return: nil)
+      :meck.expect(Model, :get, fn _dataset_id -> nil end)
 
       conn |> get("/api/v1/dataset/xyz123") |> json_response(404)
     end
@@ -120,7 +134,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
           }
         })
 
-      allow(Model.get(@dataset_id), return: model)
+      :meck.expect(Model, :get, fn "123" -> model end)
 
       :ok
     end
@@ -129,8 +143,11 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %User{organizations: [%{id: @org_id}]}})
-      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %User{organizations: [%{id: @org_id}]}} end)
+      stub(RaptorServiceMock, :is_authorized_by_user_id, fn _arg1, _arg2, _arg3 -> true end)
+
+      # Manually assign current_user to bypass Guardian middleware database requirement
+      conn = Plug.Conn.assign(conn, :current_user, %{id: "test_user_id"})
 
       conn
       |> get("/api/v1/dataset/#{@dataset_id}")

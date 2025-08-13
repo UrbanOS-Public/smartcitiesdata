@@ -1,10 +1,12 @@
 defmodule DiscoveryApi.Data.MapperTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
   alias DiscoveryApi.Data.{Mapper, Model}
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
+  
+  setup :verify_on_exit!
 
   describe "to_data_model/2 hard overrides" do
     data_test "with #{inspect(overrides)} should default #{inspect(field)} to #{inspect(value)}" do
@@ -14,7 +16,9 @@ defmodule DiscoveryApi.Data.MapperTest do
 
       organization = DiscoveryApi.Test.Helper.create_schema_organization(%{})
 
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _raptor_url, _dataset_id ->
+        %{access_groups: []}
+      end)
 
       {:ok, %Model{}} = {:ok, result} = Mapper.to_data_model(dataset, organization)
 

@@ -1,10 +1,19 @@
 defmodule DiscoveryApiWeb.DataController.DownloadTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   import Checkov
   import SmartCity.TestHelper
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
+
+  setup :verify_on_exit!
+
+  @system_name_cache Application.compile_env(:discovery_api, :system_name_cache)
+  @model Application.compile_env(:discovery_api, :model)
+  @presto_service Application.compile_env(:discovery_api, :presto_service)
+  @prestige Application.compile_env(:discovery_api, :prestige)
+  @prestige_result Application.compile_env(:discovery_api, :prestige_result)
+  @redix Application.compile_env(:discovery_api, :redix)
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -30,16 +39,19 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         ]
       })
 
-    allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
-    allow(Model.get(@dataset_id), return: model)
+    org_name = @org_name
+    data_name = @data_name
+    dataset_id = @dataset_id
+    stub(@system_name_cache, :get, fn ^org_name, ^data_name -> dataset_id end)
+    stub(@model, :get, fn ^dataset_id -> model end)
 
-    allow(PrestoService.preview_columns(any()),
-      return: ["id", "name"]
-    )
+    stub(@presto_service, :preview_columns, fn _ ->
+      ["id", "name"]
+    end)
 
-    allow(Prestige.new_session(any()), return: :connection)
+    stub(@prestige, :new_session, fn _ -> :connection end)
 
-    allow(Redix.command!(any(), any()), return: :does_not_matter)
+    stub(@redix, :command!, fn _, _ -> :does_not_matter end)
 
     :ok
   end
@@ -67,20 +79,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      org_name = @org_name
+      model_name = model.name
+      stub(@system_name_cache, :get, fn ^org_name, ^model_name -> dataset_id end)
+      stub(@model, :get, fn ^dataset_id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["id", "int_array"]
-      )
+      stub(@presto_service, :preview_columns, fn _ ->
+        ["id", "int_array"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(@prestige, :stream!, fn _, _ -> Stream.map([%{"id" => 1, "int_array" => [2, 3, 4]}], &{:ok, &1}) end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"id" => 1, "int_array" => [2, 3, 4]}]
-      )
-
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(@redix, :command!, fn _, _ -> :does_not_matter end)
 
       actual = conn |> get(url) |> response(200)
 
@@ -91,7 +101,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "stanislav"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model =
+      model = 
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__stan",
@@ -108,18 +118,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      org_name = @org_name
+      model_name = model.name
+      stub(@system_name_cache, :get, fn ^org_name, ^model_name -> dataset_id end)
+      stub(@model, :get, fn ^dataset_id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["feature"]
-      )
+      stub(@presto_service, :preview_columns, fn _ ->
+        ["feature"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(@prestige, :stream!, fn _, _ -> Stream.map([], &{:ok, &1}) end)
 
-      allow(Prestige.Result.as_maps(:result), return: [])
-
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(@redix, :command!, fn _, _ -> :does_not_matter end)
 
       actual = conn |> put_req_header("accept", "application/geo+json") |> get(url) |> response(200)
 
@@ -136,7 +146,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "stanislav"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model =
+      model = 
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__stan",
@@ -153,20 +163,20 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      org_name = @org_name
+      model_name = model.name
+      stub(@system_name_cache, :get, fn ^org_name, ^model_name -> dataset_id end)
+      stub(@model, :get, fn ^dataset_id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["feature"]
-      )
+      stub(@presto_service, :preview_columns, fn _ ->
+        ["feature"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(@prestige, :stream!, fn _, _ ->
+        Stream.map([%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}], &{:ok, &1})
+      end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
-      )
-
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(@redix, :command!, fn _, _ -> :does_not_matter end)
 
       actual = conn |> put_req_header("accept", "application/geo+json") |> get(url) |> response(200)
 
@@ -174,7 +184,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         "type" => "FeatureCollection",
         "name" => "#{@org_name}__stan",
         "features" => [
-          %{
+          %{ 
             "geometry" => %{
               "coordinates" => [0, 1]
             }
@@ -190,7 +200,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "pedro"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model =
+      model = 
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__paco",
@@ -208,20 +218,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, model.name), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      org_name = @org_name
+      model_name = model.name
+      stub(@system_name_cache, :get, fn ^org_name, ^model_name -> dataset_id end)
+      stub(@model, :get, fn ^dataset_id -> model end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["bob", "andi"]
-      )
+      stub(@presto_service, :preview_columns, fn _ ->
+        ["bob", "andi"]
+      end)
 
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(@prestige, :stream!, fn _, _ -> Stream.map([%{"andi" => 1, "bob" => 2}], &{:ok, &1}) end)
 
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"andi" => 1, "bob" => 2}]
-      )
-
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      stub(@redix, :command!, fn _, _ -> :does_not_matter end)
 
       actual = conn |> get(url) |> response(200)
 
@@ -231,21 +239,21 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
 
   describe "metrics" do
     setup do
-      allow(Prestige.stream!(any(), any()), return: [:result])
-
-      allow(Prestige.Result.as_maps(:result),
-        return: [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
-      )
+      stub(@prestige, :stream!, fn _, _ ->
+        Stream.map([%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}], &{:ok, &1})
+      end)
 
       :ok
     end
 
     data_test "increments dataset download count when user requests download", %{conn: conn} do
+      expect(@redix, :command!, fn :redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"] ->
+        :ok
+      end)
+
       conn
       |> get(url)
       |> response(200)
-
-      eventually(fn -> assert_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"])) end)
 
       where(
         url: [
@@ -258,12 +266,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
     end
 
     data_test "does not increment dataset download count when ui requests download", %{conn: conn} do
+      expect(@redix, :command!, 0)
+
       conn
       |> Plug.Conn.put_req_header("origin", "data.integration.tests.example.com")
       |> get(url)
       |> response(200)
-
-      refute_called(Redix.command!(:redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"]))
 
       where(
         url: [

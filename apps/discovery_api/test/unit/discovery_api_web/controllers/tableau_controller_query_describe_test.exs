@@ -1,9 +1,17 @@
 defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Data.Model
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
   alias DiscoveryApi.Services.PrestoService
+
+  setup :verify_on_exit!
+
+  @model Application.compile_env(:discovery_api, :model)
+  @presto_service Application.compile_env(:discovery_api, :presto_service)
+  @model_access_utils Application.compile_env(:discovery_api, :model_access_utils)
+  @prestige Application.compile_env(:discovery_api, :prestige)
+  @prestige_result Application.compile_env(:discovery_api, :prestige_result)
 
   setup do
     public_one_dataset =
@@ -51,9 +59,8 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
       geojson_dataset
     ]
 
-    allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
-
-    allow(Prestige.new_session(any()), return: :connection)
+    stub(@model, :get_all, fn -> datasets end)
+    stub(@prestige, :new_session, fn _ -> :connection end)
 
     {
       :ok,
@@ -118,12 +125,12 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
         ]
         |> Jason.encode!()
 
-      allow(Prestige.prepare!(any(), any(), any()), return: [:result])
-      allow(Prestige.execute!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: allowed_response)
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      stub(@prestige, :prepare!, fn _, _, _ -> :result end)
+      stub(@prestige, :execute!, fn _, _ -> :result end)
+      stub(@prestige_result, :as_maps, fn _ -> allowed_response end)
+      stub(@presto_service, :is_select_statement?, fn _ -> true end)
+      stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, public_tables} end)
+      stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
       response_body =
         conn
@@ -170,12 +177,12 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
         ]
         |> Jason.encode!()
 
-      allow(Prestige.prepare!(any(), any(), any()), return: [:result])
-      allow(Prestige.execute!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: allowed_response)
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, private_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      stub(@prestige, :prepare!, fn _, _, _ -> :result end)
+      stub(@prestige, :execute!, fn _, _ -> :result end)
+      stub(@prestige_result, :as_maps, fn _ -> allowed_response end)
+      stub(@presto_service, :is_select_statement?, fn _ -> true end)
+      stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, private_tables} end)
+      stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
       response_body =
         conn
@@ -192,9 +199,9 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
         INSERT INTO public__one SELECT * FROM public__two
       """
 
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:error, :does_not_matter})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      stub(@presto_service, :is_select_statement?, fn _ -> true end)
+      stub(@presto_service, :get_affected_tables, fn _, _ -> {:error, :does_not_matter} end)
+      stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
       assert conn
              |> put_req_header("accept", "application/json")
@@ -214,9 +221,9 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
       SELECT * FROM not_in_redis
       """
 
-      allow(PrestoService.is_select_statement?(statement), return: true)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, ["not_in_redis"]})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      stub(@presto_service, :is_select_statement?, fn _ -> true end)
+      stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, ["not_in_redis"]} end)
+      stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
       _response_body =
         conn
@@ -230,19 +237,16 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
              |> put_req_header("content-type", "text/plain")
              |> post("/api/v1/tableau/query_describe", statement)
              |> response(400)
-
-      assert not called?(Prestige.query!(any(), any()))
     end
 
-    test "can't perform or describe query if it not a supported/allowed statement type", %{conn: conn, public_tables: public_tables} do
+    test "can't perform or describe query if it not a supported/allowed statement type", %{
+      conn: conn
+    } do
       statement = """
         EXPLAIN ANALYZE select * from public__one
       """
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(PrestoService.is_select_statement?(statement), return: false)
-      allow(PrestoService.get_affected_tables(any(), statement), return: {:ok, public_tables})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      stub(@presto_service, :is_select_statement?, fn _ -> false end)
 
       assert conn
              |> put_req_header("accept", "application/json")

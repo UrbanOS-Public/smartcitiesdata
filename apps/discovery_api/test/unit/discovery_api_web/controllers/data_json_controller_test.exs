@@ -1,9 +1,11 @@
 defmodule DiscoveryApiWeb.DataJsonControllerTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Services.DataJsonService
+
+  setup :verify_on_exit!
 
   setup do
     public_model =
@@ -53,7 +55,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
 
   describe "GET with all fields" do
     setup %{conn: conn, models: models} do
-      allow(Model.get_all(), return: models)
+      stub(ModelMock, :get_all, fn -> models end)
       data_json = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
 
       %{models: models, data_json: data_json}
@@ -151,7 +153,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         private: false
       }
 
-      allow(Model.get_all(), return: [model])
+      stub(ModelMock, :get_all, fn -> [model] end)
 
       result_keys =
         conn

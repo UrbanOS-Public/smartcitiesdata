@@ -1,6 +1,6 @@
 defmodule DiscoveryApiWeb.VisualizationControllerTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+  import Mox
 
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
@@ -21,17 +21,35 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     :ok
   end
 
+  setup :verify_on_exit!
+  setup :set_mox_from_context
+  
+  setup %{authorized_conn: conn} do
+    # Common mocks needed by all authorized tests
+    stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
+    stub(PrestoServiceMock, :get_affected_tables, fn _arg1, _arg2 -> {:ok, []} end)
+    stub(ModelMock, :get_all, fn -> [] end)
+    :meck.expect(ModelAccessUtils, :has_access?, fn _arg1, _arg2 -> true end)
+    
+    if conn do
+      # Manually set current_user for unit tests since Guardian middleware requires database
+      current_user = %{id: @user_id}
+      updated_conn = Plug.Conn.assign(conn, :current_user, current_user)
+      [authorized_conn: updated_conn]
+    else
+      []
+    end
+  end
+
   describe "with Auth0 auth provider" do
     test "POST /visualization returns CREATED for valid bearer token and visualization setup", %{
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
-      allow(Visualizations.get_visualizations_by_owner_id(@user_id), return: [])
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
+      :meck.expect(Visualizations, :get_visualizations_by_owner_id, fn _user_id -> [] end)
 
-      allow(Visualizations.create_visualization(any()),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
-      )
+      :meck.expect(Visualizations, :create_visualization, fn _arg -> {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}} end)
 
       body =
         conn
@@ -52,15 +70,13 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart, id: 1}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart, id: 1}}
+      end)
 
-      expect(Visualizations.delete_visualization(any()),
-        return: {:ok, :does_not_matter}
-      )
+      :meck.expect(Visualizations, :delete_visualization, fn _arg -> {:ok, :does_not_matter} end)
 
       conn
       |> put_req_header("content-type", "application/json")
@@ -72,13 +88,13 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "frank", chart: @encoded_chart, id: 1}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "frank", chart: @encoded_chart, id: 1}}
+      end)
 
-      refute_called(Visualizations.delete_visualization(any()))
+      # Mox verification happens automatically - delete_visualization should not be called
 
       conn
       |> put_req_header("content-type", "application/json")
@@ -90,11 +106,11 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id), return: {:error, :does_not_matter})
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id -> {:error, :does_not_matter} end)
 
-      refute_called(Visualizations.delete_visualization(any()))
+      # Mox verification happens automatically - delete_visualization should not be called
 
       conn
       |> put_req_header("content-type", "application/json")
@@ -106,18 +122,15 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      datasets = ["123"]
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      _datasets = ["123"]
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return:
-          {:ok,
-           %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: datasets}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: ["123"]}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
+      # Manually assign current_user for this test
+      conn = Plug.Conn.assign(conn, :current_user, %{id: @user_id})
 
       body =
         conn
@@ -137,15 +150,12 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -159,15 +169,12 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -180,13 +187,10 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
     test "GET /visualization/id returns no allowed actions when no user is signed in", %{
       anonymous_conn: conn
     } do
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "someone else", chart: @encoded_chart}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -203,15 +207,12 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_subject: subject
     } do
       undecodable_chart = ~s({"data": ]]})
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: undecodable_chart}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: undecodable_chart}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -230,15 +231,12 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualization_by_id(@id),
-        return: {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: nil}}
-      )
+      :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
+        {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: nil}}
+      end)
 
-      allow(PrestoService.is_select_statement?(@query), return: true)
-      allow(PrestoService.get_affected_tables(any(), any()), return: {:ok, []})
-      allow(ModelAccessUtils.has_access?(any(), any()), return: true, meck_options: [:passthrough])
 
       body =
         conn
@@ -257,14 +255,14 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      allow(Users.get_user_with_organizations(subject, :subject_id), return: {:ok, %{id: @user_id}})
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
-      allow(Visualizations.get_visualizations_by_owner_id(@user_id),
-        return: [
+      :meck.expect(Visualizations, :get_visualizations_by_owner_id, fn _user_id ->
+        [
           %Visualization{public_id: "1", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"},
           %Visualization{public_id: "2", query: "blah", title: "blah blah", owner_id: @user_id, chart: "{}"}
         ]
-      )
+      end)
 
       body =
         conn

@@ -1,7 +1,9 @@
 defmodule DiscoveryApi.Data.CachePopulatorTest do
   @moduledoc false
   use ExUnit.Case
-  use Placebo
+  import Mox
+
+  setup :verify_on_exit!
 
   alias DiscoveryApi.Test.Helper
 

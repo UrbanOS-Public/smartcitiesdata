@@ -9,6 +9,11 @@ defmodule DiscoveryApiWeb.DataController do
   alias DiscoveryApiWeb.Utilities.HmacToken
   require Logger
 
+  # Allow configuring service modules for testing
+  @presto_service_impl Application.compile_env(:discovery_api, :presto_service, PrestoService)
+  @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
+  @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
+
   plug(GetModel)
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
   plug(:accepts, DataView.accepted_formats() when action in [:query])
@@ -29,13 +34,13 @@ defmodule DiscoveryApiWeb.DataController do
   def fetch_preview(conn, _params) do
     session =
       DiscoveryApi.prestige_opts()
-      |> Prestige.new_session()
+      |> @prestige_impl.new_session()
 
     dataset_name = conn.assigns.model.systemName
     schema = conn.assigns.model.schema
 
-    columns = PrestoService.preview_columns(schema)
-    rows = PrestoService.preview(session, dataset_name, schema)
+    columns = @presto_service_impl.preview_columns(schema)
+    rows = @presto_service_impl.preview(session, dataset_name, schema)
 
     render(conn, :data, %{
       rows: rows,
@@ -70,17 +75,17 @@ defmodule DiscoveryApiWeb.DataController do
     dataset_id = conn.assigns.model.id
     current_user = conn.assigns.current_user
     schema = conn.assigns.model.schema
-    session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
+    session = DiscoveryApi.prestige_opts() |> @prestige_impl.new_session()
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
-         {:ok, query} <- PrestoService.build_query(params, dataset_name, columns, schema),
+    with {:ok, columns} <- @presto_service_impl.get_column_names(session, dataset_name, Map.get(params, "columns")),
+         {:ok, query} <- @presto_service_impl.build_query(params, dataset_name, columns, schema),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(query),
          true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key) do
       data_stream =
         session
-        |> Prestige.stream!(query)
-        |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> @prestige_impl.stream!(query)
+        |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
         |> map_schema?(schema, format)
 
       rendered_data_stream =

@@ -13,12 +13,21 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   def init(default), do: default
 
   def call(conn, _) do
-    current_user = Guardian.Plug.current_resource(conn)
+    current_user = get_current_resource(conn)
 
     if System.get_env("REQUIRE_API_KEY") == "true" do
       assign_current_user(conn, current_user, get_api_key_from_header(conn))
     else
       assign(conn, :current_user, current_user)
+    end
+  end
+  
+  # Use test-friendly Guardian in test mode
+  defp get_current_resource(conn) do
+    if Application.get_env(:discovery_api, :test_mode, false) do
+      DiscoveryApiWeb.Test.TestGuardian.current_resource(conn)
+    else
+      Guardian.Plug.current_resource(conn)
     end
   end
 

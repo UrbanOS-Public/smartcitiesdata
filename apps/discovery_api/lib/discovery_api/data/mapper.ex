@@ -8,6 +8,9 @@ defmodule DiscoveryApi.Data.Mapper do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.OrganizationDetails
   use Properties, otp_app: :discovery_api
+  
+  # Allow configuring the RaptorService module for testing
+  @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
 
   getter(:raptor_url, generic: true)
 
@@ -74,7 +77,7 @@ defmodule DiscoveryApi.Data.Mapper do
   end
 
   defp retrieveAccessGroups(dataset_id) do
-    groups = RaptorService.list_access_groups_by_dataset(raptor_url(), dataset_id)
+    groups = @raptor_service_impl.list_access_groups_by_dataset(raptor_url(), dataset_id)
     {:ok, groups.access_groups}
   catch
     error -> {:error, error}

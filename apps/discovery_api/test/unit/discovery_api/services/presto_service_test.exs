@@ -1,12 +1,50 @@
 defmodule DiscoveryApi.Services.PrestoServiceTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
   import Checkov
+
+  @moduletag timeout: 5000
+
+  setup :verify_on_exit!
 
   alias DiscoveryApi.Services.PrestoService
 
   setup do
-    allow(Prestige.new_session(any()), return: :connection)
+    # Set up Prestige mocks using :meck since PrestoService doesn't use dependency injection
+    # Unload any existing mocks first to ensure clean state
+    try do
+      :meck.unload(Prestige)
+    catch
+      _, _ -> :ok
+    end
+    
+    try do
+      :meck.unload(Prestige.Result)
+    catch
+      _, _ -> :ok
+    end
+    
+    # Now create fresh mocks
+    :meck.new(Prestige, [:non_strict])
+    :meck.new(Prestige.Result, [:non_strict])
+    
+    # PrestigeMock is available through DI (used in other modules)
+    stub(PrestigeMock, :new_session, fn _ -> :connection end)
+    
+    on_exit(fn ->
+      try do
+        :meck.unload(Prestige)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.unload(Prestige.Result)
+      catch
+        _, _ -> :ok
+      end
+    end)
+    
     :ok
   end
 
@@ -25,11 +63,13 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       %{"id" => Faker.UUID.v4(), name: "thing3"}
     ]
 
-    allow(Prestige.query!(:connection, "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"),
-      return: :result
-    )
+    query = "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"
+    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+      assert received_query == query
+      :result 
+    end)
 
-    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+    :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
 
     result = PrestoService.preview(:connection, dataset, schema)
     assert list_of_maps == result
@@ -81,15 +121,13 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       }
     ]
 
-    allow(
-      Prestige.query!(
-        :connection,
-        "select nested_hyphen as \"nested-hyphen\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
-      ),
-      return: :result
-    )
+    query = "select nested_hyphen as \"nested-hyphen\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
+    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+      assert received_query == query
+      :result 
+    end)
 
-    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+    :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
 
     result = PrestoService.preview(:connection, dataset, schema)
     assert expected == result
@@ -162,11 +200,13 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       }
     ]
 
-    allow(Prestige.query!(:connection, "select parent as \"PARENT\" from #{dataset} limit 50"),
-      return: :result
-    )
+    query = "select parent as \"PARENT\" from #{dataset} limit 50"
+    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+      assert received_query == query
+      :result 
+    end)
 
-    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+    :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
 
     result = PrestoService.preview(:connection, dataset, schema)
     assert result == expected
@@ -179,11 +219,9 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     list_of_maps = real_geo_json_data()
     expected = real_geo_json_case_sensitive_data()
 
-    allow(Prestige.query!(:connection, any()),
-      return: :result
-    )
+    :meck.expect(Prestige, :query!, fn :connection, _query -> :result end)
 
-    expect(Prestige.Result.as_maps(:result), return: list_of_maps)
+    :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
 
     result = PrestoService.preview(:connection, dataset, schema)
     assert result == expected
@@ -217,11 +255,11 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{name: public_one_table}, %{name: public_two_table}]))
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(any()), return: explain_return)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> :result end)
+      :meck.expect(Prestige.Result, :as_maps, fn _result -> explain_return end)
 
       expected_read_tables = [public_one_table, public_two_table]
-      assert {:ok, ^expected_read_tables} = PrestoService.get_affected_tables(any(), statement)
+      assert {:ok, ^expected_read_tables} = PrestoService.get_affected_tables(:connection, statement)
     end
 
     test "reflects when statement has an insert in the query", %{public_one_table: public_one_table, public_two_table: public_two_table} do
@@ -231,10 +269,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{name: public_two_table}], %{name: public_one_table}))
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: explain_return)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> :result end)
+      :meck.expect(Prestige.Result, :as_maps, fn :result -> explain_return end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:error, _} = PrestoService.get_affected_tables(:connection, statement)
     end
 
     test "reflects when statement is not in the hive.default catalog and schema" do
@@ -244,10 +282,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([%{catalog: "$info_schema@hive", schema: "information_schema"}]))
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: explain_return)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> :result end)
+      :meck.expect(Prestige.Result, :as_maps, fn :result -> explain_return end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:error, _} = PrestoService.get_affected_tables(:connection, statement)
     end
 
     test "reflects when statement does not do IO operations" do
@@ -255,10 +293,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan(statement))
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: explain_return)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> :result end)
+      :meck.expect(Prestige.Result, :as_maps, fn :result -> explain_return end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:error, _} = PrestoService.get_affected_tables(:connection, statement)
     end
 
     test "reflects when statement does not read or write to anything at all" do
@@ -268,10 +306,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
 
       explain_return = make_explain_output(make_query_plan([]))
 
-      allow(Prestige.query!(any(), any()), return: :result)
-      allow(Prestige.Result.as_maps(:result), return: explain_return)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> :result end)
+      :meck.expect(Prestige.Result, :as_maps, fn :result -> explain_return end)
 
-      assert {:error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:error, _} = PrestoService.get_affected_tables(:connection, statement)
     end
 
     test "reflects when presto does not like the statement at all" do
@@ -279,9 +317,9 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
         THIS WILL NOT WORK
       """
 
-      allow(Prestige.query!(any(), any()), exec: fn _, _ -> raise Prestige.Error, message: "bad thing" end)
+      :meck.expect(Prestige, :query!, fn _connection, _query -> raise Prestige.Error, message: "bad thing" end)
 
-      assert {:sql_error, _} = PrestoService.get_affected_tables(any(), statement)
+      assert {:sql_error, _} = PrestoService.get_affected_tables(:connection, statement)
     end
   end
 

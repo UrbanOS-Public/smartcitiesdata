@@ -1,6 +1,8 @@
 defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
+
+  setup :verify_on_exit!
 
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApiWeb.Plugs.ResponseCache
@@ -18,16 +20,17 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   describe "handle_dataset/1" do
     setup do
       clear_saved_models()
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
-      allow(DiscoveryApi.Search.Elasticsearch.Document.update(any()), return: {:ok, :all_right_all_right})
-      allow(ResponseCache.invalidate(), return: :ok)
-      allow(DiscoveryApi.RecommendationEngine.save(any()), return: :ok)
+      stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _, _ -> %{access_groups: []} end)
+      stub(ElasticsearchDocumentMock, :update, fn _ -> {:ok, :all_right_all_right} end)
+      stub(ResponseCacheMock, :invalidate, fn -> :ok end)
+      stub(RecommendationEngineMock, :save, fn _ -> :ok end)
 
-      allow(Redix.command!(any(), any()), return: ["not_in_redis"])
+      stub(RedixMock, :command!, fn _, _ -> ["not_in_redis"] end)
 
       dataset = TDG.create_dataset(%{id: "123"})
       organization = create_schema_organization(%{id: dataset.technical.orgId})
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      org_id = dataset.technical.orgId
+      stub(OrganizationsMock, :get_organization, fn ^org_id -> {:ok, organization} end)
       {:ok, %{dataset: dataset, organization: organization}}
     end
 
@@ -41,7 +44,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "should not persist the model when organization get fails" do
       dataset = TDG.create_dataset(%{id: "123"})
 
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:error, :failure})
+      org_id = dataset.technical.orgId
+      stub(OrganizationsMock, :get_organization, fn ^org_id -> {:error, :failure} end)
 
       Brook.Test.send(DiscoveryApi.instance_name(), dataset_update(), "unit", dataset)
 
@@ -50,7 +54,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
     @tag capture_log: true
     test "should not persist the model when system cache put fails", %{dataset: dataset} do
-      allow SystemNameCache.put(any(), any(), any()), return: {:error, :failure}
+      stub(SystemNameCacheMock, :put, fn _, _, _ -> {:error, :failure} end)
 
       Brook.Test.send(@instance_name, dataset_update(), "unit", dataset)
 
@@ -58,8 +62,9 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     end
 
     test "should invalidate the ResponseCache when dataset is received", %{dataset: dataset} do
+      expect(ResponseCacheMock, :invalidate, 1, fn -> :ok end)
       Brook.Test.send(@instance_name, dataset_update(), "unit", dataset)
-      assert_called(ResponseCache.invalidate(), once())
+      verify!(ResponseCacheMock)
     end
 
     test "creates orgName/dataName mapping to dataset_id", %{dataset: dataset, organization: organization} do
@@ -77,11 +82,18 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
       organization = create_schema_organization(%{id: dataset.technical.orgId})
-      allow(Organizations.get_organization(dataset.technical.orgId), return: {:ok, organization})
+      org_id = dataset.technical.orgId
+      stub(OrganizationsMock, :get_organization, fn ^org_id -> {:ok, organization} end)
+
+      if called do
+        expect(RecommendationEngineMock, :save, 1, fn ^dataset -> :ok end)
+      else
+        expect(RecommendationEngineMock, :save, 0, fn _ -> :ok end)
+      end
 
       Brook.Test.send(@instance_name, dataset_update(), "unit", dataset)
 
-      assert called == called?(DiscoveryApi.RecommendationEngine.save(dataset))
+      verify!(RecommendationEngineMock)
 
       where([
         [:called, :dataset_map],
@@ -95,7 +107,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   describe "data write complete events" do
     setup do
       clear_saved_models()
-      allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _, _ -> %{access_groups: []} end)
       dataset = TDG.create_dataset(%{id: "123"})
       {:ok, data_model} = DiscoveryApi.Data.Mapper.to_data_model(dataset, %DiscoveryApi.Schemas.Organizations.Organization{})
 
@@ -103,7 +115,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
         Brook.ViewState.merge(:models, data_model.id, data_model)
       end)
 
-      allow(Redix.command!(any(), any()), return: ["not_in_redis"])
+      stub(RedixMock, :command!, fn _, _ -> ["not_in_redis"] end)
 
       {:ok, [data_model: data_model]}
     end
@@ -111,7 +123,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "merges the write complete timsetamp into the model", %{data_model: %{id: id, title: title}} do
       write_complete_timestamp_iso = DateTime.utc_now() |> DateTime.to_iso8601()
 
-      expect(Elasticsearch.Document.update(any()), return: {:ok, :does_not_matter})
+      expect(ElasticsearchDocumentMock, :update, 1, fn _ -> {:ok, :does_not_matter} end)
       {:ok, event} = SmartCity.DataWriteComplete.new(%{id: id, timestamp: write_complete_timestamp_iso})
 
       Brook.Test.send(@instance_name, data_write_complete(), "unit", event)

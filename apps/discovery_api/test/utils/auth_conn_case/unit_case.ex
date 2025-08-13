@@ -4,12 +4,14 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
   """
 
   use ExUnit.CaseTemplate
-  use Placebo
+  # Temporarily commenting out Mox to fix the on_exit issue
+  # import Mox
 
   using do
     quote do
       import Plug.Conn
       import Phoenix.ConnTest
+      # import Mox
       alias DiscoveryApiWeb.Router.Helpers, as: Routes
 
       @endpoint DiscoveryApiWeb.Endpoint
@@ -34,13 +36,15 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
   end
 
   @doc """
-  This exists b/c Placebo clears mocks on setup, so you can't just do it once in the helper case setup
+  This exists to stub common functions that many tests need
   """
   def disable_revocation_list() do
-    allow Guardian.DB.Token.find_by_claims(any()), return: nil
+    # In test mode, revocation is handled by TestGuardian
+    :ok
   end
 
-  def disable_user_addition() do
-    allow DiscoveryApi.Schemas.Users.create_or_update(any(), any()), return: {:ok, :good}
+  def disable_user_addition() do  
+    # In test mode, user creation is handled by TestGuardian
+    :ok
   end
 end

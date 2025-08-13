@@ -1,12 +1,17 @@
 defmodule DiscoveryApi.Stats.CompletenessTest do
   use ExUnit.Case
-  use Placebo
+  import Mox
 
   alias DiscoveryApi.Stats.DataHelper
   alias DiscoveryApi.Stats.Completeness
 
+  setup :verify_on_exit!
+
   setup do
-    allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+    # Stub RaptorService for all tests in this module
+    stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _raptor_url, _dataset_id -> 
+      %{access_groups: []}
+    end)
 
     {:ok,
      model: DataHelper.create_model(),

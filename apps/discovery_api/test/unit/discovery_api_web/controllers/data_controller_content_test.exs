@@ -1,10 +1,13 @@
 defmodule DiscoveryApiWeb.DataController.ContentTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   import Checkov
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.{PrestoService, MetricsService}
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -58,30 +61,33 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
           ]
         })
 
-      allow(SystemNameCache.get(@org_name, @data_name), return: @dataset_id)
-      allow(Model.get(@dataset_id), return: model)
-      allow(QueryAccessUtils.get_affected_models(any()), return: {:ok, nil})
-      allow(QueryAccessUtils.user_is_authorized?(any(), any(), any()), return: true, meck_options: [:passthrough])
-      allow(MetricsService.record_api_hit(any(), any()), return: :does_not_matter)
+      stub(SystemNameCacheMock, :get, fn _org_name, _data_name -> @dataset_id end)
+      stub(ModelMock, :get, fn _dataset_id -> model end)
+      stub(QueryAccessUtilsMock, :get_affected_models, fn _arg -> {:ok, nil} end)
+      stub(QueryAccessUtilsMock, :user_is_authorized?, fn _arg1, _arg2, _arg3 -> true end)
+      
+      # MetricsService uses :meck like in previous files for passthrough behavior
+      :meck.expect(MetricsService, :record_api_hit, fn _arg1, _arg2 -> :does_not_matter end)
 
       # these clearly need to be condensed
-      allow(PrestoService.get_column_names(any(), any(), any()), return: {:ok, ["feature"]})
-      allow(PrestoService.preview_columns(any()), return: ["feature"])
-      allow(PrestoService.preview(any(), @system_name, any()), return: @geo_json_features)
-      allow(PrestoService.build_query(any(), any(), any(), any()), return: {:ok, "select * from #{@system_name}"})
+      stub(PrestoServiceMock, :get_column_names, fn _arg1, _arg2, _arg3 -> {:ok, ["feature"]} end)
+      stub(PrestoServiceMock, :preview_columns, fn _arg -> ["feature"] end)
+      stub(PrestoServiceMock, :preview, fn _arg1, @system_name, _arg3 -> @geo_json_features end)
+      stub(PrestoServiceMock, :build_query, fn _arg1, _arg2, _arg3, _arg4 -> {:ok, "select * from #{@system_name}"} end)
 
-      allow(Prestige.new_session(any()), return: :connect)
-      allow(Prestige.query!(any(), "select * from #{@system_name}"), return: :result)
-      allow(Prestige.stream!(any(), any()), return: [:result])
+      stub(PrestigeMock, :new_session, fn _arg -> :connect end)
+      stub(PrestigeMock, :query!, fn _arg, "select * from #{@system_name}" -> :result end)
+      stub(PrestigeMock, :stream!, fn _arg1, _arg2 -> [:result] end)
 
-      allow(Prestige.Result.as_maps(any()),
-        return: [
+      # Prestige.Result.as_maps needs special handling - use PrestigeResultMock
+      stub(PrestigeResultMock, :as_maps, fn _arg ->
+        [
           %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
           %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
           %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
           %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
         ]
-      )
+      end)
 
       :ok
     end

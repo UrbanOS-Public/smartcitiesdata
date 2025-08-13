@@ -23,6 +23,8 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
+  
+  @mapper_impl Application.compile_env(:discovery_api, :mapper, Mapper)
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
@@ -144,7 +146,7 @@ defmodule DiscoveryApi.Event.EventHandler do
 
     with {:ok, organization} <- DiscoveryApi.Schemas.Organizations.get_organization(dataset.technical.orgId),
          {:ok, _cached} <- SystemNameCache.put(dataset.id, organization.name, dataset.technical.dataName),
-         {:ok, model} <- Mapper.to_data_model(dataset, organization) do
+         {:ok, model} <- @mapper_impl.to_data_model(dataset, organization) do
       Elasticsearch.Document.update(model)
       save_dataset_to_recommendation_engine(dataset)
       Logger.debug(fn -> "Successfully handled message: `#{dataset.technical.systemName}`" end)
@@ -264,12 +266,12 @@ defmodule DiscoveryApi.Event.EventHandler do
   end
 
   defp handle_dataset_associate(dataset, relation) do
-    model = Mapper.add_access_group(dataset, relation.access_group_id)
+    model = @mapper_impl.add_access_group(dataset, relation.access_group_id)
     update_dataset_model_with_relation(model, relation, "association")
   end
 
   defp handle_dataset_dissociate(dataset, relation) do
-    model = Mapper.remove_access_group(dataset, relation.access_group_id)
+    model = @mapper_impl.remove_access_group(dataset, relation.access_group_id)
     update_dataset_model_with_relation(model, relation, "disassociation")
   end
 

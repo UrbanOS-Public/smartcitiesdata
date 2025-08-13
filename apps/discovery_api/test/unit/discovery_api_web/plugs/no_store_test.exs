@@ -1,9 +1,10 @@
 defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApiWeb.Plugs.NoStore
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApi.Services.PrestoService
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   describe "call/2" do
     test "adds cache-control: no-store to connection header" do
@@ -15,6 +16,27 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
   end
 
   describe "router global_headers pipeline" do
+    setup do
+      # Use :meck for modules without dependency injection (Prestige, Prestige.Result)
+      try do
+        :meck.new(Prestige, [:non_strict])
+        :meck.new(Prestige.Result, [:non_strict])
+      catch
+        _, _ -> :ok
+      end
+      
+      on_exit(fn ->
+        try do
+          :meck.unload(Prestige)
+          :meck.unload(Prestige.Result)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      :ok
+    end
+
     test "response has the no-store header set", %{conn: conn} do
       dataset_id = "pedro"
       org_name = "an_org"
@@ -34,18 +56,18 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
           ]
         })
 
-      allow(SystemNameCache.get(any(), any()), return: dataset_id)
-      allow(Model.get(dataset_id), return: model)
+      # Use Mox for services with dependency injection
+      stub(SystemNameCacheMock, :get, fn _, _ -> dataset_id end)
+      stub(ModelMock, :get, fn ^dataset_id -> model end)
+      stub(PrestoServiceMock, :preview_columns, fn _ -> ["bob", "andi"] end)
+      stub(RedixMock, :command!, fn _, _ -> :does_not_matter end)
+      # Add MetricsServiceMock expectation for RecordMetrics plug
+      stub(MetricsServiceMock, :record_api_hit, fn _, _ -> :ok end)
 
-      allow(PrestoService.preview_columns(any()),
-        return: ["bob", "andi"]
-      )
-
-      allow(Prestige.new_session(any()), return: :connection)
-      allow(Prestige.stream!(any(), any()), return: [:result])
-      allow(Prestige.Result.as_maps(any()), return: [%{"andi" => 1, "bob" => 2}])
-
-      allow(Redix.command!(any(), any()), return: :does_not_matter)
+      # Use :meck for modules without dependency injection
+      :meck.expect(Prestige, :new_session, fn _ -> :connection end)
+      :meck.expect(Prestige, :stream!, fn _, _ -> [:result] end)
+      :meck.expect(Prestige.Result, :as_maps, fn _ -> [%{"andi" => 1, "bob" => 2}] end)
 
       conn = get(conn, url)
       assert ["no-cache, no-store, must-revalidate"] == get_resp_header(conn, "cache-control")

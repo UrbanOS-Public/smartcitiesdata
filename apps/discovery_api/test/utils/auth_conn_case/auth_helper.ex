@@ -16,11 +16,13 @@ defmodule DiscoveryApi.Test.AuthConnCase.AuthHelper do
       Phoenix.ConnTest.build_conn()
       |> put_bearer_token(authorized_jwt)
       |> set_content_type()
+      |> DiscoveryApiWeb.Test.AuthTestHelper.assign_test_user()
 
     revocable_conn =
       Phoenix.ConnTest.build_conn()
       |> put_bearer_token(revocable_jwt)
       |> set_content_type()
+      |> DiscoveryApiWeb.Test.AuthTestHelper.assign_test_user()
 
     invalid_conn =
       Phoenix.ConnTest.build_conn()

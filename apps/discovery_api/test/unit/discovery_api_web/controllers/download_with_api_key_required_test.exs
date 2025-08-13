@@ -1,11 +1,16 @@
 defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+  import Mox
   use Properties, otp_app: :discovery_api
 
   alias DiscoveryApi.Services.ObjectStorageService
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+
+  @object_storage_service Application.compile_env(:discovery_api, :object_storage_service)
+  @model Application.compile_env(:discovery_api, :model)
+  @prestige Application.compile_env(:discovery_api, :prestige)
+  @prestige_result Application.compile_env(:discovery_api, :prestige_result)
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -23,17 +28,22 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
   setup do
     on_exit(fn -> System.put_env("REQUIRE_API_KEY", "false") end)
     System.put_env("REQUIRE_API_KEY", "true")
-    allow(ObjectStorageService.download_file_as_stream(any(), any()), return: {:ok, @data_stream, "csv"})
-    allow(Prestige.new_session(any()), return: :connection)
-    allow(Prestige.stream!(any(), any()), return: [:result])
-    allow(Prestige.Result.as_maps(:result), return: @data_map)
+
+    stub(@object_storage_service, :download_file_as_stream, fn _, _ ->
+      {:ok, @data_stream, "csv"}
+    end)
+
+    stub(@prestige, :new_session, fn _ -> :connection end)
+    stub(@prestige, :stream!, fn _, _ -> Stream.map(@data_map, &{:ok, &1}) end)
+    stub(@prestige_result, :as_maps, fn _ -> @data_map end)
     :ok
   end
 
   describe "when api keys are required, downloading a public dataset" do
     test "with extensions will succeed with a valid hmac token and expires", %{anonymous_conn: conn} do
       model = build_model_with_extensions(private: false)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       expires = build_expires()
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}"
@@ -46,7 +56,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with extensions will fail without an hmac token", %{anonymous_conn: conn} do
       model = build_model_with_extensions(private: false)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       url = "/api/v1/dataset/#{@dataset_id}/download"
 
       response = conn |> get(url)
@@ -57,7 +68,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with requested format will succeed with a valid token and expires", %{anonymous_conn: conn} do
       model = build_model(private: false)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       expires = build_expires()
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}"
@@ -70,7 +82,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with requested format will fail without an hmac token", %{anonymous_conn: conn} do
       model = build_model(private: false)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       url = "/api/v1/dataset/#{@dataset_id}/download"
 
       response = conn |> get(url)
@@ -83,7 +96,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
   describe "when api keys are required, downloading a private dataset" do
     test "with extensions will succeed with a valid hmac token and expires", %{anonymous_conn: conn} do
       model = build_model_with_extensions(private: true)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       expires = build_expires()
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}"
@@ -96,7 +110,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with extensions will fail without an hmac token", %{anonymous_conn: conn} do
       model = build_model_with_extensions(private: true)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       url = "/api/v1/dataset/#{@dataset_id}/download"
 
       response = conn |> get(url)
@@ -107,7 +122,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with requested format will succeed with a valid token and expires", %{anonymous_conn: conn} do
       model = build_model(private: true)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       expires = build_expires()
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}&_format=csv"
@@ -120,7 +136,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
     test "with requested format will fail without an hmac token", %{anonymous_conn: conn} do
       model = build_model(private: true)
-      allow(Model.get(@dataset_id), return: model)
+      dataset_id = @dataset_id
+      stub(@model, :get, fn ^dataset_id -> model end)
       url = "/api/v1/dataset/#{@dataset_id}/download"
 
       response = conn |> get(url)
@@ -176,6 +193,6 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
 
   defp build_hmac_token(expires) do
     key = presign_key()
-    :crypto.hmac(:sha256, key, "#{@dataset_id}/#{expires}") |> Base.encode16()
+    :crypto.mac(:hmac, :sha256, key, "#{@dataset_id}/#{expires}") |> Base.encode16()
   end
 end

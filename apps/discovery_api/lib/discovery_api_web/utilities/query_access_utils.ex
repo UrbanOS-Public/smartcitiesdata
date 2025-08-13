@@ -10,6 +10,12 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
 
   getter(:raptor_url, generic: true)
 
+  # Allow configuring the service modules for testing
+  @presto_service_impl Application.compile_env(:discovery_api, :presto_service, PrestoService)
+  @model_impl Application.compile_env(:discovery_api, :model, Model)
+  @model_access_utils_impl Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtils)
+  @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
+
   def authorized_session(conn, affected_models) do
     current_user = conn.assigns.current_user
     api_key = Plug.Conn.get_req_header(conn, "api_key")
@@ -28,10 +34,10 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def get_affected_models(statement) do
-    with true <- PrestoService.is_select_statement?(statement),
+    with true <- @presto_service_impl.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
-         {:ok, affected_tables} <- PrestoService.get_affected_tables(session, statement),
+         {:ok, affected_tables} <- @presto_service_impl.get_affected_tables(session, statement),
          affected_models <- map_affected_tables_to_models(affected_tables),
          true <- valid_tables?(affected_tables, affected_models) do
       {:ok, affected_models}
@@ -42,7 +48,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def user_can_access_models?(affected_models, user) do
-    Enum.all?(affected_models, &ModelAccessUtils.has_access?(&1, user))
+    Enum.all?(affected_models, &@model_access_utils_impl.has_access?(&1, user))
   end
 
   def api_key_can_access_models?(_affected_models, []) do
@@ -50,11 +56,11 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def api_key_can_access_models?(affected_models, [api_key]) do
-    Enum.all?(affected_models, &RaptorService.is_authorized(raptor_url(), api_key, &1[:systemName]))
+    Enum.all?(affected_models, &@raptor_service_impl.is_authorized(raptor_url(), api_key, &1[:systemName]))
   end
 
   defp map_affected_tables_to_models(affected_tables) do
-    all_models = Model.get_all()
+    all_models = @model_impl.get_all()
 
     Enum.filter(all_models, &(String.downcase(&1.systemName) in affected_tables))
   end

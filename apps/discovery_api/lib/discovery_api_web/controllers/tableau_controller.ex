@@ -9,6 +9,9 @@ defmodule DiscoveryApiWeb.TableauController do
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApiWeb.Utilities.DescribeUtils
   alias DiscoveryApiWeb.MultipleDataView
+  
+  @model_impl Application.compile_env(:discovery_api, :model, Model)
+  @model_access_utils_impl Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtils)
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -24,7 +27,7 @@ defmodule DiscoveryApiWeb.TableauController do
     filtered_tables =
       case TableInfoCache.get(user_id) do
         nil ->
-          remove_unauthorized_models(conn, Model.get_all())
+          remove_unauthorized_models(conn, @model_impl.get_all())
           |> get_filtered_table_info()
           |> TableInfoCache.put(user_id)
 
@@ -74,7 +77,7 @@ defmodule DiscoveryApiWeb.TableauController do
     models
     |> filter_by_file_types(["CSV", "GEOJSON"])
     |> filter_by_source_type(true)
-    |> Enum.map(&Model.to_table_info/1)
+    |> Enum.map(&@model_impl.to_table_info/1)
   end
 
   defp filter_by_file_types(datasets, accepted_file_types) do
@@ -95,6 +98,6 @@ defmodule DiscoveryApiWeb.TableauController do
 
   defp remove_unauthorized_models(conn, filtered_tabl) do
     current_user = conn.assigns.current_user
-    Enum.filter(filtered_tabl, &ModelAccessUtils.has_access?(&1, current_user))
+    Enum.filter(filtered_tabl, &@model_access_utils_impl.has_access?(&1, current_user))
   end
 end
