@@ -10,4 +10,6 @@ defmodule PrestoServiceBehaviour do
   @callback preview_columns(list()) :: list()
   @callback get_column_names(any(), any(), any()) :: {:ok, list()} | {:error, any()}
   @callback build_query(any(), any(), any(), any()) :: {:ok, binary()} | {:error, any()}
+  @callback format_select_statement_from_schema(list()) :: binary()
+  @callback map_prestige_results_to_schema(any(), list()) :: any()
 end

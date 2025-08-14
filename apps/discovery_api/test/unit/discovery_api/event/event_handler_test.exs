@@ -28,18 +28,14 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   setup :set_mox_from_context
 
   setup do
-    # Start TelemetryEvent.Mock process
-    {:ok, _pid} = TelemetryEvent.Mock.start_link([])
-    
-    # Mock DeadLetter using :meck since EventHandler doesn't use dependency injection
-    try do
-      :meck.unload(DeadLetter)
-    catch
-      _, _ -> :ok
+    # Start TelemetryEvent.Mock process (handle case where it's already started)
+    case TelemetryEvent.Mock.start_link([]) do
+      {:ok, _pid} -> :ok
+      {:error, {:already_started, _pid}} -> :ok
     end
     
-    :meck.new(DeadLetter, [:non_strict])
-    :meck.expect(DeadLetter, :process, fn _topics, _headers, _data, _instance, _opts -> :ok end)
+    # Mock DeadLetter using Mox since EventHandler now uses dependency injection
+    stub(DeadLetterMock, :process, fn _topics, _headers, _data, _instance, _opts -> :ok end)
     
     # Mock StatsCalculator using :meck since EventHandler doesn't use dependency injection
     try do
@@ -62,12 +58,6 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     :meck.expect(DiscoveryApi.Data.ResponseCache, :invalidate, fn -> {:ok, true} end)
     
     on_exit(fn ->
-      try do
-        :meck.unload(DeadLetter)
-      catch
-        _, _ -> :ok
-      end
-      
       try do
         :meck.unload(DiscoveryApi.Stats.StatsCalculator)
       catch

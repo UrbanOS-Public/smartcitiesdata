@@ -8,13 +8,14 @@ defmodule DiscoveryApiWeb.Plugs.GetModel do
 
   alias DiscoveryApi.Data.{Model, SystemNameCache}
 
-  # Allow configuring the model module for testing
+  # Allow configuring modules for testing
   @model_impl Application.compile_env(:discovery_api, :model, Model)
+  @system_name_cache_impl Application.compile_env(:discovery_api, :system_name_cache, SystemNameCache)
 
   def init(default), do: default
 
   def call(%{params: %{"org_name" => org_name, "dataset_name" => dataset_name}} = conn, _) do
-    with dataset_id when not is_nil(dataset_id) <- SystemNameCache.get(org_name, dataset_name),
+    with dataset_id when not is_nil(dataset_id) <- @system_name_cache_impl.get(org_name, dataset_name),
          model when not is_nil(model) <- @model_impl.get(dataset_id) do
       assign(conn, :model, model)
     else

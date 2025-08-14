@@ -8,6 +8,10 @@ defmodule DiscoveryApiWeb.DataDownloadController do
   alias DiscoveryApiWeb.Utilities.ParamUtils
   require Logger
 
+  # Allow configuring Prestige modules for testing
+  @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
+  @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
+
   plug(GetModel)
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
   plug(RecordMetrics, fetch_file: "downloads")
@@ -64,9 +68,9 @@ defmodule DiscoveryApiWeb.DataDownloadController do
     if HmacToken.valid_hmac_token(key, dataset_id, parsed_expires) do
       data_stream =
         DiscoveryApi.prestige_opts()
-        |> Prestige.new_session()
-        |> Prestige.stream!("select #{PrestoService.format_select_statement_from_schema(schema)} from #{dataset_name}")
-        |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> @prestige_impl.new_session()
+        |> @prestige_impl.stream!("select #{PrestoService.format_select_statement_from_schema(schema)} from #{dataset_name}")
+        |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
         |> map_schema?(schema, format)
 
       rendered_data_stream =
@@ -101,11 +105,11 @@ defmodule DiscoveryApiWeb.DataDownloadController do
     if authorized do
       data_stream =
         DiscoveryApi.prestige_opts()
-        |> Prestige.new_session()
-        |> Prestige.stream!(
+        |> @prestige_impl.new_session()
+        |> @prestige_impl.stream!(
           "select #{if format == "json" or format == "geojson", do: PrestoService.format_select_statement_from_schema(schema), else: "*"} from #{dataset_name}"
         )
-        |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
         |> map_schema?(schema, format)
 
       rendered_data_stream =

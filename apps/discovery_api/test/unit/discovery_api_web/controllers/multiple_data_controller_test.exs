@@ -1,23 +1,16 @@
 defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
-  alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
+  setup :set_mox_from_context
 
-  import SmartCity.Event,
-    only: [dataset_query: 0]
 
-  alias DiscoveryApi.Data.Model
-  alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
-
-  @presto_service Application.compile_env(:discovery_api, :presto_service)
-  @model Application.compile_env(:discovery_api, :model)
-  @model_access_utils Application.compile_env(:discovery_api, :model_access_utils)
-  @brook Application.compile_env(:brook, :event_bus)
+  @presto_service Application.compile_env(:discovery_api, :presto_service, PrestoServiceMock)
+  @model Application.compile_env(:discovery_api, :model, ModelMock)
+  @model_access_utils Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtilsMock)
 
   setup do
     public_one_dataset =
@@ -67,8 +60,46 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
     stub(@model, :get_all, fn -> datasets end)
 
-    stub(@brook, :send, fn _, _, _, _ ->
-      :ok
+    # Mock Brook.Event since it's called directly without dependency injection
+    try do
+      :meck.unload(Brook.Event)
+    catch
+      _, _ -> :ok
+    end
+    
+    :meck.new(Brook.Event, [:non_strict])
+    :meck.expect(Brook.Event, :send, fn _, _, _, _ -> 
+      # Send a GenServer-style message that tests can assert_receive
+      send(self(), {:"$gen_call", {self(), :send}, :ok})
+      :ok 
+    end)
+
+    # Use Mox stubs so individual tests can override them
+    stub(PrestigeMock, :new_session, fn _opts -> :session end)
+    stub(PrestigeMock, :stream!, fn _session, _statement -> [:result1, :result2, :result3] end)
+    stub(PrestigeResultMock, :as_maps, fn
+      :result1 -> [%{"a" => "2", "b" => "2"}]
+      :result2 -> [%{"a" => "3", "b" => "3"}]
+      :result3 -> [%{"a" => "1", "b" => "1"}]
+      {:ok, item} -> [item]  # Handle the {:ok, item} pattern from individual tests
+      _result -> []
+    end)
+
+    # Default stubs for PrestoService that individual tests can override
+    stub(@presto_service, :is_select_statement?, fn 
+      "" -> false  # Empty statement should return false
+      _ -> true 
+    end)
+    stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, []} end)
+    stub(@model_access_utils, :has_access?, fn _, _ -> true end)
+
+    # Cleanup :meck on test exit
+    on_exit(fn ->
+      try do
+        :meck.unload(Brook.Event)
+      catch
+        _, _ -> :ok
+      end
     end)
 
     {
@@ -280,7 +311,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       |> post("/api/v1/query", statement)
       |> response(200)
 
-      [public_model_id_one, public_model_id_two] = public_model_ids
+      [_public_model_id_one, _public_model_id_two] = public_model_ids
 
       assert_receive {:"$gen_call", {_, :send}, _}
       assert_receive {:"$gen_call", {_, :send}, _}

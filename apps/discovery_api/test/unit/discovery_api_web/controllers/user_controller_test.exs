@@ -1,39 +1,74 @@
 defmodule DiscoveryApiWeb.UserControllerTest do
-  use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
-  use Placebo
+  use DiscoveryApiWeb.ConnCase
+  import Mox
+  alias Auth.TestHelper
 
-  alias DiscoveryApi.Schemas.Users
-  alias DiscoveryApi.Services.AuthService
+  @moduletag timeout: 5000
 
-  @instance_name DiscoveryApi.instance_name()
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
-  setup %{auth_conn_case: auth_conn_case} do
-    auth_conn_case.disable_revocation_list.()
-    auth_conn_case.disable_user_addition.()
-    :ok
+  setup do
+    # Create authenticated connection following successful pattern from data_controller_restricted_test.exs
+    conn = build_conn()
+    authorized_conn = build_conn()
+      |> put_req_header("authorization", "Bearer #{TestHelper.valid_jwt()}")
+      |> put_req_header("content-type", "application/json")
+    
+    %{conn: conn, authorized_conn: authorized_conn}
   end
 
   describe "POST /logged-in" do
     test "returns 200 when no errors", %{authorized_conn: conn} do
-      expect(AuthService.create_logged_in_user(any()), return: {:ok, conn})
+      # Mock AuthService using :meck since it doesn't have dependency injection
+      try do
+        :meck.unload(DiscoveryApi.Services.AuthService)
+      catch
+        _, _ -> :ok
+      end
+      
+      :meck.new(DiscoveryApi.Services.AuthService, [:non_strict])
+      :meck.expect(DiscoveryApi.Services.AuthService, :create_logged_in_user, fn _conn -> {:ok, conn} end)
 
       response_body =
         conn
         |> post("/api/v1/logged-in")
         |> response(200)
 
-      response_body == ""
+      assert response_body == ""
+      
+      # Cleanup
+      try do
+        :meck.unload(DiscoveryApi.Services.AuthService)
+      catch
+        _, _ -> :ok
+      end
     end
 
     test "returns 500 Internal Server Error create call fails", %{authorized_conn: conn} do
-      expect(AuthService.create_logged_in_user(any()), return: {:error, "error"})
+      # Mock AuthService using :meck since it doesn't have dependency injection  
+      try do
+        :meck.unload(DiscoveryApi.Services.AuthService)
+      catch
+        _, _ -> :ok
+      end
+      
+      :meck.new(DiscoveryApi.Services.AuthService, [:non_strict])
+      :meck.expect(DiscoveryApi.Services.AuthService, :create_logged_in_user, fn _conn -> {:error, "error"} end)
 
       response_body =
         conn
         |> post("/api/v1/logged-in")
         |> response(500)
 
-      response_body == "Internal Server Error"
+      assert response_body == "Internal Server Error"
+      
+      # Cleanup
+      try do
+        :meck.unload(DiscoveryApi.Services.AuthService)
+      catch
+        _, _ -> :ok
+      end
     end
   end
 end

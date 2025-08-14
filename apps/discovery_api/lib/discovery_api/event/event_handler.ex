@@ -25,6 +25,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
   
   @mapper_impl Application.compile_env(:discovery_api, :mapper, Mapper)
+  @dead_letter_impl Application.compile_env(:discovery_api, :dead_letter, DeadLetter)
   alias DiscoveryApi.Stats.StatsCalculator
   alias DiscoveryApiWeb.Plugs.ResponseCache
   alias DiscoveryApi.Services.DataJsonService
@@ -45,7 +46,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("organization_update failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -71,7 +72,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_organization_associate failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -97,7 +98,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -131,7 +132,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_write_complete failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -162,7 +163,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -184,7 +185,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_access_group_associate failed to process: #{inspect(error)}")
-      DeadLetter.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -206,7 +207,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_access_group_disassociate failed to process: #{inspect(error)}")
-      DeadLetter.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -224,7 +225,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_query failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -247,7 +248,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}")
-      DeadLetter.process([dataset.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([dataset.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -261,7 +262,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_login failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 

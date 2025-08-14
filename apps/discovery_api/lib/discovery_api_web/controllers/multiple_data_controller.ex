@@ -9,6 +9,9 @@ defmodule DiscoveryApiWeb.MultipleDataController do
   import SmartCity.Event,
     only: [dataset_query: 0]
 
+  @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
+  @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
+
   plug(:accepts, MultipleDataView.accepted_formats())
 
   def query(conn, _params) do
@@ -22,8 +25,8 @@ defmodule DiscoveryApiWeb.MultipleDataController do
       format = get_format(conn)
 
       data_stream =
-        Prestige.stream!(session, statement)
-        |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        @prestige_impl.stream!(session, statement)
+        |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
 
       rendered_data_stream = MultipleDataView.render_as_stream(:data, format, %{stream: data_stream})
 

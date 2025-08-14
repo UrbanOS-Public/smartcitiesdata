@@ -1,8 +1,12 @@
 defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Data.Model
+
+  @moduletag timeout: 5000
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @dataset_id "123"
 
@@ -35,7 +39,12 @@ defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
         Helper.sample_model(%{id: @dataset_id})
         |> Map.put(:schema, schema)
 
-      allow(Model.get(@dataset_id), return: model)
+      stub(ModelMock, :get, fn dataset_id ->
+        case dataset_id do
+          @dataset_id -> model
+          _ -> nil
+        end
+      end)
 
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}/dictionary") |> json_response(200)
 
@@ -48,7 +57,7 @@ defmodule DiscoveryApiWeb.MetadataController.SchemaTest do
     end
 
     test "returns 404 when dataset does not exist", %{conn: conn} do
-      expect(Model.get(any()), return: nil)
+      stub(ModelMock, :get, fn _dataset_id -> nil end)
 
       conn |> get("/api/v1/dataset/xyz123/dictionary") |> json_response(404)
     end

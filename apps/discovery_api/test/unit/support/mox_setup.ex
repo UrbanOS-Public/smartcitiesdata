@@ -33,13 +33,13 @@ defmodule DiscoveryApi.Test.MoxSetup do
   Mox.defmock(RedixMock, for: [RedixBehaviour])
   
   # Cache and Storage mocks
-  Mox.defmock(ResponseCacheMock, for: [])
+  Mox.defmock(ResponseCacheMock, for: [ResponseCacheBehaviour])
   Mox.defmock(SystemNameCacheMock, for: [SystemNameCacheBehaviour])
   
   # Service mocks
   Mox.defmock(RecommendationEngineMock, for: [RecommendationEngineBehaviour])
   Mox.defmock(MetricsServiceMock, for: [MetricsServiceBehaviour])
-  Mox.defmock(DeadLetterMock, for: [])
+  Mox.defmock(DeadLetterMock, for: [DeadLetterBehaviour])
   Mox.defmock(OrganizationsMock, for: [OrganizationsBehaviour])
   Mox.defmock(DataJsonServiceMock, for: [DataJsonServiceBehaviour])
   Mox.defmock(StatsCalculatorMock, for: [])

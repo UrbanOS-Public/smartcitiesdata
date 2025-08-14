@@ -1,23 +1,33 @@
 defmodule DiscoveryApiWeb.DataController.StatsTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
+  import Mox
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Data.Persistence
-  alias DiscoveryApi.Data.Model
+
+  @moduletag timeout: 5000
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @dataset_id "123"
 
   describe "fetch dataset stats" do
     test "retrieves stats for dataset when stats exist", %{conn: conn} do
       model = Helper.sample_model(%{id: @dataset_id})
-      allow(Model.get(@dataset_id), return: model)
+      stub(ModelMock, :get, fn dataset_id ->
+        case dataset_id do
+          @dataset_id -> model
+          _ -> nil
+        end
+      end)
 
-      allow(Persistence.get("discovery-api:stats:#{@dataset_id}"),
-        return: mock_stats(),
-        meck_options: [:passthrough]
-      )
+      stub(RedixMock, :command!, fn :redix, command ->
+        case command do
+          ["GET", "discovery-api:stats:#{@dataset_id}"] -> mock_stats()
+          _ -> nil
+        end
+      end)
 
-      actual = conn |> get("api/v1/dataset/#{@dataset_id}/stats") |> json_response(200)
+      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/stats") |> json_response(200)
 
       assert %{
                "completeness" => 0.8333333333333334,
@@ -29,14 +39,21 @@ defmodule DiscoveryApiWeb.DataController.StatsTest do
 
     test "Returns an empty response when the stats do not exist", %{conn: conn} do
       model = Helper.sample_model(%{id: @dataset_id})
-      allow(Model.get(@dataset_id), return: model)
+      stub(ModelMock, :get, fn dataset_id ->
+        case dataset_id do
+          @dataset_id -> model
+          _ -> nil
+        end
+      end)
 
-      allow(Persistence.get("discovery-api:stats:#{@dataset_id}"),
-        return: nil,
-        meck_options: [:passthrough]
-      )
+      stub(RedixMock, :command!, fn :redix, command ->
+        case command do
+          ["GET", "discovery-api:stats:#{@dataset_id}"] -> nil
+          _ -> nil
+        end
+      end)
 
-      actual = conn |> get("api/v1/dataset/#{@dataset_id}/stats") |> json_response(200)
+      actual = conn |> get("/api/v1/dataset/#{@dataset_id}/stats") |> json_response(200)
 
       assert %{} == actual
     end

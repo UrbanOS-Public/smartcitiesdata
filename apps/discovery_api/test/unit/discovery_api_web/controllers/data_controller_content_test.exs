@@ -2,9 +2,8 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
   import Checkov
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApi.Services.{PrestoService, MetricsService}
-  alias DiscoveryApiWeb.Utilities.QueryAccessUtils
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
   setup :set_mox_from_context
@@ -61,32 +60,74 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
           ]
         })
 
-      stub(SystemNameCacheMock, :get, fn _org_name, _data_name -> @dataset_id end)
-      stub(ModelMock, :get, fn _dataset_id -> model end)
-      stub(QueryAccessUtilsMock, :get_affected_models, fn _arg -> {:ok, nil} end)
+      # SystemNameCache mock needs to handle the specific org/data name pairs
+      stub(SystemNameCacheMock, :get, fn org_name, data_name ->
+        case {org_name, data_name} do
+          {"org1", "data1"} -> @dataset_id
+          _ -> @dataset_id  # fallback for any other combination
+        end
+      end)
+      
+      # ModelMock needs to handle both direct dataset_id calls and result from SystemNameCache
+      stub(ModelMock, :get, fn dataset_id ->
+        case dataset_id do
+          @dataset_id -> model
+          _ -> nil  # Return nil for unknown dataset_ids
+        end
+      end)
+      
+      # ModelMock.get_all/0 is called by QueryAccessUtils.map_affected_tables_to_models/1
+      stub(ModelMock, :get_all, fn -> [model] end)
+      
+      stub(QueryAccessUtilsMock, :get_affected_models, fn _arg -> {:ok, [model]} end)
       stub(QueryAccessUtilsMock, :user_is_authorized?, fn _arg1, _arg2, _arg3 -> true end)
       
-      # MetricsService uses :meck like in previous files for passthrough behavior
-      :meck.expect(MetricsService, :record_api_hit, fn _arg1, _arg2 -> :does_not_matter end)
+      # ModelAccessUtilsMock is called by QueryAccessUtils.user_can_access_models?/2
+      stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)
+      
+      # MetricsService uses Mox since it has dependency injection
+      stub(MetricsServiceMock, :record_api_hit, fn _label, _id -> :ok end)
 
-      # these clearly need to be condensed
+      # PrestoService mocks - these need to be comprehensive for both controllers
       stub(PrestoServiceMock, :get_column_names, fn _arg1, _arg2, _arg3 -> {:ok, ["feature"]} end)
       stub(PrestoServiceMock, :preview_columns, fn _arg -> ["feature"] end)
-      stub(PrestoServiceMock, :preview, fn _arg1, @system_name, _arg3 -> @geo_json_features end)
+      stub(PrestoServiceMock, :preview, fn _session, system_name, _schema ->
+        case system_name do
+          @system_name -> @geo_json_features
+          _ -> []
+        end
+      end)
       stub(PrestoServiceMock, :build_query, fn _arg1, _arg2, _arg3, _arg4 -> {:ok, "select * from #{@system_name}"} end)
+      stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
+      stub(PrestoServiceMock, :get_affected_tables, fn _session, _query -> {:ok, [@system_name]} end)
+      
+      # Additional PrestoService mocks needed for DataDownloadController
+      stub(PrestoServiceMock, :format_select_statement_from_schema, fn _schema -> "*" end)
+      stub(PrestoServiceMock, :map_prestige_results_to_schema, fn data, _schema -> data end)
 
-      stub(PrestigeMock, :new_session, fn _arg -> :connect end)
-      stub(PrestigeMock, :query!, fn _arg, "select * from #{@system_name}" -> :result end)
-      stub(PrestigeMock, :stream!, fn _arg1, _arg2 -> [:result] end)
+      # Prestige mocks - these need to prevent real HTTP connections
+      stub(PrestigeMock, :new_session, fn _opts -> :connection end)
+      stub(PrestigeMock, :query!, fn _connection, _query -> :result end)
+      stub(PrestigeMock, :stream!, fn _connection, _query -> [:result] end)
 
-      # Prestige.Result.as_maps needs special handling - use PrestigeResultMock
-      stub(PrestigeResultMock, :as_maps, fn _arg ->
-        [
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
-          %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
-        ]
+      # PrestigeResult mock for converting query results - handles both DataController and DataDownloadController
+      stub(PrestigeResultMock, :as_maps, fn result ->
+        case result do
+          :result ->
+            [
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
+            ]
+          _ ->
+            [
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[1,0]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
+              %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
+            ]
+        end
       end)
 
       :ok

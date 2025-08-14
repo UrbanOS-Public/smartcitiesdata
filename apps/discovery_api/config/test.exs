@@ -26,7 +26,9 @@ config :discovery_api,
   prestige: PrestigeMock,
   prestige_result: PrestigeResultMock,
   mapper: MapperMock,
-  metrics_service: MetricsServiceMock
+  metrics_service: MetricsServiceMock,
+  system_name_cache: SystemNameCacheMock,
+  dead_letter: DeadLetterMock
 
 config :logger, level: :warn
 
