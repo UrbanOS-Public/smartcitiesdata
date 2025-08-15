@@ -1,11 +1,9 @@
 defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
-  alias DiscoveryApi.Data.Model
-  alias DiscoveryApiWeb.Utilities.ModelAccessUtils
-  alias DiscoveryApi.Services.PrestoService
 
   setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @model Application.compile_env(:discovery_api, :model)
   @presto_service Application.compile_env(:discovery_api, :presto_service)
@@ -257,6 +255,9 @@ defmodule DiscoveryApiWeb.TableauControllerQueryDescribeTest do
 
     test "does not accept requests with no statement in the body", %{conn: conn} do
       statement = ""
+
+      stub(@presto_service, :is_select_statement?, fn _ -> true end)
+      stub(@presto_service, :get_affected_tables, fn _, _ -> {:error, :empty_statement} end)
 
       assert conn
              |> put_req_header("accept", "application/json")

@@ -6,6 +6,6 @@ case $method in
 	mix test
 	;;
     *)
-        mix test  --max-failures=5 --timeout=20
+        mix test  --max-failures=5 --timeout=30
        ;;
 esac

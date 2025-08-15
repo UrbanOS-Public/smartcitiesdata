@@ -5,7 +5,6 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   alias DiscoveryApi.Data.SystemNameCache
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
-  alias DiscoveryApi.Services.MetricsService
   alias DiscoveryApi.Test.Helper
   alias Auth.TestHelper
 
@@ -24,7 +23,7 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   setup do
     # Set up mocks using :meck for modules without dependency injection
     modules_to_mock = [
-      SystemNameCache, MetricsService, Users
+      SystemNameCache, Users
     ]
     
     Enum.each(modules_to_mock, fn module ->
@@ -73,7 +72,10 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     
     # Set up other mocks using :meck for modules without DI
     :meck.expect(SystemNameCache, :get, fn @org_name, @data_name -> @dataset_id end)
-    :meck.expect(MetricsService, :record_api_hit, fn _a, _b -> :does_not_matter end)
+    
+    # Use Mox for services with dependency injection (from config/test.exs)
+    stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)
+    stub(MetricsServiceMock, :record_api_hit, fn _type, _dataset_id -> :ok end)
 
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
@@ -87,9 +89,18 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
     # Create mock connections without complex AuthConnCase setup
     conn = build_conn()
+    
+    # Create user data for current_user assignment
+    user_data = %{
+      id: "test_user_id",
+      subject_id: TestHelper.valid_jwt_sub(),
+      organizations: [%{id: @org_id}]
+    }
+    
     authorized_conn = build_conn()
       |> put_req_header("authorization", "Bearer #{TestHelper.valid_jwt()}")
       |> put_req_header("content-type", "application/json")
+      |> Plug.Conn.assign(:current_user, user_data)
     
     %{
       conn: conn,

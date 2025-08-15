@@ -8,9 +8,10 @@ defmodule DiscoveryApiWeb.DataDownloadController do
   alias DiscoveryApiWeb.Utilities.ParamUtils
   require Logger
 
-  # Allow configuring Prestige modules for testing
+  # Allow configuring modules for testing
   @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
   @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
+  @object_storage_service_impl Application.compile_env(:discovery_api, :object_storage_service, ObjectStorageService)
 
   plug(GetModel)
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
@@ -43,7 +44,7 @@ defmodule DiscoveryApiWeb.DataDownloadController do
       end
 
     if authorized do
-      case ObjectStorageService.download_file_as_stream(path, possible_extensions) do
+      case @object_storage_service_impl.download_file_as_stream(path, possible_extensions) do
         {:ok, data_stream, extension} ->
           resp_as_stream(conn, data_stream, extension, dataset_id, true)
 

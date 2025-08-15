@@ -6,8 +6,15 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
   alias DiscoveryApi.Services.DataJsonService
 
   setup :verify_on_exit!
+  setup :set_mox_from_context
 
   setup do
+    # Stub PersistenceMock to return empty metrics for all dataset stats
+    stub(PersistenceMock, :get_many_with_keys, fn _keys ->
+      # Return empty map - no metrics data available
+      %{}
+    end)
+
     public_model =
       Helper.sample_model(%{
         id: "myfancydata",

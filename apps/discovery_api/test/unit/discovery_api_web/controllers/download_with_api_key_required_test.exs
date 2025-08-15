@@ -3,14 +3,16 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
   import Mox
   use Properties, otp_app: :discovery_api
 
-  alias DiscoveryApi.Services.ObjectStorageService
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Test.Helper
+
+  setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @object_storage_service Application.compile_env(:discovery_api, :object_storage_service)
   @model Application.compile_env(:discovery_api, :model)
   @prestige Application.compile_env(:discovery_api, :prestige)
   @prestige_result Application.compile_env(:discovery_api, :prestige_result)
+  @metrics_service Application.compile_env(:discovery_api, :metrics_service)
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -36,6 +38,7 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
     stub(@prestige, :new_session, fn _ -> :connection end)
     stub(@prestige, :stream!, fn _, _ -> Stream.map(@data_map, &{:ok, &1}) end)
     stub(@prestige_result, :as_maps, fn _ -> @data_map end)
+    stub(@metrics_service, :record_api_hit, fn _, _ -> :ok end)
     :ok
   end
 
@@ -48,7 +51,7 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}"
 
-      response = conn |> get(url)
+      response = conn |> put_req_header("accept", "text/csv") |> get(url)
 
       assert response.status === 200
       assert response.resp_body === @expected_response_body
@@ -102,7 +105,7 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
       hmac = build_hmac_token(expires)
       url = "/api/v1/dataset/#{@dataset_id}/download?key=#{hmac}&expires=#{expires}"
 
-      response = conn |> get(url)
+      response = conn |> put_req_header("accept", "text/csv") |> get(url)
 
       assert response.status === 200
       assert response.resp_body === @expected_response_body

@@ -6,14 +6,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   alias DiscoveryApi.Data.{Model, SystemNameCache}
   alias DiscoveryApi.Services.PrestoService
 
+  @moduletag timeout: 5000
+
   setup :verify_on_exit!
+  setup :set_mox_from_context
 
   @system_name_cache Application.compile_env(:discovery_api, :system_name_cache)
   @model Application.compile_env(:discovery_api, :model)
   @presto_service Application.compile_env(:discovery_api, :presto_service)
   @prestige Application.compile_env(:discovery_api, :prestige)
   @prestige_result Application.compile_env(:discovery_api, :prestige_result)
-  @redix Application.compile_env(:discovery_api, :redix)
+  @redix Application.compile_env(:discovery_api, :redix_module)
+  @metrics_service Application.compile_env(:discovery_api, :metrics_service)
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
@@ -50,8 +54,12 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
     end)
 
     stub(@prestige, :new_session, fn _ -> :connection end)
+    
+    stub(@prestige_result, :as_maps, fn {:ok, data} -> [data] end)
 
     stub(@redix, :command!, fn _, _ -> :does_not_matter end)
+    
+    stub(@metrics_service, :record_api_hit, fn _, _ -> :ok end)
 
     :ok
   end
@@ -246,14 +254,17 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       :ok
     end
 
+    @tag timeout: 1000
     data_test "increments dataset download count when user requests download", %{conn: conn} do
-      expect(@redix, :command!, fn :redix, ["INCR", "smart_registry:downloads:count:#{@dataset_id}"] ->
-        :ok
-      end)
+      # Expect call to MetricsService.record_api_hit for dataset downloads
+      expect(@metrics_service, :record_api_hit, fn "downloads", _dataset_id -> :ok end)
 
       conn
       |> get(url)
       |> response(200)
+      
+      # Give the Task time to complete
+      Process.sleep(100)
 
       where(
         url: [
@@ -265,13 +276,18 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       )
     end
 
+    @tag timeout: 1000
     data_test "does not increment dataset download count when ui requests download", %{conn: conn} do
-      expect(@redix, :command!, 0)
+      # Expect no calls to MetricsService for these UI requests (origin header present)
+      expect(@metrics_service, :record_api_hit, 0, fn _, _ -> :ok end)
 
       conn
       |> Plug.Conn.put_req_header("origin", "data.integration.tests.example.com")
       |> get(url)
       |> response(200)
+      
+      # Give time for any potential Task to complete
+      Process.sleep(100)
 
       where(
         url: [

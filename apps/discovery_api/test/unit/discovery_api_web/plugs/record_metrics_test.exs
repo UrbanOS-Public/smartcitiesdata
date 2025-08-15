@@ -1,9 +1,7 @@
 defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
-  import SmartCity.TestHelper
   alias DiscoveryApiWeb.Plugs.RecordMetrics
-  alias DiscoveryApi.Services.MetricsService
   alias DiscoveryApi.Test.Helper
 
   setup :verify_on_exit!
@@ -33,20 +31,24 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
   end
 
   describe "call/2 records metrics" do
+    @tag timeout: 1000
     test "when allowed origin is false" do
       run_test(false, :fetch_file, "downloads")
     end
 
+    @tag timeout: 1000
     test "when allowed origin is nil" do
       run_test(nil, :fetch_file, "downloads")
     end
 
+    @tag timeout: 1000
     test "and converts query action to the label 'queries'" do
       run_test(nil, :query, "queries")
     end
   end
 
   describe "call/2 does not records metrics" do
+    @tag timeout: 1000
     test "when allowed origin is true" do
       dataset_id = 1111
       model = Helper.sample_model(%{id: dataset_id})

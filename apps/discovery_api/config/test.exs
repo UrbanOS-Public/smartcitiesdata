@@ -31,7 +31,8 @@ config :discovery_api,
   dead_letter: DeadLetterMock,
   hmac_token: HmacTokenMock,
   date_time: DateTimeMock,
-  auth_service: AuthServiceMock
+  auth_service: AuthServiceMock,
+  object_storage_service: ObjectStorageServiceMock
 
 config :logger, level: :warn
 

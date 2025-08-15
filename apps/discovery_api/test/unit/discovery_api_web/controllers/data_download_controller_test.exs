@@ -492,7 +492,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
     stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
     stub(ModelMock, :get, fn _id -> model end)
-    :meck.expect(ObjectStorageService, :download_file_as_stream, fn _a, _b -> {:ok, ["anything"], "csv"} end)
+    stub(ObjectStorageServiceMock, :download_file_as_stream, fn _a, _b -> {:ok, ["anything"], "csv"} end)
     stub(RedixMock, :command!, fn _a, _b -> :ok end)
 
     url = "/api/v1/dataset/#{dataset_id}/download"

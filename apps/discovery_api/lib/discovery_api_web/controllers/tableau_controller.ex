@@ -12,6 +12,8 @@ defmodule DiscoveryApiWeb.TableauController do
   
   @model_impl Application.compile_env(:discovery_api, :model, Model)
   @model_access_utils_impl Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtils)
+  @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
+  @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
 
   @matched_params [
     %{"query" => "", "limit" => "10", "offset" => "0", "apiAccessible" => "false"},
@@ -50,9 +52,9 @@ defmodule DiscoveryApiWeb.TableauController do
 
       query_schema =
         session
-        |> Prestige.prepare!("describable_statement", statement)
-        |> Prestige.execute!("describe output describable_statement")
-        |> Prestige.Result.as_maps()
+        |> @prestige_impl.prepare!("describable_statement", statement)
+        |> @prestige_impl.execute!("describe output describable_statement")
+        |> @prestige_result_impl.as_maps()
         |> DescribeUtils.convert_description()
 
       response = MultipleDataView.render(:describe, format, %{rows: query_schema})
