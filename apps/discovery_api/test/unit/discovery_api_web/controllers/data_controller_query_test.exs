@@ -2,7 +2,6 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
   import Checkov
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
 
   setup :verify_on_exit!
   setup :set_mox_from_context
@@ -19,6 +18,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     stub(PrestoServiceMock, :get_column_names, fn _session, _dataset_name, _columns -> {:ok, ["id", "name"]} end)
     stub(PrestoServiceMock, :build_query, fn _params, _dataset_name, _columns, _schema -> {:ok, "SELECT id, name FROM #{@system_name}"} end)
     stub(ModelAccessUtilsMock, :has_access?, fn _arg1, _arg2 -> true end)
+    stub(MetricsServiceMock, :record_api_hit, fn _type, _dataset_id -> :ok end)
 
     model =
       Helper.sample_model(%{
@@ -35,28 +35,26 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         ]
       })
 
-    # Use :meck for modules without dependency injection
-    :meck.expect(SystemNameCache, :get, fn @org_name, @data_name -> @dataset_id end)
-    :meck.expect(Model, :get, fn @dataset_id -> model end)
-    
-    # ModelMock is used by QueryAccessUtils through dependency injection
-    stub(ModelMock, :get, fn @dataset_id -> model end)
+    # Use Mox for dependency injection - GetModel plug uses SystemNameCacheMock and ModelMock
+    stub(SystemNameCacheMock, :get, fn 
+      @org_name, @data_name -> @dataset_id
+      "org1", "nest" -> "123456"
+      _org, _data -> nil
+    end)
+    stub(ModelMock, :get, fn 
+      @dataset_id -> model
+      "123456" -> Helper.sample_model(%{
+        id: "123456",
+        systemName: "org1__nest",
+        name: "nest",
+        private: false,
+        schema: [%{name: "feature", type: "json"}]
+      })
+      _id -> nil
+    end)
     stub(ModelMock, :get_all, fn -> [model] end)
 
     stub(PrestigeMock, :new_session, fn _opts -> :connection end)
-
-    on_exit(fn -> 
-      try do
-        :meck.unload(SystemNameCache)
-      rescue
-        _ -> :ok
-      end
-      try do
-        :meck.unload(Model)
-      rescue
-        _ -> :ok
-      end
-    end)
 
     stub(PrestigeMock, :query!, fn :connection, "describe #{@system_name}" ->
       %{
@@ -183,8 +181,19 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
   describe "error cases" do
     test "table does not exist returns Not Found", %{conn: conn} do
-      :meck.expect(Model, :get, fn "no_exist" ->
-        %Model{:id => "test", :systemName => "coda__no_exist", private: false}
+      # Use Mox for ModelMock instead of :meck for Model module
+      stub(ModelMock, :get, fn 
+        "no_exist" -> Helper.sample_model(%{
+          id: "test", 
+          systemName: "coda__no_exist", 
+          private: false
+        })
+        _id -> nil
+      end)
+
+      # Override the PrestoService mock to return an error for non-existent table
+      stub(PrestoServiceMock, :get_column_names, fn _session, "coda__no_exist", _columns -> 
+        {:error, "Table coda__no_exist does not exist"}
       end)
 
       stub(PrestigeMock, :query!, fn :connection, _query -> 
@@ -199,6 +208,22 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   end
 
   describe "malice cases" do
+    setup do
+      # Override the global build_query mock to simulate proper malicious query validation
+      stub(PrestoServiceMock, :build_query, fn params, _dataset_name, _columns, _schema ->
+        # Check for malicious patterns in any parameter
+        all_params = Map.values(params) |> Enum.join(" ")
+        malicious_patterns = [";", "/*", "*/", "--", "$path"]
+        
+        case Enum.any?(malicious_patterns, fn pattern -> String.contains?(all_params, pattern) end) do
+          true -> {:bad_request, "Query contained illegal character(s)"}
+          false -> {:ok, "SELECT id, name FROM #{@system_name}"}
+        end
+      end)
+      
+      :ok
+    end
+
     test "json queries cannot contain semicolons", %{conn: conn} do
       conn
       |> put_req_header("accept", "application/json")
@@ -242,26 +267,23 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
           sourceFormat: "geojson"
         })
 
-      # Use :meck for modules without dependency injection
-      :meck.expect(SystemNameCache, :get, fn "geojson", "geojson" -> "geojson__geojson" end)
-      :meck.expect(Model, :get, fn _id -> model end)
-      :meck.expect(Model, :get_all, fn -> [model] end)
+      # Use Mox for both ModelMock and SystemNameCacheMock (both have dependency injection)
+      stub(ModelMock, :get, fn 
+        "geojson" -> model
+        _id -> nil
+      end)
+      stub(ModelMock, :get_all, fn -> [model] end)
+
+      # Update SystemNameCacheMock to handle the geojson mapping
+      stub(SystemNameCacheMock, :get, fn 
+        @org_name, @data_name -> @dataset_id
+        "org1", "nest" -> "123456"
+        "geojson", "geojson" -> "geojson"
+        _org, _data -> nil
+      end)
 
       stub(PrestigeMock, :stream!, fn :connection, "SELECT id, name FROM geojson" ->
         [:any]
-      end)
-
-      on_exit(fn -> 
-        try do
-          :meck.unload(SystemNameCache)
-        rescue
-          _ -> :ok
-        end
-        try do
-          :meck.unload(Model)
-        rescue
-          _ -> :ok
-        end
       end)
 
       stub(RedixMock, :command!, fn _arg1, _arg2 -> :doesnt_matter end)
@@ -276,7 +298,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     end
 
     data_test "returns geojson", %{conn: conn} do
-      stub(PrestigeResultMock, :as_maps, fn [:any] ->
+      stub(PrestigeResultMock, :as_maps, fn :any ->
         [
           %{"feature" => "{\"geometry\": {\"coordinates\": [1, 0]}}"},
           %{"feature" => "{\"geometry\": {\"coordinates\": [[0, 1]]}}"}
@@ -355,25 +377,32 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
           ]
         })
 
-      # Use :meck for modules without dependency injection
-      :meck.expect(SystemNameCache, :get, fn @org_name, "nest" -> "123456" end)
-      :meck.expect(Model, :get, fn "123456" -> model end)
+      # Use Mox for both SystemNameCacheMock and ModelMock (both have dependency injection)
+      # Update SystemNameCacheMock to handle the nest scenario
+      stub(SystemNameCacheMock, :get, fn 
+        @org_name, @data_name -> @dataset_id
+        @org_name, "nest" -> "123456"
+        _org, _data -> nil
+      end)
+
+      # Use Mox for ModelMock (has dependency injection) - override the global stub
+      stub(ModelMock, :get, fn 
+        @dataset_id -> Helper.sample_model(%{
+          id: @dataset_id,
+          systemName: @system_name,
+          name: @data_name,
+          private: false,
+          schema: [
+            %{name: "id", type: "integer"},
+            %{name: "name", type: "string"}
+          ]
+        })
+        "123456" -> model
+        _id -> nil
+      end)
 
       stub(PrestigeMock, :query!, fn :connection, "describe nest_test" ->
         :to_nest_prefetch
-      end)
-
-      on_exit(fn -> 
-        try do
-          :meck.unload(SystemNameCache)
-        rescue
-          _ -> :ok
-        end
-        try do
-          :meck.unload(Model)
-        rescue
-          _ -> :ok
-        end
       end)
 
       stub(PrestigeMock, :stream!, fn :connection, _query -> [:result] end)

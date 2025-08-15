@@ -9,6 +9,11 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApiWeb.UserController
   alias DiscoveryApi.Services.AuthService
+  alias RaptorService
+
+  # Allow configuring service modules for testing
+  @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
+  @auth_service_impl Application.compile_env(:discovery_api, :auth_service, DiscoveryApi.Services.AuthService)
 
   def init(default), do: default
 
@@ -36,7 +41,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and is_nil(api_key) do
-    case AuthService.create_logged_in_user(conn) do
+    case @auth_service_impl.create_logged_in_user(conn) do
       {:ok, new_conn} ->
         current_user = Guardian.Plug.current_resource(new_conn)
         assign(new_conn, :current_user, current_user)
@@ -47,7 +52,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
-    case RaptorService.get_user_id_from_api_key(raptor_url(), api_key) do
+    case @raptor_service_impl.get_user_id_from_api_key(raptor_url(), api_key) do
       {:ok, _user_id} ->
         assign(conn, :current_user, current_user)
 

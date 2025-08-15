@@ -68,6 +68,9 @@ defmodule DiscoveryApi.Test.MoxSetup do
   Mox.defmock(PrestigeMock, for: [PrestigeBehaviour])
   Mox.defmock(PrestigeResultMock, for: [PrestigeResultBehaviour])
   
+  # Auth service mock
+  Mox.defmock(AuthServiceMock, for: [AuthServiceBehaviour])
+  
   
   def setup_mox() do
     # Set Mox to private mode by default

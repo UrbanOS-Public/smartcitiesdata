@@ -12,21 +12,9 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       on_exit(fn -> System.put_env("REQUIRE_API_KEY", "false") end)
       System.put_env("REQUIRE_API_KEY", "true")
       
-      # Mock RenderError and RaptorService since they don't have dependency injection in this plug
-      :meck.new(DiscoveryApiWeb.RenderError, [:passthrough])
-      :meck.expect(DiscoveryApiWeb.RenderError, :render_error, fn conn, _status, _message -> 
-        conn |> Plug.Conn.halt() 
-      end)
-      
-      :meck.new(RaptorService, [:passthrough])
-      
-      on_exit(fn -> 
-        try do
-          :meck.unload(DiscoveryApiWeb.RenderError)
-          :meck.unload(RaptorService)
-        catch
-          :error, _ -> :ok
-        end
+      # Use Mox for AuthService to avoid HTTP calls in tests
+      stub(AuthServiceMock, :create_logged_in_user, fn _conn -> 
+        {:error, "Unauthorized"}
       end)
 
       :ok
@@ -40,7 +28,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 401 when user passes invalid api_key" do
-      :meck.expect(RaptorService, :get_user_id_from_api_key, fn _url, _api_key -> 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
         {:error, "401 error", 401} 
       end)
 
@@ -54,7 +42,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 401 when users call fails" do
-      :meck.expect(RaptorService, :get_user_id_from_api_key, fn _url, _api_key -> 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
         {:error, "401 error", 401} 
       end)
 
@@ -68,7 +56,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 500 when raptor encounters and unexpected error" do
-      :meck.expect(RaptorService, :get_user_id_from_api_key, fn _url, _api_key -> 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
         {:error, "Unmatched response"} 
       end)
 
@@ -82,14 +70,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "plug completes when apiKey is valid" do
-      :meck.expect(RaptorService, :get_user_id_from_api_key, fn _url, _api_key -> 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
         {:ok, "user_id"} 
-      end)
-
-      # Reset mock expectation for successful case - RenderError should not be called
-      :meck.delete(DiscoveryApiWeb.RenderError, :render_error, 3)
-      :meck.expect(DiscoveryApiWeb.RenderError, :render_error, fn _conn, _status, _message ->
-        flunk("RenderError should not be called for successful api_key validation")
       end)
 
       conn =
@@ -98,6 +80,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
 
       result = SetCurrentUser.call(conn, [])
 
+      # If the API key is valid, the connection should not be halted
       assert result.halted == false
     end
 
@@ -105,7 +88,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       userId = "userId"
       userObject = "I am a user object"
 
-      :meck.expect(RaptorService, :get_user_id_from_api_key, fn _url, _api_key -> 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
         {:ok, userId} 
       end)
 

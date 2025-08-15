@@ -30,7 +30,8 @@ config :discovery_api,
   system_name_cache: SystemNameCacheMock,
   dead_letter: DeadLetterMock,
   hmac_token: HmacTokenMock,
-  date_time: DateTimeMock
+  date_time: DateTimeMock,
+  auth_service: AuthServiceMock
 
 config :logger, level: :warn
 
