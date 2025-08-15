@@ -1,8 +1,9 @@
 defmodule DiscoveryApiWeb.JsonFieldDecoderTest do
   use ExUnit.Case
-  use Placebo
   import Checkov
   alias DiscoveryApiWeb.Utilities.JsonFieldDecoder
+
+  @moduletag timeout: 5000
 
   describe "decode_one_datum/2" do
     data_test "returns based on schema assigned to it - #{description}" do

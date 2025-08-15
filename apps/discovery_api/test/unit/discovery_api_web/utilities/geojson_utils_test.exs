@@ -1,9 +1,10 @@
 defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
   use ExUnit.Case
-  use Placebo
   import Checkov
   require Logger
   alias DiscoveryApiWeb.Utilities.GeojsonUtils
+  
+  @moduletag timeout: 5000
 
   describe("calculate_bounding_box/1") do
     data_test "calculates bounding box for #{geometry_type}" do

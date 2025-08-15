@@ -13,6 +13,8 @@ defmodule DiscoveryApiWeb.DataController do
   @presto_service_impl Application.compile_env(:discovery_api, :presto_service, PrestoService)
   @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)
   @prestige_result_impl Application.compile_env(:discovery_api, :prestige_result, Prestige.Result)
+  @hmac_token_impl Application.compile_env(:discovery_api, :hmac_token, DiscoveryApiWeb.Utilities.HmacToken)
+  @date_time_impl Application.compile_env(:discovery_api, :date_time, DateTime)
 
   plug(GetModel)
   plug(:conditional_accepts, DataView.accepted_formats() when action in [:fetch_file])
@@ -57,8 +59,8 @@ defmodule DiscoveryApiWeb.DataController do
   def download_presigned_url(conn, params) do
     ## Potential issue
     expires_in_seconds = download_link_expire_seconds()
-    expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
-    hmac_token = HmacToken.create_hmac_token(params["dataset_id"], expires)
+    expires = @date_time_impl.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
+    hmac_token = @hmac_token_impl.create_hmac_token(params["dataset_id"], expires)
     scheme = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:scheme]
     host = Application.get_env(:discovery_api, DiscoveryApiWeb.Endpoint)[:url][:host]
     base_url = scheme <> "://" <> host

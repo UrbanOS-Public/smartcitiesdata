@@ -75,3 +75,4 @@ Previous categories:
 - The apps/pipeline unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 - The apps/raptor unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
 - The apps/transformers unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- The apps/reaper unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.

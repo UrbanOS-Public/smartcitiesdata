@@ -13,7 +13,7 @@ defmodule DiscoveryApi.Test.MoxSetup do
   
   # Discovery API mocks
   Mox.defmock(ModelMock, for: [ModelBehaviour])
-  Mox.defmock(UsersMock, for: [])
+  Mox.defmock(UsersMock, for: [UsersBehaviour])
   Mox.defmock(PrestoServiceMock, for: [PrestoServiceBehaviour])
   Mox.defmock(PersistenceMock, for: [DiscoveryApi.Data.PersistenceBehaviour])
   
@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Test.MoxSetup do
   Mox.defmock(StatsCalculatorMock, for: [])
   Mox.defmock(TableInfoCacheMock, for: [TableInfoCacheBehaviour])
   Mox.defmock(ObjectStorageServiceMock, for: [ObjectStorageServiceBehaviour])
-  Mox.defmock(HmacTokenMock, for: [])
+  Mox.defmock(HmacTokenMock, for: [HmacTokenBehaviour])
   Mox.defmock(ModelAccessUtilsMock, for: [ModelAccessUtilsBehaviour])
   Mox.defmock(QueryAccessUtilsMock, for: [QueryAccessUtilsBehaviour])
   
@@ -60,6 +60,9 @@ defmodule DiscoveryApi.Test.MoxSetup do
   
   # Brook mock
   Mox.defmock(BrookMock, for: [BrookBehaviour])
+  
+  # DateTime mock
+  Mox.defmock(DateTimeMock, for: [DateTimeBehaviour])
   
   # Prestige (Presto client) mocks
   Mox.defmock(PrestigeMock, for: [PrestigeBehaviour])

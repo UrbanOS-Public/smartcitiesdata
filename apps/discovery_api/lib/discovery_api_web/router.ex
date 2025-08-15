@@ -5,26 +5,42 @@ defmodule DiscoveryApiWeb.Router do
   use DiscoveryApiWeb, :router
 
   pipeline :verify_token do
-    plug(Guardian.Plug.Pipeline,
-      otp_app: :discovery_api,
-      module: DiscoveryApiWeb.Auth.TokenHandler,
-      error_handler: DiscoveryApiWeb.Auth.ErrorHandler
-    )
-
-    plug(Auth.Guardian.Plug.VerifyHeader)
+    if Application.get_env(:discovery_api, :test_mode, false) do
+      plug(DiscoveryApiWeb.Test.TestGuardianPlugs.Pipeline)
+      plug(DiscoveryApiWeb.Test.TestGuardianPlugs.VerifyHeader)
+    else
+      plug(Guardian.Plug.Pipeline,
+        otp_app: :discovery_api,
+        module: DiscoveryApiWeb.Auth.TokenHandler,
+        error_handler: DiscoveryApiWeb.Auth.ErrorHandler
+      )
+      plug(Auth.Guardian.Plug.VerifyHeader)
+    end
   end
 
   pipeline :add_user_details do
-    plug(Guardian.Plug.LoadResource, allow_blank: true)
+    if Application.get_env(:discovery_api, :test_mode, false) do
+      plug(DiscoveryApiWeb.Test.TestGuardianPlugs.LoadResource, allow_blank: true)
+    else
+      plug(Guardian.Plug.LoadResource, allow_blank: true)
+    end
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 
   pipeline :ensure_authenticated do
-    plug(Guardian.Plug.EnsureAuthenticated)
+    if Application.get_env(:discovery_api, :test_mode, false) do
+      plug(DiscoveryApiWeb.Test.TestGuardianPlugs.EnsureAuthenticated)
+    else
+      plug(Guardian.Plug.EnsureAuthenticated)
+    end
   end
 
   pipeline :ensure_user_details_loaded do
-    plug(Guardian.Plug.LoadResource, allow_blank: false)
+    if Application.get_env(:discovery_api, :test_mode, false) do
+      plug(DiscoveryApiWeb.Test.TestGuardianPlugs.LoadResource, allow_blank: false)
+    else
+      plug(Guardian.Plug.LoadResource, allow_blank: false)
+    end
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 

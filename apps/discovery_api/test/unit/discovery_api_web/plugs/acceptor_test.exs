@@ -1,7 +1,8 @@
 defmodule DiscoveryApiWeb.Plugs.AcceptorTest do
   use DiscoveryApiWeb.ConnCase
-  use Placebo
   alias DiscoveryApiWeb.Plugs.Acceptor
+
+  @moduletag timeout: 5000
 
   describe "call/2" do
     test "parses file extensions from the accept header" do

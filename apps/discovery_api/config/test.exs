@@ -28,7 +28,9 @@ config :discovery_api,
   mapper: MapperMock,
   metrics_service: MetricsServiceMock,
   system_name_cache: SystemNameCacheMock,
-  dead_letter: DeadLetterMock
+  dead_letter: DeadLetterMock,
+  hmac_token: HmacTokenMock,
+  date_time: DateTimeMock
 
 config :logger, level: :warn
 

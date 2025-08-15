@@ -1,5 +1,5 @@
 defmodule DiscoveryApiWeb.VisualizationControllerTest do
-  use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
+  use DiscoveryApiWeb.ConnCase
   import Mox
 
   alias DiscoveryApi.Schemas.Users
@@ -7,6 +7,8 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   alias DiscoveryApi.Schemas.Visualizations.Visualization
   alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
+
+  @moduletag timeout: 5000
 
   @user_id "asdfkjashdflkjhasdkjkadsf"
 
@@ -16,29 +18,68 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   @decoded_chart %{"data" => [], "frames" => [], "layout" => %{}}
   @encoded_chart Jason.encode!(@decoded_chart)
 
-  setup %{auth_conn_case: auth_conn_case} do
-    auth_conn_case.disable_revocation_list.()
-    :ok
-  end
-
   setup :verify_on_exit!
   setup :set_mox_from_context
   
-  setup %{authorized_conn: conn} do
-    # Common mocks needed by all authorized tests
+  setup do
+    # Common mocks needed by all tests
     stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
     stub(PrestoServiceMock, :get_affected_tables, fn _arg1, _arg2 -> {:ok, []} end)
     stub(ModelMock, :get_all, fn -> [] end)
+    
+    # Mock modules using :meck since they lack dependency injection  
+    modules_to_mock = [ModelAccessUtils, Users, Visualizations]
+    
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.unload(module)
+      catch
+        _, _ -> :ok
+      end
+      :meck.new(module, [:passthrough])
+    end)
+    
     :meck.expect(ModelAccessUtils, :has_access?, fn _arg1, _arg2 -> true end)
     
-    if conn do
-      # Manually set current_user for unit tests since Guardian middleware requires database
-      current_user = %{id: @user_id}
-      updated_conn = Plug.Conn.assign(conn, :current_user, current_user)
-      [authorized_conn: updated_conn]
-    else
-      []
-    end
+    # Mock the Guardian resource_from_claims lookup - catch all calls
+    valid_jwt_sub = Auth.TestHelper.valid_jwt_sub()
+    :meck.expect(Users, :get_user_with_organizations, fn _, _ -> 
+      {:ok, %{id: @user_id, subject_id: valid_jwt_sub}}
+    end)
+    
+    
+    # Since test_mode: true is set, the SetCurrentUser plug will use TestGuardian
+    # which simply checks for :current_user in conn.assigns
+    # But we also need to set up Guardian resource for LoadResource plug
+    user_resource = %{id: @user_id, subject_id: Auth.TestHelper.valid_jwt_sub()}
+    
+    authorized_conn = 
+      build_conn()
+      |> put_req_header("authorization", "Bearer #{Auth.TestHelper.valid_jwt()}")
+      |> put_req_header("content-type", "application/json")
+      |> Plug.Conn.assign(:current_user, user_resource)
+      |> Guardian.Plug.put_current_resource(user_resource)
+    
+    # For tests that need anonymous access  
+    anonymous_conn = 
+      build_conn()
+      |> put_req_header("content-type", "application/json")
+
+    on_exit(fn ->
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+    end)
+    
+    [
+      authorized_conn: authorized_conn,
+      anonymous_conn: anonymous_conn,
+      authorized_subject: Auth.TestHelper.valid_jwt_sub()
+    ]
   end
 
   describe "with Auth0 auth provider" do
@@ -70,7 +111,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
+      :meck.expect(Users, :get_user_with_organizations, fn user_subject, :subject_id -> {:ok, %{id: @user_id, subject_id: user_subject}} end)
 
       :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
         {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: @user_id, chart: @encoded_chart, id: 1}}
@@ -129,8 +170,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
         {:ok, %Visualization{public_id: @id, query: @query, title: @title, owner_id: "irrelevant", chart: @encoded_chart, datasets: ["123"]}}
       end)
 
-      # Manually assign current_user for this test
-      conn = Plug.Conn.assign(conn, :current_user, %{id: @user_id})
+      # current_user is already assigned in setup
 
       body =
         conn

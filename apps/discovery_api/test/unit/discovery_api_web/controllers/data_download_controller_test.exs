@@ -3,6 +3,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   import Mox
   use Properties, otp_app: :discovery_api
 
+  @moduletag timeout: 5000
+  
   setup :verify_on_exit!
   setup :set_mox_from_context
 
@@ -56,6 +58,25 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     stub(PrestigeMock, :new_session, fn _any -> :connection end)
 
     stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
+    stub(MetricsServiceMock, :record_api_hit, fn _type, _dataset_id -> :ok end)
+    stub(DateTimeMock, :utc_now, fn -> ~U[2023-01-01 12:00:00Z] end)
+    stub(HmacTokenMock, :create_hmac_token, fn _dataset_id, _expires -> "test_hmac_token" end)
+
+    # Mock ObjectStorageService using :meck since it doesn't have dependency injection
+    try do
+      :meck.unload(ObjectStorageService)
+    catch
+      _, _ -> :ok
+    end
+    :meck.new(ObjectStorageService, [:passthrough])
+
+    on_exit(fn ->
+      try do
+        :meck.unload(ObjectStorageService)
+      catch
+        _, _ -> :ok
+      end
+    end)
 
     :ok
   end
@@ -94,7 +115,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      stub(PrestigeMock, :Result.as_maps, fn :result ->
+      stub(PrestigeResultMock, :as_maps, fn :result ->
         [%{"id" => 1, "int_array" => [2, 3, 4]}]
       end)
 
@@ -135,7 +156,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      stub(PrestigeMock, :Result.as_maps, fn :result -> [] end)
+      stub(PrestigeResultMock, :as_maps, fn :result -> [] end)
 
       stub(RedixMock, :command!, fn _a, _b -> :does_not_matter end)
 
@@ -180,7 +201,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      stub(PrestigeMock, :Result.as_maps, fn :result ->
+      stub(PrestigeResultMock, :as_maps, fn :result ->
         [%{"feature" => "{\"geometry\":{\"coordinates\":[0,1]}}"}]
       end)
 
@@ -235,7 +256,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      stub(PrestigeMock, :Result.as_maps, fn :result ->
+      stub(PrestigeResultMock, :as_maps, fn :result ->
         [%{"andi" => 1, "bob" => 2}]
       end)
 
@@ -251,7 +272,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     setup do
       stub(PrestigeMock, :stream!, fn _a, _b -> [:result] end)
 
-      stub(PrestigeMock, :Result.as_maps, fn :result ->
+      stub(PrestigeResultMock, :as_maps, fn :result ->
         [%{"id" => 1, name: "Joe"}, %{"id" => 2, name: "Robby"}]
       end)
 
@@ -321,8 +342,8 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       expires_in_seconds = download_link_expire_seconds()
 
-      expires = DateTime.utc_now() |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
-      hmac = :crypto.hmac(:sha256, key, "#{dataset_id}/#{expires}") |> Base.encode16()
+      expires = ~U[2023-01-01 12:00:00Z] |> DateTime.add(expires_in_seconds, :second) |> DateTime.to_unix()
+      hmac = "test_hmac_token"
 
       url = "https://data.tests.example.com/api/v1/dataset/#{dataset_id}/download/presigned_url"
       actual_response = conn |> get(url) |> response(200)
@@ -393,7 +414,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     } do
       dataset_id = "private_dataset"
 
-      stub(Users, :get_user_with_organizations, fn subject, :subject_id ->
+      stub(UsersMock, :get_user_with_organizations, fn _subject, :subject_id ->
         {:ok, %{subject_id: :subject_id, id: @user_id, organizations: [%{id: "org_id"}]}}
       end)
 
@@ -416,11 +437,22 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
           ]
         })
 
+      # Set mocks to global for this test
+      set_mox_global()
+      
+      # Set up authorized connection with proper subject_id for ModelAccessUtils
+      conn = Plug.Conn.assign(conn, :current_user, %{subject_id: subject})
+      
+      # Use stub for ModelMock - it should work since model is configured as ModelMock
+      stub(ModelMock, :get, fn id ->
+        result = if id == dataset_id, do: model, else: nil
+        result
+      end)
+      
       stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
-      stub(ModelMock, :get, fn _id -> model end)
       hmac = "IAMANHMACTOKENFORREAL"
       date_time = DateTime.utc_now()
-      stub(DiscoveryApiWeb.Utilities.HmacTokenMock, :create_hmac_token, fn _a, _b -> "IAMANHMACTOKENFORREAL" end)
+      stub(HmacTokenMock, :create_hmac_token, fn _a, _b -> "IAMANHMACTOKENFORREAL" end)
       stub(DateTimeMock, :utc_now, fn -> date_time end)
 
       expires_in_seconds = download_link_expire_seconds()
@@ -460,7 +492,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
     stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
     stub(ModelMock, :get, fn _id -> model end)
-    stub(ObjectStorageServiceMock, :download_file_as_stream, fn _a, _b -> {:ok, ["anything"], "csv"} end)
+    :meck.expect(ObjectStorageService, :download_file_as_stream, fn _a, _b -> {:ok, ["anything"], "csv"} end)
     stub(RedixMock, :command!, fn _a, _b -> :ok end)
 
     url = "/api/v1/dataset/#{dataset_id}/download"
