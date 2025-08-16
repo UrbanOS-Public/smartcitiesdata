@@ -1,16 +1,24 @@
 defmodule DiscoveryApiWeb.DataController.MetricsTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
-  alias DiscoveryApi.Data.Model
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
+  setup :set_mox_from_context
 
   describe "fetching dataset metrics" do
     setup do
-      stub(ModelMock, :get_count_maps, fn
-        "123" -> %{"queries" => "7", "downloads" => "9"}
-        "456" -> %{}
+      # Set up PersistenceMock expectations for Model.get_count_maps behavior
+      stub(PersistenceMock, :get_keys, fn
+        "smart_registry:*:count:123" -> ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
+        "smart_registry:*:count:456" -> []
       end)
+      
+      stub(PersistenceMock, :get_many, fn
+        ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"] -> ["7", "9"]
+      end)
+      
       :ok
     end
 

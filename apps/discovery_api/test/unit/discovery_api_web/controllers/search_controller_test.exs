@@ -5,6 +5,9 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
   alias DiscoveryApi.Search.Elasticsearch.Search
   alias DiscoveryApi.Schemas.Users.User
   alias DiscoveryApi.Schemas.Organizations.Organization
+  alias DiscoveryApi.Test.Helper
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
   setup :set_mox_from_context

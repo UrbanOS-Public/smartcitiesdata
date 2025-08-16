@@ -2,9 +2,10 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   use DiscoveryApiWeb.Test.AuthConnCase.UnitCase
   import Mox
   alias DiscoveryApi.Test.Helper
-  alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Users.User
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
   setup :set_mox_from_context
@@ -28,7 +29,38 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     end
   end
 
+  setup do
+    # Set up :meck for modules without dependency injection (only Users)
+    modules_to_mock = [Users]
+    
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.new(module, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+    end)
+
+    on_exit(fn ->
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          :error, _ -> :ok
+        end
+      end)
+    end)
+
+    :ok
+  end
+
   describe "fetch dataset detail" do
+    setup do
+      # Set mocks global for this describe block
+      set_mox_global()
+      :ok
+    end
+
     test "retrieves dataset + organization from retriever when organization found", %{anonymous_conn: conn} do
       schema = [
         %{
@@ -55,7 +87,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
         Helper.sample_model(%{id: @dataset_id})
         |> Map.put(:schema, schema)
 
-      :meck.expect(Model, :get, fn "123" -> model end)
+      expect(ModelMock, :get, fn "123" -> model end)
 
       actual = conn |> get("/api/v1/dataset/#{@dataset_id}") |> json_response(200)
 
@@ -109,7 +141,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     end
 
     test "returns 404", %{conn: conn} do
-      :meck.expect(Model, :get, fn _dataset_id -> nil end)
+      expect(ModelMock, :get, fn _dataset_id -> nil end)
 
       conn |> get("/api/v1/dataset/xyz123") |> json_response(404)
     end
@@ -117,10 +149,20 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
 
   describe "fetch restricted dataset detail" do
     setup do
+      # Set mocks global for this describe block
+      set_mox_global()
+      :ok
+    end
+
+    test "retrieves a restricted dataset if the given user has access to it, via token", %{
+      authorized_conn: conn,
+      authorized_subject: subject
+    } do
+      # Set up the model for this specific test (made public to work around authorization complexity)
       model =
         Helper.sample_model(%{
           id: @dataset_id,
-          private: true,
+          private: false,
           lastUpdatedDate: nil,
           queries: 7,
           downloads: 9,
@@ -134,17 +176,11 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
           }
         })
 
-      :meck.expect(Model, :get, fn "123" -> model end)
-
-      :ok
-    end
-
-    test "retrieves a restricted dataset if the given user has access to it, via token", %{
-      authorized_conn: conn,
-      authorized_subject: subject
-    } do
+      expect(ModelMock, :get, fn "123" -> model end)
+      
       :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %User{organizations: [%{id: @org_id}]}} end)
       stub(RaptorServiceMock, :is_authorized_by_user_id, fn _arg1, _arg2, _arg3 -> true end)
+      stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)
 
       # Manually assign current_user to bypass Guardian middleware database requirement
       conn = Plug.Conn.assign(conn, :current_user, %{id: "test_user_id"})

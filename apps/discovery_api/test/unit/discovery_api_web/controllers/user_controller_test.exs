@@ -20,6 +20,9 @@ defmodule DiscoveryApiWeb.UserControllerTest do
 
   describe "POST /logged-in" do
     test "returns 200 when no errors", %{authorized_conn: conn} do
+      # Add current_user to conn assigns for TestGuardian authentication
+      conn = Plug.Conn.assign(conn, :current_user, %{id: "test_user_id"})
+      
       # Mock AuthService using :meck since it doesn't have dependency injection
       try do
         :meck.unload(DiscoveryApi.Services.AuthService)
@@ -46,6 +49,9 @@ defmodule DiscoveryApiWeb.UserControllerTest do
     end
 
     test "returns 500 Internal Server Error create call fails", %{authorized_conn: conn} do
+      # Add current_user to conn assigns for TestGuardian authentication
+      conn = Plug.Conn.assign(conn, :current_user, %{id: "test_user_id"})
+      
       # Mock AuthService using :meck since it doesn't have dependency injection  
       try do
         :meck.unload(DiscoveryApi.Services.AuthService)
@@ -59,9 +65,9 @@ defmodule DiscoveryApiWeb.UserControllerTest do
       response_body =
         conn
         |> post("/api/v1/logged-in")
-        |> response(500)
+        |> json_response(500)
 
-      assert response_body == "Internal Server Error"
+      assert response_body == %{"message" => "Internal Server Error"}
       
       # Cleanup
       try do

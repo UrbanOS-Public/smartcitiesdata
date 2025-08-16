@@ -2,6 +2,9 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
   alias DiscoveryApiWeb.Plugs.NoStore
+  alias DiscoveryApi.Test.Helper
+
+  @moduletag timeout: 5000
 
   setup :verify_on_exit!
   setup :set_mox_from_context
@@ -63,8 +66,13 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       stub(RedixMock, :command!, fn _, _ -> :does_not_matter end)
       # Add MetricsServiceMock expectation for RecordMetrics plug
       stub(MetricsServiceMock, :record_api_hit, fn _, _ -> :ok end)
+      
+      # Use Mox for Prestige services with dependency injection
+      stub(PrestigeMock, :new_session, fn _ -> :connection end)
+      stub(PrestigeMock, :stream!, fn _, _ -> [:result] end)
+      stub(PrestigeResultMock, :as_maps, fn _ -> [%{"andi" => 1, "bob" => 2}] end)
 
-      # Use :meck for modules without dependency injection
+      # Keep :meck for modules without dependency injection if needed
       :meck.expect(Prestige, :new_session, fn _ -> :connection end)
       :meck.expect(Prestige, :stream!, fn _, _ -> [:result] end)
       :meck.expect(Prestige.Result, :as_maps, fn _ -> [%{"andi" => 1, "bob" => 2}] end)

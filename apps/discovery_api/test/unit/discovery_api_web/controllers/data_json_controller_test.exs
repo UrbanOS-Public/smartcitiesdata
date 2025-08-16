@@ -5,6 +5,8 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Services.DataJsonService
 
+  @moduletag timeout: 5000
+
   setup :verify_on_exit!
   setup :set_mox_from_context
 
@@ -62,8 +64,28 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
 
   describe "GET with all fields" do
     setup %{conn: conn, models: models} do
-      stub(ModelMock, :get_all, fn -> models end)
+      # Set mocks global for this describe block so they work across processes
+      set_mox_global()
+      
+      # DataJson calls Model.get_all() directly, not through dependency injection
+      # So we need to use :meck to mock the Model module
+      try do
+        :meck.new(Model, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Model, :get_all, fn -> models end)
+      
       data_json = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
+
+      on_exit(fn ->
+        try do
+          :meck.unload(Model)
+        catch
+          :error, _ -> :ok
+        end
+      end)
 
       %{models: models, data_json: data_json}
     end
@@ -147,6 +169,12 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
   end
 
   describe "GET with only required fields" do
+    setup do
+      # Set mocks global for this describe block too
+      set_mox_global()
+      :ok
+    end
+    
     test "drops optional fields with nil value", %{conn: conn} do
       model = %Model{
         id: "myfancydata",
@@ -160,7 +188,22 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
         private: false
       }
 
-      stub(ModelMock, :get_all, fn -> [model] end)
+      # Use :meck for Model since DataJson doesn't use dependency injection
+      try do
+        :meck.new(Model, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Model, :get_all, fn -> [model] end)
+      
+      on_exit(fn ->
+        try do
+          :meck.unload(Model)
+        catch
+          :error, _ -> :ok
+        end
+      end)
 
       result_keys =
         conn

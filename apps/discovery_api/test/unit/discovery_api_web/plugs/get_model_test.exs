@@ -7,6 +7,8 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
 
   alias SmartCity.TestDataGenerator, as: TDG
 
+  @moduletag timeout: 5000
+
   setup :verify_on_exit!
   setup :set_mox_from_context
 
@@ -36,7 +38,13 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
       org = DiscoveryApi.Test.Helper.create_schema_organization(orgName: "org1")
       dataset1 = TDG.create_dataset(id: "ds1", technical: %{orgId: org.id, dataName: "data1"})
 
-      SystemNameCache.put(dataset1.id, org.name, dataset1.technical.dataName)
+      # Use SystemNameCacheMock since GetModel plug uses dependency injection
+      stub(SystemNameCacheMock, :get, fn org_name, dataset_name ->
+        assert org_name == "org1"
+        assert dataset_name == "data1"
+        dataset1.id
+      end)
+      
       # Use ModelMock since GetModel plug uses dependency injection
       stub(ModelMock, :get, fn id -> 
         assert id == dataset1.id
@@ -50,6 +58,9 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
     end
 
     test "responds with a 404 when org_name and dataset_name combination is not known" do
+      # Use SystemNameCacheMock to return nil (not found)
+      stub(SystemNameCacheMock, :get, fn _org_name, _dataset_name -> nil end)
+      
       # Use :meck for RenderError since it doesn't have dependency injection
       :meck.expect(DiscoveryApiWeb.RenderError, :render_error, fn conn, status, message -> 
         assert status == 404
