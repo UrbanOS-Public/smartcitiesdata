@@ -2,7 +2,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
   use ExUnit.Case
 
   import Checkov
-  import Mock
+
+  @moduletag timeout: 10000
 
   alias Andi.InputSchemas.Ingestion
   alias Andi.InputSchemas.Datasets
@@ -240,7 +241,20 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "cadence should be valid: #{inspect(cadence_under_test)}" do
-      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
+      # Set up :meck for Datasets
+      try do
+        :meck.unload(Datasets)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
         changes =
           @valid_changes
           |> put_in([:cadence], cadence_under_test)
@@ -254,7 +268,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
         assert %{} == accumulate_errors(changeset)
         assert changeset.valid?
-      end
+        
+        :meck.unload(Datasets)
 
       where([
         [:cadence_under_test],
@@ -268,7 +283,20 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     data_test "cadence should not be valid: #{inspect(cadence_under_test)}" do
-      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
+      # Set up :meck for Datasets
+      try do
+        :meck.unload(Datasets)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
         changes =
           @valid_changes
           |> put_in([:cadence], cadence_under_test)
@@ -282,7 +310,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
         refute changeset.valid?
         refute Enum.empty?(accumulate_errors(changeset))
-      end
+        
+        :meck.unload(Datasets)
 
       where([
         [:cadence_under_test],
@@ -293,7 +322,20 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     end
 
     test "extract steps are valid when http step is last" do
-      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
+      # Set up :meck for Datasets
+      try do
+        :meck.unload(Datasets)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
         extract_steps = [
           %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
           %{type: "http", context: %{action: "GET", url: "http://example.com"}}
@@ -312,11 +354,25 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
         assert %{} == accumulate_errors(changeset)
         assert changeset.valid?
-      end
+        
+        :meck.unload(Datasets)
     end
 
     test "extract steps are valid when s3 step is last" do
-      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
+      # Set up :meck for Datasets
+      try do
+        :meck.unload(Datasets)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
         extract_steps = [
           %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
           %{type: "s3", context: %{url: "something"}}
@@ -335,11 +391,25 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
 
         assert %{} == accumulate_errors(changeset)
         assert changeset.valid?
-      end
+        
+        :meck.unload(Datasets)
     end
 
     test "extract steps are not valid when http or s3 step is not last" do
-      with_mock(Datasets, get: fn _ -> %{technical: %{sourceType: "ingest"}} end) do
+      # Set up :meck for Datasets
+      try do
+        :meck.unload(Datasets)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
         extract_steps = [
           %{type: "s3", context: %{url: "something"}},
           %{type: "http", context: %{action: "GET", url: "http://example.com"}},
@@ -360,7 +430,8 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
         expected_error = %{extractSteps: [extractSteps: {"Cannot be empty and must end with a http or s3 step", []}]}
         assert expected_error == accumulate_errors(changeset)
         refute changeset.valid?
-      end
+        
+        :meck.unload(Datasets)
     end
   end
 

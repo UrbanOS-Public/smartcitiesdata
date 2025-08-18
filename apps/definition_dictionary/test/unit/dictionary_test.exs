@@ -1,6 +1,8 @@
 defmodule DictionaryTest do
   use ExUnit.Case
   import Checkov
+  
+  @moduletag timeout: 5000
 
   describe "dictionary data structure" do
     setup do

@@ -3,6 +3,7 @@ import Config
 config :flair,
   table_writer: MockTableWriter,
   topic_reader: MockTopicReader,
+  producer_module: MockProducer,
   window_unit: :second,
   window_length: 1,
   message_timeout: 50,

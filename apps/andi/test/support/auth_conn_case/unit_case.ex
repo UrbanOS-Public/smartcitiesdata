@@ -4,12 +4,12 @@ defmodule AndiWeb.Test.AuthConnCase.UnitCase do
   """
 
   use ExUnit.CaseTemplate
-  use Placebo
 
   using do
     quote do
       import Phoenix.ConnTest
       import Plug.Conn
+      import Mox
       alias AndiWeb.Router.Helpers, as: Routes
 
       @endpoint AndiWeb.Endpoint

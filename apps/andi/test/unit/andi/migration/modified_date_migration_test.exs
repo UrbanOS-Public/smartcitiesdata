@@ -3,13 +3,48 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
 
   import SmartCity.Event, only: [dataset_update: 0]
   import ExUnit.CaptureLog
-  import Mock
 
   alias SmartCity.TestDataGenerator, as: TDG
 
   require Andi
 
+  @moduletag timeout: 5000
   @instance_name Andi.instance_name()
+  
+  setup do
+    # Set up :meck for modules that will be mocked across tests
+    modules_to_mock = [Brook, Brook.Event, Brook.ViewState]
+    
+    # Clean up any existing mocks first
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.unload(module)
+      catch
+        _, _ -> :ok
+      end
+    end)
+    
+    # Set up fresh mocks
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.new(module, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+    end)
+    
+    on_exit(fn ->
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+    end)
+    
+    :ok
+  end
 
   test "Sends dataset update event when dataset has been migrated" do
     dataset =
@@ -30,16 +65,16 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
       |> Map.put(:business, updated_business)
       |> SmartCity.Dataset.new()
 
-    with_mocks([
-      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
-      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
-      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
-    ]) do
-      Andi.Migration.ModifiedDateMigration.do_migration()
+    # Set up expectations for this test
+    :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
+    :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
+    :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
+    
+    Andi.Migration.ModifiedDateMigration.do_migration()
 
-      assert_called Brook.ViewState.merge(:dataset, updated_dataset.id, updated_dataset)
-      assert_called Brook.Event.send(@instance_name, dataset_update(), :andi, updated_dataset)
-    end
+    # Verify calls were made with expected arguments
+    assert :meck.called(Brook.ViewState, :merge, [:dataset, updated_dataset.id, updated_dataset])
+    assert :meck.called(Brook.Event, :send, [@instance_name, dataset_update(), :andi, updated_dataset])
   end
 
   test "does not send dataset update event if there was no change" do
@@ -49,19 +84,19 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         business: %{modifiedDate: "2017-08-08T13:03:48.000Z"}
       )
 
-    with_mocks([
-      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
-      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
-      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
-    ]) do
-      Andi.Migration.ModifiedDateMigration.do_migration()
+    # Set up expectations for this test
+    :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
+    :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
+    :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
+    
+    Andi.Migration.ModifiedDateMigration.do_migration()
 
-      assert_not_called(Brook.Event.send(@instance_name, dataset_update(), :andi, dataset))
-      assert_not_called(Brook.ViewState.merge(:dataset, dataset.id, :_))
-    end
+    # Verify no calls were made (dataset already has correct format)
+    refute :meck.called(Brook.Event, :send, [@instance_name, dataset_update(), :andi, dataset])
+    refute :meck.called(Brook.ViewState, :merge, [:dataset, dataset.id, :_])
   end
 
-  @moduletag capture_log: true
+  @tag capture_log: true
   test "Logs dates that can not be parsed" do
     dataset =
       TDG.create_dataset(
@@ -69,16 +104,15 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         business: %{modifiedDate: "not an actual date"}
       )
 
-    with_mocks([
-      {Brook, [], [get_all_values!: fn :andi, :dataset -> [dataset] end]},
-      {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]},
-      {Brook.ViewState, [], [merge: fn :dataset, _, _ -> :ok end]}
-    ]) do
-      expected = "[abc1234] unable to parse business.modifiedDate '\"not an actual date\"' in modified_date_migration"
+    # Set up expectations for this test
+    :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
+    :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
+    :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
+    
+    expected = "[abc1234] unable to parse business.modifiedDate '\"not an actual date\"' in modified_date_migration"
 
-      captured = capture_log([level: :warn], fn -> Andi.Migration.ModifiedDateMigration.do_migration() end)
+    captured = capture_log([level: :warn], fn -> Andi.Migration.ModifiedDateMigration.do_migration() end)
 
-      assert String.contains?(captured, expected)
-    end
+    assert String.contains?(captured, expected)
   end
 end

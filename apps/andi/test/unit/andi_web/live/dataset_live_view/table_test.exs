@@ -1,11 +1,12 @@
 defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
 
+  @moduletag timeout: 5000
+
   alias Andi.Schemas.User
   alias Andi.InputSchemas.MessageErrors
 
   import Phoenix.LiveViewTest
-  import Mock
 
   import FlokiHelpers,
     only: [
@@ -27,22 +28,52 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
              |> Map.put(:ingestedTime, nil)
              |> Map.put(:submission_status, :approved)
 
-  setup_with_mocks [
-                     {User, [],
-                      [
-                        get_all: fn -> [@user] end,
-                        get_by_subject_id: fn _ -> @user end
-                      ]},
-                     {Andi.Repo, [], [all: fn _ -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end]},
-                     {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
-                   ],
-                   %{conn: conn} do
+  setup %{conn: conn} do
+    # Use :meck for modules without dependency injection
+    modules_to_mock = [User, Andi.Repo, Guardian.DB.Token, MessageErrors]
+    
+    # Clean up any existing mocks first
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.unload(module)
+      catch
+        _, _ -> :ok
+      end
+    end)
+    
+    # Set up fresh mocks
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.new(module, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+    end)
+
+    :meck.expect(User, :get_all, fn -> [@user] end)
+    :meck.expect(User, :get_by_subject_id, fn _ -> @user end)
+    :meck.expect(Andi.Repo, :all, fn _ -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end)
+    :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
+    
+    :meck.expect(MessageErrors, :get_latest_error, fn
+      id when id == @dataset_a.id -> create_message_error(@dataset_a.id)
+      id when id == @dataset_b.id -> create_message_error(@dataset_b.id)
+      id when id == @dataset_c.id -> create_message_error(@dataset_c.id)
+      id when id == @dataset_d.id -> create_message_error(@dataset_d.id)
+      _ -> nil
+    end)
+
     DatasetHelpers.replace_all_datasets_in_repo([@dataset_a, @dataset_b])
 
-    allow(MessageErrors.get_latest_error(dataset_a.id), return: create_message_error(dataset_a.id))
-    allow(MessageErrors.get_latest_error(dataset_b.id), return: create_message_error(dataset_b.id))
-    allow(MessageErrors.get_latest_error(dataset_c.id), return: create_message_error(dataset_c.id))
-    allow(MessageErrors.get_latest_error(dataset_d.id), return: create_message_error(dataset_d.id))
+    on_exit(fn ->
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+    end)
 
     {:ok, view, _} =
       get(conn, @url_path)
@@ -145,13 +176,14 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     test "edit buttons link to dataset edit", %{conn: conn} do
       dataset = DatasetHelpers.create_dataset(%{})
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([dataset])
+      # Override the Andi.Repo expectation for this specific test
+      :meck.expect(Andi.Repo, :all, fn _ -> [dataset] end)
+      
+      DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
-        {:ok, _view, html} = live(conn, @url_path)
+      {:ok, _view, html} = live(conn, @url_path)
 
-        assert get_attributes(html, ".btn", "href") == ["#{@url_path}/#{dataset.id}"]
-      end
+      assert get_attributes(html, ".btn", "href") == ["#{@url_path}/#{dataset.id}"]
     end
   end
 

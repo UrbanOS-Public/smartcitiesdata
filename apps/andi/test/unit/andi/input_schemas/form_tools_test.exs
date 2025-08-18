@@ -1,11 +1,11 @@
 defmodule AndiWeb.Helpers.FormToolsTest do
   use ExUnit.Case
 
-  import Mock
-
   alias SmartCity.TestDataGenerator, as: TDG
   alias AndiWeb.Helpers.FormTools
   alias Andi.Services.OrgStore
+  
+  @moduletag timeout: 5000
 
   describe "adjust_source_query_params_for_url/1" do
     test "given a url it sets the query params to match what is in it" do
@@ -162,23 +162,43 @@ defmodule AndiWeb.Helpers.FormToolsTest do
     test "updating the orgId updates the orgName" do
       org = TDG.create_organization(%{orgTitle: "Existing Org Title", orgName: "existing_org_name", id: "existing_org_id"})
 
-      with_mock(OrgStore, get: fn _ -> {:ok, org} end) do
-        current_form_data = %{
-          "orgTitle" => "Another Org Title",
-          "dataName" => "another_data_title",
-          "orgName" => "something_not_related",
-          "orgId" => "existing_org_id"
-        }
+      # Set up :meck for OrgStore
+      try do
+        :meck.unload(OrgStore)
+      catch
+        _, _ -> :ok
+      end
+      
+      try do
+        :meck.new(OrgStore, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+      
+      :meck.expect(OrgStore, :get, fn _ -> {:ok, org} end)
+      
+      current_form_data = %{
+        "orgTitle" => "Another Org Title",
+        "dataName" => "another_data_title",
+        "orgName" => "something_not_related",
+        "orgId" => "existing_org_id"
+      }
 
-        new_form_data = FormTools.adjust_org_name(current_form_data)
+      new_form_data = FormTools.adjust_org_name(current_form_data)
 
-        assert %{
-                 "orgTitle" => "Existing Org Title",
-                 "dataName" => "another_data_title",
-                 "orgName" => "existing_org_name",
-                 "orgId" => "existing_org_id",
-                 "systemName" => "existing_org_name__another_data_title"
-               } == new_form_data
+      assert %{
+               "orgTitle" => "Existing Org Title",
+               "dataName" => "another_data_title",
+               "orgName" => "existing_org_name",
+               "orgId" => "existing_org_id",
+               "systemName" => "existing_org_name__another_data_title"
+             } == new_form_data
+      
+      # Clean up
+      try do
+        :meck.unload(OrgStore)
+      catch
+        _, _ -> :ok
       end
     end
   end

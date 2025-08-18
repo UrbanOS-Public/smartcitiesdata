@@ -6,6 +6,8 @@ defmodule DiscoveryApi.Services.AuthServiceTest do
   alias DiscoveryApi.Services.AuthService
   alias Auth.TestHelper
 
+  @moduletag timeout: 5000
+
   setup :verify_on_exit!
   setup :set_mox_from_context
 

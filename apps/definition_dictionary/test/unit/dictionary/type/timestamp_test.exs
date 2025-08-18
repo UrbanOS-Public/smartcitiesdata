@@ -1,6 +1,8 @@
 defmodule Dictionary.Type.TimestampTest do
   use ExUnit.Case
   import Checkov
+  
+  @moduletag timeout: 10000
 
   test "can be encoded to json" do
     expected = %{

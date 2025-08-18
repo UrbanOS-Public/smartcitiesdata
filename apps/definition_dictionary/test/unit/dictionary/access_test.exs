@@ -3,6 +3,8 @@ defmodule Dictionary.AccessTest do
   import Checkov
 
   import Dictionary.Access, only: [key: 1, key: 3]
+  
+  @moduletag timeout: 5000
 
   setup do
     dictionary =

@@ -3,8 +3,9 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
   import Checkov
 
   alias Andi.InputSchemas.Ingestions.ExtractAuthStep
-  alias Andi.InputSchemas.Ingestions.ExtractStep
   alias Ecto.Changeset
+  
+  @moduletag timeout: 5000
 
   describe "body validation" do
     setup do
@@ -24,10 +25,10 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
     test "changeset casts correctly", %{changes: changes} do
       changeset = ExtractAuthStep.changeset(ExtractAuthStep.get_module(), changes)
 
-      {_, changeset_headers} = Changeset.fetch_field(changeset, :headers)
-      assert changeset_headers = [%{"api-key" => "to-my-heart"}]
-      {_, changeset_destination} = Changeset.fetch_field(changeset, :destination)
-      assert changeset_destination = "dest"
+      {_, _changeset_headers} = Changeset.fetch_field(changeset, :headers)
+      assert _changeset_headers = [%{"api-key" => "to-my-heart"}]
+      {_, _changeset_destination} = Changeset.fetch_field(changeset, :destination)
+      assert _changeset_destination = "dest"
     end
 
     data_test "valid when body is #{inspect(value)}", %{changes: changes} do

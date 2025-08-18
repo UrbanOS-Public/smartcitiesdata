@@ -28,6 +28,12 @@ config :andi,
   hsts_enabled: false,
   access_level: :private
 
+# Configure TelemetryEvent to use mock implementation and start it properly
+config :telemetry_event,
+  init_server: false,
+  add_poller: false,
+  implementation: TelemetryEvent.Mock
+
 config :andi, AndiWeb.Auth.TokenHandler,
   issuer: "https://urbanos-dev.us.auth0.com/",
   allowed_algos: ["RS256"],

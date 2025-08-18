@@ -4,6 +4,8 @@ defmodule AndiWeb.RedirectTest do
 
   alias AndiWeb.Redirect
 
+  @moduletag timeout: 5000
+
   defmodule TestRouter do
     use Phoenix.Router
 

@@ -7,8 +7,8 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-
-  import Mock
+  
+  @moduletag timeout: 5000
 
   describe "ingestion conversions" do
     test "prepare_smrt_ingestion_for_casting/1 passes through the extract step body if it is json encoded" do
@@ -56,10 +56,10 @@ defmodule Andi.InputSchemas.InputConverterTest do
         })
 
       try do
-        result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+        _result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
         flunk("Expected incorrectly formatted body to raise an error")
       rescue
-        e in ArgumentError ->
+        _e in ArgumentError ->
           :ok
       end
     end
@@ -80,19 +80,51 @@ defmodule Andi.InputSchemas.InputConverterTest do
         })
 
       try do
-        result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
+        _result = InputConverter.prepare_smrt_ingestion_for_casting(smrt_ingestion)
         flunk("Expected incorrectly formatted body to raise an error")
       rescue
-        e in ArgumentError ->
+        _e in ArgumentError ->
           :ok
       end
     end
   end
 
   describe "main conversions" do
-    setup_with_mocks([
-      {Datasets, [], [is_unique?: fn _, _, _ -> true end]}
-    ]) do
+    setup do
+      # Set up :meck for modules without dependency injection
+      modules_to_mock = [Datasets]
+      
+      # Clean up any existing mocks first
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      # Set up fresh mocks
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end)
+      
+      # Default expectations for this describe block
+      :meck.expect(Datasets, :is_unique?, fn _, _, _ -> true end)
+      
+      on_exit(fn ->
+        Enum.each(modules_to_mock, fn module ->
+          try do
+            :meck.unload(module)
+          catch
+            _, _ -> :ok
+          end
+        end)
+      end)
+      
       :ok
     end
 
@@ -387,9 +419,41 @@ defmodule Andi.InputSchemas.InputConverterTest do
   }
 
   describe "form_data_to_ui_changeset/1" do
-    setup_with_mocks([
-      {Datasets, [], [is_unique?: fn _, _, _ -> false end]}
-    ]) do
+    setup do
+      # Set up :meck for modules without dependency injection
+      modules_to_mock = [Datasets]
+      
+      # Clean up any existing mocks first
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      # Set up fresh mocks
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end)
+      
+      # Default expectations for this describe block
+      :meck.expect(Datasets, :is_unique?, fn _, _, _ -> false end)
+      
+      on_exit(fn ->
+        Enum.each(modules_to_mock, fn module ->
+          try do
+            :meck.unload(module)
+          catch
+            _, _ -> :ok
+          end
+        end)
+      end)
+      
       :ok
     end
 
@@ -446,9 +510,41 @@ defmodule Andi.InputSchemas.InputConverterTest do
   end
 
   describe "form_data_to_full_ui_changeset/1" do
-    setup_with_mocks([
-      {Datasets, [], [is_unique?: fn _, _, _ -> false end]}
-    ]) do
+    setup do
+      # Set up :meck for modules without dependency injection
+      modules_to_mock = [Datasets]
+      
+      # Clean up any existing mocks first
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      # Set up fresh mocks
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end)
+      
+      # Default expectations for this describe block
+      :meck.expect(Datasets, :is_unique?, fn _, _, _ -> false end)
+      
+      on_exit(fn ->
+        Enum.each(modules_to_mock, fn module ->
+          try do
+            :meck.unload(module)
+          catch
+            _, _ -> :ok
+          end
+        end)
+      end)
+      
       :ok
     end
 
@@ -465,9 +561,41 @@ defmodule Andi.InputSchemas.InputConverterTest do
   end
 
   describe "form_data_to_full_changeset/2" do
-    setup_with_mocks([
-      {Datasets, [], [is_unique?: fn _, _, _ -> true end]}
-    ]) do
+    setup do
+      # Set up :meck for modules without dependency injection
+      modules_to_mock = [Datasets]
+      
+      # Clean up any existing mocks first
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      # Set up fresh mocks
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end)
+      
+      # Default expectations for this describe block
+      :meck.expect(Datasets, :is_unique?, fn _, _, _ -> true end)
+      
+      on_exit(fn ->
+        Enum.each(modules_to_mock, fn module ->
+          try do
+            :meck.unload(module)
+          catch
+            _, _ -> :ok
+          end
+        end)
+      end)
+      
       :ok
     end
 
@@ -532,7 +660,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
 
     test "returns list unchanged" do
       keywords = ["one", "blue", "sky"]
-      assert keywords = InputConverter.keywords_to_list(keywords)
+      assert ^keywords = InputConverter.keywords_to_list(keywords)
     end
 
     test "comma space separated string turns into array of strings" do

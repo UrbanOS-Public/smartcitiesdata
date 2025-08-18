@@ -1,10 +1,8 @@
 defmodule Flair.ConsumerTest do
   use ExUnit.Case
-  use Placebo
 
   import Mox
 
-  setup :set_mox_global
   setup :verify_on_exit!
 
   describe "handle_events/3" do

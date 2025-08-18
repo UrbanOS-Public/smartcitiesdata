@@ -5,24 +5,51 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   import Phoenix.LiveViewTest
   import FlokiHelpers, only: [get_text: 2, get_values: 2]
-  import Mock
+
+  @moduletag timeout: 5000
 
   @endpoint AndiWeb.Endpoint
   @url_path "/datasets"
   @user UserHelpers.create_user()
 
-  setup_with_mocks([
-    {Andi.Repo, [],
-     [
-       get_by: fn Andi.Schemas.User, _ -> @user end
-     ]},
-    {User, [],
-     [
-       get_all: fn -> [@user] end,
-       get_by_subject_id: fn _ -> @user end
-     ]},
-    {Guardian.DB.Token, [], [find_by_claims: fn _ -> nil end]}
-  ]) do
+  setup do
+    # Set up :meck for modules without dependency injection
+    modules_to_mock = [Andi.Repo, User, Guardian.DB.Token]
+    
+    # Clean up any existing mocks first
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.unload(module)
+      catch
+        _, _ -> :ok
+      end
+    end)
+    
+    # Set up fresh mocks
+    Enum.each(modules_to_mock, fn module ->
+      try do
+        :meck.new(module, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+    end)
+    
+    # Default expectations
+    :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
+    :meck.expect(User, :get_all, fn -> [@user] end)
+    :meck.expect(User, :get_by_subject_id, fn _ -> @user end)
+    :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
+    
+    on_exit(fn ->
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+    end)
+    
     :ok
   end
 
@@ -36,35 +63,32 @@ defmodule AndiWeb.DatasetLiveViewTest do
           end
         )
 
-      with_mock(Andi.Repo, all: fn _ -> datasets end) do
-        DatasetHelpers.replace_all_datasets_in_repo(datasets)
+      :meck.expect(Andi.Repo, :all, fn _ -> datasets end)
+      DatasetHelpers.replace_all_datasets_in_repo(datasets)
 
-        assert {:ok, _view, html} = live(conn, @url_path)
+      assert {:ok, _view, html} = live(conn, @url_path)
 
-        table_text = get_text(html, ".datasets-index__table")
+      table_text = get_text(html, ".datasets-index__table")
 
-        Enum.each(datasets, fn dataset ->
-          assert table_text =~ dataset.business.dataTitle
-        end)
-      end
+      Enum.each(datasets, fn dataset ->
+        assert table_text =~ dataset.business.dataTitle
+      end)
     end
 
     test "shows No Datasets when there are no rows to show", %{conn: conn} do
-      with_mock(Andi.Repo, all: fn _ -> [] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([])
+      :meck.expect(Andi.Repo, :all, fn _ -> [] end)
+      DatasetHelpers.replace_all_datasets_in_repo([])
 
-        assert {:ok, _view, html} = live(conn, @url_path)
+      assert {:ok, _view, html} = live(conn, @url_path)
 
-        assert get_text(html, ".datasets-index__title") =~ "All Datasets"
-        assert get_text(html, ".datasets-index__table") =~ "No Datasets"
-      end
+      assert get_text(html, ".datasets-index__title") =~ "All Datasets"
+      assert get_text(html, ".datasets-index__table") =~ "No Datasets"
     end
   end
 
   describe "Live connection with search params in URL" do
-    setup_with_mocks([
-      {Andi.Repo, [], [all: fn _ -> [] end]}
-    ]) do
+    setup do
+      :meck.expect(Andi.Repo, :all, fn _ -> [] end)
       :ok
     end
 
@@ -89,39 +113,37 @@ defmodule AndiWeb.DatasetLiveViewTest do
 
   describe "When form change executes search" do
     test "Search Change event triggers redirect and updates search box value", %{conn: conn} do
-      with_mock(Andi.Repo, all: fn _ -> [] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([])
+      :meck.expect(Andi.Repo, :all, fn _ -> [] end)
+      DatasetHelpers.replace_all_datasets_in_repo([])
 
-        {:ok, view, _html} = live(conn, @url_path)
+      {:ok, view, _html} = live(conn, @url_path)
 
-        search_text = "Some search"
+      search_text = "Some search"
 
-        assert [search_text] ==
-                 view
-                 |> render_change(:search, %{"search-value" => search_text})
-                 |> get_values("input.datasets-index__search-input")
+      assert [search_text] ==
+               view
+               |> render_change(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
 
-        assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
-      end
+      assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
     end
   end
 
   describe "When form submit executes search" do
     test "Search Submit event triggers redirect and updates search box value", %{conn: conn} do
-      with_mock(Andi.Repo, all: fn _ -> [] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([])
+      :meck.expect(Andi.Repo, :all, fn _ -> [] end)
+      DatasetHelpers.replace_all_datasets_in_repo([])
 
-        {:ok, view, _html} = live(conn, @url_path)
+      {:ok, view, _html} = live(conn, @url_path)
 
-        search_text = "Some text"
+      search_text = "Some text"
 
-        assert [search_text] ==
-                 view
-                 |> render_submit(:search, %{"search-value" => search_text})
-                 |> get_values("input.datasets-index__search-input")
+      assert [search_text] ==
+               view
+               |> render_submit(:search, %{"search-value" => search_text})
+               |> get_values("input.datasets-index__search-input")
 
-        assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
-      end
+      assert_patch(view, encoded(@url_path <> "?search=" <> search_text))
     end
   end
 
@@ -130,30 +152,28 @@ defmodule AndiWeb.DatasetLiveViewTest do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+      :meck.expect(Andi.Repo, :all, fn _ -> [dataset_a, dataset_b] end)
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
-        {:ok, _view, html} = live(conn, @url_path)
+      {:ok, _view, html} = live(conn, @url_path)
 
-        assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-        refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-      end
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      refute get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "toggles inclusion of remotes when button is clicked", %{conn: conn} do
       dataset_a = DatasetHelpers.create_dataset(technical: %{sourceType: "ingest"})
       dataset_b = DatasetHelpers.create_dataset(technical: %{sourceType: "remote"})
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+      :meck.expect(Andi.Repo, :all, fn _ -> [dataset_a, dataset_b] end)
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
-        {:ok, view, _html} = live(conn, @url_path)
+      {:ok, view, _html} = live(conn, @url_path)
 
-        html = render_click(view, :toggle_remotes)
+      html = render_click(view, :toggle_remotes)
 
-        assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-        assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-      end
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
   end
 
@@ -167,14 +187,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
         DatasetHelpers.create_dataset(%{})
         |> Map.put(:submission_status, :submitted)
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+      :meck.expect(Andi.Repo, :all, fn _ -> [dataset_a, dataset_b] end)
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
-        {:ok, _view, html} = live(conn, @url_path)
+      {:ok, _view, html} = live(conn, @url_path)
 
-        assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-        assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-      end
+      assert get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
 
     test "toggles exclusion of non-submitted datasets when checked", %{conn: conn} do
@@ -186,16 +205,15 @@ defmodule AndiWeb.DatasetLiveViewTest do
         DatasetHelpers.create_dataset(%{})
         |> Map.put(:submission_status, :submitted)
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset_a, dataset_b] end) do
-        DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
+      :meck.expect(Andi.Repo, :all, fn _ -> [dataset_a, dataset_b] end)
+      DatasetHelpers.replace_all_datasets_in_repo([dataset_a, dataset_b])
 
-        {:ok, view, _html} = live(conn, @url_path)
+      {:ok, view, _html} = live(conn, @url_path)
 
-        html = render_click(view, :toggle_submitted)
+      html = render_click(view, :toggle_submitted)
 
-        refute get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
-        assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
-      end
+      refute get_text(html, ".datasets-index__table") =~ dataset_a.business.dataTitle
+      assert get_text(html, ".datasets-index__table") =~ dataset_b.business.dataTitle
     end
   end
 

@@ -6,13 +6,44 @@ defmodule Andi.Harvest.HarvesterTest do
   alias Andi.Services.OrgStore
   alias SmartCity.TestDataGenerator, as: TDG
 
-  import Mock
   import SmartCity.Event, only: [dataset_update: 0, dataset_harvest_end: 0, dataset_harvest_start: 0]
 
+  @moduletag timeout: 5000
   @instance_name Andi.instance_name()
 
   describe "data json harvester" do
     setup do
+      # Set up :meck for modules that will be mocked across tests
+      modules_to_mock = [Brook.Event, OrgStore, Organizations]
+      
+      # Clean up any existing mocks first
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end)
+      
+      # Set up fresh mocks
+      Enum.each(modules_to_mock, fn module ->
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end)
+      
+      on_exit(fn ->
+        Enum.each(modules_to_mock, fn module ->
+          try do
+            :meck.unload(module)
+          catch
+            _, _ -> :ok
+          end
+        end)
+      end)
+      
       data_json = get_schema_from_path("./test/integration/schemas/data_json.json")
       org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
       bypass = Bypass.open()
@@ -28,15 +59,15 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: "http://www.google.com"
         })
 
-      with_mocks([
-        {Brook.Event, [], [send: fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end]},
-        {OrgStore, [], [get_all: fn -> {:ok, [org_1]} end]},
-        {Organizations, [], [get_harvested_dataset: fn _ -> %{include: true} end]}
-      ]) do
-        Harvester.start_harvesting()
+      # Set up expectations for this test
+      :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
+      :meck.expect(OrgStore, :get_all, fn -> {:ok, [org_1]} end)
+      :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
+      
+      Harvester.start_harvesting()
 
-        assert_called_exactly(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, :_), 1)
-      end
+      # Verify calls were made
+      assert :meck.num_calls(Brook.Event, :send, 4) == 1
     end
 
     test "start_harvesting/0 when orgs without dataJsonUrls are in the system" do
@@ -48,14 +79,14 @@ defmodule Andi.Harvest.HarvesterTest do
           dataJsonUrl: nil
         })
 
-      with_mocks([
-        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end]},
-        {OrgStore, [:passthrough], [get_all: fn -> [org_1] end]}
-      ]) do
-        Harvester.start_harvesting()
+      # Set up expectations for this test
+      :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
+      :meck.expect(OrgStore, :get_all, fn -> [org_1] end)
+      
+      Harvester.start_harvesting()
 
-        assert_not_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, :_))
-      end
+      # Verify no calls were made (org has nil dataJsonUrl)
+      assert :meck.num_calls(Brook.Event, :send, 4) == 0
     end
 
     test "get_data_json/1", %{data_json: data_json, bypass: bypass} do
@@ -86,31 +117,31 @@ defmodule Andi.Harvest.HarvesterTest do
     end
 
     test "dataset_update/1", %{data_json: data_json, org: org} do
-      with_mocks([
-        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_update(), :andi, _ -> :ok end]},
-        {Organizations, [], [get_harvested_dataset: fn _ -> %{include: true} end]}
-      ]) do
-        {:ok, data_json} = Jason.decode(data_json)
-        datasets = Harvester.map_data_json_to_dataset(data_json, org)
+      # Set up expectations for this test
+      :meck.expect(Brook.Event, :send, fn @instance_name, dataset_update(), :andi, _ -> :ok end)
+      :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
+      
+      {:ok, data_json} = Jason.decode(data_json)
+      datasets = Harvester.map_data_json_to_dataset(data_json, org)
 
-        Harvester.dataset_update(datasets)
+      Harvester.dataset_update(datasets)
 
-        assert_called_exactly(Brook.Event.send(@instance_name, dataset_update(), :andi, :_), 3)
-      end
+      # Verify calls were made (3 datasets in test data)
+      assert :meck.num_calls(Brook.Event, :send, 4) == 3
     end
 
     test "harvested_dataset_update/1", %{data_json: data_json, org: org} do
-      with_mocks([
-        {Brook.Event, [:passthrough], [send: fn @instance_name, dataset_harvest_end(), :andi, _ -> :ok end]},
-        {Organizations, [:passthrough], [get_harvested_dataset: fn _ -> %{include: true} end]}
-      ]) do
-        {:ok, data_json} = Jason.decode(data_json)
-        harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
+      # Set up expectations for this test
+      :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_end(), :andi, _ -> :ok end)
+      :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
+      
+      {:ok, data_json} = Jason.decode(data_json)
+      harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
 
-        Harvester.harvested_dataset_update(harvested_datasets)
+      Harvester.harvested_dataset_update(harvested_datasets)
 
-        assert_called_exactly(Brook.Event.send(@instance_name, dataset_harvest_end(), :andi, :_), 3)
-      end
+      # Verify calls were made (3 datasets in test data)
+      assert :meck.num_calls(Brook.Event, :send, 4) == 3
     end
 
     test "datasets without a modified date should be set to todays date", %{data_json: data_json, org: org} do

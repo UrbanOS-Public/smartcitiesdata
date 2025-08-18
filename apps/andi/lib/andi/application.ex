@@ -18,6 +18,7 @@ defmodule Andi.Application do
 
     children =
       [
+        test_telemetry_mock(),
         {Phoenix.PubSub, [name: Andi.PubSub, adapter: Phoenix.PubSub.PG2]},
         AndiWeb.Endpoint,
         ecto_repo(),
@@ -211,6 +212,14 @@ defmodule Andi.Application do
 
       config ->
         Application.put_env(:guardian, Guardian.DB, config)
+    end
+  end
+
+  defp test_telemetry_mock do
+    if Mix.env() == :test do
+      TelemetryEvent.Mock
+    else
+      []
     end
   end
 end

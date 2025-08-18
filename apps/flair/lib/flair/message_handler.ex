@@ -5,8 +5,10 @@ defmodule Flair.MessageHandler do
   use Elsa.Consumer.MessageHandler
   alias Flair.Producer
 
+  @producer_module Application.compile_env(:flair, :producer_module, Producer)
+
   def handle_messages(message_set) do
-    Producer.add_messages(:durations, message_set)
+    @producer_module.add_messages(:durations, message_set)
 
     :ack
   end

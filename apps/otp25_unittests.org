@@ -1,6 +1,6 @@
 # Review code
 
-## elixir apps [30/36] [83%]
+## elixir apps [34/36] [94%]
 - [X] protocol_decoder     - 41 lines
 - [ ] web                  - 59 lines
 - [X] protocol_destination - 87 lines
@@ -22,11 +22,11 @@
 - [X] definition           - 740 lines
 - [X] auth                 - 831 lines
 - [X] definition_kafka     - 833 lines
-- [ ] flair                - 891 lines
+- [X] flair                - 891 lines
 - [X] estuary              - 1609 lines
 - [X] discovery_streams    - 1835 lines
 - [X] alchemist            - 1903 lines
-- [ ] definition_dictionary - 2238 lines
+- [X] definition_dictionary - 2238 lines
 - [X] performance
 - [X] valkyrie             - 3442 lines  -> Mostly resolved save for a problem with DeadLetter.Carrier.Test.receive()
 - [X] pipeline             - 3757 lines
@@ -34,8 +34,8 @@
 - [X] raptor               - 4961 lines
 - [X] transformers         - 8141 lines
 - [X] reaper               - 11475 lines
-- [ ] discovery_api        - 25244 lines
-- [ ] andi                 - 40700 lines
+- [X] discovery_api        - 25244 lines
+- [X] andi                 - 40700 lines
 - [ ] e2e
 
 

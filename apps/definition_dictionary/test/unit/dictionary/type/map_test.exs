@@ -1,6 +1,8 @@
 defmodule Dictionary.Type.MapTest do
   use ExUnit.Case
   import Checkov
+  
+  @moduletag timeout: 5000
 
   test "can be encoded to json" do
     expected = %{
