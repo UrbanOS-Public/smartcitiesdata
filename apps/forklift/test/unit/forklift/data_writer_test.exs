@@ -6,13 +6,6 @@ defmodule Forklift.DataWriterTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
 
-  Mox.defmock(MockTopic, for: Pipeline.Writer)
-  Mox.defmock(MockTable, for: Pipeline.Writer)
-  Mox.defmock(MockBrook, for: Brook.Event.Handler)
-  Mox.defmock(MockDateTime, for: Forklift.Test.DateTimeBehaviour)
-  Mox.defmock(MockDataMigration, for: Forklift.Test.DataMigrationBehaviour)
-  Mox.defmock(MockRedix, for: Forklift.Test.RedixBehaviour)
-  Mox.defmock(MockPrestigeHelper, for: Forklift.Test.PrestigeHelperBehaviour)
   import SmartCity.Data, only: [end_of_data: 0]
   import SmartCity.Event, only: [data_ingest_end: 0, event_log_published: 0, ingestion_complete: 0]
 
@@ -101,6 +94,8 @@ defmodule Forklift.DataWriterTest do
     stub(MockBrook, :handle_event, fn _ -> :ok end)
     stub(MockRedix, :command!, fn _, _ -> "1" end)
     stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
+    stub(PrestigeMock, :new_session, fn _ -> :connection end)
+    stub(PrestigeMock, :execute, fn _, _ -> {:ok, %{rows: [[1]]}} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -157,6 +152,8 @@ defmodule Forklift.DataWriterTest do
     stub(MockBrook, :handle_event, fn _ -> :ok end)
     stub(MockRedix, :command!, fn _, _ -> "1" end)
     stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
+    stub(PrestigeMock, :new_session, fn _ -> :connection end)
+    stub(PrestigeMock, :execute, fn _, _ -> {:ok, %{rows: [[1]]}} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -736,6 +733,8 @@ defmodule Forklift.DataWriterTest do
     stub(MockBrook, :handle_event, fn _ -> :ok end)
     stub(MockRedix, :command!, fn _, _ -> "2" end)
     stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, length(actual_messages)} end)
+    stub(PrestigeMock, :new_session, fn _ -> :connection end)
+    stub(PrestigeMock, :execute, fn _, _ -> {:ok, %{rows: [[1]]}} end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok
@@ -1363,6 +1362,9 @@ defmodule Forklift.DataWriterTest do
     stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
     stub(MockRedix, :command!, fn _, _ -> "1" end)
     stub(MockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
+    stub(PrestigeMock, :new_session, fn _ -> :connection end)
+    stub(PrestigeMock, :execute, fn _, _ -> {:ok, %{rows: [[1]]}} end)
+    stub(MockReader, :init, fn _ -> :ok end)
 
     stub(MockTable, :write, fn _data, _params ->
       :ok

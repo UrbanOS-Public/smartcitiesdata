@@ -1,7 +1,3 @@
-defmodule Forklift.Test.DateTimeBehaviour do
-  @callback utc_now() :: DateTime.t()
-end
-
 defmodule Forklift.Test.DatasetsBehaviour do
   @callback update(any) :: any
   @callback get!(any) :: any
@@ -31,8 +27,15 @@ defmodule Forklift.Test.PrestigeHelperBehaviour do
   @callback table_exists?(any) :: boolean
   @callback execute_query(any) :: {:ok, any} | {:error, any}
   @callback count(any) :: {:ok, any} | {:error, any}
+  @callback count_query(String.t()) :: {:ok, integer()} | {:error, term()}
 end
 
 defmodule Forklift.Test.TelemetryEventBehaviour do
   @callback add_event_metrics(any, any) :: :ok
+end
+
+defmodule Forklift.Test.PrestigeBehaviour do
+  @callback new_session(any) :: any
+  @callback execute(any, any) :: any
+  @callback query!(any, any) :: any
 end

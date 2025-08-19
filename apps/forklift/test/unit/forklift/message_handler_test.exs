@@ -13,8 +13,8 @@ defmodule Forklift.MessageHandlerTest do
     # Setup test environment
     Brook.Test.register(@instance_name)
     
-    # Use Test implementation of DeadLetter
-    DeadLetter.Carrier.Test.clear()
+    # Note: DeadLetter.Carrier.Test.clear() not available in current implementation
+    # DeadLetter.Carrier.Test.clear()
     
     :ok
   end

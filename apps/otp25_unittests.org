@@ -1,6 +1,6 @@
-# Review code
+= Review code =
 
-## elixir apps [34/36] [94%]
+==  elixir apps [34/36] [94%] ==
 - [X] protocol_decoder     - 41 lines
 - [ ] web                  - 59 lines
 - [X] protocol_destination - 87 lines
@@ -38,5 +38,10 @@
 - [X] andi                 - 40700 lines
 - [ ] e2e
 
+== End 2 End Testing ==
+
+- [ ] Review e2e tests to see how the containers interact with the code base.
+- [ ] Consider setting up an ubuntu22_04 instance on my laptop with a shared home directory
+- [ ] Try to run the e2e tests without distrobox with the OTP25 code base.
 
 
