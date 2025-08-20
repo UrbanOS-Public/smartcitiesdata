@@ -1,6 +1,5 @@
 defmodule Valkyrie.DatasetSupervisorTest do
   use ExUnit.Case
-  import Mock
 
   alias Valkyrie.DatasetSupervisor
   alias SmartCity.TestDataGenerator, as: TDG
@@ -19,25 +18,31 @@ defmodule Valkyrie.DatasetSupervisorTest do
     end
 
     test "should start dataset process", %{start_options: start_options} do
-      with_mock(DynamicSupervisor, 
-        start_child: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") end
-      ) do
-        DatasetSupervisor.ensure_started(start_options)
+      :meck.new(DynamicSupervisor, [:passthrough])
+      :meck.expect(DynamicSupervisor, :start_child, fn _, _ -> 
+        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") 
+      end)
+      
+      DatasetSupervisor.ensure_started(start_options)
 
-        assert_called DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options})
-      end
+      assert :meck.num_calls(DynamicSupervisor, :start_child, [Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}]) == 1
+      
+      :meck.unload(DynamicSupervisor)
     end
 
     test "should not restart a running dataset process", %{start_options: start_options} do
-      with_mock(DynamicSupervisor,
-        start_child: fn _, _ -> Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") end
-      ) do
-        {:ok, first_pid} = DatasetSupervisor.ensure_started(start_options)
+      :meck.new(DynamicSupervisor, [:passthrough])
+      :meck.expect(DynamicSupervisor, :start_child, fn _, _ -> 
+        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") 
+      end)
+      
+      {:ok, first_pid} = DatasetSupervisor.ensure_started(start_options)
 
-        assert {:ok, ^first_pid} = DatasetSupervisor.ensure_started(start_options)
+      assert {:ok, ^first_pid} = DatasetSupervisor.ensure_started(start_options)
 
-        assert_called_exactly(DynamicSupervisor.start_child(Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}), 1)
-      end
+      assert :meck.num_calls(DynamicSupervisor, :start_child, [Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}]) == 1
+      
+      :meck.unload(DynamicSupervisor)
     end
   end
 end

@@ -52,7 +52,6 @@ defmodule Valkyrie.MixProject do
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
       {:observer_cli, "~> 1.4"},
       {:off_broadway_kafka_pipeline, "~> 2.0.0"},
-      {:mock, "~> 0.3", only: [:dev, :test, :integration]},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:properties, in_umbrella: true},
       {:retry, "~> 0.15"},

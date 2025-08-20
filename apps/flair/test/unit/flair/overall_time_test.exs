@@ -1,5 +1,8 @@
 defmodule Flair.OverallTimeTest do
   use ExUnit.Case
+  
+  # Add timeout configuration for OTP 25 compatibility
+  @moduletag timeout: 5000
 
   alias SmartCity.Data
   alias SmartCity.Data.Timing
