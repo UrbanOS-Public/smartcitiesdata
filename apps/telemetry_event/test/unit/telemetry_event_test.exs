@@ -53,9 +53,7 @@ end
         event_type: "any_event_type"
       ]
 
-      # Call the. I will now focus on the original task, which is to fix the compilation error in the `reaper` app.
-
-I will start by reading the `reaper`'s `test.exs` config file.
+      # Call the function under test
       assert :ok = TelemetryEvent.add_event_metrics(metadata, [:test, :event])
       # Verify the event was captured with the correct data
       event = assert_event_captured([:test, :event])

@@ -38,7 +38,13 @@ defmodule TelemetryEvent.MyTestHelper do
 
   """
   def setup_telemetry_mock(_context) do
-    {:ok, _} = start_supervised(Mock)
+    # Handle case where Mock is already started globally
+    case start_supervised(Mock) do
+      {:ok, _} -> :ok
+      {:error, {{:already_started, _}, _}} -> :ok
+      {:error, {:already_started, _}} -> :ok
+    end
+    
     :ok = Mock.clear_events()
     :ok
   end
