@@ -19,7 +19,7 @@ defmodule E2E.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :bypass, :hackney, :httpoison]
     ]
   end
 
@@ -36,6 +36,7 @@ defmodule E2E.MixProject do
       {:flair, in_umbrella: true},
       {:discovery_streams, in_umbrella: true},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
+      {:bypass, "~> 2.0", only: [:test, :integration]},
       {:ranch, "~> 1.8", override: true},
       {:smart_city, "~> 5.4.0"},
       {:jason, "~> 1.2", override: true}

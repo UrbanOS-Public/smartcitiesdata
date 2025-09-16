@@ -109,6 +109,7 @@ defmodule AndiWeb.Router do
 
   scope "/", AndiWeb do
     get "/healthcheck", HealthCheckController, :index
+    get "/readiness", HealthCheckController, :readiness
   end
 
   scope "/", AndiWeb do

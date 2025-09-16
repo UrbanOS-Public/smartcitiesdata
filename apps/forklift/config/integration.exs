@@ -57,7 +57,8 @@ config :forklift, :brook,
       redix_args: redix_args,
       namespace: "forklift:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
 
 config :prestige, :session_opts,
   url: "http://#{host}:8080",

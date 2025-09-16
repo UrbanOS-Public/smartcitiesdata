@@ -1,7 +1,10 @@
 #!/bin/bash
 
 MIX_ENV=integration mix docker.start
-#MIX_ENV=integration mix test.integration --max-failures 1
+rm -f e2e.log
+MIX_ENV=integration mix test.integration --max-failures 50 | tee e2e.log
 
 # teardown
-#MIX_ENV=integration mix docker.kill
+MIX_ENV=integration mix docker.kill
+
+tail e2e.log

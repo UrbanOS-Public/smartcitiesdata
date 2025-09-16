@@ -8,8 +8,8 @@ I am also replacing the Placebo component in unit tests with Mox. Please help me
 
 ## Pending Tasks
 
-- The apps/flair unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
-- Run the unit tests by first executing "cd apps/flair" and then "mix test" and fix any failures.
+- The apps/forklift unit tests are failing. Please revise the tests to work without placebo, use mox instead and restore the unit tests to a passing state.
+- Run the unit tests by first executing "cd apps/forklift" and then "mix test" and fix any failures.
 - Categorize the remaining unit test failures in apps/reaper and group them together for later resolution.
 - Analyze the changes staged for commit, summarize them into four sentences or less suitable as a git commit message.
 - Please read otp25_migrate_notes.txt file to refresh your context for this project.

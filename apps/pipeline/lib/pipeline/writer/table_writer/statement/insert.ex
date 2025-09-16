@@ -49,7 +49,7 @@ defmodule Pipeline.Writer.TableWriter.Statement.Insert do
 
   defp format_data(value, %{type: type}) when type in ["string", "json"] do
     value
-    |> to_string()
+    |> safe_to_string()
     |> escape_quote()
     |> wrap_with_quote()
   end
@@ -117,6 +117,9 @@ defmodule Pipeline.Writer.TableWriter.Statement.Insert do
     |> Enum.join(",")
     |> wrap_with_array()
   end
+
+  defp safe_to_string(value) when is_map(value), do: Jason.encode!(value)
+  defp safe_to_string(value), do: to_string(value)
 
   defp escape_quote(value), do: String.replace(value, "'", "''")
 

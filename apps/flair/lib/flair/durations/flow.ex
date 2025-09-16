@@ -27,11 +27,21 @@ defmodule Flair.Durations.Flow do
     |> Flow.from_specs()
     |> Flow.map(&get_message/1)
     |> Flow.map(&OverallTime.add/1)
-    |> Flow.each(&log_message/1)
+    |> Flow.map(fn message ->
+      log_message(message)
+      message
+    end)
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
-    |> Flow.map(&Durations.calculate_durations/1)
-    |> Flow.each(&log_profile/1)
+    |> Flow.on_trigger(fn acc, _partition_info, _trigger ->
+      result = acc
+      |> Enum.map(fn {dataset_id, timing_list} ->
+        profile = Durations.calculate_durations({dataset_id, timing_list})
+        log_profile(profile)
+        profile
+      end)
+      {result, %{}}
+    end)
     |> Flow.into_specs(consumer_spec)
   end
 

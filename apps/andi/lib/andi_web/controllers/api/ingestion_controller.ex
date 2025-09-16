@@ -81,7 +81,7 @@ defmodule AndiWeb.API.IngestionController do
     statuses
     |> Enum.filter(fn status -> is_map(status) end)
     |> Enum.dedup()
-    |> Enum.map(fn {code, msg} -> msg end)
+    |> Enum.map(fn {_code, msg} -> msg end)
     |> Enum.join(", ")
   end
 
@@ -122,10 +122,11 @@ defmodule AndiWeb.API.IngestionController do
   Return all ingestions stored in redis
   """
   def get_all(conn, _params) do
-    case IngestionStore.get_all() do
-      {:ok, ingestions} ->
-        respond(conn, :ok, ingestions)
-
+    try do
+      # IngestionStore.get_all() returns values directly, not {:ok, _} tuples
+      ingestions = IngestionStore.get_all()
+      respond(conn, :ok, ingestions)
+    rescue
       error ->
         Logger.error("Failed to retrieve ingestions: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")

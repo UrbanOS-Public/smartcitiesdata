@@ -51,4 +51,5 @@ config :valkyrie, :brook,
       redix_args: redix_args,
       namespace: "valkyrie:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop

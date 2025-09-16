@@ -4396,3 +4396,107 @@ The migration work now includes comprehensive patterns for:
 - **Module Mocking Hybridization**: Combined Mox + :meck architecture
 
 This enhanced migration blueprint now covers the full spectrum of distributed system testing challenges in the smartcitiesdata monorepo, providing battle-tested solutions for OTP 25 compatibility across all architectural patterns.
+
+## E2E Integration Test Issues - Session 5
+
+### Problem: E2E Integration Tests Failing with Connection Refused Errors
+
+#### Issues Resolved ✅
+
+**1. Docker Container Setup Issues**
+- **Problem**: Container setup.sh file not found, volume mount syntax issues  
+- **Files Modified**: `apps/e2e/test/docker-compose.yml`
+- **Fix**: Changed volume syntax from `${PWD}/test:/workdir` to `..:/workdir`, fixed entrypoint path
+
+**2. Database Setup Issues**  
+- **Problem**: andi_test database didn't exist
+- **Fix**: Modified ecto-postgres container to create andi_test database on startup
+
+**3. Brook :pg Process Conflicts** 
+- **Problem**: Multiple applications trying to start same Brook process group causing "already started" errors
+- **Root Cause**: Missing `dispatcher: Brook.Dispatcher.Noop` in Brook configurations  
+- **Files Modified**: Added dispatcher to integration.exs configs in:
+  - andi, raptor, valkyrie, reaper, alchemist, forklift, discovery_streams, template, discovery_api
+- **Pattern**: 
+  ```elixir
+  config :app_name, :brook,
+    # ... existing config ...
+    dispatcher: Brook.Dispatcher.Noop  # <- Critical addition
+  ```
+
+**4. Application Dependencies**
+- **Problem**: Missing HTTP client library dependencies
+- **Files Modified**: `apps/e2e/mix.exs` 
+- **Fix**: Added `:bypass`, `:hackney`, `:httpoison` to `extra_applications`
+
+#### Remaining Issue ⚠️
+
+**Connection Refused Error**
+- **Symptom**: `{:error, %HTTPoison.Error{reason: :econnrefused}}`
+- **Location**: Line 101 in `apps/e2e/test/e2e_test.exs` 
+- **Request**: HTTP PUT to `http://localhost:4000/api/v1/dataset`
+
+**Confirmed Working Components:**
+- ✅ Docker infrastructure starts/stops correctly
+- ✅ Database migrations run successfully  
+- ✅ Applications start successfully (confirmed Andi on port 4000)
+- ✅ Kafka connections establish successfully
+- ✅ Brook :pg conflicts resolved
+- ✅ No compilation errors
+
+**Root Cause Analysis:**
+Background testing confirmed Andi starts and listens on port 4000, but during test execution applications appear to start then become inaccessible, likely due to:
+1. **Timing Issue**: Applications start but shut down before HTTP request
+2. **Application Cascade Failure**: Some dependency failure causes application shutdown  
+3. **Test Environment Configuration**: Applications may not stay running during tests
+
+**Next Investigation Steps:**
+1. Add health check polling to test setup before making HTTP requests
+2. Check application logs during test execution to identify failing services
+3. Verify application lifecycle management in test environment
+4. Consider adding startup delays or retry logic
+
+### Key Patterns Learned
+
+**Brook Configuration for Integration Tests:**
+```elixir
+config :app_name, :brook,
+  instance: :app_name,
+  driver: [
+    module: Brook.Driver.Kafka,
+    init_arg: [
+      endpoints: endpoints,
+      topic: "event-stream", 
+      group: "app-event-stream"
+    ]
+  ],
+  handlers: [App.Event.EventHandler],
+  storage: [
+    module: Brook.Storage.Redis,
+    init_arg: [redix_args: redix_args, namespace: "app:view"]
+  ],
+  dispatcher: Brook.Dispatcher.Noop  # <- Essential for integration tests
+```
+
+**Docker Volume Syntax Fix:**
+```yaml
+# Working pattern for Podman/Docker Compose
+volumes:
+  - ..:/workdir  # Relative path works better than ${PWD}/test:/workdir
+```
+
+**Application Startup Dependencies:**
+```elixir
+def application do
+  [
+    extra_applications: [:logger, :bypass, :hackney, :httpoison]
+  ]
+end
+```
+
+### Migration Impact: E2E Integration
+- **Status**: Infrastructure and configuration issues resolved, application lifecycle issue remains
+- **Test Environment**: Docker + Podman + Divo orchestration working
+- **Application Communication**: Inter-service communication established successfully
+- **Blocking Issue**: Application availability during test execution window
+

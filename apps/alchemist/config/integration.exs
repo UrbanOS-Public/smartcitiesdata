@@ -51,4 +51,5 @@ config :alchemist, :brook,
       redix_args: redix_args,
       namespace: "alchemist:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop

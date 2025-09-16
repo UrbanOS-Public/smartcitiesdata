@@ -21,7 +21,8 @@ config :andi, :brook,
   storage: [
     module: Brook.Storage.Ets,
     init_arg: []
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
 
 config :andi,
   dead_letter_topic: "dead-letters",

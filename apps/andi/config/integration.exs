@@ -76,7 +76,8 @@ config :andi, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "andi:view"]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
 
 config :andi, :auth0,
   url: "https://urbanos-dev.us.auth0.com/oauth/token",

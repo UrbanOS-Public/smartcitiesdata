@@ -5,3 +5,6 @@ rm -rf /minio/trino-hive-storage || true
 mkdir /minio/trino-hive-storage
 echo "Setup complete"
 ls minio
+
+uptime                >> /minio/init.log
+echo "Setup complete" >> /minio/init.log

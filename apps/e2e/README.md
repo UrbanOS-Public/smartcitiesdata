@@ -19,3 +19,16 @@ they're written. --max-failures can be removed but it's recommended to be left i
 to find a specific point of failure.
 
 At time of writing, containers need to be destroyed in between test attempts.
+
+## Containers E2E should start with a clean state
+
+  - [ ] init
+  - [X] metastore
+  - [X] postgres
+  - [X] ecto-postgres
+  - [X] minio
+  - [X] presto
+  - [X] zookeeper
+  - [X] kafka
+  - [X] redis
+  - [X] elasticsearch

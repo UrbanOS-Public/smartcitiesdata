@@ -66,9 +66,26 @@ defmodule E2ETest do
   }
 
   setup_all do
+    # Wait for database container to be ready before creating database
+    eventually(
+      fn ->
+        case :gen_tcp.connect('localhost', 5456, []) do
+          {:ok, socket} ->
+            :gen_tcp.close(socket)
+            :ok
+          {:error, _} -> :retry
+        end
+      end,
+      1000,  # Check every second
+      60     # Wait up to 60 seconds
+    )
+
     Mix.Tasks.Ecto.Create.run([])
     Mix.Tasks.Ecto.Migrate.run([])
 
+    {:ok, _} = Application.ensure_all_started(:bypass)
+    {:ok, _} = Application.ensure_all_started(:hackney)
+    {:ok, _} = Application.ensure_all_started(:httpoison)
     bypass = Bypass.open()
     shapefile = File.read!("test/support/shapefile.zip")
 
@@ -138,6 +155,17 @@ defmodule E2ETest do
 
     first_streaming_dataset = Jason.decode!(first_streaming_dataset_body)
     second_streaming_dataset = Jason.decode!(second_streaming_dataset_body)
+
+    # Wait for Andi to be fully ready before making API calls
+    eventually(
+      fn ->
+        {:ok, resp} = HTTPoison.get("http://localhost:4000/readiness")
+        readiness_data = Jason.decode!(resp.body)
+        assert readiness_data["status"] == "ready"
+      end,
+      2000,  # Check every 2 seconds
+      30     # Wait up to 60 seconds
+    )
 
     eventually(
       fn ->
@@ -250,7 +278,10 @@ defmodule E2ETest do
     eventually(
       fn ->
         resp = HTTPoison.get!("http://localhost:4000/api/v1/ingestions")
-        assert length(Jason.decode!(resp.body)) == 2
+        body = Jason.decode!(resp.body)
+        # Ensure we got a list, not an error string
+        assert is_list(body), "Expected list but got: #{inspect(body)}"
+        assert length(body) == 2
       end,
       500,
       20
@@ -350,7 +381,6 @@ defmodule E2ETest do
   # This series of tests should be extended as more apps are added to the umbrella.
   describe "ingested data" do
     test "is written by reaper", %{ingestion: ingestion} do
-      stub_with(Reaper.Cache, {:cache, fn _, _ -> Process.sleep(30000) end})
       topic = "#{Application.get_env(:reaper, :output_topic_prefix)}-#{ingestion["id"]}"
 
       eventually(fn ->
@@ -596,6 +626,18 @@ defmodule E2ETest do
       first_streaming_dataset: first_dataset,
       second_streaming_dataset: second_dataset
     } do
+      # Mock the dependencies for channel authorization
+      Application.put_env(:discovery_streams, :brook_view_state, BrookViewStateMock)
+      Application.put_env(:discovery_streams, :raptor_service, RaptorServiceMock)
+
+      # Set up mocks to allow channel joins
+      Mox.stub(BrookViewStateMock, :get, fn _, _, _ -> {:ok, "some-dataset-id"} end)
+      Mox.stub(RaptorServiceMock, :is_authorized, fn _, _, _ -> true end)
+
+      # Start PubSub registry and endpoint for channel testing
+      start_supervised!({Phoenix.PubSub, [name: DiscoveryStreams.PubSub, adapter: Phoenix.PubSub.PG2]})
+      start_supervised!(DiscoveryStreamsWeb.Endpoint)
+
       {:ok, _, _} =
         socket(DiscoveryStreamsWeb.UserSocket, "kenny", %{})
         |> subscribe_and_join(

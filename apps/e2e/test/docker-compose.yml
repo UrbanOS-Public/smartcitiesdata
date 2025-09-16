@@ -5,9 +5,9 @@ services:
     image: alpine:3.16.0
     platform: linux/amd64
     volumes:
-      - ${PWD}/test:/workdir
+      - ..:/workdir
       - minio:/minio
-    entrypoint: /workdir/setup.sh
+    entrypoint: /workdir/test/setup.sh
   metastore:
     image: quay.io/urbanos/ubi-hive:3.1.3-metastore-060-hadoop-3.3.6
     depends_on:
@@ -28,6 +28,12 @@ services:
       POSTGRES_SQL_SERVICE_HOST: postgres
       POSTGRES_SQL_SERVICE_PORT: 5432
       DATABASE_NAME: metastore
+    # healthcheck:
+    #   test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/localhost/8000' && echo 'Port 8000 is open' || exit 1"]
+    #   interval: 30s
+    #   timeout: 30s
+    #   retries: 10
+    #   start_period: 60s
   postgres:
     image: smartcitiesdata/postgres-testo:0.9.12
     platform: linux/amd64
@@ -42,6 +48,13 @@ services:
       POSTGRES_DB: discovery_api_test
     ports:
       - "5456:5432"
+    command: >
+      bash -c "
+        docker-entrypoint.sh postgres &
+        sleep 5 &&
+        PGPASSWORD=postgres createdb -h localhost -U postgres andi_test &&
+        wait
+      "
   minio:
     image: minio/minio:RELEASE.2022-10-15T19-57-03Z.fips
     platform: linux/amd64
@@ -53,6 +66,11 @@ services:
     - "9001:9001"
     depends_on:
       - init
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
   presto:
     depends_on:
     - metastore
@@ -66,7 +84,8 @@ services:
       timeout: 30s
       retries: 10
     volumes:
-      - ${PWD}/test/hive.properties:/etc/trino/catalog/hive.properties
+      - ./:/opt/test:ro
+    entrypoint: ["/opt/test/init-trino.sh"]
   zookeeper:
     image: zookeeper:3.4.13
     platform: linux/amd64

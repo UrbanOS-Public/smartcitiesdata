@@ -37,4 +37,5 @@ config :template, :brook,
   storage: [
     module: Brook.Storage.Redis,
     init_arg: [redix_args: redix_args, namespace: "template:view"]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop

@@ -2,7 +2,7 @@ import Config
 
 config :e2e,
   divo: "test/docker-compose.yml",
-  divo_wait: [dwell: 1_000, max_tries: 120],
+  divo_wait: [dwell: 1_000, max_tries: 300],
   elsa_brokers: [{:localhost, 9092}],
   ecto_repos: [Andi.Repo]
 

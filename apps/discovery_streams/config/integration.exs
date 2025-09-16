@@ -38,6 +38,7 @@ config :discovery_streams, :brook,
       redix_args: [host: host],
       namespace: "discovery_streams:view"
     ]
-  ]
+  ],
+  dispatcher: Brook.Dispatcher.Noop
 
 config :phoenix, serve_endpoints: true
