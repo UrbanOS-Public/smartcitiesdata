@@ -15,7 +15,6 @@ defmodule Forklift.Test.BrookSendBehaviour do
   @callback send(any, any, any, any) :: :ok
 end
 
-
 defmodule Forklift.Test.DataWriterBehaviour do
   @callback init(any) :: :ok
 end
