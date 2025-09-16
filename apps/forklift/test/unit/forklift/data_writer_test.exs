@@ -88,7 +88,7 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    stub(MockDateTime, :utc_now, fn -> dateTime end)
+    stub(ForkliftMockDateTime, :utc_now, fn -> dateTime end)
 
     stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
     stub(MockBrook, :handle_event, fn _ -> :ok end)
@@ -100,6 +100,9 @@ defmodule Forklift.DataWriterTest do
     stub(MockTable, :write, fn _data, _params ->
       :ok
     end)
+
+    # Mock the reader initialization that happens during DataWriter.write
+    stub(MockReader, :init, fn _ -> :ok end)
 
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
@@ -146,7 +149,7 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    stub(MockDateTime, :utc_now, fn -> dateTime end)
+    stub(ForkliftMockDateTime, :utc_now, fn -> dateTime end)
 
     stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
     stub(MockBrook, :handle_event, fn _ -> :ok end)
@@ -158,6 +161,9 @@ defmodule Forklift.DataWriterTest do
     stub(MockTable, :write, fn _data, _params ->
       :ok
     end)
+
+    # Mock the reader initialization that happens during DataWriter.write
+    stub(MockReader, :init, fn _ -> :ok end)
 
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
@@ -727,7 +733,7 @@ defmodule Forklift.DataWriterTest do
 
     dateTime = ~U[2023-01-01 00:00:00Z]
 
-    stub(MockDateTime, :utc_now, fn -> dateTime end)
+    stub(ForkliftMockDateTime, :utc_now, fn -> dateTime end)
 
     stub(MockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
     stub(MockBrook, :handle_event, fn _ -> :ok end)

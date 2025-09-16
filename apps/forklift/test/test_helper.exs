@@ -15,7 +15,7 @@ Mox.defmock(TelemetryEventMock, for: Forklift.Test.TelemetryEventBehaviour)
 Mox.defmock(MockRedix, for: Forklift.Test.RedixBehaviour)
 # Additional mocks needed by specific test files
 Mox.defmock(MockBrook, for: Brook.Event.Handler)
-Mox.defmock(MockDateTime, for: Forklift.Test.DateTimeBehaviour)
+Mox.defmock(ForkliftMockDateTime, for: Forklift.Test.DateTimeBehaviour)
 Mox.defmock(MockDataMigration, for: Forklift.Test.DataMigrationBehaviour)
 Mox.defmock(MockPrestigeHelper, for: Forklift.Test.PrestigeHelperBehaviour)
 # Create a behavior for Prestige and its mock
