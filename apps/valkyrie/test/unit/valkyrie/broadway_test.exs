@@ -1,6 +1,6 @@
 defmodule Valkyrie.BroadwayTest do
   use ExUnit.Case
-  Code.require_file "/home/rseward/src/github/urbanos/smartcitiesdata/apps/dead_letter/test/unit/test_helper.exs"
+  Code.require_file "../../apps/dead_letter/test/unit/test_helper.exs"
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
