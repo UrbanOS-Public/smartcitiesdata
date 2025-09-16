@@ -8,10 +8,9 @@ defmodule Forklift.Jobs.DataMigrationTest do
   alias Forklift.Jobs.JobUtils
   import Helper
 
-      import Mox
+  import Mox
 
   Mox.defmock(PrestigeHelperMock, for: Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
-
 
   import SmartCity.Event,
     only: [

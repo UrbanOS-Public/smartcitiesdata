@@ -2,5 +2,5 @@
 [
   inputs: ["mix.exs", "{config,lib,test}/**/*.{ex,exs}"],
   line_length: 140,
-  import_deps: [:placebo, :phoenix]
+  import_deps: [:phoenix]
 ]

@@ -18,22 +18,24 @@ defmodule Forklift.MessageHandlingTest do
     Application.put_env(:forklift, :retry_count, 6)
     Application.put_env(:forklift, :retry_initial_delay, 10)
     Application.put_env(:forklift, :retry_max_wait, 100)
-    
+
     # Setup test environment
     Brook.Test.register(@instance_name)
-    
+
     :ok
   end
 
   test "retries to persist to Presto if failing" do
     test = self()
-    
+
     # Set up mocks
     expect(MockTopic, :write, fn _, _ -> :ok end)
+
     expect(MockTable, :write, 5, fn _, _ ->
       send(test, :retry)
       :error
     end)
+
     expect(MockTable, :write, 1, fn _, args ->
       send(test, args[:table])
       :ok
@@ -51,18 +53,18 @@ defmodule Forklift.MessageHandlingTest do
     # Verify behavior
     assert_receive :retry
     assert_receive ^table_name, 2_000
-    
+
     # Verify a data_write_complete event was sent
-    assert_event_sent(data_write_complete(), fn event -> 
+    assert_event_sent(data_write_complete(), fn event ->
       event.id == dataset.id
     end)
-    
+
     wait_for_mox()
   end
 
   test "writes message to topic with timing data" do
     test = self()
-    
+
     # Set up mocks
     expect(MockTable, :write, fn _, _ -> :ok end)
     expect(MockTopic, :write, fn msg, _ -> send(test, msg) end)
@@ -81,12 +83,12 @@ defmodule Forklift.MessageHandlingTest do
     assert Enum.count(timing) == 2
     assert Enum.any?(timing, fn time -> time["label"] == "presto_insert_time" end)
     assert Enum.any?(timing, fn time -> time["label"] == "total_time" end)
-    
+
     # Verify a data_write_complete event was sent
-    assert_event_sent(data_write_complete(), fn event -> 
+    assert_event_sent(data_write_complete(), fn event ->
       event.id == dataset.id
     end)
-    
+
     wait_for_mox()
   end
 
@@ -94,7 +96,7 @@ defmodule Forklift.MessageHandlingTest do
     # Set up mocks
     expect(MockTable, :write, 2, fn _, _ -> :ok end)
     expect(MockTopic, :write, fn _, _ -> :ok end)
-    
+
     # Create test data
     dataset = TDG.create_dataset(%{})
     datum1 = TDG.create_data(%{dataset_id: dataset.id, payload: %{"foo" => "bar"}})
@@ -108,11 +110,11 @@ defmodule Forklift.MessageHandlingTest do
     Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
 
     # Verify a data_write_complete event was sent with a timestamp after now
-    assert_event_sent(data_write_complete(), fn event -> 
-      event.id == dataset.id && 
-      timestamp_after?(event.timestamp, now)
+    assert_event_sent(data_write_complete(), fn event ->
+      event.id == dataset.id &&
+        timestamp_after?(event.timestamp, now)
     end)
-    
+
     wait_for_mox()
   end
 
@@ -149,9 +151,9 @@ defmodule Forklift.MessageHandlingTest do
 
     # Verify no exception is raised despite topic writer failing
     assert {:ack, _} = Forklift.MessageHandler.handle_messages([message1, message2], %{dataset: dataset})
-    
+
     # Verify a data_write_complete event was sent
-    assert_event_sent(data_write_complete(), fn event -> 
+    assert_event_sent(data_write_complete(), fn event ->
       event.id == dataset.id
     end)
   end
@@ -159,9 +161,9 @@ defmodule Forklift.MessageHandlingTest do
   test "should return empty timing data when profiling is set to false" do
     # Disable profiling for this test
     Application.put_env(:forklift, :profiling_enabled, false)
-    
+
     test = self()
-    
+
     # Set up mocks
     expect(MockTable, :write, fn _, _ -> :ok end)
     expect(MockTopic, :write, fn msg, _ -> send(test, msg) end)
@@ -177,12 +179,12 @@ defmodule Forklift.MessageHandlingTest do
     # Verify behavior
     assert_receive [{"key_two", msg}]
     assert [] == Jason.decode!(msg)["operational"]["timing"]
-    
+
     # Verify a data_write_complete event was sent
-    assert_event_sent(data_write_complete(), fn event -> 
+    assert_event_sent(data_write_complete(), fn event ->
       event.id == dataset.id
     end)
-    
+
     wait_for_mox()
   end
 
@@ -196,7 +198,7 @@ defmodule Forklift.MessageHandlingTest do
       end
     end)
   end
-  
+
   defp assert_event_sent(event_type, event_validator) do
     SmartCity.TestHelper.eventually(fn ->
       # The Brook.Test API seems to have changed
@@ -209,7 +211,7 @@ defmodule Forklift.MessageHandlingTest do
       end)
     end)
   end
-  
+
   defp timestamp_after?(timestamp_str, %DateTime{} = reference_time) do
     case DateTime.from_iso8601(timestamp_str) do
       {:ok, timestamp, _} -> DateTime.compare(timestamp, reference_time) == :gt

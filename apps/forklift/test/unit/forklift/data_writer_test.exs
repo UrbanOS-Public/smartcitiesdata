@@ -11,8 +11,8 @@ defmodule Forklift.DataWriterTest do
 
   import Mox
   setup :verify_on_exit!
- 
-   getter(:elsa_brokers, generic: true)
+
+  getter(:elsa_brokers, generic: true)
   getter(:input_topic_prefix, generic: true)
   getter(:table_writer, generic: true)
 
@@ -110,7 +110,7 @@ defmodule Forklift.DataWriterTest do
       dataset_id: dataset.id
     }
 
-    call_count = :atomics.new(1, [signed: false])
+    call_count = :atomics.new(1, signed: false)
 
     stub(MockBrook, :handle_event, fn _ ->
       :atomics.add(call_count, 1, 1)
@@ -1321,7 +1321,7 @@ defmodule Forklift.DataWriterTest do
 
     fake_data = [TDG.create_data(%{}), TDG.create_data(%{})]
 
-    call_count = :atomics.new(1, [signed: false])
+    call_count = :atomics.new(1, signed: false)
 
     stub(MockDataMigration, :compact, fn _, _, _ ->
       :atomics.add(call_count, 1, 1)

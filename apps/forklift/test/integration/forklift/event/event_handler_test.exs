@@ -1,6 +1,6 @@
 defmodule Forklift.Event.EventHandlerTest do
   use ExUnit.Case
-    import Mox
+  import Mox
   use Properties, otp_app: :forklift
 
   Mox.defmock(DatasetsMock, for: Forklift.Datasets)

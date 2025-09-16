@@ -1,7 +1,7 @@
 defmodule Forklift.MessageHandlerTest do
   use ExUnit.Case
-  
-  Code.require_file "../../test_helper.exs", __DIR__
+
+  Code.require_file("../../test_helper.exs", __DIR__)
 
   alias SmartCity.TestDataGenerator, as: TDG
   alias Forklift.MessageHandler
@@ -12,10 +12,10 @@ defmodule Forklift.MessageHandlerTest do
   setup do
     # Setup test environment
     Brook.Test.register(@instance_name)
-    
+
     # Note: DeadLetter.Carrier.Test.clear() not available in current implementation
     # DeadLetter.Carrier.Test.clear()
-    
+
     :ok
   end
 

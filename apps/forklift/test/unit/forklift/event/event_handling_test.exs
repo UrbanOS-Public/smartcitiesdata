@@ -2,7 +2,7 @@ defmodule Forklift.Event.EventHandlingTest do
   use ExUnit.Case
   import Mox
 
-  Code.require_file "../../test_helper.exs", __DIR__
+  Code.require_file("../../test_helper.exs", __DIR__)
 
   import SmartCity.Event,
     only: [
@@ -64,7 +64,7 @@ defmodule Forklift.Event.EventHandlingTest do
       TelemetryEventMock |> stub(:add_event_metrics, fn _, _ -> :ok end)
       DataWriterMock |> stub(:init, fn _ -> :ok end)
       PrestigeHelperMock |> stub(:table_exists?, fn _ -> true end)
-      
+
       dataset = TDG.create_dataset(%{})
       _table_name = dataset.technical.systemName
       _schema = dataset.technical.schema |> Forklift.DataWriter.add_ingestion_metadata_to_schema()
@@ -95,6 +95,7 @@ defmodule Forklift.Event.EventHandlingTest do
       test = self()
 
       BrookEventMock |> expect(:send, 3, fn _, _, _, _ -> :ok end)
+
       MockReader
       |> expect(:init, fn args ->
         send(test, Keyword.get(args, :dataset))
@@ -129,7 +130,9 @@ defmodule Forklift.Event.EventHandlingTest do
       test = self()
 
       BrookEventMock |> expect(:send, fn _, _, _, _ -> :ok end)
-      MockReader |> expect(:terminate, fn args ->
+
+      MockReader
+      |> expect(:terminate, fn args ->
         send(test, args[:dataset])
         :ok
       end)

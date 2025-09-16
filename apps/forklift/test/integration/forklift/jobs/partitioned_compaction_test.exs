@@ -4,12 +4,11 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
   alias Pipeline.Writer.TableWriter.Helper.PrestigeHelper
   alias Forklift.Jobs.PartitionedCompaction
   import Helper
-      import Mox
+  import Mox
 
   Mox.defmock(QuantumSchedulerMock, for: Forklift.Quantum.Scheduler)
   Mox.defmock(DatasetsMock, for: Forklift.Datasets)
   Mox.defmock(PrestigeHelperMock, for: Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
-
 
   @instance_name Forklift.instance_name()
   @batch_size 2
@@ -21,7 +20,6 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     ]
 
   setup do
-    
     delete_all_datasets()
 
     datasets =
@@ -152,7 +150,13 @@ defmodule Forklift.Jobs.PartitionedCompactionTest do
     error_dataset_compact_table =
       PartitionedCompaction.compact_table_name(error_dataset.technical.systemName, current_partition)
 
-    stub(PrestigeHelperMock, :execute_query, fn "insert into #{error_dataset.technical.systemName} select * from #{error_dataset_compact_table}" -> {:ok, :false_positive} end)
+    stub(
+      PrestigeHelperMock,
+      :execute_query,
+      fn "insert into #{error_dataset.technical.systemName} select * from #{error_dataset_compact_table}" ->
+        {:ok, :false_positive}
+      end
+    )
 
     compaction_results = PartitionedCompaction.run()
 
