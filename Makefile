@@ -11,7 +11,6 @@ compile:
 	mix compile
 
 lint:
-	#cd apps/forklift; mix format
-	./scripts/gh-action-static-checks.sh forklift
+	./scripts/rtd-lint.sh forklift
 
 
