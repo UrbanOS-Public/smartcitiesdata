@@ -31,9 +31,15 @@ defmodule Forklift.DataWriterTest do
 
     # Start a test Redis process to handle Redix.command!(:redix, ...) calls
     case start_supervised({Redix, name: :redix, host: "localhost", port: 6379, database: 15}) do
-      {:ok, _} -> :ok
-      {:error, {{:already_started, _}, _}} -> :ok
-      {:error, {:already_started, _}} -> :ok
+      {:ok, _} ->
+        :ok
+
+      {:error, {{:already_started, _}, _}} ->
+        :ok
+
+      {:error, {:already_started, _}} ->
+        :ok
+
       {:error, _} ->
         # If Redis is not available, start a mock GenServer that responds to Redix calls
         {:ok, agent} = Agent.start_link(fn -> %{} end, name: :test_redis_agent)
@@ -159,7 +165,6 @@ defmodule Forklift.DataWriterTest do
       :ok
     end)
 
-
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
       timestamp: dateTime |> DateTime.to_string(),
@@ -201,11 +206,12 @@ defmodule Forklift.DataWriterTest do
 
     stub(DateTimeMock, :utc_now, fn -> dateTime end)
 
-
     # Set up the expected Redis key for this test
     redis_key = "#{ingestion_id}#{extract_start}"
+
     case Process.whereis(:redix) do
-      nil -> :ok  # Redis not available, will fail anyway
+      # Redis not available, will fail anyway
+      nil -> :ok
       _pid -> Redix.command!(:redix, ["SET", redis_key, "1"])
     end
 
@@ -214,7 +220,6 @@ defmodule Forklift.DataWriterTest do
     stub(MockTable, :write, fn _data, _params ->
       :ok
     end)
-
 
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
@@ -781,11 +786,12 @@ defmodule Forklift.DataWriterTest do
 
     stub(DateTimeMock, :utc_now, fn -> dateTime end)
 
-
     # Set up the expected Redis key for this test
     redis_key = "#{ingestion_id}#{extract_start}"
+
     case Process.whereis(:redix) do
-      nil -> :ok  # Redis not available, will fail anyway
+      # Redis not available, will fail anyway
+      nil -> :ok
       _pid -> Redix.command!(:redix, ["SET", redis_key, "2"])
     end
 
@@ -1413,8 +1419,10 @@ defmodule Forklift.DataWriterTest do
 
     # Set up the expected Redis key for this test
     redis_key = "#{ingestion_id}#{extract_start}"
+
     case Process.whereis(:redix) do
-      nil -> :ok  # Redis not available, will fail anyway
+      # Redis not available, will fail anyway
+      nil -> :ok
       _pid -> Redix.command!(:redix, ["SET", redis_key, "1"])
     end
 
