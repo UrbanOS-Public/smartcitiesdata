@@ -29,6 +29,17 @@ jobs:
           otp-version: 24.3 # 21.3.8.24
           # version-type: strict
           elixir-version: 1.14 # 1.10.4
+      - name: Cache Hex packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.hex
+            ~/.mix
+            _build
+            deps
+          key: ${{ runner.os }}-elixir-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-elixir-
       - name: Get dependencies
         run: |
           bash scripts/gh-action-get-deps.sh
