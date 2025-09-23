@@ -19,8 +19,26 @@ defmodule Forklift.InitServer do
   end
 
   def handle_info({:DOWN, _, _, pid, _}, %{pipeline: pid}) do
+    # Wait for supervisor to restart, then re-monitor and re-initialize
+    wait_for_supervisor_restart()
     :ok = init_readers()
-    {:noreply, %{pipeline: Process.whereis(Pipeline.DynamicSupervisor)}}
+    new_pid = Process.whereis(Pipeline.DynamicSupervisor)
+    if new_pid, do: Process.monitor(new_pid)
+    {:noreply, %{pipeline: new_pid}}
+  end
+
+  defp wait_for_supervisor_restart(retries \\ 50) do
+    case Process.whereis(Pipeline.DynamicSupervisor) do
+      nil when retries > 0 ->
+        Process.sleep(10)
+        wait_for_supervisor_restart(retries - 1)
+
+      nil ->
+        :supervisor_restart_timeout
+
+      _pid ->
+        :ok
+    end
   end
 
   defp init_readers do

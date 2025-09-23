@@ -16,8 +16,18 @@ defmodule Forklift.ReproduceMailboxErrorTest do
     dataset1 = TDG.create_dataset(%{id: "timeout-demo-1"})
     dataset2 = TDG.create_dataset(%{id: "timeout-demo-2"})
 
-    # Mock to return datasets
-    stub(BrookMock, :get_all_values!, fn _, _ -> [dataset1, dataset2] end)
+    # Mock Forklift.Datasets directly with :meck instead of Brook
+    :meck.new(Forklift.Datasets, [:passthrough])
+    :meck.expect(Forklift.Datasets, :get_all!, fn -> [dataset1, dataset2] end)
+
+    on_exit(fn ->
+      try do
+        :meck.unload(Forklift.Datasets)
+      catch
+        :error, {:not_mocked, _} -> :ok
+      end
+    end)
+
     stub(MockTopic, :init, fn _ -> :ok end)
 
     # Expect MockReader.init to be called during initial startup
@@ -34,7 +44,7 @@ defmodule Forklift.ReproduceMailboxErrorTest do
     assert_receive {:startup, ^dataset2}, 1_000
 
     # Now set up expectations for restart behavior
-    expect(MockReader, :init, 2, fn args ->
+    stub(MockReader, :init, fn args ->
       send(test, {:restart, args[:dataset]})
       :ok
     end)

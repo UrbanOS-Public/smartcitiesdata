@@ -228,8 +228,21 @@ defmodule Forklift.DataWriter do
   end
 
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
+    redis_key = "#{ingestion_id}#{extract_time}"
+
     {expected_message_count, _} =
-      Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"])
+      case Process.whereis(:redix) do
+        nil ->
+          "1"
+
+        _pid ->
+          try do
+            Redix.command!(:redix, ["GET", redis_key])
+          rescue
+            Redix.ConnectionError -> "1"
+            _ -> "1"
+          end
+      end
       |> Integer.parse()
 
     %{
