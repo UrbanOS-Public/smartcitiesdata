@@ -4,11 +4,13 @@ defmodule Smartcitiesdata.MixProject do
   def project do
     [
       apps_path: "apps",
+      version: "1.0.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
       docs: docs(),
-      description: description()
+      description: description(),
+      releases: releases()
     ]
   end
 
@@ -50,6 +52,16 @@ defmodule Smartcitiesdata.MixProject do
         "apps/discovery_streams/README.md",
         "apps/forklift/README.md",
         "apps/flair/README.md"
+      ]
+    ]
+  end
+
+  defp releases do
+    [
+      forklift: [
+        include_executables_for: [:unix],
+        applications: [forklift: :permanent, runtime_tools: :permanent],
+        steps: [:assemble, :tar]
       ]
     ]
   end

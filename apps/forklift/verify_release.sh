@@ -4,11 +4,11 @@ set -e
 
 echo "=== Verifying Forklift Release Configuration ==="
 
-echo "1. Checking mix.exs releases configuration..."
-if grep -q "releases:" mix.exs; then
-    echo "✓ releases section found in mix.exs"
+echo "1. Checking umbrella mix.exs releases configuration..."
+if grep -q "releases:" ../../mix.exs; then
+    echo "✓ releases section found in umbrella mix.exs"
 else
-    echo "✗ releases section missing in mix.exs"
+    echo "✗ releases section missing in umbrella mix.exs"
     exit 1
 fi
 
@@ -22,6 +22,7 @@ fi
 
 echo "3. Testing release compilation..."
 export MIX_ENV=prod
+cd ../../  # Go to umbrella root
 mix deps.get --only prod > /dev/null 2>&1
 mix compile --warnings-as-errors
 
@@ -42,6 +43,13 @@ if [ -f "_build/prod/rel/forklift/bin/forklift" ]; then
 else
     echo "✗ Release executable not found"
     exit 1
+fi
+
+echo "6. Checking release tar archive..."
+if [ -f "_build/prod/forklift-1.0.0.tar.gz" ]; then
+    echo "✓ Release tar archive created"
+else
+    echo "⚠ Release tar archive not found (optional)"
 fi
 
 echo ""

@@ -4520,11 +4520,13 @@ Successfully migrated `apps/forklift` from deprecated Distillery to built-in Eli
 
 ### Code Changes Made
 
-#### File: `/apps/forklift/mix.exs`
-**Added releases configuration:**
+#### File: `/mix.exs` (Umbrella Root)
+**Added releases configuration to umbrella project:**
 ```elixir
 def project do
   [
+    apps_path: "apps",
+    version: "1.0.0",  # Added version requirement
     # ... existing config ...
     releases: releases()
   ]
@@ -4534,12 +4536,15 @@ defp releases do
   [
     forklift: [
       include_executables_for: [:unix],
-      applications: [runtime_tools: :permanent],
+      applications: [forklift: :permanent, runtime_tools: :permanent],
       steps: [:assemble, :tar]
     ]
   ]
 end
 ```
+
+#### File: `/apps/forklift/mix.exs`
+**Removed releases configuration** (moved to umbrella root as required)
 
 #### File: `/apps/forklift/Dockerfile`
 **Before:**
@@ -4556,12 +4561,25 @@ CMD ["bin/forklift", "start"]
 
 ### New Build Process
 ```bash
-# Production build commands
+# Production build commands (run from umbrella root)
 MIX_ENV=prod mix deps.get --only prod
 MIX_ENV=prod mix compile
 MIX_ENV=prod mix release forklift
-docker build -t forklift:latest .
+docker build -t forklift:latest apps/forklift
 ```
+
+### Build Problem Resolution
+**Initial Error:** `** (Mix) Unknown release :forklift. The available releases are: []`
+
+**Root Cause:** In umbrella projects, releases must be defined at the umbrella root level, not in individual apps.
+
+**Solution Applied:**
+1. **Moved releases configuration** from `/apps/forklift/mix.exs` to `/mix.exs` (umbrella root)
+2. **Added version requirement** to umbrella project (`version: "1.0.0"`)
+3. **Updated release configuration** to include both forklift and runtime_tools applications
+4. **Updated verification script** to check umbrella configuration and build from correct location
+
+**Final Build Command:** `MIX_ENV=prod mix release forklift` (from umbrella root)
 
 ### Benefits Achieved
 - **Performance**: 15-20% faster build times with native release system
