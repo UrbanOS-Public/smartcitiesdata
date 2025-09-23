@@ -45,7 +45,9 @@ defmodule Forklift.Event.EventHandlingTest do
       TelemetryEventMock |> stub(:add_event_metrics, fn _, _ -> :ok end)
 
       # Add necessary mocks for dataset_update event handling
-      PrestigeHelperMock |> stub(:table_exists?, fn _ -> false end)
+      # Mock PrestigeHelper directly with :meck since PrestigeHelperMock doesn't define table_exists?
+      :meck.new(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, [:passthrough])
+      :meck.expect(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, :table_exists?, fn _ -> false end)
 
       # Mock the actual Forklift.DataWriter module instead of DataWriterMock
       :meck.new(Forklift.DataWriter, [:passthrough])
@@ -64,6 +66,7 @@ defmodule Forklift.Event.EventHandlingTest do
         try do
           :meck.unload(Forklift.Datasets)
           :meck.unload(Forklift.DataWriter)
+          :meck.unload(Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
         catch
           :error, {:not_mocked, _} -> :ok
         end

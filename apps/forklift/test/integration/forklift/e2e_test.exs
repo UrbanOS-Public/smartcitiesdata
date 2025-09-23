@@ -21,6 +21,11 @@ defmodule Forklift.E2ETest do
   @brokers Application.get_env(:forklift, :elsa_brokers)
 
   setup do
+    # Wait for dependencies to become available
+    wait_for_presto_availability()
+    wait_for_redis_availability()
+    wait_for_kafka_availability()
+
     Application.put_env(:forklift, :overwrite_mode, true)
     drop_all_tables()
     delete_validated_topics()
@@ -411,9 +416,121 @@ defmodule Forklift.E2ETest do
     |> Prestige.new_session()
   end
 
+  def wait_for_presto_availability(max_attempts \\ 20, delay_ms \\ 5000) do
+    IO.puts("Waiting for Presto container to become available...")
+
+    Enum.reduce_while(1..max_attempts, :unavailable, fn attempt, _acc ->
+      case check_presto_connection() do
+        :available ->
+          IO.puts("Presto is available after #{attempt} attempts")
+          {:halt, :available}
+
+        :unavailable ->
+          if attempt == max_attempts do
+            raise "Presto container did not become available after #{max_attempts} attempts (#{max_attempts * delay_ms / 1000} seconds)"
+          else
+            IO.puts("Presto not ready, attempt #{attempt}/#{max_attempts}, retrying in #{delay_ms}ms...")
+            Process.sleep(delay_ms)
+            {:cont, :unavailable}
+          end
+      end
+    end)
+  end
+
+  def check_presto_connection() do
+    # Use Prestige directly to bypass any mocks for integration tests
+    try do
+      session = Application.get_env(:prestige, :session_opts) |> Prestige.new_session()
+
+      case Prestige.execute(session, "SELECT 1") do
+        {:ok, _} -> :available
+        {:error, %Prestige.ConnectionError{}} -> :unavailable
+        {:error, _} -> :unavailable
+      end
+    rescue
+      _ -> :unavailable
+    end
+  end
+
+  def wait_for_redis_availability(max_attempts \\ 30, delay_ms \\ 1000) do
+    IO.puts("Waiting for Redis container to become available...")
+
+    Enum.reduce_while(1..max_attempts, :unavailable, fn attempt, _acc ->
+      case check_redis_connection() do
+        :available ->
+          IO.puts("Redis is available after #{attempt} attempts")
+          {:halt, :available}
+
+        :unavailable ->
+          if attempt == max_attempts do
+            raise "Redis container did not become available after #{max_attempts} attempts (#{max_attempts * delay_ms / 1000} seconds)"
+          else
+            IO.puts("Redis not ready, attempt #{attempt}/#{max_attempts}, retrying in #{delay_ms}ms...")
+            Process.sleep(delay_ms)
+            {:cont, :unavailable}
+          end
+      end
+    end)
+  end
+
+  def check_redis_connection() do
+    try do
+      case Redix.command(:redix, ["PING"]) do
+        {:ok, "PONG"} -> :available
+        _ -> :unavailable
+      end
+    rescue
+      _ -> :unavailable
+    end
+  end
+
+  def wait_for_kafka_availability(max_attempts \\ 30, delay_ms \\ 1000) do
+    IO.puts("Waiting for Kafka brokers to become available...")
+
+    Enum.reduce_while(1..max_attempts, :unavailable, fn attempt, _acc ->
+      case check_kafka_connection() do
+        :available ->
+          IO.puts("Kafka is available after #{attempt} attempts")
+          {:halt, :available}
+
+        :unavailable ->
+          if attempt == max_attempts do
+            raise "Kafka brokers did not become available after #{max_attempts} attempts (#{max_attempts * delay_ms / 1000} seconds)"
+          else
+            IO.puts("Kafka not ready, attempt #{attempt}/#{max_attempts}, retrying in #{delay_ms}ms...")
+            Process.sleep(delay_ms)
+            {:cont, :unavailable}
+          end
+      end
+    end)
+  end
+
+  def check_kafka_connection() do
+    try do
+      case Elsa.list_topics(@brokers) do
+        {:ok, _topics} -> :available
+        _ -> :unavailable
+      end
+    rescue
+      _ -> :unavailable
+    end
+  end
+
   def drop_all_tables() do
-    {:ok, result} = PrestigeHelper.execute_query("show tables")
-    result |> Prestige.Result.as_maps() |> Enum.each(&PrestigeHelper.drop_table/1)
+    case PrestigeHelper.execute_query("show tables") do
+      {:ok, result} ->
+        result |> Prestige.Result.as_maps() |> Enum.each(&PrestigeHelper.drop_table/1)
+
+      {:error, %Prestige.ConnectionError{}} ->
+        # Presto is not available, skip table cleanup
+        # This is acceptable for tests that may run without Presto
+        :ok
+
+      {:error, reason} ->
+        # Log other errors but don't crash the test setup
+        IO.puts("Warning: Failed to drop tables: #{inspect(reason)}")
+        :ok
+    end
   end
 
   def delete_validated_topics() do

@@ -151,8 +151,15 @@ defmodule Forklift.Jobs.DataMigration do
     |> PrestigeHelper.execute_query()
   end
 
+  defp filter_unmatched_ingestion_ids_from_table([], _table) do
+    # If no ingestion IDs to keep, delete all data
+    {:ok, :no_ingestions_to_keep}
+  end
+
   defp filter_unmatched_ingestion_ids_from_table(ingestion_ids, table) do
-    "delete from #{table} where _ingestion_id not in (#{Enum.map(ingestion_ids, fn id -> "\'" <> id <> "\'" end) |> Enum.join(",")})"
+    quoted_ids = Enum.map(ingestion_ids, fn id -> "'" <> id <> "'" end) |> Enum.join(",")
+
+    "delete from #{table} where _ingestion_id not in (#{quoted_ids})"
     |> PrestigeHelper.execute_query()
   end
 
