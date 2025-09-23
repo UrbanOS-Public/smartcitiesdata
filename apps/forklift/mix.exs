@@ -14,7 +14,8 @@ defmodule Forklift.MixProject do
       deps: deps(),
       aliases: aliases(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      test_paths: test_paths(Mix.env())
+      test_paths: test_paths(Mix.env()),
+      releases: releases()
     ]
   end
 
@@ -76,4 +77,14 @@ defmodule Forklift.MixProject do
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
+
+  defp releases do
+    [
+      forklift: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        steps: [:assemble, :tar]
+      ]
+    ]
+  end
 end
