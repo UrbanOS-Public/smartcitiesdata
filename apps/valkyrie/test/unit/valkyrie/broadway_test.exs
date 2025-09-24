@@ -1,6 +1,6 @@
 defmodule Valkyrie.BroadwayTest do
   use ExUnit.Case
-  Code.require_file "../../apps/dead_letter/test/unit/test_helper.exs"
+  Code.require_file("../../apps/dead_letter/test/unit/test_helper.exs")
   alias SmartCity.TestDataGenerator, as: TDG
   alias SmartCity.Data
 
@@ -18,7 +18,7 @@ defmodule Valkyrie.BroadwayTest do
     # Set up Mox to use global mode for Broadway processes
     set_mox_global()
     verify_on_exit!()
-    
+
     # Set up global mocks for all tests
     stub(ElsaMock, :produce, fn _, _, _, _ -> :ok end)
     # Don't stub DeadLetter.process so it uses the real implementation for testing
@@ -30,6 +30,7 @@ defmodule Valkyrie.BroadwayTest do
   setup do
     # Mocking moved to individual tests due to setup complexity
     DeadLetter.Carrier.Test.start_link([])
+
     schema = [
       %{name: "name", type: "string", ingestion_field_selector: "name"},
       %{name: "age", type: "integer", ingestion_field_selector: "age"},
@@ -86,7 +87,7 @@ defmodule Valkyrie.BroadwayTest do
         payload: %{"name" => "johnny", "age" => "21"}
       )
 
-    end_of_data = 
+    end_of_data =
       TDG.create_data(
         dataset_ids: [@dataset_id, @dataset_id2],
         ingestion_id: ingestion_id,
@@ -141,17 +142,17 @@ defmodule Valkyrie.BroadwayTest do
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
-    timing = 
+    timing =
       messages
       |> Enum.map(fn message -> Data.new(message.data.value) end)
       |> Enum.map(fn {:ok, data} -> data.operational.timing end)
       |> List.flatten()
       |> Enum.filter(fn timing -> timing.app == "valkyrie" end)
 
-      [timing_result] = timing
-      assert timing_result.app == "valkyrie"
-      assert Regex.match?(~r/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z/, timing_result.end_time)
-      assert Regex.match?(~r/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z/, timing_result.start_time)
+    [timing_result] = timing
+    assert timing_result.app == "valkyrie"
+    assert Regex.match?(~r/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z/, timing_result.end_time)
+    assert Regex.match?(~r/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z/, timing_result.start_time)
   end
 
   test "should return empty timing when profiling status is not true", %{broadway: broadway} do
@@ -163,7 +164,7 @@ defmodule Valkyrie.BroadwayTest do
 
     assert_receive {:ack, _ref, messages, _}, 5_000
 
-    timing = 
+    timing =
       messages
       |> Enum.map(fn message -> Data.new(message.data.value) end)
       |> Enum.map(fn {:ok, data} -> data.operational.timing end)
@@ -173,14 +174,15 @@ defmodule Valkyrie.BroadwayTest do
     assert timing == []
   end
 
-    test "should yeet message when it fails to parse properly", %{broadway: broadway} do
+  test "should yeet message when it fails to parse properly", %{broadway: broadway} do
     # Clear any existing messages by draining the queue
     :timer.sleep(100)
+
     case DeadLetter.Carrier.Test.receive() do
       {:ok, _} -> :ok
       {:error, :empty} -> :ok
     end
-    
+
     kafka_message = %{value: Jason.encode!(%{payload: %{}, ingestion_id: ""})}
 
     Broadway.test_batch(broadway, [kafka_message], [])

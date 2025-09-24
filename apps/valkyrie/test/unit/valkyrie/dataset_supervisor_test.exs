@@ -19,29 +19,37 @@ defmodule Valkyrie.DatasetSupervisorTest do
 
     test "should start dataset process", %{start_options: start_options} do
       :meck.new(DynamicSupervisor, [:passthrough])
-      :meck.expect(DynamicSupervisor, :start_child, fn _, _ -> 
-        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") 
+
+      :meck.expect(DynamicSupervisor, :start_child, fn _, _ ->
+        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor")
       end)
-      
+
       DatasetSupervisor.ensure_started(start_options)
 
-      assert :meck.num_calls(DynamicSupervisor, :start_child, [Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}]) == 1
-      
+      assert :meck.num_calls(DynamicSupervisor, :start_child, [
+               Valkyrie.Dynamic.Supervisor,
+               {Valkyrie.DatasetSupervisor, start_options}
+             ]) == 1
+
       :meck.unload(DynamicSupervisor)
     end
 
     test "should not restart a running dataset process", %{start_options: start_options} do
       :meck.new(DynamicSupervisor, [:passthrough])
-      :meck.expect(DynamicSupervisor, :start_child, fn _, _ -> 
-        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor") 
+
+      :meck.expect(DynamicSupervisor, :start_child, fn _, _ ->
+        Agent.start(fn -> 36 end, name: :"#{Keyword.get(start_options, :dataset).id}_supervisor")
       end)
-      
+
       {:ok, first_pid} = DatasetSupervisor.ensure_started(start_options)
 
       assert {:ok, ^first_pid} = DatasetSupervisor.ensure_started(start_options)
 
-      assert :meck.num_calls(DynamicSupervisor, :start_child, [Valkyrie.Dynamic.Supervisor, {Valkyrie.DatasetSupervisor, start_options}]) == 1
-      
+      assert :meck.num_calls(DynamicSupervisor, :start_child, [
+               Valkyrie.Dynamic.Supervisor,
+               {Valkyrie.DatasetSupervisor, start_options}
+             ]) == 1
+
       :meck.unload(DynamicSupervisor)
     end
   end

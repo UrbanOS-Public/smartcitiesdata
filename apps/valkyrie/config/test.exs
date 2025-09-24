@@ -24,6 +24,3 @@ config :valkyrie, :mox, mox_test: self()
 # Mock configurations for testing
 config :valkyrie,
   elsa: ElsaMock
-  
-
-

@@ -16,7 +16,7 @@ defmodule Valkyrie.Event.EventHandlerTest do
   setup_all do
     set_mox_global()
     verify_on_exit!()
-    
+
     # Set up global mocks for all tests
     stub(ElsaMock, :create_topic, fn _, _ -> :ok end)
     stub(ElsaMock, :delete_topic, fn _, _ -> :ok end)
