@@ -21,13 +21,13 @@ jobs:
   ci:
     if: github.event.pull_request.draft == false
     name: Verify Application
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: 21.3.8.24
-          elixir-version: 1.10.4
+          otp-version: 24.3 # 21.3.8.24
+          elixir-version: 1.14 # 1.10.4
           version-type: strict
       - name: Get dependencies
         run: |
