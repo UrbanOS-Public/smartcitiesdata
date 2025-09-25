@@ -50,6 +50,7 @@ defmodule Valkyrie.MixProject do
       {:httpoison, "~> 2.1"},
       {:libcluster, "~> 3.1"},
       {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:meck, "~> 0.9", only: :test},
       {:observer_cli, "~> 1.4"},
       {:off_broadway_kafka_pipeline, "~> 2.0.0"},
       {:mox, "~> 1.0", only: [:dev, :test, :integration]},
