@@ -26,6 +26,7 @@ defmodule Performance.MixProject do
       {:combinatorics, "~> 0.1.0", only: [:integration]},
       {:smart_city_test, "~> 2.4.0", only: [:test, :integration]},
       {:benchee, "~> 1.1", only: [:integration]},
+      {:elsa_kafka, "~> 2.0"},
       {:exprof, "~> 0.2.3", only: [:integration]},
       {:retry, "~> 0.15"}
     ]

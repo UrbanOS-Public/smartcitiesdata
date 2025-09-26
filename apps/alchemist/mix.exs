@@ -44,6 +44,7 @@ defmodule Alchemist.MixProject do
       {:divo_kafka, "~> 1.0.0", only: [:integration]},
       {:divo_redis, "~> 1.0.0", only: [:integration]},
       {:elixir_uuid, "~> 1.2"},
+      {:elsa_kafka, "~> 2.0"},
       {:excoveralls, "~> 0.16.1", only: :test},
       {:tasks, in_umbrella: true, only: :dev},
       {:jason, "~> 1.4", override: true},

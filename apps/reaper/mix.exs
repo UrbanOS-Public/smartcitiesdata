@@ -55,6 +55,7 @@ defmodule Reaper.MixProject do
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},
       {:elixir_uuid, "~> 1.2"},
+      {:elsa_kafka, "~> 2.0"},
       {:gen_stage, "~> 1.0", override: true},
       {:hackney, "~> 1.18"},
       {:horde, "~> 0.8"},

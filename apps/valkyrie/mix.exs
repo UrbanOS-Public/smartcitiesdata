@@ -43,6 +43,7 @@ defmodule Valkyrie.MixProject do
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 1.0", only: [:integration]},
       {:divo_redis, "~> 1.0", only: [:integration]},
+      {:elsa_kafka, "~> 2.0"},
       {:elixir_uuid, "~> 1.2"},
       {:excoveralls, "~> 0.16.1", only: :test},
       {:tasks, in_umbrella: true, only: :dev},
