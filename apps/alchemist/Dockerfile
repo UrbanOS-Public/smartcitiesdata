@@ -1,7 +1,7 @@
 FROM smartcitiesdata:build as builder
 RUN MIX_ENV=prod mix distillery.release --name alchemist
 
-FROM hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.16.9
+FROM hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.18.0
 ENV HOME /opt/app
 ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}
