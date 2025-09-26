@@ -7,12 +7,29 @@ defmodule RaptorWeb.AuthorizeController do
   alias Raptor.Services.UserOrgAssocStore
   alias Raptor.Services.UserAccessGroupRelationStore
   alias Raptor.Services.DatasetAccessGroupRelationStore
-  
+
   defp auth0_management, do: Application.get_env(:raptor, :auth0_management, Auth0Management)
   defp dataset_store, do: Application.get_env(:raptor, :dataset_store, DatasetStore)
-  defp user_org_assoc_store, do: Application.get_env(:raptor, :user_org_assoc_store, UserOrgAssocStore)
-  defp user_access_group_relation_store, do: Application.get_env(:raptor, :user_access_group_relation_store, UserAccessGroupRelationStore)
-  defp dataset_access_group_relation_store, do: Application.get_env(:raptor, :dataset_access_group_relation_store, DatasetAccessGroupRelationStore)
+
+  defp user_org_assoc_store,
+    do: Application.get_env(:raptor, :user_org_assoc_store, UserOrgAssocStore)
+
+  defp user_access_group_relation_store,
+    do:
+      Application.get_env(
+        :raptor,
+        :user_access_group_relation_store,
+        UserAccessGroupRelationStore
+      )
+
+  defp dataset_access_group_relation_store,
+    do:
+      Application.get_env(
+        :raptor,
+        :dataset_access_group_relation_store,
+        DatasetAccessGroupRelationStore
+      )
+
   require Logger
 
   plug(:accepts, ["json"])

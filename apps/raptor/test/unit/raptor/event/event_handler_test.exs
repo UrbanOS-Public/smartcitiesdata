@@ -35,7 +35,7 @@ defmodule Raptor.Event.EventHandlerTest do
         access_group_id: "access_group_id"
       }
 
-      with_mock UserAccessGroupRelationStore, [persist: fn(_) -> {:ok, "success"} end] do
+      with_mock UserAccessGroupRelationStore, persist: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -64,7 +64,7 @@ defmodule Raptor.Event.EventHandlerTest do
         access_group_id: "access_group_id"
       }
 
-      with_mock DatasetAccessGroupRelationStore, [persist: fn(_) -> {:ok, "success"} end] do
+      with_mock DatasetAccessGroupRelationStore, persist: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -95,7 +95,7 @@ defmodule Raptor.Event.EventHandlerTest do
         email: "blah@example.com"
       }
 
-      with_mock UserOrgAssocStore, [persist: fn(_) -> {:ok, "success"} end] do
+      with_mock UserOrgAssocStore, persist: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -124,7 +124,7 @@ defmodule Raptor.Event.EventHandlerTest do
         access_group_id: "group_id"
       }
 
-      with_mock UserAccessGroupRelationStore, [delete: fn(_) -> {:ok, "success"} end] do
+      with_mock UserAccessGroupRelationStore, delete: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -153,7 +153,7 @@ defmodule Raptor.Event.EventHandlerTest do
         access_group_id: "group_id"
       }
 
-      with_mock DatasetAccessGroupRelationStore, [delete: fn(_) -> {:ok, "success"} end] do
+      with_mock DatasetAccessGroupRelationStore, delete: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -180,7 +180,7 @@ defmodule Raptor.Event.EventHandlerTest do
         email: nil
       }
 
-      with_mock UserOrgAssocStore, [delete: fn(_) -> {:ok, "success"} end] do
+      with_mock UserOrgAssocStore, delete: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(
@@ -207,7 +207,7 @@ defmodule Raptor.Event.EventHandlerTest do
         is_private: dataset.technical.private
       }
 
-      with_mock DatasetStore, [persist: fn(_) -> {:ok, "success"} end] do
+      with_mock DatasetStore, persist: fn _ -> {:ok, "success"} end do
         result =
           EventHandler.handle_event(
             Brook.Event.new(

@@ -56,8 +56,13 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user_id = user.user_id
       expected = %{"is_authorized" => true}
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true} end)
-      expect(UserOrgAssocStoreMock, :get, fn user_id, org_id -> %{user_id: user_id, org_id: org_id, email: "penny@starfleet.com"} end)
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true}
+      end)
+
+      expect(UserOrgAssocStoreMock, :get, fn user_id, org_id ->
+        %{user_id: user_id, org_id: org_id, email: "penny@starfleet.com"}
+      end)
 
       actual =
         conn
@@ -77,15 +82,24 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user_id = user.user_id
       expected = %{"is_authorized" => true}
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: dataset_id,
           system_name: system_name,
           org_id: dataset_org_id,
           is_private: true
-        } end)
+        }
+      end)
+
       expect(UserOrgAssocStoreMock, :get, fn user_id, dataset_org_id -> %{} end)
-      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id -> ["poodles", "german shepards", "sheepdog"] end)
-      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id -> ["poodles", "golden retrievers", "labradoodles"] end)
+
+      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id ->
+        ["poodles", "german shepards", "sheepdog"]
+      end)
+
+      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id ->
+        ["poodles", "golden retrievers", "labradoodles"]
+      end)
 
       actual =
         conn
@@ -116,12 +130,15 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user_id = user.user_id
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: "wags",
           system_name: system_name,
           org_id: dataset_org_id,
           is_private: true
-        } end)
+        }
+      end)
+
       expect(UserOrgAssocStoreMock, :get, fn user_id, dataset_org_id -> %{} end)
       expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id -> [] end)
       expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn "wags" -> [] end)
@@ -143,11 +160,20 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user = @authorized_call |> List.first()
       user_id = user.user_id
       expected = %{"is_authorized" => true}
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key -> {:ok, @authorized_call} end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key ->
+        {:ok, @authorized_call}
+      end)
+
       expect(Auth0ManagementMock, :is_valid_user, fn _ -> true end)
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true} end)
-      expect(UserOrgAssocStoreMock, :get, fn user_id, org_id -> %{user_id: user_id, org_id: org_id, email: "penny@starfleet.com"} end)
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{dataset_id: "wags", system_name: system_name, org_id: org_id, is_private: true}
+      end)
+
+      expect(UserOrgAssocStoreMock, :get, fn user_id, org_id ->
+        %{user_id: user_id, org_id: org_id, email: "penny@starfleet.com"}
+      end)
 
       actual =
         conn
@@ -166,15 +192,22 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user = @authorized_call |> List.first()
       user_id = user.user_id
       expected = %{"is_authorized" => false}
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key -> {:ok, @authorized_call} end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key ->
+        {:ok, @authorized_call}
+      end)
+
       expect(Auth0ManagementMock, :is_valid_user, fn _ -> true end)
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: "wags",
           system_name: system_name,
           org_id: dataset_org_id,
           is_private: true
-        } end)
+        }
+      end)
+
       expect(UserOrgAssocStoreMock, :get, fn user_id, dataset_org_id -> %{} end)
       expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id -> [] end)
       expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn "wags" -> [] end)
@@ -196,18 +229,31 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user = @authorized_call |> List.first()
       user_id = user.user_id
       expected = %{"is_authorized" => true}
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key -> {:ok, @authorized_call} end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key ->
+        {:ok, @authorized_call}
+      end)
+
       expect(Auth0ManagementMock, :is_valid_user, fn _ -> true end)
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: dataset_id,
           system_name: system_name,
           org_id: dataset_org_id,
           is_private: true
-        } end)
+        }
+      end)
+
       expect(UserOrgAssocStoreMock, :get, fn user_id, dataset_org_id -> %{} end)
-      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id -> ["poodles", "german shepards", "sheepdog"] end)
-      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id -> ["poodles", "golden retrievers", "labradoodles"] end)
+
+      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id ->
+        ["poodles", "german shepards", "sheepdog"]
+      end)
+
+      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id ->
+        ["poodles", "golden retrievers", "labradoodles"]
+      end)
 
       actual =
         conn
@@ -226,18 +272,31 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       user = @authorized_call |> List.first()
       user_id = user.user_id
       expected = %{"is_authorized" => false}
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key -> {:ok, @authorized_call} end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key ->
+        {:ok, @authorized_call}
+      end)
+
       expect(Auth0ManagementMock, :is_valid_user, fn _ -> true end)
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: dataset_id,
           system_name: system_name,
           org_id: dataset_org_id,
           is_private: true
-        } end)
+        }
+      end)
+
       expect(UserOrgAssocStoreMock, :get, fn user_id, dataset_org_id -> %{} end)
-      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id -> ["german shepards", "sheepdog"] end)
-      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id -> ["poodles", "golden retrievers", "labradoodles"] end)
+
+      expect(UserAccessGroupRelationStoreMock, :get_all_by_user, fn user_id ->
+        ["german shepards", "sheepdog"]
+      end)
+
+      expect(DatasetAccessGroupRelationStoreMock, :get_all_by_dataset, fn dataset_id ->
+        ["poodles", "golden retrievers", "labradoodles"]
+      end)
 
       actual =
         conn
@@ -266,12 +325,14 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       expected = %{"message" => "apiKey is a required parameter to access private datasets."}
       system_name = "some__data"
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: "wags",
           system_name: system_name,
           org_id: "dog_stats",
           is_private: true
-        } end)
+        }
+      end)
 
       actual =
         conn
@@ -287,12 +348,14 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       system_name = "system__name"
       expected = %{"is_authorized" => true}
 
-      expect(DatasetStoreMock, :get, fn system_name -> %{
+      expect(DatasetStoreMock, :get, fn system_name ->
+        %{
           dataset_id: "wags",
           system_name: system_name,
           org_id: "dog_stats",
           is_private: false
-        } end)
+        }
+      end)
 
       actual =
         conn
@@ -333,13 +396,19 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "enterprise"
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn _ -> %{
+      expect(DatasetStoreMock, :get, fn _ ->
+        %{
           dataset_id: "wags",
           system_name: "system__name",
           org_id: "dog_stats",
           is_private: true
-        } end)
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key -> {:ok, @unverified_email_call} end)
+        }
+      end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key ->
+        {:ok, @unverified_email_call}
+      end)
+
       expect(Auth0ManagementMock, :is_valid_user, fn _ -> false end)
 
       actual =
@@ -354,13 +423,18 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn _ -> %{
+      expect(DatasetStoreMock, :get, fn _ ->
+        %{
           dataset_id: "wags",
           system_name: "system__name",
           org_id: "dog_stats",
           is_private: true
-        } end)
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key -> {:ok, @unauthorized_call} end)
+        }
+      end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key ->
+        {:ok, @unauthorized_call}
+      end)
 
       actual =
         conn
@@ -374,13 +448,18 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn _ -> %{
+      expect(DatasetStoreMock, :get, fn _ ->
+        %{
           dataset_id: "wags",
           system_name: "system__name",
           org_id: "dog_stats",
           is_private: true
-        } end)
-      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key -> {:ok, @multiple_users_call} end)
+        }
+      end)
+
+      expect(Auth0ManagementMock, :get_users_by_api_key, fn api_key ->
+        {:ok, @multiple_users_call}
+      end)
 
       actual =
         conn
@@ -396,12 +475,14 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn _ -> %{
+      expect(DatasetStoreMock, :get, fn _ ->
+        %{
           dataset_id: "wags",
           system_name: "system__name",
           org_id: "dog_stats",
           is_private: true
-        } end)
+        }
+      end)
 
       # mock that the user is in the org of the private dataset
       stub(UserOrgAssocStoreMock, :get, fn _, "dog_stats" -> %{"user|id|blah": true} end)
@@ -421,12 +502,15 @@ defmodule RaptorWeb.AuthorizeControllerTest do
       api_key = "intrepid"
       expected = %{"is_authorized" => false}
 
-      expect(DatasetStoreMock, :get, fn _ -> %{
+      expect(DatasetStoreMock, :get, fn _ ->
+        %{
           dataset_id: "wags",
           system_name: "system__name",
           org_id: "dog_stats",
           is_private: true
-        } end)
+        }
+      end)
+
       expect(Auth0ManagementMock, :get_users_by_api_key, fn ^api_key -> {:error, []} end)
 
       actual =
