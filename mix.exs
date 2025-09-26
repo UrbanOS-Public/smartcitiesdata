@@ -62,6 +62,11 @@ defmodule Smartcitiesdata.MixProject do
         include_executables_for: [:unix],
         applications: [forklift: :permanent, runtime_tools: :permanent],
         steps: [:assemble, :tar]
+      ],
+      valkyrie: [
+        include_executables_for: [:unix],
+        applications: [valkyrie: :permanent, runtime_tools: :permanent],
+        steps: [:assemble, :tar]
       ]
     ]
   end
