@@ -36,7 +36,7 @@ defmodule Alchemist.TopicManagerTest do
 
       TopicManager.setup_topics(ingestion)
 
-      assert_called Elsa.create_topic(elsa_brokers(), "#{input_topic_prefix()}-#{@ingestion_id}")
+      assert_called(Elsa.create_topic(elsa_brokers(), "#{input_topic_prefix()}-#{@ingestion_id}"))
     end
   end
 

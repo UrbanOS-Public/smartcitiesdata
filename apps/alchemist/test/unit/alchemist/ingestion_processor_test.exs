@@ -27,8 +27,8 @@ defmodule Alchemist.IngestionProcessorTest do
     test "should setup topics", setup_params do
       Alchemist.IngestionProcessor.start(setup_params.ingestion)
 
-      assert_called Alchemist.TopicManager.setup_topics(setup_params.ingestion)
-      assert_called Alchemist.IngestionSupervisor.ensure_started(:_)
+      assert_called(Alchemist.TopicManager.setup_topics(setup_params.ingestion))
+      assert_called(Alchemist.IngestionSupervisor.ensure_started(:_))
     end
 
     # test "should start a new IngestionSupervisor", setup_params do

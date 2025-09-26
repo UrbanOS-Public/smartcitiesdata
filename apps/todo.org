@@ -1,15 +1,15 @@
-= May 2025 erlang /elixir version upgrade [7/8] [87%]
+= May 2025 erlang /elixir version upgrade [3/9] [33%]
 
 == Convert for compilation
 
-- [X] alchemist
-- [X] andi
-- [X] discovery_api
-- [X] discovery_streams
 - [X] forklift
+- [X] valkyrie
 - [X] raptor
-- [X] reaper
-- [ ] valkyrie
+- [ ] alchemist
+- [ ] andi
+- [ ] discovery_api
+- [ ] discovery_streams
+- [ ] reaper
 
 == High Level Goals
 

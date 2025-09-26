@@ -8,7 +8,6 @@ defmodule Alchemist.BroadwayTest do
   import Mock
   import SmartCity.TestHelper, only: [eventually: 1]
 
-
   @ingestion_id "ingestion1"
   @dataset_id "ds1"
   @dataset_id2 "ds2"
