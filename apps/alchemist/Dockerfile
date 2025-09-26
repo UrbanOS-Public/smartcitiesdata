@@ -1,8 +1,8 @@
-FROM smartcitiesdata:build as builder
-RUN MIX_ENV=prod mix distillery.release --name alchemist
+FROM smartcitiesdata:build AS builder
+RUN MIX_ENV=prod mix release alchemist
 
 FROM hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.18.0
-ENV HOME /opt/app
+ENV HOME=/opt/app
 ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}
 RUN adduser -s /bin/sh -u 1001 -G root -h "${HOME}" -S -D default && \
@@ -17,4 +17,4 @@ RUN chgrp -R 0 ${HOME} && \
 USER default
 ENV PORT=4000
 EXPOSE ${PORT}
-CMD ["bin/alchemist", "foreground"]
+CMD ["bin/alchemist", "start"]

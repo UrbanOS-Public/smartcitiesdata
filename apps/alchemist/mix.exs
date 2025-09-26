@@ -39,7 +39,6 @@ defmodule Alchemist.MixProject do
       # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dead_letter, in_umbrella: true},
-      {:distillery, "~> 2.1"},
       {:divo, "~> 2.0.0", only: [:dev, :test, :integration]},
       {:divo_kafka, "~> 1.0.0", only: [:integration]},
       {:divo_redis, "~> 1.0.0", only: [:integration]},
