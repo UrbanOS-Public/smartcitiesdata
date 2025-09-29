@@ -20,7 +20,6 @@ config :reaper,
   date_time: DateTimeMock,
   processor: ProcessorMock,
   elsa_brokers: [localhost: 9092],
-  
   ex_aws: ExAwsMock,
   ex_aws_s3: ExAwsS3Mock,
   ftp: FtpMock,
@@ -30,8 +29,6 @@ config :reaper,
   mint_http: MintHttpMock,
   stop_ingestion: StopIngestionMock,
   topic_manager: TopicManagerMock
-
-
 
 config :reaper, :brook,
   driver: [

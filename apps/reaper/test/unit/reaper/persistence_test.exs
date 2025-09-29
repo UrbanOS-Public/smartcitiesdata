@@ -21,7 +21,10 @@ defmodule Reaper.RecorderTest do
   end
 
   test "persists last_processed_index to redis" do
-    expect(RedixMock, :command!, fn @redix, ["SET", "reaper:" <> @ingestion_id <> ":last_processed_index", 1] -> "OK" end)
+    expect(RedixMock, :command!, fn @redix, ["SET", "reaper:" <> @ingestion_id <> ":last_processed_index", 1] ->
+      "OK"
+    end)
+
     Persistence.record_last_processed_index(@ingestion_id, 1)
   end
 

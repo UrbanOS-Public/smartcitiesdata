@@ -5,11 +5,12 @@ defmodule Reaper.DecoderTest do
 
   import SmartCity.TestHelper, only: [eventually: 1]
   alias SmartCity.TestDataGenerator, as: TDG
-  
-  use TempEnv, reaper: [
-    decoder_implementations: [CsvDecoderMock, Reaper.Decoder.Unknown]
-  ]
-  
+
+  use TempEnv,
+    reaper: [
+      decoder_implementations: [CsvDecoderMock, Reaper.Decoder.Unknown]
+    ]
+
   setup :verify_on_exit!
 
   @filename "#{__MODULE__}_temp_file"
@@ -25,30 +26,39 @@ defmodule Reaper.DecoderTest do
   describe "failure to decode" do
     setup do
       # Set up the mock CSV decoder for both tests
-      stub(CsvDecoderMock, :handle?, fn "csv" -> true; _ -> false end)
-      
+      stub(CsvDecoderMock, :handle?, fn
+        "csv" -> true
+        _ -> false
+      end)
+
       # Override the implementations list to use our mock
       implementations = [
         Reaper.Decoder.Gtfs,
         Reaper.Decoder.Json,
-        CsvDecoderMock,  # Replace Reaper.Decoder.Csv with mock
+        # Replace Reaper.Decoder.Csv with mock
+        CsvDecoderMock,
         Reaper.Decoder.Tsv,
         Reaper.Decoder.Xml,
         Reaper.Decoder.GeoJson,
         Reaper.Decoder.Unknown
       ]
+
       Application.put_env(:reaper, :decoder_implementations, implementations)
-      
+
       on_exit(fn -> Application.delete_env(:reaper, :decoder_implementations) end)
       :ok
     end
-    
+
     test "csv messages deadlettered and error raised" do
-      stub(CsvDecoderMock, :handle?, fn "text/csv" -> true; _ -> false end)
-      expect(CsvDecoderMock, :decode, fn _, _ -> 
+      stub(CsvDecoderMock, :handle?, fn
+        "text/csv" -> true
+        _ -> false
+      end)
+
+      expect(CsvDecoderMock, :decode, fn _, _ ->
         {:error, "this is the data part", "bad Csv"}
       end)
-      
+
       body = "baaad csv"
       File.write(@filename, body)
 

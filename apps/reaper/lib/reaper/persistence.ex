@@ -2,7 +2,7 @@ defmodule Reaper.Persistence do
   @moduledoc """
   This module provides functionality for interacting with Redis
   """
-  
+
   @behaviour Reaper.PersistenceBehaviour
 
   @name_space_derived "reaper:derived:"

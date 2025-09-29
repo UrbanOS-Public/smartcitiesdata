@@ -3,7 +3,7 @@ defmodule Reaper.DataExtract.ValidationStage do
   use GenStage
 
   alias Reaper.{Cache, Persistence}
-  
+
   @cache_module Application.compile_env(:reaper, :cache_module, Cache)
 
   def start_link(opts) do

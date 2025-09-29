@@ -4,7 +4,7 @@ defmodule Reaper.DataSlurper.Ftp do
   """
   @behaviour Reaper.DataSlurper
   alias Reaper.DataSlurper
-  
+
   @ftp Application.compile_env(:reaper, :ftp, :ftp)
 
   @ftp_errors %{

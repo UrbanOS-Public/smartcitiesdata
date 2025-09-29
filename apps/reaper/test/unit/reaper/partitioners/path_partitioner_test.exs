@@ -8,7 +8,6 @@ defmodule Reaper.Partitioners.PathPartitionerTest do
   use ExUnit.Case
   alias Reaper.Partitioners.PathPartitioner
 
-
   test "Successfully parses vehicle id from data message" do
     message = %{"a" => "1", "b" => "2"}
     key = PathPartitioner.partition(message, "b")

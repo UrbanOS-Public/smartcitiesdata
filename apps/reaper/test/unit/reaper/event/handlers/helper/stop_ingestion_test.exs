@@ -71,12 +71,13 @@ defmodule Reaper.Event.Handlers.Helper.StopIngestionTest do
       # This test would need dependency injection in StopIngestion module to work with Mox
       # For now, we'll skip the mocking and test the actual error handling
       # expect(HordeRegistryMock, :lookup, fn _ -> raise("Mistakes were made") end)
-      
+
       # Since we can't easily mock Horde.Registry without dependency injection,
       # this test verifies that the function handles errors gracefully
       # We'll test with a non-existent ingestion ID that might cause issues
       result = StopIngestion.stop_horde_and_cache("non-existent-id")
-      assert result == :ok  # The function should handle this gracefully
+      # The function should handle this gracefully
+      assert result == :ok
     end
 
     test "stops the ingestion job in quantum", %{ingestion: ingestion} do

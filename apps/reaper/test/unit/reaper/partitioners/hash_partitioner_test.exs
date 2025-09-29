@@ -4,7 +4,6 @@ defmodule Reaper.Partitioners.HashPartitionerTest do
   use ExUnit.Case
   alias Reaper.Partitioners.HashPartitioner
 
-
   test "Successfully produces hash for valid message" do
     message = %{a: "1", b: "2"}
     expected = "7D7D9E8E60D8D8A8C62F78E388E29EB7"

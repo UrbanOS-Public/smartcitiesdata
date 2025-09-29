@@ -77,30 +77,32 @@ defmodule Reaper.Decoder.Json do
   defp convert_json_path_to_jaxon_query(json_path) do
     # Convert JSONPath expressions like "$.data", "$.data[*]", "$.[*].data"
     # to Jaxon.Stream query format [:root, "data", :all]
-    
+
     # Handle special case for root array access like "$.[*].property"
     if String.starts_with?(json_path, "$.[*]") do
       # Remove "$.[*]." and process the rest
       remaining_path = String.replace_leading(json_path, "$.[*].", "")
       segments = if remaining_path == "", do: [], else: String.split(remaining_path, ".")
-      query_parts = 
+
+      query_parts =
         segments
         |> Enum.map(&convert_segment/1)
         |> List.flatten()
+
       [:root, :all | query_parts]
     else
       # Remove the leading "$." 
       path = String.replace_leading(json_path, "$.", "")
-      
+
       # Split by dots to get path segments
       segments = String.split(path, ".")
-      
+
       # Convert each segment to appropriate Jaxon query format and flatten
-      query_parts = 
+      query_parts =
         segments
         |> Enum.map(&convert_segment/1)
         |> List.flatten()
-      
+
       # Add :root at the beginning for Jaxon.Stream
       [:root | query_parts]
     end
@@ -112,11 +114,11 @@ defmodule Reaper.Decoder.Json do
       String.contains?(segment, "[*]") ->
         base = String.replace(segment, "[*]", "")
         [base, :all]
-      
+
       # Handle invalid array access like "data[XX]" - this should cause an error
       String.contains?(segment, "[") && !String.contains?(segment, "[*]") ->
         raise "Invalid array selector in JSONPath"
-      
+
       # Regular object property
       true ->
         [segment]

@@ -89,7 +89,8 @@ defmodule Reaper.DataSlurper.FtpTest do
     test "handles successful file retrieval", map do
       expect(FtpMock, :open, fn _host -> {:ok, "pid"} end)
       expect(FtpMock, :user, fn "pid", _username, _password -> :ok end)
-      expect(FtpMock, :recv, fn "pid", _path, filename -> 
+
+      expect(FtpMock, :recv, fn "pid", _path, filename ->
         if filename == map.ingestion_id, do: :ok, else: {:error, :epath}
       end)
 

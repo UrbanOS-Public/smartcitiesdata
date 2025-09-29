@@ -16,6 +16,7 @@ defmodule Reaper.Decoder.GeoJson do
           {:ok, features} -> {:ok, features}
           {:error, error} -> {:error, truncate_file_for_logging(filename), error}
         end
+
       {:error, file_content, error} ->
         {:error, file_content, error}
     end

@@ -12,11 +12,11 @@ defmodule Reaper.Cache.RegistryTest do
 
       # Wait for registration to complete in distributed registry
       :timer.sleep(50)
-      
+
       # Ensure the registration actually worked
       lookup_result = Reaper.Cache.Registry.lookup(:agent)
       assert pid == lookup_result, "Expected #{inspect(pid)}, got #{inspect(lookup_result)}"
-      
+
       # Clean up
       Agent.stop(pid)
     end

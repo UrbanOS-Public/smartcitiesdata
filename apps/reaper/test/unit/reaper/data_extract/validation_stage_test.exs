@@ -88,7 +88,7 @@ defmodule Reaper.DataExtract.ValidationStageTest do
     test "will yeet any errors marked during cache call" do
       expect(CacheMock, :mark_duplicates, fn @cache, %{one: 1, two: 2} -> {:ok, %{one: 1, two: 2}} end)
       expect(CacheMock, :mark_duplicates, fn @cache, %{three: 3, four: 4} -> {:error, "bad stuff"} end)
-      
+
       # Allow telemetry calls for dead letter processing (may be called multiple times)
       stub(ValkyrierTelemetryEventMock, :add_event_metrics, fn _event_metadata, _event_name, %{} -> :ok end)
 

@@ -29,7 +29,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   """
 
   setup :verify_on_exit!
-  
+
   setup do
     bypass = Bypass.open()
 
@@ -451,7 +451,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
 
   describe "execute_extract_steps/2 secret" do
     test "puts a secret into assigns block", %{ingestion: ingestion} do
-
       expect(SecretRetrieverMock, :retrieve_ingestion_credentials, fn "the_key" ->
         {:ok,
          %{
@@ -488,6 +487,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
       stub(MintHttpMock, :close, fn _conn -> :closed end)
       :ok
     end
+
     @tag :skip
     test "simple http get", %{bypass: bypass, ingestion: ingestion, sourceUrl: sourceUrl} do
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
@@ -707,7 +707,6 @@ defmodule Reaper.DataExtract.ExtractStepTest do
   describe "execute_extract_steps/2 sftp" do
     @tag :skip
     test "successfully constructs the sftp request", %{ingestion: ingestion} do
-
       steps = [
         %{
           type: "sftp",
@@ -737,6 +736,7 @@ defmodule Reaper.DataExtract.ExtractStepTest do
     test "Set variable then single extract step for http get", %{ingestion: ingestion, sourceUrl: sourceUrl} do
       # The date step will fail due to invalid format, but Timex.now() is still called
       expect(TimexMock, :now, fn -> DateTime.utc_now() end)
+
       steps = [
         %{
           type: "date",

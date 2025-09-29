@@ -18,24 +18,26 @@ defmodule Reaper.DataExtract.LoadStageTest do
   setup do
     # Setup meck for external modules (don't mock Cache since we use real cache in tests)
     modules_to_mock = [Elsa, Persistence]
-    
+
     Enum.each(modules_to_mock, fn module ->
       try do
         :meck.unload(module)
       rescue
         ErlangError -> :ok
       end
+
       :meck.new(module, [:non_strict])
     end)
-    
+
     # Mock DateTime with passthrough to only override specific functions
     try do
       :meck.unload(DateTime)
     rescue
       ErlangError -> :ok
     end
+
     :meck.new(DateTime, [:passthrough])
-    
+
     on_exit(fn ->
       Enum.each([DateTime | modules_to_mock], fn module ->
         try do
@@ -45,6 +47,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
         end
       end)
     end)
+
     {:ok, registry} = Horde.Registry.start_link(keys: :unique, name: Reaper.Cache.Registry)
     {:ok, horde_sup} = Horde.DynamicSupervisor.start_link(strategy: :one_for_one, name: Reaper.Horde.Supervisor)
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: @cache})
@@ -56,10 +59,10 @@ defmodule Reaper.DataExtract.LoadStageTest do
 
     # Mock DateTime.to_iso8601 to return consistent output
     :meck.expect(DateTime, :to_iso8601, fn _datetime -> @iso_output end)
-    
+
     # Set up Jason mock for Cache operations
     stub(JasonMock, :encode, fn value -> {:ok, Jason.encode!(value)} end)
-    
+
     :ok
   end
 
@@ -89,7 +92,7 @@ defmodule Reaper.DataExtract.LoadStageTest do
     test "2 batches are sent to kafka", %{new_state: new_state} do
       expected_batch1 = create_data_messages(?a..?j, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
       expected_batch2 = create_data_messages(?k..?t, ["ds1", "ds2"], new_state.ingestion, new_state.start_time)
-      
+
       assert :meck.called(Elsa, :produce, [:"test-ingest1_producer", "test-ingest1", expected_batch1, [partition: 0]])
       assert :meck.called(Elsa, :produce, [:"test-ingest1_producer", "test-ingest1", expected_batch2, [partition: 0]])
     end

@@ -81,7 +81,7 @@ defmodule Reaper.FullTest do
 
   describe "pre-existing ingestion" do
     setup %{bypass: bypass} do
-      allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+      allow(DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z])
 
       pre_existing_ingestion =
         TDG.create_ingestion(%{
@@ -152,7 +152,7 @@ defmodule Reaper.FullTest do
     setup %{bypass: bypass} do
       {:ok, pid} = Agent.start_link(fn -> %{has_raised: false, invocations: 0} end)
 
-      allow Elsa.produce(any(), any(), any()),
+      allow(Elsa.produce(any(), any(), any()),
         meck_options: [:passthrough],
         exec: fn topic, messages, options ->
           case Agent.get(pid, fn s -> {s.has_raised, s.invocations} end) do
@@ -165,6 +165,7 @@ defmodule Reaper.FullTest do
               :meck.passthrough([topic, messages, options])
           end
         end
+      )
 
       Bypass.stub(bypass, "GET", "/partial.csv", fn conn ->
         data =
@@ -421,7 +422,7 @@ defmodule Reaper.FullTest do
         )
       end)
 
-      allow Timex.now(), return: DateTime.from_naive!(~N[2018-01-01 13:26:08.003], "Etc/UTC")
+      allow(Timex.now(), return: DateTime.from_naive!(~N[2018-01-01 13:26:08.003], "Etc/UTC"))
 
       ingestion_id = "only-once-extract-steps"
       topic = "#{output_topic_prefix()}-#{ingestion_id}"
@@ -636,7 +637,7 @@ defmodule Reaper.FullTest do
 
   describe "xml ingestion" do
     setup %{bypass: bypass} do
-      allow DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z]
+      allow(DateTime.utc_now(), return: ~U[2022-05-19 19:31:16.994987Z])
 
       pre_existing_ingestion =
         TDG.create_ingestion(%{

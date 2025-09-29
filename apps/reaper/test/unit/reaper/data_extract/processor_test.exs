@@ -25,16 +25,17 @@ defmodule Reaper.DataExtract.ProcessorTest do
   """
 
   @download_dir "./test_downloads/"
-  use TempEnv, reaper: [
-    download_dir: @download_dir,
-    elsa_brokers: [localhost: 9092],
-    output_topic_prefix: "output"
-  ]
+  use TempEnv,
+    reaper: [
+      download_dir: @download_dir,
+      elsa_brokers: [localhost: 9092],
+      output_topic_prefix: "output"
+    ]
 
   setup do
     # Ensure download directory exists
     File.mkdir_p!(@download_dir)
-    
+
     # Mock Elsa module since the processor calls it directly
     :meck.new(Elsa, [:passthrough])
     :meck.expect(Elsa, :create_topic, fn _brokers, _topic -> :ok end)
@@ -45,16 +46,36 @@ defmodule Reaper.DataExtract.ProcessorTest do
     :meck.expect(Elsa.Supervisor, :start_link, fn _opts -> {:ok, :pid} end)
     :meck.new(Elsa.Producer, [:passthrough])
     :meck.expect(Elsa.Producer, :ready?, fn _connection -> true end)
-    
+
     # Mock Brook.Event module since the processor calls it directly
     :meck.new(Brook.Event, [:passthrough])
     :meck.expect(Brook.Event, :send, fn _instance, _event_type, _source, _data -> :ok end)
-    
+
     on_exit(fn ->
-      try do :meck.unload(Elsa) rescue ErlangError -> :ok end
-      try do :meck.unload(Elsa.Supervisor) rescue ErlangError -> :ok end
-      try do :meck.unload(Elsa.Producer) rescue ErlangError -> :ok end
-      try do :meck.unload(Brook.Event) rescue ErlangError -> :ok end
+      try do
+        :meck.unload(Elsa)
+      rescue
+        ErlangError -> :ok
+      end
+
+      try do
+        :meck.unload(Elsa.Supervisor)
+      rescue
+        ErlangError -> :ok
+      end
+
+      try do
+        :meck.unload(Elsa.Producer)
+      rescue
+        ErlangError -> :ok
+      end
+
+      try do
+        :meck.unload(Brook.Event)
+      rescue
+        ErlangError -> :ok
+      end
+
       # Clean up test download directory
       File.rm_rf(@download_dir)
       # Restore Mox to private mode
@@ -106,38 +127,44 @@ defmodule Reaper.DataExtract.ProcessorTest do
     # Set up global stubs for common function calls
     stub(DateTimeMock, :to_unix, fn _ -> unix_time end)
     stub(BrookEventMock, :send, fn _, _, _, _ -> :ok end)
-    
+
     # Set up global PersistenceMock stubs for all tests
     stub(PersistenceMock, :get_last_processed_index, fn _ -> -1 end)
     stub(PersistenceMock, :record_last_processed_index, fn _, _ -> "OK" end)
     stub(PersistenceMock, :remove_last_processed_index, fn _ -> :ok end)
-    
+
     # Set up CacheMock stubs for duplicate detection - but allow tests to override
-    stub(CacheMock, :mark_duplicates, fn _, _ -> {:ok, false} end)  # Return no duplicate found
+    # Return no duplicate found
+    stub(CacheMock, :mark_duplicates, fn _, _ -> {:ok, false} end)
     stub(CacheMock, :cache, fn _, _ -> {:ok, true} end)
-    
+
     # Set up JasonMock stubs for JSON encoding/decoding
     stub(JasonMock, :encode, fn data -> Jason.encode(data) end)
     stub(JasonMock, :decode, fn data -> Jason.decode(data) end)
-    
+
     # Set up RedixMock stub for Redis operations
-    stub(RedixMock, :command!, fn 
-      _, ["GET", _] -> nil  # Return nil for last processed index
-      _, ["SET", _, _] -> "OK"  # Return OK for set operations
+    stub(RedixMock, :command!, fn
+      # Return nil for last processed index
+      _, ["GET", _] -> nil
+      # Return OK for set operations
+      _, ["SET", _, _] -> "OK"
       _, cmd -> {:error, "Unsupported Redis command: #{inspect(cmd)}"}
     end)
-    
+
     # Set up MintHttpMock to delegate to real Mint.HTTP for integration testing
-    stub(MintHttpMock, :connect, fn scheme, host, port, opts -> 
+    stub(MintHttpMock, :connect, fn scheme, host, port, opts ->
       Mint.HTTP.connect(scheme, host, port, opts)
     end)
-    stub(MintHttpMock, :request, fn conn, method, path, headers, body -> 
+
+    stub(MintHttpMock, :request, fn conn, method, path, headers, body ->
       Mint.HTTP.request(conn, method, path, headers, body)
     end)
-    stub(MintHttpMock, :stream, fn conn, message -> 
+
+    stub(MintHttpMock, :stream, fn conn, message ->
       Mint.HTTP.stream(conn, message)
     end)
-    stub(MintHttpMock, :close, fn conn -> 
+
+    stub(MintHttpMock, :close, fn conn ->
       Mint.HTTP.close(conn)
     end)
 
@@ -147,7 +174,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
     extract_time = DateTime.utc_now()
     cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
     Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
-    
+
     # Set mocks to global mode so they can be used by any process
     # This is needed for GenStage processes that get spawned by the processor
     Mox.set_mox_global()
@@ -167,9 +194,9 @@ defmodule Reaper.DataExtract.ProcessorTest do
     end
 
     test "parses csv into data messages and sends to kafka", %{ingestion: ingestion, extract_time: extract_time} do
-
       # Mock Elsa.produce to capture calls
       test_pid = self()
+
       :meck.expect(Elsa, :produce, fn producer, topic, messages, opts ->
         send(test_pid, {:elsa_produce, producer, topic, messages, opts})
         :ok
@@ -180,14 +207,18 @@ defmodule Reaper.DataExtract.ProcessorTest do
       # Check that Elsa.produce was called by verifying meck history
       # The new implementation batches all messages in one call instead of separate calls
       elsa_calls = :meck.history(Elsa)
-      produce_calls = Enum.filter(elsa_calls, fn {_pid, {Elsa, :produce, _args}, _result} -> true
-                                                 _ -> false end)
-      
+
+      produce_calls =
+        Enum.filter(elsa_calls, fn
+          {_pid, {Elsa, :produce, _args}, _result} -> true
+          _ -> false
+        end)
+
       assert length(produce_calls) >= 1, "Expected at least 1 Elsa.produce call"
-      
+
       # Extract the messages from the first produce call 
       {_pid, {Elsa, :produce, [_producer, _topic, messages, _opts]}, _result} = List.first(produce_calls)
-      
+
       expected = [
         %{"a" => "one", "b" => "two", "c" => "three"},
         %{"a" => "four", "b" => "five", "c" => "six"},
@@ -220,7 +251,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       cache_name = ingestion.id <> "_" <> to_string(DateTime.to_unix(extract_time))
       Horde.DynamicSupervisor.start_child(Reaper.Horde.Supervisor, {Reaper.Cache, name: cache_name})
       Cache.cache(cache_name, %{"a" => "one", "b" => "two", "c" => "three"})
-      
+
       # Override CacheMock to simulate duplicate detection
       # The first row should be detected as duplicate, second row should be OK
       stub(CacheMock, :mark_duplicates, fn _, value ->
@@ -232,6 +263,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Mock Elsa.produce to capture calls
       test_pid = self()
+
       :meck.expect(Elsa, :produce, fn producer, topic, messages, opts ->
         send(test_pid, {:elsa_produce, producer, topic, messages, opts})
         :ok
@@ -241,11 +273,15 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Check that Elsa.produce was called by verifying meck history
       elsa_calls = :meck.history(Elsa)
-      produce_calls = Enum.filter(elsa_calls, fn {_pid, {Elsa, :produce, _args}, _result} -> true
-                                                 _ -> false end)
-      
+
+      produce_calls =
+        Enum.filter(elsa_calls, fn
+          {_pid, {Elsa, :produce, _args}, _result} -> true
+          _ -> false
+        end)
+
       assert length(produce_calls) >= 1, "Expected at least 1 Elsa.produce call"
-      
+
       # Extract the messages from the first produce call 
       {_pid, {Elsa, :produce, [_producer, _topic, messages, _opts]}, _result} = List.first(produce_calls)
 
@@ -296,7 +332,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
   describe "process/2 happy path with extract steps" do
     setup %{bypass: bypass} do
-        stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
+      stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
       stub(TimexMock, :now, fn -> DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC") end)
 
       Bypass.stub(bypass, "GET", "/api/csv", fn conn ->
@@ -329,6 +365,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Mock Elsa.produce to capture calls
       test_pid = self()
+
       :meck.expect(Elsa, :produce, fn producer, topic, messages, opts ->
         send(test_pid, {:elsa_produce, producer, topic, messages, opts})
         :ok
@@ -339,11 +376,15 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Check that Elsa.produce was called by verifying meck history
       elsa_calls = :meck.history(Elsa)
-      produce_calls = Enum.filter(elsa_calls, fn {_pid, {Elsa, :produce, _args}, _result} -> true
-                                                 _ -> false end)
-      
+
+      produce_calls =
+        Enum.filter(elsa_calls, fn
+          {_pid, {Elsa, :produce, _args}, _result} -> true
+          _ -> false
+        end)
+
       assert length(produce_calls) >= 1, "Expected at least 1 Elsa.produce call"
-      
+
       # Extract the messages from the first produce call 
       {_pid, {Elsa, :produce, [_producer, _topic, messages, _opts]}, _result} = List.first(produce_calls)
 
@@ -397,6 +438,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Mock Elsa.produce to capture calls
       test_pid = self()
+
       :meck.expect(Elsa, :produce, fn producer, topic, messages, opts ->
         send(test_pid, {:elsa_produce, producer, topic, messages, opts})
         :ok
@@ -407,11 +449,15 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Check that Elsa.produce was called by verifying meck history
       elsa_calls = :meck.history(Elsa)
-      produce_calls = Enum.filter(elsa_calls, fn {_pid, {Elsa, :produce, _args}, _result} -> true
-                                                 _ -> false end)
-      
+
+      produce_calls =
+        Enum.filter(elsa_calls, fn
+          {_pid, {Elsa, :produce, _args}, _result} -> true
+          _ -> false
+        end)
+
       assert length(produce_calls) >= 1, "Expected at least 1 Elsa.produce call"
-      
+
       # Extract the messages from the first produce call 
       {_pid, {Elsa, :produce, [_producer, _topic, messages, _opts]}, _result} = List.first(produce_calls)
 
@@ -467,7 +513,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
     end
 
     test "process/2 should execute providers prior to processing", %{bypass: bypass, sourceUrl: sourceUrl} do
-        stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
+      stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
       stub(PersistenceMock, :get_last_processed_index, fn @ingestion_id -> -1 end)
       stub(PersistenceMock, :record_last_processed_index, fn @ingestion_id, _ -> "OK" end)
 
@@ -513,6 +559,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Mock Elsa.produce to capture calls
       test_pid = self()
+
       :meck.expect(Elsa, :produce, fn producer, topic, messages, opts ->
         send(test_pid, {:elsa_produce, producer, topic, messages, opts})
         :ok
@@ -522,11 +569,15 @@ defmodule Reaper.DataExtract.ProcessorTest do
 
       # Check that Elsa.produce was called by verifying meck history
       elsa_calls = :meck.history(Elsa)
-      produce_calls = Enum.filter(elsa_calls, fn {_pid, {Elsa, :produce, _args}, _result} -> true
-                                                 _ -> false end)
-      
+
+      produce_calls =
+        Enum.filter(elsa_calls, fn
+          {_pid, {Elsa, :produce, _args}, _result} -> true
+          _ -> false
+        end)
+
       assert length(produce_calls) >= 1, "Expected at least 1 Elsa.produce call"
-      
+
       # Extract the messages from the first produce call 
       {_pid, {Elsa, :produce, [_producer, _topic, messages, _opts]}, _result} = List.first(produce_calls)
 
@@ -544,12 +595,12 @@ defmodule Reaper.DataExtract.ProcessorTest do
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
 
-        stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
+      stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
       stub(PersistenceMock, :get_last_processed_index, fn @ingestion_id -> -1 end)
       stub(PersistenceMock, :record_last_processed_index, fn @ingestion_id, _ -> "OK" end)
       :meck.new(DateTime, [:passthrough])
       :meck.expect(DateTime, :to_string, fn _ -> "2023-08-03 16:31:47.899763Z" end)
-      
+
       provisioned_ingestion =
         TDG.create_ingestion(%{
           id: @ingestion_id,
@@ -580,7 +631,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       # This test just verifies that processing works end-to-end 
       # EventLog functionality is tested in other dedicated tests
       result = Processor.process(provisioned_ingestion, extract_time)
-      
+
       # Verify processing completed successfully (returned message count > 0)
       assert result > 0
     end
@@ -590,7 +641,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       first_dataset_id = Faker.UUID.v4()
       second_dataset_id = Faker.UUID.v4()
 
-        stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
+      stub(PersistenceMock, :remove_last_processed_index, fn @ingestion_id -> :ok end)
       stub(PersistenceMock, :get_last_processed_index, fn @ingestion_id -> -1 end)
       stub(PersistenceMock, :record_last_processed_index, fn @ingestion_id, _ -> "OK" end)
       :meck.new(DateTime, [:passthrough])
@@ -693,7 +744,7 @@ defmodule Reaper.DataExtract.ProcessorTest do
       # Since we're using stubs instead of capture, we just verify the error was raised
       # The intent was to verify no event logs were sent when errors occur
       verify!()
-      
+
       # Cleanup DateTime mock
       :meck.unload(DateTime)
     end

@@ -7,7 +7,7 @@ defmodule Reaper.DataExtract.ExtractStep do
   require Logger
   alias Reaper.DataSlurper
   alias Reaper.UrlBuilder
-  
+
   @timex Application.compile_env(:reaper, :timex, Timex)
   @secret_retriever Application.compile_env(:reaper, :secret_retriever, Reaper.SecretRetriever)
 

@@ -19,7 +19,7 @@ defmodule Reaper.SecretRetrieverTest do
     test "retrieves credentials for given ingestion_id", values do
       :meck.new(File, [:unstick])
       :meck.expect(File, :read, fn "/var/run/secrets/kubernetes.io/serviceaccount/token" -> {:ok, values.jwt} end)
-      
+
       :meck.new(Vault, [:non_strict])
       :meck.expect(Vault, :new, fn _ -> values.vault end)
       :meck.expect(Vault, :auth, fn _, %{role: "reaper-role", jwt: _} -> {:ok, values.vault} end)
@@ -27,7 +27,7 @@ defmodule Reaper.SecretRetrieverTest do
       :meck.expect(Vault, :read, fn _, ^expected_path -> {:ok, values.credentials} end)
 
       assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) == {:ok, values.credentials}
-      
+
       :meck.unload(File)
       :meck.unload(Vault)
     end
@@ -40,14 +40,14 @@ defmodule Reaper.SecretRetrieverTest do
                assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Secret token file not found"
-      
+
       :meck.unload(File)
     end
 
     test "returns error when vault service is unavailable", values do
       :meck.new(File, [:unstick])
       :meck.expect(File, :read, fn "/var/run/secrets/kubernetes.io/serviceaccount/token" -> {:ok, values.jwt} end)
-      
+
       :meck.new(Vault, [:non_strict])
       :meck.expect(Vault, :new, fn _ -> values.vault end)
       :meck.expect(Vault, :auth, fn _, %{role: "reaper-role", jwt: _} -> {:error, ["Something bad happened"]} end)
@@ -56,7 +56,7 @@ defmodule Reaper.SecretRetrieverTest do
                assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
                         {:error, :retrieve_credential_failed}
              end) =~ "Something bad happened"
-      
+
       :meck.unload(File)
       :meck.unload(Vault)
     end

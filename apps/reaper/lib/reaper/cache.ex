@@ -3,9 +3,9 @@ defmodule Reaper.Cache do
   Cache module for rows of data before it is added to the raw topic
   """
   require Logger
-  
+
   @behaviour Reaper.CacheBehaviour
-  
+
   @json_encoder Application.compile_env(:reaper, :json_encoder, Jason)
 
   defmodule CacheError do

@@ -24,7 +24,7 @@ defmodule Reaper.Decoder do
       Reaper.Decoder.Unknown
     ]
   end
-  
+
   defp implementations do
     Application.get_env(:reaper, :decoder_implementations, default_implementations())
   end

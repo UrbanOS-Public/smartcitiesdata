@@ -18,7 +18,7 @@ defmodule Reaper.Decoder.Gtfs do
         {:error, bytes, error}
     end
   end
-  
+
   defp feed_message_decoder do
     Application.get_env(:reaper, :feed_message_decoder, FeedMessage)
   end

@@ -14,17 +14,17 @@ defmodule Reaper.Topic.TopicManagerTest do
     rescue
       ErlangError -> :ok
     end
-    
+
     :meck.new(Elsa, [:non_strict])
-    
-    on_exit(fn -> 
+
+    on_exit(fn ->
       try do
         :meck.unload(Elsa)
       rescue
         ErlangError -> :ok
       end
     end)
-    
+
     :ok
   end
 
@@ -33,9 +33,9 @@ defmodule Reaper.Topic.TopicManagerTest do
     expected_topic = "#{output_topic_prefix()}-#{ingestion_id}"
     expected_brokers = elsa_brokers()
     :meck.expect(Elsa, :delete_topic, fn ^expected_brokers, ^expected_topic -> :ok end)
-    
+
     TopicManager.delete_topic(ingestion_id)
-    
+
     assert :meck.called(Elsa, :delete_topic, [expected_brokers, expected_topic])
   end
 end

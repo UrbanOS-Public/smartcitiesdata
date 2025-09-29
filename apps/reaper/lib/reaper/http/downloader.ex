@@ -4,7 +4,7 @@ defmodule Reaper.Http.Downloader do
   """
   alias Reaper.Util
   require Logger
-  
+
   @mint_http Application.compile_env(:reaper, :mint_http, Mint.HTTP)
 
   @type url :: String.t()

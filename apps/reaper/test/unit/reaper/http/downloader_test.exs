@@ -6,22 +6,25 @@ defmodule Reaper.Http.DownloaderTest do
   alias Reaper.Http.Downloader
 
   setup :verify_on_exit!
-  
+
   setup do
     on_exit(fn -> File.rm("test.output") end)
 
     # Set up MintHttpMock to delegate to real Mint.HTTP for integration testing
     # This allows the HTTP Downloader to work with real HTTP connections through Bypass
-    stub(MintHttpMock, :connect, fn scheme, host, port, opts -> 
+    stub(MintHttpMock, :connect, fn scheme, host, port, opts ->
       Mint.HTTP.connect(scheme, host, port, opts)
     end)
-    stub(MintHttpMock, :request, fn conn, method, path, headers, body -> 
+
+    stub(MintHttpMock, :request, fn conn, method, path, headers, body ->
       Mint.HTTP.request(conn, method, path, headers, body)
     end)
-    stub(MintHttpMock, :stream, fn conn, message -> 
+
+    stub(MintHttpMock, :stream, fn conn, message ->
       Mint.HTTP.stream(conn, message)
     end)
-    stub(MintHttpMock, :close, fn conn -> 
+
+    stub(MintHttpMock, :close, fn conn ->
       Mint.HTTP.close(conn)
     end)
 

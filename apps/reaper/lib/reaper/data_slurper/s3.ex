@@ -6,7 +6,7 @@ defmodule Reaper.DataSlurper.S3 do
   alias ExAws.S3
   alias Reaper.DataSlurper
   require Logger
-  
+
   @ex_aws Application.compile_env(:reaper, :ex_aws, ExAws)
   @ex_aws_s3 Application.compile_env(:reaper, :ex_aws_s3, S3)
 

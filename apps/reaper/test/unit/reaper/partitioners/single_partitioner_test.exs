@@ -4,7 +4,6 @@ defmodule Reaper.Partitioners.SinglePartitionerTest do
   use ExUnit.Case
   alias Reaper.Partitioners.SinglePartitioner
 
-
   test "Successfully produces Single for valid message" do
     message = ~s({"a": "1", "b": "2"})
     expected = "SINGLE"

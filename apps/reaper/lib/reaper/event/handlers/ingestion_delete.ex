@@ -5,7 +5,7 @@ defmodule Reaper.Event.Handlers.IngestionDelete do
 
   alias Reaper.Event.Handlers.Helper.StopIngestion
   alias Reaper.Topic.TopicManager
-  
+
   @stop_ingestion Application.compile_env(:reaper, :stop_ingestion, StopIngestion)
   @topic_manager Application.compile_env(:reaper, :topic_manager, TopicManager)
 

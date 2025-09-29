@@ -76,7 +76,6 @@ defmodule Reaper.Event.EventHandlerTest do
       ingestion: ingestion,
       date: date
     } do
-
       Brook.Test.with_event(@instance_name, fn ->
         Reaper.Collections.Extractions.update_ingestion(ingestion)
       end)
@@ -92,7 +91,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should send ingest_start event", %{ingestion: ingestion} do
-
       Brook.Test.with_event(@instance_name, fn ->
         Reaper.Collections.Extractions.update_ingestion(ingestion)
       end)
@@ -115,7 +113,6 @@ defmodule Reaper.Event.EventHandlerTest do
     end
 
     test "should not send ingest_start event for data that updates more than once per minute on subsequent events" do
-
       ingestion = TDG.create_ingestion(%{id: "in1", targetDatasets: ["ds2", "ds3"], cadence: "* 2 24 * * *"})
 
       Brook.Test.with_event(@instance_name, fn ->
@@ -168,7 +165,7 @@ defmodule Reaper.Event.EventHandlerTest do
 
       # Mock the dependencies that IngestionDelete uses
       stub(StopIngestionMock, :delete_quantum_job, fn _ingestion_id -> :ok end)
-      stub(StopIngestionMock, :stop_horde_and_cache, fn _ingestion_id -> :ok end) 
+      stub(StopIngestionMock, :stop_horde_and_cache, fn _ingestion_id -> :ok end)
       stub(TopicManagerMock, :delete_topic, fn _ingestion_id -> :ok end)
 
       Brook.Test.send(@instance_name, data_extract_start(), :author, ingestion)

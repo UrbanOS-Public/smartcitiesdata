@@ -4,7 +4,6 @@ defmodule Reaper.Partitioners.RoundRobinPartitionerTest do
   use ExUnit.Case
   alias Reaper.Partitioners.RoundRobinPartitioner
 
-
   test "Successfully returns nil indicating round-robin with valid message" do
     message = ~s({"a": "1", "b": "2"})
     expected = nil

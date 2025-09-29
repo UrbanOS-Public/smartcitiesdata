@@ -19,7 +19,7 @@ defmodule Reaper.Event.Handlers.IngestionDeleteTest do
   getter(:brook, generic: true)
 
   setup :verify_on_exit!
-  
+
   setup do
     {:ok, brook} = Brook.start_link(brook() |> Keyword.put(:instance, @instance_name))
     {:ok, scheduler} = Reaper.Scheduler.start_link()
