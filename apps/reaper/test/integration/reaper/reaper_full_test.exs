@@ -2,7 +2,6 @@ defmodule Reaper.FullTest do
   use ExUnit.Case
   use Divo
   use Tesla
-  use Placebo
   use Properties, otp_app: :reaper
 
   import Checkov

@@ -1,6 +1,5 @@
 defmodule Reaper.EventHandlerTest do
   use ExUnit.Case
-  use Placebo
   use Divo
   use Properties, otp_app: :reaper
 

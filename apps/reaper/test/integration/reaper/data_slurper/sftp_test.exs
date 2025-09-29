@@ -1,7 +1,6 @@
 defmodule Reaper.SftpExtractorTest do
   use ExUnit.Case
   use Divo
-  use Placebo
   use Properties, otp_app: :reaper
 
   alias SmartCity.TestDataGenerator, as: TDG
