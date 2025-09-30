@@ -82,7 +82,7 @@ services:
     - "2181:2181"
   kafka:
     platform: linux/amd64
-    image: bitnamilegacy/kafka:3.7.2
+    image: bitnamilegacy/kafka:3.7.1
     depends_on:
     - zookeeper
     ports:
