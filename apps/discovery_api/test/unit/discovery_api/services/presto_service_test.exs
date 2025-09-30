@@ -17,34 +17,34 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     catch
       _, _ -> :ok
     end
-    
+
     try do
       :meck.unload(Prestige.Result)
     catch
       _, _ -> :ok
     end
-    
+
     # Now create fresh mocks
     :meck.new(Prestige, [:non_strict])
     :meck.new(Prestige.Result, [:non_strict])
-    
+
     # PrestigeMock is available through DI (used in other modules)
     stub(PrestigeMock, :new_session, fn _ -> :connection end)
-    
+
     on_exit(fn ->
       try do
         :meck.unload(Prestige)
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.unload(Prestige.Result)
       catch
         _, _ -> :ok
       end
     end)
-    
+
     :ok
   end
 
@@ -64,9 +64,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     ]
 
     query = "select thing1 as \"Thing1\", thing2 as \"Thing2\", thing3 as \"Thing3\" from #{dataset} limit 50"
-    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+
+    :meck.expect(Prestige, :query!, fn :connection, received_query ->
       assert received_query == query
-      :result 
+      :result
     end)
 
     :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
@@ -121,10 +122,12 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
       }
     ]
 
-    query = "select nested_hyphen as \"nested-hyphen\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
-    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+    query =
+      "select nested_hyphen as \"nested-hyphen\", other_thing as \"other-thing\", some_thing_else as \"some-thing-else\" from #{dataset} limit 50"
+
+    :meck.expect(Prestige, :query!, fn :connection, received_query ->
       assert received_query == query
-      :result 
+      :result
     end)
 
     :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)
@@ -201,9 +204,10 @@ defmodule DiscoveryApi.Services.PrestoServiceTest do
     ]
 
     query = "select parent as \"PARENT\" from #{dataset} limit 50"
-    :meck.expect(Prestige, :query!, fn :connection, received_query -> 
+
+    :meck.expect(Prestige, :query!, fn :connection, received_query ->
       assert received_query == query
-      :result 
+      :result
     end)
 
     :meck.expect(Prestige.Result, :as_maps, fn :result -> list_of_maps end)

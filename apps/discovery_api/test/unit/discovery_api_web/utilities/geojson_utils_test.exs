@@ -3,7 +3,7 @@ defmodule DiscoveryApiWeb.Utilities.GeojsonUtilsTest do
   import Checkov
   require Logger
   alias DiscoveryApiWeb.Utilities.GeojsonUtils
-  
+
   @moduletag timeout: 5000
 
   describe("calculate_bounding_box/1") do

@@ -1,7 +1,7 @@
 defmodule DiscoveryApiWeb.Plugs.RecordMetrics do
   @moduledoc false
   alias DiscoveryApi.Services.MetricsService
-  
+
   @metrics_service_impl Application.compile_env(:discovery_api, :metrics_service, MetricsService)
 
   def init(default), do: default

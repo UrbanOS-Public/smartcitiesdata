@@ -2,7 +2,7 @@ defmodule RaptorServiceBehaviour do
   @moduledoc """
   Behaviour for the RaptorService module to enable mocking
   """
-  
+
   @callback list_access_groups_by_dataset(binary(), binary()) :: map()
   @callback list_groups_by_user(binary(), binary()) :: map()
   @callback list_groups_by_api_key(binary(), binary()) :: map()

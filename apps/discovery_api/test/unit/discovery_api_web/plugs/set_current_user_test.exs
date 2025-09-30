@@ -11,9 +11,9 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     setup do
       on_exit(fn -> System.put_env("REQUIRE_API_KEY", "false") end)
       System.put_env("REQUIRE_API_KEY", "true")
-      
+
       # Use Mox for AuthService to avoid HTTP calls in tests
-      stub(AuthServiceMock, :create_logged_in_user, fn _conn -> 
+      stub(AuthServiceMock, :create_logged_in_user, fn _conn ->
         {:error, "Unauthorized"}
       end)
 
@@ -28,8 +28,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 401 when user passes invalid api_key" do
-      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
-        {:error, "401 error", 401} 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key ->
+        {:error, "401 error", 401}
       end)
 
       conn =
@@ -42,8 +42,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 401 when users call fails" do
-      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
-        {:error, "401 error", 401} 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key ->
+        {:error, "401 error", 401}
       end)
 
       conn =
@@ -56,8 +56,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "responds with a 500 when raptor encounters and unexpected error" do
-      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
-        {:error, "Unmatched response"} 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key ->
+        {:error, "Unmatched response"}
       end)
 
       conn =
@@ -70,8 +70,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     end
 
     test "plug completes when apiKey is valid" do
-      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
-        {:ok, "user_id"} 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key ->
+        {:ok, "user_id"}
       end)
 
       conn =
@@ -88,8 +88,8 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
       userId = "userId"
       userObject = "I am a user object"
 
-      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key -> 
-        {:ok, userId} 
+      stub(RaptorServiceMock, :get_user_id_from_api_key, fn _url, _api_key ->
+        {:ok, userId}
       end)
 
       conn =
@@ -113,8 +113,9 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUserTest do
     test "assigns current_user to whatever was passed in" do
       userObject = "I am a user object"
 
-      conn = build_conn(:get, "/doesnt/matter")
-               |> assign(:current_user, userObject)
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> assign(:current_user, userObject)
 
       result = SetCurrentUser.call(conn, [])
 

@@ -14,11 +14,11 @@ defmodule DiscoveryApiWeb.DataController.MetricsTest do
         "smart_registry:*:count:123" -> ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
         "smart_registry:*:count:456" -> []
       end)
-      
+
       stub(PersistenceMock, :get_many, fn
         ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"] -> ["7", "9"]
       end)
-      
+
       :ok
     end
 

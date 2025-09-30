@@ -2,7 +2,7 @@ defmodule PrestoServiceBehaviour do
   @moduledoc """
   Behaviour for the PrestoService module to enable mocking
   """
-  
+
   @callback get_affected_tables(any(), binary()) :: {:ok, list()} | {:error, any()}
   @callback is_select_statement?(binary()) :: boolean()
   @callback preview(any(), binary(), integer(), list()) :: list()

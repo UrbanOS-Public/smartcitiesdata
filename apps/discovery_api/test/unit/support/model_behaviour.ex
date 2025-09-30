@@ -2,7 +2,7 @@ defmodule ModelBehaviour do
   @moduledoc """
   Behaviour for the Model module to enable mocking
   """
-  
+
   @callback get(binary()) :: any() | nil
   @callback get_all() :: list()
   @callback get_all(list()) :: list()

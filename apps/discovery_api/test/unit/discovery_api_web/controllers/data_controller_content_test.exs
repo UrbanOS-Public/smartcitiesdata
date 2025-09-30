@@ -64,43 +64,47 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
       stub(SystemNameCacheMock, :get, fn org_name, data_name ->
         case {org_name, data_name} do
           {"org1", "data1"} -> @dataset_id
-          _ -> @dataset_id  # fallback for any other combination
+          # fallback for any other combination
+          _ -> @dataset_id
         end
       end)
-      
+
       # ModelMock needs to handle both direct dataset_id calls and result from SystemNameCache
       stub(ModelMock, :get, fn dataset_id ->
         case dataset_id do
           @dataset_id -> model
-          _ -> nil  # Return nil for unknown dataset_ids
+          # Return nil for unknown dataset_ids
+          _ -> nil
         end
       end)
-      
+
       # ModelMock.get_all/0 is called by QueryAccessUtils.map_affected_tables_to_models/1
       stub(ModelMock, :get_all, fn -> [model] end)
-      
+
       stub(QueryAccessUtilsMock, :get_affected_models, fn _arg -> {:ok, [model]} end)
       stub(QueryAccessUtilsMock, :user_is_authorized?, fn _arg1, _arg2, _arg3 -> true end)
-      
+
       # ModelAccessUtilsMock is called by QueryAccessUtils.user_can_access_models?/2
       stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)
-      
+
       # MetricsService uses Mox since it has dependency injection
       stub(MetricsServiceMock, :record_api_hit, fn _label, _id -> :ok end)
 
       # PrestoService mocks - these need to be comprehensive for both controllers
       stub(PrestoServiceMock, :get_column_names, fn _arg1, _arg2, _arg3 -> {:ok, ["feature"]} end)
       stub(PrestoServiceMock, :preview_columns, fn _arg -> ["feature"] end)
+
       stub(PrestoServiceMock, :preview, fn _session, system_name, _schema ->
         case system_name do
           @system_name -> @geo_json_features
           _ -> []
         end
       end)
+
       stub(PrestoServiceMock, :build_query, fn _arg1, _arg2, _arg3, _arg4 -> {:ok, "select * from #{@system_name}"} end)
       stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
       stub(PrestoServiceMock, :get_affected_tables, fn _session, _query -> {:ok, [@system_name]} end)
-      
+
       # Additional PrestoService mocks needed for DataDownloadController
       stub(PrestoServiceMock, :format_select_statement_from_schema, fn _schema -> "*" end)
       stub(PrestoServiceMock, :map_prestige_results_to_schema, fn data, _schema -> data end)
@@ -120,6 +124,7 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
               %{"feature" => "{\"geometry\":{\"coordinates\":[[1,1]]}}"},
               %{"feature" => "{\"geometry\":{\"coordinates\":[[0,1]]}}"}
             ]
+
           _ ->
             [
               %{"feature" => "{\"geometry\":{\"coordinates\":[[0,0],[0,1]]}}"},

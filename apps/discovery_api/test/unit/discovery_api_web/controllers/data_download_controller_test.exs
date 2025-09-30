@@ -4,7 +4,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   use Properties, otp_app: :discovery_api
 
   @moduletag timeout: 5000
-  
+
   setup :verify_on_exit!
   setup :set_mox_from_context
 
@@ -68,6 +68,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
     catch
       _, _ -> :ok
     end
+
     :meck.new(ObjectStorageService, [:passthrough])
 
     on_exit(fn ->
@@ -439,16 +440,16 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
       # Set mocks to global for this test
       set_mox_global()
-      
+
       # Set up authorized connection with proper subject_id for ModelAccessUtils
       conn = Plug.Conn.assign(conn, :current_user, %{subject_id: subject})
-      
+
       # Use stub for ModelMock - it should work since model is configured as ModelMock
       stub(ModelMock, :get, fn id ->
         result = if id == dataset_id, do: model, else: nil
         result
       end)
-      
+
       stub(SystemNameCacheMock, :get, fn _org_name, _name -> dataset_id end)
       hmac = "IAMANHMACTOKENFORREAL"
       date_time = DateTime.utc_now()

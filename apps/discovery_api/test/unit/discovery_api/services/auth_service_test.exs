@@ -1,7 +1,7 @@
 defmodule DiscoveryApi.Services.AuthServiceTest do
   use ExUnit.Case
   import Mox
-  
+
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Services.AuthService
   alias Auth.TestHelper
@@ -15,19 +15,18 @@ defmodule DiscoveryApi.Services.AuthServiceTest do
 
   setup do
     # Set up a simple mock bypass for testing without actual HTTP server
-    bypass = %{port: 9999}  # Mock bypass object
-    
+    # Mock bypass object
+    bypass = %{port: 9999}
+
     # Configure application for testing with mock endpoint
     original_config = Application.get_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler)
-    Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, 
-      issuer: "http://localhost:#{bypass.port}/"
-    )
-    
+    Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, issuer: "http://localhost:#{bypass.port}/")
+
     Brook.Test.register(@instance_name)
-    
+
     # Set up mocks using :meck (Guardian.Plug is already mocked globally)
     try do
-      :meck.new(HTTPoison, [:passthrough]) 
+      :meck.new(HTTPoison, [:passthrough])
     catch
       :error, {:already_started, _} -> :ok
     end
@@ -49,11 +48,11 @@ defmodule DiscoveryApi.Services.AuthServiceTest do
     catch
       :error, {:already_started, _} -> :ok
     end
-    
+
     on_exit(fn ->
       # Restore original config
       Application.put_env(:discovery_api, DiscoveryApiWeb.Auth.TokenHandler, original_config)
-      
+
       # Clean up meck modules (except Guardian.Plug which is managed globally)
       try do
         :meck.unload(HTTPoison)
@@ -64,16 +63,18 @@ defmodule DiscoveryApi.Services.AuthServiceTest do
         :error, _ -> :ok
       end
     end)
-    
+
     # Create mock connections without actual Bypass server
     conn = Phoenix.ConnTest.build_conn()
-    authorized_conn = Phoenix.ConnTest.build_conn()
+
+    authorized_conn =
+      Phoenix.ConnTest.build_conn()
       |> Plug.Conn.put_req_header("authorization", "Bearer #{TestHelper.valid_jwt()}")
       |> Plug.Conn.put_req_header("content-type", "application/json")
-    
+
     %{
       bypass: bypass,
-      conn: conn, 
+      conn: conn,
       authorized_conn: authorized_conn,
       authorized_token: TestHelper.valid_jwt()
     }
@@ -137,10 +138,12 @@ defmodule DiscoveryApi.Services.AuthServiceTest do
 
       :meck.expect(Guardian.Plug, :current_token, fn _conn -> "valid_token" end)
       :meck.expect(Guardian.Plug, :current_claims, fn _conn -> %{"sub" => subject} end)
-      :meck.expect(Guardian.Plug, :put_current_resource, fn conn, user -> 
+
+      :meck.expect(Guardian.Plug, :put_current_resource, fn conn, user ->
         # Return the same conn with user assigned (simplified for testing)
         %{conn | assigns: Map.put(conn.assigns, :current_resource, user)}
       end)
+
       :meck.expect(Users, :create_or_update, fn ^subject, %{email: ^email, name: ^name} -> {:ok, test_user} end)
       :meck.expect(SmartCity.User, :new, fn %{subject_id: ^subject, email: ^email, name: ^name} -> {:ok, smart_user} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _event_type, _module, ^smart_user -> :ok end)

@@ -14,6 +14,7 @@ defmodule DiscoveryApiWeb.Router do
         module: DiscoveryApiWeb.Auth.TokenHandler,
         error_handler: DiscoveryApiWeb.Auth.ErrorHandler
       )
+
       plug(Auth.Guardian.Plug.VerifyHeader)
     end
   end
@@ -24,6 +25,7 @@ defmodule DiscoveryApiWeb.Router do
     else
       plug(Guardian.Plug.LoadResource, allow_blank: true)
     end
+
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 
@@ -41,6 +43,7 @@ defmodule DiscoveryApiWeb.Router do
     else
       plug(Guardian.Plug.LoadResource, allow_blank: false)
     end
+
     plug(DiscoveryApiWeb.Plugs.SetCurrentUser)
   end
 

@@ -8,7 +8,7 @@ defmodule DiscoveryApi.Data.Mapper do
   alias DiscoveryApi.Data.Model
   alias DiscoveryApi.Data.OrganizationDetails
   use Properties, otp_app: :discovery_api
-  
+
   # Allow configuring the RaptorService module for testing
   @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
 

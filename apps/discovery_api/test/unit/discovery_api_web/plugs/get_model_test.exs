@@ -15,14 +15,14 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
   describe "call/2" do
     setup do
       Cachex.clear(SystemNameCache.cache_name())
-      
+
       # Use :meck for DiscoveryApiWeb.RenderError since it doesn't have dependency injection
       try do
         :meck.new(DiscoveryApiWeb.RenderError, [:non_strict])
       catch
         _, _ -> :ok
       end
-      
+
       on_exit(fn ->
         try do
           :meck.unload(DiscoveryApiWeb.RenderError)
@@ -30,7 +30,7 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
           _, _ -> :ok
         end
       end)
-      
+
       :ok
     end
 
@@ -44,9 +44,9 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
         assert dataset_name == "data1"
         dataset1.id
       end)
-      
+
       # Use ModelMock since GetModel plug uses dependency injection
-      stub(ModelMock, :get, fn id -> 
+      stub(ModelMock, :get, fn id ->
         assert id == dataset1.id
         :model
       end)
@@ -60,14 +60,14 @@ defmodule DiscoveryApiWeb.Plugs.GetModelTest do
     test "responds with a 404 when org_name and dataset_name combination is not known" do
       # Use SystemNameCacheMock to return nil (not found)
       stub(SystemNameCacheMock, :get, fn _org_name, _dataset_name -> nil end)
-      
+
       # Use :meck for RenderError since it doesn't have dependency injection
-      :meck.expect(DiscoveryApiWeb.RenderError, :render_error, fn conn, status, message -> 
+      :meck.expect(DiscoveryApiWeb.RenderError, :render_error, fn conn, status, message ->
         assert status == 404
         assert message == "Not Found"
         conn
       end)
-      
+
       conn = build_conn(:get, "/doesnt/matter", %{"org_name" => "org1", "dataset_name" => "data1"})
       result = GetModel.call(conn, [])
 

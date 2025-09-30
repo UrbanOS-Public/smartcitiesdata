@@ -26,7 +26,7 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
       assign(conn, :current_user, current_user)
     end
   end
-  
+
   # Use test-friendly Guardian in test mode
   defp get_current_resource(conn) do
     if Application.get_env(:discovery_api, :test_mode, false) do

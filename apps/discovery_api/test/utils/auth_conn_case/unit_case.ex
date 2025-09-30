@@ -43,7 +43,7 @@ defmodule DiscoveryApiWeb.Test.AuthConnCase.UnitCase do
     :ok
   end
 
-  def disable_user_addition() do  
+  def disable_user_addition() do
     # In test mode, user creation is handled by TestGuardian
     :ok
   end

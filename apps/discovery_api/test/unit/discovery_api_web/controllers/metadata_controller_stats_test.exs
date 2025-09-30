@@ -13,6 +13,7 @@ defmodule DiscoveryApiWeb.DataController.StatsTest do
   describe "fetch dataset stats" do
     test "retrieves stats for dataset when stats exist", %{conn: conn} do
       model = Helper.sample_model(%{id: @dataset_id})
+
       stub(ModelMock, :get, fn dataset_id ->
         case dataset_id do
           @dataset_id -> model
@@ -39,6 +40,7 @@ defmodule DiscoveryApiWeb.DataController.StatsTest do
 
     test "Returns an empty response when the stats do not exist", %{conn: conn} do
       model = Helper.sample_model(%{id: @dataset_id})
+
       stub(ModelMock, :get, fn dataset_id ->
         case dataset_id do
           @dataset_id -> model

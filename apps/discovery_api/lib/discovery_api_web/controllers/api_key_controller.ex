@@ -6,7 +6,7 @@ defmodule DiscoveryApiWeb.ApiKeyController do
 
   plug(:accepts, ["json"])
   getter(:raptor_url, generic: true)
-  
+
   @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
 
   def regenerate_api_key(conn, _) do

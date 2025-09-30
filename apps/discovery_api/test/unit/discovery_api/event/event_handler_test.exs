@@ -33,44 +33,44 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       {:ok, _pid} -> :ok
       {:error, {:already_started, _pid}} -> :ok
     end
-    
+
     # Mock DeadLetter using Mox since EventHandler now uses dependency injection
     stub(DeadLetterMock, :process, fn _topics, _headers, _data, _instance, _opts -> :ok end)
-    
+
     # Mock StatsCalculator using :meck since EventHandler doesn't use dependency injection
     try do
       :meck.unload(DiscoveryApi.Stats.StatsCalculator)
     catch
       _, _ -> :ok
     end
-    
+
     :meck.new(DiscoveryApi.Stats.StatsCalculator, [:non_strict])
     :meck.expect(DiscoveryApi.Stats.StatsCalculator, :delete_completeness, fn _dataset_id -> :ok end)
-    
+
     # Mock ResponseCache using :meck since EventHandler doesn't use dependency injection
     try do
       :meck.unload(DiscoveryApi.Data.ResponseCache)
     catch
       _, _ -> :ok
     end
-    
+
     :meck.new(DiscoveryApi.Data.ResponseCache, [:non_strict])
     :meck.expect(DiscoveryApi.Data.ResponseCache, :invalidate, fn -> {:ok, true} end)
-    
+
     on_exit(fn ->
       try do
         :meck.unload(DiscoveryApi.Stats.StatsCalculator)
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.unload(DiscoveryApi.Data.ResponseCache)
       catch
         _, _ -> :ok
       end
     end)
-    
+
     :ok
   end
 
@@ -79,14 +79,14 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 organization_update" do
     test "should save organization to ecto" do
       org = TDG.create_organization(%{})
-      
+
       # Clean unload any existing mock first
       try do
         :meck.unload(DiscoveryApi.Schemas.Organizations)
       catch
         _, _ -> :ok
       end
-      
+
       # Mock Organizations.create_or_update using :meck
       :meck.new(DiscoveryApi.Schemas.Organizations, [:passthrough])
       :meck.expect(DiscoveryApi.Schemas.Organizations, :create_or_update, fn _org -> :dontcare end)
@@ -95,7 +95,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
 
       # Verify the function was called
       assert :meck.called(DiscoveryApi.Schemas.Organizations, :create_or_update, :_)
-      
+
       # Clean up the mock with try-catch for safety
       try do
         :meck.unload(DiscoveryApi.Schemas.Organizations)
@@ -118,7 +118,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       catch
         _, _ -> :ok
       end
-      
+
       # Mock Users module using :meck since EventHandler doesn't use dependency injection
       :meck.new(DiscoveryApi.Schemas.Users, [:passthrough])
       :meck.expect(DiscoveryApi.Schemas.Users, :get_user, fn _subject_id, :subject_id -> {:ok, :does_not_matter} end)
@@ -165,7 +165,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       catch
         _, _ -> :ok
       end
-      
+
       # Mock Users module using :meck since EventHandler doesn't use dependency injection
       :meck.new(DiscoveryApi.Schemas.Users, [:passthrough])
 
@@ -326,10 +326,10 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       stub(ModelMock, :delete, fn _dataset_id -> :ok end)
       stub(DataJsonServiceMock, :delete_data_json, fn -> :ok end)
       stub(ElasticsearchDocumentMock, :delete, fn _dataset_id -> :ok end)
-      
+
       # Add PersistenceMock expectation for RecommendationEngine.delete and StatsCalculator operations
       stub(PersistenceMock, :delete, fn _key -> :ok end)
-      
+
       # Add RedixMock expectation for Redis deletion operations
       stub(RedixMock, :command, fn _connection, _command -> {:ok, "1"} end)
 
@@ -347,7 +347,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       stub(TableInfoCacheMock, :invalidate, fn -> {:ok, true} end)
       stub(SystemNameCacheMock, :delete, fn _org_name, _data_name -> {:ok, true} end)
       stub(ModelMock, :delete, fn _dataset_id -> :ok end)
-      
+
       # Mock RedixMock to return an error to simulate a Redis failure
       expect(RedixMock, :command, fn _, _ -> raise error end)
       # Also add PersistenceMock expectation
@@ -363,26 +363,26 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
   describe "handle_event/1 #{dataset_query()}" do
     test "records api query hit for all affected datasets" do
       sample_model = DiscoveryApi.Test.Helper.sample_model(%{id: "123"})
-      
+
       # Clean unload any existing mock first
       try do
         :meck.unload(DiscoveryApi.Services.MetricsService)
       catch
         _, _ -> :ok
       end
-      
+
       # Mock the MetricsService.record_api_hit function using :meck
       :meck.new(DiscoveryApi.Services.MetricsService, [:passthrough])
       :meck.expect(DiscoveryApi.Services.MetricsService, :record_api_hit, fn _request_type, _dataset_id -> :ok end)
 
       # Process the event directly to verify behavior
       result = EventHandler.handle_event(Brook.Event.new(type: dataset_query(), data: sample_model.id, author: :author))
-      
+
       # Verify the MetricsService was called correctly
       assert :meck.called(DiscoveryApi.Services.MetricsService, :record_api_hit, [:_, :_])
-      
+
       assert result == :discard
-      
+
       # Clean up the mock with try-catch for safety
       try do
         :meck.unload(DiscoveryApi.Services.MetricsService)

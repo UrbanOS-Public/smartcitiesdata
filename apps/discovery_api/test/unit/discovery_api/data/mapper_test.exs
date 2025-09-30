@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Data.MapperTest do
   alias DiscoveryApi.Test.Helper
   alias SmartCity.TestDataGenerator, as: TDG
   import Checkov
-  
+
   setup :verify_on_exit!
 
   describe "to_data_model/2 hard overrides" do

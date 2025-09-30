@@ -61,6 +61,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
           ^completeness_key -> "2019-06-05T13:59:09.630290Z"
         end
       end)
+
       StatsCalculator.produce_completeness_stats()
 
       # Mox verification happens automatically with verify_on_exit!
@@ -125,6 +126,7 @@ defmodule DiscoveryApi.Stats.StatsCalculatorTest do
 
       last_inserted_key = "forklift:last_insert_date:#{dataset.id}"
       complete_key = "#{@completeness_key}:#{dataset.id}"
+
       stub(PersistenceMock, :get, fn key ->
         case key do
           ^last_inserted_key -> "2019-06-05T13:59:09.630290Z"

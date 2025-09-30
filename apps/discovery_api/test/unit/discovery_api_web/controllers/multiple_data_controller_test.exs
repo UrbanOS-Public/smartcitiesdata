@@ -7,7 +7,6 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
   setup :verify_on_exit!
   setup :set_mox_from_context
 
-
   @presto_service Application.compile_env(:discovery_api, :presto_service, PrestoServiceMock)
   @model Application.compile_env(:discovery_api, :model, ModelMock)
   @model_access_utils Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtilsMock)
@@ -66,30 +65,35 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     catch
       _, _ -> :ok
     end
-    
+
     :meck.new(Brook.Event, [:non_strict])
-    :meck.expect(Brook.Event, :send, fn _, _, _, _ -> 
+
+    :meck.expect(Brook.Event, :send, fn _, _, _, _ ->
       # Send a GenServer-style message that tests can assert_receive
       send(self(), {:"$gen_call", {self(), :send}, :ok})
-      :ok 
+      :ok
     end)
 
     # Use Mox stubs so individual tests can override them
     stub(PrestigeMock, :new_session, fn _opts -> :session end)
     stub(PrestigeMock, :stream!, fn _session, _statement -> [:result1, :result2, :result3] end)
+
     stub(PrestigeResultMock, :as_maps, fn
       :result1 -> [%{"a" => "2", "b" => "2"}]
       :result2 -> [%{"a" => "3", "b" => "3"}]
       :result3 -> [%{"a" => "1", "b" => "1"}]
-      {:ok, item} -> [item]  # Handle the {:ok, item} pattern from individual tests
+      # Handle the {:ok, item} pattern from individual tests
+      {:ok, item} -> [item]
       _result -> []
     end)
 
     # Default stubs for PrestoService that individual tests can override
-    stub(@presto_service, :is_select_statement?, fn 
-      "" -> false  # Empty statement should return false
-      _ -> true 
+    stub(@presto_service, :is_select_statement?, fn
+      # Empty statement should return false
+      "" -> false
+      _ -> true
     end)
+
     stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, []} end)
     stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
@@ -104,7 +108,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
     {
       :ok,
-      %{ 
+      %{
         public_model_ids: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :id)),
         public_tables: [public_one_dataset, public_two_dataset] |> Enum.map(&Map.get(&1, :systemName)),
         private_tables: [private_one_dataset, private_two_dataset] |> Enum.map(&Map.get(&1, :systemName))
@@ -125,7 +129,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
       {
         :ok,
-        %{ 
+        %{
           json_response: json_from_execute,
           csv_response: csv_from_execute
         }
@@ -150,7 +154,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, public_tables} end)
       stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
-      response_body = 
+      response_body =
         conn
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "text/plain")
@@ -180,7 +184,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
       stub(@presto_service, :get_affected_tables, fn _, _ -> {:ok, public_tables} end)
       stub(@model_access_utils, :has_access?, fn _, _ -> true end)
 
-      response_body = 
+      response_body =
         conn
         |> put_req_header("accept", "text/csv")
         |> put_req_header("content-type", "text/plain")
@@ -350,7 +354,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
     end
 
     test "returns geojson with bounding box", %{conn: conn, statement: statement} do
-      actual = 
+      actual =
         conn
         |> put_req_header("accept", "application/json")
         |> put_req_header("content-type", "text/plain")
@@ -361,12 +365,12 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
                "type" => "FeatureCollection",
                "bbox" => [0, 0, 1, 1],
                "features" => [
-                 %{ 
+                 %{
                    "geometry" => %{
                      "coordinates" => [1, 0]
                    }
                  },
-                 %{ 
+                 %{
                    "geometry" => %{
                      "coordinates" => [[0, 1]]
                    }

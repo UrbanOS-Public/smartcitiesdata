@@ -66,7 +66,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
     setup %{conn: conn, models: models} do
       # Set mocks global for this describe block so they work across processes
       set_mox_global()
-      
+
       # DataJson calls Model.get_all() directly, not through dependency injection
       # So we need to use :meck to mock the Model module
       try do
@@ -74,9 +74,9 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Model, :get_all, fn -> models end)
-      
+
       data_json = conn |> get("/api/v1/data_json") |> json_response(200) |> Map.get("dataset")
 
       on_exit(fn ->
@@ -174,7 +174,7 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       set_mox_global()
       :ok
     end
-    
+
     test "drops optional fields with nil value", %{conn: conn} do
       model = %Model{
         id: "myfancydata",
@@ -194,9 +194,9 @@ defmodule DiscoveryApiWeb.DataJsonControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Model, :get_all, fn -> [model] end)
-      
+
       on_exit(fn ->
         try do
           :meck.unload(Model)

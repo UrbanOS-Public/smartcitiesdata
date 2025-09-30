@@ -17,7 +17,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
     auth_conn_case.disable_revocation_list.()
     :ok
   end
-  
+
   setup %{authorized_conn: conn} do
     if conn do
       # Manually set current_user for unit tests since Guardian middleware requires database
@@ -32,7 +32,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
   setup do
     # Set up :meck for modules without dependency injection (only Users)
     modules_to_mock = [Users]
-    
+
     Enum.each(modules_to_mock, fn module ->
       try do
         :meck.new(module, [:passthrough])
@@ -177,7 +177,7 @@ defmodule DiscoveryApiWeb.MetadataController.DetailTest do
         })
 
       expect(ModelMock, :get, fn "123" -> model end)
-      
+
       :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %User{organizations: [%{id: @org_id}]}} end)
       stub(RaptorServiceMock, :is_authorized_by_user_id, fn _arg1, _arg2, _arg3 -> true end)
       stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)

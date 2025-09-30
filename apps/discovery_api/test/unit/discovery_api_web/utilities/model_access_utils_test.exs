@@ -35,10 +35,10 @@ defmodule DiscoveryApiWeb.Utilities.ModelAccessUtilsTest do
     test "returns true for private dataset when user is associated with organization" do
       model = Helper.sample_model(%{private: true})
       user = %{subject_id: "bob", organizations: [%{id: model.organizationDetails.id}]}
-      
+
       # Mock RaptorService to return true (user is authorized)
       expect(RaptorServiceMock, :is_authorized_by_user_id, fn _url, "bob", _system_name -> true end)
-      
+
       assert ModelAccessUtils.has_access?(model, user) == true
     end
 

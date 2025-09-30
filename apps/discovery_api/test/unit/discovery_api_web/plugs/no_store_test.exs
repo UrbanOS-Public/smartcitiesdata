@@ -27,7 +27,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       catch
         _, _ -> :ok
       end
-      
+
       on_exit(fn ->
         try do
           :meck.unload(Prestige)
@@ -36,7 +36,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
           _, _ -> :ok
         end
       end)
-      
+
       :ok
     end
 
@@ -66,7 +66,7 @@ defmodule DiscoveryApiWeb.Plugs.NoStoreTest do
       stub(RedixMock, :command!, fn _, _ -> :does_not_matter end)
       # Add MetricsServiceMock expectation for RecordMetrics plug
       stub(MetricsServiceMock, :record_api_hit, fn _, _ -> :ok end)
-      
+
       # Use Mox for Prestige services with dependency injection
       stub(PrestigeMock, :new_session, fn _ -> :connection end)
       stub(PrestigeMock, :stream!, fn _, _ -> [:result] end)

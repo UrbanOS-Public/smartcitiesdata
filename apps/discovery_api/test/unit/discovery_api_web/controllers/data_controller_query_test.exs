@@ -36,22 +36,29 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       })
 
     # Use Mox for dependency injection - GetModel plug uses SystemNameCacheMock and ModelMock
-    stub(SystemNameCacheMock, :get, fn 
+    stub(SystemNameCacheMock, :get, fn
       @org_name, @data_name -> @dataset_id
       "org1", "nest" -> "123456"
       _org, _data -> nil
     end)
-    stub(ModelMock, :get, fn 
-      @dataset_id -> model
-      "123456" -> Helper.sample_model(%{
-        id: "123456",
-        systemName: "org1__nest",
-        name: "nest",
-        private: false,
-        schema: [%{name: "feature", type: "json"}]
-      })
-      _id -> nil
+
+    stub(ModelMock, :get, fn
+      @dataset_id ->
+        model
+
+      "123456" ->
+        Helper.sample_model(%{
+          id: "123456",
+          systemName: "org1__nest",
+          name: "nest",
+          private: false,
+          schema: [%{name: "feature", type: "json"}]
+        })
+
+      _id ->
+        nil
     end)
+
     stub(ModelMock, :get_all, fn -> [model] end)
 
     stub(PrestigeMock, :new_session, fn _opts -> :connection end)
@@ -138,7 +145,6 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, where: "id=1", orderBy: "name", limit: "200", groupBy: "name")
       |> response(200)
 
-
       where(
         url: [
           "/api/v1/dataset/test/query",
@@ -167,7 +173,6 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
       |> get(url, columns: "id, name")
       |> response(200)
 
-
       where(
         url: [
           "/api/v1/dataset/test/query",
@@ -182,21 +187,24 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
   describe "error cases" do
     test "table does not exist returns Not Found", %{conn: conn} do
       # Use Mox for ModelMock instead of :meck for Model module
-      stub(ModelMock, :get, fn 
-        "no_exist" -> Helper.sample_model(%{
-          id: "test", 
-          systemName: "coda__no_exist", 
-          private: false
-        })
-        _id -> nil
+      stub(ModelMock, :get, fn
+        "no_exist" ->
+          Helper.sample_model(%{
+            id: "test",
+            systemName: "coda__no_exist",
+            private: false
+          })
+
+        _id ->
+          nil
       end)
 
       # Override the PrestoService mock to return an error for non-existent table
-      stub(PrestoServiceMock, :get_column_names, fn _session, "coda__no_exist", _columns -> 
+      stub(PrestoServiceMock, :get_column_names, fn _session, "coda__no_exist", _columns ->
         {:error, "Table coda__no_exist does not exist"}
       end)
 
-      stub(PrestigeMock, :query!, fn :connection, _query -> 
+      stub(PrestigeMock, :query!, fn :connection, _query ->
         %Prestige.Result{columns: :doesnt_matter, presto_headers: :doesnt_matter, rows: []}
       end)
 
@@ -214,13 +222,13 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         # Check for malicious patterns in any parameter
         all_params = Map.values(params) |> Enum.join(" ")
         malicious_patterns = [";", "/*", "*/", "--", "$path"]
-        
+
         case Enum.any?(malicious_patterns, fn pattern -> String.contains?(all_params, pattern) end) do
           true -> {:bad_request, "Query contained illegal character(s)"}
           false -> {:ok, "SELECT id, name FROM #{@system_name}"}
         end
       end)
-      
+
       :ok
     end
 
@@ -268,14 +276,15 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
         })
 
       # Use Mox for both ModelMock and SystemNameCacheMock (both have dependency injection)
-      stub(ModelMock, :get, fn 
+      stub(ModelMock, :get, fn
         "geojson" -> model
         _id -> nil
       end)
+
       stub(ModelMock, :get_all, fn -> [model] end)
 
       # Update SystemNameCacheMock to handle the geojson mapping
-      stub(SystemNameCacheMock, :get, fn 
+      stub(SystemNameCacheMock, :get, fn
         @org_name, @data_name -> @dataset_id
         "org1", "nest" -> "123456"
         "geojson", "geojson" -> "geojson"
@@ -329,7 +338,6 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
                "type" => @feature_type
              }
 
-
       where(
         url: [
           "/api/v1/dataset/geojson/query",
@@ -379,26 +387,31 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
 
       # Use Mox for both SystemNameCacheMock and ModelMock (both have dependency injection)
       # Update SystemNameCacheMock to handle the nest scenario
-      stub(SystemNameCacheMock, :get, fn 
+      stub(SystemNameCacheMock, :get, fn
         @org_name, @data_name -> @dataset_id
         @org_name, "nest" -> "123456"
         _org, _data -> nil
       end)
 
       # Use Mox for ModelMock (has dependency injection) - override the global stub
-      stub(ModelMock, :get, fn 
-        @dataset_id -> Helper.sample_model(%{
-          id: @dataset_id,
-          systemName: @system_name,
-          name: @data_name,
-          private: false,
-          schema: [
-            %{name: "id", type: "integer"},
-            %{name: "name", type: "string"}
-          ]
-        })
-        "123456" -> model
-        _id -> nil
+      stub(ModelMock, :get, fn
+        @dataset_id ->
+          Helper.sample_model(%{
+            id: @dataset_id,
+            systemName: @system_name,
+            name: @data_name,
+            private: false,
+            schema: [
+              %{name: "id", type: "integer"},
+              %{name: "name", type: "string"}
+            ]
+          })
+
+        "123456" ->
+          model
+
+        _id ->
+          nil
       end)
 
       stub(PrestigeMock, :query!, fn :connection, "describe nest_test" ->

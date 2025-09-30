@@ -9,7 +9,7 @@ defmodule DiscoveryApi.Stats.CompletenessTest do
 
   setup do
     # Stub RaptorService for all tests in this module
-    stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _raptor_url, _dataset_id -> 
+    stub(RaptorServiceMock, :list_access_groups_by_dataset, fn _raptor_url, _dataset_id ->
       %{access_groups: []}
     end)
 

@@ -2,7 +2,7 @@ defmodule QueryAccessUtilsBehaviour do
   @moduledoc """
   Behaviour for QueryAccessUtils module to enable mocking
   """
-  
+
   @callback authorized_session(any(), any()) :: {:ok, any()} | {:error, binary()}
   @callback user_is_authorized?(any(), any(), any()) :: boolean()
   @callback get_affected_models(binary()) :: {:ok, list()} | {:error, binary()} | {:sql_error, binary()}

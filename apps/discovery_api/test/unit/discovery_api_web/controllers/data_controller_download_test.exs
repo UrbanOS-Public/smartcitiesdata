@@ -54,11 +54,11 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
     end)
 
     stub(@prestige, :new_session, fn _ -> :connection end)
-    
+
     stub(@prestige_result, :as_maps, fn {:ok, data} -> [data] end)
 
     stub(@redix, :command!, fn _, _ -> :does_not_matter end)
-    
+
     stub(@metrics_service, :record_api_hit, fn _, _ -> :ok end)
 
     :ok
@@ -109,7 +109,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "stanislav"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model = 
+      model =
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__stan",
@@ -154,7 +154,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "stanislav"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model = 
+      model =
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__stan",
@@ -192,7 +192,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
         "type" => "FeatureCollection",
         "name" => "#{@org_name}__stan",
         "features" => [
-          %{ 
+          %{
             "geometry" => %{
               "coordinates" => [0, 1]
             }
@@ -208,7 +208,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       dataset_id = "pedro"
       url = "/api/v1/dataset/#{dataset_id}/download"
 
-      model = 
+      model =
         Helper.sample_model(%{
           id: dataset_id,
           systemName: "#{@org_name}__paco",
@@ -262,7 +262,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       conn
       |> get(url)
       |> response(200)
-      
+
       # Give the Task time to complete
       Process.sleep(100)
 
@@ -285,7 +285,7 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
       |> Plug.Conn.put_req_header("origin", "data.integration.tests.example.com")
       |> get(url)
       |> response(200)
-      
+
       # Give time for any potential Task to complete
       Process.sleep(100)
 

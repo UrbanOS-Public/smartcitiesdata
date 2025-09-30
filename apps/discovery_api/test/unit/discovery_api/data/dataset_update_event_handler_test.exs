@@ -43,37 +43,42 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       dataset = TDG.create_dataset(%{id: "123"})
       organization = create_schema_organization(%{id: dataset.technical.orgId})
       org_id = dataset.technical.orgId
-      
+
       # Mock Organizations using :meck since EventHandler calls it directly
       try do
         :meck.unload(DiscoveryApi.Schemas.Organizations)
       catch
         _, _ -> :ok
       end
+
       :meck.new(DiscoveryApi.Schemas.Organizations, [:passthrough])
-      :meck.expect(DiscoveryApi.Schemas.Organizations, :get_organization, fn received_org_id -> 
+
+      :meck.expect(DiscoveryApi.Schemas.Organizations, :get_organization, fn received_org_id ->
         case received_org_id do
-          ^org_id -> {:ok, organization}
-          _ -> 
+          ^org_id ->
+            {:ok, organization}
+
+          _ ->
             # Create a default organization for any other org_id (like in data_test scenarios)
             default_org = create_schema_organization(%{id: received_org_id})
             {:ok, default_org}
         end
       end)
-      
+
       # Stub MapperMock for tests that need it
       sample_model = sample_model()
       stub(MapperMock, :to_data_model, fn _dataset, _org -> {:ok, sample_model} end)
-      
+
       # Mock Elasticsearch.Document using :meck since EventHandler calls it directly
       try do
         :meck.unload(DiscoveryApi.Search.Elasticsearch.Document)
       catch
         _, _ -> :ok
       end
+
       :meck.new(DiscoveryApi.Search.Elasticsearch.Document, [:passthrough])
       :meck.expect(DiscoveryApi.Search.Elasticsearch.Document, :update, fn _model -> {:ok, :updated} end)
-      
+
       # Mock RecommendationEngine using :meck since EventHandler calls it directly
       # But delegate to RecommendationEngineMock so individual tests can use Mox expectations
       try do
@@ -81,11 +86,13 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       catch
         _, _ -> :ok
       end
+
       :meck.new(DiscoveryApi.RecommendationEngine, [:passthrough])
-      :meck.expect(DiscoveryApi.RecommendationEngine, :save, fn dataset -> 
-        RecommendationEngineMock.save(dataset) 
+
+      :meck.expect(DiscoveryApi.RecommendationEngine, :save, fn dataset ->
+        RecommendationEngineMock.save(dataset)
       end)
-      
+
       # Mock ResponseCache using :meck since EventHandler calls it directly
       # But delegate to ResponseCacheMock so individual tests can use Mox expectations
       try do
@@ -93,9 +100,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       catch
         _, _ -> :ok
       end
+
       :meck.new(DiscoveryApiWeb.Plugs.ResponseCache, [:passthrough])
-      :meck.expect(DiscoveryApiWeb.Plugs.ResponseCache, :invalidate, fn -> 
-        ResponseCacheMock.invalidate() 
+
+      :meck.expect(DiscoveryApiWeb.Plugs.ResponseCache, :invalidate, fn ->
+        ResponseCacheMock.invalidate()
       end)
 
       {:ok, %{dataset: dataset, organization: organization}}
@@ -146,10 +155,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
       # Check if model was saved successfully (like the working test does)
       case Brook.ViewState.get(@instance_name, :models, id) do
-        {:ok, model} when model != nil -> 
+        {:ok, model} when model != nil ->
           # Verify the model has the expected structure
           assert model.id == id
           assert model.title == title
+
         {:ok, nil} ->
           # Handle case where event processing failed due to missing dependencies
           # but still verify the event was received (this is acceptable in the migration context)
@@ -161,11 +171,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       dataset = TDG.create_dataset(dataset_map)
       organization = create_schema_organization(%{id: dataset.technical.orgId})
       org_id = dataset.technical.orgId
-      
+
       if called do
-        expect(RecommendationEngineMock, :save, 1, fn received_dataset -> 
+        expect(RecommendationEngineMock, :save, 1, fn received_dataset ->
           assert received_dataset == dataset
-          :ok 
+          :ok
         end)
       else
         expect(RecommendationEngineMock, :save, 0, fn _ -> :ok end)
@@ -198,7 +208,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       end)
 
       stub(RedixMock, :command!, fn _, _ -> ["not_in_redis"] end)
-      
+
       # Mock Elasticsearch.Document using :meck since EventHandler calls it directly
       # But delegate to ElasticsearchDocumentMock so individual tests can use Mox expectations
       try do
@@ -206,9 +216,11 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
       catch
         _, _ -> :ok
       end
+
       :meck.new(DiscoveryApi.Search.Elasticsearch.Document, [:passthrough])
-      :meck.expect(DiscoveryApi.Search.Elasticsearch.Document, :update, fn model -> 
-        ElasticsearchDocumentMock.update(model) 
+
+      :meck.expect(DiscoveryApi.Search.Elasticsearch.Document, :update, fn model ->
+        ElasticsearchDocumentMock.update(model)
       end)
 
       {:ok, [data_model: data_model]}

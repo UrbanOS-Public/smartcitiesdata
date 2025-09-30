@@ -15,7 +15,7 @@ defmodule DiscoveryApi.Data.ModelTest do
 
   test "get_count_maps/1" do
     keys = ["smart_registry:queries:count:123", "smart_registry:downloads:count:123"]
-    
+
     expect(PersistenceMock, :get_keys, fn "smart_registry:*:count:123" -> keys end)
     expect(PersistenceMock, :get_many, fn ^keys -> ["7", "9"] end)
 
@@ -45,7 +45,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)
 
-    expect(PersistenceMock, :get_many_with_keys, fn _keys -> 
+    expect(PersistenceMock, :get_many_with_keys, fn _keys ->
       Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
     end)
 
@@ -63,7 +63,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       Brook.ViewState.merge(:models, nate_as_expected.id, nate_as_expected)
     end)
 
-    expect(PersistenceMock, :get_many_with_keys, fn _keys -> 
+    expect(PersistenceMock, :get_many_with_keys, fn _keys ->
       Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
     end)
 
@@ -77,7 +77,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)
 
-    expect(PersistenceMock, :get_many_with_keys, fn _keys -> 
+    expect(PersistenceMock, :get_many_with_keys, fn _keys ->
       Map.merge(get_many_with_keys_result(nil), get_many_with_keys_result(paul_as_expected))
     end)
 
@@ -93,7 +93,7 @@ defmodule DiscoveryApi.Data.ModelTest do
       Brook.ViewState.merge(:models, paul_as_expected.id, paul_as_expected)
     end)
 
-    expect(PersistenceMock, :get_many_with_keys, fn _keys -> 
+    expect(PersistenceMock, :get_many_with_keys, fn _keys ->
       Map.merge(get_many_with_keys_result(cam_as_expected), get_many_with_keys_result(paul_as_expected))
     end)
 

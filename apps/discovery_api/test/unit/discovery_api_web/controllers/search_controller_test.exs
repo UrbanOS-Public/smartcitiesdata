@@ -18,33 +18,33 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       generate_model("Richard", ~D(2001-09-09), "ingest")
     ]
 
-    
     # Mock modules that don't have dependency injection
     try do
       :meck.new(Plug.Conn, [:passthrough])
     catch
       :error, {:already_started, _} -> :ok
     end
+
     :meck.expect(Plug.Conn, :get_req_header, fn _conn, _header -> [] end)
-    
+
     try do
       :meck.new(Search, [:passthrough])
     catch
       :error, {:already_started, _} -> :ok
     end
-    
-    
+
     try do
       :meck.new(RaptorService, [:passthrough])
     catch
       :error, {:already_started, _} -> :ok
     end
-    :meck.expect(RaptorService, :list_groups_by_api_key, fn _url, _api_key -> 
-      %{access_groups: [], organizations: []} 
+
+    :meck.expect(RaptorService, :list_groups_by_api_key, fn _url, _api_key ->
+      %{access_groups: [], organizations: []}
     end)
-    
+
     stub(ModelMock, :get_all, fn -> mock_dataset_summaries end)
-    
+
     on_exit(fn ->
       try do
         :meck.unload(Plug.Conn)
@@ -54,7 +54,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
         :error, _ -> :ok
       end
     end)
-    
+
     :ok
   end
 
@@ -79,6 +79,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, %{}, 2}
       end)
@@ -108,6 +109,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, mock_facets, 0}
       end)
@@ -135,6 +137,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, mock_facets, 0}
       end)
@@ -157,6 +160,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, %{}, 0}
       end)
@@ -186,6 +190,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, %{}, 0}
       end)
@@ -193,9 +198,10 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       params = %{query: "Bob"}
       user = %User{subject_id: "id", organizations: [%Organization{id: "1"}, %Organization{id: "2"}]}
 
-      response_map = conn 
+      response_map =
+        conn
         |> assign(:current_user, user)
-        |> get("/api/v2/dataset/search", params) 
+        |> get("/api/v2/dataset/search", params)
         |> json_response(200)
 
       assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
@@ -219,6 +225,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, %{}, 0}
       end)
@@ -226,9 +233,10 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       params = %{query: "Bob"}
       user = %User{subject_id: "id", organizations: []}
 
-      response_map = conn 
+      response_map =
+        conn
         |> assign(:current_user, user)
-        |> get("/api/v2/dataset/search", params) 
+        |> get("/api/v2/dataset/search", params)
         |> json_response(200)
 
       assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
@@ -250,6 +258,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
           offset: 0,
           limit: 10
         ]
+
         assert search_opts == expected_opts
         {:ok, mock_dataset_summaries, %{}, 0}
       end)
@@ -257,12 +266,17 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       subject_id = "12345abc"
       user = %User{subject_id: subject_id, organizations: []}
       params = %{query: "Bob"}
-      :meck.expect(RaptorService, :list_groups_by_user, fn _url, ^subject_id -> %{access_groups: authorized_access_group_ids, organizations: []} end)
 
-      response_map = conn 
+      :meck.expect(RaptorService, :list_groups_by_user, fn _url, ^subject_id ->
+        %{access_groups: authorized_access_group_ids, organizations: []}
+      end)
+
+      response_map =
+        conn
         |> assign(:current_user, user)
-        |> get("/api/v2/dataset/search", params) 
+        |> get("/api/v2/dataset/search", params)
         |> json_response(200)
+
       assert length(mock_dataset_summaries) == length(Map.get(response_map, "results"))
     end
   end

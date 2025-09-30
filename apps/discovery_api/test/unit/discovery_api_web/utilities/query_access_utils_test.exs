@@ -140,7 +140,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
         build_conn()
         |> Map.put(:assigns, %{current_user: "jim bob"})
 
-      stub(ModelAccessUtilsMock, :has_access?, fn 
+      stub(ModelAccessUtilsMock, :has_access?, fn
         ^private_model, _user -> false
         ^public_model, _user -> true
       end)

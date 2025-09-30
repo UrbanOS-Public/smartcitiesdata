@@ -9,7 +9,7 @@ defmodule DiscoveryApiWeb.TableauController do
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
   alias DiscoveryApiWeb.Utilities.DescribeUtils
   alias DiscoveryApiWeb.MultipleDataView
-  
+
   @model_impl Application.compile_env(:discovery_api, :model, Model)
   @model_access_utils_impl Application.compile_env(:discovery_api, :model_access_utils, ModelAccessUtils)
   @prestige_impl Application.compile_env(:discovery_api, :prestige, Prestige)

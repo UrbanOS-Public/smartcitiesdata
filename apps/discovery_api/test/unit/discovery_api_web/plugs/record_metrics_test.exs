@@ -25,7 +25,7 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
       |> put_private(:phoenix_action, action)
 
     RecordMetrics.call(conn, fetch_file: "downloads", query: "queries")
-    
+
     # Give the Task time to complete
     Process.sleep(100)
   end
@@ -63,10 +63,10 @@ defmodule DiscoveryApiWeb.Plugs.RecordMetricsTest do
         |> put_private(:phoenix_action, :fetch_file)
 
       RecordMetrics.call(conn, fetch_file: "downloads", query: "queries")
-      
+
       # Give time for any potential Task to complete
       Process.sleep(100)
-      
+
       # If we reach here without Mox failing, the test passes
     end
   end

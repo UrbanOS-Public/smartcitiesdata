@@ -54,7 +54,7 @@ defmodule DiscoveryApi.Data.PersistenceTest do
 
   describe "get_all/2" do
     test "doesnt filter out nils by default" do
-      stub(RedixMock, :command!, fn 
+      stub(RedixMock, :command!, fn
         :redix, ["KEYS", "redis_key"] -> ["key", "keyb"]
         :redix, ["MGET", "key", "keyb"] -> [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
       end)
@@ -65,7 +65,7 @@ defmodule DiscoveryApi.Data.PersistenceTest do
     end
 
     test "can filter out nils" do
-      stub(RedixMock, :command!, fn 
+      stub(RedixMock, :command!, fn
         :redix, ["KEYS", "redis_key"] -> ["key", "keyb"]
         :redix, ["MGET", "key", "keyb"] -> [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
       end)

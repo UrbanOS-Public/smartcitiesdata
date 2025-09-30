@@ -23,9 +23,10 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
   setup do
     # Set up mocks using :meck for modules without dependency injection
     modules_to_mock = [
-      SystemNameCache, Users
+      SystemNameCache,
+      Users
     ]
-    
+
     Enum.each(modules_to_mock, fn module ->
       try do
         :meck.new(module, [:passthrough])
@@ -65,14 +66,16 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     stub(PrestigeMock, :new_session, fn _opts -> :connection end)
     stub(PrestigeMock, :query!, fn _conn, "select * from #{@system_name}" -> :result end)
     stub(PrestigeMock, :stream!, fn _conn, _query -> [:result] end)
-    stub(PrestigeResultMock, :as_maps, fn :result -> 
+
+    stub(PrestigeResultMock, :as_maps, fn :result ->
       [%{"id" => 1, "name" => "Joe"}, %{"id" => 2, "name" => "Robby"}]
     end)
+
     stub(RaptorServiceMock, :is_authorized_by_user_id, fn _a, _b, _c -> true end)
-    
+
     # Set up other mocks using :meck for modules without DI
     :meck.expect(SystemNameCache, :get, fn @org_name, @data_name -> @dataset_id end)
-    
+
     # Use Mox for services with dependency injection (from config/test.exs)
     stub(ModelAccessUtilsMock, :has_access?, fn _model, _user -> true end)
     stub(MetricsServiceMock, :record_api_hit, fn _type, _dataset_id -> :ok end)
@@ -89,19 +92,20 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
 
     # Create mock connections without complex AuthConnCase setup
     conn = build_conn()
-    
+
     # Create user data for current_user assignment
     user_data = %{
       id: "test_user_id",
       subject_id: TestHelper.valid_jwt_sub(),
       organizations: [%{id: @org_id}]
     }
-    
-    authorized_conn = build_conn()
+
+    authorized_conn =
+      build_conn()
       |> put_req_header("authorization", "Bearer #{TestHelper.valid_jwt()}")
       |> put_req_header("content-type", "application/json")
       |> Plug.Conn.assign(:current_user, user_data)
-    
+
     %{
       conn: conn,
       authorized_conn: authorized_conn,
@@ -116,8 +120,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
       authorized_subject: subject
     } do
       # Set up specific mocks for this test using :meck
-      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> 
-        {:ok, %User{organizations: [%{id: @org_id}]}} 
+      :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id ->
+        {:ok, %User{organizations: [%{id: @org_id}]}}
       end)
 
       conn

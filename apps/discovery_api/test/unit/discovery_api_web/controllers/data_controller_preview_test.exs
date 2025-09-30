@@ -27,7 +27,7 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       # Mock the prestige session creation
       stub(PrestigeMock, :new_session, fn _opts -> "mock_session" end)
-      
+
       stub(ModelMock, :get, fn dataset_id when dataset_id == @dataset_id -> model end)
       {:ok, %{model: model}}
     end
@@ -46,10 +46,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema -> 
+      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema ->
         assert system_name == @system_name
-        list_of_maps 
+        list_of_maps
       end)
+
       expect(PrestoServiceMock, :preview_columns, fn _url -> list_of_columns end)
 
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
@@ -90,10 +91,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       expected = %{"data" => encoded_maps, "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema -> 
+      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema ->
         assert system_name == @system_name
-        list_of_maps 
+        list_of_maps
       end)
+
       expect(PrestoServiceMock, :preview_columns, fn _url -> list_of_columns end)
 
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
@@ -105,10 +107,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       list_of_columns = ["id", "json_encoded"]
       expected = %{"data" => [], "meta" => %{"columns" => list_of_columns}}
 
-      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema -> 
+      expect(PrestoServiceMock, :preview, fn _url, system_name, _schema ->
         assert system_name == @system_name
-        [] 
+        []
       end)
+
       expect(PrestoServiceMock, :preview_columns, fn _url -> list_of_columns end)
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
@@ -119,9 +122,11 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
       expected = %{"data" => [], "meta" => %{"columns" => []}}
 
       stub(PrestoServiceMock, :preview_columns, fn _url -> [] end)
-      stub(PrestoServiceMock, :preview, fn _url, _system_name, _schema -> 
-        raise Prestige.Error, message: "Test error" 
+
+      stub(PrestoServiceMock, :preview, fn _url, _system_name, _schema ->
+        raise Prestige.Error, message: "Test error"
       end)
+
       actual = conn |> put_req_header("accept", "application/json") |> get("/api/v1/dataset/#{@dataset_id}/preview") |> json_response(200)
 
       assert expected == actual
@@ -149,12 +154,13 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       # Mock the prestige session creation
       stub(PrestigeMock, :new_session, fn _opts -> "mock_session" end)
-      
+
       stub(ModelMock, :get, fn id when id == dataset_id -> model end)
 
       stub(PrestoServiceMock, :preview, fn _url, name, schema_param ->
         assert name == dataset_name
         assert schema_param == schema
+
         [
           %{"feature" => "{\"geometry\": { \"coordinates\": [[0, 0], [0, 1]] }}"},
           %{"feature" => "{\"geometry\": { \"coordinates\": [[1, 0]] }}"},
@@ -202,11 +208,12 @@ defmodule DiscoveryApiWeb.DataController.PreviewTest do
 
       # Mock the prestige session creation
       stub(PrestigeMock, :new_session, fn _opts -> "mock_session" end)
-      
+
       stub(ModelMock, :get, fn id when id == dataset_id -> model end)
 
       stub(PrestoServiceMock, :preview, fn _url, name, _schema ->
         assert name == dataset_name
+
         [
           %{"feature" => "{\"geometry\": { \"coordinates\": [] }}"}
         ]

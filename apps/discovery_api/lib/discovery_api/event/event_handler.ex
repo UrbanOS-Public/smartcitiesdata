@@ -23,7 +23,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   alias DiscoveryApi.RecommendationEngine
   alias DiscoveryApi.Schemas.{Organizations, Users}
   alias DiscoveryApi.Data.{Mapper, Model, SystemNameCache}
-  
+
   @mapper_impl Application.compile_env(:discovery_api, :mapper, Mapper)
   @dead_letter_impl Application.compile_env(:discovery_api, :dead_letter, DeadLetter)
   alias DiscoveryApi.Stats.StatsCalculator

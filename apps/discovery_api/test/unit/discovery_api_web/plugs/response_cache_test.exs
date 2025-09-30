@@ -1,9 +1,19 @@
 defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
   use ExUnit.Case
-  use Plug.Test
+  import Plug.Test
+  import Plug.Conn
   alias DiscoveryApiWeb.Plugs.ResponseCache
 
   setup do
+    # Ensure Cachex process is started before clearing
+    case GenServer.whereis(DiscoveryApiWeb.Plugs.ResponseCache) do
+      nil ->
+        {:ok, _pid} = Cachex.start_link(DiscoveryApiWeb.Plugs.ResponseCache)
+
+      _pid ->
+        :ok
+    end
+
     Cachex.clear(DiscoveryApiWeb.Plugs.ResponseCache)
 
     :ok
@@ -19,6 +29,7 @@ defmodule DiscoveryApiWeb.Plugs.ResponseCacheTest do
       assert actual == conn
     end
 
+    @tag timeout: 5000
     test "searches matching for_params will registrer before send hook that caches the response" do
       for_params = [%{"offset" => "0", "limit" => "5", "query" => ""}]
       conn = conn(:get, "/a/path", %{"offset" => "0", "limit" => "5", "query" => ""})

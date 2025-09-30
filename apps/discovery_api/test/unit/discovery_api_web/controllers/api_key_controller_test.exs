@@ -18,10 +18,10 @@ defmodule DiscoveryApiWeb.ApiKeyControllerTest do
 
       # Use the existing auth infrastructure instead of trying to mock Guardian.Plug
       conn = AuthTestHelper.assign_test_user(conn, %{subject_id: @apiKey.apiKey})
-      
+
       # Use RaptorServiceMock for the service call
-      expect(RaptorServiceMock, :regenerate_api_key_for_user, fn _, _ -> 
-        {:ok, %{"apiKey" => @apiKey.apiKey}} 
+      expect(RaptorServiceMock, :regenerate_api_key_for_user, fn _, _ ->
+        {:ok, %{"apiKey" => @apiKey.apiKey}}
       end)
 
       actual =
@@ -35,12 +35,12 @@ defmodule DiscoveryApiWeb.ApiKeyControllerTest do
     test "returns 500 if raptor service returns error", %{conn: conn} do
       # Use the existing auth infrastructure with nil subject_id
       conn = AuthTestHelper.assign_test_user(conn, %{subject_id: nil})
-      
+
       # Use RaptorServiceMock for the service call
-      expect(RaptorServiceMock, :regenerate_api_key_for_user, fn _, _ -> 
-        {:error, "Does not exist"} 
+      expect(RaptorServiceMock, :regenerate_api_key_for_user, fn _, _ ->
+        {:error, "Does not exist"}
       end)
-      
+
       actual = conn |> patch("/api/v1/regenerateApiKey") |> json_response(500)
 
       assert %{"message" => "Internal Server Error"} = actual
