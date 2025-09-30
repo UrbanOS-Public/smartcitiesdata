@@ -22,25 +22,51 @@ defmodule Reaper.DataSlurper.Sftp do
     else
       {:error, reason} ->
         raise "Failed calling '" <> url <> "': " <> inspect(reason)
+
+      {:exit, :normal} ->
+        raise "SFTP connection terminated normally during operation for '" <> url <> "'. This may indicate the file was not found or connection was closed by server."
+
+      {:exit, reason} ->
+        raise "SFTP connection terminated unexpectedly for '" <> url <> "': " <> inspect(reason)
+
+      other ->
+        raise "Failed calling '" <> url <> "': " <> inspect(other)
     end
   end
 
   defp stream_file(connection, path, filename) do
-    connection
-    |> SftpEx.stream!(path)
-    |> Stream.into(File.stream!(filename, [:write]))
-    |> Stream.run()
+    try do
+      connection
+      |> SftpEx.stream!(path)
+      |> Stream.into(File.stream!(filename, [:write]))
+      |> Stream.run()
 
-    {:file, filename}
+      {:file, filename}
+    rescue
+      error ->
+        # Clean up partial file on error
+        File.rm(filename)
+        {:error, error}
+    catch
+      :exit, reason ->
+        # Clean up partial file on exit
+        File.rm(filename)
+        {:exit, reason}
+    end
   end
 
-  defp connect(host, username, password, port, ingestion_id) do
-    SftpEx.connect(
-      host: to_charlist(host),
-      port: port,
-      user: to_charlist(username),
-      password: to_charlist(password)
-    )
+  defp connect(host, username, password, port, _ingestion_id) do
+    try do
+      SftpEx.connect(
+        host: to_charlist(host),
+        port: port,
+        user: to_charlist(username),
+        password: to_charlist(password)
+      )
+    catch
+      :exit, reason ->
+        {:exit, reason}
+    end
   end
 
   defp get_sftp_credentials(userinfo) do
