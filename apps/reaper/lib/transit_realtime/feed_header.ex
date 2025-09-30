@@ -2,13 +2,7 @@ defmodule TransitRealtime.FeedHeader do
   @moduledoc false
   use Protobuf, syntax: :proto2
 
-  @type t :: %__MODULE__{
-          gtfs_realtime_version: String.t(),
-          incrementality: integer,
-          timestamp: non_neg_integer
-        }
   @derive Jason.Encoder
-  defstruct [:gtfs_realtime_version, :incrementality, :timestamp]
 
   field(:gtfs_realtime_version, 1, required: true, type: :string)
 

@@ -2,15 +2,7 @@ defmodule TransitRealtime.TripUpdate do
   @moduledoc false
   use Protobuf, syntax: :proto2
 
-  @type t :: %__MODULE__{
-          trip: TransitRealtime.TripDescriptor.t(),
-          vehicle: TransitRealtime.VehicleDescriptor.t(),
-          stop_time_update: [TransitRealtime.TripUpdate.StopTimeUpdate.t()],
-          timestamp: non_neg_integer,
-          delay: integer
-        }
   @derive Jason.Encoder
-  defstruct [:trip, :vehicle, :stop_time_update, :timestamp, :delay]
 
   field(:trip, 1, required: true, type: TransitRealtime.TripDescriptor)
   field(:vehicle, 3, optional: true, type: TransitRealtime.VehicleDescriptor)

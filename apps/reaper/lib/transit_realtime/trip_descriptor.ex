@@ -2,16 +2,7 @@ defmodule TransitRealtime.TripDescriptor do
   @moduledoc false
   use Protobuf, syntax: :proto2
 
-  @type t :: %__MODULE__{
-          trip_id: String.t(),
-          route_id: String.t(),
-          direction_id: non_neg_integer,
-          start_time: String.t(),
-          start_date: String.t(),
-          schedule_relationship: integer
-        }
   @derive Jason.Encoder
-  defstruct [:trip_id, :route_id, :direction_id, :start_time, :start_date, :schedule_relationship]
 
   field(:trip_id, 1, optional: true, type: :string)
   field(:route_id, 5, optional: true, type: :string)
