@@ -24,7 +24,8 @@ defmodule Reaper.DataSlurper.Sftp do
         raise "Failed calling '" <> url <> "': " <> inspect(reason)
 
       {:exit, :normal} ->
-        raise "SFTP connection terminated normally during operation for '" <> url <> "'. This may indicate the file was not found or connection was closed by server."
+        raise "SFTP connection terminated normally during operation for '" <>
+                url <> "'. This may indicate the file was not found or connection was closed by server."
 
       {:exit, reason} ->
         raise "SFTP connection terminated unexpectedly for '" <> url <> "': " <> inspect(reason)
