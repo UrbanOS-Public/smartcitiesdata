@@ -20,6 +20,10 @@ defmodule Reaper.DataSlurper.Sftp do
          {:file, filename} <- stream_file(pid, path, filename) do
       {:file, filename}
     else
+      {:error, :timeout} ->
+        raise "SFTP connection timed out after 30 seconds for '" <>
+                url <> "'. Check server availability and network connectivity."
+
       {:error, reason} ->
         raise "Failed calling '" <> url <> "': " <> inspect(reason)
 
@@ -57,16 +61,24 @@ defmodule Reaper.DataSlurper.Sftp do
   end
 
   defp connect(host, username, password, port, _ingestion_id) do
-    try do
-      SftpEx.connect(
-        host: to_charlist(host),
-        port: port,
-        user: to_charlist(username),
-        password: to_charlist(password)
-      )
-    catch
-      :exit, reason ->
-        {:exit, reason}
+    task =
+      Task.async(fn ->
+        try do
+          SftpEx.connect(
+            host: to_charlist(host),
+            port: port,
+            user: to_charlist(username),
+            password: to_charlist(password)
+          )
+        catch
+          :exit, reason ->
+            {:exit, reason}
+        end
+      end)
+
+    case Task.yield(task, 30_000) || Task.shutdown(task) do
+      {:ok, result} -> result
+      nil -> {:error, :timeout}
     end
   end
 
