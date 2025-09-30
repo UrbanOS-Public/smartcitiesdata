@@ -1,7 +1,9 @@
 FROM smartcitiesdata:build as builder
-RUN MIX_ENV=prod mix distillery.release --name reaper
+RUN MIX_ENV=prod mix release reaper
 
-FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.9
+#FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.9
+FROM hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.18.0
+
 ENV HOME /opt/app
 ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}
@@ -17,4 +19,4 @@ RUN chgrp -R 0 ${HOME} && \
 USER default
 ENV PORT=4000
 EXPOSE ${PORT}
-CMD ["bin/reaper", "foreground"]
+CMD ["bin/reaper", "start"]

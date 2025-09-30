@@ -50,7 +50,6 @@ defmodule Reaper.MixProject do
       {:ranch, "~> 1.8", override: true},
       {:dead_letter, in_umbrella: true},
       {:providers, in_umbrella: true},
-      {:distillery, "~> 2.1"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_s3, "~> 2.0",
        [env: :prod, git: "https://github.com/ex-aws/ex_aws_s3", ref: "6b9fdac73b62dee14bffb939965742f2576f2a7b"]},

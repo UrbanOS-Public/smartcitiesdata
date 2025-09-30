@@ -77,6 +77,11 @@ defmodule Smartcitiesdata.MixProject do
         include_executables_for: [:unix],
         applications: [alchemist: :permanent, runtime_tools: :permanent],
         steps: [:assemble, :tar]
+      ],
+      reaper: [
+        include_executables_for: [:unix],
+        applications: [reaper: :permanent, runtime_tools: :permanent],
+        steps: [:assemble, :tar]
       ]
     ]
   end
