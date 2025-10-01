@@ -46,7 +46,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("organization_update failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -72,7 +72,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_organization_associate failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([], nil, association, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([], nil, association, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -98,7 +98,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_organization_disassociate failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([], nil, disassociation, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([], nil, disassociation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -132,7 +132,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("data_write_complete failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -163,7 +163,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_update failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([dataset.id], nil, dataset, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -185,7 +185,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_access_group_associate failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -207,7 +207,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_access_group_disassociate failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([relation.dataset_id], nil, relation, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -225,7 +225,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("dataset_query failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([dataset_id], nil, data, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([dataset_id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -248,7 +248,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("Dataset: #{dataset.id}; dataset_delete failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([dataset.id], nil, data, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([dataset.id], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
@@ -262,7 +262,7 @@ defmodule DiscoveryApi.Event.EventHandler do
   rescue
     error ->
       Logger.error("user_login failed to process: #{inspect(error)}")
-      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), [reason: inspect(error)])
+      @dead_letter_impl.process([], nil, data, Atom.to_string(@instance_name), reason: inspect(error))
       :discard
   end
 
