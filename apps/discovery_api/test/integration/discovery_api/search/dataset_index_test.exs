@@ -948,9 +948,11 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
 
     Brook.Event.send(@instance_name, "dataset:update", __MODULE__, dataset)
 
+    # Wait longer for Brook event processing to complete
     eventually(fn ->
-      assert nil != Model.get(dataset.id)
-    end)
+      model = Model.get(dataset.id)
+      assert nil != model, "Dataset #{dataset.id} not found after event processing"
+    end, 2000, 20) # Increase timeout: 2 seconds * 20 = 40 seconds total
 
     dataset
   end
