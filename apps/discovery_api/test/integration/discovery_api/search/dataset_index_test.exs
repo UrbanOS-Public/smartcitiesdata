@@ -915,7 +915,20 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
     end
 
     test "pagination parameters are respected" do
-      Enum.each(0..9, fn x -> create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}}) end)
+      datasets =
+        Enum.map(0..9, fn x ->
+          create_dataset(%{id: "#{x}", business: %{modifiedDate: "2020-03-01T00:0#{x}:00Z"}})
+        end)
+
+      # Wait for all datasets to be indexed before proceeding
+      local_eventually(fn ->
+        dataset_count =
+          Enum.count(datasets, fn dataset ->
+            Model.get(dataset.id) != nil
+          end)
+
+        assert 10 == dataset_count, "Only #{dataset_count} out of 10 datasets were processed"
+      end)
 
       local_eventually(fn ->
         %{"results" => results, "metadata" => metadata} = call_search_endpoint_with_params(%{sort: "last_mod", limit: "2"})
@@ -974,7 +987,7 @@ defmodule DiscoveryApi.Data.Search.DatasetIndexTest do
   end
 
   defp local_eventually(function) do
-    eventually(function, 250, 10)
+    eventually(function, 2000, 30)
   end
 
   defp call_search_endpoint_with_params(params) do

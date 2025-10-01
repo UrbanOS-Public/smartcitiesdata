@@ -21,7 +21,8 @@ config :discovery_api,
   hsts_enabled: false
 
 config :discovery_api,
-  raptor_url: "http://localhost:4002/api"
+  raptor_url: "http://localhost:4002/api",
+  raptor_service: RaptorServiceTestImpl
 
 config :redix,
   args: redix_args

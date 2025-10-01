@@ -1,6 +1,9 @@
 ExUnit.start(exclude: [:skip], capture_log: true)
 Faker.start()
 
+# Load test implementations for integration tests only
+# Code.require_file("../support/raptor_service_test_impl.ex", __DIR__)
+
 # Set up test authentication to bypass Guardian database requirements
 DiscoveryApiWeb.Test.AuthTestHelper.setup_test_auth()
 

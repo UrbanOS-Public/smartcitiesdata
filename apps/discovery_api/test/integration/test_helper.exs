@@ -1,8 +1,15 @@
 alias DiscoveryApi.Test.Helper
 
-# Load support files
+# Ensure Mix application is loaded
+Application.ensure_all_started(:mix)
+
+# Load support files after the application is ready
 Code.require_file("support/elasticsearch_case.ex", __DIR__)
 Code.require_file("support/data_case.ex", __DIR__)
+
+# Load behaviour and implementation files
+Code.require_file("../unit/support/raptor_service_behaviour.ex", __DIR__)
+Code.require_file("../support/raptor_service_test_impl.ex", __DIR__)
 
 Divo.Suite.start()
 Helper.wait_for_brook_to_be_ready()
