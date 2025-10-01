@@ -5,7 +5,6 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
   alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Schemas.Visualizations
   alias DiscoveryApi.Schemas.Visualizations.Visualization
-  alias DiscoveryApi.Services.PrestoService
   alias DiscoveryApiWeb.Utilities.ModelAccessUtils
 
   @moduletag timeout: 5000
@@ -112,7 +111,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
 
     test "DELETE /visualization returns NO CONTENT for valid bearer token and an owned visualization id", %{
       authorized_conn: conn,
-      authorized_subject: subject
+      authorized_subject: _subject
     } do
       :meck.expect(Users, :get_user_with_organizations, fn user_subject, :subject_id -> {:ok, %{id: @user_id, subject_id: user_subject}} end)
 
@@ -166,7 +165,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      _datasets = ["123"]
+      datasets = ["123"]
       :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
       :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->

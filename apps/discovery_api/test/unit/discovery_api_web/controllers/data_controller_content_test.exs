@@ -10,7 +10,6 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
 
   @dataset_id "1234-4567-89101"
   @system_name "foobar__company_data"
-  @org_name "org1"
   @data_name "data1"
   @geo_json_features_raw [
     %{"geometry" => %{"coordinates" => [[0, 0], [0, 1]]}},

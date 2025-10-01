@@ -2,9 +2,6 @@ defmodule DiscoveryApiWeb.DataController.DownloadTest do
   use DiscoveryApiWeb.ConnCase
   import Mox
   import Checkov
-  import SmartCity.TestHelper
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApi.Services.PrestoService
 
   @moduletag timeout: 5000
 

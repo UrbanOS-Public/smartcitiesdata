@@ -9,11 +9,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
   setup :set_mox_from_context
 
   import Checkov
-  import SmartCity.TestHelper
   alias DiscoveryApi.Services.ObjectStorageService
-  alias DiscoveryApi.Data.{Model, SystemNameCache}
-  alias DiscoveryApi.Services.PrestoService
-  alias DiscoveryApi.Schemas.Users
   alias DiscoveryApi.Test.Helper
 
   @dataset_id "1234-4567-89101"
@@ -318,7 +314,7 @@ defmodule DiscoveryApiWeb.DataDownloadControllerTest do
 
   describe "presign_url" do
     test "returns a presigned url for public datasets when bearer token is not passed", %{conn: conn} do
-      key = presign_key()
+      _key = presign_key()
       dataset_id = "public_dataset"
 
       model =

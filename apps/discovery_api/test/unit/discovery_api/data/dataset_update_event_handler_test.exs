@@ -14,9 +14,6 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
   end
 
   alias DiscoveryApi.Data.SystemNameCache
-  alias DiscoveryApiWeb.Plugs.ResponseCache
-  alias DiscoveryApi.Schemas.Organizations
-  alias DiscoveryApi.Search.Elasticsearch
 
   import SmartCity.Event, only: [dataset_update: 0, data_write_complete: 0]
 
@@ -169,8 +166,8 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
     data_test "sends dataset to recommendation engine" do
       dataset = TDG.create_dataset(dataset_map)
-      organization = create_schema_organization(%{id: dataset.technical.orgId})
-      org_id = dataset.technical.orgId
+      _organization = create_schema_organization(%{id: dataset.technical.orgId})
+      _org_id = dataset.technical.orgId
 
       if called do
         expect(RecommendationEngineMock, :save, 1, fn received_dataset ->
@@ -227,15 +224,14 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     end
 
     test "merges the write complete timsetamp into the model", %{data_model: %{id: id, title: title}} do
-      write_complete_timestamp_iso = DateTime.utc_now() |> DateTime.to_iso8601()
+      timestamp_iso = DateTime.utc_now() |> DateTime.to_iso8601()
 
       expect(ElasticsearchDocumentMock, :update, 1, fn _ -> {:ok, :does_not_matter} end)
-      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: id, timestamp: write_complete_timestamp_iso})
+      {:ok, event} = SmartCity.DataWriteComplete.new(%{id: id, timestamp: timestamp_iso})
 
       Brook.Test.send(@instance_name, data_write_complete(), "unit", event)
 
-      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: write_complete_timestamp_iso} =
-               DiscoveryApi.Data.Model.get(id)
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: timestamp_iso} = DiscoveryApi.Data.Model.get(id)
     end
 
     test "does not record write complete for datasets that are not in view state, as storing the partial can make other things blow up" do

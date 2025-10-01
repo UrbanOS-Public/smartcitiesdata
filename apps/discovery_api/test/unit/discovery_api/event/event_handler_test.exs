@@ -247,7 +247,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
     end
 
     test "adds the access group to the model and updates elastic search", %{model: model} do
-      model = %Model{model | accessGroups: model.accessGroups ++ ["new_group"]}
+      _model = %Model{model | accessGroups: model.accessGroups ++ ["new_group"]}
       # Mox verification happens automatically with verify_on_exit!
     end
 
@@ -288,7 +288,7 @@ defmodule DiscoveryApi.Event.EventHandlerTest do
       %{model: model_without_group}
     end
 
-    test "removes the access group from the model and updates elastic search", %{model: model} do
+    test "removes the access group from the model and updates elastic search", %{model: _model} do
       # Mox verification happens automatically with verify_on_exit!
     end
 

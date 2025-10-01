@@ -73,4 +73,6 @@ defmodule ProtocolDestination.FinalTest do
     end
   end
 
-  describe "Protocol Implementation
+  describe "Protocol Implementation" do
+  end
+end
