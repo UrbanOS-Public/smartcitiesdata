@@ -20,7 +20,14 @@ defmodule DiscoveryApi.ElasticSearchCase do
 
   setup _tags do
     delete_indices()
+
+    # Wait a moment after deleting to ensure Elasticsearch processes the deletion
+    Process.sleep(500)
+
     create_indices()
+
+    # Wait to ensure indices are fully created and available
+    Process.sleep(1000)
 
     on_exit(fn ->
       delete_indices()

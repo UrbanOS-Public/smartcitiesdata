@@ -95,6 +95,30 @@ defmodule DiscoveryApi.Test.Helper do
     Process.sleep(5_000)
   end
 
+  def wait_for_elasticsearch_to_be_ready() do
+    elasticsearch_url = Application.get_env(:discovery_api, :elasticsearch)[:url]
+
+    Patiently.wait_for(
+      fn ->
+        case HTTPoison.get("#{elasticsearch_url}/_cluster/health") do
+          {:ok, %{status_code: 200}} -> true
+          _ -> false
+        end
+      end,
+      dwell: 1000,
+      max_tries: 60
+    )
+    |> case do
+      :ok ->
+        # Additional wait to ensure cluster is actually ready
+        Process.sleep(2_000)
+        :ok
+
+      _ ->
+        raise "Elasticsearch failed to become ready after 60 seconds"
+    end
+  end
+
   def create_persisted_user() do
     create_persisted_user(Auth.TestHelper.valid_jwt_sub())
   end

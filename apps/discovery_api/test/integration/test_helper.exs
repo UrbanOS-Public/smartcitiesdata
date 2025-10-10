@@ -13,6 +13,7 @@ Code.require_file("../support/raptor_service_test_impl.ex", __DIR__)
 
 Divo.Suite.start()
 Helper.wait_for_brook_to_be_ready()
+Helper.wait_for_elasticsearch_to_be_ready()
 Faker.start()
 ExUnit.start(timeout: 300_000)
 
