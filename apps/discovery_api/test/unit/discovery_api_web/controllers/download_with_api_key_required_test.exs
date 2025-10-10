@@ -3,6 +3,8 @@ defmodule DiscoveryApiWeb.DownloadWithApiKeyRequiredTest do
   import Mox
   use Properties, otp_app: :discovery_api
 
+  @moduletag timeout: 5000
+
   alias DiscoveryApi.Test.Helper
 
   setup :verify_on_exit!
