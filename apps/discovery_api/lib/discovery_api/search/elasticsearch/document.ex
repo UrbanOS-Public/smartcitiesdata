@@ -129,6 +129,12 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
   defp populate_sort_date(%{sourceType: "stream", lastUpdatedDate: sort_date} = model) when sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
+  defp populate_sort_date(%{modifiedDate: sort_date} = model) when sort_date != "",
+    do: Map.put(model, :sortDate, sort_date)
+
+  defp populate_sort_date(%{lastUpdatedDate: sort_date} = model) when sort_date != "",
+    do: Map.put(model, :sortDate, sort_date)
+
   defp populate_sort_date(%{issuedDate: sort_date} = model), do: Map.put(model, :sortDate, sort_date)
   defp populate_sort_date(model), do: model
 
