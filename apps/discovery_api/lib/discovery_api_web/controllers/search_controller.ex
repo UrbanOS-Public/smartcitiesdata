@@ -9,6 +9,7 @@ defmodule DiscoveryApiWeb.SearchController do
   plug(:accepts, SearchView.accepted_formats())
 
   getter(:raptor_url, generic: true)
+  getter(:raptor_service, generic: true, default: RaptorService)
 
   def advanced_search(conn, params) do
     sort = Map.get(params, "sort", "name_asc")
@@ -45,11 +46,11 @@ defmodule DiscoveryApiWeb.SearchController do
   defp get_groups(_current_user = nil, _api_key = nil), do: %{access_groups: [], organizations: []}
 
   defp get_groups(_current_user = nil, api_key) do
-    RaptorService.list_groups_by_api_key(raptor_url(), api_key)
+    raptor_service().list_groups_by_api_key(raptor_url(), api_key)
   end
 
   defp get_groups(current_user, _api_key) do
-    RaptorService.list_groups_by_user(raptor_url(), current_user.subject_id)
+    raptor_service().list_groups_by_user(raptor_url(), current_user.subject_id)
   end
 
   defp build_search_opts(params, current_user, api_key, sort, offset, limit) do
