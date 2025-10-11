@@ -115,7 +115,7 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
     dataset
     |> Map.from_struct()
     |> Map.drop([:completeness])
-    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Enum.reject(fn {_k, v} -> is_nil(v) or v == "" end)
     |> Map.new()
     |> populate_org_facets()
     |> populate_keyword_facets()

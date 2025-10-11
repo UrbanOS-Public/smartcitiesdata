@@ -110,7 +110,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
     test "should save the dataset as a model", %{dataset: dataset} do
       Brook.Test.send(@instance_name, dataset_update(), "unit", dataset)
 
-      assert {:ok, model} = Brook.ViewState.get(@instance_name, :models, dataset.id)
+      assert {:ok, _model} = Brook.ViewState.get(@instance_name, :models, dataset.id)
     end
 
     @tag capture_log: true
@@ -231,7 +231,7 @@ defmodule DiscoveryApi.Data.DatasetUpdateEventHandlerTest do
 
       Brook.Test.send(@instance_name, data_write_complete(), "unit", event)
 
-      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: timestamp_iso} = DiscoveryApi.Data.Model.get(id)
+      assert %DiscoveryApi.Data.Model{id: ^id, title: ^title, lastUpdatedDate: ^timestamp_iso} = DiscoveryApi.Data.Model.get(id)
     end
 
     test "does not record write complete for datasets that are not in view state, as storing the partial can make other things blow up" do

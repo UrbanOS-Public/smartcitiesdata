@@ -165,7 +165,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
       authorized_conn: conn,
       authorized_subject: subject
     } do
-      datasets = ["123"]
+      expected_datasets = ["123"]
       :meck.expect(Users, :get_user_with_organizations, fn ^subject, :subject_id -> {:ok, %{id: @user_id}} end)
 
       :meck.expect(Visualizations, :get_visualization_by_id, fn _id ->
@@ -185,7 +185,7 @@ defmodule DiscoveryApiWeb.VisualizationControllerTest do
                "title" => @title,
                "id" => @id,
                "chart" => @decoded_chart,
-               "usedDatasets" => datasets
+               "usedDatasets" => ^expected_datasets
              } = body
     end
 
