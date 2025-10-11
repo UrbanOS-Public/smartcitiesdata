@@ -33,13 +33,12 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       :error, {:already_started, _} -> :ok
     end
 
-    try do
-      :meck.new(RaptorService, [:passthrough])
-    catch
-      :error, {:already_started, _} -> :ok
-    end
+    # Use Mox for RaptorServiceMock instead of meck
+    stub(RaptorServiceMock, :list_groups_by_api_key, fn _url, _api_key ->
+      %{access_groups: [], organizations: []}
+    end)
 
-    :meck.expect(RaptorService, :list_groups_by_api_key, fn _url, _api_key ->
+    stub(RaptorServiceMock, :list_groups_by_user, fn _url, _user_id ->
       %{access_groups: [], organizations: []}
     end)
 
@@ -49,7 +48,6 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       try do
         :meck.unload(Plug.Conn)
         :meck.unload(Search)
-        :meck.unload(RaptorService)
       catch
         :error, _ -> :ok
       end
@@ -178,7 +176,9 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       conn: conn,
       mock_dataset_summaries: mock_dataset_summaries
     } do
-      :meck.expect(RaptorService, :list_groups_by_user, fn _url, _user_id -> %{access_groups: [], organizations: ["1", "2"]} end)
+      expect(RaptorServiceMock, :list_groups_by_user, fn _url, _user_id ->
+        %{access_groups: [], organizations: ["1", "2"]}
+      end)
 
       :meck.expect(Search, :search, fn search_opts ->
         expected_opts = [
@@ -211,7 +211,7 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       conn: conn,
       mock_dataset_summaries: mock_dataset_summaries
     } do
-      :meck.expect(RaptorService, :list_groups_by_user, fn _url, _user_id ->
+      expect(RaptorServiceMock, :list_groups_by_user, fn _url, _user_id ->
         %{access_groups: ["access_group_1", "access_group_2"], organizations: []}
       end)
 
@@ -247,6 +247,11 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
       mock_dataset_summaries: mock_dataset_summaries
     } do
       authorized_access_group_ids = ["321b", "432a"]
+      subject_id = "12345abc"
+
+      expect(RaptorServiceMock, :list_groups_by_user, fn _url, ^subject_id ->
+        %{access_groups: authorized_access_group_ids, organizations: []}
+      end)
 
       :meck.expect(Search, :search, fn search_opts ->
         expected_opts = [
@@ -263,13 +268,8 @@ defmodule DiscoveryApiWeb.SearchControllerTest do
         {:ok, mock_dataset_summaries, %{}, 0}
       end)
 
-      subject_id = "12345abc"
       user = %User{subject_id: subject_id, organizations: []}
       params = %{query: "Bob"}
-
-      :meck.expect(RaptorService, :list_groups_by_user, fn _url, ^subject_id ->
-        %{access_groups: authorized_access_group_ids, organizations: []}
-      end)
 
       response_map =
         conn
