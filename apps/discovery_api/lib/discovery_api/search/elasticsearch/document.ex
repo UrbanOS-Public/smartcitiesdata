@@ -123,27 +123,25 @@ defmodule DiscoveryApi.Search.Elasticsearch.Document do
     |> populate_sort_date()
   end
 
+  # For ingest datasets: use modifiedDate, fallback to issuedDate
   defp populate_sort_date(%{sourceType: "ingest", modifiedDate: sort_date} = model) when sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
   defp populate_sort_date(%{sourceType: "ingest", issuedDate: sort_date} = model) when sort_date != nil and sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
+  # For stream datasets: use lastUpdatedDate, fallback to issuedDate
   defp populate_sort_date(%{sourceType: "stream", lastUpdatedDate: sort_date} = model) when sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
   defp populate_sort_date(%{sourceType: "stream", issuedDate: sort_date} = model) when sort_date != nil and sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
-  defp populate_sort_date(%{modifiedDate: sort_date} = model) when sort_date != "",
-    do: Map.put(model, :sortDate, sort_date)
-
-  defp populate_sort_date(%{lastUpdatedDate: sort_date} = model) when sort_date != "",
-    do: Map.put(model, :sortDate, sort_date)
-
+  # For all other sourceTypes: use issuedDate only
   defp populate_sort_date(%{issuedDate: sort_date} = model) when sort_date != nil and sort_date != "",
     do: Map.put(model, :sortDate, sort_date)
 
+  # No sortDate could be determined
   defp populate_sort_date(model), do: model
 
   defp populate_org_facets(%{organizationDetails: %{orgTitle: org_title}} = dataset) do
