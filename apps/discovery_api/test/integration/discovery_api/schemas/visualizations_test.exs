@@ -287,10 +287,11 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       conn_with_owner = Plug.Conn.assign(authorized_conn, :current_user, owner)
 
       try do
-        assert put(conn_with_owner, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
-               |> response(200)
-
+        # Wrap the entire update and assertion in eventually to handle Presto timing issues
         eventually(fn ->
+          assert put(conn_with_owner, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
+                 |> response(200)
+
           {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
           assert [id] == viz.datasets
         end)
