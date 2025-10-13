@@ -7,7 +7,9 @@ RUN cd apps/andi/assets/ && \
     mix cmd --app andi mix do compile, phx.digest
 RUN MIX_ENV=prod mix distillery.release --name andi
 
-FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.9
+
+#FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.9
+FROM hexpm/elixir:1.14.4-erlang-25.3.2-alpine-3.18.0
 ENV HOME=/opt/app
 ENV REPLACE_OS_VARS=true
 WORKDIR ${HOME}

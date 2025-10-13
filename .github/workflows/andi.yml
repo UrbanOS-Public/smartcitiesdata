@@ -21,7 +21,7 @@ jobs:
   unit:
     if: github.event.pull_request.draft == false
     name: Run unit tests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04    
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -42,7 +42,7 @@ jobs:
   integration:
     if: github.event.pull_request.draft == false
     name: Run integration tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04    
     steps:
       - uses: actions/checkout@v2
       - uses: erlef/setup-beam@v1
@@ -59,7 +59,7 @@ jobs:
 
   publish:
     name: Publish development image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04    
     needs: [unit, integration]
     steps:
       - uses: actions/checkout@v2
