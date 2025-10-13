@@ -82,6 +82,11 @@ defmodule Smartcitiesdata.MixProject do
         include_executables_for: [:unix],
         applications: [reaper: :permanent, runtime_tools: :permanent],
         steps: [:assemble, :tar]
+      ],
+      discovery_api: [
+        include_executables_for: [:unix],
+        applications: [discovery_api: :permanent, runtime_tools: :permanent],
+        steps: [:assemble, :tar]
       ]
     ]
   end
