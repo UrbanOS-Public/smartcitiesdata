@@ -7,7 +7,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
   alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias SmartCity.TestDataGenerator, as: TDG
-  
+
   @moduletag timeout: 5000
 
   describe "ingestion conversions" do
@@ -93,7 +93,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     setup do
       # Set up :meck for modules without dependency injection
       modules_to_mock = [Datasets]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -102,7 +102,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -111,10 +111,10 @@ defmodule Andi.InputSchemas.InputConverterTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       # Default expectations for this describe block
       :meck.expect(Datasets, :is_unique?, fn _, _, _ -> true end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -124,7 +124,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           end
         end)
       end)
-      
+
       :ok
     end
 
@@ -422,7 +422,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     setup do
       # Set up :meck for modules without dependency injection
       modules_to_mock = [Datasets]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -431,7 +431,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -440,10 +440,10 @@ defmodule Andi.InputSchemas.InputConverterTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       # Default expectations for this describe block
       :meck.expect(Datasets, :is_unique?, fn _, _, _ -> false end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -453,7 +453,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           end
         end)
       end)
-      
+
       :ok
     end
 
@@ -513,7 +513,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     setup do
       # Set up :meck for modules without dependency injection
       modules_to_mock = [Datasets]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -522,7 +522,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -531,10 +531,10 @@ defmodule Andi.InputSchemas.InputConverterTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       # Default expectations for this describe block
       :meck.expect(Datasets, :is_unique?, fn _, _, _ -> false end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -544,7 +544,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           end
         end)
       end)
-      
+
       :ok
     end
 
@@ -564,7 +564,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
     setup do
       # Set up :meck for modules without dependency injection
       modules_to_mock = [Datasets]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -573,7 +573,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -582,10 +582,10 @@ defmodule Andi.InputSchemas.InputConverterTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       # Default expectations for this describe block
       :meck.expect(Datasets, :is_unique?, fn _, _, _ -> true end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -595,7 +595,7 @@ defmodule Andi.InputSchemas.InputConverterTest do
           end
         end)
       end)
-      
+
       :ok
     end
 

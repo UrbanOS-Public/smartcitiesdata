@@ -26,18 +26,28 @@ defmodule DatasetHelpers do
 
     # Use :meck to set up expectations
     setup_meck_modules()
-    :meck.expect(Datasets, :get, fn id when id == dataset.id -> dataset; _ -> nil end)
+
+    :meck.expect(Datasets, :get, fn
+      id when id == dataset.id -> dataset
+      _ -> nil
+    end)
+
     :meck.expect(Datasets, :is_unique?, fn
       id, _, _ when id == dataset.id -> unique
       nil, _, _ -> unique
       _, _, _ -> true
     end)
+
     :meck.expect(Andi.Repo, :all, fn _ -> [{"Top Level", dataset.technical.id}] end)
   end
 
   def ensure_dataset_removed_from_repo(id, _opts \\ []) do
     setup_meck_modules()
-    :meck.expect(Datasets, :get, fn dataset_id when dataset_id == id -> nil; other_id -> :meck.passthrough([other_id]) end)
+
+    :meck.expect(Datasets, :get, fn
+      dataset_id when dataset_id == id -> nil
+      other_id -> :meck.passthrough([other_id])
+    end)
   end
 
   def replace_all_datasets_in_repo(datasets, _opts \\ []) do
@@ -47,6 +57,7 @@ defmodule DatasetHelpers do
 
   defp setup_meck_modules do
     modules = [Datasets, Andi.Repo]
+
     Enum.each(modules, fn module ->
       try do
         :meck.new(module, [:passthrough])

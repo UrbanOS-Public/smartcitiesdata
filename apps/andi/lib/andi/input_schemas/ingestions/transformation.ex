@@ -122,8 +122,6 @@ defmodule Andi.InputSchemas.Ingestions.Transformation do
     end
   end
 
-  defp validate_parameters(changeset), do: changeset
-
   defp convert_parameters_from_atom_to_string(parameters) do
     Map.new(parameters, fn {key, value} -> {Atom.to_string(key), value} end)
   end

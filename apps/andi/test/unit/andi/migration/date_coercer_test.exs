@@ -4,7 +4,7 @@ defmodule Andi.Migration.DateCoercerTest do
   import Checkov
 
   alias Andi.Migration.DateCoercer
-  
+
   @moduletag timeout: 10000
 
   data_test "coerces date #{input} into #{expected}" do

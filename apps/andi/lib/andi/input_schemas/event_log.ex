@@ -29,13 +29,6 @@ defmodule Andi.InputSchemas.EventLog do
     :dataset_id
   ]
 
-  @required_fields [
-    :title,
-    :timestamp,
-    :source,
-    :description
-  ]
-
   def changeset(%SmartCity.EventLog{} = changes) do
     changes_as_map = StructTools.to_map(changes)
 

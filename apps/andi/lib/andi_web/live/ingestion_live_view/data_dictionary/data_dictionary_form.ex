@@ -493,7 +493,7 @@ defmodule AndiWeb.IngestionLiveView.DataDictionaryForm do
       remove_element = Map.get(individual_schema, :id) == field_id
       sub_schema = Map.get(individual_schema, :subSchema)
 
-      updated_schema =
+      _updated_schema =
         cond do
           remove_element -> {:halt, List.delete(schema, individual_schema) |> sort_by_sequence()}
           !is_nil(sub_schema) -> {:cont, acc ++ [Map.put(individual_schema, :subSchema, remove_field(sub_schema, field_id))]}

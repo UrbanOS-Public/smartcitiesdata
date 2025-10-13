@@ -4,9 +4,6 @@ defmodule AndiWeb.InputSchemas.FinalizeFormSchema do
   use Ecto.Schema
   alias Ecto.Changeset
 
-  alias Andi.InputSchemas.StructTools
-  alias Andi.Schemas.Validation.CadenceValidator
-
   embedded_schema do
     field(:cadence, :string)
   end

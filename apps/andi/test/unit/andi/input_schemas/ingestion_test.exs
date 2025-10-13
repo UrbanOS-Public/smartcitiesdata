@@ -247,29 +247,30 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.new(Datasets, [:passthrough])
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
-        changes =
-          @valid_changes
-          |> put_in([:cadence], cadence_under_test)
-          |> Map.merge(%{
-            sourceFormat: "text/csv"
-          })
 
-        changeset =
-          Ingestion.changeset(%Ingestion{}, changes)
-          |> Ingestion.validate()
+      changes =
+        @valid_changes
+        |> put_in([:cadence], cadence_under_test)
+        |> Map.merge(%{
+          sourceFormat: "text/csv"
+        })
 
-        assert %{} == accumulate_errors(changeset)
-        assert changeset.valid?
-        
-        :meck.unload(Datasets)
+      changeset =
+        Ingestion.changeset(%Ingestion{}, changes)
+        |> Ingestion.validate()
+
+      assert %{} == accumulate_errors(changeset)
+      assert changeset.valid?
+
+      :meck.unload(Datasets)
 
       where([
         [:cadence_under_test],
@@ -289,29 +290,30 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.new(Datasets, [:passthrough])
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
-        changes =
-          @valid_changes
-          |> put_in([:cadence], cadence_under_test)
-          |> Map.merge(%{
-            sourceFormat: "text/csv"
-          })
 
-        changeset =
-          Ingestion.changeset(%Ingestion{}, changes)
-          |> Ingestion.validate()
+      changes =
+        @valid_changes
+        |> put_in([:cadence], cadence_under_test)
+        |> Map.merge(%{
+          sourceFormat: "text/csv"
+        })
 
-        refute changeset.valid?
-        refute Enum.empty?(accumulate_errors(changeset))
-        
-        :meck.unload(Datasets)
+      changeset =
+        Ingestion.changeset(%Ingestion{}, changes)
+        |> Ingestion.validate()
+
+      refute changeset.valid?
+      refute Enum.empty?(accumulate_errors(changeset))
+
+      :meck.unload(Datasets)
 
       where([
         [:cadence_under_test],
@@ -328,34 +330,35 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.new(Datasets, [:passthrough])
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
-        extract_steps = [
-          %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
-          %{type: "http", context: %{action: "GET", url: "http://example.com"}}
-        ]
 
-        changes =
-          @valid_changes
-          |> put_in([:extractSteps], extract_steps)
-          |> Map.merge(%{
-            sourceFormat: "text/csv"
-          })
+      extract_steps = [
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
+        %{type: "http", context: %{action: "GET", url: "http://example.com"}}
+      ]
 
-        changeset =
-          Ingestion.changeset(%Ingestion{}, changes)
-          |> Ingestion.validate()
+      changes =
+        @valid_changes
+        |> put_in([:extractSteps], extract_steps)
+        |> Map.merge(%{
+          sourceFormat: "text/csv"
+        })
 
-        assert %{} == accumulate_errors(changeset)
-        assert changeset.valid?
-        
-        :meck.unload(Datasets)
+      changeset =
+        Ingestion.changeset(%Ingestion{}, changes)
+        |> Ingestion.validate()
+
+      assert %{} == accumulate_errors(changeset)
+      assert changeset.valid?
+
+      :meck.unload(Datasets)
     end
 
     test "extract steps are valid when s3 step is last" do
@@ -365,34 +368,35 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.new(Datasets, [:passthrough])
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
-        extract_steps = [
-          %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
-          %{type: "s3", context: %{url: "something"}}
-        ]
 
-        changes =
-          @valid_changes
-          |> put_in([:extractSteps], extract_steps)
-          |> Map.merge(%{
-            sourceFormat: "text/csv"
-          })
+      extract_steps = [
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}},
+        %{type: "s3", context: %{url: "something"}}
+      ]
 
-        changeset =
-          Ingestion.changeset(%Ingestion{}, changes)
-          |> Ingestion.validate()
+      changes =
+        @valid_changes
+        |> put_in([:extractSteps], extract_steps)
+        |> Map.merge(%{
+          sourceFormat: "text/csv"
+        })
 
-        assert %{} == accumulate_errors(changeset)
-        assert changeset.valid?
-        
-        :meck.unload(Datasets)
+      changeset =
+        Ingestion.changeset(%Ingestion{}, changes)
+        |> Ingestion.validate()
+
+      assert %{} == accumulate_errors(changeset)
+      assert changeset.valid?
+
+      :meck.unload(Datasets)
     end
 
     test "extract steps are not valid when http or s3 step is not last" do
@@ -402,36 +406,37 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
       catch
         _, _ -> :ok
       end
-      
+
       try do
         :meck.new(Datasets, [:passthrough])
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
-        extract_steps = [
-          %{type: "s3", context: %{url: "something"}},
-          %{type: "http", context: %{action: "GET", url: "http://example.com"}},
-          %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}}
-        ]
 
-        changes =
-          @valid_changes
-          |> put_in([:extractSteps], extract_steps)
-          |> Map.merge(%{
-            sourceFormat: "text/csv"
-          })
+      extract_steps = [
+        %{type: "s3", context: %{url: "something"}},
+        %{type: "http", context: %{action: "GET", url: "http://example.com"}},
+        %{type: "secret", context: %{destination: "bob_field", key: "one", sub_key: "secret-key"}}
+      ]
 
-        changeset =
-          Ingestion.changeset(%Ingestion{}, changes)
-          |> Ingestion.validate()
+      changes =
+        @valid_changes
+        |> put_in([:extractSteps], extract_steps)
+        |> Map.merge(%{
+          sourceFormat: "text/csv"
+        })
 
-        expected_error = %{extractSteps: [extractSteps: {"Cannot be empty and must end with a http or s3 step", []}]}
-        assert expected_error == accumulate_errors(changeset)
-        refute changeset.valid?
-        
-        :meck.unload(Datasets)
+      changeset =
+        Ingestion.changeset(%Ingestion{}, changes)
+        |> Ingestion.validate()
+
+      expected_error = %{extractSteps: [extractSteps: {"Cannot be empty and must end with a http or s3 step", []}]}
+      assert expected_error == accumulate_errors(changeset)
+      refute changeset.valid?
+
+      :meck.unload(Datasets)
     end
   end
 

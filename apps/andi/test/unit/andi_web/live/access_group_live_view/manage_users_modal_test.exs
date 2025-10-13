@@ -21,7 +21,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Guardian.DB.Token]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -30,7 +30,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -39,10 +39,10 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations
     :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -52,7 +52,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
         end
       end)
     end)
-    
+
     []
   end
 
@@ -63,7 +63,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       # Set up mocks for this test
       test_modules = [AccessGroups, Andi.Repo]
-      
+
       Enum.each(test_modules, fn module ->
         try do
           :meck.new(module, [:passthrough])
@@ -71,14 +71,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
-      :meck.expect(Andi.Repo, :all, fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end)
+
+      :meck.expect(Andi.Repo, :all, fn _ ->
+        [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}]
+      end)
+
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
-      
+
       _access_group = create_access_group(access_group_id)
 
       assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group_id}")
@@ -92,7 +96,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       assert element(view, ".manage-users-modal--hidden") |> has_element?
       refute element(view, ".manage-users-modal--visible") |> has_element?
-      
+
       Enum.each(test_modules, &:meck.unload/1)
     end
 
@@ -102,7 +106,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       # Set up mocks for this test
       test_modules = [AccessGroups, Andi.Repo]
-      
+
       Enum.each(test_modules, fn module ->
         try do
           :meck.new(module, [:passthrough])
@@ -110,20 +114,24 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
-      :meck.expect(Andi.Repo, :all, fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end)
+
+      :meck.expect(Andi.Repo, :all, fn _ ->
+        [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}]
+      end)
+
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
-      
+
       access_group = create_access_group(access_group_id)
       assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group.id}")
       get_manage_users_button(view) |> render_click()
 
       assert element(view, ".manage-users-modal .search-modal__search_bar-input") |> has_element?
-      
+
       Enum.each(test_modules, &:meck.unload/1)
     end
   end
@@ -135,7 +143,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       # Set up mocks for this test
       test_modules = [AccessGroups, Andi.Repo]
-      
+
       Enum.each(test_modules, fn module ->
         try do
           :meck.new(module, [:passthrough])
@@ -143,21 +151,25 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
-      :meck.expect(Andi.Repo, :all, fn _ -> [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}] end)
+
+      :meck.expect(Andi.Repo, :all, fn _ ->
+        [%User{id: Ecto.UUID.generate(), name: "Joe", email: "someone@example.com", organizations: [org]}]
+      end)
+
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
-      
+
       _access_group = create_access_group(access_group_id)
 
       assert {:ok, view, html} = live(conn, "#{@url_path}/#{access_group_id}")
       get_manage_users_button(view) |> render_click()
 
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "No Matching Users"
-      
+
       Enum.each(test_modules, &:meck.unload/1)
     end
 
@@ -168,7 +180,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       # Set up mocks for this test
       test_modules = [AccessGroups, Andi.Repo]
-      
+
       Enum.each(test_modules, fn module ->
         try do
           :meck.new(module, [:passthrough])
@@ -176,17 +188,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(Andi.Repo, :all, fn _ -> [user] end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
       :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> user end)
+
       :meck.expect(Andi.Repo, :preload, fn
         _, [:datasets, :users] -> %{datasets: [], users: [], id: access_group_id}
         _, [:datasets, :organizations] -> %{datasets: [], users: [], id: access_group_id}
       end)
-      
+
       _access_group = create_access_group(access_group_id)
       assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group_id}")
       get_manage_users_button(view) |> render_click()
@@ -196,7 +209,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       assert get_text(html, ".search-table__cell") =~ "Joe"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "someone@example.com"
       assert get_text(html, ".manage-users-modal .search-table__cell") =~ "123"
-      
+
       Enum.each(test_modules, &:meck.unload/1)
     end
 
@@ -212,7 +225,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
 
       # Set up mocks for this test
       test_modules = [AccessGroups, Andi.Repo]
-      
+
       Enum.each(test_modules, fn module ->
         try do
           :meck.new(module, [:passthrough])
@@ -220,17 +233,18 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: UUID.uuid4(), name: "group"} end)
       :meck.expect(Andi.Repo, :all, fn _ -> [user_1, user_2, user_3] end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
       :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> user_1 end)
+
       :meck.expect(Andi.Repo, :preload, fn
         _, [:datasets, :users] -> %{datasets: [], users: [], id: access_group_id}
         _, [:datasets, :organizations] -> %{datasets: [], users: [], id: access_group_id}
       end)
-      
+
       _access_group = create_access_group(access_group_id)
       assert {:ok, view, _html} = live(conn, "#{@url_path}/#{access_group_id}")
 
@@ -247,7 +261,7 @@ defmodule AndiWeb.AccessGroupLiveView.ManageUsersModalTest do
       assert get_text(html, ".search-table__cell") =~ "Alice"
       assert get_text(html, ".search-table__cell") =~ "completely_different@example.com"
       assert get_text(html, ".search-table__cell") =~ "Zed"
-      
+
       Enum.each(test_modules, &:meck.unload/1)
     end
   end

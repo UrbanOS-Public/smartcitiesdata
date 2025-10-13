@@ -97,10 +97,6 @@ defmodule AndiWeb.Helpers.FormTools do
     put_in(form_data, [url_location], updated_source_url)
   end
 
-  defp convert_param_to_form_data({value, index}, acc) do
-    Map.put(acc, to_string(index), value)
-  end
-
   defp convert_param_to_key_value({k, v}) do
     %{"key" => k, "value" => v}
   end

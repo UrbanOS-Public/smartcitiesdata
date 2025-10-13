@@ -15,7 +15,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Andi.Repo, User, Guardian.DB.Token]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -24,7 +24,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -33,13 +33,13 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations
     :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
     :meck.expect(User, :get_all, fn -> [@user] end)
     :meck.expect(User, :get_by_subject_id, fn _ -> @user end)
     :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -49,14 +49,14 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
         end
       end)
     end)
-    
+
     :ok
   end
 
   describe "Basic ingestions page load" do
     test "shows \"No Ingestions\" when there are no rows to show", %{conn: conn} do
       :meck.expect(Andi.Repo, :all, fn _ -> [] end)
-      
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "No Ingestions"
@@ -64,15 +64,17 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
 
     test "shows ingestions when there are rows to show and the dataset title is nil", %{conn: conn} do
       :meck.expect(Andi.Repo, :all, fn _ -> [%{submissionStatus: :draft, name: "penny", id: "123"}] end)
-      
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
     end
 
     test "shows ingestions when there are rows to show and the dataset title not nil", %{conn: conn} do
-      :meck.expect(Andi.Repo, :all, fn _ -> [%{submissionStatus: :draft, name: "penny", id: "123", dataset: [%{business: %{dataTitle: "Hazel"}}]}] end)
-      
+      :meck.expect(Andi.Repo, :all, fn _ ->
+        [%{submissionStatus: :draft, name: "penny", id: "123", dataset: [%{business: %{dataTitle: "Hazel"}}]}]
+      end)
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
@@ -86,7 +88,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
       ]
 
       :meck.expect(Andi.Repo, :all, fn _ -> [%{submissionStatus: :draft, name: "penny", id: "123", dataset: datasets}] end)
-      
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "penny"
@@ -97,7 +99,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
       draft_ingestion = %{submissionStatus: :draft, name: "one", id: "123", dataset: %{business: %{dataTitle: "Hazel"}}}
 
       :meck.expect(Andi.Repo, :all, fn _ -> [draft_ingestion] end)
-      
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "Draft"
@@ -107,7 +109,7 @@ defmodule AndiWeb.IngestionLiveView.TableTest do
       published_ingestion = %{submissionStatus: :published, name: "two", id: "456", dataset: %{business: %{dataTitle: "Theo"}}}
 
       :meck.expect(Andi.Repo, :all, fn _ -> [published_ingestion] end)
-      
+
       assert {:ok, _view, html} = live(conn, @url_path)
 
       assert get_text(html, ".ingestions-table__cell") =~ "Published"

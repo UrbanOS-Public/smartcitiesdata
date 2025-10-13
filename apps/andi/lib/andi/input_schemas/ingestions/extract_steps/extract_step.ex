@@ -113,12 +113,4 @@ defmodule Andi.InputSchemas.Ingestions.ExtractStep do
   def step_module("s3"), do: Andi.InputSchemas.Ingestions.ExtractS3Step
   def step_module("sftp"), do: nil
   def step_module(_invalid_type), do: :invalid_type
-
-  defp wrap_context(form_data) do
-    context =
-      form_data
-      |> Map.delete(:type)
-
-    %{type: form_data.type, context: context}
-  end
 end

@@ -19,7 +19,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Andi.Repo, User, AccessGroups, Guardian.DB.Token]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -28,7 +28,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -37,22 +37,25 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations - provide flexible fallbacks
     :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
     :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
     :meck.expect(User, :get_all, fn -> [@user] end)
-    :meck.expect(User, :get_by_subject_id, fn subject_id -> 
+
+    :meck.expect(User, :get_by_subject_id, fn subject_id ->
       # Handle auth system subject_id and test-specific ones
       case subject_id do
-        id when is_binary(id) -> @user  # Return default user for any string subject_id
+        # Return default user for any string subject_id
+        id when is_binary(id) -> @user
         _ -> @user
       end
     end)
+
     :meck.expect(AccessGroups, :update, fn _ -> %AccessGroup{id: @access_group.id, name: @access_group.name} end)
     :meck.expect(AccessGroups, :get, fn _ -> %AccessGroup{id: @access_group.id, name: @access_group.name} end)
     :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -62,7 +65,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
         end
       end)
     end)
-    
+
     :ok
   end
 
@@ -71,7 +74,7 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       # Override the default Andi.Repo expectations for this test
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [], id: @access_group.id} end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
-      
+
       assert {:ok, _view, html} = live(conn, "#{@url_path}/#{@access_group.id}")
 
       assert get_text(html, ".access-groups-sub-table__cell") =~ "No Associated Users"
@@ -95,11 +98,13 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       # Override expectations for this test
       :meck.expect(Andi.Repo, :preload, fn _, [:datasets, :users] -> %{datasets: [], users: [user], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
+
       :meck.expect(User, :get_by_subject_id, fn
         ^user_subject_id -> user
-        _ -> @user  # Fallback for auth system subject_id
+        # Fallback for auth system subject_id
+        _ -> @user
       end)
-      
+
       assert {:ok, _view, html} = live(conn, "#{@url_path}/#{access_group_id}")
 
       assert get_text(html, ".access-groups-sub-table__cell") =~ user.name
@@ -132,12 +137,13 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       # Override expectations for this test
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [user_1, user_2], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
+
       :meck.expect(User, :get_by_subject_id, fn
         ^user_1_subject_id -> user_1
         ^user_2_subject_id -> user_2
         _ -> @user
       end)
-      
+
       assert {:ok, _view, html} = live(conn, "#{@url_path}/#{access_group_id}")
 
       assert get_text(html, ".access-groups-sub-table__cell") =~ user_1.name
@@ -170,12 +176,13 @@ defmodule AndiWeb.AccessGroupLiveView.UserTableTest do
       # Override expectations for this test
       :meck.expect(Andi.Repo, :preload, fn _, _ -> %{datasets: [], users: [user_1, user_2], id: access_group_id} end)
       :meck.expect(Andi.Repo, :get, fn Andi.InputSchemas.AccessGroup, _ -> [] end)
+
       :meck.expect(User, :get_by_subject_id, fn
         ^user_1_subject_id -> user_1
         ^user_2_subject_id -> user_2
         _ -> @user
       end)
-      
+
       assert {:ok, _view, html} = live(conn, "#{@url_path}/#{access_group_id}")
       text = get_text(html, ".access-groups-sub-table__cell")
       results = Regex.scan(~r/Remove/, text)

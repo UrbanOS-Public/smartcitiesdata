@@ -3,18 +3,7 @@ defmodule AndiWeb.EditLiveView.EventLogForm do
   LiveComponent for viewing EventLog
   """
   use Phoenix.LiveView
-  import Phoenix.HTML.Form
   import AndiWeb.Helpers.SortingHelpers
-
-  alias AndiWeb.ErrorHelpers
-  alias AndiWeb.DataDictionary.Tree
-  alias AndiWeb.InputSchemas.DataDictionaryFormSchema
-  alias Andi.InputSchemas.Datasets
-  alias Andi.InputSchemas.Datasets.DataDictionary
-  alias Andi.InputSchemas.DataDictionaryFields
-  alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.InputConverter
-  alias Ecto.Changeset
 
   @limit 50
 

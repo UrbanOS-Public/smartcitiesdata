@@ -15,7 +15,7 @@ defmodule Andi.Harvest.HarvesterTest do
     setup do
       # Set up :meck for modules that will be mocked across tests
       modules_to_mock = [Brook.Event, OrgStore, Organizations]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -24,7 +24,7 @@ defmodule Andi.Harvest.HarvesterTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -33,7 +33,7 @@ defmodule Andi.Harvest.HarvesterTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -43,7 +43,7 @@ defmodule Andi.Harvest.HarvesterTest do
           end
         end)
       end)
-      
+
       data_json = get_schema_from_path("./test/integration/schemas/data_json.json")
       org = TDG.create_organization(%{orgTitle: "Awesome Title", orgName: "awesome_title", id: "95254592-d611-4bcb-9478-7fa248f4118d"})
       bypass = Bypass.open()
@@ -63,7 +63,7 @@ defmodule Andi.Harvest.HarvesterTest do
       :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
       :meck.expect(OrgStore, :get_all, fn -> {:ok, [org_1]} end)
       :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
-      
+
       Harvester.start_harvesting()
 
       # Verify calls were made
@@ -82,7 +82,7 @@ defmodule Andi.Harvest.HarvesterTest do
       # Set up expectations for this test
       :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
       :meck.expect(OrgStore, :get_all, fn -> [org_1] end)
-      
+
       Harvester.start_harvesting()
 
       # Verify no calls were made (org has nil dataJsonUrl)
@@ -120,7 +120,7 @@ defmodule Andi.Harvest.HarvesterTest do
       # Set up expectations for this test
       :meck.expect(Brook.Event, :send, fn @instance_name, dataset_update(), :andi, _ -> :ok end)
       :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
-      
+
       {:ok, data_json} = Jason.decode(data_json)
       datasets = Harvester.map_data_json_to_dataset(data_json, org)
 
@@ -134,7 +134,7 @@ defmodule Andi.Harvest.HarvesterTest do
       # Set up expectations for this test
       :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_end(), :andi, _ -> :ok end)
       :meck.expect(Organizations, :get_harvested_dataset, fn _ -> %{include: true} end)
-      
+
       {:ok, data_json} = Jason.decode(data_json)
       harvested_datasets = Harvester.map_data_json_to_harvested_dataset(data_json, org)
 

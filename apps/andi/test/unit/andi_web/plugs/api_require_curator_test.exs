@@ -20,7 +20,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
 
   describe "call/1 REQUIRE_ADMIN_API_KEY true" do
     setup do
-      on_exit(fn -> 
+      on_exit(fn ->
         System.put_env("REQUIRE_ADMIN_API_KEY", "false")
         # Clean up :meck if it was used
         try do
@@ -29,6 +29,7 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
           _, _ -> :ok
         end
       end)
+
       System.put_env("REQUIRE_ADMIN_API_KEY", "true")
 
       :ok
@@ -48,11 +49,13 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(RaptorService, :check_auth0_role, fn _, _, _ -> {:ok, true} end)
-      
-      conn = build_conn(:get, "/doesnt/matter")
-             |> put_req_header("api_key", "valid_api_key")
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "valid_api_key")
+
       result = APIRequireCurator.call(conn, [])
 
       assert result.resp_body == nil
@@ -65,11 +68,13 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(RaptorService, :check_auth0_role, fn _, _, _ -> {:ok, false} end)
-      
-      conn = build_conn(:get, "/doesnt/matter")
-             |> put_req_header("api_key", "invalid_api_key")
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "invalid_api_key")
+
       result = APIRequireCurator.call(conn, [])
 
       assert result.resp_body == "Unauthorized: Missing user role"
@@ -82,11 +87,13 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(RaptorService, :check_auth0_role, fn _, _, _ -> {:error, "doesntMatter", 500} end)
-      
-      conn = build_conn(:get, "/doesnt/matter")
-             |> put_req_header("api_key", "some_api_key")
+
+      conn =
+        build_conn(:get, "/doesnt/matter")
+        |> put_req_header("api_key", "some_api_key")
+
       result = APIRequireCurator.call(conn, [])
 
       assert result.resp_body == "Internal Server Error"

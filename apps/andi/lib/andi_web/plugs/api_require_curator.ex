@@ -32,7 +32,7 @@ defmodule AndiWeb.Plugs.APIRequireCurator do
             Logger.error("Raptor reported unauthorized api_key with reason: #{inspect(error_reason)}")
             render_401_missing_api_key(conn)
 
-          {:error, error_reason, status_code} ->
+          {:error, error_reason, _status_code} ->
             Logger.error("Error when checking auth0 role via raptor: #{inspect(error_reason)}")
             render_500_internal_server_error(conn)
         end

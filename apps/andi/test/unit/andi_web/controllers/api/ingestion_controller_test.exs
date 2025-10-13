@@ -16,7 +16,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Andi.Schemas.AuditEvents, Brook.Event, DatasetStore]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -25,7 +25,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -34,12 +34,12 @@ defmodule AndiWeb.API.IngestionControllerTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations
     :meck.expect(Andi.Schemas.AuditEvents, :log_audit_event, fn _, _, _ -> %{} end)
     :meck.expect(Brook.Event, :send, fn @instance_name, _, :andi, _ -> :ok end)
     :meck.expect(DatasetStore, :get, fn "dataset_id" -> {:ok, %{id: "dataset_id"}} end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -49,7 +49,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
         end
       end)
     end)
-    
+
     uuid = Faker.UUID.v4()
 
     request = %{
@@ -78,16 +78,16 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get_all, fn -> {:ok, example_ingestions} end)
-      
+
       actual_ingestions =
         conn
         |> get(@get_ingestions_route)
         |> json_response(200)
 
       assert MapSet.new(example_ingestions) == MapSet.new(actual_ingestions)
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -98,9 +98,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get_all, fn -> {:error, "this was an error"} end)
-      
+
       response = get(conn, @get_ingestions_route)
 
       parsed_response =
@@ -108,7 +108,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
         |> json_response(404)
 
       assert parsed_response == "Unable to process your request"
-      
+
       :meck.unload(IngestionStore)
     end
   end
@@ -124,14 +124,14 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn ^id -> {:ok, ingestion} end)
-      
+
       conn = get(conn, "/api/v1/ingestion/#{id}")
 
       response = conn |> json_response(200)
       assert Map.get(response, "id") == id
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -144,15 +144,15 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn ^id -> {:ok, nil} end)
-      
+
       conn = get(conn, "/api/v1/ingestion/#{id}")
 
       response = conn |> json_response(404)
 
       assert response == "Ingestion not found"
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -163,9 +163,9 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get_all, fn -> {:error, "this was an error"} end)
-      
+
       response = get(conn, @get_ingestions_route)
 
       parsed_response =
@@ -173,7 +173,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
         |> json_response(404)
 
       assert parsed_response == "Unable to process your request"
-      
+
       :meck.unload(IngestionStore)
     end
   end
@@ -191,16 +191,16 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn _ -> {:ok, ingestion} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/delete", %{id: ingestion.id})
       |> json_response(200)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, ingestion_delete(), :andi, ingestion]) == 1
       assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, ingestion_delete(), ingestion]) == 1
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -215,15 +215,15 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn _ -> {:ok, nil} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/delete", %{id: ingestion.id})
       |> json_response(404)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, ingestion_delete(), :andi, ingestion]) == 0
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -235,13 +235,13 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn _ -> {:ok, ingestion} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end)
-      
+
       post(conn, "#{@route}/delete", %{id: ingestion.id})
       |> json_response(500)
-      
+
       :meck.unload(IngestionStore)
     end
   end
@@ -257,11 +257,11 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(Andi.InputSchemas.Datasets, :get, fn _ -> %{technical: %{sourceType: "ingest"}} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, %{}} end)
-      
+
       conn = put(conn, @route, ingestion_without_id)
 
       {_, decoded_body} = Jason.decode(response(conn, 201))
@@ -270,7 +270,7 @@ defmodule AndiWeb.API.IngestionControllerTest do
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, ingestion_update(), :andi, expected_ingestion]) == 1
       assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, ingestion_update(), expected_ingestion]) == 1
-      
+
       :meck.unload(Andi.InputSchemas.Datasets)
     end
 
@@ -284,15 +284,15 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn ^id -> {:ok, nil} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, %{}} end)
-      
+
       conn = put(conn, @route, ingestion)
       body = json_response(conn, 400)
       assert "Do not include id in create call" =~ Map.get(body, "errors")
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -306,18 +306,18 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn ^id -> {:ok, ingestion} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, %{}} end)
-      
+
       conn = put(conn, @route, ingestion)
 
       response(conn, 201)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, ingestion_update(), :andi, smrt_ingestion]) == 1
       assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, ingestion_update(), smrt_ingestion]) == 1
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -343,15 +343,15 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn _ -> {:ok, nil} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn "nonexistent_dataset" -> {:ok, nil} end)
-      
+
       conn = put(conn, @route, ingestion_without_id)
       body = json_response(conn, 400)
       assert "Target dataset does not exist" =~ Map.get(body, "errors")
-      
+
       :meck.unload(IngestionStore)
     end
 
@@ -365,15 +365,15 @@ defmodule AndiWeb.API.IngestionControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(IngestionStore, :get, fn ^id -> {:ok, ingestion} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn "error_dataset" -> {:error, "error reason"} end)
-      
+
       conn = put(conn, @route, ingestion)
       body = json_response(conn, 400)
       assert "Unable to retrieve target dataset" =~ Map.get(body, "errors")
-      
+
       :meck.unload(IngestionStore)
     end
   end

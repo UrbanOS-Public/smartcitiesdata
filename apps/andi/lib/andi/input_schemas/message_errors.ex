@@ -1,7 +1,6 @@
 defmodule Andi.InputSchemas.MessageErrors do
   @moduledoc false
   alias Andi.Repo
-  alias Ecto.Changeset
   alias Andi.InputSchemas.MessageError
 
   use Properties, otp_app: :andi

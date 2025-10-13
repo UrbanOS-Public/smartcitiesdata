@@ -187,8 +187,8 @@ defmodule AndiWeb.InputSchemas.DataDictionaryFormSchema do
     |> Enum.map(fn
       %Ecto.Changeset{} = dictionary_field_changeset ->
         dictionary_field_changeset
-        |> Changeset.put_change(:ingestion_field_selector, "None")
-        |> Changeset.put_change(:ingestion_field_sync, true)
+        |> Ecto.Changeset.put_change(:ingestion_field_selector, "None")
+        |> Ecto.Changeset.put_change(:ingestion_field_sync, true)
 
       %{} = dictionary_field_data ->
         dictionary_field_data

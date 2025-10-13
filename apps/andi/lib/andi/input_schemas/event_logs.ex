@@ -1,7 +1,6 @@
 defmodule Andi.InputSchemas.EventLogs do
   @moduledoc false
   alias Andi.Repo
-  alias Ecto.Changeset
   alias Andi.InputSchemas.EventLog
 
   use Properties, otp_app: :andi

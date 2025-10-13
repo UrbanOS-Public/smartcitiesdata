@@ -16,7 +16,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Andi.Schemas.AuditEvents, Brook.Event]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -25,7 +25,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -34,11 +34,11 @@ defmodule AndiWeb.API.DatasetControllerTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations
     :meck.expect(Andi.Schemas.AuditEvents, :log_audit_event, fn _, _, _ -> %{} end)
     :meck.expect(Brook.Event, :send, fn @instance_name, _, :andi, _ -> :ok end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -48,7 +48,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
         end
       end)
     end)
-    
+
     {:ok, example_datasets: get_example_datasets()}
   end
 
@@ -65,15 +65,15 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, dataset} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(200)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_disable(), :andi, dataset]) == 1
-      
+
       :meck.unload(DatasetStore)
     end
 
@@ -88,15 +88,15 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, nil} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(404)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_disable(), :andi, dataset]) == 0
-      
+
       :meck.unload(DatasetStore)
     end
 
@@ -108,13 +108,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, dataset} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end)
-      
+
       post(conn, "#{@route}/disable", %{id: dataset.id})
       |> json_response(500)
-      
+
       :meck.unload(DatasetStore)
     end
   end
@@ -132,16 +132,16 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, dataset} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(200)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_delete(), :andi, dataset]) == 1
       assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, dataset_delete(), dataset]) == 1
-      
+
       :meck.unload(DatasetStore)
     end
 
@@ -156,16 +156,16 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, nil} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-      
+
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(404)
 
       assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_delete(), :andi, dataset]) == 0
       assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, dataset_delete(), dataset]) == 0
-      
+
       :meck.unload(DatasetStore)
     end
 
@@ -177,13 +177,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, dataset} end)
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> {:error, "Mistakes were made"} end)
-      
+
       post(conn, "#{@route}/delete", %{id: dataset.id})
       |> json_response(500)
-      
+
       :meck.unload(DatasetStore)
     end
   end
@@ -211,10 +211,10 @@ defmodule AndiWeb.API.DatasetControllerTest do
     catch
       :error, {:already_started, _} -> :ok
     end
-    
+
     :meck.expect(InputConverter, :smrt_dataset_to_full_changeset, fn _ -> %{valid?: true} end)
     :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-    
+
     conn = put(conn, @route, dataset_without_id)
 
     {_, decoded_body} = Jason.decode(response(conn, 201))
@@ -222,7 +222,7 @@ defmodule AndiWeb.API.DatasetControllerTest do
 
     assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_update(), :andi, expected_dataset]) == 1
     assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, dataset_update(), expected_dataset]) == 1
-    
+
     :meck.unload(InputConverter)
   end
 
@@ -236,17 +236,17 @@ defmodule AndiWeb.API.DatasetControllerTest do
     catch
       :error, {:already_started, _} -> :ok
     end
-    
+
     :meck.expect(InputConverter, :smrt_dataset_to_full_changeset, fn _ -> %{valid?: true} end)
     :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-    
+
     conn = put(conn, @route, dataset)
 
     response(conn, 400)
     # For these wildcard assertions, we check that Brook.Event.send and log_audit_event were not called with any arguments
     assert :meck.num_calls(Brook.Event, :send, :_) == 0
     assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, :_) == 0
-    
+
     :meck.unload(InputConverter)
   end
 
@@ -261,24 +261,24 @@ defmodule AndiWeb.API.DatasetControllerTest do
     catch
       :error, {:already_started, _} -> :ok
     end
-    
+
     try do
       :meck.new(InputConverter, [:passthrough])
     catch
       :error, {:already_started, _} -> :ok
     end
-    
+
     :meck.expect(DatasetStore, :get, fn _id -> {:ok, dataset} end)
     :meck.expect(InputConverter, :smrt_dataset_to_full_changeset, fn _ -> %{valid?: true} end)
     :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
-    
+
     conn = put(conn, @route, dataset)
 
     response(conn, 201)
 
     assert :meck.num_calls(Brook.Event, :send, [@instance_name, dataset_update(), :andi, smrt_dataset]) == 1
     assert :meck.num_calls(Andi.Schemas.AuditEvents, :log_audit_event, [:api, dataset_update(), smrt_dataset]) == 1
-    
+
     :meck.unload(DatasetStore)
     :meck.unload(InputConverter)
   end
@@ -292,15 +292,15 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get_all, fn -> {:ok, example_datasets} end)
-      
+
       actual_datasets =
         get(conn, @get_datasets_route)
         |> json_response(200)
 
       assert MapSet.new(example_datasets) == MapSet.new(actual_datasets)
-      
+
       :meck.unload(DatasetStore)
     end
   end
@@ -315,14 +315,14 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn ^id -> {:ok, dataset} end)
-      
+
       conn = get(conn, "/api/v1/dataset/#{id}")
 
       response = conn |> json_response(200)
       assert Map.get(response, "id") == id
-      
+
       :meck.unload(DatasetStore)
     end
 
@@ -333,13 +333,13 @@ defmodule AndiWeb.API.DatasetControllerTest do
       catch
         :error, {:already_started, _} -> :ok
       end
-      
+
       :meck.expect(DatasetStore, :get, fn _ -> {:ok, nil} end)
-      
+
       conn = get(conn, "/api/v1/dataset/123")
 
       assert 404 == conn.status
-      
+
       :meck.unload(DatasetStore)
     end
   end

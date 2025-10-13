@@ -4,7 +4,6 @@ defmodule Codelabs.Person do
 
   alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
-  alias Andi.Repo
 
   @primary_key {:id, Ecto.UUID, autogenerate: true}
   schema "person" do
@@ -17,13 +16,6 @@ defmodule Codelabs.Person do
     :id,
     :name,
     :age
-  ]
-
-  @required_fields [
-    :id,
-    :name,
-    :age,
-    :addresses
   ]
 
   def changeset(current, changes) do
@@ -40,7 +32,7 @@ defmodule Codelabs.Person do
       |> StructTools.to_map()
 
     # Since validations have varying behavior, its better to create a new changeset to validate everything as a new change
-    validation_changeset =
+    _validation_changeset =
       changeset
       |> Map.replace(:errors, [])
       |> Changeset.cast(data_as_changes, @cast_fields, force_changes: true)

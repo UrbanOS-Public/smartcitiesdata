@@ -42,7 +42,7 @@ defmodule Andi.Event.EventHandlerTest do
     # Verify the calls were made
     assert :meck.called(Ingestions, :delete, [ingestion.id])
     assert :meck.called(IngestionStore, :delete, [ingestion.id])
-    
+
     # Clean up
     try do
       :meck.unload(IngestionStore)
@@ -78,7 +78,7 @@ defmodule Andi.Event.EventHandlerTest do
     # Verify the calls were made
     assert :meck.called(Ingestions, :update, [ingestion])
     assert :meck.called(IngestionStore, :update, [ingestion])
-    
+
     # Clean up
     try do
       :meck.unload(IngestionStore)
@@ -112,7 +112,7 @@ defmodule Andi.Event.EventHandlerTest do
 
     # Verify the calls were made
     assert :meck.called(Datasets, :delete, [dataset.id])
-    
+
     # Clean up
     try do
       :meck.unload(Brook.ViewState)
@@ -133,16 +133,18 @@ defmodule Andi.Event.EventHandlerTest do
     catch
       _, _ -> :ok
     end
-    
-    Process.sleep(10)  # Brief pause for cleanup
-    
+
+    # Brief pause for cleanup
+    Process.sleep(10)
+
     try do
       :meck.new(Harvester, [:passthrough, :no_link])
     catch
-      :error, {:already_started, _} -> 
+      :error, {:already_started, _} ->
         :meck.unload(Harvester)
         Process.sleep(10)
         :meck.new(Harvester, [:passthrough, :no_link])
+
       error, reason ->
         IO.puts("Warning: Mock creation error for Harvester: #{inspect({error, reason})}")
         :ok
@@ -179,6 +181,7 @@ defmodule Andi.Event.EventHandlerTest do
         @instance_name, dataset_harvest_start(), :andi, _ -> :ok
         @instance_name, type, :andi, message -> :meck.passthrough([@instance_name, type, :andi, message])
       end)
+
       :meck.expect(OrgStore, :update, fn _ -> :ok end)
       :meck.expect(Organizations, :update, fn _ -> :ok end)
 
@@ -201,7 +204,7 @@ defmodule Andi.Event.EventHandlerTest do
 
       # Allow some time for the event to be processed
       Process.sleep(10)
-      
+
       # Verify the call was made
       assert :meck.called(Brook.Event, :send, [@instance_name, dataset_harvest_start(), :andi, org])
     end
@@ -212,7 +215,7 @@ defmodule Andi.Event.EventHandlerTest do
 
       # Allow some time for the event to be processed
       Process.sleep(10)
-      
+
       # Verify the harvest start call was NOT made
       refute :meck.called(Brook.Event, :send, [@instance_name, dataset_harvest_start(), :andi, org])
     end

@@ -4,7 +4,6 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
   use Ecto.Schema
 
   alias Ecto.Changeset
-  alias Andi.InputSchemas.StructTools
 
   embedded_schema do
     field(:name, :string)
@@ -18,12 +17,6 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
     :sourceFormat,
     :targetDatasets,
     :topLevelSelector
-  ]
-
-  @required_fields [
-    :name,
-    :sourceFormat,
-    :targetDatasets
   ]
 
   def extract_from_ingestion_changeset(%Ecto.Changeset{data: %Andi.InputSchemas.Ingestion{}} = ingestion_changeset) do
@@ -45,7 +38,7 @@ defmodule AndiWeb.InputSchemas.IngestionMetadataFormSchema do
         {:sourceFormat, {msg, opts}} -> {:sourceFormat, {msg, opts}}
         {:topLevelSelector, {msg, opts}} -> {:topLevelSelector, {msg, opts}}
         {:targetDatasets, {msg, opts}} -> {:targetDatasets, {msg, opts}}
-        other_errors -> nil
+        _other_errors -> nil
       end)
       |> Enum.reject(&is_nil/1)
 

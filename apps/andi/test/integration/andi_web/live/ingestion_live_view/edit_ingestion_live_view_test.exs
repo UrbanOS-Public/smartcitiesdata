@@ -244,7 +244,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
         render_click(view, "publish")
 
-        assert_called Brook.Event.send(:_, ingestion_update(), :_, %{id: ingestion.id})
+        assert_called(Brook.Event.send(:_, ingestion_update(), :_, %{id: ingestion.id}))
       end
     end
 
@@ -285,7 +285,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
 
         render_click(view, "publish")
 
-        assert_called Brook.Event.send(:_, ingestion_update(), :_, %{name: new_name})
+        assert_called(Brook.Event.send(:_, ingestion_update(), :_, %{name: new_name}))
       end
     end
 

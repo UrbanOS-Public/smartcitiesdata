@@ -122,14 +122,16 @@ defmodule AndiWeb.API.IngestionController do
   Return all ingestions stored in redis
   """
   def get_all(conn, _params) do
-    try do
-      # IngestionStore.get_all() returns values directly, not {:ok, _} tuples
-      ingestions = IngestionStore.get_all()
-      respond(conn, :ok, ingestions)
-    rescue
-      error ->
+    case IngestionStore.get_all() do
+      {:ok, ingestions} ->
+        respond(conn, :ok, ingestions)
+
+      {:error, error} ->
         Logger.error("Failed to retrieve ingestions: #{inspect(error)}")
         respond(conn, :not_found, "Unable to process your request")
+
+      ingestions when is_list(ingestions) ->
+        respond(conn, :ok, ingestions)
     end
   end
 

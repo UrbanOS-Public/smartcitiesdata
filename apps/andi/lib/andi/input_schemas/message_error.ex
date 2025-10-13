@@ -25,10 +25,6 @@ defmodule Andi.InputSchemas.MessageError do
     :last_error_time
   ]
 
-  @required_fields [
-    :dataset_id
-  ]
-
   def changeset(%{} = changes) do
     changes_as_map = StructTools.to_map(changes)
 

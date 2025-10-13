@@ -3,9 +3,9 @@ defmodule AndiWeb.API.AuditLogControllerTest do
 
   alias Andi.Schemas.AuditEvents
   alias Andi.Schemas.AuditEvent
-  
+
   @moduletag timeout: 5000
-  
+
   @route "/api/v1/audit"
   @error_text "Unsupported request. Only one filter can be used at a time - 'user_id', 'audit_id', 'type', 'event_id.'" <>
                 "For time, exactly 'start_date' and 'end_date' must be used and formatted in ISO-8601. ex. /start_date=2020-12-31&end-date=2021-01-01"
@@ -13,7 +13,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
   setup %{} do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [AuditEvents]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -22,7 +22,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -31,7 +31,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -41,7 +41,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
         end
       end)
     end)
-    
+
     logs = [
       struct(AuditEvent, %{
         id: "id",
@@ -78,7 +78,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
 
   test "get all audit logs", %{conn: conn, logs: logs, logs_as_text: logs_as_text} do
     :meck.expect(AuditEvents, :get_all, fn -> logs end)
-    
+
     conn = get(conn, "#{@route}")
 
     assert :meck.num_calls(AuditEvents, :get_all, []) == 1
@@ -90,7 +90,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     audit_id = "12345"
 
     :meck.expect(AuditEvents, :get, fn ^audit_id -> logs end)
-    
+
     conn = get(conn, "#{@route}?audit_id=#{audit_id}")
 
     assert :meck.num_calls(AuditEvents, :get, [audit_id]) == 1
@@ -102,7 +102,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     user_id = "user_id"
 
     :meck.expect(AuditEvents, :get_all_for_user, fn ^user_id -> logs end)
-    
+
     conn = get(conn, "#{@route}?user_id=#{user_id}")
 
     assert :meck.num_calls(AuditEvents, :get_all_for_user, [user_id]) == 1
@@ -114,7 +114,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     type = "some_type"
 
     :meck.expect(AuditEvents, :get_all_of_type, fn ^type -> logs end)
-    
+
     conn = get(conn, "#{@route}?type=#{type}")
 
     assert :meck.num_calls(AuditEvents, :get_all_of_type, [type]) == 1
@@ -126,7 +126,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     event_id = "54321"
 
     :meck.expect(AuditEvents, :get_all_by_event_id, fn ^event_id -> logs end)
-    
+
     conn = get(conn, "#{@route}?event_id=#{event_id}")
 
     assert :meck.num_calls(AuditEvents, :get_all_by_event_id, [event_id]) == 1
@@ -139,7 +139,7 @@ defmodule AndiWeb.API.AuditLogControllerTest do
     {:ok, end_date_struct} = Date.new(2020, 10, 9)
 
     :meck.expect(AuditEvents, :get_all_in_range, fn ^start_date_struct, ^end_date_struct -> logs end)
-    
+
     conn = get(conn, "#{@route}?start_date=2020-06-05&end_date=2020-10-09")
 
     assert :meck.num_calls(AuditEvents, :get_all_in_range, [start_date_struct, end_date_struct]) == 1

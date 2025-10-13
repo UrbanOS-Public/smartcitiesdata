@@ -7,7 +7,6 @@ defmodule Andi.InputSchemas.Ingestion do
 
   alias Ecto.Changeset
   alias Andi.InputSchemas.StructTools
-  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.Datasets.Dataset
   alias Andi.InputSchemas.Datasets.DataDictionary
   alias Andi.InputSchemas.Ingestions.ExtractStep
@@ -83,7 +82,7 @@ defmodule Andi.InputSchemas.Ingestion do
       |> StructTools.to_map()
       |> migrate_to_multiple_datasets()
 
-    source_format = Map.get(data_as_changes, :sourceFormat, nil)
+    _source_format = Map.get(data_as_changes, :sourceFormat, nil)
 
     changeset
     |> Map.replace(:errors, [])

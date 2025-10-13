@@ -1,6 +1,6 @@
 defmodule Andi.Services.UrlTestTest do
   use ExUnit.Case
-  
+
   @moduletag timeout: 15000
 
   describe "test/1" do

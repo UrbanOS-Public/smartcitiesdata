@@ -104,7 +104,7 @@ defmodule Andi.InputSchemas.Organizations do
     end
   end
 
-  def is_unique?(id, nil) do
+  def is_unique?(_id, nil) do
     false
   end
 

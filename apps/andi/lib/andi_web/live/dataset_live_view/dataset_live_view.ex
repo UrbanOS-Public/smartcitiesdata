@@ -234,20 +234,6 @@ defmodule AndiWeb.DatasetLiveView do
     end
   end
 
-  defp has_recent_dlq_message?(nil), do: false
-
-  defp has_recent_dlq_message?(message) do
-    message_timestamp = message["timestamp"]
-    message_received_within?(message_timestamp, 7, :days)
-  end
-
-  defp message_received_within?(message_timestamp, length_of_time, interval) do
-    {:ok, message_datetime, _} = DateTime.from_iso8601(message_timestamp)
-    message_age = Timex.diff(DateTime.utc_now(), message_datetime, interval)
-
-    message_age <= length_of_time
-  end
-
   def string_to_bool("true"), do: true
   def string_to_bool("false"), do: false
 

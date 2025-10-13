@@ -6,7 +6,7 @@ defmodule Andi.MessageHandler do
 
   alias Andi.InputSchemas.Datasets
 
-  @dead_letter_topic Application.get_env(:andi, :dead_letter_topic)
+  @dead_letter_topic Application.compile_env(:andi, :dead_letter_topic)
 
   def init(_) do
     {:ok, %{}}

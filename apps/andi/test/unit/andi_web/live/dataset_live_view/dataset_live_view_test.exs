@@ -15,7 +15,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
   setup do
     # Set up :meck for modules without dependency injection
     modules_to_mock = [Andi.Repo, User, Guardian.DB.Token]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -24,7 +24,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -33,13 +33,13 @@ defmodule AndiWeb.DatasetLiveViewTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     # Default expectations
     :meck.expect(Andi.Repo, :get_by, fn Andi.Schemas.User, _ -> @user end)
     :meck.expect(User, :get_all, fn -> [@user] end)
     :meck.expect(User, :get_by_subject_id, fn _ -> @user end)
     :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -49,7 +49,7 @@ defmodule AndiWeb.DatasetLiveViewTest do
         end
       end)
     end)
-    
+
     :ok
   end
 

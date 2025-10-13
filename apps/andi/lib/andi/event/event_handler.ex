@@ -20,11 +20,10 @@ defmodule Andi.Event.EventHandler do
       ingestion_complete: 0,
       ingestion_update: 0,
       ingestion_delete: 0,
-      event_log_published: 0,
-      data_extract_end: 0
+      event_log_published: 0
     ]
 
-  alias SmartCity.{Dataset, Organization, Ingestion, EventLog}
+  alias SmartCity.{Dataset, Organization, Ingestion}
   alias SmartCity.UserOrganizationAssociate
   alias SmartCity.UserOrganizationDisassociate
 
@@ -36,7 +35,6 @@ defmodule Andi.Event.EventHandler do
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Ingestions
   alias Andi.InputSchemas.EventLogs
-  alias Andi.InputSchemas.MessageError
   alias Andi.InputSchemas.MessageErrors
   alias Andi.Services.IngestionStore
 
@@ -392,7 +390,7 @@ defmodule Andi.Event.EventHandler do
       Map.update(andi_ingestion, :targetDatasets, [], fn datasets -> List.delete(datasets, data.id) end)
     end)
     |> Enum.each(fn
-      %{submissionStatus: :published, targetDatasets: targetDatasets} = andi_ingestion ->
+      %{submissionStatus: :published, targetDatasets: _targetDatasets} = andi_ingestion ->
         updated_andi_ingestion =
           case Enum.empty?(andi_ingestion.targetDatasets) do
             true -> Map.put(andi_ingestion, :submissionStatus, :draft)
@@ -400,7 +398,7 @@ defmodule Andi.Event.EventHandler do
           end
 
         case Ingestions.update(updated_andi_ingestion) do
-          {:ok, ingestion} ->
+          {:ok, _ingestion} ->
             :ok
 
           {:error, changeset} ->
@@ -411,7 +409,7 @@ defmodule Andi.Event.EventHandler do
 
       %{submissionStatus: :draft} = andi_ingestion ->
         case Ingestions.update(andi_ingestion) do
-          {:ok, ingestion} ->
+          {:ok, _ingestion} ->
             :ok
 
           {:error, changeset} ->

@@ -2,14 +2,14 @@ defmodule AndiWeb.HeaderLiveViewTest do
   use AndiWeb.Test.AuthConnCase.UnitCase
 
   import Phoenix.LiveViewTest
-  
+
   @moduletag timeout: 5000
 
   describe "Header Live View" do
     setup do
       # Set up :meck for modules without dependency injection
       modules_to_mock = [Application]
-      
+
       # Clean up any existing mocks first
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -18,7 +18,7 @@ defmodule AndiWeb.HeaderLiveViewTest do
           _, _ -> :ok
         end
       end)
-      
+
       # Set up fresh mocks
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -27,7 +27,7 @@ defmodule AndiWeb.HeaderLiveViewTest do
           :error, {:already_started, _} -> :ok
         end
       end)
-      
+
       on_exit(fn ->
         Enum.each(modules_to_mock, fn module ->
           try do
@@ -37,10 +37,10 @@ defmodule AndiWeb.HeaderLiveViewTest do
           end
         end)
       end)
-      
+
       :ok
     end
-    
+
     test "Displays default logo when none is provided" do
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
@@ -58,9 +58,9 @@ defmodule AndiWeb.HeaderLiveViewTest do
         :andi, :logo_url -> "/images/RuralOS.svg"
         app, env -> :meck.passthrough([app, env])
       end)
-      
+
       :meck.expect(Application, :get_env, fn app, env, opts -> :meck.passthrough([app, env, opts]) end)
-      
+
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
       header_logo =
@@ -89,9 +89,9 @@ defmodule AndiWeb.HeaderLiveViewTest do
         :andi, :header_text -> "Definitely Not Data Submission Tool"
         app, env -> :meck.passthrough([app, env])
       end)
-      
+
       :meck.expect(Application, :get_env, fn app, env, opts -> :meck.passthrough([app, env, opts]) end)
-      
+
       html = render_component(AndiWeb.HeaderLiveView, is_curator: true, path: "test")
 
       header_text =

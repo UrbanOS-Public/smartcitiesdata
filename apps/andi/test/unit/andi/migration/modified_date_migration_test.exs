@@ -10,11 +10,11 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
 
   @moduletag timeout: 5000
   @instance_name Andi.instance_name()
-  
+
   setup do
     # Set up :meck for modules that will be mocked across tests
     modules_to_mock = [Brook, Brook.Event, Brook.ViewState]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -23,7 +23,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -32,7 +32,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         :error, {:already_started, _} -> :ok
       end
     end)
-    
+
     on_exit(fn ->
       Enum.each(modules_to_mock, fn module ->
         try do
@@ -42,7 +42,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
         end
       end)
     end)
-    
+
     :ok
   end
 
@@ -69,7 +69,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
     :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
     :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
     :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
-    
+
     Andi.Migration.ModifiedDateMigration.do_migration()
 
     # Verify calls were made with expected arguments
@@ -88,7 +88,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
     :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
     :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
     :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
-    
+
     Andi.Migration.ModifiedDateMigration.do_migration()
 
     # Verify no calls were made (dataset already has correct format)
@@ -108,7 +108,7 @@ defmodule Andi.Migration.ModifiedDateMigrationTest do
     :meck.expect(Brook, :get_all_values!, fn :andi, :dataset -> [dataset] end)
     :meck.expect(Brook.Event, :send, fn _, _, _, _ -> :ok end)
     :meck.expect(Brook.ViewState, :merge, fn :dataset, _, _ -> :ok end)
-    
+
     expected = "[abc1234] unable to parse business.modifiedDate '\"not an actual date\"' in modified_date_migration"
 
     captured = capture_log([level: :warn], fn -> Andi.Migration.ModifiedDateMigration.do_migration() end)

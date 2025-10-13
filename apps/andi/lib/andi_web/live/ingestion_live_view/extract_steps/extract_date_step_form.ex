@@ -85,10 +85,6 @@ defmodule AndiWeb.ExtractSteps.ExtractDateStepForm do
 
   defp get_time_units(), do: map_to_dropdown_options(Options.time_units())
 
-  defp update_example_output(changeset, socket) do
-    {changeset, assign(socket, example_output: get_example_output(changeset))}
-  end
-
   defp get_example_output(%{valid?: false}), do: "Please clear errors before output can be shown"
 
   defp get_example_output(%{changes: %{deltaTimeUnit: ""}} = changeset) do

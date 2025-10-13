@@ -3,7 +3,6 @@ defmodule Codelabs.Address do
   use Properties, otp_app: :andi
 
   alias Ecto.Changeset
-  alias Andi.InputSchemas.StructTools
 
   defmodule InvalidId do
     defexception [:message, :field]
@@ -23,10 +22,6 @@ defmodule Codelabs.Address do
     :street,
     :person_id,
     :id
-  ]
-
-  @required_fields [
-    :street
   ]
 
   def changeset(current, changes) do

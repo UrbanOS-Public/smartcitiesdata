@@ -79,7 +79,7 @@ defmodule RaptorService do
         if (status_code >= 400) do
           {:error, body}
         else
-          {:ok, apiKey} = Jason.decode(body)
+          {:ok, _apiKey} = Jason.decode(body)
         end
 
       error ->
@@ -114,8 +114,8 @@ defmodule RaptorService do
         Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
         {:error, error_reason, status_code}
 
-      _error ->
-        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(_error)}")
+      error ->
+        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(error)}")
         {:error, "Internal Server Error", 500}
     end
   end

@@ -31,7 +31,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
   setup %{conn: conn} do
     # Use :meck for modules without dependency injection
     modules_to_mock = [User, Andi.Repo, Guardian.DB.Token, MessageErrors]
-    
+
     # Clean up any existing mocks first
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -40,7 +40,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
         _, _ -> :ok
       end
     end)
-    
+
     # Set up fresh mocks
     Enum.each(modules_to_mock, fn module ->
       try do
@@ -54,7 +54,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
     :meck.expect(User, :get_by_subject_id, fn _ -> @user end)
     :meck.expect(Andi.Repo, :all, fn _ -> [@dataset_a, @dataset_b, @dataset_c, @dataset_d] end)
     :meck.expect(Guardian.DB.Token, :find_by_claims, fn _ -> nil end)
-    
+
     :meck.expect(MessageErrors, :get_latest_error, fn
       id when id == @dataset_a.id -> create_message_error(@dataset_a.id)
       id when id == @dataset_b.id -> create_message_error(@dataset_b.id)
@@ -178,7 +178,7 @@ defmodule AndiWeb.DatasetLiveViewTest.TableTest do
 
       # Override the Andi.Repo expectation for this specific test
       :meck.expect(Andi.Repo, :all, fn _ -> [dataset] end)
-      
+
       DatasetHelpers.replace_all_datasets_in_repo([dataset])
 
       {:ok, _view, html} = live(conn, @url_path)

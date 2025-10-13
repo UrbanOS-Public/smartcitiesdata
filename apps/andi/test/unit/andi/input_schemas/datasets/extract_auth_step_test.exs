@@ -4,7 +4,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractAuthStepTest do
 
   alias Andi.InputSchemas.Ingestions.ExtractAuthStep
   alias Ecto.Changeset
-  
+
   @moduletag timeout: 5000
 
   describe "body validation" do

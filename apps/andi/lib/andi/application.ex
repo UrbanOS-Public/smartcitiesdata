@@ -76,7 +76,7 @@ defmodule Andi.Application do
     Application.get_env(:andi, Andi.Repo)
     |> case do
       nil -> []
-      _ -> Supervisor.Spec.worker(Andi.Repo, [])
+      _ -> Andi.Repo
     end
   end
 
@@ -200,7 +200,7 @@ defmodule Andi.Application do
         []
 
       _config ->
-        Supervisor.Spec.worker(Guardian.DB.Token.SweeperServer, [])
+        Guardian.DB.Token.SweeperServer
     end
   end
 
