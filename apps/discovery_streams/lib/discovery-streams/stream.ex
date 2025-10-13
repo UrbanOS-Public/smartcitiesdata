@@ -57,16 +57,15 @@ defmodule DiscoveryStreams.Stream do
 
   @retry with: exponential_backoff(100) |> take(@max_retries)
   defp start_source(state) do
-    context =
-      Source.Context.new!(
-        handler: DiscoveryStreams.Stream.SourceHandler,
-        app_name: @instance_name,
-        dataset_id: state.dataset_id,
-        assigns: %{
-          kafka: topic_subscriber_config(),
-          system_name: state.system_name
-        }
-      )
+    context = %Source.Context{
+      handler: DiscoveryStreams.Stream.SourceHandler,
+      app_name: @instance_name,
+      dataset_id: state.dataset_id,
+      assigns: %{
+        kafka: topic_subscriber_config(),
+        system_name: state.system_name
+      }
+    }
 
     Source.start_link(
       Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(state.dataset_id)),
