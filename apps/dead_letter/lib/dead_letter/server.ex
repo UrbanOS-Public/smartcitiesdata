@@ -5,14 +5,6 @@ defmodule DeadLetter.Server do
   driver as defined in the config.
   """
 
-  defimpl Jason.Encoder, for: Tuple do
-    def encode(value, opts) do
-      value
-      |> Tuple.to_list()
-      |> Jason.Encode.list(opts)
-    end
-  end
-
   use GenServer
   require Logger
 
