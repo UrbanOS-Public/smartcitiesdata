@@ -272,6 +272,12 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 
+      # Wait for the dataset to be fully available in Brook before proceeding
+      eventually(fn ->
+        assert Brook.get_all_values!(DiscoveryApi.instance_name(), :models)
+               |> Enum.any?(fn model -> model.id == id end)
+      end)
+
       # Configure RaptorServiceTestImpl to allow access for this user to this public dataset
       Process.put(:raptor_auth_rules, [{:allow, owner.subject_id, table}])
 
