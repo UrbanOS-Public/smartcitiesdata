@@ -68,7 +68,7 @@ defmodule DiscoveryStreams.Stream do
     }
 
     Source.start_link(
-      Kafka.Topic.new!(endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(state.dataset_id)),
+      %Kafka.Topic{endpoints: TopicHelper.get_endpoints(), name: TopicHelper.topic_name(state.dataset_id)},
       context
     )
   end
