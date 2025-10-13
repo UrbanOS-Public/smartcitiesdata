@@ -75,7 +75,7 @@ defmodule DiscoveryStreams.Mixfile do
       {:telemetry_event, in_umbrella: true},
       {:temporary_env, "~> 2.0", only: [:test, :integration]},
       {:sobelow, "~> 0.8", only: :dev, runtime: false},
-      {:distillery, "~> 2.1"},
+      # {:distillery, "~> 2.1"},
       {:poison, "~> 5.0", override: true},
       {:tasks, in_umbrella: true, only: :dev},
       {:decimal, "~> 2.0"},
