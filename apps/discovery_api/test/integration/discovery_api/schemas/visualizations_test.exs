@@ -270,21 +270,28 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       authorized_conn: authorized_conn
     } do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
-      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
+
+      # Configure RaptorServiceTestImpl to allow access for this user to this public dataset
+      Process.put(:raptor_auth_rules, [{:allow, owner.subject_id, table}])
 
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
 
       # Assign the actual owner to the connection so ownership check passes
       conn_with_owner = Plug.Conn.assign(authorized_conn, :current_user, owner)
 
-      assert put(conn_with_owner, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
-             |> response(200)
+      try do
+        assert put(conn_with_owner, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
+               |> response(200)
 
-      eventually(fn ->
-        {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
-        assert [id] == viz.datasets
-      end)
+        eventually(fn ->
+          {:ok, viz} = Visualizations.get_visualization_by_id(created_visualization.public_id)
+          assert [id] == viz.datasets
+        end)
+      after
+        # Clean up the process dictionary
+        Process.delete(:raptor_auth_rules)
+      end
     end
   end
 end
