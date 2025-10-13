@@ -33,7 +33,7 @@ defmodule DiscoveryApi.Data.DataJson do
         "hasEmail" => "mailto:" <> model.contactEmail
       },
       "accessLevel" => model.accessLevel,
-      "license" => val_or_optional(model.license),
+      "license" => ensure_valid_uri(model.license),
       "rights" => val_or_optional(model.rights),
       "spatial" => val_or_optional(model.spatial),
       "temporal" => :optional,
@@ -50,14 +50,14 @@ defmodule DiscoveryApi.Data.DataJson do
         }
       ],
       "accrualPeriodicity" => :optional,
-      "conformsTo" => val_or_optional(model.conformsToUri),
-      "describedBy" => val_or_optional(model.describedByUrl),
+      "conformsTo" => ensure_valid_uri(model.conformsToUri),
+      "describedBy" => ensure_valid_uri(model.describedByUrl),
       "describedByType" => val_or_optional(model.describedByMimeType),
       "isPartOf" => val_or_optional(model.parentDataset),
       "issued" => val_or_optional(model.issuedDate),
       "language" => [val_or_optional(model.language)],
-      "landingPage" => val_or_optional(model.homepage),
-      "references" => val_or_optional(model.referenceUrls),
+      "landingPage" => ensure_valid_uri(model.homepage),
+      "references" => ensure_valid_uri_array(model.referenceUrls),
       "theme" => val_or_optional(model.categories)
     }
     |> remove_optional_values()
@@ -85,6 +85,44 @@ defmodule DiscoveryApi.Data.DataJson do
   end
 
   defp val_or_optional(val), do: val
+
+  # Helper to ensure URLs are valid URIs with schemes
+  defp ensure_valid_uri(nil), do: :optional
+  defp ensure_valid_uri(""), do: :optional
+
+  defp ensure_valid_uri(val) when is_binary(val) do
+    trimmed = String.trim(val)
+
+    case URI.parse(trimmed) do
+      # No scheme means invalid URI
+      %URI{scheme: nil} -> :optional
+      # Has scheme, valid URI
+      %URI{scheme: _} -> trimmed
+    end
+  end
+
+  defp ensure_valid_uri(_), do: :optional
+
+  # Helper to ensure an array of URLs contains only valid URIs
+  defp ensure_valid_uri_array(nil), do: :optional
+  defp ensure_valid_uri_array([]), do: :optional
+
+  defp ensure_valid_uri_array(list) when is_list(list) do
+    valid_uris =
+      Enum.filter(list, fn item ->
+        case ensure_valid_uri(item) do
+          :optional -> false
+          _ -> true
+        end
+      end)
+
+    case valid_uris do
+      [] -> :optional
+      uris -> uris
+    end
+  end
+
+  defp ensure_valid_uri_array(_), do: :optional
 
   defp is_public?(%Model{} = model) do
     model.private == false
