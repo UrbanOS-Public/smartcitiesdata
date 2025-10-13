@@ -26,6 +26,7 @@ defmodule DiscoveryStreams.TopicHelper do
     Logger.debug("#{__MODULE__}: Deleting Topic: #{input_topic}")
 
     elsa_impl = elsa_module || elsa()
+
     case elsa_impl.delete_topic(get_endpoints(), input_topic) do
       :ok ->
         Logger.debug("#{__MODULE__}: Deleted topic: #{input_topic}")

@@ -21,9 +21,9 @@ defmodule DiscoveryStreams.SourceHandlerTest do
     Application.put_env(:discovery_streams, :raptor_service, RaptorServiceMock)
     Application.put_env(:discovery_streams, :telemetry_event, DiscoveryStreamsTelemetryEventMock)
     Application.put_env(:discovery_streams, :hostname_module, StreamingMetrics.HostnameMock)
-    
+
     BrookViewStateMock
-    |> stub(:get, fn 
+    |> stub(:get, fn
       _, :streaming_datasets_by_system_name, "ceav__shuttles_on_a_map" -> {:ok, @dataset_1_id}
       _, :streaming_datasets_by_system_name, "central_ohio_transit_authority__cota_stream" -> {:ok, @dataset_2_id}
       _, :streaming_datasets_by_system_name, _ -> {:error, "does_not_exist"}
@@ -36,12 +36,11 @@ defmodule DiscoveryStreams.SourceHandlerTest do
     |> stub(:add_event_metrics, fn _, _, _ -> :ok end)
 
     stub(StreamingMetrics.HostnameMock, :get, fn -> "test-hostname" end)
-    
+
     :ok
   end
 
   data_test "broadcasts data from system_name #{system_name} to a websocket channel #{channel}" do
-
     {:ok, _, socket} =
       socket(DiscoveryStreamsWeb.UserSocket)
       |> subscribe_and_join(DiscoveryStreamsWeb.StreamingChannel, channel)
@@ -62,7 +61,7 @@ defmodule DiscoveryStreams.SourceHandlerTest do
   test "Telemetry events are published with each handled batch" do
     # Override TelemetryEvent at the application level to bypass the real TelemetryEvent.Mock
     Application.put_env(:telemetry_event, :implementation, DiscoveryStreamsTelemetryEventMock)
-    
+
     expect(DiscoveryStreamsTelemetryEventMock, :add_event_metrics, fn _, _, _ -> :ok end)
 
     [%{"payload" => %{"vehicle" => %{"vehicle" => %{"id" => "11603"}}}}]

@@ -1,17 +1,17 @@
-= May 2025 erlang /elixir version upgrade [5/9] [55%]
+* May 2025 erlang /elixir version upgrade 
 
-== Convert for compilation
+** Convert for OTP25 compilation [6/8] [75%]
 
 - [X] forklift
 - [X] valkyrie
 - [X] raptor
 - [X] alchemist
 - [X] reaper
-- [ ] discovery_api
+- [X] discovery_api
 - [ ] discovery_streams
 - [ ] andi
 
-== High Level Goals
+** High Level Goals
 
 - [ ] replace placebo with mox
 

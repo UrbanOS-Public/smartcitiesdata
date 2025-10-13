@@ -8,7 +8,7 @@ defmodule DiscoveryStreams.InitTest do
     # Set up dependency injection through Application environment
     Application.put_env(:discovery_streams, :brook_view_state, BrookViewStateMock)
     Application.put_env(:discovery_streams, :stream_supervisor, StreamSupervisorMock)
-    
+
     expect(BrookViewStateMock, :get_all, fn :discovery_streams, :streaming_datasets_by_system_name ->
       {:ok,
        %{

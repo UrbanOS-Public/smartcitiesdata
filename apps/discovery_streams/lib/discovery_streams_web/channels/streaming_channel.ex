@@ -12,11 +12,11 @@ defmodule DiscoveryStreamsWeb.StreamingChannel do
   getter(:raptor_url, generic: true)
 
   @instance_name DiscoveryStreams.instance_name()
-  
+
   defp raptor_service() do
     Application.get_env(:discovery_streams, :raptor_service, RaptorService)
   end
-  
+
   defp brook_view_state() do
     Application.get_env(:discovery_streams, :brook_view_state, Brook)
   end
