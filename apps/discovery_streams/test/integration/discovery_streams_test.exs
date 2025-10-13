@@ -167,8 +167,8 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
     system_name = Faker.UUID.v4()
     dataset = TDG.create_dataset(id: dataset_id, technical: %{sourceType: "stream", systemName: system_name})
     ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
-    Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
-    Brook.Test.send(@instance_name, data_ingest_start(), :author, ingestion)
+    Brook.Event.send(@instance_name, dataset_update(), :author, dataset)
+    Brook.Event.send(@instance_name, data_ingest_start(), :author, ingestion)
 
     eventually(
       fn ->
@@ -180,7 +180,7 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
       10
     )
 
-    Brook.Test.send(@instance_name, dataset_delete(), :author, dataset)
+    Brook.Event.send(@instance_name, dataset_delete(), :author, dataset)
 
     eventually(
       fn ->

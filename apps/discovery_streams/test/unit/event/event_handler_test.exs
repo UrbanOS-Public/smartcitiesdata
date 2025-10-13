@@ -51,7 +51,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
-      [dataset_id1, dataset_id2] = ingestion.targetDatasets
+      [_dataset_id1, _dataset_id2] = ingestion.targetDatasets
 
       # Mock Brook.get! for the EventHandler calls
       BrookViewStateMock
@@ -71,7 +71,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
           id: Faker.UUID.v4()
         })
 
-      [dataset_id1, dataset_id2] = ingestion.targetDatasets
+      [_dataset_id1, _dataset_id2] = ingestion.targetDatasets
 
       # Mock Brook.get! to return nil for non-streaming datasets
       BrookViewStateMock
@@ -125,7 +125,7 @@ defmodule DiscoveryStreams.Event.EventHandlerTest do
 
       response = EventHandler.handle_event(event)
 
-      response == :discard
+      assert response == :discard
 
       where([
         [:source_type],
