@@ -263,6 +263,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
       authorized_conn: authorized_conn
     } do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: true)
       {table, id} = Helper.create_persisted_dataset("123A", "a_table", "a_org")
 
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
