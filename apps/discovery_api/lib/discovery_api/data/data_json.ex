@@ -74,8 +74,16 @@ defmodule DiscoveryApi.Data.DataJson do
     |> Enum.into(Map.new())
   end
 
-  defp val_or_optional(""), do: :optional
   defp val_or_optional(nil), do: :optional
+  defp val_or_optional(""), do: :optional
+
+  defp val_or_optional(val) when is_binary(val) do
+    case String.trim(val) do
+      "" -> :optional
+      trimmed -> trimmed
+    end
+  end
+
   defp val_or_optional(val), do: val
 
   defp is_public?(%Model{} = model) do
