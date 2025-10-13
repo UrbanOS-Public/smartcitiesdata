@@ -1,7 +1,6 @@
 defmodule DiscoveryStreams.DiscoveryStreamsTest do
   use ExUnit.Case
   use DiscoveryStreamsWeb.ChannelCase
-  import Mox
   import Checkov
 
   use Divo
@@ -9,18 +8,22 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   alias DiscoveryStreams.TopicHelper
   import SmartCity.TestHelper
   import SmartCity.Event, only: [data_ingest_start: 0, dataset_update: 0, dataset_delete: 0]
-  alias RaptorServiceMock
 
   @instance_name DiscoveryStreams.instance_name()
   @unauthorized_private_system_name "private__data"
 
   setup do
-    Application.put_env(:discovery_streams, :raptor_service, RaptorServiceMock)
+    # Reset authorization to default (allow all) for each test
+    Application.put_env(:discovery_streams, :raptor_test_is_authorized, true)
+
+    on_exit(fn ->
+      Application.delete_env(:discovery_streams, :raptor_test_is_authorized)
+    end)
+
     :ok
   end
 
   test "broadcasts data to end users" do
-    expect(RaptorServiceMock, :is_authorized, 2, fn _, _, _ -> true end)
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     dataset2 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     ingestion1 = TDG.create_ingestion(%{targetDatasets: [dataset1.id, dataset2.id]})
@@ -59,7 +62,6 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "broadcasts starting at latest offset" do
-    expect(RaptorServiceMock, :is_authorized, 1, fn _, _, _ -> true end)
     dataset1 = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     ingestion1 = TDG.create_ingestion(%{targetDatasets: [dataset1.id]})
     Brook.Test.send(@instance_name, dataset_update(), :author, dataset1)
@@ -85,7 +87,8 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   test "doesnt broadcast private datasets if unauthorized" do
-    expect(RaptorServiceMock, :is_authorized, 1, fn _, _, _ -> false end)
+    # Configure test implementation to deny authorization for this test
+    Application.put_env(:discovery_streams, :raptor_test_is_authorized, false)
 
     private_dataset =
       TDG.create_dataset(
@@ -107,7 +110,6 @@ defmodule DiscoveryStreams.DiscoveryStreamsTest do
   end
 
   data_test "stops broadcasting after #{scenario}" do
-    expect(RaptorServiceMock, :is_authorized, 1, fn _, _, _ -> true end)
     dataset = TDG.create_dataset(id: Faker.UUID.v4(), technical: %{sourceType: "stream", private: false})
     ingestion = TDG.create_ingestion(%{targetDatasets: [dataset.id]})
     Brook.Test.send(@instance_name, dataset_update(), :author, dataset)
