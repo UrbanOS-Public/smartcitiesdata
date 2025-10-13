@@ -88,7 +88,7 @@ defmodule DiscoveryApi.Mixfile do
       {:timex, "~> 3.0"},
       {:sobelow, "~> 0.8", only: :dev},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
-      {:distillery, "~> 2.1"},
+      # {:distillery, "~> 2.1"},
       {:poison, "~> 5.0", override: true},
       # poison breaks @ 4.0.1 due to encode_to_iotdata missing from 4.0
       # additionally, nearly no library that includes it as a dep is actually configured to use it
