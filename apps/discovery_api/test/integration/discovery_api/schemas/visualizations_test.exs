@@ -119,6 +119,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
     test "given a query containing a dataset the user is not authorized to query, it is created with an empty list of datasets and is flagged invalid" do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
+      allow(RaptorService.is_authorized_by_user_id(any(), any(), any()), return: false)
       {table, _id} = Helper.create_persisted_dataset("123AD", "private_dataset_d", "private_org", true)
       query = "select * from #{table}"
       title = "My first visualization"
