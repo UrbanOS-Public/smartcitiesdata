@@ -259,7 +259,7 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
     test "given a valid query through the API, it is updated with a list of datasets used in it", %{
       created_visualization: created_visualization,
-      owner: _owner,
+      owner: owner,
       authorized_conn: authorized_conn
     } do
       allow(RaptorService.list_access_groups_by_dataset(any(), any()), return: %{access_groups: []})
@@ -268,7 +268,10 @@ defmodule DiscoveryApi.Schemas.VisualizationsTest do
 
       put_body = ~s({"query": "select * from #{table}", "title": "My favorite title", "chart": {"data": "hello"}})
 
-      assert put(authorized_conn, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
+      # Assign the actual owner to the connection so ownership check passes
+      conn_with_owner = Plug.Conn.assign(authorized_conn, :current_user, owner)
+
+      assert put(conn_with_owner, "/api/v1/visualization/#{created_visualization.public_id}", put_body)
              |> response(200)
 
       eventually(fn ->
