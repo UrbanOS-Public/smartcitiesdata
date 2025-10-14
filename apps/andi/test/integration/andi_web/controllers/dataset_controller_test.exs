@@ -153,8 +153,6 @@ defmodule Andi.DatasetControllerTest do
     test "writes data to event stream", %{response: response} do
       {:ok, struct} = SmartCity.Dataset.new(response)
 
-      struct = put_in(struct, [:technical, :systemName], struct.technical.orgName <> "__" <> struct.technical.dataName)
-
       eventually(fn ->
         values =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
