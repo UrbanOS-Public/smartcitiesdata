@@ -119,14 +119,14 @@ defmodule AndiWeb.EventLogFormTest do
       assert Enum.member?(row_values, "testSource")
       assert Enum.member?(row_values, dataset.id)
       assert Enum.member?(row_values, ingestion_id_1)
-      assert Enum.member?(row_values, DateTime.to_string(timestamp))
+      assert Enum.member?(row_values, "2023-01-01 00:00:00.000Z")
       assert Enum.member?(row_values, "testDescription")
 
       assert Enum.member?(row_values, "testTitle2")
       assert Enum.member?(row_values, "testSource2")
       assert Enum.member?(row_values, dataset.id)
       assert Enum.member?(row_values, ingestion_id_2)
-      assert Enum.member?(row_values, DateTime.to_string(timestamp2))
+      assert Enum.member?(row_values, "2023-01-01 00:00:01.000Z")
       assert Enum.member?(row_values, "testDescription2")
     end
   end
