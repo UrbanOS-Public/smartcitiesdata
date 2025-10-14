@@ -162,7 +162,7 @@ defmodule Andi.DatasetControllerTest do
             brook_message
           end)
           |> Enum.filter(fn response ->
-            response.type == dataset_update()
+            response.type == dataset_update() && response.data.id == struct.id
           end)
           |> Enum.map(fn response ->
             response.data
