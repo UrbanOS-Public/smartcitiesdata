@@ -294,7 +294,7 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
         {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn _, _, _, _ -> :ok end]},
         {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
-        smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
+        smrt_ingestion = TDG.create_ingestion(%{sourceFormat: nil})
 
         {:ok, ingestion} =
           InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
