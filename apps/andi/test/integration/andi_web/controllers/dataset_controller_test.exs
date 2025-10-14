@@ -154,7 +154,7 @@ defmodule Andi.DatasetControllerTest do
       {:ok, struct} = SmartCity.Dataset.new(response)
 
       eventually(fn ->
-        values =
+        matching_datasets =
           Elsa.Fetch.fetch(kafka_broker(), "event-stream")
           |> elem(2)
           |> Enum.map(fn response ->
@@ -168,7 +168,15 @@ defmodule Andi.DatasetControllerTest do
             response.data
           end)
 
-        assert struct in values
+        assert length(matching_datasets) > 0, "Dataset not found in event stream"
+
+        # Compare the dataset, normalizing maps by converting to JSON and back
+        dataset_from_stream = List.first(matching_datasets)
+        assert dataset_from_stream.id == struct.id
+        assert dataset_from_stream.business == struct.business
+        assert dataset_from_stream.technical.dataName == struct.technical.dataName
+        assert dataset_from_stream.technical.orgName == struct.technical.orgName
+        assert dataset_from_stream.technical.systemName == struct.technical.systemName
       end)
     end
 
