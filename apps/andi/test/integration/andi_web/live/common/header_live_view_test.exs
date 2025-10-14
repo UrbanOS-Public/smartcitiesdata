@@ -2,7 +2,9 @@ defmodule AndiWeb.HeaderLiveViewTest do
   use ExUnit.Case
   use AndiWeb.Test.PublicAccessCase
   use Andi.DataCase
-  use AndiWeb.Test.AuthConnCase.IntegrationCase = @moduletag(shared_data_connection: true)
+  use AndiWeb.Test.AuthConnCase.IntegrationCase
+
+  @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
   import Checkov
