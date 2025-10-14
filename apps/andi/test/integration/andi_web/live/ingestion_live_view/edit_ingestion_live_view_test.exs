@@ -290,7 +290,10 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
     end
 
     test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
-      with_mock(Brook.Event, send: fn _, _, _, _ -> :ok end) do
+      with_mocks([
+        {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn _, _, _, _ -> :ok end]},
+        {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
+      ]) do
         smrt_ingestion = TDG.create_ingestion(%{targetDatasets: nil})
 
         {:ok, ingestion} =
