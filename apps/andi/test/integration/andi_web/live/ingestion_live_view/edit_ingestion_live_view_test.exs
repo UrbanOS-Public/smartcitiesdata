@@ -289,18 +289,19 @@ defmodule AndiWeb.EditIngestionLiveViewTest do
       end
     end
 
-    test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn} do
+    test "attempting to publish an invalid ingestion does *not* send an ingestion_update event", %{curator_conn: conn, ingestion: ingestion} do
       with_mocks([
         {AndiWeb.Endpoint, [:passthrough], [broadcast_from: fn _, _, _, _ -> :ok end]},
         {Brook.Event, [], [send: fn _, _, _, _ -> :ok end]}
       ]) do
-        smrt_ingestion = TDG.create_ingestion(%{sourceFormat: nil})
-
-        {:ok, ingestion} =
-          InputConverter.smrt_ingestion_to_draft_changeset(smrt_ingestion)
-          |> Ingestions.save()
-
         assert {:ok, view, html} = live(conn, "#{@url_path}/#{ingestion.id}")
+
+        # Make the ingestion invalid by removing sourceFormat
+        form_data = %{"sourceFormat" => nil}
+
+        view
+        |> form("#ingestion_metadata_form", form_data: form_data)
+        |> render_change()
 
         render_click(view, "publish")
 
