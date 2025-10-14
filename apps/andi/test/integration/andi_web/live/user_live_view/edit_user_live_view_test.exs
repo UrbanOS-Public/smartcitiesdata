@@ -6,6 +6,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
   @moduletag shared_data_connection: true
 
   import Phoenix.LiveViewTest
+  import Mock
 
   import SmartCity.Event,
     only: [
