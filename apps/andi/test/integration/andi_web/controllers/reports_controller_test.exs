@@ -20,7 +20,15 @@ defmodule Andi.ReportsControllerTest do
         technical: %Technical{private: false, systemName: "Test__Example"}
       }
 
-      with_mock(Andi.Repo, all: fn _ -> [dataset1] end) do
+      with_mock(Andi.Repo, [:passthrough],
+        all: fn query ->
+          # Only mock Dataset queries, let everything else pass through
+          case query do
+            %Ecto.Query{from: %{source: {"datasets", _}}} -> [dataset1]
+            _ -> :meck.passthrough([query])
+          end
+        end
+      ) do
         result = get(conn, "/report")
         assert result.status == 200
 
@@ -57,10 +65,29 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user1, user2]}
 
-      :meck.new(Andi.Repo)
-      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+      :meck.new(Andi.Repo, [:passthrough])
+      call_count = :counters.new(1, [:atomics])
+
+      :meck.expect(Andi.Repo, :all, fn query ->
+        case :counters.get(call_count, 1) do
+          0 ->
+            :counters.add(call_count, 1, 1)
+
+            case query do
+              %Ecto.Query{from: %{source: {"datasets", _}}} -> [dataset1, dataset2]
+              _ -> :meck.passthrough([query])
+            end
+
+          _ ->
+            case query do
+              %Ecto.Query{from: %{source: {"organizations", _}}} -> [org]
+              _ -> :meck.passthrough([query])
+            end
+        end
+      end)
 
       result = get(conn, "/report")
+      :meck.unload(Andi.Repo)
       assert result.status == 200
 
       assert result.resp_body ==
@@ -104,10 +131,29 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user3]}
 
-      :meck.new(Andi.Repo)
-      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+      :meck.new(Andi.Repo, [:passthrough])
+      call_count = :counters.new(1, [:atomics])
+
+      :meck.expect(Andi.Repo, :all, fn query ->
+        case :counters.get(call_count, 1) do
+          0 ->
+            :counters.add(call_count, 1, 1)
+
+            case query do
+              %Ecto.Query{from: %{source: {"datasets", _}}} -> [dataset1, dataset2]
+              _ -> :meck.passthrough([query])
+            end
+
+          _ ->
+            case query do
+              %Ecto.Query{from: %{source: {"organizations", _}}} -> [org]
+              _ -> :meck.passthrough([query])
+            end
+        end
+      end)
 
       result = get(conn, "/report")
+      :meck.unload(Andi.Repo)
       assert result.status == 200
 
       assert result.resp_body ==
@@ -139,10 +185,29 @@ defmodule Andi.ReportsControllerTest do
 
       org = %Organization{id: "1122", users: [user1]}
 
-      :meck.new(Andi.Repo)
-      :meck.sequence(Andi.Repo, :all, 1, [[dataset1, dataset2], [org]])
+      :meck.new(Andi.Repo, [:passthrough])
+      call_count = :counters.new(1, [:atomics])
+
+      :meck.expect(Andi.Repo, :all, fn query ->
+        case :counters.get(call_count, 1) do
+          0 ->
+            :counters.add(call_count, 1, 1)
+
+            case query do
+              %Ecto.Query{from: %{source: {"datasets", _}}} -> [dataset1, dataset2]
+              _ -> :meck.passthrough([query])
+            end
+
+          _ ->
+            case query do
+              %Ecto.Query{from: %{source: {"organizations", _}}} -> [org]
+              _ -> :meck.passthrough([query])
+            end
+        end
+      end)
 
       result = get(conn, "/report")
+      :meck.unload(Andi.Repo)
       assert result.status == 200
 
       assert result.resp_body ==
