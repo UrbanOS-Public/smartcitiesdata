@@ -41,13 +41,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     selector: "/cam/cam",
     ingestion_field_selector: "name"
   }
-  @test_ingestion %Andi.InputSchemas.Ingestion{
-    id: "f5484914-c640-47a7-b509-ce16e8d70b85",
-    name: "test_ingestion",
-    extractSteps: [@test_extract_step],
-    schema: [@test_schema],
-    transformations: []
-  }
 
   test "changeset_for_draft updates changeset with new name" do
     original_ingestion = %Andi.InputSchemas.Ingestion{

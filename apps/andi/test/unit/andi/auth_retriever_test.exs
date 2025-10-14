@@ -1,12 +1,7 @@
 defmodule AuthRetrieverTest do
   use ExUnit.Case
 
-  alias SmartCity.TestDataGenerator, as: TDG
-
-  alias Andi.Collections.Extractions
-
   @ingestion_id "123"
-  @dataset_id "some-dataset"
   @auth_response Jason.encode!(%{"api_key" => "12343523423423"})
 
   describe "authorize/6" do

@@ -1,7 +1,8 @@
 defmodule AndiWeb.Plugs.APIRequireCuratorTest do
   use ExUnit.Case, async: true
-  use Plug.Test
 
+  import Plug.Test
+  import Plug.Conn
   import Phoenix.ConnTest
 
   alias AndiWeb.Plugs.APIRequireCurator
@@ -98,13 +99,5 @@ defmodule AndiWeb.Plugs.APIRequireCuratorTest do
 
       assert result.resp_body == "Internal Server Error"
     end
-  end
-
-  defp get(path, router) do
-    router_opts = router.init([])
-
-    :get
-    |> conn(path)
-    |> router.call(router_opts)
   end
 end

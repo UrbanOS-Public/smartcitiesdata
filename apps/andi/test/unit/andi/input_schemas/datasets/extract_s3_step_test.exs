@@ -2,7 +2,6 @@ defmodule Andi.InputSchemas.Ingestions.ExtractS3StepTest do
   use ExUnit.Case
 
   alias Andi.InputSchemas.Ingestions.ExtractS3Step
-  alias Andi.InputSchemas.Ingestions.ExtractStep
 
   test "given changes with valid headers map, properly casts" do
     changes = %{
