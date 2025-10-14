@@ -196,6 +196,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
       with_mock(
         Auth0Management,
         [:passthrough],
+        get_roles: fn -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end,
         get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
       ) do
         assert {:ok, view, html} = live(conn, @url_path <> user.id)
@@ -206,7 +207,10 @@ defmodule AndiWeb.EditUserLiveViewTest do
 
     test "curators can add roles to users", %{curator_conn: conn, user: user} do
       {:ok, view, html} =
-        with_mock(Auth0Management, [:passthrough], get_user_roles: fn _ -> {:ok, []} end) do
+        with_mock(Auth0Management, [:passthrough],
+          get_roles: fn -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end,
+          get_user_roles: fn _ -> {:ok, []} end
+        ) do
           live(conn, @url_path <> user.id)
         end
 
@@ -226,6 +230,7 @@ defmodule AndiWeb.EditUserLiveViewTest do
     test "curators can remove roles from users", %{curator_conn: conn, user: user} do
       {:ok, view, html} =
         with_mock(Auth0Management, [:passthrough],
+          get_roles: fn -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end,
           get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
         ) do
           live(conn, @url_path <> user.id)
