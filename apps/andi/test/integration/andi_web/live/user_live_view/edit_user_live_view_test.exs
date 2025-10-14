@@ -205,39 +205,43 @@ defmodule AndiWeb.EditUserLiveViewTest do
     end
 
     test "curators can add roles to users", %{curator_conn: conn, user: user} do
-      with_mock(Auth0Management, [:passthrough], get_user_roles: fn _ -> {:ok, []} end) do
-        assert {:ok, view, html} = live(conn, @url_path <> user.id)
+      {:ok, view, html} =
+        with_mock(Auth0Management, [:passthrough], get_user_roles: fn _ -> {:ok, []} end) do
+          live(conn, @url_path <> user.id)
+        end
 
-        assert Enum.empty?(find_elements(html, ".roles-table__tr"))
-      end
+      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
 
-      with_mock(Auth0Management, [:passthrough],
-        get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
-      ) do
-        # add role to user
-        html = render_change(view, "add-role", %{"selected-role" => "rol_OQaxdo38yewzqWR0"})
+      html =
+        with_mock(Auth0Management, [:passthrough],
+          get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
+        ) do
+          # add role to user
+          render_change(view, "add-role", %{"selected-role" => "rol_OQaxdo38yewzqWR0"})
+        end
 
-        assert length(find_elements(html, ".roles-table__tr")) == 1
-      end
+      assert length(find_elements(html, ".roles-table__tr")) == 1
     end
 
     test "curators can remove roles from users", %{curator_conn: conn, user: user} do
-      with_mock(Auth0Management, [:passthrough],
-        get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
-      ) do
-        assert {:ok, view, html} = live(conn, @url_path <> user.id)
+      {:ok, view, html} =
+        with_mock(Auth0Management, [:passthrough],
+          get_user_roles: fn _ -> {:ok, [%{"description" => "Dataset Curator", "id" => "rol_OQaxdo38yewzqWR0", "name" => "Curator"}]} end
+        ) do
+          live(conn, @url_path <> user.id)
+        end
 
-        assert length(find_elements(html, ".roles-table__tr")) == 1
-      end
+      assert length(find_elements(html, ".roles-table__tr")) == 1
 
-      with_mock(Auth0Management, [:passthrough], get_user_roles: fn _ -> {:ok, []} end) do
-        # remove role
-        send(view.pid, {:remove_role, "rol_OQaxdo38yewzqWR0"})
+      html =
+        with_mock(Auth0Management, [:passthrough], get_user_roles: fn _ -> {:ok, []} end) do
+          # remove role
+          send(view.pid, {:remove_role, "rol_OQaxdo38yewzqWR0"})
 
-        html = render(view)
+          render(view)
+        end
 
-        assert Enum.empty?(find_elements(html, ".roles-table__tr"))
-      end
+      assert Enum.empty?(find_elements(html, ".roles-table__tr"))
     end
   end
 end

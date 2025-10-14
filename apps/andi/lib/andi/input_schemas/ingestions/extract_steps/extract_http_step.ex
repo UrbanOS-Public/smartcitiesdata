@@ -100,11 +100,21 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStep do
         changeset
 
       {:error, _} ->
-        try do
-          SweetXml.parse(body)
-          changeset
-        catch
-          :exit, _ ->
+        task =
+          Task.async(fn ->
+            try do
+              SweetXml.parse(body)
+              :ok
+            catch
+              :exit, _ -> :error
+            end
+          end)
+
+        case Task.yield(task, 100) || Task.shutdown(task) do
+          {:ok, :ok} ->
+            changeset
+
+          _ ->
             Changeset.add_error(changeset, :body, "could not parse json or xml", validation: :format)
         end
     end
