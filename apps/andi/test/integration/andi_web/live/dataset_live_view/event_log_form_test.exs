@@ -77,12 +77,14 @@ defmodule AndiWeb.EventLogFormTest do
       dataset = Datasets.create(curator)
       timestamp = ~U[2023-01-01 00:00:00Z]
       timestamp2 = ~U[2023-01-01 00:00:01Z]
+      ingestion_id_1 = UUID.uuid4()
+      ingestion_id_2 = UUID.uuid4()
 
       # Insert actual event logs into the database
       event_log_1 = %SmartCity.EventLog{
         dataset_id: dataset.id,
         description: "testDescription",
-        ingestion_id: "testIngestionId",
+        ingestion_id: ingestion_id_1,
         source: "testSource",
         timestamp: DateTime.to_iso8601(timestamp),
         title: "testTitle"
@@ -91,7 +93,7 @@ defmodule AndiWeb.EventLogFormTest do
       event_log_2 = %SmartCity.EventLog{
         dataset_id: dataset.id,
         description: "testDescription2",
-        ingestion_id: "testIngestionId2",
+        ingestion_id: ingestion_id_2,
         source: "testSource2",
         timestamp: DateTime.to_iso8601(timestamp2),
         title: "testTitle2"
@@ -116,14 +118,14 @@ defmodule AndiWeb.EventLogFormTest do
       assert Enum.member?(row_values, "testTitle")
       assert Enum.member?(row_values, "testSource")
       assert Enum.member?(row_values, dataset.id)
-      assert Enum.member?(row_values, "testIngestionId")
+      assert Enum.member?(row_values, ingestion_id_1)
       assert Enum.member?(row_values, DateTime.to_string(timestamp))
       assert Enum.member?(row_values, "testDescription")
 
       assert Enum.member?(row_values, "testTitle2")
       assert Enum.member?(row_values, "testSource2")
       assert Enum.member?(row_values, dataset.id)
-      assert Enum.member?(row_values, "testIngestionId2")
+      assert Enum.member?(row_values, ingestion_id_2)
       assert Enum.member?(row_values, DateTime.to_string(timestamp2))
       assert Enum.member?(row_values, "testDescription2")
     end
