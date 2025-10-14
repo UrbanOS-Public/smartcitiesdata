@@ -468,13 +468,20 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
-          Ingestions.update_submission_status(ingestion_id, :published)
-          Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_update(), smrt_ingestion)
-          AndiWeb.Endpoint.broadcast_from(self(), "ingestion-published", "ingestion-published", %{})
-          {:ok, ingestion_changeset}
+          case Ingestions.update_submission_status(ingestion_id, :published) do
+            {:ok, _updated_ingestion} ->
+              Andi.Schemas.AuditEvents.log_audit_event(user_id, ingestion_update(), smrt_ingestion)
+              AndiWeb.Endpoint.broadcast_from(self(), "ingestion-published", "ingestion-published", %{})
+              {:ok, ingestion_changeset}
+
+            {:error, changeset} ->
+              Logger.error("Ingestion Publish Error: Unable to update submission status: #{inspect(changeset.errors)}")
+              {:error, "Failed to update submission status"}
+          end
 
         error ->
           Logger.error("Ingestion Publish Error: Unable to publish updated ingestion to Brook: #{inspect(error)}")
+          {:error, "Failed to send Brook event"}
       end
     else
       nil ->
