@@ -1,4 +1,4 @@
 #!/bin/bash
 
-bin/andi migrate
-bin/andi foreground
+bin/andi eval "Andi.ReleaseTasks.migrate()"
+bin/andi start

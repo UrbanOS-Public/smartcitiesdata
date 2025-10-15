@@ -36,10 +36,10 @@ defmodule Andi.Event.EventHandlerTest do
     end
 
     test "updates ingested time for dataset" do
+      before_time = DateTime.utc_now()
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
-      before_time = DateTime.utc_now()
       Brook.Event.send(@instance_name, dataset_update(), __MODULE__, dataset)
 
       eventually(fn ->

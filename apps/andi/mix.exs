@@ -16,6 +16,7 @@ defmodule Andi.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      releases: releases(),
       description: "Dataset curation interface for UrbanOS"
     ]
   end
@@ -47,7 +48,6 @@ defmodule Andi.MixProject do
       {:css_colors, "~> 0.2.2"},
       {:csv, "~> 3.0", override: true},
       {:dead_letter, in_umbrella: true},
-      {:distillery, "~> 2.1"},
       {:divo, "~> 2.0", only: [:dev, :integration]},
       {:divo_kafka, "~> 1.0", only: [:dev, :integration]},
       {:divo_postgres_db, "~> 1.0", only: [:dev, :integration]},
@@ -103,6 +103,15 @@ defmodule Andi.MixProject do
       {:ueberauth_auth0, "~> 2.1"},
       {:x509, "~> 0.8.1", only: [:dev, :integration]},
       {:web, in_umbrella: true}
+    ]
+  end
+
+  defp releases do
+    [
+      andi: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent]
+      ]
     ]
   end
 

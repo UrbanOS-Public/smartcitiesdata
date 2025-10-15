@@ -5,7 +5,7 @@ RUN cd apps/andi/assets/ && \
     npm run deploy && \
     cd - && \
     mix cmd --app andi mix do compile, phx.digest
-RUN MIX_ENV=prod mix distillery.release --name andi
+RUN MIX_ENV=prod mix release andi
 
 
 #FROM hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.9
