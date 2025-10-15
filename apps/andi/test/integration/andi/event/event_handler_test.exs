@@ -337,9 +337,13 @@ defmodule Andi.Event.EventHandlerTest do
       org_id = UUID.uuid4()
       invalid_org = TDG.create_organization(%{id: org_id})
 
-      with_mock(TelemetryEvent,
-        add_event_metrics: fn [app: "andi", author: _, dataset_id: _, event_type: dataset_harvest_start()], [:events_handled] ->
-          raise "nope"
+      with_mock(TelemetryEvent, [:passthrough],
+        add_event_metrics: fn
+          [app: "andi", author: _, dataset_id: _, event_type: event_type], [:events_handled] when event_type == dataset_harvest_start() ->
+            raise "nope"
+
+          args, metrics ->
+            :meck.passthrough([args, metrics])
         end
       ) do
         Brook.Event.send(@instance_name, dataset_harvest_start(), __MODULE__, invalid_org)
