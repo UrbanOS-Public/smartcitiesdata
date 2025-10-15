@@ -45,8 +45,8 @@ defmodule Andi.Event.EventHandlerTest do
       eventually(fn ->
         persisted_dataset = Datasets.get(dataset_id)
         assert persisted_dataset != nil
-        assert persisted_dataset.ingested_time != nil
-        assert DateTime.compare(persisted_dataset.ingested_time, before_time) in [:gt, :eq]
+        assert persisted_dataset.ingestedTime != nil
+        assert DateTime.compare(persisted_dataset.ingestedTime, before_time) in [:gt, :eq]
       end)
     end
   end
