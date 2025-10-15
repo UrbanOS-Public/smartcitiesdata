@@ -222,7 +222,8 @@ defmodule Andi.Event.EventHandlerTest do
 
       eventually(fn ->
         user = User.get_by_subject_id(subject_id)
-        refute user.organizations |> Enum.map(fn o -> o.id end) |> Enum.member?(org.id)
+        is_member = user.organizations |> Enum.map(fn o -> o.id end) |> Enum.member?(org.id)
+        assert is_member == false
       end)
     end
   end
