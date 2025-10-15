@@ -58,6 +58,11 @@ defmodule Smartcitiesdata.MixProject do
 
   defp releases do
     [
+      andi: [
+        include_executables_for: [:unix],
+        applications: [andi: :permanent, runtime_tools: :permanent],
+        steps: [:assemble, :tar]
+      ],
       forklift: [
         include_executables_for: [:unix],
         applications: [forklift: :permanent, runtime_tools: :permanent],
