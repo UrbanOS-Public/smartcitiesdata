@@ -272,7 +272,7 @@ defmodule Andi.Event.EventHandler do
       :discard
   end
 
-  def handle_event(%Brook.Event{type: "migration:modified_date:start", author: author} = event) do
+  def handle_event(%Brook.Event{type: "migration:modified_date:start", data: data, author: author}) do
     Logger.info("Received migration:modified_date:start event from #{author}")
 
     "migration:modified_date:start"
@@ -283,7 +283,11 @@ defmodule Andi.Event.EventHandler do
   rescue
     error ->
       Logger.error("migration_modified_date_start failed to process: #{inspect(error)}")
-      DeadLetter.process([], nil, event, Atom.to_string(@instance_name), reason: inspect(error))
+
+      DeadLetter.process([], nil, Map.put(data, "type", "migration:modified_date:start"), Atom.to_string(@instance_name),
+        reason: inspect(error)
+      )
+
       :discard
   end
 
