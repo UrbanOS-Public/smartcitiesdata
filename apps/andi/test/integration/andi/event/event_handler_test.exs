@@ -33,7 +33,12 @@ defmodule Andi.Event.EventHandlerTest do
       id_for_invalid_dataset = UUID.uuid4()
       invalid_dataset = TDG.create_dataset(%{id: id_for_invalid_dataset})
 
-      with_mock(DatasetCache, add_dataset_info: fn _ -> raise "nope" end) do
+      with_mock(DatasetCache, [:passthrough],
+        add_dataset_info: fn
+          dataset when dataset.id == id_for_invalid_dataset -> raise "nope"
+          dataset -> :meck.passthrough([dataset])
+        end
+      ) do
         id = UUID.uuid4()
         valid_dataset = TDG.create_dataset(%{id: id})
 
