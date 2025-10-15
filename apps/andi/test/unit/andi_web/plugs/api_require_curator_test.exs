@@ -1,7 +1,6 @@
 defmodule AndiWeb.Plugs.APIRequireCuratorTest do
   use ExUnit.Case, async: true
 
-  import Plug.Test
   import Plug.Conn
   import Phoenix.ConnTest
 

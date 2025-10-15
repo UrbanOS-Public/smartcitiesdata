@@ -31,17 +31,6 @@ defmodule Andi.InputSchemas.Ingestion.IngestionTest do
     sourceFormat: "text/csv"
   }
 
-  @test_extract_step %{type: "http", context: %{action: "GET", url: "http://example.com"}}
-  @test_schema %{
-    id: Ecto.UUID.generate(),
-    name: "name",
-    type: "type",
-    bread_crumb: "name",
-    dataset_id: "id",
-    selector: "/cam/cam",
-    ingestion_field_selector: "name"
-  }
-
   test "changeset_for_draft updates changeset with new name" do
     original_ingestion = %Andi.InputSchemas.Ingestion{
       id: "f5484914-c640-47a7-b509-ce16e8d70b85",

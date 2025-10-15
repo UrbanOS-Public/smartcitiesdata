@@ -2,7 +2,6 @@ defmodule AndiWeb.RedirectTest do
   use ExUnit.Case, async: true
 
   import Plug.Test
-  import Plug.Conn
 
   alias AndiWeb.Redirect
 

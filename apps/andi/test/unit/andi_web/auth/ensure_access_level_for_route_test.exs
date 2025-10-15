@@ -76,7 +76,7 @@ defmodule AndiWeb.Auth.EnsureAccessLevelForRouteTest do
     test "plugs can be excluded" do
       conn =
         build_conn(:get, "/excluded")
-        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router, exclusions: [AndiWeb.Test.ExcludeMe, AndiWeb.Test.ExcludeMeToo])
+        |> EnsureAccessLevelForRoute.call(router: AndiWeb.Test.Router, exclusions: [AndiWeb.Test.ExcludedMe, AndiWeb.Test.ExcludeMeToo])
 
       refute conn.status == 404
       refute conn.halted
@@ -240,7 +240,7 @@ defmodule AndiWeb.Test.Router do
     live "/live-no-match", AndiWeb.Test.SpecifiedNonMatchingLiveView, layout: {AndiWeb.LayoutView, :app}
     live "/live-match", AndiWeb.Test.SpecifiedMatchingLiveView, layout: {AndiWeb.LayoutView, :app}
 
-    get "/excluded", AndiWeb.Test.ExcludeMe, match: "me"
+    get "/excluded", AndiWeb.Test.ExcludedMe, match: "me"
     get "/controller-excluded", AndiWeb.Test.ExcludedController, :excluded
     live "/live-excluded", AndiWeb.Test.ExcludedLiveView, layout: {AndiWeb.LayoutView, :app}
 

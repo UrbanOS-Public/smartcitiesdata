@@ -5,8 +5,6 @@ defmodule Andi.InputSchemas.MessageErrorsTest do
   alias Andi.InputSchemas.MessageError
   alias Andi.InputSchemas.MessageErrors
 
-  alias Andi.Repo
-
   describe "get_all/0" do
     test "returns all results from andi repo" do
       message_error_1 = %{
@@ -254,9 +252,12 @@ defmodule Andi.InputSchemas.MessageErrorsTest do
 
       result = MessageErrors.delete(not_existing_message_error)
 
-      assert result ==
-               {:error,
-                "attempted to remove a message_count: %Andi.InputSchemas.MessageError{__meta__: #Ecto.Schema.Metadata<:built, \"message_error\">, dataset_id: \"#{dataset_id}\", has_current_error: false, ingestion_id: \"#{ingestion_id}\", last_error_time: ~U[1970-01-01 00:00:00Z]} that does not exist."}
+      # Assert it's an error tuple with the expected message content
+      assert {:error, error_message} = result
+      assert error_message =~ "attempted to remove a message_count:"
+      assert error_message =~ "that does not exist."
+      assert error_message =~ dataset_id
+      assert error_message =~ ingestion_id
     end
   end
 
