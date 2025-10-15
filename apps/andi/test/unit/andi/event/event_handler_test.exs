@@ -226,11 +226,33 @@ defmodule Andi.Event.EventHandlerTest do
     test "organization_update failure sends message to dead letter queue" do
       org = TDG.create_organization(%{id: Faker.UUID.v4()})
 
+      # Unload first to ensure clean state
+      try do
+        :meck.unload(OrgStore)
+      catch
+        _, _ -> :ok
+      end
+
+      try do
+        :meck.unload(DeadLetter)
+      catch
+        _, _ -> :ok
+      end
+
+      # Brief pause for cleanup
+      Process.sleep(10)
+
+      # Now create fresh mocks
       try do
         :meck.new(OrgStore, [:passthrough])
         :meck.new(DeadLetter, [:passthrough])
       catch
-        :error, {:already_started, _} -> :ok
+        :error, {:already_started, _} ->
+          :meck.unload(OrgStore)
+          :meck.unload(DeadLetter)
+          Process.sleep(10)
+          :meck.new(OrgStore, [:passthrough])
+          :meck.new(DeadLetter, [:passthrough])
       end
 
       :meck.expect(OrgStore, :update, fn _ -> raise "test error" end)
