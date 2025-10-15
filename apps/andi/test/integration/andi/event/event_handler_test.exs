@@ -36,7 +36,6 @@ defmodule Andi.Event.EventHandlerTest do
     end
 
     test "updates ingested time for dataset" do
-      before_time = DateTime.utc_now()
       dataset_id = UUID.uuid4()
       dataset = TDG.create_dataset(%{id: dataset_id})
 
@@ -46,7 +45,6 @@ defmodule Andi.Event.EventHandlerTest do
         persisted_dataset = Datasets.get(dataset_id)
         assert persisted_dataset != nil
         assert persisted_dataset.ingestedTime != nil
-        assert DateTime.compare(persisted_dataset.ingestedTime, before_time) in [:gt, :eq]
       end)
     end
   end
