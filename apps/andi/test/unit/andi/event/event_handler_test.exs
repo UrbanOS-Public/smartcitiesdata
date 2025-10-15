@@ -166,6 +166,119 @@ defmodule Andi.Event.EventHandlerTest do
     end
   end
 
+  describe "error handling and dead letter queue" do
+    test "dataset_update failure sends message to dead letter queue" do
+      dataset = TDG.create_dataset(%{id: Faker.UUID.v4()})
+
+      try do
+        :meck.new(Andi.DatasetCache, [:passthrough])
+        :meck.new(DeadLetter, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(Andi.DatasetCache, :add_dataset_info, fn _ -> raise "test error" end)
+      :meck.expect(DeadLetter, :process, fn _dataset_ids, _ingestion_id, _data, _app_name, _opts -> :ok end)
+
+      result =
+        Brook.Event.new(type: dataset_update(), data: dataset, author: :author)
+        |> EventHandler.handle_event()
+
+      assert result == :discard
+      assert :meck.called(DeadLetter, :process, [[dataset.id], nil, dataset, "andi", :_])
+
+      try do
+        :meck.unload(Andi.DatasetCache)
+        :meck.unload(DeadLetter)
+      catch
+        _, _ -> :ok
+      end
+    end
+
+    test "ingestion_update failure sends message to dead letter queue" do
+      ingestion = TDG.create_ingestion(%{id: Faker.UUID.v4()})
+
+      try do
+        :meck.new(IngestionStore, [:passthrough])
+        :meck.new(DeadLetter, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(IngestionStore, :update, fn _ -> raise "test error" end)
+      :meck.expect(DeadLetter, :process, fn _dataset_ids, _ingestion_id, _data, _app_name, _opts -> :ok end)
+
+      result =
+        Brook.Event.new(type: ingestion_update(), data: ingestion, author: :author)
+        |> EventHandler.handle_event()
+
+      assert result == :discard
+      assert :meck.called(DeadLetter, :process, [ingestion.targetDatasets, ingestion.id, ingestion, "andi", :_])
+
+      try do
+        :meck.unload(IngestionStore)
+        :meck.unload(DeadLetter)
+      catch
+        _, _ -> :ok
+      end
+    end
+
+    test "organization_update failure sends message to dead letter queue" do
+      org = TDG.create_organization(%{id: Faker.UUID.v4()})
+
+      try do
+        :meck.new(OrgStore, [:passthrough])
+        :meck.new(DeadLetter, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(OrgStore, :update, fn _ -> raise "test error" end)
+      :meck.expect(DeadLetter, :process, fn _dataset_ids, _ingestion_id, _data, _app_name, _opts -> :ok end)
+
+      result =
+        Brook.Event.new(type: organization_update(), data: org, author: :author)
+        |> EventHandler.handle_event()
+
+      assert result == :discard
+      assert :meck.called(DeadLetter, :process, [[], nil, org, "andi", :_])
+
+      try do
+        :meck.unload(OrgStore)
+        :meck.unload(DeadLetter)
+      catch
+        _, _ -> :ok
+      end
+    end
+
+    test "migration failure sends message to dead letter queue with correct structure" do
+      try do
+        :meck.new(Andi.Migration.ModifiedDateMigration, [:passthrough])
+        :meck.new(DeadLetter, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(Andi.Migration.ModifiedDateMigration, :do_migration, fn -> raise "test error" end)
+      :meck.expect(DeadLetter, :process, fn _dataset_ids, _ingestion_id, _data, _app_name, _opts -> :ok end)
+
+      result =
+        Brook.Event.new(type: "migration:modified_date:start", data: %{}, author: :author)
+        |> EventHandler.handle_event()
+
+      assert result == :discard
+      # Verify the data includes the type field for filtering in dead letter queue
+      assert :meck.called(DeadLetter, :process, [[], nil, %{"type" => "migration:modified_date:start"}, "andi", :_])
+
+      try do
+        :meck.unload(Andi.Migration.ModifiedDateMigration)
+        :meck.unload(DeadLetter)
+      catch
+        _, _ -> :ok
+      end
+    end
+  end
+
   describe "data harvest event is triggered when organization is updated" do
     setup do
       # Use :meck for modules without dependency injection
