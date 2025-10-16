@@ -3,7 +3,14 @@ defmodule Andi.UrlBuilder do
     regex = ~r"{{(.+?)}}"
 
     Regex.replace(regex, url, fn _match, var_name ->
-      bindings[String.to_atom(var_name)]
+      atom_var_name = String.to_atom(var_name)
+      case Map.fetch(bindings, atom_var_name) do
+        {:ok, binding_value} -> binding_value
+        :error ->
+          raise ArgumentError,
+                "Template variable '#{var_name}' not found in bindings. " <>
+                "Available bindings: #{inspect(Map.keys(bindings))}"
+      end
     end)
   end
 
@@ -33,7 +40,14 @@ defmodule Andi.UrlBuilder do
 
     value =
       Regex.replace(regex, to_string(value), fn _match, var_name ->
-        bindings[String.to_atom(var_name)]
+        atom_var_name = String.to_atom(var_name)
+        case Map.fetch(bindings, atom_var_name) do
+          {:ok, binding_value} -> binding_value
+          :error ->
+            raise ArgumentError,
+                  "Template variable '#{var_name}' not found in bindings. " <>
+                  "Available bindings: #{inspect(Map.keys(bindings))}"
+        end
       end)
 
     {key, value}
