@@ -1,6 +1,6 @@
 * May 2025 erlang /elixir version upgrade 
 
-** Convert for OTP25 compilation [6/8] [75%]
+** Convert for OTP25 compilation [9/9] [100%]
 
 - [X] forklift
 - [X] valkyrie
@@ -8,8 +8,23 @@
 - [X] alchemist
 - [X] reaper
 - [X] discovery_api
-- [ ] discovery_streams
-- [ ] andi
+- [X] discovery_streams
+- [X] andi
+- [X] discovery_ui
+
+** Quay Images Updated [9/9] [100%] **
+
+https://quay.io/organization/urbanos?tab=repos
+
+- [X] forklift
+- [X] valkyrie
+- [X] raptor
+- [X] alchemist
+- [X] reaper
+- [X] discovery_api
+- [X] discovery_streams
+- [X] andi
+- [X] discovery_ui
 
 ** High Level Goals
 
