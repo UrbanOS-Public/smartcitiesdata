@@ -14,12 +14,16 @@ defmodule DefinitionTest do
     test "generates an id if not present on input", %{fake_uuid: fake_uuid} do
       Mox.expect(IdGeneratorMock, :uuid4, fn -> fake_uuid end)
       input = %{version: 2, bar: 9001}
-      assert {:ok, %Foo{version: 2, id: ^fake_uuid, bar: 9001, baz: nil}} = Foo.new(input, IdGeneratorMock)
+
+      assert {:ok, %Foo{version: 2, id: ^fake_uuid, bar: 9001, baz: nil}} =
+               Foo.new(input, IdGeneratorMock)
     end
 
     test "preserves an id if one is given" do
       input = %{version: 2, id: "my id", bar: 9001}
-      assert {:ok, %Foo{version: 2, id: "my id", bar: 9001, baz: nil}} = Foo.new(input, IdGeneratorMock)
+
+      assert {:ok, %Foo{version: 2, id: "my id", bar: 9001, baz: nil}} =
+               Foo.new(input, IdGeneratorMock)
     end
 
     test "makes new/1 available to create struct" do

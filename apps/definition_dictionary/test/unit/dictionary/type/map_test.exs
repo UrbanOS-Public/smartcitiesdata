@@ -1,7 +1,7 @@
 defmodule Dictionary.Type.MapTest do
   use ExUnit.Case
   import Checkov
-  
+
   @moduletag timeout: 5000
 
   test "can be encoded to json" do
@@ -31,13 +31,17 @@ defmodule Dictionary.Type.MapTest do
 
     map =
       Dictionary.Type.Map.new!(
-        [name: "name",
-        description: "description",
-        dictionary:
-          Dictionary.from_list([
-            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
-          ])], IdGenerator.Impl)
+        [
+          name: "name",
+          description: "description",
+          dictionary:
+            Dictionary.from_list([
+              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+            ])
+        ],
+        IdGenerator.Impl
+      )
 
     assert expected == JsonSerde.serialize!(map) |> Jason.decode!()
   end
@@ -45,13 +49,17 @@ defmodule Dictionary.Type.MapTest do
   test "can be decoded back into struct" do
     map =
       Dictionary.Type.Map.new!(
-        [name: "name",
-        description: "description",
-        dictionary:
-          Dictionary.from_list([
-            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
-          ])], IdGenerator.Impl)
+        [
+          name: "name",
+          description: "description",
+          dictionary:
+            Dictionary.from_list([
+              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+            ])
+        ],
+        IdGenerator.Impl
+      )
 
     serialized = JsonSerde.serialize!(map)
 
@@ -66,12 +74,16 @@ defmodule Dictionary.Type.MapTest do
 
     field =
       Dictionary.Type.Map.new!(
-        [name: "spouse",
-        dictionary:
-          Dictionary.from_list([
-            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
-          ])], IdGenerator.Impl)
+        [
+          name: "spouse",
+          dictionary:
+            Dictionary.from_list([
+              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+            ])
+        ],
+        IdGenerator.Impl
+      )
 
     assert result == Dictionary.Type.Normalizer.normalize(field, value)
 
@@ -85,12 +97,16 @@ defmodule Dictionary.Type.MapTest do
   test "handles nil" do
     field =
       Dictionary.Type.Map.new!(
-        [name: "spouse",
-        dictionary:
-          Dictionary.from_list([
-            Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-            Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
-          ])], IdGenerator.Impl)
+        [
+          name: "spouse",
+          dictionary:
+            Dictionary.from_list([
+              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)
+            ])
+        ],
+        IdGenerator.Impl
+      )
 
     assert {:ok, nil} == Dictionary.Type.Normalizer.normalize(field, nil)
   end

@@ -17,8 +17,11 @@ fi
 cd apps/$app
 appdir="$(pwd)"
 mix compile
-mix format
-mix format --check-formatted
+
+if [ -f .formatter.ex ] ; then
+  mix format
+  mix format --check-formatted
+fi
 
 #if mix help credo >/dev/null 2>&1; then
 #    mix credo

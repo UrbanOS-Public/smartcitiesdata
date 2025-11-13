@@ -34,12 +34,14 @@ defmodule Flair.Durations.Flow do
     |> partition_by_dataset_id_and_window()
     |> aggregate_by_dataset()
     |> Flow.on_trigger(fn acc, _partition_info, _trigger ->
-      result = acc
-      |> Enum.map(fn {dataset_id, timing_list} ->
-        profile = Durations.calculate_durations({dataset_id, timing_list})
-        log_profile(profile)
-        profile
-      end)
+      result =
+        acc
+        |> Enum.map(fn {dataset_id, timing_list} ->
+          profile = Durations.calculate_durations({dataset_id, timing_list})
+          log_profile(profile)
+          profile
+        end)
+
       {result, %{}}
     end)
     |> Flow.into_specs(consumer_spec)

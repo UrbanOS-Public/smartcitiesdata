@@ -31,7 +31,7 @@ defmodule DeadLetter.MixProject do
       # {:cowboy, "~> 2.14.0", override: true},
       {:definition, in_umbrella: true},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
-      {:mox, "~> 1.0", only: [:test, :integration]},
+      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:ex_doc, "~> 0.21", only: :dev},
       {:jason, "~> 1.2"},
       {:elsa_kafka, "~> 2.0"},

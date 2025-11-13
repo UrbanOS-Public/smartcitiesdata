@@ -33,7 +33,6 @@ defmodule Definition.MixProject do
       {:stream_data, "~> 0.6", only: [:dev, :test, :integration]},
       {:ok, in_umbrella: true},
       {:elixir_uuid, "~> 1.2"},
-      
       {:result, "~> 1.1"}
     ]
   end

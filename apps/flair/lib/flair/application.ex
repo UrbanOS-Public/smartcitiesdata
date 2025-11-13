@@ -5,12 +5,12 @@ defmodule Flair.Application do
   use Application
 
   def start(_type, _args) do
-    children = 
+    children =
       case Mix.env() do
         :test -> []
         _ -> [{Flair.Durations.Flow, []}, {Flair.Durations.Init, []}]
       end
-    
+
     Supervisor.start_link(children, strategy: :one_for_one, name: Flair.Supervisor)
   end
 end

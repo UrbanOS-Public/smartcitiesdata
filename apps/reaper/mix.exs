@@ -82,7 +82,7 @@ defmodule Reaper.MixProject do
       # Test/Dev Dependencies
       {:tasks, in_umbrella: true, only: :dev},
       {:bypass, "~> 2.0", only: [:test, :integration]},
-      {:checkov, "~> 1.0", only: [:test, :integration]},
+      {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       {:credo, "~> 1.7", only: [:dev, :test, :integration], runtime: false},
       {:dialyxir, "~> 1.3", only: :dev, runtime: false},
       {:divo, "~> 2.0", only: [:dev, :integration], override: true},

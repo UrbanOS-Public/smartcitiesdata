@@ -2,8 +2,10 @@ defmodule Foo do
   use Definition, schema: Foo.V2
   defstruct [:version, :id, :bar, :baz]
 
-  def on_new(foo, id_generator \\ Application.get_env(:definition, :id_generator, IdGenerator.Impl)) do
-
+  def on_new(
+        foo,
+        id_generator \\ Application.get_env(:definition, :id_generator, IdGenerator.Impl)
+      ) do
     new_baz =
       case foo.baz do
         nil -> nil

@@ -6,7 +6,6 @@ defmodule EstuaryWeb.StreamingEventLiveViewTest do
 
   import FlokiHelpers, only: [get_text: 2]
 
-
   setup :set_mox_global
   setup :verify_on_exit!
 

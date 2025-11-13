@@ -4,7 +4,6 @@ defmodule Auth.Auth0.SecretFetcher do
   use Guardian.Token.Jwt.SecretFetcher
   @behaviour Auth.Auth0.SecretFetcher.Behaviour
 
-
   alias Auth.Auth0.CachedJWKS
 
   def fetch_verifying_secret(module, token_headers, _opts) do

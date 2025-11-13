@@ -2,11 +2,16 @@ defmodule EstuaryWeb.API.EventControllerTest do
   use EstuaryWeb.ConnCase
   import Mox
 
-
   setup :set_mox_global
   setup :verify_on_exit!
+
   setup do
-    Application.put_env(:estuary, :event_retrieval_service, Estuary.Services.EventRetrievalService.Mock)
+    Application.put_env(
+      :estuary,
+      :event_retrieval_service,
+      Estuary.Services.EventRetrievalService.Mock
+    )
+
     :ok
   end
 
@@ -41,7 +46,11 @@ defmodule EstuaryWeb.API.EventControllerTest do
     @tag capture_log: true
     test "should return 404 and message when error occurs", %{conn: conn} do
       expected_error = "Unable to process your request"
-      expect(Estuary.Services.EventRetrievalService.Mock, :get_all, fn -> {:error, :do_not_care} end)
+
+      expect(Estuary.Services.EventRetrievalService.Mock, :get_all, fn ->
+        {:error, :do_not_care}
+      end)
+
       conn = get(conn, "/api/v1/events")
 
       actual_error =

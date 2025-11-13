@@ -3,7 +3,7 @@ defmodule Dictionary.AccessTest do
   import Checkov
 
   import Dictionary.Access, only: [key: 1, key: 3]
-  
+
   @moduletag timeout: 5000
 
   setup do
@@ -13,24 +13,36 @@ defmodule Dictionary.AccessTest do
         Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
         Dictionary.Type.Date.new!([name: "birthdate", format: "%Y-%m-%d"], IdGenerator.Impl),
         Dictionary.Type.Map.new!(
-          [name: "spouse",
-          dictionary:
-            Dictionary.from_list([
-              Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-              Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
-              Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
-            ])], IdGenerator.Impl),
+          [
+            name: "spouse",
+            dictionary:
+              Dictionary.from_list([
+                Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+                Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
+              ])
+          ],
+          IdGenerator.Impl
+        ),
         Dictionary.Type.List.new!(
-          [name: "friends",
-          item_type:
-            Dictionary.Type.Map.new!(
-              [name: "in_list",
-              dictionary:
-                Dictionary.from_list([
-                  Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
-                  Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
-                  Dictionary.Type.Integer.new!([name: "since"], IdGenerator.Impl)
-                ])], IdGenerator.Impl)], IdGenerator.Impl)
+          [
+            name: "friends",
+            item_type:
+              Dictionary.Type.Map.new!(
+                [
+                  name: "in_list",
+                  dictionary:
+                    Dictionary.from_list([
+                      Dictionary.Type.String.new!([name: "name"], IdGenerator.Impl),
+                      Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl),
+                      Dictionary.Type.Integer.new!([name: "since"], IdGenerator.Impl)
+                    ])
+                ],
+                IdGenerator.Impl
+              )
+          ],
+          IdGenerator.Impl
+        )
       ])
 
     data = %{
@@ -209,7 +221,10 @@ defmodule Dictionary.AccessTest do
       where [
         [:path, :expected],
         [["age"], Dictionary.Type.Integer.new!([name: "age"], IdGenerator.Impl)],
-        [["spouse", "nickname"], Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)],
+        [
+          ["spouse", "nickname"],
+          Dictionary.Type.String.new!([name: "nickname"], IdGenerator.Impl)
+        ],
         [["friends", "since"], Dictionary.Type.Integer.new!([name: "since"], IdGenerator.Impl)]
       ]
     end

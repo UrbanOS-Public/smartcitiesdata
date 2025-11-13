@@ -11,16 +11,19 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       dataset = TDG.create_dataset(%{id: "test-dataset"})
 
       expect(TopicReaderMock, :init, fn [
-        instance: :dataset_topic_reader_test,
-        connection: :"dataset_topic_reader_test-test-topic-test-dataset-test-dataset-consumer",
-        endpoints: [localhost: 9092],
-        topic: "test-topic-test-dataset",
-        handler: TestHandler,
-        handler_init_args: [],
-        topic_subscriber_config: [],
-        retry_count: 10,
-        retry_delay: 100
-      ] -> :ok end)
+                                          instance: :dataset_topic_reader_test,
+                                          connection:
+                                            :"dataset_topic_reader_test-test-topic-test-dataset-test-dataset-consumer",
+                                          endpoints: [localhost: 9092],
+                                          topic: "test-topic-test-dataset",
+                                          handler: TestHandler,
+                                          handler_init_args: [],
+                                          topic_subscriber_config: [],
+                                          retry_count: 10,
+                                          retry_delay: 100
+                                        ] ->
+        :ok
+      end)
 
       assert :ok ==
                DatasetTopicReader.init(
@@ -38,9 +41,11 @@ defmodule Pipeline.Reader.DatasetTopicReaderTest do
       dataset = TDG.create_dataset(%{id: "test-dataset"})
 
       expect(TopicReaderMock, :terminate, fn [
-        instance: :dataset_topic_reader_test,
-        topic: "test-topic-test-dataset"
-      ] -> :ok end)
+                                               instance: :dataset_topic_reader_test,
+                                               topic: "test-topic-test-dataset"
+                                             ] ->
+        :ok
+      end)
 
       assert :ok ==
                DatasetTopicReader.terminate(

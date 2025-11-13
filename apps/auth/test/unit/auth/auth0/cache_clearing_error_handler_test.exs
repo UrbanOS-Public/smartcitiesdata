@@ -3,7 +3,7 @@ defmodule Auth.Auth0.CacheClearingErrorHandlerTest do
 
   use ExUnit.Case, async: true
   import Mox
-  
+
   setup :verify_on_exit!
 
   describe "basic functionality" do

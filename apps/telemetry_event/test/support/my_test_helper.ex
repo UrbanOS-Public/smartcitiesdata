@@ -44,7 +44,7 @@ defmodule TelemetryEvent.MyTestHelper do
       {:error, {{:already_started, _}, _}} -> :ok
       {:error, {:already_started, _}} -> :ok
     end
-    
+
     :ok = Mock.clear_events()
     :ok
   end

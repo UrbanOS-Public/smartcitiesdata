@@ -53,7 +53,7 @@ defmodule DiscoveryApi.Mixfile do
       {:credo, "~> 1.7", only: [:dev, :test, :integration], runtime: false},
       {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
-      {:ex_json_schema, "~> 0.9", only: [:test, :integration]},
+      {:ex_json_schema, "~> 0.9"},
       {:ecto, "== 3.10.1", override: true},
       {:ecto_sql, "== 3.10.1", override: true},
       {:elastix_search, "~> 1.0.1"},

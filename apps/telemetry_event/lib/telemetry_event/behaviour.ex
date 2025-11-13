@@ -23,8 +23,8 @@ defmodule TelemetryEvent.Behaviour do
     * `{:error, reason}` on failure
   """
   @callback add_event_metrics(
-          event_metadata :: event_metadata(),
-          event_name :: event_name(),
-          measurements :: event_measurements()
-        ) :: :ok | {:error, term()}
+              event_metadata :: event_metadata(),
+              event_name :: event_name(),
+              measurements :: event_measurements()
+            ) :: :ok | {:error, term()}
 end

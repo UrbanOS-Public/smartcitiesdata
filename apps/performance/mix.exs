@@ -11,7 +11,8 @@ defmodule Performance.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -31,4 +32,7 @@ defmodule Performance.MixProject do
       {:retry, "~> 0.15"}
     ]
   end
+
+  defp elixirc_paths(:integration), do: ["lib"]
+  defp elixirc_paths(_), do: []
 end

@@ -44,7 +44,6 @@ defmodule Estuary.MixProject do
       {:phoenix_live_view, "~> 0.14"},
       {:phoenix_pubsub, "~> 2.0"},
       {:pipeline, in_umbrella: true},
-      {:mox, "~> 1.0", only: [:dev, :test, :integration]},
       {:plug_cowboy, "~> 2.6"},
       {:plug_heartbeat, "~> 1.0"},
       {:prestige, "~> 3.0.0"},

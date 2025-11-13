@@ -14,10 +14,14 @@ defmodule Estuary.Query.Helper.PrestigeHelperTest do
     ]
 
     expect(Prestige.Mock, :new_session, fn _ -> :connection end)
+
     expect(Prestige.Mock, :stream!, 2, fn _, _ ->
       {:ok,
        %Prestige.Result{
-         columns: [%Prestige.ColumnDefinition{name: "column_1"}, %Prestige.ColumnDefinition{name: "column_2"}],
+         columns: [
+           %Prestige.ColumnDefinition{name: "column_1"},
+           %Prestige.ColumnDefinition{name: "column_2"}
+         ],
          rows: [["any column_1 data", "any column_2 data"]]
        }}
     end)

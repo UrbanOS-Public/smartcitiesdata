@@ -5,43 +5,43 @@ defmodule TelemetryEventTest do
   # Setup the mock before each test
   setup :setup_telemetry_mock
 
-describe "original project unittests" do
+  describe "original project unittests" do
     # @tag :skip
     test "should return `:ok` when all the mandatory fields are passed" do
-    assert :ok ==
-             [
-               app: "any_app",
-               author: "any_author",
-               dataset_id: "any_dataset_id",
-               event_type: "any_event_type"
-             ]
-             |> TelemetryEvent.add_event_metrics([:any_event_name])
+      assert :ok ==
+               [
+                 app: "any_app",
+                 author: "any_author",
+                 dataset_id: "any_dataset_id",
+                 event_type: "any_event_type"
+               ]
+               |> TelemetryEvent.add_event_metrics([:any_event_name])
     end
 
     # @tag :skip
     test "should return `:ok` when `dataset_id` is missing" do
-    assert :ok ==
-             [
-               app: "",
-               author: "",
-               dataset_id: "",
-               event_type: ""
-             ]
-             |> TelemetryEvent.add_event_metrics([:any_event_name])
+      assert :ok ==
+               [
+                 app: "",
+                 author: "",
+                 dataset_id: "",
+                 event_type: ""
+               ]
+               |> TelemetryEvent.add_event_metrics([:any_event_name])
     end
 
     # @tag :skip
     test "should return `:ok` any value is nil" do
-    assert :ok ==
-             [
-               app: nil,
-               author: nil,
-               dataset_id: nil,
-               event_type: nil
-             ]
-             |> TelemetryEvent.add_event_metrics([:any_event_name])
+      assert :ok ==
+               [
+                 app: nil,
+                 author: nil,
+                 dataset_id: nil,
+                 event_type: nil
+               ]
+               |> TelemetryEvent.add_event_metrics([:any_event_name])
     end
-end
+  end
 
   describe "add_event_metrics/3" do
     # @tag :skip
@@ -57,7 +57,12 @@ end
       assert :ok = TelemetryEvent.add_event_metrics(metadata, [:test, :event])
       # Verify the event was captured with the correct data
       event = assert_event_captured([:test, :event])
-      assert match?({[:test, :event], [app: "any_app", author: "any_author", dataset_id: "any_dataset_id", event_type: "any_event_type"], _}, event)
+
+      assert match?(
+               {[:test, :event],
+                [app: "any_app", author: "any_author", dataset_id: "any_dataset_id", event_type: "any_event_type"], _},
+               event
+             )
     end
 
     @tag :skip
@@ -76,7 +81,7 @@ end
       assert match?({[:test, :empty_values], %{app: "UNKNOWN", author: "UNKNOWN"}, _}, event)
     end
 
-    #@tag :skip
+    # @tag :skip
     test "includes measurements when provided" do
       metadata = [app: "test_app", dataset_id: "123"]
       measurements = %{duration: 100, count: 5}

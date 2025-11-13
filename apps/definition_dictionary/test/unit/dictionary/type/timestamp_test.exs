@@ -1,7 +1,7 @@
 defmodule Dictionary.Type.TimestampTest do
   use ExUnit.Case
   import Checkov
-  
+
   @moduletag timeout: 10000
 
   test "can be encoded to json" do
@@ -32,7 +32,10 @@ defmodule Dictionary.Type.TimestampTest do
 
   test "can be decoded back into struct" do
     timestamp =
-      Dictionary.Type.Timestamp.new!([name: "name", description: "description", format: "%Y"], IdGenerator.Impl)
+      Dictionary.Type.Timestamp.new!(
+        [name: "name", description: "description", format: "%Y"],
+        IdGenerator.Impl
+      )
 
     serialized = JsonSerde.serialize!(timestamp)
 
@@ -40,7 +43,12 @@ defmodule Dictionary.Type.TimestampTest do
   end
 
   data_test "validates dates - #{inspect(value)} tz #{timezone} --> #{inspect(result)}" do
-    field = Dictionary.Type.Timestamp.new!([name: "fake", format: format, timezone: timezone], IdGenerator.Impl)
+    field =
+      Dictionary.Type.Timestamp.new!(
+        [name: "fake", format: format, timezone: timezone],
+        IdGenerator.Impl
+      )
+
     assert result == Dictionary.Type.Normalizer.normalize(field, value)
 
     where [

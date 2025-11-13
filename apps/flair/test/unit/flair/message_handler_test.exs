@@ -1,8 +1,8 @@
 defmodule MessageHandlerTest do
   use ExUnit.Case
-  
+
   import Mox
-  
+
   setup :verify_on_exit!
 
   describe "handle_messages/2" do

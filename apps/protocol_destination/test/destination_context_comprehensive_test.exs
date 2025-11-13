@@ -12,16 +12,37 @@ defmodule Destination.ContextComprehensiveTest do
 
     def s do
       schema(%{
-        dictionary: spec(is_struct(SimpleDictionary)),
+        dictionary: spec(fn
+          nil -> false
+          %SimpleDictionary{} -> true
+          _ -> false
+        end),
         app_name: spec(is_atom() or is_binary()),
-        dataset_id: is_binary() |> not_empty() |> required(),
-        subset_id: is_binary() |> not_empty() |> required()
+        dataset_id: spec(is_binary() and not_empty?()),
+        subset_id: spec(is_binary() and not_empty?())
       })
     end
   end
 
   defmodule ComplexDictionary do
     defstruct [:id, :name, :fields, :metadata]
+  end
+
+  defmodule TestSchemaComplex do
+    use Definition.Schema
+
+    def s do
+      schema(%{
+        dictionary: spec(fn
+          nil -> false
+          %ComplexDictionary{} -> true
+          _ -> false
+        end),
+        app_name: spec(is_atom() or is_binary()),
+        dataset_id: spec(is_binary() and not_empty?()),
+        subset_id: spec(is_binary() and not_empty?())
+      })
+    end
   end
 
   describe "Context Creation Tests" do
@@ -69,35 +90,38 @@ defmodule Destination.ContextComprehensiveTest do
   describe "Context Validation Failure Tests" do
     test "missing dictionary field" do
       params = %{
+        dictionary: nil,
         app_name: "test_app",
         dataset_id: "test_dataset",
         subset_id: "test_subset"
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :dictionary)
+      assert Enum.any?(errors, fn error -> error.path == [:dictionary] end)
     end
 
     test "missing dataset_id field" do
       params = %{
         dictionary: %SimpleDictionary{name: "test"},
         app_name: "test_app",
+        dataset_id: nil,
         subset_id: "test_subset"
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :dataset_id)
+      assert Enum.any?(errors, fn error -> error.path == [:dataset_id] end)
     end
 
     test "missing subset_id field" do
       params = %{
         dictionary: %SimpleDictionary{name: "test"},
         app_name: "test_app",
-        dataset_id: "test_dataset"
+        dataset_id: "test_dataset",
+        subset_id: nil
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :subset_id)
+      assert Enum.any?(errors, fn error -> error.path == [:subset_id] end)
     end
 
     test "invalid app_name type (neither atom nor string)" do
@@ -109,7 +133,7 @@ defmodule Destination.ContextComprehensiveTest do
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :app_name)
+      assert Enum.any?(errors, fn error -> error.path == [:app_name] end)
     end
 
     test "empty dataset_id string" do
@@ -121,7 +145,7 @@ defmodule Destination.ContextComprehensiveTest do
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :dataset_id)
+      assert Enum.any?(errors, fn error -> error.path == [:dataset_id] end)
     end
 
     test "empty subset_id string" do
@@ -133,7 +157,7 @@ defmodule Destination.ContextComprehensiveTest do
       }
 
       assert {:error, errors} = Context.new(params, TestSchemaSimple)
-      assert Keyword.has_key?(errors, :subset_id)
+      assert Enum.any?(errors, fn error -> error.path == [:subset_id] end)
     end
   end
 
@@ -217,7 +241,7 @@ defmodule Destination.ContextComprehensiveTest do
         subset_id: "subset-#{System.unique_integer()}"
       }
 
-      assert {:ok, context} = Context.new(params, TestSchemaSimple)
+      assert {:ok, context} = Context.new(params, TestSchemaComplex)
       assert context.dictionary == complex_dict
     end
   end

@@ -39,9 +39,10 @@ defmodule ProtocolDestination.FinalTest do
     end
 
     test "protocol callbacks are properly defined" do
-      callbacks = Destination.__protocol__(:callbacks)
-      assert is_list(callbacks)
-      assert length(callbacks) == 4
+      # __protocol__(:callbacks) is not available in OTP 25+
+      # Instead, verify the protocol functions exist (already tested above)
+      # This test is redundant with the functions test
+      assert Destination.__protocol__(:functions) |> length() == 4
     end
   end
 

@@ -35,7 +35,11 @@ defmodule Dictionary.Type.StringTest do
 
     field = input |> Jason.encode!() |> JsonSerde.deserialize!()
 
-    assert field == Dictionary.Type.String.new!([name: "name", description: "description"], IdGenerator.Impl)
+    assert field ==
+             Dictionary.Type.String.new!(
+               [name: "name", description: "description"],
+               IdGenerator.Impl
+             )
   end
 
   data_test "validates strings - #{inspect(value)} --> #{inspect(result)}" do

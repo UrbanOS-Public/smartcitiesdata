@@ -31,6 +31,7 @@ defmodule DeadLetterTest do
         module: DeadLetter.Carrier.Test,
         init_args: [size: 3000]
       }
+
       DeadLetter.Server.start_link(config)
     end
 
@@ -44,7 +45,9 @@ defmodule DeadLetterTest do
   describe "process/2" do
     @tag capture_log: true
     test "sends formatted message to the queue" do
-      DeadLetter.process([@dataset_id, @dataset_id2], @ingestion_id, @default_original_message, "forklift", reason: "test_reason")
+      DeadLetter.process([@dataset_id, @dataset_id2], @ingestion_id, @default_original_message, "forklift",
+        reason: "test_reason"
+      )
 
       assert_async do
         expected = %{
@@ -133,9 +136,9 @@ defmodule DeadLetterTest do
       assert Map.get(actual, :original_message) == %{payload: "{}", topic: "streaming-raw"}
     end
 
-    #@tag skip: "OTP25 Placebo work pending"
+    # @tag skip: "OTP25 Placebo work pending"
     test "returns formatted DLQ message with a reason" do
-      #expect(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
+      # expect(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
         DeadLetter.Server.format_message(
@@ -151,7 +154,7 @@ defmodule DeadLetterTest do
 
     # @tag skip: "OTP25 Placebo work pending"
     test "returns formatted DLQ message with a reason exception" do
-      #allow(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
+      # allow(TelemetryEvent.add_event_metrics(any(), [:dead_letters_handled]), return: :ok)
 
       actual =
         DeadLetter.Server.format_message(
@@ -244,7 +247,7 @@ defmodule DeadLetterTest do
       assert "%RuntimeError{message: \"Error\"}" == Map.get(actual, :exit_code)
     end
 
-  # @tag skip: "OTP25 Placebo work pending"
+    # @tag skip: "OTP25 Placebo work pending"
     test "sets the timestamp on DLQ message" do
       actual =
         DeadLetter.Server.format_message(

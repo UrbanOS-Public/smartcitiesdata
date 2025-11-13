@@ -8,6 +8,7 @@ defmodule DeadLetter.TelemetryEventHelper do
     case Process.whereis(TelemetryEvent.Mock) do
       nil ->
         {:ok, _pid} = TelemetryEvent.Mock.start_link()
+
       _ ->
         TelemetryEvent.Mock.clear_events()
     end
