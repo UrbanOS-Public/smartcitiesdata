@@ -71,7 +71,7 @@ services:
     ports:
     - "2181:2181"
   kafka:
-    image: bitnami/kafka:3.1.2
+    image: bitnamilegacy/kafka:3.7.1
     platform: linux/amd64
     depends_on:
     - zookeeper
@@ -93,7 +93,7 @@ services:
       retries: 10
 
   kafka-init:
-    image: bitnami/kafka:3.1.2
+    image: bitnamilegacy/kafka:3.7.1
     platform: linux/amd64
     depends_on:
       - kafka
