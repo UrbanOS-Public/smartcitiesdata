@@ -14,10 +14,23 @@ defmodule Raptor.Application do
   def redis_client(), do: :raptor_redix
 
   def start(_type, _args) do
+    Logger.info("======================================================")
+    Logger.info("Raptor.Application starting...")
+    Logger.info("======================================================")
+
+    # Log Brook configuration
+    brook_config = brook()
+    log_brook_configuration(brook_config)
+
+    # Log Redis configuration
+    redix_config = Application.get_env(:redix, :args, [])
+    Logger.info("Raptor Redis configuration:")
+    Logger.info("  Redix args: #{inspect(redix_config)}")
+
     children = [
       # Start the Telemetry supervisor
       RaptorWeb.Telemetry,
-      {Brook, brook()},
+      {Brook, brook_config},
       redis(),
       # Start the PubSub system
       {Phoenix.PubSub, [name: Raptor.PubSub, adapter: Phoenix.PubSub.PG2]},
@@ -32,7 +45,76 @@ defmodule Raptor.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Raptor.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    Logger.info("Starting Raptor supervisor...")
+    result = Supervisor.start_link(children, opts)
+
+    case result do
+      {:ok, pid} ->
+        Logger.info("Raptor.Application started successfully (pid: #{inspect(pid)})")
+        Logger.info("======================================================")
+        {:ok, pid}
+
+      {:error, reason} ->
+        Logger.error("Raptor.Application failed to start: #{inspect(reason)}")
+        Logger.error("======================================================")
+        {:error, reason}
+    end
+  end
+
+  defp log_brook_configuration(brook_config) do
+    Logger.info("Raptor Brook configuration:")
+
+    if is_nil(brook_config) do
+      Logger.error("""
+      FATAL: Brook configuration is nil!
+
+      Required configuration:
+        config :raptor, :brook,
+          instance: :raptor,
+          driver: [
+            module: Brook.Driver.Kafka,
+            init_arg: [endpoints: [...], topic: "event-stream", group: "raptor-events"]
+          ],
+          handlers: [Raptor.Event.EventHandler],
+          storage: [
+            module: Brook.Storage.Redis,
+            init_arg: [redix_args: [...], namespace: "raptor:view"]
+          ]
+
+      Please check:
+      1. config/runtime.exs exists and is being loaded (MIX_ENV=prod)
+      2. Environment variables are set:
+         - KAFKA_BROKERS (default: localhost:9092)
+         - EVENT_STREAM_TOPIC (default: event-stream)
+         - REDIS_HOST (default: localhost)
+         - REDIS_PORT (default: 6379)
+      3. The release was built with the latest configuration
+      """)
+    else
+      Logger.info("  Instance: #{inspect(Keyword.get(brook_config, :instance))}")
+
+      driver = Keyword.get(brook_config, :driver, [])
+      Logger.info("  Driver module: #{inspect(driver[:module])}")
+
+      if driver[:init_arg] do
+        Logger.info("  Driver endpoints: #{inspect(driver[:init_arg][:endpoints])}")
+        Logger.info("  Driver topic: #{inspect(driver[:init_arg][:topic])}")
+        Logger.info("  Driver group: #{inspect(driver[:init_arg][:group])}")
+      end
+
+      handlers = Keyword.get(brook_config, :handlers, [])
+      Logger.info("  Handlers: #{inspect(handlers)}")
+
+      storage = Keyword.get(brook_config, :storage, [])
+      Logger.info("  Storage module: #{inspect(storage[:module])}")
+
+      if storage[:init_arg] do
+        Logger.info("  Storage namespace: #{inspect(storage[:init_arg][:namespace])}")
+        # Don't log full redix_args as it might contain passwords
+        Logger.info("  Storage redix configured: #{not is_nil(storage[:init_arg][:redix_args])}")
+      end
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration
