@@ -14,8 +14,6 @@ defmodule Raptor.Services.Auth0Management do
 
   getter(:auth0, generic: true)
 
-  @instance_name Raptor.instance_name()
-
   def get_users_by_api_key(apiKey) do
     case Auth0UserDataStore.get_user_by_api_key(apiKey) do
       [] ->

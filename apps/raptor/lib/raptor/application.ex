@@ -7,8 +7,6 @@ defmodule Raptor.Application do
   use Properties, otp_app: :raptor
   require Logger
 
-  @instance_name Raptor.instance_name()
-
   getter(:brook, generic: true)
 
   def redis_client(), do: :raptor_redix

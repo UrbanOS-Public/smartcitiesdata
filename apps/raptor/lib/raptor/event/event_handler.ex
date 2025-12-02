@@ -12,6 +12,8 @@ defmodule Raptor.Event.EventHandler do
   alias Raptor.Services.DatasetAccessGroupRelationStore
   alias Raptor.Schemas.DatasetAccessGroupRelation
 
+  @instance_name Raptor.instance_name()
+
   import SmartCity.Event,
     only: [
       dataset_update: 0,
