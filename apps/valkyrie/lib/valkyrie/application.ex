@@ -28,6 +28,7 @@ defmodule Valkyrie.Application do
         libcluster(),
         {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
         brook_instance(),
+        dead_letter_children(),
         {Valkyrie.Init, monitor: Valkyrie.Dynamic.Supervisor}
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
@@ -72,6 +73,28 @@ defmodule Valkyrie.Application do
     Logger.info("  Full config keys: #{inspect(Keyword.keys(config))}")
 
     {Brook, config}
+  end
+
+  defp dead_letter_children() do
+    Logger.info("Initializing DeadLetter children...")
+
+    opts = Application.get_all_env(:dead_letter)
+
+    case Keyword.fetch(opts, :driver) do
+      {:ok, driver_config} ->
+        config = Enum.into(driver_config, %{init_args: [size: 3000]})
+
+        Logger.info("DeadLetter will start with driver: #{inspect(config.module)}")
+
+        [
+          {config.module, config.init_args},
+          {DeadLetter.Server, config}
+        ]
+
+      :error ->
+        Logger.warn("DeadLetter configuration not found, skipping DeadLetter initialization")
+        []
+    end
   end
 
   defp libcluster() do

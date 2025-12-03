@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "2.0.2",
+      version: "2.0.3",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -27,7 +27,8 @@ defmodule Valkyrie.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Valkyrie.Application, []}
+      mod: {Valkyrie.Application, []},
+      included_applications: [:dead_letter]
     ]
   end
 
