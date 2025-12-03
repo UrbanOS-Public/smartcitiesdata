@@ -20,6 +20,9 @@ defmodule Valkyrie.Application do
     brook_config = brook()
     log_brook_configuration(brook_config)
 
+    # Log registered processes before starting Brook
+    log_registered_processes()
+
     children =
       [
         libcluster(),
@@ -29,6 +32,18 @@ defmodule Valkyrie.Application do
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
+
+    # Log the final children list
+    Logger.info("Supervisor children to start:")
+    Enum.with_index(children, 1)
+    |> Enum.each(fn {child, idx} ->
+      case child do
+        {module, _config} -> Logger.info("  #{idx}. #{inspect(module)}")
+        {module, _config, _opts} -> Logger.info("  #{idx}. #{inspect(module)}")
+        module when is_atom(module) -> Logger.info("  #{idx}. #{inspect(module)}")
+        _ -> Logger.info("  #{idx}. #{inspect(child)}")
+      end
+    end)
 
     opts = [strategy: :one_for_one, name: Valkyrie.Supervisor]
 
@@ -50,6 +65,11 @@ defmodule Valkyrie.Application do
 
   defp brook_instance() do
     config = brook() |> Keyword.put(:instance, @instance_name)
+
+    Logger.info("Brook instance configuration (with instance name added):")
+    Logger.info("  Instance: #{inspect(config[:instance])}")
+    Logger.info("  Full config keys: #{inspect(Keyword.keys(config))}")
+
     {Brook, config}
   end
 
@@ -58,6 +78,39 @@ defmodule Valkyrie.Application do
       nil -> []
       topology -> {Cluster.Supervisor, [topology, [name: Cluster.ClusterSupervisor]]}
     end
+  end
+
+  defp log_registered_processes() do
+    Logger.info("Registered processes before starting Brook:")
+
+    registered = Process.registered()
+
+    # Filter to show Brook-related, Redis-related, and Kafka-related processes
+    relevant_processes =
+      registered
+      |> Enum.filter(fn name ->
+        name_str = Atom.to_string(name)
+        String.contains?(name_str, "Brook") or
+        String.contains?(name_str, "brook") or
+        String.contains?(name_str, "Redix") or
+        String.contains?(name_str, "redix") or
+        String.contains?(name_str, "Kafka") or
+        String.contains?(name_str, "kafka") or
+        String.contains?(name_str, "brod") or
+        String.contains?(name_str, "Elsa") or
+        String.contains?(name_str, "valkyrie")
+      end)
+
+    if Enum.empty?(relevant_processes) do
+      Logger.info("  No Brook/Redis/Kafka related processes registered")
+    else
+      Logger.info("  Found #{length(relevant_processes)} relevant processes:")
+      Enum.each(relevant_processes, fn name ->
+        Logger.info("    - #{inspect(name)}")
+      end)
+    end
+
+    Logger.info("  Total registered processes: #{length(registered)}")
   end
 
   defp log_brook_configuration(brook_config) do

@@ -14,7 +14,7 @@ if config_env() == :prod do
     |> String.split(",")
     |> Enum.map(fn broker ->
       [host, port] = String.split(broker, ":")
-      {String.to_atom(host), String.to_integer(port)}
+      {host, String.to_integer(port)}
     end)
 
   event_stream_topic = System.get_env("EVENT_STREAM_TOPIC", "event-stream")
