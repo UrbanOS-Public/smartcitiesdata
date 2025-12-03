@@ -18,7 +18,7 @@ cd apps/$app
 appdir="$(pwd)"
 mix compile
 
-if [ -f .formatter.ex ] ; then
+if [ -f .formatter.ex -o -f .formatter.exs ] ; then
   mix format
   mix format --check-formatted
 fi

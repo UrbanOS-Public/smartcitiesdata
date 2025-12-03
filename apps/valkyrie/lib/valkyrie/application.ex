@@ -35,6 +35,7 @@ defmodule Valkyrie.Application do
 
     # Log the final children list
     Logger.info("Supervisor children to start:")
+
     Enum.with_index(children, 1)
     |> Enum.each(fn {child, idx} ->
       case child do
@@ -90,21 +91,23 @@ defmodule Valkyrie.Application do
       registered
       |> Enum.filter(fn name ->
         name_str = Atom.to_string(name)
+
         String.contains?(name_str, "Brook") or
-        String.contains?(name_str, "brook") or
-        String.contains?(name_str, "Redix") or
-        String.contains?(name_str, "redix") or
-        String.contains?(name_str, "Kafka") or
-        String.contains?(name_str, "kafka") or
-        String.contains?(name_str, "brod") or
-        String.contains?(name_str, "Elsa") or
-        String.contains?(name_str, "valkyrie")
+          String.contains?(name_str, "brook") or
+          String.contains?(name_str, "Redix") or
+          String.contains?(name_str, "redix") or
+          String.contains?(name_str, "Kafka") or
+          String.contains?(name_str, "kafka") or
+          String.contains?(name_str, "brod") or
+          String.contains?(name_str, "Elsa") or
+          String.contains?(name_str, "valkyrie")
       end)
 
     if Enum.empty?(relevant_processes) do
       Logger.info("  No Brook/Redis/Kafka related processes registered")
     else
       Logger.info("  Found #{length(relevant_processes)} relevant processes:")
+
       Enum.each(relevant_processes, fn name ->
         Logger.info("    - #{inspect(name)}")
       end)
