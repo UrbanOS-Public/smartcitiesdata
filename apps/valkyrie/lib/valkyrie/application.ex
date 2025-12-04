@@ -137,6 +137,16 @@ defmodule Valkyrie.Application do
     end
 
     Logger.info("  Total registered processes: #{length(registered)}")
+
+    # Log ALL started applications to identify what's starting brod
+    Logger.info("Started OTP applications:")
+    started_apps = Application.started_applications()
+
+    Enum.each(started_apps, fn {app, _desc, _vsn} ->
+      Logger.info("  - #{inspect(app)}")
+    end)
+
+    Logger.info("  Total started applications: #{length(started_apps)}")
   end
 
   defp log_brook_configuration(brook_config) do
