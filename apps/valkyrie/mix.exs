@@ -28,7 +28,7 @@ defmodule Valkyrie.MixProject do
     [
       extra_applications: [:logger],
       mod: {Valkyrie.Application, []},
-      included_applications: [:dead_letter, :off_broadway_kafka_pipeline, :brod, :elsa_kafka]
+      included_applications: [:dead_letter, :off_broadway_kafka_pipeline, :brook_stream]
     ]
   end
 
