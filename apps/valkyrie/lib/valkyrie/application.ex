@@ -23,6 +23,17 @@ defmodule Valkyrie.Application do
     # Log registered processes before starting Brook
     log_registered_processes()
 
+    # Manually start brook_stream to control initialization order
+    Logger.info("Manually starting brook_stream application...")
+
+    case Application.ensure_all_started(:brook_stream) do
+      {:ok, started_apps} ->
+        Logger.info("Successfully started brook_stream and dependencies: #{inspect(started_apps)}")
+
+      {:error, {app, reason}} ->
+        Logger.error("Failed to start #{app}: #{inspect(reason)}")
+    end
+
     children =
       [
         libcluster(),
