@@ -44,7 +44,7 @@ defmodule Reaper.MixProject do
       {:atomic_map, "~> 0.9"},
       {:brod, "~> 3.16", override: true},
       {:brook_stream,
-       git: "git@github.com:UrbanOS-Public/brook_stream.git",
+       git: "https://github.com/UrbanOS-Public/brook_stream.git",
        branch: "20251205-v1.0.0-handle-already-started"},
       {:cachex, "~> 3.4"},
       {:castore, "~> 0.1"},
