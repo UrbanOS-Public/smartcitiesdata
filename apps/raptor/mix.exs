@@ -5,7 +5,7 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "2.0.1",
+      version: "2.0.2",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -30,7 +30,9 @@ defmodule Raptor.MixProject do
     [
       {:brod, "~> 3.16", override: true},
       {:atomic_map, "~> 0.9"},
-      {:brook_stream, "~> 1.0"},
+      {:brook_stream,
+       git: "https://github.com/UrbanOS-Public/brook_stream.git",
+       branch: "20251205-v1.0.0-handle-already-started"},
       # {:cowlib, "== 2.12.1", override: true},
       {:dead_letter, in_umbrella: true},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
