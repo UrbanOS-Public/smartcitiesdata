@@ -4,7 +4,7 @@ defmodule DiscoveryStreams.Mixfile do
   def project do
     [
       app: :discovery_streams,
-      version: "4.0.0",
+      version: "4.0.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -35,7 +35,9 @@ defmodule DiscoveryStreams.Mixfile do
   defp deps do
     [
       {:annotated_retry, in_umbrella: true},
-      {:brook_stream, "~> 1.0"},
+      {:brook_stream,
+       git: "https://github.com/UrbanOS-Public/brook_stream.git",
+       branch: "20251205-v1.0.0-handle-already-started"},
       {:bypass, "~> 2.0", only: [:test, :integration]},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
