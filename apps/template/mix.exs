@@ -28,7 +28,9 @@ defmodule Template.MixProject do
 
   defp deps do
     [
-      {:brook_stream, "~> 1.0"},
+      {:brook_stream,
+       git: "https://github.com/UrbanOS-Public/brook_stream.git",
+       branch: "20251205-v1.0.0-handle-already-started"},
       {:divo, "~> 2.0", only: [:dev, :test, :integration]},
       {:phoenix, "~> 1.4"},
       {:phoenix_html, "~> 2.14"},
