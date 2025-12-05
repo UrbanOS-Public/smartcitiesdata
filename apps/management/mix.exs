@@ -23,7 +23,9 @@ defmodule Management.MixProject do
 
   defp deps do
     [
-      {:brook_stream, "~> 1.0"},
+      {:brook_stream,
+       git: "https://github.com/UrbanOS-Public/brook_stream.git",
+       branch: "20251205-v1.0.0-handle-already-started"},
       {:credo, "~> 1.7", only: [:dev]}
     ]
   end
