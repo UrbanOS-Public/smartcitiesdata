@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "3.0.1",
+      version: "3.0.2",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -43,7 +43,9 @@ defmodule Reaper.MixProject do
     [
       {:atomic_map, "~> 0.9"},
       {:brod, "~> 3.16", override: true},
-      {:brook_stream, "~> 1.0"},
+      {:brook_stream,
+       git: "git@github.com:UrbanOS-Public/brook_stream.git",
+       branch: "20251205-v1.0.0-handle-already-started"},
       {:cachex, "~> 3.4"},
       {:castore, "~> 0.1"},
       # {:cowlib, "== 2.12.1", override: true},
