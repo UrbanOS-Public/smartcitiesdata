@@ -5,6 +5,9 @@ Application.load(:reaper)
 Application.spec(:reaper, :applications)
 |> Enum.each(&Application.ensure_all_started/1)
 
+# Ensure tzdata is started for DateTime operations in tests
+Application.ensure_all_started(:tzdata)
+
 Mox.defmock(Providers.Echo, for: Providers.Provider)
 Mox.defmock(JasonMock, for: Reaper.JasonBehaviour)
 Mox.defmock(TransitRealtimeMock, for: Reaper.TransitRealtimeBehaviour)
