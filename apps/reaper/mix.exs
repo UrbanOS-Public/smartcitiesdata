@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "3.0.2",
+      version: "3.0.3",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -28,7 +28,7 @@ defmodule Reaper.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex, :ftp],
+      extra_applications: [:logger, :eex, :ftp, :pg],
       mod: {Reaper.Application, []}
     ]
   end

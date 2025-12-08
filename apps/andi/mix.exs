@@ -24,7 +24,7 @@ defmodule Andi.MixProject do
   def application do
     [
       mod: {Andi.Application, []},
-      extra_applications: [:logger, :runtime_tools, :phoenix_ecto]
+      extra_applications: [:logger, :runtime_tools, :phoenix_ecto, :pg]
     ]
   end
 
