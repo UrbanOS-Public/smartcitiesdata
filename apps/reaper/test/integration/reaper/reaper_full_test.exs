@@ -53,6 +53,35 @@ defmodule Reaper.FullTest do
     Temp.track!()
     Application.put_env(:reaper, :download_dir, Temp.mkdir!())
 
+    # Wait for Redis and Kafka to be available before starting the Reaper application
+    # This ensures Docker services are ready
+    eventually(fn ->
+      redis_ready =
+        case :gen_tcp.connect('localhost', 6379, [], 1000) do
+          {:ok, socket} ->
+            :gen_tcp.close(socket)
+            true
+
+          {:error, _} ->
+            false
+        end
+
+      kafka_ready =
+        case :gen_tcp.connect('localhost', 9092, [], 1000) do
+          {:ok, socket} ->
+            :gen_tcp.close(socket)
+            true
+
+          {:error, _} ->
+            false
+        end
+
+      redis_ready and kafka_ready
+    end)
+
+    # Start the Reaper application after Docker services are confirmed ready
+    {:ok, _apps} = Application.ensure_all_started(:reaper)
+
     # NOTE: using Bypass in setup all b/c we have no expectations.
     # If we add any, we'll need to move this, per https://github.com/pspdfkit-labs/bypass#example
     bypass = Bypass.open()
