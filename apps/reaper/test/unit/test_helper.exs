@@ -7,6 +7,8 @@ Application.spec(:reaper, :applications)
 
 # Ensure tzdata is started for DateTime operations in tests
 Application.ensure_all_started(:tzdata)
+# Force tzdata to initialize its ETS tables by accessing timezone data
+Tzdata.zone_exists?("America/New_York")
 
 Mox.defmock(Providers.Echo, for: Providers.Provider)
 Mox.defmock(JasonMock, for: Reaper.JasonBehaviour)
