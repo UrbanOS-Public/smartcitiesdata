@@ -53,35 +53,6 @@ defmodule Reaper.FullTest do
     Temp.track!()
     Application.put_env(:reaper, :download_dir, Temp.mkdir!())
 
-    # Wait for Redis and Kafka to be available before starting the Reaper application
-    # This ensures Docker services are ready
-    eventually(fn ->
-      redis_ready =
-        case :gen_tcp.connect('localhost', 6379, [], 1000) do
-          {:ok, socket} ->
-            :gen_tcp.close(socket)
-            true
-
-          {:error, _} ->
-            false
-        end
-
-      kafka_ready =
-        case :gen_tcp.connect('localhost', 9092, [], 1000) do
-          {:ok, socket} ->
-            :gen_tcp.close(socket)
-            true
-
-          {:error, _} ->
-            false
-        end
-
-      redis_ready and kafka_ready
-    end)
-
-    # Start the Reaper application after Docker services are confirmed ready
-    {:ok, _apps} = Application.ensure_all_started(:reaper)
-
     # NOTE: using Bypass in setup all b/c we have no expectations.
     # If we add any, we'll need to move this, per https://github.com/pspdfkit-labs/bypass#example
     bypass = Bypass.open()
@@ -103,6 +74,31 @@ defmodule Reaper.FullTest do
   end
 
   setup do
+    # Start the Reaper application if it's not already running
+    # This happens after Divo has started Docker containers
+    case Application.ensure_all_started(:reaper) do
+      {:ok, _apps} -> :ok
+      {:error, {:already_started, :reaper}} -> :ok
+      {:error, reason} -> raise "Failed to start reaper: #{inspect(reason)}"
+    end
+
+    # Wait for MinIO to be ready (especially important for S3 tests)
+    # Give it up to 2 minutes in CI environments
+    eventually(
+      fn ->
+        case :gen_tcp.connect('localhost', 9000, [], 1000) do
+          {:ok, socket} ->
+            :gen_tcp.close(socket)
+            true
+
+          {:error, _} ->
+            false
+        end
+      end,
+      1_000,
+      120
+    )
+
     Redix.command(@redix, ["FLUSHALL"])
     :ok
   end
