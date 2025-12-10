@@ -6,9 +6,26 @@ Application.spec(:reaper, :applications)
 |> Enum.each(&Application.ensure_all_started/1)
 
 # Ensure tzdata is started for DateTime operations in tests
-Application.ensure_all_started(:tzdata)
+# This is critical because tests run with --no-start, so we need to manually
+# start tzdata and ensure its ETS tables are initialized
+{:ok, _} = Application.ensure_all_started(:tzdata)
+
+# Give tzdata a moment to fully initialize its supervision tree and ETS tables
+Process.sleep(100)
+
 # Force tzdata to initialize its ETS tables by accessing timezone data
-Tzdata.zone_exists?("America/New_York")
+# This is needed for Timex operations that use timezone data and time shifts
+try do
+  # Access multiple zones to ensure full initialization
+  Tzdata.zone_exists?("America/New_York")
+  Tzdata.zone_exists?("Etc/UTC")
+  # Force load a timezone period to ensure ETS tables are populated
+  Tzdata.TimeZoneDatabase.time_zone_periods_from_wall_datetime(~N[2020-01-01 00:00:00], "Etc/UTC")
+rescue
+  error ->
+    IO.puts("Warning: tzdata initialization failed: #{inspect(error)}")
+    IO.puts("Tests using Timex.shift may fail")
+end
 
 Mox.defmock(Providers.Echo, for: Providers.Provider)
 Mox.defmock(JasonMock, for: Reaper.JasonBehaviour)
