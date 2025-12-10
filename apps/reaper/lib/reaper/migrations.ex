@@ -16,19 +16,47 @@ defmodule Reaper.Migrations do
   end
 
   def init(_args) do
-    {:ok, brook} = start_brook()
+    Logger.info("======================================================")
+    Logger.info("Reaper.Migrations starting...")
+    Logger.info("======================================================")
 
-    migrate_enabled_flag()
+    # Verify :pg is available before starting Brook
+    case :application.get_key(:pg, :vsn) do
+      {:ok, vsn} ->
+        Logger.info("Reaper.Migrations: :pg application is available, version: #{vsn}")
 
-    stop_brook(brook)
+      :undefined ->
+        Logger.error("Reaper.Migrations: CRITICAL - :pg application is NOT available!")
+    end
 
-    {:ok, quantum} = start_quantum_storage()
+    Logger.info("Reaper.Migrations: Starting Brook instance for migrations...")
 
-    migrate_quantum_task()
+    case start_brook() do
+      {:ok, brook} ->
+        Logger.info("Reaper.Migrations: Brook started successfully (pid: #{inspect(brook)})")
 
-    stop_quantum_storage(quantum)
+        migrate_enabled_flag()
 
-    {:ok, :ok, {:continue, :stop}}
+        stop_brook(brook)
+
+        {:ok, quantum} = start_quantum_storage()
+
+        migrate_quantum_task()
+
+        stop_quantum_storage(quantum)
+
+        Logger.info("======================================================")
+        Logger.info("Reaper.Migrations completed successfully")
+        Logger.info("======================================================")
+
+        {:ok, :ok, {:continue, :stop}}
+
+      {:error, reason} = error ->
+        Logger.error("======================================================")
+        Logger.error("Reaper.Migrations: FAILED to start Brook: #{inspect(reason)}")
+        Logger.error("======================================================")
+        {:stop, reason}
+    end
   end
 
   defp start_brook() do
@@ -37,7 +65,22 @@ defmodule Reaper.Migrations do
       |> Keyword.put(:instance, @instance_name)
       |> Keyword.delete(:driver)
 
-    Brook.start_link(brook_config)
+    Logger.debug("Reaper.Migrations: Brook config: #{inspect(brook_config)}")
+
+    result = Brook.start_link(brook_config)
+
+    case result do
+      {:ok, pid} ->
+        Logger.info("Reaper.Migrations: Brook.start_link succeeded (pid: #{inspect(pid)})")
+
+      {:error, {:already_started, pid}} ->
+        Logger.warn("Reaper.Migrations: Brook already started (pid: #{inspect(pid)})")
+
+      {:error, reason} ->
+        Logger.error("Reaper.Migrations: Brook.start_link failed: #{inspect(reason)}")
+    end
+
+    result
   end
 
   defp stop_brook(brook) do

@@ -14,6 +14,20 @@ defmodule Reaper.Application do
   def redis_client(), do: :reaper_redix
 
   def start(_type, _args) do
+    Logger.info("======================================================")
+    Logger.info("Reaper.Application starting...")
+    Logger.info("======================================================")
+
+    # Verify :pg application is available before starting Brook
+    case :application.get_key(:pg, :vsn) do
+      {:ok, vsn} ->
+        Logger.info("Process group (:pg) application is available, version: #{vsn}")
+
+      :undefined ->
+        Logger.error("CRITICAL: Process group (:pg) application is NOT available!")
+        Logger.error("This is required for Brook to function properly.")
+    end
+
     children =
       [
         libcluster(),
@@ -36,7 +50,22 @@ defmodule Reaper.Application do
 
     opts = [strategy: :one_for_one, name: Reaper.Supervisor]
     Logger.info("Yo, reaper is about to reap.")
-    Supervisor.start_link(children, opts)
+
+    result = Supervisor.start_link(children, opts)
+
+    case result do
+      {:ok, pid} ->
+        Logger.info("======================================================")
+        Logger.info("Reaper.Application started successfully (pid: #{inspect(pid)})")
+        Logger.info("======================================================")
+
+      {:error, reason} ->
+        Logger.error("======================================================")
+        Logger.error("Reaper.Application FAILED to start: #{inspect(reason)}")
+        Logger.error("======================================================")
+    end
+
+    result
   end
 
   defp libcluster() do
