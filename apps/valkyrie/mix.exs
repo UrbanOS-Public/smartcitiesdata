@@ -26,7 +26,7 @@ defmodule Valkyrie.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :pg],
+      extra_applications: [:logger],
       mod: {Valkyrie.Application, []},
       included_applications: [:dead_letter, :brook_stream]
     ]

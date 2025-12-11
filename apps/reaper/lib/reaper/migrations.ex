@@ -20,13 +20,11 @@ defmodule Reaper.Migrations do
     Logger.info("Reaper.Migrations starting...")
     Logger.info("======================================================")
 
-    # Verify :pg is available before starting Brook
-    case :application.get_key(:pg, :vsn) do
-      {:ok, vsn} ->
-        Logger.info("Reaper.Migrations: :pg application is available, version: #{vsn}")
-
-      :undefined ->
-        Logger.error("Reaper.Migrations: CRITICAL - :pg application is NOT available!")
+    # Verify :pg module is available (part of kernel application in OTP 23+)
+    if Code.ensure_loaded?(:pg) do
+      Logger.info("Reaper.Migrations: :pg module is available and loaded")
+    else
+      Logger.error("Reaper.Migrations: CRITICAL - :pg module is NOT available!")
     end
 
     Logger.info("Reaper.Migrations: Starting Brook instance for migrations...")

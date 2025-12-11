@@ -22,7 +22,7 @@ defmodule Raptor.MixProject do
   def application do
     [
       mod: {Raptor.Application, []},
-      extra_applications: [:logger, :runtime_tools, :pg]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 

@@ -28,7 +28,7 @@ defmodule Reaper.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :eex, :ftp, :pg],
+      extra_applications: [:logger, :eex, :ftp],
       mod: {Reaper.Application, []}
     ]
   end

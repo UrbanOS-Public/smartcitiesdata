@@ -18,14 +18,13 @@ defmodule Reaper.Application do
     Logger.info("Reaper.Application starting...")
     Logger.info("======================================================")
 
-    # Verify :pg application is available before starting Brook
-    case :application.get_key(:pg, :vsn) do
-      {:ok, vsn} ->
-        Logger.info("Process group (:pg) application is available, version: #{vsn}")
-
-      :undefined ->
-        Logger.error("CRITICAL: Process group (:pg) application is NOT available!")
-        Logger.error("This is required for Brook to function properly.")
+    # Verify :pg module is available (part of kernel application in OTP 23+)
+    # This is required for Brook to function properly
+    if Code.ensure_loaded?(:pg) do
+      Logger.info("Process group (:pg) module is available and loaded")
+    else
+      Logger.error("CRITICAL: Process group (:pg) module is NOT available!")
+      Logger.error("This requires OTP 23+ and is needed for Brook to function properly.")
     end
 
     children =

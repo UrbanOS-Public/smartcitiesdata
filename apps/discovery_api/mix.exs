@@ -22,7 +22,7 @@ defmodule DiscoveryApi.Mixfile do
   def application do
     [
       mod: {DiscoveryApi.Application, []},
-      extra_applications: [:logger, :runtime_tools, :corsica, :prestige, :ecto, :pg]
+      extra_applications: [:logger, :runtime_tools, :corsica, :prestige, :ecto]
     ]
   end
 

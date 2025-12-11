@@ -22,7 +22,7 @@ defmodule Template.MixProject do
   def application do
     [
       mod: {Template.Application, []},
-      extra_applications: [:logger, :runtime_tools, :pg]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
