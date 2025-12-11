@@ -179,6 +179,14 @@ if config_env() == :prod do
   config :reaper,
     elsa_brokers: kafka_brokers
 
+  # Configure Reaper Quantum Scheduler storage (Redis)
+  config :reaper, Reaper.Scheduler,
+    storage: Reaper.Quantum.Storage,
+    global: true,
+    overlap: false
+
+  config :reaper, Reaper.Quantum.Storage, redix_args
+
   config :valkyrie,
     elsa_brokers: kafka_brokers
 
