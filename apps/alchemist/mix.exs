@@ -34,8 +34,7 @@ defmodule Alchemist.MixProject do
   defp deps do
     [
       {:brook_stream,
-       git: "https://github.com/UrbanOS-Public/brook_stream.git",
-       branch: "20251205-v1.0.0-handle-already-started"},
+       git: "https://github.com/UrbanOS-Public/brook_stream.git", branch: "20251205-v1.0.0-handle-already-started"},
       {:cachex, "~> 3.6"},
       {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       # {:cowlib, "== 2.12.1", override: true},

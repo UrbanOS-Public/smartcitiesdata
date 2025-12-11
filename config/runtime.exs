@@ -88,6 +88,22 @@ if config_env() == :prod do
     handlers: [Alchemist.Event.EventHandler],
     storage: brook_storage_redis.("alchemist:view")
 
+  # Alchemist Libcluster Configuration (if running in Kubernetes)
+  if System.get_env("RUN_IN_KUBERNETES") do
+    config :libcluster,
+      topologies: [
+        alchemist_cluster: [
+          strategy: Elixir.Cluster.Strategy.Kubernetes,
+          config: [
+            mode: :dns,
+            kubernetes_node_basename: "alchemist",
+            kubernetes_selector: "app.kubernetes.io/name=alchemist",
+            polling_interval: 10_000
+          ]
+        ]
+      ]
+  end
+
   # Andi Brook Configuration
   config :andi, :brook,
     instance: :andi,
@@ -191,7 +207,16 @@ if config_env() == :prod do
     elsa_brokers: kafka_brokers
 
   config :alchemist,
-    elsa_brokers: kafka_brokers
+    elsa_brokers: kafka_brokers,
+    input_topic_prefix: System.get_env("INPUT_TOPIC_PREFIX", "raw"),
+    output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX", "transformed"),
+    processor_stages: String.to_integer(System.get_env("PROCESSOR_STAGES", "1")),
+    profiling_enabled: System.get_env("PROFILING_ENABLED") == "true"
+
+  # Alchemist Telemetry Configuration
+  config :telemetry_event,
+    metrics_port: String.to_integer(System.get_env("METRICS_PORT", "9568")),
+    add_metrics: [:dead_letters_handled_count]
 
   config :discovery_streams,
     elsa_brokers: kafka_brokers

@@ -5,12 +5,44 @@ defmodule Alchemist.Application do
   use Properties, otp_app: :alchemist
 
   require Cachex.Spec
+  require Logger
 
   @instance_name Alchemist.instance_name()
 
   getter(:brook, generic: true)
 
   def start(_type, _args) do
+    Logger.info("======================================================")
+    Logger.info("Alchemist.Application starting...")
+    Logger.info("======================================================")
+
+    # Verify :pg module is available (part of kernel application in OTP 23+)
+    # Note: Only start :pg explicitly in production mode
+    # In test/dev modes, Brook may manage :pg itself depending on driver config
+    if Code.ensure_loaded?(:pg) and Mix.env() == :prod do
+      Logger.info("Process group (:pg) module is available and loaded")
+
+      # Ensure the :pg server process is running
+      case Process.whereis(:pg) do
+        nil ->
+          Logger.warning("Process group (:pg) server is NOT running, attempting to start it...")
+
+          case :pg.start_link() do
+            {:ok, pid} ->
+              Logger.info("Successfully started :pg server (pid: #{inspect(pid)})")
+
+            {:error, {:already_started, pid}} ->
+              Logger.info(":pg server already started (pid: #{inspect(pid)})")
+
+            {:error, reason} ->
+              Logger.error("CRITICAL: Failed to start :pg server: #{inspect(reason)}")
+          end
+
+        pid ->
+          Logger.info("Process group (:pg) server is running (pid: #{inspect(pid)})")
+      end
+    end
+
     children =
       [
         libcluster(),
