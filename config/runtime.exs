@@ -84,7 +84,9 @@ if config_env() == :prod do
   # Alchemist Brook Configuration
   config :alchemist, :brook,
     instance: :alchemist,
-    driver: brook_driver_config,
+    driver: Keyword.update!(brook_driver_config, :init_arg, fn init_arg ->
+      Keyword.put(init_arg, :group, "alchemist-events")
+    end),
     handlers: [Alchemist.Event.EventHandler],
     storage: brook_storage_redis.("alchemist:view")
 
