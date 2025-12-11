@@ -17,10 +17,14 @@ defmodule Alchemist.Application do
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)
-    # Note: Only start :pg explicitly in production mode
-    # In test/dev modes, Brook may manage :pg itself depending on driver config
-    if Code.ensure_loaded?(:pg) and Mix.env() == :prod do
+    # Start :pg if Brook has a Kafka driver configured (production)
+    # In test mode with ETS storage, Brook manages :pg internally
+    brook_config = Application.get_env(:alchemist, :brook, [])
+    has_driver = Keyword.has_key?(brook_config, :driver)
+
+    if Code.ensure_loaded?(:pg) and has_driver do
       Logger.info("Process group (:pg) module is available and loaded")
+      Logger.info("Brook driver detected - ensuring :pg server is running")
 
       # Ensure the :pg server process is running
       case Process.whereis(:pg) do
