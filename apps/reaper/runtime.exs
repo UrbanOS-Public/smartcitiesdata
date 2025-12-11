@@ -97,8 +97,9 @@ config :reaper, Reaper.Scheduler,
   global: true,
   overlap: false
 
-config :reaper, Reaper.Quantum.Storage,
-  redix_args
+# Configure Quantum storage to use the same Redis connection as main app
+# This passes the redix_args keyword list (host, port, password, ssl) to Quantum.Storage.Connection
+config :reaper, Reaper.Quantum.Storage, redix_args
 
 config :redix, :args,
   redix_args
