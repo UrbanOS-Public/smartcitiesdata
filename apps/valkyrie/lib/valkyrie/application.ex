@@ -16,8 +16,38 @@ defmodule Valkyrie.Application do
     Logger.info("Valkyrie.Application starting...")
     Logger.info("======================================================")
 
+    # Verify :pg module is available (part of kernel application in OTP 23+)
+    # Start :pg if Brook has a Kafka driver configured (production)
+    # In test mode with ETS storage, Brook manages :pg internally
+    brook_config = Application.get_env(:valkyrie, :brook, [])
+    has_driver = Keyword.has_key?(brook_config, :driver)
+
+    if Code.ensure_loaded?(:pg) and has_driver do
+      Logger.info("Process group (:pg) module is available and loaded")
+      Logger.info("Brook driver detected - ensuring :pg server is running")
+
+      # Ensure the :pg server process is running
+      case Process.whereis(:pg) do
+        nil ->
+          Logger.warning("Process group (:pg) server is NOT running, attempting to start it...")
+
+          case :pg.start_link() do
+            {:ok, pid} ->
+              Logger.info("Successfully started :pg server (pid: #{inspect(pid)})")
+
+            {:error, {:already_started, pid}} ->
+              Logger.info(":pg server already started (pid: #{inspect(pid)})")
+
+            {:error, reason} ->
+              Logger.error("CRITICAL: Failed to start :pg server: #{inspect(reason)}")
+          end
+
+        pid ->
+          Logger.info("Process group (:pg) server is running (pid: #{inspect(pid)})")
+      end
+    end
+
     # Log Brook configuration
-    brook_config = brook()
     log_brook_configuration(brook_config)
 
     # Log registered processes before starting Brook

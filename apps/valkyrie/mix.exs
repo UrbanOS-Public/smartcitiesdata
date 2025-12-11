@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "2.0.8",
+      version: "2.0.9",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -35,8 +35,7 @@ defmodule Valkyrie.MixProject do
   defp deps do
     [
       {:brook_stream,
-       git: "https://github.com/UrbanOS-Public/brook_stream.git",
-       branch: "20251205-v1.0.0-handle-already-started"},
+       git: "https://github.com/UrbanOS-Public/brook_stream.git", branch: "20251205-v1.0.0-handle-already-started"},
       {:cachex, "~> 3.4"},
       {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       # {:cowlib, "== 2.12.1", override: true},
