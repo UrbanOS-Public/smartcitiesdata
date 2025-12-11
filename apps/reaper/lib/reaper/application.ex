@@ -96,10 +96,17 @@ defmodule Reaper.Application do
   end
 
   defp redis() do
-    Application.get_env(:redix, :args, [])
-    |> case do
-      nil -> []
-      redix_args -> {Redix, Keyword.put(redix_args, :name, redis_client())}
+    redix_config = Application.get_env(:redix, :args, [])
+
+    case redix_config do
+      nil ->
+        Logger.info("Redis: No configuration found, Redis will not be started")
+        []
+
+      redix_args ->
+        full_args = Keyword.put(redix_args, :name, redis_client())
+        Logger.info("Redis: Starting with config: #{inspect(full_args)}")
+        {Redix, full_args}
     end
   end
 

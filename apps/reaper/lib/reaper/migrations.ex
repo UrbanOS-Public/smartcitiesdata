@@ -47,11 +47,35 @@ defmodule Reaper.Migrations do
 
         stop_brook(brook)
 
-        {:ok, quantum} = start_quantum_storage()
+        # Quantum storage (Redis) may not be available during startup
+        # Handle gracefully and continue with application startup
+        case start_quantum_storage() do
+          {:ok, quantum} ->
+            Logger.info("Reaper.Migrations: Quantum storage connected successfully")
+            Logger.info("Reaper.Migrations: Running Quantum migrations...")
+            migrate_quantum_task()
+            stop_quantum_storage(quantum)
+            Logger.info("Reaper.Migrations: Quantum migrations completed")
 
-        migrate_quantum_task()
+          {:error, %Redix.ConnectionError{reason: reason} = error} ->
+            redis_config = Application.get_env(:reaper, Reaper.Quantum.Storage, [])
+            Logger.warn("======================================================")
+            Logger.warn("Reaper.Migrations: Redis connection FAILED")
+            Logger.warn("  Error reason: #{reason}")
+            Logger.warn("  Redis config: #{inspect(redis_config)}")
+            Logger.warn("  Full error: #{inspect(error)}")
+            Logger.warn("  Skipping Quantum migrations - scheduled jobs will not be migrated")
+            Logger.warn("======================================================")
 
-        stop_quantum_storage(quantum)
+          {:error, reason} ->
+            redis_config = Application.get_env(:reaper, Reaper.Quantum.Storage, [])
+            Logger.warn("======================================================")
+            Logger.warn("Reaper.Migrations: Quantum storage failed to start")
+            Logger.warn("  Error: #{inspect(reason)}")
+            Logger.warn("  Redis config: #{inspect(redis_config)}")
+            Logger.warn("  Skipping Quantum migrations - scheduled jobs will not be migrated")
+            Logger.warn("======================================================")
+        end
 
         Logger.info("======================================================")
         Logger.info("Reaper.Migrations completed successfully")
@@ -97,8 +121,9 @@ defmodule Reaper.Migrations do
   end
 
   defp start_quantum_storage() do
-    Application.get_env(:reaper, Reaper.Quantum.Storage, [])
-    |> Reaper.Quantum.Storage.Connection.start_link()
+    config = Application.get_env(:reaper, Reaper.Quantum.Storage, [])
+    Logger.info("Reaper.Migrations: Attempting to start Quantum storage (Redis) with config: #{inspect(config)}")
+    Reaper.Quantum.Storage.Connection.start_link(config)
   end
 
   defp stop_quantum_storage(quantum) do
