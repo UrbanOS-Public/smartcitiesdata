@@ -23,6 +23,16 @@ defmodule Reaper.Migrations do
     # Verify :pg module is available (part of kernel application in OTP 23+)
     if Code.ensure_loaded?(:pg) do
       Logger.info("Reaper.Migrations: :pg module is available and loaded")
+
+      # Double-check that :pg server process is running before starting Brook
+      case Process.whereis(:pg) do
+        nil ->
+          Logger.error("Reaper.Migrations: CRITICAL - :pg server is NOT running!")
+          Logger.error("Brook requires the :pg GenServer to be running.")
+
+        pid ->
+          Logger.info("Reaper.Migrations: :pg server confirmed running (pid: #{inspect(pid)})")
+      end
     else
       Logger.error("Reaper.Migrations: CRITICAL - :pg module is NOT available!")
     end

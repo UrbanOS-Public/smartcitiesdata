@@ -22,6 +22,27 @@ defmodule Reaper.Application do
     # This is required for Brook to function properly
     if Code.ensure_loaded?(:pg) do
       Logger.info("Process group (:pg) module is available and loaded")
+
+      # Ensure the :pg server process is running
+      # In some release configurations, the :pg GenServer may not be started automatically
+      case Process.whereis(:pg) do
+        nil ->
+          Logger.warn("Process group (:pg) server is NOT running, attempting to start it...")
+
+          case :pg.start_link() do
+            {:ok, pid} ->
+              Logger.info("Successfully started :pg server (pid: #{inspect(pid)})")
+
+            {:error, {:already_started, pid}} ->
+              Logger.info(":pg server already started (pid: #{inspect(pid)})")
+
+            {:error, reason} ->
+              Logger.error("CRITICAL: Failed to start :pg server: #{inspect(reason)}")
+          end
+
+        pid ->
+          Logger.info("Process group (:pg) server is running (pid: #{inspect(pid)})")
+      end
     else
       Logger.error("CRITICAL: Process group (:pg) module is NOT available!")
       Logger.error("This requires OTP 23+ and is needed for Brook to function properly.")
