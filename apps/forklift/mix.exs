@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "1.0.1",
+      version: "1.0.3",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -21,7 +21,8 @@ defmodule Forklift.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Forklift.Application, []}
+      mod: {Forklift.Application, []},
+      included_applications: [:dead_letter, :brook_stream]
     ]
   end
 
@@ -29,8 +30,7 @@ defmodule Forklift.MixProject do
     [
       {:brod, "~> 3.16", override: true},
       {:brook_stream,
-       git: "https://github.com/UrbanOS-Public/brook_stream.git",
-       branch: "20251205-v1.0.0-handle-already-started"},
+       git: "https://github.com/UrbanOS-Public/brook_stream.git", branch: "20251205-v1.0.0-handle-already-started"},
       {:checkov, "~> 1.0", only: [:dev, :test, :integration]},
       # {:cowlib, "== 2.12.1", override: true},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
