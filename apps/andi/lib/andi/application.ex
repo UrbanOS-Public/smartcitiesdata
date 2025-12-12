@@ -264,7 +264,9 @@ defmodule Andi.Application do
   end
 
   defp test_telemetry_mock do
-    if Mix.env() == :test do
+    # Check if TelemetryEvent.Mock module exists (only available in test environment)
+    # Don't use Mix.env() as Mix is not available in production releases
+    if Code.ensure_loaded?(TelemetryEvent.Mock) do
       TelemetryEvent.Mock
     else
       []
