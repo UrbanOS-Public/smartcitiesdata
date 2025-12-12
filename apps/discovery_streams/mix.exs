@@ -23,7 +23,7 @@ defmodule DiscoveryStreams.Mixfile do
     [
       mod: {DiscoveryStreams.Application, []},
       extra_applications: [:logger, :runtime_tools],
-      included_applications: [:dead_letter, :brook_stream]
+      included_applications: [:dead_letter]
     ]
   end
 
