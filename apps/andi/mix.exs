@@ -4,7 +4,7 @@ defmodule Andi.MixProject do
   def project do
     [
       app: :andi,
-      version: "3.0.1",
+      version: "25.0.1",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -24,7 +24,8 @@ defmodule Andi.MixProject do
   def application do
     [
       mod: {Andi.Application, []},
-      extra_applications: [:logger, :runtime_tools, :phoenix_ecto]
+      extra_applications: [:logger, :runtime_tools, :phoenix_ecto],
+      included_applications: [:dead_letter]
     ]
   end
 
