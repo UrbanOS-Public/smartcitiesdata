@@ -11,7 +11,55 @@ defmodule DiscoveryApi.Application do
   getter(:elasticsearch, generic: true)
 
   def start(_type, _args) do
+    require Logger
     import Supervisor.Spec
+
+    Logger.info("======================================================")
+    Logger.info("DiscoveryApi.Application starting...")
+    Logger.info("======================================================")
+
+    # Verify :pg module is available (part of kernel application in OTP 23+)
+    # Start :pg if Brook has a Kafka driver configured (production)
+    # In test mode with Brook.Driver.Test, Brook manages :pg internally
+    brook_config = Application.get_env(:discovery_api, :brook, [])
+    driver_config = Keyword.get(brook_config, :driver, [])
+    has_kafka_driver = Keyword.get(driver_config, :module) == Brook.Driver.Kafka
+
+    if Code.ensure_loaded?(:pg) and has_kafka_driver do
+      Logger.info("Process group (:pg) module is available and loaded")
+      Logger.info("Brook driver detected - ensuring :pg server is running")
+
+      # Ensure the :pg server process is running
+      case Process.whereis(:pg) do
+        nil ->
+          Logger.warning("Process group (:pg) server is NOT running, attempting to start it...")
+
+          case :pg.start_link() do
+            {:ok, pid} ->
+              Logger.info("Successfully started :pg server (pid: #{inspect(pid)})")
+
+            {:error, {:already_started, pid}} ->
+              Logger.info(":pg server already started (pid: #{inspect(pid)})")
+
+            {:error, reason} ->
+              Logger.error("CRITICAL: Failed to start :pg server: #{inspect(reason)}")
+          end
+
+        pid ->
+          Logger.info("Process group (:pg) server is running (pid: #{inspect(pid)})")
+      end
+    end
+
+    # Manually start brook_stream to control initialization order
+    Logger.info("Manually starting brook_stream application...")
+
+    case Application.ensure_all_started(:brook_stream) do
+      {:ok, started_apps} ->
+        Logger.info("Successfully started brook_stream and dependencies: #{inspect(started_apps)}")
+
+      {:error, {app, reason}} ->
+        Logger.error("Failed to start #{app}: #{inspect(reason)}")
+    end
 
     get_s3_credentials()
 
@@ -27,7 +75,8 @@ defmodule DiscoveryApi.Application do
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
-        DiscoveryApi.Data.TableInfoCache
+        DiscoveryApi.Data.TableInfoCache,
+        dead_letter_children()
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
@@ -90,6 +139,29 @@ defmodule DiscoveryApi.Application do
     |> case do
       nil -> []
       _ -> DiscoveryApi.Data.CachePopulator
+    end
+  end
+
+  defp dead_letter_children() do
+    require Logger
+    Logger.info("Initializing DeadLetter children...")
+
+    opts = Application.get_all_env(:dead_letter)
+
+    case Keyword.fetch(opts, :driver) do
+      {:ok, driver_config} ->
+        config = Enum.into(driver_config, %{init_args: [size: 3000]})
+
+        Logger.info("DeadLetter will start with driver: #{inspect(config.module)}")
+
+        [
+          {config.module, config.init_args},
+          {DeadLetter.Server, config}
+        ]
+
+      :error ->
+        Logger.warn("DeadLetter configuration not found, skipping DeadLetter initialization")
+        []
     end
   end
 end
