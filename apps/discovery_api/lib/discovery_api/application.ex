@@ -81,7 +81,14 @@ defmodule DiscoveryApi.Application do
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()
 
-    DiscoveryApi.Search.Elasticsearch.DatasetIndex.create_if_missing()
+    # Only initialize Elasticsearch index if elasticsearch is configured
+    if elasticsearch() do
+      Logger.info("Elasticsearch configured, creating index if missing...")
+      DiscoveryApi.Search.Elasticsearch.DatasetIndex.create_if_missing()
+    else
+      Logger.info("Elasticsearch not configured, skipping index creation")
+    end
+
     opts = [strategy: :one_for_one, name: DiscoveryApi.Supervisor]
     Supervisor.start_link(children, opts)
   end

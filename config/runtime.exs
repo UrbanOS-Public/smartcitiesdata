@@ -191,6 +191,78 @@ if config_env() == :prod do
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
 
+  # Discovery API Elasticsearch Configuration
+  elasticsearch_protocol =
+    case System.get_env("ELASTICSEARCH_TLS_ENABLED") do
+      "true" -> "https"
+      _ -> "http"
+    end
+
+  elasticsearch_host = System.get_env("ELASTICSEARCH_HOST")
+
+  if elasticsearch_host do
+    config :discovery_api, :elasticsearch,
+      url: "#{elasticsearch_protocol}://#{elasticsearch_host}",
+      indices: %{
+        datasets: %{
+          name: "datasets",
+          options: %{
+            settings: %{
+              number_of_shards: 1
+            },
+            mappings: %{
+              properties: %{
+                title: %{
+                  type: "text",
+                  index: true
+                },
+                titleKeyword: %{
+                  type: "keyword",
+                  index: true
+                },
+                modifiedDate: %{
+                  type: "text",
+                  index: true
+                },
+                lastUpdatedDate: %{
+                  type: "text",
+                  index: true
+                },
+                sortDate: %{
+                  type: "date",
+                  index: true
+                },
+                keywords: %{
+                  type: "text",
+                  index: true
+                },
+                organizationDetails: %{
+                  properties: %{
+                    id: %{
+                      type: "keyword",
+                      index: true
+                    }
+                  }
+                },
+                facets: %{
+                  properties: %{
+                    orgTitle: %{
+                      type: "keyword",
+                      index: true
+                    },
+                    keywords: %{
+                      type: "keyword",
+                      index: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  end
+
   config :forklift,
     elsa_brokers: kafka_brokers
 
