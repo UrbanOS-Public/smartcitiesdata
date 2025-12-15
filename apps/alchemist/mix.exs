@@ -4,7 +4,7 @@ defmodule Alchemist.MixProject do
   def project do
     [
       app: :alchemist,
-      version: "1.0.3",
+      version: "25.0.4",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -13,6 +13,7 @@ defmodule Alchemist.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      releases: releases(),
       test_paths: test_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
@@ -73,6 +74,16 @@ defmodule Alchemist.MixProject do
     [
       lint: ["format", "credo"],
       verify: ["format --check-formatted", "credo"]
+    ]
+  end
+
+  defp releases do
+    [
+      alchemist: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        cookie: "alchemist_cookie"
+      ]
     ]
   end
 end
