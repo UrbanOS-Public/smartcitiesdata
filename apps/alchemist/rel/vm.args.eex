@@ -1,6 +1,8 @@
 ## Configure distributed Erlang to use long names (supports FQDNs)
 ## This is required for Kubernetes where pods have FQDN hostnames
--name <%= @release.name %>@${HOSTNAME}
+## The distribution mode and node name are set via environment variables in env.sh.eex:
+##   RELEASE_DISTRIBUTION=name
+##   RELEASE_NODE=alchemist@<FQDN>
 
 ## Set the distributed Erlang cookie
 -setcookie <%= @release.cookie %>

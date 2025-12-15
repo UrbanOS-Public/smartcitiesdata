@@ -16,6 +16,13 @@ defmodule Alchemist.Application do
     Logger.info("Alchemist.Application starting...")
     Logger.info("======================================================")
 
+    # Log node distribution configuration for debugging
+    Logger.info("Node name: #{inspect(Node.self())}")
+    Logger.info("Node alive?: #{Node.alive?()}")
+    Logger.info("HOSTNAME env: #{System.get_env("HOSTNAME")}")
+    Logger.info("RELEASE_NODE env: #{System.get_env("RELEASE_NODE")}")
+    Logger.info("RELEASE_DISTRIBUTION env: #{System.get_env("RELEASE_DISTRIBUTION")}")
+
     # Verify :pg module is available (part of kernel application in OTP 23+)
     # Start :pg if Brook has a Kafka driver configured (production)
     # In test mode with ETS storage, Brook manages :pg internally
