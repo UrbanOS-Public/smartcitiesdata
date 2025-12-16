@@ -24,18 +24,22 @@ profiling_enabled = System.get_env("PROFILING_ENABLED") == "true"
 
 
 if System.get_env("RUN_IN_KUBERNETES") do
-  config :libcluster,
-    topologies: [
-      alchemist_cluster: [
-        strategy: Elixir.Cluster.Strategy.Kubernetes,
-        config: [
-          mode: :dns,
-          kubernetes_node_basename: "alchemist",
-          kubernetes_selector: "app.kubernetes.io/name=alchemist",
-          polling_interval: 10_000
-        ]
-      ]
-    ]
+  # Disable libcluster for now due to FQDN/short name conflict
+  # The Kubernetes deployment sets RELEASE_DISTRIBUTION=sname which prevents
+  # libcluster from connecting to pods with FQDN hostnames
+  # To re-enable: ensure RELEASE_DISTRIBUTION=name in Kubernetes deployment
+  # config :libcluster,
+  #   topologies: [
+  #     alchemist_cluster: [
+  #       strategy: Elixir.Cluster.Strategy.Kubernetes,
+  #       config: [
+  #         mode: :dns,
+  #         kubernetes_node_basename: "alchemist",
+  #         kubernetes_selector: "app.kubernetes.io/name=alchemist",
+  #         polling_interval: 10_000
+  #       ]
+  #     ]
+  #   ]
 end
 
 if kafka_brokers do
