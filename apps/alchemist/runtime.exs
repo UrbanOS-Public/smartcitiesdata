@@ -24,10 +24,13 @@ profiling_enabled = System.get_env("PROFILING_ENABLED") == "true"
 
 
 if System.get_env("RUN_IN_KUBERNETES") do
-  # Disable libcluster for now due to FQDN/short name conflict
+  # Disable libcluster due to FQDN/short name conflict
   # The Kubernetes deployment sets RELEASE_DISTRIBUTION=sname which prevents
   # libcluster from connecting to pods with FQDN hostnames
-  # To re-enable: ensure RELEASE_DISTRIBUTION=name in Kubernetes deployment
+  # Setting topologies to empty list disables libcluster completely
+  config :libcluster, topologies: []
+
+  # To re-enable, ensure RELEASE_DISTRIBUTION=name in K8s deployment, then use:
   # config :libcluster,
   #   topologies: [
   #     alchemist_cluster: [
