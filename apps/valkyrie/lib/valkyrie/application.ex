@@ -66,7 +66,7 @@ defmodule Valkyrie.Application do
 
     children =
       [
-        libcluster(),
+        # libcluster() - DISABLED due to FQDN/short name conflicts
         {DynamicSupervisor, strategy: :one_for_one, name: Valkyrie.Dynamic.Supervisor},
         brook_instance(),
         dead_letter_children(),
