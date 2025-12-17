@@ -104,7 +104,7 @@ defmodule Forklift.E2ETest do
         },
         payload: %{
           "foo" => "testFoo",
-          "bar" => 12345
+          "bar" => 12_345
         },
         version: "0.1"
       }
@@ -112,7 +112,7 @@ defmodule Forklift.E2ETest do
       expected_table_data_1 = %{
         "_extraction_start_time" => extract_time_unix_1,
         "_ingestion_id" => ingestion_1.id,
-        "bar" => 12345,
+        "bar" => 12_345,
         "foo" => "testFoo",
         "os_partition" => "#{yyyy_mm_time}"
       }
@@ -154,7 +154,7 @@ defmodule Forklift.E2ETest do
         },
         payload: %{
           "foo" => "testBar",
-          "bar" => 54321
+          "bar" => 54_321
         },
         version: "0.1"
       }
@@ -162,7 +162,7 @@ defmodule Forklift.E2ETest do
       expected_table_data_2 = %{
         "_extraction_start_time" => extract_time_unix_2,
         "_ingestion_id" => ingestion_2.id,
-        "bar" => 54321,
+        "bar" => 54_321,
         "foo" => "testBar",
         "os_partition" => "#{yyyy_mm_time}"
       }
@@ -204,7 +204,7 @@ defmodule Forklift.E2ETest do
         },
         payload: %{
           "foo" => "testFoo",
-          "bar" => 12345
+          "bar" => 12_345
         },
         version: "0.1"
       }
@@ -212,7 +212,7 @@ defmodule Forklift.E2ETest do
       expected_table_data_3 = %{
         "_extraction_start_time" => extract_time_unix_3,
         "_ingestion_id" => ingestion_1.id,
-        "bar" => 12345,
+        "bar" => 12_345,
         "foo" => "testFoo",
         "os_partition" => "#{yyyy_mm_time}"
       }
@@ -229,7 +229,7 @@ defmodule Forklift.E2ETest do
         fn ->
           assert Forklift.Datasets.get!(dataset.id) != nil
         end,
-        10000
+        10_000
       )
 
       # Wait for both ingestions to be stored in state
@@ -238,7 +238,7 @@ defmodule Forklift.E2ETest do
         fn ->
           assert length(Forklift.Ingestions.get_all!()) == 2
         end,
-        10000
+        10_000
       )
 
       # Wait for tables to exist for the dataset
@@ -253,7 +253,7 @@ defmodule Forklift.E2ETest do
                    "DESCRIBE #{dataset.technical.systemName}__json"
                    |> execute_query(session)
         end,
-        10000
+        10_000
       )
 
       # Toggle ingestion start, ties dataset to a kafka topic
@@ -264,7 +264,7 @@ defmodule Forklift.E2ETest do
         fn ->
           assert Elsa.topic?(@brokers, topic_name)
         end,
-        10000
+        10_000
       )
 
       # Indicates reaper is done extracting data for extraction 1 and forklift should eventually receive the set amount of messages
@@ -338,7 +338,7 @@ defmodule Forklift.E2ETest do
             error -> assert error == nil
           end
         end,
-        30000
+        30_000
       )
 
       # Trigger delete of all ingestion 2 data and verify ingestion is reduced accordingly
@@ -349,7 +349,7 @@ defmodule Forklift.E2ETest do
         fn ->
           assert length(Forklift.Ingestions.get_all!()) == 1
         end,
-        10000
+        10_000
       )
 
       # # Indicates reaper is done extracting data for extraction 3 and forklift should eventually receive the set amount of messages
@@ -400,7 +400,7 @@ defmodule Forklift.E2ETest do
             error -> assert error == nil
           end
         end,
-        10000
+        10_000
       )
     end
   end

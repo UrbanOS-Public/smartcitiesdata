@@ -135,9 +135,9 @@ defmodule Forklift.DataWriterTest do
 
     ingestion_id = "testIngestionId"
 
-    dateTime = ~U[2023-01-01 00:00:00Z]
+    date_time = ~U[2023-01-01 00:00:00Z]
 
-    stub(DateTimeMock, :utc_now, fn -> dateTime end)
+    stub(DateTimeMock, :utc_now, fn -> date_time end)
     stub(LocalMockBrook, :handle_event, fn _ -> :ok end)
     # Prestige mocks commented out to test without database interactions
     # stub(LocalMockPrestigeHelper, :count_query, fn _ -> {:ok, 1} end)
@@ -167,7 +167,7 @@ defmodule Forklift.DataWriterTest do
 
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
-      timestamp: dateTime |> DateTime.to_string(),
+      timestamp: date_time |> DateTime.to_string(),
       source: "Forklift",
       description: "All data has been written to table.",
       ingestion_id: ingestion_id,
@@ -202,9 +202,9 @@ defmodule Forklift.DataWriterTest do
 
     ingestion_id = "testIngestionId"
 
-    dateTime = ~U[2023-01-01 00:00:00Z]
+    date_time = ~U[2023-01-01 00:00:00Z]
 
-    stub(DateTimeMock, :utc_now, fn -> dateTime end)
+    stub(DateTimeMock, :utc_now, fn -> date_time end)
 
     # Set up the expected Redis key for this test
     redis_key = "#{ingestion_id}#{extract_start}"
@@ -231,7 +231,7 @@ defmodule Forklift.DataWriterTest do
 
     first_expected_event_log = %SmartCity.EventLog{
       title: "Data Write Complete",
-      timestamp: dateTime |> DateTime.to_string(),
+      timestamp: date_time |> DateTime.to_string(),
       source: "Forklift",
       description: "All data has been written to table.",
       ingestion_id: ingestion_id,
@@ -790,9 +790,9 @@ defmodule Forklift.DataWriterTest do
 
     ingestion_id = "testIngestionId"
 
-    dateTime = ~U[2023-01-01 00:00:00Z]
+    date_time = ~U[2023-01-01 00:00:00Z]
 
-    stub(DateTimeMock, :utc_now, fn -> dateTime end)
+    stub(DateTimeMock, :utc_now, fn -> date_time end)
 
     # Set up the expected Redis key for this test
     redis_key = "#{ingestion_id}#{extract_start}"

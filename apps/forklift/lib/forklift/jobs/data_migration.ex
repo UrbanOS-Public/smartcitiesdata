@@ -177,15 +177,15 @@ defmodule Forklift.Jobs.DataMigration do
   end
 
   defp drop_last_extraction_if_overwrite(overwrite_mode, main_table, ingestion_id, extract_start) do
-    if not overwrite_mode do
-      {:ok, :overwrite_mode_disabled}
-    else
-      if(table_contains_more_recent_data(main_table, ingestion_id, extract_start)) do
+    if overwrite_mode do
+      if table_contains_more_recent_data(main_table, ingestion_id, extract_start) do
         remove_extraction_from_table(main_table <> "__json", ingestion_id, extract_start)
         {:abort, "aborting compaction because more recent data is present in main table"}
       else
         remove_ingestion_from_table(main_table, ingestion_id)
       end
+    else
+      {:ok, :overwrite_mode_disabled}
     end
   end
 
