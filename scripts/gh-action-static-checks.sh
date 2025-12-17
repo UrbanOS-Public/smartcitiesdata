@@ -7,7 +7,9 @@ cd apps/$app
 mix format --check-formatted
 
 if mix help credo >/dev/null 2>&1; then
-    mix credo; exit 0
+    set +e
+    mix credo
+    set -e
 fi
 
 if mix help sobelow >/dev/null 2>&1; then
