@@ -56,7 +56,7 @@ defmodule Alchemist.Application do
 
     children =
       [
-        libcluster(),
+        # libcluster() - DISABLED due to FQDN/short name conflicts
         {DynamicSupervisor, strategy: :one_for_one, name: Alchemist.Dynamic.Supervisor},
         brook_instance(),
         {Alchemist.Init, monitor: Alchemist.Dynamic.Supervisor}
