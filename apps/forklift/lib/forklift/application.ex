@@ -62,7 +62,7 @@ defmodule Forklift.Application do
 
     children =
       [
-        libcluster(),
+        # libcluster() - DISABLED due to FQDN/short name conflicts
         redis(),
         {DynamicSupervisor, strategy: :one_for_one, name: Forklift.Dynamic.Supervisor},
         Forklift.Quantum.Scheduler,
