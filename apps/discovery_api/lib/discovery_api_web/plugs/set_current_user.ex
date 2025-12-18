@@ -52,15 +52,23 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
-    case @raptor_service_impl.get_user_id_from_api_key(raptor_url(), api_key) do
-      {:ok, _user_id} ->
-        assign(conn, :current_user, current_user)
+    url = raptor_url()
 
-      {:error, reason, status_code} when status_code == 401 ->
-        render_401_invalid_api_key(conn)
+    if is_nil(url) or url == "" do
+      require Logger
+      Logger.error("RAPTOR_URL environment variable is not configured or is empty")
+      render_500_internal_server_error(conn)
+    else
+      case @raptor_service_impl.get_user_id_from_api_key(url, api_key) do
+        {:ok, _user_id} ->
+          assign(conn, :current_user, current_user)
 
-      error ->
-        render_500_internal_server_error(conn)
+        {:error, reason, status_code} when status_code == 401 ->
+          render_401_invalid_api_key(conn)
+
+        error ->
+          render_500_internal_server_error(conn)
+      end
     end
   end
 

@@ -18,6 +18,9 @@ defmodule DiscoveryApi.Application do
     Logger.info("DiscoveryApi.Application starting...")
     Logger.info("======================================================")
 
+    # Validate required configuration
+    validate_required_config!()
+
     # Verify :pg module is available (part of kernel application in OTP 23+)
     # Start :pg if Brook has a Kafka driver configured (production)
     # In test mode with Brook.Driver.Test, Brook manages :pg internally
@@ -170,5 +173,19 @@ defmodule DiscoveryApi.Application do
         Logger.warn("DeadLetter configuration not found, skipping DeadLetter initialization")
         []
     end
+  end
+
+  defp validate_required_config! do
+    require Logger
+
+    raptor_url = Application.get_env(:discovery_api, :raptor_url)
+
+    if is_nil(raptor_url) or raptor_url == "" do
+      Logger.error("CRITICAL: RAPTOR_URL environment variable is not configured or is empty")
+      Logger.error("Application cannot start without a valid RAPTOR_URL")
+      raise "RAPTOR_URL environment variable must be set to a valid URL"
+    end
+
+    Logger.info("Configuration validation passed: RAPTOR_URL is configured")
   end
 end

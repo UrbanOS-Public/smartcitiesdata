@@ -247,8 +247,9 @@ config :telemetry_event,
   ]
 
 
-if System.get_env("RAPTOR_URL") do
-  config :discovery_api, raptor_url: System.get_env("RAPTOR_URL")
+raptor_url = System.get_env("RAPTOR_URL")
+if raptor_url != nil and raptor_url != "" do
+  config :discovery_api, raptor_url: raptor_url
 end
 
 if System.get_env("MIX_ENV") == "integration" do
