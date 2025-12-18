@@ -67,7 +67,8 @@ config :raptor, :brook,
       topic: "event-stream",
       group: "raptor-event-stream",
       config: [
-        begin_offset: :earliest
+        # Start from latest to skip problematic old messages
+        begin_offset: :latest
       ]
     ]
   ],
