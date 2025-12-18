@@ -15,3 +15,6 @@ fi
 if mix help sobelow >/dev/null 2>&1; then
     mix sobelow
 fi
+
+echo "Static checks for $app complete."
+exit 0
