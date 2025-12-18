@@ -30,7 +30,8 @@ defmodule Raptor.Event.EventHandler do
     UserOrganizationDisassociate,
     Dataset,
     UserAccessGroupRelation,
-    DatasetAccessGroupRelation
+    DatasetAccessGroupRelation,
+    EventLog
   }
 
   require Logger
@@ -208,5 +209,11 @@ defmodule Raptor.Event.EventHandler do
       )
 
       :discard
+  end
+
+  # Catch-all handler for events Raptor doesn't care about
+  def handle_event(%Brook.Event{type: event_type, author: author}) do
+    Logger.debug("Raptor ignoring event type: #{event_type} from #{author}")
+    :discard
   end
 end
