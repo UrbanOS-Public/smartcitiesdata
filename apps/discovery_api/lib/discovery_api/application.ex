@@ -178,14 +178,21 @@ defmodule DiscoveryApi.Application do
   defp validate_required_config! do
     require Logger
 
-    raptor_url = Application.get_env(:discovery_api, :raptor_url)
+    # Check both sources: environment variable (production) and application config (test/dev)
+    env_raptor_url = System.get_env("RAPTOR_URL")
+    app_raptor_url = Application.get_env(:discovery_api, :raptor_url)
+
+    raptor_url = env_raptor_url || app_raptor_url
 
     if is_nil(raptor_url) or raptor_url == "" do
-      Logger.error("CRITICAL: RAPTOR_URL environment variable is not configured or is empty")
-      Logger.error("Application cannot start without a valid RAPTOR_URL")
-      raise "RAPTOR_URL environment variable must be set to a valid URL"
+      Logger.error("CRITICAL: RAPTOR_URL is not configured")
+      Logger.error("Neither RAPTOR_URL environment variable nor :raptor_url application config is set")
+      Logger.error("Please set one of:")
+      Logger.error("  - Environment variable: RAPTOR_URL=http://raptor:4002/api")
+      Logger.error("  - Application config: config :discovery_api, raptor_url: \"http://raptor:4002/api\"")
+      raise "RAPTOR_URL must be configured via environment variable or application config"
     end
 
-    Logger.info("Configuration validation passed: RAPTOR_URL is configured")
+    Logger.info("Configuration validation passed: RAPTOR_URL=#{raptor_url}")
   end
 end
