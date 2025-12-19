@@ -247,9 +247,21 @@ config :telemetry_event,
   ]
 
 
+# Map RAPTOR_URL environment variable to application config
 raptor_url = System.get_env("RAPTOR_URL")
-if raptor_url != nil and raptor_url != "" do
-  config :discovery_api, raptor_url: raptor_url
+
+# Validate and set configuration
+case raptor_url do
+  nil ->
+    IO.warn("RAPTOR_URL environment variable is not set - application may fail at runtime")
+    config :discovery_api, raptor_url: nil
+
+  "" ->
+    IO.warn("RAPTOR_URL environment variable is empty - application may fail at runtime")
+    config :discovery_api, raptor_url: nil
+
+  url ->
+    config :discovery_api, raptor_url: url
 end
 
 if System.get_env("MIX_ENV") == "integration" do
