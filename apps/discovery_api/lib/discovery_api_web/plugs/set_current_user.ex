@@ -52,11 +52,12 @@ defmodule DiscoveryApiWeb.Plugs.SetCurrentUser do
   end
 
   defp assign_current_user(conn, current_user, api_key) when is_nil(current_user) and not is_nil(api_key) do
-    url = raptor_url()
+    # Check both environment variable and application config
+    url = System.get_env("RAPTOR_URL") || raptor_url()
 
     if is_nil(url) or url == "" do
       require Logger
-      Logger.error("RAPTOR_URL environment variable is not configured or is empty")
+      Logger.error("RAPTOR_URL is not configured - cannot validate API key")
       render_500_internal_server_error(conn)
     else
       case @raptor_service_impl.get_user_id_from_api_key(url, api_key) do

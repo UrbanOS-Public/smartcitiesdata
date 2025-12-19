@@ -77,11 +77,12 @@ defmodule DiscoveryApi.Data.Mapper do
   end
 
   defp retrieveAccessGroups(dataset_id) do
-    url = raptor_url()
+    # Check both environment variable and application config
+    url = System.get_env("RAPTOR_URL") || raptor_url()
 
     if is_nil(url) or url == "" do
       require Logger
-      Logger.error("RAPTOR_URL environment variable is not configured or is empty")
+      Logger.error("RAPTOR_URL is not configured - cannot retrieve access groups")
       {:error, "RAPTOR_URL not configured"}
     else
       groups = @raptor_service_impl.list_access_groups_by_dataset(url, dataset_id)
