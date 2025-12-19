@@ -191,6 +191,12 @@ if config_env() == :prod do
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
 
+  # Discovery API Prestige (Trino/Presto) Configuration
+  prestige_url = System.get_env("PRESTO_URL", "http://ride-trino:8080")
+
+  config :prestige, :session_opts,
+    url: prestige_url
+
   # Discovery API Elasticsearch Configuration
   elasticsearch_protocol =
     case System.get_env("ELASTICSEARCH_TLS_ENABLED") do
@@ -315,6 +321,7 @@ if config_env() == :prod do
   Dead Letter Topic: #{dead_letter_topic}
   Redis Host: #{redis_host}:#{redis_port}
   Redis Password: #{if redix_args[:password], do: "***SET***", else: "not set"}
+  Prestige URL: #{prestige_url}
 
   Brook instances configured:
     - alchemist
