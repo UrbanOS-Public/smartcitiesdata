@@ -14,6 +14,28 @@ defmodule Raptor.Services.Auth0Management do
 
   getter(:auth0, generic: true)
 
+  # Get Auth0 configuration from either environment variable or application config.
+  #
+  # In production, AUTH0_DOMAIN environment variable is used directly.
+  # In test/dev, the :auth0 application config is used.
+  #
+  # Returns a keyword list with :url and :audience keys, or nil if not configured.
+  defp get_auth0_config do
+    # Check environment variable first (production pattern)
+    auth0_domain = System.get_env("AUTH0_DOMAIN")
+
+    if not is_nil(auth0_domain) and auth0_domain != "" do
+      # Build config from environment variable
+      [
+        url: "https://#{auth0_domain}/oauth/token",
+        audience: "https://#{auth0_domain}/api/v2/"
+      ]
+    else
+      # Fall back to application config (test/dev pattern)
+      auth0()
+    end
+  end
+
   def get_users_by_api_key(apiKey) do
     case Auth0UserDataStore.get_user_by_api_key(apiKey) do
       [] ->
@@ -39,16 +61,16 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   defp get_users_by_api_key_from_auth0(apiKey) do
-    auth0_config = auth0()
+    auth0_config = get_auth0_config()
 
     if is_nil(auth0_config) do
       require Logger
 
       Logger.error(
-        "Auth0 configuration is not set. Please set AUTH0_DOMAIN environment variable."
+        "Auth0 configuration is not set. Please set AUTH0_DOMAIN environment variable or configure :auth0 in application config."
       )
 
-      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set"
+      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set or :auth0 must be configured"
     end
 
     url = Keyword.fetch!(auth0_config, :audience)
@@ -73,7 +95,16 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   defp get_roles_by_user_id_from_auth0(user_id) do
-    url = Keyword.fetch!(auth0(), :audience)
+    auth0_config = get_auth0_config()
+
+    if is_nil(auth0_config) do
+      require Logger
+      Logger.error("Auth0 configuration is not set when attempting to get user roles")
+
+      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set or :auth0 must be configured"
+    end
+
+    url = Keyword.fetch!(auth0_config, :audience)
     full_url = "#{url}users/#{user_id}/roles"
 
     with {:ok, access_token} <- get_token(),
@@ -96,7 +127,16 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   def patch_api_key(userID, apiKey) do
-    audience = Keyword.fetch!(auth0(), :audience)
+    auth0_config = get_auth0_config()
+
+    if is_nil(auth0_config) do
+      require Logger
+      Logger.error("Auth0 configuration is not set when attempting to patch API key")
+
+      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set or :auth0 must be configured"
+    end
+
+    audience = Keyword.fetch!(auth0_config, :audience)
     url = "#{audience}users/#{userID}"
     {:ok, access_token} = get_token()
     body = '{"app_metadata": {"apiKey": "#{apiKey}"}}'
@@ -127,8 +167,17 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   defp get_token() do
-    url = Keyword.fetch!(auth0(), :url)
-    audience = Keyword.fetch!(auth0(), :audience)
+    auth0_config = get_auth0_config()
+
+    if is_nil(auth0_config) do
+      require Logger
+      Logger.error("Auth0 configuration is not set when attempting to get access token")
+
+      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set or :auth0 must be configured"
+    end
+
+    url = Keyword.fetch!(auth0_config, :url)
+    audience = Keyword.fetch!(auth0_config, :audience)
 
     req_body =
       URI.encode_query(%{
