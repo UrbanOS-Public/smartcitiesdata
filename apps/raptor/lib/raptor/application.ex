@@ -25,6 +25,9 @@ defmodule Raptor.Application do
     Logger.info("Raptor Redis configuration:")
     Logger.info("  Redix args: #{inspect(redix_config)}")
 
+    # Validate required configuration
+    validate_required_config!()
+
     children = [
       # Start the Telemetry supervisor
       RaptorWeb.Telemetry,
@@ -155,5 +158,29 @@ defmodule Raptor.Application do
       client_id: get_env_variable("RAPTOR_AUTH0_CLIENT_ID", false),
       client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
     )
+  end
+
+  defp validate_required_config! do
+    # Check both sources: environment variable (production) and application config (test/dev)
+    env_auth0 = System.get_env("AUTH0_DOMAIN")
+    app_auth0 = Application.get_env(:raptor, :auth0)
+
+    # Pass if either env var is set OR app config exists
+    auth0_configured = (not is_nil(env_auth0) and env_auth0 != "") or not is_nil(app_auth0)
+
+    if not auth0_configured do
+      Logger.error("CRITICAL: AUTH0 is not configured")
+      Logger.error("Raptor requires Auth0 configuration to validate API keys")
+      Logger.error("Please set one of:")
+      Logger.error("  - Environment variable: AUTH0_DOMAIN=your-tenant.auth0.com")
+      Logger.error("  - Application config: config :raptor, :auth0, [url: ..., audience: ...]")
+      raise "AUTH0 must be configured via environment variable or application config"
+    end
+
+    if not is_nil(env_auth0) do
+      Logger.info("Configuration validation passed: AUTH0_DOMAIN=#{env_auth0}")
+    else
+      Logger.info("Configuration validation passed: AUTH0 configured via app config")
+    end
   end
 end

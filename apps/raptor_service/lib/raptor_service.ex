@@ -98,8 +98,9 @@ defmodule RaptorService do
         Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
         {:error, error_reason, status_code}
 
-      _error ->
-        Logger.error("Raptor encountered an unknown error while attempting to validate api key")
+      error ->
+        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(error)}")
+        Logger.error("RAPTOR_URL was: #{raptor_url}")
         {:error, "Internal Server Error", 500}
     end
   end

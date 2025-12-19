@@ -39,7 +39,19 @@ defmodule Raptor.Services.Auth0Management do
   end
 
   defp get_users_by_api_key_from_auth0(apiKey) do
-    url = Keyword.fetch!(auth0(), :audience)
+    auth0_config = auth0()
+
+    if is_nil(auth0_config) do
+      require Logger
+
+      Logger.error(
+        "Auth0 configuration is not set. Please set AUTH0_DOMAIN environment variable."
+      )
+
+      raise "Auth0 configuration missing - AUTH0_DOMAIN environment variable must be set"
+    end
+
+    url = Keyword.fetch!(auth0_config, :audience)
 
     with {:ok, access_token} <- get_token(),
          {:ok, response} <-

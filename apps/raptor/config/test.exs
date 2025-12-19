@@ -25,6 +25,10 @@ config :raptor, :brook,
     init_arg: []
   ]
 
+config :raptor, :auth0,
+  url: "https://test.auth0.com/oauth/token",
+  audience: "https://test.auth0.com/api/v2/"
+
 config :raptor,
   auth0_management: Auth0ManagementMock,
   dataset_store: DatasetStoreMock,
