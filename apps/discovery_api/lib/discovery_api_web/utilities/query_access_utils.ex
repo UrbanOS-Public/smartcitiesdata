@@ -17,14 +17,27 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   @raptor_service_impl Application.compile_env(:discovery_api, :raptor_service, RaptorService)
 
   def authorized_session(conn, affected_models) do
+    require Logger
     current_user = conn.assigns.current_user
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    if api_key_can_access_models?(affected_models, api_key) || user_can_access_models?(affected_models, current_user) do
+    api_key_authorized = api_key_can_access_models?(affected_models, api_key)
+    user_authorized = user_can_access_models?(affected_models, current_user)
+
+    Logger.info(
+      "authorized_session - checking authorization: api_key_present=#{not Enum.empty?(api_key)}, api_key_authorized=#{api_key_authorized}, user_authorized=#{user_authorized}, affected_models_count=#{length(affected_models)}"
+    )
+
+    if api_key_authorized || user_authorized do
       session_opts = DiscoveryApi.prestige_opts()
+      Logger.debug("authorized_session - creating Prestige session with opts: #{inspect(session_opts)}")
       session = Prestige.new_session(session_opts)
       {:ok, session}
     else
+      Logger.error(
+        "authorized_session - session not authorized: current_user=#{inspect(current_user)}, api_key_present=#{not Enum.empty?(api_key)}, affected_models=#{inspect(Enum.map(affected_models, & &1.systemName))}"
+      )
+
       {:error, "Session not authorized"}
     end
   end
@@ -34,6 +47,8 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   def get_affected_models(statement) do
+    require Logger
+
     with true <- @presto_service_impl.is_select_statement?(statement),
          session_opts <- DiscoveryApi.prestige_opts(),
          session <- Prestige.new_session(session_opts),
@@ -42,8 +57,21 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
          true <- valid_tables?(affected_tables, affected_models) do
       {:ok, affected_models}
     else
-      {:sql_error, error} -> {:sql_error, error}
-      _ -> {:error, "Query statement is invalid"}
+      {:sql_error, error} ->
+        Logger.error("get_affected_models - SQL error: #{inspect(error)}")
+        {:sql_error, error}
+
+      false ->
+        Logger.error("get_affected_models - statement is not a SELECT statement or tables invalid. Statement: #{inspect(statement)}")
+        {:error, "Query statement is invalid"}
+
+      {:error, reason} ->
+        Logger.error("get_affected_models - error getting affected tables, reason: #{inspect(reason)}")
+        {:error, "Query statement is invalid: #{inspect(reason)}"}
+
+      other ->
+        Logger.error("get_affected_models - unexpected error: #{inspect(other)}, statement: #{inspect(statement)}")
+        {:error, "Query statement is invalid"}
     end
   end
 
