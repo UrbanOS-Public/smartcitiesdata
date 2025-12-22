@@ -94,11 +94,27 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtils do
   end
 
   defp valid_tables?(affected_tables, affected_models) do
+    require Logger
+
     affected_system_names =
       affected_models
       |> Enum.map(&Map.get(&1, :systemName))
       |> Enum.map(&String.downcase/1)
 
-    MapSet.new(affected_tables) == MapSet.new(affected_system_names)
+    tables_set = MapSet.new(affected_tables)
+    models_set = MapSet.new(affected_system_names)
+
+    if tables_set != models_set do
+      tables_only = MapSet.difference(tables_set, models_set)
+      models_only = MapSet.difference(models_set, tables_set)
+
+      Logger.error("valid_tables? - Table/Model mismatch!")
+      Logger.error("  Tables queried from Trino: #{inspect(Enum.to_list(tables_set))}")
+      Logger.error("  Models found in Brook: #{inspect(Enum.to_list(models_set))}")
+      Logger.error("  Tables in Trino but NOT in Brook: #{inspect(Enum.to_list(tables_only))}")
+      Logger.error("  Models in Brook but NOT in Trino: #{inspect(Enum.to_list(models_only))}")
+    end
+
+    tables_set == models_set
   end
 end

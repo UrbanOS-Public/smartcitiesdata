@@ -5,7 +5,7 @@ defmodule DiscoveryApi.Mixfile do
     [
       app: :discovery_api,
       compilers: [:phoenix, :gettext | Mix.compilers()],
-      version: "25.0.7",
+      version: "25.0.8",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
