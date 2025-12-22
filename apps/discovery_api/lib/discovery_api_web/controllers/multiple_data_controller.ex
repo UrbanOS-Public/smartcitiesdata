@@ -42,13 +42,21 @@ defmodule DiscoveryApiWeb.MultipleDataController do
         Logger.error("Query failed - table not found")
         render_error(conn, 400, "Table not found")
 
+      {:error, "Query statement is invalid" <> _rest = error_msg} ->
+        Logger.error("Query failed - #{error_msg}")
+        render_error(conn, 400, "Bad Request")
+
       {:sql_error, error} ->
         Logger.error("Query failed - SQL error: #{inspect(error)}")
         render_error(conn, 400, error)
 
+      {:error, "Session not authorized" = error_msg} ->
+        Logger.error("Query failed - #{error_msg}")
+        render_error(conn, 400, "Bad Request")
+
       {:error, reason} ->
         Logger.error("Query failed - error reading body or getting affected models, reason: #{inspect(reason)}")
-        render_error(conn, 400, "Bad Request: #{inspect(reason)}")
+        render_error(conn, 400, "Bad Request")
 
       other ->
         Logger.error("Query failed - unexpected error: #{inspect(other)}")
