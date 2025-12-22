@@ -199,9 +199,9 @@ if config_env() == :prod do
       verify_issuer: false,
       allowed_drift: 60_000  # 60 seconds - reasonable clock skew tolerance
 
-    Logger.info("Configured Andi Guardian TokenHandler with issuer: #{auth0_issuer}")
+    IO.puts("Configured Andi Guardian TokenHandler with issuer: #{auth0_issuer}")
   else
-    Logger.warn("AUTH0_DOMAIN not set - Andi Guardian TokenHandler not configured")
+    IO.warn("AUTH0_DOMAIN not set - Andi Guardian TokenHandler not configured")
   end
 
   config :discovery_api,
