@@ -187,6 +187,23 @@ if config_env() == :prod do
     kafka_endpoints: kafka_brokers,
     dead_letter_topic: dead_letter_topic
 
+  # Andi Guardian (JWT) Configuration
+  auth0_domain = System.get_env("AUTH0_DOMAIN")
+
+  if auth0_domain && auth0_domain != "" do
+    auth0_issuer = "https://#{auth0_domain}/"
+
+    config :andi, AndiWeb.Auth.TokenHandler,
+      issuer: auth0_issuer,
+      allowed_algos: ["RS256"],
+      verify_issuer: false,
+      allowed_drift: 60_000  # 60 seconds - reasonable clock skew tolerance
+
+    Logger.info("Configured Andi Guardian TokenHandler with issuer: #{auth0_issuer}")
+  else
+    Logger.warn("AUTH0_DOMAIN not set - Andi Guardian TokenHandler not configured")
+  end
+
   config :discovery_api,
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
@@ -322,6 +339,7 @@ if config_env() == :prod do
   Redis Host: #{redis_host}:#{redis_port}
   Redis Password: #{if redix_args[:password], do: "***SET***", else: "not set"}
   Prestige URL: #{prestige_url}
+  Auth0 Domain: #{auth0_domain || "not set"}
 
   Brook instances configured:
     - alchemist
