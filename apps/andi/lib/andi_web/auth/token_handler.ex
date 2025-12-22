@@ -38,14 +38,25 @@ defmodule AndiWeb.Auth.TokenHandler do
   Given the claims loads a resource (user or otherwise) from a database or separate service to fill out the resource details, such as email, name, etc.
   """
   def resource_from_claims(claims) do
+    require Logger
+    Logger.debug("resource_from_claims called with claims: #{inspect(Map.keys(claims))}")
+    Logger.debug("  Subject (sub): #{inspect(claims["sub"])}")
+
     user_id =
       case Andi.Schemas.User.get_by_subject_id(claims["sub"]) do
-        nil -> nil
-        user -> user.id
+        nil ->
+          Logger.debug("  No user found for subject_id: #{claims["sub"]}")
+          nil
+
+        user ->
+          Logger.debug("  Found user: #{user.id}")
+          user.id
       end
 
     roles = claims["https://andi.smartcolumbusos.com/roles"] || []
     is_curator = Enum.member?(roles, "Curator")
+
+    Logger.debug("  Roles: #{inspect(roles)}, is_curator: #{is_curator}")
 
     {:ok, %{"user_id" => user_id, "roles" => roles, "is_curator" => is_curator}}
   end

@@ -159,11 +159,26 @@ defmodule Andi.Application do
   end
 
   def set_auth0_credentials() do
+    require Logger
+
+    auth0_domain = get_env_variable("AUTH0_DOMAIN", false)
+    andi_client_id = get_env_variable("ANDI_AUTH0_CLIENT_ID", false)
+    auth0_secret = get_env_variable("AUTH0_CLIENT_SECRET", false)
+
+    Logger.info("Setting Auth0 credentials for Andi:")
+    Logger.info("  AUTH0_DOMAIN: #{if is_nil(auth0_domain) or auth0_domain == "", do: "NOT SET", else: auth0_domain}")
+    Logger.info("  ANDI_AUTH0_CLIENT_ID: #{if is_nil(andi_client_id) or andi_client_id == "", do: "NOT SET", else: "***SET***"}")
+    Logger.info("  AUTH0_CLIENT_SECRET: #{if is_nil(auth0_secret) or auth0_secret == "", do: "NOT SET", else: "***SET***"}")
+
     Application.put_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth,
-      domain: get_env_variable("AUTH0_DOMAIN", false),
-      client_id: get_env_variable("ANDI_AUTH0_CLIENT_ID", false),
-      client_secret: get_env_variable("AUTH0_CLIENT_SECRET", false)
+      domain: auth0_domain,
+      client_id: andi_client_id,
+      client_secret: auth0_secret
     )
+
+    # Verify it was set
+    config = Application.get_env(:ueberauth, Ueberauth.Strategy.Auth0.OAuth)
+    Logger.info("Ueberauth Auth0 OAuth configuration after setting: #{if is_nil(config), do: "NIL!", else: "configured"}")
   end
 
   def set_aws_keys() do

@@ -18,19 +18,30 @@ defmodule AndiWeb.AuthController do
   @instance_name Andi.instance_name()
 
   def callback(%{assigns: %{ueberauth_failure: fails}} = conn, params) do
-    Logger.error("Failed to retrieve auth credentials: #{inspect(fails)} with params #{inspect(params)}")
+    Logger.error("Ueberauth callback FAILED:")
+    Logger.error("  Failures: #{inspect(fails)}")
+    Logger.error("  Params: #{inspect(params)}")
+    Logger.error("  Failure errors: #{inspect(fails.errors)}")
 
     conn
     |> redirect(to: "/autherror")
   end
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    Logger.info("Ueberauth callback SUCCESS:")
+    Logger.info("  UID: #{auth.uid}")
+    Logger.info("  Email: #{auth.info.email}")
+    Logger.info("  Name: #{auth.info.name}")
+    Logger.info("  Token present: #{not is_nil(auth.credentials.token)}")
+
     {:ok, _user} = Andi.Schemas.User.create_or_update(auth.uid, %{email: auth.info.email, name: auth.info.name})
     {:ok, smrt_user} = SmartCity.User.new(%{subject_id: auth.uid, email: auth.info.email, name: auth.info.name})
 
     if Andi.private_access?() do
       Brook.Event.send(@instance_name, user_login(), __MODULE__, smrt_user)
     end
+
+    Logger.info("Putting session token and redirecting to /")
 
     conn
     |> TokenHandler.put_session_token(auth.credentials.token)
