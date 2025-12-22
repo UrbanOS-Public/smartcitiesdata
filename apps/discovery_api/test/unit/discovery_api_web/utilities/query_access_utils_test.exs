@@ -70,7 +70,7 @@ defmodule DiscoveryApiWeb.Utilities.QueryAccessUtilsTest do
       stub(PrestoServiceMock, :is_select_statement?, fn ^statement -> true end)
       stub(PrestoServiceMock, :get_affected_tables, fn _a, ^statement -> {:error, :does_not_matter} end)
 
-      assert {:error, "Query statement is invalid"} = QueryAccessUtils.get_affected_models(statement)
+      assert {:error, "Query statement is invalid: :does_not_matter"} = QueryAccessUtils.get_affected_models(statement)
     end
   end
 
