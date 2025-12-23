@@ -230,6 +230,33 @@ if config_env() == :prod do
     IO.warn("POSTGRES_HOST or POSTGRES_PASSWORD not set - Andi.Repo not configured (database unavailable)")
   end
 
+  # Andi Endpoint Configuration for Production
+  # Allow WebSocket connections from the actual domain
+  andi_host = System.get_env("ANDI_HOST")
+
+  if andi_host && andi_host != "" do
+    config :andi, AndiWeb.Endpoint,
+      url: [host: andi_host],
+      check_origin: [
+        "https://#{andi_host}",
+        "http://#{andi_host}",
+        "https://*.urbanos-demo.com"  # Keep backward compatibility
+      ]
+
+    IO.puts("Configured AndiWeb.Endpoint for host: #{andi_host}")
+  else
+    # Fallback: allow common Michigan domain patterns
+    config :andi, AndiWeb.Endpoint,
+      check_origin: [
+        "https://*.apps.ocnonprd.ngds.state.mi.us",
+        "https://*.apps.ocprd.ngds.state.mi.us",
+        "https://*.urbanos-demo.com",
+        "http://localhost:4000"
+      ]
+
+    IO.puts("Configured AndiWeb.Endpoint with wildcard patterns (ANDI_HOST not set)")
+  end
+
   config :discovery_api,
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
