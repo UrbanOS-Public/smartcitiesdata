@@ -204,6 +204,27 @@ if config_env() == :prod do
     IO.warn("AUTH0_DOMAIN not set - Andi Guardian TokenHandler not configured")
   end
 
+  # Andi Database (PostgreSQL) Configuration
+  postgres_host = System.get_env("POSTGRES_HOST")
+  postgres_port = String.to_integer(System.get_env("POSTGRES_PORT", "5432"))
+  postgres_db = System.get_env("POSTGRES_DBNAME") || System.get_env("POSTGRES_DB", "andi")
+  postgres_user = System.get_env("POSTGRES_USER", "postgres")
+  postgres_password = System.get_env("POSTGRES_PASSWORD")
+
+  if postgres_host && postgres_password do
+    config :andi, Andi.Repo,
+      username: postgres_user,
+      password: postgres_password,
+      database: postgres_db,
+      hostname: postgres_host,
+      port: postgres_port,
+      pool_size: String.to_integer(System.get_env("POSTGRES_POOL_SIZE", "10"))
+
+    IO.puts("Configured Andi.Repo with database: #{postgres_db} at #{postgres_host}:#{postgres_port}")
+  else
+    IO.warn("POSTGRES_HOST or POSTGRES_PASSWORD not set - Andi.Repo not configured (database unavailable)")
+  end
+
   config :discovery_api,
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
