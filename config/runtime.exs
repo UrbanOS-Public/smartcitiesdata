@@ -220,7 +220,11 @@ if config_env() == :prod do
       port: postgres_port,
       pool_size: String.to_integer(System.get_env("POSTGRES_POOL_SIZE", "10"))
 
+    # Guardian.DB uses Andi.Repo to store revoked tokens
+    config :andi, Guardian.DB, repo: Andi.Repo
+
     IO.puts("Configured Andi.Repo with database: #{postgres_db} at #{postgres_host}:#{postgres_port}")
+    IO.puts("Configured Guardian.DB to use Andi.Repo")
   else
     IO.warn("POSTGRES_HOST or POSTGRES_PASSWORD not set - Andi.Repo not configured (database unavailable)")
   end
