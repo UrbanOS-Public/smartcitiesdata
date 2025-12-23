@@ -17,6 +17,12 @@ defmodule AndiWeb.AuthController do
 
   @instance_name Andi.instance_name()
 
+  def request(conn, _params) do
+    # Ueberauth handles the redirect to Auth0 via the plug
+    # This action just needs to exist for the route to work
+    conn
+  end
+
   def callback(%{assigns: %{ueberauth_failure: fails}} = conn, params) do
     Logger.error("Ueberauth callback FAILED:")
     Logger.error("  Failures: #{inspect(fails)}")
