@@ -185,7 +185,8 @@ if config_env() == :prod do
   # Kafka endpoints for services that need them directly
   config :andi,
     kafka_endpoints: kafka_brokers,
-    dead_letter_topic: dead_letter_topic
+    dead_letter_topic: dead_letter_topic,
+    access_level: :private  # Required for EnsureAccessLevelForRoute plug
 
   # Andi Guardian (JWT) Configuration
   auth0_domain = System.get_env("AUTH0_DOMAIN")
