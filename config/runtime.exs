@@ -257,9 +257,15 @@ if config_env() == :prod do
     IO.puts("Configured AndiWeb.Endpoint with wildcard patterns (ANDI_HOST not set)")
   end
 
+  # Discovery API Raptor URL Configuration
+  raptor_url = System.get_env("RAPTOR_URL", "http://localhost:4002/api")
+
   config :discovery_api,
     elsa_brokers: kafka_brokers,
-    dead_letter_topic: dead_letter_topic
+    dead_letter_topic: dead_letter_topic,
+    raptor_url: raptor_url
+
+  IO.puts("Configured Discovery API with Raptor URL: #{raptor_url}")
 
   # Discovery API Database (PostgreSQL) Configuration
   # Uses same POSTGRES_* env vars as ANDI
