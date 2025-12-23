@@ -261,6 +261,26 @@ if config_env() == :prod do
     elsa_brokers: kafka_brokers,
     dead_letter_topic: dead_letter_topic
 
+  # Discovery API Database (PostgreSQL) Configuration
+  # Uses same POSTGRES_* env vars as ANDI
+  if postgres_host && postgres_password do
+    config :discovery_api, DiscoveryApi.Repo,
+      username: postgres_user,
+      password: postgres_password,
+      database: postgres_db,
+      hostname: postgres_host,
+      port: postgres_port,
+      pool_size: String.to_integer(System.get_env("POSTGRES_POOL_SIZE", "10"))
+
+    # Guardian.DB uses DiscoveryApi.Repo to store revoked tokens
+    config :discovery_api, Guardian.DB, repo: DiscoveryApi.Repo
+
+    IO.puts("Configured DiscoveryApi.Repo with database: #{postgres_db} at #{postgres_host}:#{postgres_port}")
+    IO.puts("Configured Guardian.DB for Discovery API")
+  else
+    IO.warn("POSTGRES_HOST or POSTGRES_PASSWORD not set - DiscoveryApi.Repo not configured (database unavailable)")
+  end
+
   # Discovery API Prestige (Trino/Presto) Configuration
   prestige_url = System.get_env("PRESTO_URL", "http://ride-trino:8080")
 
