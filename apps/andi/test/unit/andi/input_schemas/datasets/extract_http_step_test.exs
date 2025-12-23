@@ -5,6 +5,7 @@ defmodule Andi.InputSchemas.Ingestions.ExtractHttpStepTest do
   alias AndiWeb.Helpers.FormTools
   alias Andi.InputSchemas.Ingestions.ExtractHttpStep
 
+  @tag timeout: 5_000
   describe "body validation" do
     setup do
       changes = %{

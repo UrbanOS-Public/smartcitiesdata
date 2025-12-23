@@ -23,7 +23,7 @@ defmodule AndiWeb.Endpoint do
     plug Phoenix.CodeReloader
   end
 
-  plug AndiWeb.Auth.EnsureAccessLevelForRoute, router: AndiWeb.Router, exclusions: [AndiWeb.Redirect]
+  plug AndiWeb.Auth.EnsureAccessLevelForRoute, router: AndiWeb.Router, exclusions: [AndiWeb.Redirect, AndiWeb.AuthController]
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
