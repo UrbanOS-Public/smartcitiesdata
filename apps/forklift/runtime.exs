@@ -6,7 +6,8 @@ required_envars = [
   "DATA_TOPIC_PREFIX",
   "PRESTO_USER",
   "PRESTO_URL",
-  "OUTPUT_TOPIC"
+  "OUTPUT_TOPIC",
+  "SECRETS_ENDPOINT"
 ]
 
 Enum.each(required_envars, fn var ->
@@ -146,25 +147,20 @@ case System.get_env("OVERWRITE_MODE") do
 end
 
 if System.get_env("RUN_IN_KUBERNETES") do
-  # Disable libcluster due to FQDN/short name conflict
-  # The Kubernetes deployment sets RELEASE_DISTRIBUTION=sname which prevents
-  # libcluster from connecting to pods with FQDN hostnames
-  # Setting topologies to empty list disables libcluster completely
-  config :libcluster, topologies: []
-
-  # To re-enable, ensure RELEASE_DISTRIBUTION=name in K8s deployment, then use:
-  # config :libcluster,
-  #   topologies: [
-  #     forklift_cluster: [
-  #       strategy: Elixir.Cluster.Strategy.Kubernetes,
-  #       config: [
-  #         mode: :dns,
-  #         kubernetes_node_basename: "forklift",
-  #         kubernetes_selector: "app.kubernetes.io/name=forklift",
-  #         polling_interval: 10_000
-  #       ]
-  #     ]
-  #   ]
+  # libcluster enabled with FQDN support via rel/env.sh.eex
+  # The env.sh.eex file sets RELEASE_DISTRIBUTION=name and constructs proper FQDNs
+  config :libcluster,
+    topologies: [
+      forklift_cluster: [
+        strategy: Elixir.Cluster.Strategy.Kubernetes,
+        config: [
+          mode: :dns,
+          kubernetes_node_basename: "forklift",
+          kubernetes_selector: "app.kubernetes.io/name=forklift",
+          polling_interval: 10_000
+        ]
+      ]
+    ]
 end
 
 config :telemetry_event,

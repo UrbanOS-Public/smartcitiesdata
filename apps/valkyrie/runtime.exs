@@ -21,25 +21,20 @@ processor_stages = System.get_env("PROCESSOR_STAGES") || "1"
 profiling_enabled = System.get_env("PROFILING_ENABLED") == "true"
 
 if System.get_env("RUN_IN_KUBERNETES") do
-  # Disable libcluster due to FQDN/short name conflict
-  # The Kubernetes deployment sets RELEASE_DISTRIBUTION=sname which prevents
-  # libcluster from connecting to pods with FQDN hostnames
-  # Setting topologies to empty list disables libcluster completely
-  config :libcluster, topologies: []
-
-  # To re-enable, ensure RELEASE_DISTRIBUTION=name in K8s deployment, then use:
-  # config :libcluster,
-  #   topologies: [
-  #     valkyrie_cluster: [
-  #       strategy: Elixir.Cluster.Strategy.Kubernetes,
-  #       config: [
-  #         mode: :dns,
-  #         kubernetes_node_basename: "valkyrie",
-  #         kubernetes_selector: "app.kubernetes.io/name=valkyrie",
-  #         polling_interval: 10_000
-  #       ]
-  #     ]
-  #   ]
+  # libcluster enabled with FQDN support via rel/env.sh.eex
+  # The env.sh.eex file sets RELEASE_DISTRIBUTION=name and constructs proper FQDNs
+  config :libcluster,
+    topologies: [
+      valkyrie_cluster: [
+        strategy: Elixir.Cluster.Strategy.Kubernetes,
+        config: [
+          mode: :dns,
+          kubernetes_node_basename: "valkyrie",
+          kubernetes_selector: "app.kubernetes.io/name=valkyrie",
+          polling_interval: 10_000
+        ]
+      ]
+    ]
 end
 
 if kafka_brokers do
