@@ -4,7 +4,7 @@ defmodule Alchemist.MixProject do
   def project do
     [
       app: :alchemist,
-      version: "25.0.12",
+      version: "25.0.13",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -82,7 +82,9 @@ defmodule Alchemist.MixProject do
       alchemist: [
         include_executables_for: [:unix],
         applications: [runtime_tools: :permanent],
-        cookie: "alchemist_cookie"
+        overlays: [
+          {:template, "apps/alchemist/rel/env.sh.eex", "releases/<%= @release.version %>/env.sh"}
+        ]
       ]
     ]
   end

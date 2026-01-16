@@ -4,7 +4,7 @@ defmodule Forklift.MixProject do
   def project do
     [
       app: :forklift,
-      version: "25.0.2",
+      version: "25.0.3",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -13,6 +13,7 @@ defmodule Forklift.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      releases: releases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env())
     ]
@@ -78,4 +79,16 @@ defmodule Forklift.MixProject do
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
+
+  defp releases do
+    [
+      forklift: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        overlays: [
+          {:template, "apps/forklift/rel/env.sh.eex", "releases/<%= @release.version %>/env.sh"}
+        ]
+      ]
+    ]
+  end
 end

@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "25.0.2",
+      version: "25.0.3",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -13,6 +13,7 @@ defmodule Valkyrie.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      releases: releases(),
       test_paths: test_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
@@ -73,6 +74,18 @@ defmodule Valkyrie.MixProject do
     [
       lint: ["format", "credo"],
       verify: ["format --check-formatted", "credo"]
+    ]
+  end
+
+  defp releases do
+    [
+      valkyrie: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        overlays: [
+          {:template, "apps/valkyrie/rel/env.sh.eex", "releases/<%= @release.version %>/env.sh"}
+        ]
+      ]
     ]
   end
 end

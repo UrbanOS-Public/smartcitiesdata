@@ -4,7 +4,7 @@ defmodule Reaper.MixProject do
   def project do
     [
       app: :reaper,
-      version: "25.0.12",
+      version: "25.0.13",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
@@ -13,6 +13,7 @@ defmodule Reaper.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
+      releases: releases(),
       elixirc_paths: elixirc_paths(Mix.env()),
       test_paths: test_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
@@ -108,4 +109,16 @@ defmodule Reaper.MixProject do
 
   defp test_paths(:integration), do: ["test/integration"]
   defp test_paths(_), do: ["test/unit"]
+
+  defp releases do
+    [
+      reaper: [
+        include_executables_for: [:unix],
+        applications: [runtime_tools: :permanent],
+        overlays: [
+          {:template, "apps/reaper/rel/env.sh.eex", "releases/<%= @release.version %>/env.sh"}
+        ]
+      ]
+    ]
+  end
 end
