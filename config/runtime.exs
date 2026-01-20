@@ -368,8 +368,38 @@ if config_env() == :prod do
   config :forklift,
     elsa_brokers: kafka_brokers
 
+  # =============================================================================
+  # Reaper Configuration
+  # =============================================================================
+
+  # Normalize SECRETS_ENDPOINT to ensure it has a protocol scheme
+  secrets_endpoint_raw = System.get_env("SECRETS_ENDPOINT")
+  IO.puts("DEBUG: Reaper SECRETS_ENDPOINT raw from env: #{inspect(secrets_endpoint_raw)}")
+
+  secrets_endpoint =
+    case secrets_endpoint_raw do
+      nil ->
+        nil
+
+      endpoint ->
+        cond do
+          String.starts_with?(endpoint, "http://") or String.starts_with?(endpoint, "https://") ->
+            endpoint
+
+          true ->
+            "http://#{endpoint}"
+        end
+    end
+
+  IO.puts("DEBUG: Reaper SECRETS_ENDPOINT after normalization: #{inspect(secrets_endpoint)}")
+
   config :reaper,
-    elsa_brokers: kafka_brokers
+    elsa_brokers: kafka_brokers,
+    secrets_endpoint: secrets_endpoint,
+    output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX", "raw"),
+    download_dir: System.get_env("DOWNLOAD_DIR", "/downloads/"),
+    hosted_file_bucket: System.get_env("HOSTED_FILE_BUCKET", "hosted-dataset-files"),
+    profiling_enabled: System.get_env("PROFILING_ENABLED") == "true"
 
   # Configure Reaper Quantum Scheduler storage (Redis)
   config :reaper, Reaper.Scheduler,
