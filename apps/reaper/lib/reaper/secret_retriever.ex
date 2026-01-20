@@ -16,6 +16,7 @@ defmodule Reaper.SecretRetriever do
 
   defp retrieve(path) do
     vault_path = "#{@root_path}#{path}"
+    Logger.info("SECRETS_ENDPOINT from application config: #{inspect(Application.get_env(:reaper, :secrets_endpoint))}")
 
     with {:ok, jwt} <- get_kubernetes_token(),
          {:ok, vault} <- instantiate_vault_conn(jwt),
@@ -36,10 +37,13 @@ defmodule Reaper.SecretRetriever do
   end
 
   defp instantiate_vault_conn(token) do
+    endpoint = secrets_endpoint()
+    Logger.info("Attempting to connect to Vault at: #{inspect(endpoint)}")
+
     Vault.new(
       engine: Vault.Engine.KVV1,
       auth: Vault.Auth.Kubernetes,
-      host: secrets_endpoint(),
+      host: endpoint,
       token_expires_at: set_login_ttl(20, :second)
     )
     |> Vault.auth(%{role: "reaper-role", jwt: token})
