@@ -38,16 +38,21 @@ endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
-normalize_secrets_endpoint = fn endpoint ->
-  cond do
-    String.starts_with?(endpoint, "http://") or String.starts_with?(endpoint, "https://") ->
-      endpoint
-    true ->
-      "http://#{endpoint}"
-  end
+normalize_secrets_endpoint = fn
+  nil -> nil
+  endpoint ->
+    cond do
+      String.starts_with?(endpoint, "http://") or String.starts_with?(endpoint, "https://") ->
+        endpoint
+      true ->
+        "http://#{endpoint}"
+    end
 end
 
-secrets_endpoint = normalize_secrets_endpoint.(System.get_env("SECRETS_ENDPOINT"))
+secrets_endpoint_raw = System.get_env("SECRETS_ENDPOINT")
+IO.puts("DEBUG: SECRETS_ENDPOINT raw from env: #{inspect(secrets_endpoint_raw)}")
+secrets_endpoint = normalize_secrets_endpoint.(secrets_endpoint_raw)
+IO.puts("DEBUG: SECRETS_ENDPOINT after normalization: #{inspect(secrets_endpoint)}")
 
 if System.get_env("RUN_IN_KUBERNETES") do
   config :libcluster,
