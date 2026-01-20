@@ -38,6 +38,17 @@ endpoints =
   |> Enum.map(fn entry -> String.split(entry, ":") end)
   |> Enum.map(fn [host, port] -> {String.to_atom(host), String.to_integer(port)} end)
 
+normalize_secrets_endpoint = fn endpoint ->
+  cond do
+    String.starts_with?(endpoint, "http://") or String.starts_with?(endpoint, "https://") ->
+      endpoint
+    true ->
+      "http://#{endpoint}"
+  end
+end
+
+secrets_endpoint = normalize_secrets_endpoint.(System.get_env("SECRETS_ENDPOINT"))
+
 if System.get_env("RUN_IN_KUBERNETES") do
   config :libcluster,
     topologies: [
@@ -54,7 +65,7 @@ if System.get_env("RUN_IN_KUBERNETES") do
 end
 
 config :reaper,
-  secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
+  secrets_endpoint: secrets_endpoint,
   elsa_brokers: endpoints,
   output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX"),
   download_dir: System.get_env("DOWNLOAD_DIR") || "/downloads/",
