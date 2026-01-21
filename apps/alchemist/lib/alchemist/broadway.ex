@@ -73,8 +73,21 @@ defmodule Alchemist.Broadway do
         ingestion: ingestion,
         transformations: transformations
       }) do
+    # Skip empty or nil messages gracefully
+    case message_data.value do
+      value when value in [nil, ""] ->
+        Logger.warning("Skipping empty message; INGESTION_ID: #{ingestion.id}; value=#{inspect(value)}")
+
+        Message.failed(message, "Empty message received")
+
+      value ->
+        process_message(message, value, ingestion, transformations)
+    end
+  end
+
+  defp process_message(message, value, ingestion, transformations) do
     with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <-
-           SmartCity.Data.new(message_data.value),
+           SmartCity.Data.new(value),
          {:ok, transformed_payload} <- Transformers.perform(transformations, payload),
          transformed_smart_city_data <- %{smart_city_data | payload: transformed_payload},
          {:ok, json_data} <- Jason.encode(transformed_smart_city_data) do
@@ -91,9 +104,7 @@ defmodule Alchemist.Broadway do
       {:error, reason} ->
         Logger.error("Transformation error; INGESTION_ID: #{ingestion.id}; #{inspect(reason)}")
 
-        DeadLetter.process(ingestion.targetDatasets, ingestion.id, message_data.value, @app_name,
-          reason: inspect(reason)
-        )
+        DeadLetter.process(ingestion.targetDatasets, ingestion.id, value, @app_name, reason: inspect(reason))
 
         Message.failed(message, reason)
     end
