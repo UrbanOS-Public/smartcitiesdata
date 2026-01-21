@@ -60,6 +60,19 @@ defmodule Reaper.Http.Downloader do
 
     action = Keyword.get(opts, :action, "GET") |> String.upcase()
 
+    # Log sanitized headers (mask Authorization values)
+    sanitized_headers =
+      Enum.map(evaluated_headers, fn
+        {"Authorization", _} -> {"Authorization", "[REDACTED]"}
+        {key, value} -> {key, value}
+      end)
+
+    Logger.info(
+      "HTTP Downloader starting: url=#{url}, action=#{action}, " <>
+        "headers=#{inspect(sanitized_headers)}, body_length=#{byte_size(body)}, " <>
+        "destination=#{inspect(Keyword.get(opts, :to))}"
+    )
+
     with {:ok, conn} <- connect(uri, opts),
          {:ok, conn, request_ref} <- request(conn, action, uri, evaluated_headers, body),
          {:ok, response} <- create_initial_response(conn, request_ref, url, opts),
@@ -71,10 +84,36 @@ defmodule Reaper.Http.Downloader do
       handle_status(response, evaluated_headers)
     else
       {:error, conn, error} ->
+        Logger.error(
+          "HTTP Downloader error (with connection): url=#{url}, error=#{inspect(error)}, " <>
+            "error_struct=#{if is_struct(error), do: inspect(error.__struct__), else: "not a struct"}"
+        )
+
         @mint_http.close(conn)
         raise error
 
+      {:error, %Mint.TransportError{reason: reason} = error} ->
+        Logger.error(
+          "HTTP Downloader transport error: url=#{url}, reason=#{inspect(reason)}, " <>
+            "full_error=#{inspect(error)}"
+        )
+
+        raise HttpDownloadError, message: "Transport error downloading file from #{url}: #{inspect(error)}"
+
+      {:error, error} ->
+        Logger.error(
+          "HTTP Downloader error: url=#{url}, error=#{inspect(error)}, " <>
+            "error_type=#{if is_struct(error), do: inspect(error.__struct__), else: "primitive"}"
+        )
+
+        raise HttpDownloadError, message: "Error downloading file from #{url}: #{inspect(error)}"
+
       error ->
+        Logger.error(
+          "HTTP Downloader unexpected error: url=#{url}, error=#{inspect(error)}, " <>
+            "error_type=#{if is_struct(error), do: inspect(error.__struct__), else: "unknown"}"
+        )
+
         raise HttpDownloadError, message: "Error downloading file from #{url}: #{inspect(error)}"
     end
   end
@@ -84,15 +123,38 @@ defmodule Reaper.Http.Downloader do
     connect_timeout = Keyword.get(opts, :connect_timeout, 30_000)
     protocol = format_protocol(Keyword.get(opts, :protocol, nil))
 
-    case protocol do
-      nil ->
-        @mint_http.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+    Logger.info(
+      "HTTP Downloader connecting: scheme=#{scheme}, host=#{uri.host}, port=#{uri.port}, " <>
+        "connect_timeout=#{connect_timeout}, protocol=#{inspect(protocol)}, " <>
+        "mint_module=#{inspect(@mint_http)}, opts=#{inspect(opts)}"
+    )
 
-      protocol ->
-        @mint_http.connect(scheme, uri.host, uri.port,
-          transport_opts: [timeout: connect_timeout],
-          protocols: protocol
+    result =
+      case protocol do
+        nil ->
+          @mint_http.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+
+        protocol ->
+          @mint_http.connect(scheme, uri.host, uri.port,
+            transport_opts: [timeout: connect_timeout],
+            protocols: protocol
+          )
+      end
+
+    case result do
+      {:ok, conn} ->
+        Logger.info("HTTP Downloader connected successfully to #{uri.host}:#{uri.port}")
+        {:ok, conn}
+
+      {:error, error} ->
+        error_type = if is_struct(error), do: inspect(error.__struct__), else: "not a struct"
+
+        Logger.error(
+          "HTTP Downloader connection FAILED: scheme=#{scheme}, host=#{uri.host}, port=#{uri.port}, " <>
+            "error=#{inspect(error)}, error_type=#{error_type}"
         )
+
+        {:error, error}
     end
   end
 
