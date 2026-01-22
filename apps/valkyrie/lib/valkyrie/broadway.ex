@@ -161,6 +161,7 @@ defmodule Valkyrie.Broadway do
 
   defp truncate_for_logging(data) do
     inspected = inspect(data)
+
     if String.length(inspected) > 500 do
       String.slice(inspected, 0, 500) <> "... [truncated]"
     else
