@@ -62,10 +62,22 @@ defmodule Valkyrie.Broadway do
   end
 
   def handle_message(_processor, %Message{data: message_data} = message, %{dataset: dataset}) do
+    # Skip empty or nil messages gracefully
+    case message_data.value do
+      value when value in [nil, ""] ->
+        Logger.warning("Skipping empty message; DATASET_ID: #{dataset.id}; value=#{inspect(value)}")
+        Message.failed(message, "Empty message received")
+
+      value ->
+        process_message(message, value, dataset)
+    end
+  end
+
+  defp process_message(message, value, dataset) do
     start_time = Data.Timing.current_time()
 
     with {:ok, %{payload: payload} = smart_city_data} when payload != end_of_data() <-
-           SmartCity.Data.new(message_data.value),
+           SmartCity.Data.new(value),
          {:ok, standardized_payload} <- standardize_data(dataset, smart_city_data.payload),
          smart_city_data <- %{smart_city_data | payload: standardized_payload},
          smart_city_data <- add_timing(smart_city_data, start_time),
@@ -73,7 +85,7 @@ defmodule Valkyrie.Broadway do
       %{message | data: %{message.data | value: json_data}}
     else
       {:ok, %{payload: end_of_data()} = smart_city_data} ->
-        decoded_message_data = Jason.decode!(message_data.value)
+        decoded_message_data = Jason.decode!(value)
         ingestion_id = decoded_message_data["ingestion_id"]
         target_datasets = decoded_message_data["dataset_ids"]
 
@@ -85,37 +97,52 @@ defmodule Valkyrie.Broadway do
         %{message | data: %{message.data | value: Jason.encode!(smart_city_data)}}
 
       {:failed_schema_validation, reason} ->
-        decoded_message_data = Jason.decode!(message_data.value)
-        ingestion_id = decoded_message_data["ingestion_id"]
-        payload = decoded_message_data["payload"]
-
-        DeadLetter.process(
-          [dataset.id],
-          ingestion_id,
-          message_data.value,
-          @app_name,
-          error: :failed_schema_validation,
-          reason: inspect(reason)
-        )
-
-        Logger.error(
-          "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}"
-        )
-
-        Message.failed(message, reason)
+        handle_decode_error(value, dataset, :failed_schema_validation, reason, message)
 
       {:error, reason} ->
-        decoded_message_data = Jason.decode!(message_data.value)
+        handle_decode_error(value, dataset, :error, reason, message)
+    end
+  end
+
+  defp handle_decode_error(value, dataset, error_type, reason, message) do
+    case Jason.decode(value) do
+      {:ok, decoded_message_data} ->
         ingestion_id = decoded_message_data["ingestion_id"]
         payload = decoded_message_data["payload"]
 
-        DeadLetter.process([dataset.id], ingestion_id, message_data.value, @app_name, reason: inspect(reason))
+        case error_type do
+          :failed_schema_validation ->
+            DeadLetter.process(
+              [dataset.id],
+              ingestion_id,
+              value,
+              @app_name,
+              error: :failed_schema_validation,
+              reason: inspect(reason)
+            )
 
-        Logger.error(
-          "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}"
-        )
+            Logger.error(
+              "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}"
+            )
+
+          :error ->
+            DeadLetter.process([dataset.id], ingestion_id, value, @app_name, reason: inspect(reason))
+
+            Logger.error(
+              "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}"
+            )
+        end
 
         Message.failed(message, reason)
+
+      {:error, decode_error} ->
+        Logger.error(
+          "DATASET_ID: #{dataset.id}; Failed to decode message: #{inspect(decode_error)}; Original error: #{inspect(reason)}; Raw value: #{inspect(value)}"
+        )
+
+        DeadLetter.process([dataset.id], nil, value, @app_name, reason: "JSON decode failed: #{inspect(decode_error)}")
+
+        Message.failed(message, decode_error)
     end
   end
 

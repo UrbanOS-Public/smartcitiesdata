@@ -12,8 +12,10 @@ defmodule Valkyrie.Application do
   getter(:brook, generic: true)
 
   def start(_type, _args) do
+    version = Application.spec(:valkyrie, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Valkyrie.Application starting...")
+    Logger.info("Valkyrie.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)
