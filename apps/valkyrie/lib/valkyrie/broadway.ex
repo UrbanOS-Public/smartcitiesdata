@@ -109,6 +109,8 @@ defmodule Valkyrie.Broadway do
       {:ok, decoded_message_data} ->
         ingestion_id = decoded_message_data["ingestion_id"]
         payload = decoded_message_data["payload"]
+        # Truncate payload for logging to prevent memory bloat
+        payload_preview = truncate_for_logging(payload)
 
         case error_type do
           :failed_schema_validation ->
@@ -122,27 +124,47 @@ defmodule Valkyrie.Broadway do
             )
 
             Logger.error(
-              "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Failed Schema Validation: #{inspect(reason)}"
+              "ingestion_id: #{ingestion_id}; payload_preview: #{payload_preview}; Failed Schema Validation: #{inspect(reason)}"
             )
 
           :error ->
             DeadLetter.process([dataset.id], ingestion_id, value, @app_name, reason: inspect(reason))
 
             Logger.error(
-              "ingestion_id: #{ingestion_id}; payload: #{inspect(payload)}; Unknown Valkyrie Error: #{inspect(reason)}"
+              "ingestion_id: #{ingestion_id}; payload_preview: #{payload_preview}; Unknown Valkyrie Error: #{inspect(reason)}"
             )
         end
 
         Message.failed(message, reason)
 
       {:error, decode_error} ->
+        # Truncate raw value for logging
+        value_preview = truncate_for_logging(value)
+
         Logger.error(
-          "DATASET_ID: #{dataset.id}; Failed to decode message: #{inspect(decode_error)}; Original error: #{inspect(reason)}; Raw value: #{inspect(value)}"
+          "DATASET_ID: #{dataset.id}; Failed to decode message: #{inspect(decode_error)}; Original error: #{inspect(reason)}; Raw value preview: #{value_preview}"
         )
 
         DeadLetter.process([dataset.id], nil, value, @app_name, reason: "JSON decode failed: #{inspect(decode_error)}")
 
         Message.failed(message, decode_error)
+    end
+  end
+
+  defp truncate_for_logging(data) when is_binary(data) do
+    if String.length(data) > 500 do
+      String.slice(data, 0, 500) <> "... [truncated]"
+    else
+      data
+    end
+  end
+
+  defp truncate_for_logging(data) do
+    inspected = inspect(data)
+    if String.length(inspected) > 500 do
+      String.slice(inspected, 0, 500) <> "... [truncated]"
+    else
+      inspected
     end
   end
 
