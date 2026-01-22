@@ -4,7 +4,7 @@ defmodule Valkyrie.MixProject do
   def project do
     [
       app: :valkyrie,
-      version: "25.0.3",
+      version: "25.0.4",
       elixir: "~> 1.14",
       build_path: "../../_build",
       config_path: "../../config/config.exs",

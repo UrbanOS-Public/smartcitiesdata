@@ -410,7 +410,11 @@ if config_env() == :prod do
   config :reaper, Reaper.Quantum.Storage, redix_args
 
   config :valkyrie,
-    elsa_brokers: kafka_brokers
+    elsa_brokers: kafka_brokers,
+    input_topic_prefix: System.get_env("INPUT_TOPIC_PREFIX", "transformed"),
+    output_topic_prefix: System.get_env("OUTPUT_TOPIC_PREFIX", "validated"),
+    processor_stages: String.to_integer(System.get_env("PROCESSOR_STAGES", "1")),
+    profiling_enabled: System.get_env("PROFILING_ENABLED") == "true"
 
   config :alchemist,
     elsa_brokers: kafka_brokers,
