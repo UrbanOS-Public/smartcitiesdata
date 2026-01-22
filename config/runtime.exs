@@ -366,7 +366,8 @@ if config_env() == :prod do
   end
 
   config :forklift,
-    elsa_brokers: kafka_brokers
+    elsa_brokers: kafka_brokers,
+    input_topic_prefix: System.get_env("INPUT_TOPIC_PREFIX", "validated")
 
   # =============================================================================
   # Reaper Configuration

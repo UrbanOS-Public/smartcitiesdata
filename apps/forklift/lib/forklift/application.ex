@@ -13,8 +13,10 @@ defmodule Forklift.Application do
   getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
+    version = Application.spec(:forklift, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Forklift.Application starting...")
+    Logger.info("Forklift.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)
