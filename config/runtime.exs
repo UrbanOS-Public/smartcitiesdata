@@ -365,9 +365,23 @@ if config_env() == :prod do
       }
   end
 
+  forklift_output_topic = System.get_env("OUTPUT_TOPIC")
+
   config :forklift,
     elsa_brokers: kafka_brokers,
-    input_topic_prefix: System.get_env("INPUT_TOPIC_PREFIX", "validated")
+    input_topic_prefix: System.get_env("INPUT_TOPIC_PREFIX", "validated"),
+    output_topic: forklift_output_topic,
+    s3_writer_bucket: System.get_env("S3_WRITER_BUCKET"),
+    secrets_endpoint: System.get_env("SECRETS_ENDPOINT"),
+    producer_name: if(forklift_output_topic, do: :"#{forklift_output_topic}-producer", else: nil),
+    profiling_enabled: System.get_env("PROFILING_ENABLED") == "true",
+    topic_subscriber_config: [
+      begin_offset: :earliest,
+      offset_reset_policy: :reset_to_earliest,
+      max_bytes: 10_000_000,
+      min_bytes: 0,
+      max_wait_time: 10_000
+    ]
 
   # =============================================================================
   # Reaper Configuration
