@@ -21,8 +21,14 @@ defmodule Forklift.MessageHandler do
   Handle each kafka message.
   """
   def handle_messages(messages, %{dataset: %SmartCity.Dataset{} = dataset}) do
+    {empty_messages, valid_messages} = Enum.split_with(messages, &empty_message?/1)
+
+    if length(empty_messages) > 0 do
+      Logger.warning("Forklift skipping #{length(empty_messages)} empty message(s) for dataset #{dataset.id}")
+    end
+
     timed_messages =
-      messages
+      valid_messages
       |> Enum.map(&parse/1)
       |> Enum.map(&yeet_error/1)
       |> Enum.reject(&error_tuple?/1)
@@ -62,6 +68,10 @@ defmodule Forklift.MessageHandler do
 
   defp error_tuple?({:error, _, _}), do: true
   defp error_tuple?(_), do: false
+
+  defp empty_message?(%{value: nil}), do: true
+  defp empty_message?(%{value: ""}), do: true
+  defp empty_message?(_), do: false
 
   defp group_by_each_extraction(msgs) do
     msgs
