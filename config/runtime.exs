@@ -383,6 +383,29 @@ if config_env() == :prod do
       max_wait_time: 10_000
     ]
 
+  # ExAws configuration for Forklift S3 writes (MinIO or AWS)
+  config :ex_aws,
+    region: System.get_env("AWS_REGION", "us-west-2")
+
+  if System.get_env("AWS_ACCESS_KEY_ID") do
+    config :ex_aws,
+      access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+      secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY")
+  end
+
+  # When S3_HOST_NAME is set, use MinIO instead of AWS S3
+  if System.get_env("S3_HOST_NAME") do
+    s3_port = System.get_env("S3_PORT", "80") |> String.to_integer()
+
+    config :ex_aws, :s3,
+      scheme: "http://",
+      region: "local",
+      host: %{
+        "local" => System.get_env("S3_HOST_NAME")
+      },
+      port: s3_port
+  end
+
   # =============================================================================
   # Reaper Configuration
   # =============================================================================
