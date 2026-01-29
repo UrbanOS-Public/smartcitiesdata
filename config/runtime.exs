@@ -287,6 +287,24 @@ if config_env() == :prod do
     IO.warn("POSTGRES_HOST or POSTGRES_PASSWORD not set - DiscoveryApi.Repo not configured (database unavailable)")
   end
 
+  # Discovery API Auth/Guardian TokenHandler Configuration
+  auth_jwt_issuer = System.get_env("AUTH_JWT_ISSUER")
+
+  if auth_jwt_issuer do
+    config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler,
+      issuer: auth_jwt_issuer,
+      allowed_algos: ["RS256"],
+      verify_issuer: true
+
+    config :discovery_api,
+      jwks_endpoint: System.get_env("AUTH_JWKS_ENDPOINT"),
+      user_info_endpoint: System.get_env("AUTH_USER_INFO_ENDPOINT")
+
+    IO.puts("Configured Discovery API TokenHandler with issuer: #{auth_jwt_issuer}")
+  else
+    IO.warn("AUTH_JWT_ISSUER not set - Discovery API authentication will not work")
+  end
+
   # Discovery API Prestige (Trino/Presto) Configuration
   prestige_url = System.get_env("PRESTO_URL", "http://ride-trino:8080")
 

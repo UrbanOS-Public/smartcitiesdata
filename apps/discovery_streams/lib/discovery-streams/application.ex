@@ -12,8 +12,10 @@ defmodule DiscoveryStreams.Application do
     require Logger
     import Supervisor.Spec
 
+    version = Application.spec(:discovery_streams, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("DiscoveryStreams.Application starting...")
+    Logger.info("DiscoveryStreams.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)

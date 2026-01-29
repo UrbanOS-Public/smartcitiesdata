@@ -14,8 +14,10 @@ defmodule DiscoveryApi.Application do
     require Logger
     import Supervisor.Spec
 
+    version = Application.spec(:discovery_api, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("DiscoveryApi.Application starting...")
+    Logger.info("DiscoveryApi.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Validate required configuration
