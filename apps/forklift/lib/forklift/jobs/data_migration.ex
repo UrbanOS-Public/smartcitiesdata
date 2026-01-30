@@ -32,6 +32,8 @@ defmodule Forklift.Jobs.DataMigration do
          {:ok, _} <-
            drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
+           clear_extraction_from_main_table(system_name, ingestion_id, extract_time),
+         {:ok, _} <-
            insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
            verify_extraction_count_in_table(
@@ -138,6 +140,18 @@ defmodule Forklift.Jobs.DataMigration do
 
   defp insert_partitioned_data(source, target, ingestion_id, extract_time) do
     "insert into #{target} select *, date_format(now(), '%Y_%m') as os_partition from #{source} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
+    |> PrestigeHelper.execute_query()
+  end
+
+  defp clear_extraction_from_main_table(table, ingestion_id, extract_time) do
+    # Delete any existing records for this specific extraction to ensure idempotent migration.
+    # This prevents duplicate records if the same extraction is processed multiple times
+    # (e.g., due to consumer offset issues, pod restarts, or retry logic).
+    Logger.debug(
+      "Clearing existing records for extraction (ingestion: #{ingestion_id}, extract_time: #{extract_time}) from #{table}"
+    )
+
+    "delete from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
   end
 
