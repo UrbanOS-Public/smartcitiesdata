@@ -32,7 +32,7 @@ defmodule Forklift.Jobs.DataMigration do
          {:ok, _} <-
            drop_last_extraction_if_overwrite(overwrite_mode, system_name, ingestion_id, extract_time),
          {:ok, _} <-
-           clear_extraction_from_main_table(system_name, ingestion_id, extract_time),
+           skip_if_already_migrated(system_name, ingestion_id, extract_time, extraction_count),
          {:ok, _} <-
            insert_partitioned_data(json_table, system_name, ingestion_id, extract_time),
          {:ok, _} <-
@@ -143,18 +143,6 @@ defmodule Forklift.Jobs.DataMigration do
     |> PrestigeHelper.execute_query()
   end
 
-  defp clear_extraction_from_main_table(table, ingestion_id, extract_time) do
-    # Delete any existing records for this specific extraction to ensure idempotent migration.
-    # This prevents duplicate records if the same extraction is processed multiple times
-    # (e.g., due to consumer offset issues, pod restarts, or retry logic).
-    Logger.debug(
-      "Clearing existing records for extraction (ingestion: #{ingestion_id}, extract_time: #{extract_time}) from #{table}"
-    )
-
-    "delete from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
-    |> PrestigeHelper.execute_query()
-  end
-
   defp remove_extraction_from_table(table, ingestion_id, extract_time) do
     "delete from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
     |> PrestigeHelper.execute_query()
@@ -215,4 +203,34 @@ defmodule Forklift.Jobs.DataMigration do
 
   defp check_for_data_to_migrate(0), do: {:abort, "No data found to migrate"}
   defp check_for_data_to_migrate(_count), do: {:ok, :data_found}
+
+  defp skip_if_already_migrated(table, ingestion_id, extract_time, expected_count) do
+    # Check if this extraction has already been migrated to the main table.
+    # If records exist with the expected count, skip the migration to avoid duplicates.
+    # This provides idempotency since Trino/Hive non-transactional tables don't support DELETE.
+    count_query =
+      "select count(1) from #{table} where (_ingestion_id = '#{ingestion_id}' and _extraction_start_time = #{extract_time})"
+
+    case PrestigeHelper.count_query(count_query) do
+      {:ok, 0} ->
+        # No existing records, proceed with migration
+        {:ok, :proceed}
+
+      {:ok, existing_count} when existing_count == expected_count ->
+        # Already migrated with correct count, skip to avoid duplicates
+        {:abort, "extraction already exists in main table with expected count #{expected_count}"}
+
+      {:ok, existing_count} ->
+        # Partial migration or mismatch - this is a problem we can't easily fix without DELETE
+        Logger.warning(
+          "Extraction (ingestion: #{ingestion_id}, extract_time: #{extract_time}) exists in #{table} " <>
+            "with count #{existing_count}, expected #{expected_count}. Skipping to avoid further duplicates."
+        )
+
+        {:abort, "extraction partially exists in main table (#{existing_count} vs expected #{expected_count})"}
+
+      {:error, error} ->
+        {:error, error}
+    end
+  end
 end
