@@ -401,6 +401,11 @@ if config_env() == :prod do
       max_wait_time: 10_000
     ]
 
+  case System.get_env("OVERWRITE_MODE") do
+    "true" -> config :forklift, overwrite_mode: true
+    _ -> config :forklift, overwrite_mode: false
+  end
+
   # ExAws configuration for Forklift S3 writes (MinIO or AWS)
   config :ex_aws,
     region: System.get_env("AWS_REGION", "us-west-2")
