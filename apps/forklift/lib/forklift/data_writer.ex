@@ -227,9 +227,21 @@ defmodule Forklift.DataWriter do
     }
   end
 
+  defp get_with_default(redis_conn, key, default) do
+    case Redix.command(redis_conn, ["GET", key]) do
+      {:ok, nil} -> 
+        default
+      {:ok, value} -> 
+        value
+      {:error, reason} -> 
+        {:error, reason}
+    end
+  end
+
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     {expected_message_count, _} =
-      Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"])
+      #Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"])
+      get_with_default( :redix, "#{ingestion_id}" <> "#{extract_time}", "0")
       |> Integer.parse()
 
     %{

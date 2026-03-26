@@ -82,13 +82,14 @@ defmodule Reaper.Http.Downloader do
     connect_timeout = Keyword.get(opts, :connect_timeout, 30_000)
     protocol = format_protocol(Keyword.get(opts, :protocol, nil))
 
+    # Modified to ignore SSL certs should be a temporary code fix.
     case protocol do
       nil ->
-        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+        Mint.HTTP.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout, verify: :verify_none ])
 
       protocol ->
         Mint.HTTP.connect(scheme, uri.host, uri.port,
-          transport_opts: [timeout: connect_timeout],
+          transport_opts: [timeout: connect_timeout, verify: :verify_none ],
           protocols: protocol
         )
     end
