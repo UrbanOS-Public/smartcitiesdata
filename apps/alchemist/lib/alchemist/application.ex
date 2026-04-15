@@ -12,8 +12,10 @@ defmodule Alchemist.Application do
   getter(:brook, generic: true)
 
   def start(_type, _args) do
+    version = Application.spec(:alchemist, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Alchemist.Application starting...")
+    Logger.info("Alchemist.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Log node distribution configuration for debugging

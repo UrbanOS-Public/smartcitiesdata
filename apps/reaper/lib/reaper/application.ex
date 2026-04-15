@@ -14,8 +14,10 @@ defmodule Reaper.Application do
   def redis_client(), do: :reaper_redix
 
   def start(_type, _args) do
+    version = Application.spec(:reaper, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Reaper.Application starting...")
+    Logger.info("Reaper.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)

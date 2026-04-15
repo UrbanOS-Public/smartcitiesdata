@@ -42,3 +42,5 @@ apps/reaper/12345-6789
 
 *.log
 package.json package-lock.json
+releases
+tasks

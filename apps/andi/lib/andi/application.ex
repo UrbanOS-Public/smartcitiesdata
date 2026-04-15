@@ -14,8 +14,10 @@ defmodule Andi.Application do
   getter(:secrets_endpoint, generic: true)
 
   def start(_type, _args) do
+    version = Application.spec(:andi, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Andi.Application starting...")
+    Logger.info("Andi.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Verify :pg module is available (part of kernel application in OTP 23+)

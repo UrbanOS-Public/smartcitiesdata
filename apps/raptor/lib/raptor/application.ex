@@ -12,8 +12,10 @@ defmodule Raptor.Application do
   def redis_client(), do: :raptor_redix
 
   def start(_type, _args) do
+    version = Application.spec(:raptor, :vsn) |> to_string()
+
     Logger.info("======================================================")
-    Logger.info("Raptor.Application starting...")
+    Logger.info("Raptor.Application v#{version} starting...")
     Logger.info("======================================================")
 
     # Log Brook configuration
