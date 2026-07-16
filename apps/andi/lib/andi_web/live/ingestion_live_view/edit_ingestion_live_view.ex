@@ -462,10 +462,9 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
            andi_ingestion
            |> Ingestion.changeset(%{})
            |> Ingestion.validate(),
-         true <- ingestion_changeset.valid? do
-      ingestion_for_publish = ingestion_changeset.data
-      smrt_ingestion = InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish)
-
+         true <- ingestion_changeset.valid?,
+         ingestion_for_publish <- ingestion_changeset.data,
+         {:ok, smrt_ingestion} <- InputConverter.andi_ingestion_to_smrt_ingestion(ingestion_for_publish) do
       case Brook.Event.send(@instance_name, ingestion_update(), :andi, smrt_ingestion) do
         :ok ->
           Ingestions.update_submission_status(ingestion_id, :published)
@@ -475,6 +474,7 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
 
         error ->
           Logger.error("Ingestion Publish Error: Unable to publish updated ingestion to Brook: #{inspect(error)}")
+          {:error, error}
       end
     else
       nil ->
@@ -493,6 +493,10 @@ defmodule AndiWeb.IngestionLiveView.EditIngestionLiveView do
         Logger.error("Ingestion Publish Error: Changeset validation found errors in ingestion: #{inspect(changeset_errors)}")
 
         {:error, changeset_errors}
+
+      {:error, reason} ->
+        Logger.error("Ingestion Publish Error: Unable to convert ingestion #{ingestion_id} to SmartCity.Ingestion: #{inspect(reason)}")
+        {:error, reason}
 
       error ->
         Logger.error("Ingestion Publish Error: #{inspect(error)}")

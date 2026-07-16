@@ -5,7 +5,8 @@ required_envars = [
   "KAFKA_BROKERS",
   "OUTPUT_TOPIC_PREFIX",
   "DLQ_TOPIC",
-  "HOSTED_FILE_BUCKET"
+  "HOSTED_FILE_BUCKET",
+  "SECRETS_ENDPOINT"
 ]
 
 Enum.each(required_envars, fn var ->

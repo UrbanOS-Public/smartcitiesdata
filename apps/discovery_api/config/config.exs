@@ -38,7 +38,11 @@ config :discovery_api, DiscoveryApiWeb.Auth.TokenHandler, secret_key: secret
 config :discovery_api, DiscoveryApi.Quantum.Scheduler,
   jobs: [
     # Every Monday at 2:00am EDT or 6:00am UTC
-    {"0 6 * * 1", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}}
+    {"0 6 * * 1", {DiscoveryApi.Stats.StatsCalculator, :produce_completeness_stats, []}},
+    # Flush Trino query stats to Redis every 5 minutes
+    {"*/5 * * * *", {DiscoveryApi.Services.MetricsService, :flush_query_stats_to_redis, []}},
+    # Reset in-memory query stats every hour
+    {"0 * * * *", {DiscoveryApi.Stats.QueryStats, :reset, []}}
   ]
 
 config :mime, :types, %{
@@ -48,6 +52,9 @@ config :mime, :types, %{
 
 config :discovery_api,
   user_visualization_limit: 1_000
+
+config :discovery_api, :query_cache,
+  max_rows: 50_000
 
 config :elastix,
   json_codec: Jason,

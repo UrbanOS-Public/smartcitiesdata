@@ -6,6 +6,7 @@ defmodule Andi.Services.UserOrganizationAssociateService do
   alias SmartCity.Organization
   alias SmartCity.UserOrganizationAssociate
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
   require Logger
 
   @doc """
@@ -17,7 +18,12 @@ defmodule Andi.Services.UserOrganizationAssociateService do
         send_events(org_id, users)
 
       {:ok, nil} ->
-        {:error, :invalid_org}
+        # Falls back to Postgres so this still works after a Redis key reset,
+        # where the org exists in Postgres but hasn't yet been resynced to Redis.
+        case Organizations.get(org_id) do
+          nil -> {:error, :invalid_org}
+          _org -> send_events(org_id, users)
+        end
 
       {:error, reason} ->
         Logger.error("Unable to retrieve organization: #{reason}")

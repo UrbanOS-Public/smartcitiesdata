@@ -3,6 +3,7 @@ defmodule AndiWeb.Helpers.FormTools do
   use Properties, otp_app: :andi
 
   alias Andi.InputSchemas.Datasets
+  alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.StructTools
   alias Andi.Services.OrgStore
 
@@ -49,8 +50,20 @@ defmodule AndiWeb.Helpers.FormTools do
     org_id = form_data["orgId"]
     data_name = form_data["dataName"]
 
-    case OrgStore.get(org_id) do
-      {:ok, org} when org != nil ->
+    org =
+      case OrgStore.get(org_id) do
+        {:ok, org} when org != nil -> org
+        _ -> Organizations.get(org_id)
+      end
+
+    case org do
+      nil ->
+        form_data
+        |> put_in(["orgTitle"], "")
+        |> put_in(["orgName"], "")
+        |> put_in(["systemName"], "")
+
+      org ->
         org_name = org.orgName
         org_title = org.orgTitle
         system_name = "#{org_name}__#{data_name}"
@@ -59,12 +72,6 @@ defmodule AndiWeb.Helpers.FormTools do
         |> put_in(["orgTitle"], org_title)
         |> put_in(["orgName"], org_name)
         |> put_in(["systemName"], system_name)
-
-      _ ->
-        form_data
-        |> put_in(["orgTitle"], "")
-        |> put_in(["orgName"], "")
-        |> put_in(["systemName"], "")
     end
   end
 

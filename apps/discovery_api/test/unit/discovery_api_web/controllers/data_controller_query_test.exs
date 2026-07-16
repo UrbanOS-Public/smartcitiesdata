@@ -53,6 +53,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     )
 
     allow(Redix.command!(any(), any()), return: :does_not_matter)
+    allow(Redix.command(any(), any()), return: {:ok, nil})
 
     :ok
   end

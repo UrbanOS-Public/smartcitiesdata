@@ -6,13 +6,21 @@ defmodule DiscoveryApi.Services.PrestoService do
     ~r/^\s*WITH\s.*$/i
   ]
 
+  @metadata_columns ["_extraction_start_time", "_ingestion_id", "os_partition"]
+
   def preview(session, dataset_system_name, row_limit \\ 50, schema) do
     sql_statement = "select #{format_select_statement_from_schema(schema)} from #{dataset_system_name} limit #{row_limit}"
 
-    session
-    |> Prestige.query!(sql_statement)
-    |> Prestige.Result.as_maps()
-    |> map_prestige_results_to_schema(schema)
+    {duration_us, result} =
+      :timer.tc(fn ->
+        session
+        |> Prestige.query!(sql_statement)
+        |> Prestige.Result.as_maps()
+      end)
+
+    Task.start(fn -> DiscoveryApi.Stats.QueryStats.record(sql_statement, div(duration_us, 1000)) end)
+
+    map_prestige_results_to_schema(result, schema)
   end
 
   def preview_columns(schema) do
@@ -113,6 +121,15 @@ defmodule DiscoveryApi.Services.PrestoService do
     catalog == "hive" && schema == "default"
   end
 
+  def get_column_names_from_schema(schema, nil) do
+    names = schema |> Enum.map(& &1.name) |> Enum.reject(&(&1 in @metadata_columns))
+    {:ok, names}
+  end
+
+  def get_column_names_from_schema(_schema, columns_string) do
+    {:ok, clean_columns(columns_string)}
+  end
+
   def get_column_names(session, system_name, nil), do: get_column_names(session, system_name)
 
   def get_column_names(session, system_name, columns_string) do
@@ -190,9 +207,7 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   defp remove_metadata_columns(columns) do
-    metadata_columns = ["_extraction_start_time", "_ingestion_id", "os_partition"]
-
-    columns |> Enum.reject(fn column -> column in metadata_columns end)
+    columns |> Enum.reject(fn column -> column in @metadata_columns end)
   end
 
   defp add_casing_based_on_schema(columns, schema) do

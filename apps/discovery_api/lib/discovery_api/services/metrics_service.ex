@@ -27,4 +27,18 @@ defmodule DiscoveryApi.Services.MetricsService do
   def record_api_hit(request_type, dataset_id) do
     Redix.command!(:redix, ["INCR", "smart_registry:#{request_type}:count:#{dataset_id}"])
   end
+
+  def flush_query_stats_to_redis do
+    stats = DiscoveryApi.Stats.QueryStats.stats()
+    json = Jason.encode!(stats)
+
+    Redix.command!(:redix, ["SET", "discovery_api:query_stats", json])
+
+    Logger.info(
+      "Query stats flushed to Redis — unique=#{stats.unique_query_count} total=#{stats.total_query_count}" <>
+        " overall_avg_ms=#{Float.round(stats.overall_avg_duration_ms, 2)}" <>
+        " cache_hits=#{stats.cache_hits} cache_misses=#{stats.cache_misses} hit_ratio=#{stats.cache_hit_ratio}" <>
+        " unique_callers=#{map_size(stats.caller_counts)}"
+    )
+  end
 end

@@ -7,7 +7,7 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
 
   import Checkov
   import Phoenix.LiveViewTest
-  import SmartCity.Event, only: [organization_update: 0]
+  import SmartCity.Event, only: [organization_update: 0, dataset_update: 0]
   import SmartCity.TestHelper, only: [eventually: 1, eventually: 3]
 
   import FlokiHelpers,
@@ -90,6 +90,46 @@ defmodule AndiWeb.EditOrganizationLiveViewTest do
         1_000,
         30
       )
+
+      assert {:ok, view, html} = live(conn, @url_path <> smrt_organization.id)
+
+      form_data = %{"orgTitle" => "some new org title", "orgName" => "original_org_name"}
+
+      html = render_change(view, "validate", %{"form_data" => form_data, "_target" => ["form_data", "orgTitle"]})
+
+      value = get_value(html, "#form_data_orgName")
+
+      assert value == "original_org_name"
+    end
+
+    test "validation is not triggered for an existing org even after a Redis key reset", %{conn: conn} do
+      smrt_organization = TDG.create_organization(%{orgName: "original_org_name"})
+      Brook.Event.send(@instance_name, organization_update(), __MODULE__, smrt_organization)
+
+      eventually(
+        fn ->
+          assert {:ok, nil} != OrgStore.get(smrt_organization.id)
+        end,
+        1_000,
+        30
+      )
+
+      smrt_dataset =
+        TDG.create_dataset(%{technical: %{orgId: smrt_organization.id, orgName: smrt_organization.orgName}})
+
+      Brook.Event.send(@instance_name, dataset_update(), __MODULE__, smrt_dataset)
+
+      eventually(
+        fn ->
+          assert nil != Datasets.get(smrt_dataset.id)
+        end,
+        1_000,
+        30
+      )
+
+      # Simulate a Redis key reset wiping this org from the OrgStore, even though
+      # it's still present (and has associated datasets) in Postgres.
+      OrgStore.delete(smrt_organization.id)
 
       assert {:ok, view, html} = live(conn, @url_path <> smrt_organization.id)
 

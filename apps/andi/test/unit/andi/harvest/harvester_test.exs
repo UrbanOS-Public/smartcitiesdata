@@ -45,11 +45,29 @@ defmodule Andi.Harvest.HarvesterTest do
         })
 
       allow(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), return: :ok, meck_options: [:passthrough])
-      allow(OrgStore.get_all(), return: [org_1], meck_options: [:passthrough])
+      allow(OrgStore.get_all(), return: {:ok, [org_1]}, meck_options: [:passthrough])
 
       Harvester.start_harvesting()
 
       refute_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), times(1))
+    end
+
+    test "start_harvesting/0 falls back to Postgres when the OrgStore (Redis) has no orgs" do
+      andi_org = %Andi.InputSchemas.Organization{
+        id: "95254592-d611-4bcb-9478-7fa248f4118d",
+        orgTitle: "Awesome Title",
+        orgName: "awesome_title",
+        description: "a description",
+        dataJsonUrl: "http://www.google.com"
+      }
+
+      allow(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), return: :ok)
+      allow(OrgStore.get_all(), return: {:ok, []})
+      allow(Organizations.get_all(), return: [andi_org])
+
+      Harvester.start_harvesting()
+
+      assert_called(Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, any()), times(1))
     end
 
     test "get_data_json/1", %{data_json: data_json, bypass: bypass} do

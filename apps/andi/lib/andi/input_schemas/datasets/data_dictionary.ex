@@ -167,6 +167,7 @@ defmodule Andi.InputSchemas.Datasets.DataDictionary do
     dictionary
     |> cast(changes_with_id, @cast_fields_for_ingestion, empty_values: [])
     |> cast_assoc(:subSchema, with: &__MODULE__.changeset_for_draft_ingestion/2)
+    |> format_ingestion_sync()
     |> validate_format(:name, ~r/^[^.\[\]]+$/)
     |> foreign_key_constraint(:ingestion_id)
   end

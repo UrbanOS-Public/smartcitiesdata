@@ -5,6 +5,7 @@ defmodule AndiWeb.Helpers.FormToolsTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias AndiWeb.Helpers.FormTools
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
 
   describe "adjust_source_query_params_for_url/1" do
     test "given a url it sets the query params to match what is in it" do
@@ -181,6 +182,51 @@ defmodule AndiWeb.Helpers.FormToolsTest do
                "orgId" => "existing_org_id",
                "systemName" => "existing_org_name__another_data_title"
              } == new_form_data
+    end
+
+    test "falls back to Postgres when org is not in Redis (Redis miss after key reset)" do
+      pg_org = %Andi.InputSchemas.Organization{
+        id: "existing_org_id",
+        orgTitle: "Postgres Org Title",
+        orgName: "postgres_org_name"
+      }
+
+      Placebo.allow(OrgStore.get(any()), return: {:ok, nil})
+      Placebo.allow(Organizations.get(any()), return: pg_org)
+
+      current_form_data = %{
+        "orgTitle" => "",
+        "dataName" => "my_dataset",
+        "orgName" => "",
+        "orgId" => "existing_org_id"
+      }
+
+      new_form_data = FormTools.adjust_org_name(current_form_data)
+
+      assert %{
+               "orgTitle" => "Postgres Org Title",
+               "orgName" => "postgres_org_name",
+               "orgId" => "existing_org_id",
+               "systemName" => "postgres_org_name__my_dataset"
+             } = new_form_data
+    end
+
+    test "clears org fields when org is missing from both Redis and Postgres" do
+      Placebo.allow(OrgStore.get(any()), return: {:ok, nil})
+      Placebo.allow(Organizations.get(any()), return: nil)
+
+      current_form_data = %{
+        "orgTitle" => "Some Title",
+        "dataName" => "my_dataset",
+        "orgName" => "some_org",
+        "orgId" => "nonexistent_org_id"
+      }
+
+      new_form_data = FormTools.adjust_org_name(current_form_data)
+
+      assert new_form_data["orgTitle"] == ""
+      assert new_form_data["orgName"] == ""
+      assert new_form_data["systemName"] == ""
     end
   end
 end

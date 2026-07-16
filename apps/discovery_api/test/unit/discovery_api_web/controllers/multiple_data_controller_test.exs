@@ -57,6 +57,7 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
     allow(Model.get_all(), return: datasets, meck_options: [:passthrough])
     allow(Brook.Event.send(DiscoveryApi.instance_name(), dataset_query(), any(), any()), return: :ok)
+    allow(Redix.command(any(), any()), return: {:ok, nil})
 
     {
       :ok,

@@ -166,15 +166,25 @@ defmodule Andi.InputSchemas.InputConverter do
   end
 
   def andi_ingestion_to_smrt_ingestion(%Ingestion{} = ingestion) do
-    ingestion
-    |> StructTools.to_map()
-    |> Map.update(:extractSteps, nil, &convert_andi_extract_steps/1)
-    |> Map.update(:schema, nil, fn schema ->
-      schema
-      |> Enum.map(&drop_fields_from_dictionary_item/1)
-      |> Enum.map(&populate_schema_field_default/1)
+    result =
+      ingestion
+      |> StructTools.to_map()
+      |> Map.put_new(:transformations, [])
+      |> Map.update(:extractSteps, nil, fn steps ->
+      steps
+      |> convert_andi_extract_steps()
+      |> Enum.sort_by(&Map.get(&1, :sequence, 0))
     end)
-    |> SmartCity.Ingestion.new()
+      |> Map.update(:schema, nil, fn schema ->
+        schema
+        |> Enum.map(&drop_fields_from_dictionary_item/1)
+        |> Enum.map(&populate_schema_field_default/1)
+      end)
+      |> SmartCity.Ingestion.new()
+
+    {:ok, result}
+  rescue
+    e -> {:error, e}
   end
 
   def andi_org_to_smrt_org(%Organization{} = org) do
@@ -483,6 +493,8 @@ defmodule Andi.InputSchemas.InputConverter do
     |> Map.delete(:id)
     |> Map.delete(:dataset_id)
     |> Map.delete(:bread_crumb)
+    |> Map.delete(:technical_id)
+    |> Map.delete(:ingestion_id)
     |> Map.update(:subSchema, nil, fn sub_schema ->
       Enum.map(sub_schema, &drop_fields_from_dictionary_item/1)
     end)

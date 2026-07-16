@@ -32,6 +32,7 @@ defmodule Andi.InputSchemas.Datasets do
       )
 
     Repo.all(query)
+    |> Repo.preload(technical: :schema)
   end
 
   def create(owner) do

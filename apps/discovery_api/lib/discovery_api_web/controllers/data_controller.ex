@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.DataController do
   use DiscoveryApiWeb, :controller
   use Properties, otp_app: :discovery_api
 
-  alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApi.Services.{PrestoService, QueryCache}
   alias DiscoveryApiWeb.Plugs.{GetModel, Restrictor, RecordMetrics}
   alias DiscoveryApiWeb.DataView
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
@@ -65,6 +65,7 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def query(conn, params) do
+    conn = assign(conn, :query_start_ms, System.monotonic_time(:millisecond))
     format = get_format(conn)
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
@@ -73,15 +74,25 @@ defmodule DiscoveryApiWeb.DataController do
     session = DiscoveryApi.prestige_opts() |> Prestige.new_session()
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    with {:ok, columns} <- PrestoService.get_column_names(session, dataset_name, Map.get(params, "columns")),
+    with {:ok, columns} <- PrestoService.get_column_names_from_schema(schema, Map.get(params, "columns")),
          {:ok, query} <- PrestoService.build_query(params, dataset_name, columns, schema),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(query),
-         true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key) do
+         true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key),
+         {:ok, rows, _} <- QueryCache.fetch_or_execute(query, fn ->
+           fetched =
+             session
+             |> Prestige.stream!(query)
+             |> Stream.flat_map(&Prestige.Result.as_maps/1)
+             |> Enum.to_list()
+           {:ok, fetched}
+         end) do
+      caller_id = List.first(api_key) || "anonymous"
+      Task.start(fn -> DiscoveryApi.Stats.QueryStats.record_caller(caller_id) end)
+
       data_stream =
-        session
-        |> Prestige.stream!(query)
-        |> Stream.flat_map(&Prestige.Result.as_maps/1)
+        rows
         |> map_schema?(schema, format)
+        |> DiscoveryApi.Stats.QueryStats.wrap_stream(query)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})
@@ -89,11 +100,19 @@ defmodule DiscoveryApiWeb.DataController do
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
       {:error, error} ->
+        duration_ms = System.monotonic_time(:millisecond) - conn.assigns.query_start_ms
+        Task.start(fn -> DiscoveryApi.Stats.QueryStats.record("failed:#{conn.assigns.model.systemName}", duration_ms) end)
         render_error(conn, 404, error)
 
       _ ->
         render_error(conn, 400, "Bad Request")
-    end
+  end
+  rescue
+    error in [Prestige.Error, Prestige.ConnectionError] ->
+      duration_ms = System.monotonic_time(:millisecond) - conn.assigns.query_start_ms
+      Task.start(fn -> DiscoveryApi.Stats.QueryStats.record("failed:#{conn.assigns.model.systemName}", duration_ms) end)
+      Logger.error("Query endpoint error for dataset #{conn.assigns.model.systemName}: #{inspect(error)}")
+      render_error(conn, 400, "Bad Request")
   end
 
   defp map_schema?(data, schema, format) do

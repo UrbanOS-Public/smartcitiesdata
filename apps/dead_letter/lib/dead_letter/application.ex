@@ -5,6 +5,8 @@ defmodule DeadLetter.Application do
   def start(_something, _else) do
     opts = Application.get_all_env(:dead_letter)
     config = Keyword.fetch!(opts, :driver) |> Enum.into(%{})
+    IO.inspect(config, label: "Dead Letter Config")
+
 
     children =
       [

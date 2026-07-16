@@ -211,6 +211,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
         meck_options: [:passthrough]
       )
 
+      allow(Andi.InputSchemas.Organizations.get(any()), return: nil)
+
       org_id = 111
 
       actual =

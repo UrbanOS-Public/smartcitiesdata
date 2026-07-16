@@ -248,10 +248,26 @@ defmodule AndiWeb.API.IngestionControllerTest do
       allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
       allow(IngestionStore.get(any()), return: {:ok, nil})
       allow(DatasetStore.get("nonexistent_dataset"), return: {:ok, nil})
+      allow(Andi.InputSchemas.Datasets.get("nonexistent_dataset"), return: nil)
 
       conn = put(conn, @route, ingestion_without_id)
       body = json_response(conn, 400)
       assert "Target dataset does not exist" =~ Map.get(body, "errors")
+    end
+
+    test "PUT /api/ targetDatasets falls back to Postgres when the DatasetStore (Redis) has no record",
+         %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: ["dataset_in_postgres_only"]})
+      {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
+
+      allow(Brook.Event.send(@instance_name, any(), any(), any()), return: :ok)
+      allow(IngestionStore.get(any()), return: {:ok, nil})
+      allow(DatasetStore.get("dataset_in_postgres_only"), return: {:ok, nil})
+      allow(Andi.InputSchemas.Datasets.get("dataset_in_postgres_only"), return: %{submission_status: :published})
+
+      conn = put(conn, @route, ingestion_without_id)
+
+      response(conn, 201)
     end
 
     test "PUT /api/ fail validation when datasetStore fails", %{conn: conn} do

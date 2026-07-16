@@ -124,6 +124,10 @@ defmodule Valkyrie do
     end
   end
 
+  defp standardize(%{type: "map"}, value) when is_map(value) do
+    {:ok, value}
+  end
+
   defp standardize(%{type: "list"}, value) when not is_list(value) do
     {:error, :invalid_list}
   end

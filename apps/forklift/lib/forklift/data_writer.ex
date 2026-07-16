@@ -151,7 +151,12 @@ defmodule Forklift.DataWriter do
       %{name: "_ingestion_id", type: "string"}
     ]
 
-    schema ++ ingestion_metadata_schema
+    if is_nil(schema) do
+      require Logger
+      Logger.warn("add_ingestion_metadata_to_schema called with nil schema — dataset_update event may not have been processed yet")
+    end
+
+    (schema || []) ++ ingestion_metadata_schema
   end
 
   def write_to_topic(data) do

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Diagnosing ANDI Publish Failures</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-border: #2a2e3a;
+    --text: #e4e7ef;
+    --muted: #9aa1b4;
+    --accent: #5aa9ff;
+    --ok: #4fd18b;
+    --warn: #f2b84b;
+    --bad: #f2624b;
+    --code-bg: #10131a;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.35rem;
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  h3 { font-size: 1.05rem; color: var(--accent); margin-top: 1.75rem; }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); margin-top: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-right: 0.4rem;
+  }
+  .tag.gap { background: rgba(242, 98, 75, 0.15); color: var(--bad); border: 1px solid rgba(242,98,75,0.4); }
+  .tag.ok { background: rgba(79, 209, 139, 0.15); color: var(--ok); border: 1px solid rgba(79,209,139,0.4); }
+  .tag.warn { background: rgba(242, 184, 75, 0.15); color: var(--warn); border: 1px solid rgba(242,184,75,0.4); }
+
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.87rem;
+  }
+  code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: #cfe8ff; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: #cfe8ff;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { white-space: nowrap; }
+
+  .diagram-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .diagram-caption { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+
+  .callout {
+    border-left: 3px solid var(--warn);
+    background: rgba(242, 184, 75, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.1rem 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: rgba(242, 98, 75, 0.08); }
+  .callout.good { border-left-color: var(--ok); background: rgba(79, 209, 139, 0.08); }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 1rem;
+  }
+
+  svg text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .toc {
+    columns: 2;
+    font-size: 0.92rem;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Diagnosing ANDI Publish Failures</h1>
+  <p class="subtitle">
+    Console tools for finding why a Dataset or Ingestion won't publish, plus the two bugs
+    that motivated them &mdash; found while troubleshooting
+    <code>ingestion_id = f4822954-1c0d-482e-9208-f45f5620c5a2</code> the week of 2026-07-09.
+  </p>
+
+  <nav class="card">
+    <strong>Contents</strong>
+    <div class="toc">
+      <p><a href="#why">Why this exists</a></p>
+      <p><a href="#quickstart">Quick start</a></p>
+      <p><a href="#flow">How publish validation actually works</a></p>
+      <p><a href="#reference">Function reference</a></p>
+      <p><a href="#gap">The "Ingestion Field" UI gap</a></p>
+      <p><a href="#case-study">Case study walkthrough</a></p>
+      <p><a href="#caveats">Caveats &amp; open questions</a></p>
+    </div>
+  </nav>
+
+  <h2 id="why">Why this exists</h2>
+  <p>
+    ANDI's Publish button can fail with no useful information in the UI. The banner it shows on
+    failure is hard-coded to the same soft message regardless of what went wrong, and the error
+    ANDI itself logs server-side is frequently <code>[]</code> &mdash; an empty list &mdash; even
+    when the underlying data is genuinely invalid. That's not a fluke; it's how
+    <code>Ecto.Changeset.errors</code> works: it only holds errors attached directly to the
+    top-level changeset, never the ones nested inside <code>cast_assoc</code> children
+    (schema fields, extract steps, transformations). Reproducing the failure and calling
+    <code>Ecto.Changeset.traverse_errors/2</code> instead is the only way to see what's actually wrong.
+  </p>
+  <p>
+    <code>Andi.Scripts.PublishDiagnostics</code> (<code>apps/andi/lib/andi/scripts/publish_diagnostics.ex</code>)
+    wraps that up into single function calls, plus two checks for the specific failure modes
+    this week's incident turned up.
+  </p>
+
+  <h2 id="quickstart">Quick start</h2>
+  <div class="card">
+    <p>Compiled into the release &mdash; no extra deploy step, callable straight from the remote console:</p>
+<pre><code>. ~/profile.d/urbanos
+kubectl -n mdot-ride-dev-ns exec -it &lt;andi-pod&gt; -- bin/andi remote</code></pre>
+<pre><code>iex(andi@...)&gt; Andi.Scripts.PublishDiagnostics.diagnose_ingestion("f4822954-1c0d-482e-9208-f45f5620c5a2")</code></pre>
+  </div>
+
+  <h2 id="flow">How publish validation actually works</h2>
+  <p>
+    The single biggest source of confusion this week: <strong>saving a draft validates almost
+    nothing</strong>, and <strong>the Publish button's own error log is misleading</strong>. The
+    diagram below traces both save paths side by side.
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 920 460" width="100%" role="img" aria-label="Publish validation flow diagram">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#5aa9ff"/>
+        </marker>
+        <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#f2624b"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#4fd18b"/>
+        </marker>
+      </defs>
+
+      <!-- Start node -->
+      <rect x="360" y="10" width="200" height="46" rx="8" fill="#1f2330" stroke="#3a3f52"/>
+      <text x="460" y="38" text-anchor="middle" fill="#e4e7ef" font-size="14">Editing in ANDI UI</text>
+
+      <line x1="460" y1="56" x2="460" y2="90" stroke="#3a3f52" stroke-width="2"/>
+      <!-- branch labels -->
+      <text x="230" y="82" fill="#9aa1b4" font-size="12">click "Save"</text>
+      <text x="620" y="82" fill="#9aa1b4" font-size="12">click "Publish"</text>
+      <path d="M460,90 L230,90 L230,120" fill="none" stroke="#4fd18b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <path d="M460,90 L680,90 L680,120" fill="none" stroke="#f2b84b" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Save Draft branch -->
+      <rect x="110" y="120" width="240" height="58" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="230" y="143" text-anchor="middle" fill="#e4e7ef" font-size="13">changeset_for_draft(_ingestion)</text>
+      <text x="230" y="162" text-anchor="middle" fill="#9aa1b4" font-size="11.5">no validate_required at all</text>
+
+      <line x1="230" y1="178" x2="230" y2="210" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <rect x="110" y="210" width="240" height="50" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="230" y="240" text-anchor="middle" fill="#4fd18b" font-size="13">Saved to Postgres</text>
+
+      <line x1="230" y1="260" x2="230" y2="292" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <rect x="90" y="292" width="280" height="60" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="230" y="316" text-anchor="middle" fill="#e4e7ef" font-size="13">Blank / bad fields sail through</text>
+      <text x="230" y="334" text-anchor="middle" fill="#9aa1b4" font-size="11.5">e.g. blank ingestion_field_selector</text>
+
+      <!-- Publish branch -->
+      <rect x="560" y="120" width="240" height="58" rx="8" fill="#2a2013" stroke="#5a4522"/>
+      <text x="680" y="143" text-anchor="middle" fill="#e4e7ef" font-size="13">save_ingestion(socket) first,</text>
+      <text x="680" y="162" text-anchor="middle" fill="#9aa1b4" font-size="11.5">then re-fetch + Ingestion.validate/1</text>
+
+      <line x1="680" y1="178" x2="680" y2="210" stroke="#5a4522" stroke-width="2" marker-end="url(#arrow)"/>
+      <rect x="560" y="210" width="240" height="58" rx="8" fill="#2a2013" stroke="#5a4522"/>
+      <text x="680" y="233" text-anchor="middle" fill="#e4e7ef" font-size="13">strict cast_assoc validation</text>
+      <text x="680" y="252" text-anchor="middle" fill="#9aa1b4" font-size="11.5">schema / extractSteps / transformations</text>
+
+      <line x1="680" y1="268" x2="680" y2="300" stroke="#5a4522" stroke-width="2"/>
+      <text x="590" y="292" fill="#9aa1b4" font-size="12">valid?</text>
+      <path d="M680,300 L560,330 L560,360" fill="none" stroke="#4fd18b" stroke-width="2" marker-end="url(#arrowGreen)"/>
+      <path d="M680,300 L800,330 L800,360" fill="none" stroke="#f2624b" stroke-width="2" marker-end="url(#arrowRed)"/>
+      <text x="530" y="322" fill="#4fd18b" font-size="12">true</text>
+      <text x="810" y="322" fill="#f2624b" font-size="12">false</text>
+
+      <rect x="430" y="360" width="260" height="70" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="560" y="384" text-anchor="middle" fill="#4fd18b" font-size="13">Brook.Event.send(ingestion_update)</text>
+      <text x="560" y="403" text-anchor="middle" fill="#9aa1b4" font-size="11.5">reaper / alchemist / valkyrie / forklift</text>
+      <text x="560" y="419" text-anchor="middle" fill="#9aa1b4" font-size="11.5">rebuild consumer groups</text>
+
+      <rect x="700" y="360" width="200" height="70" rx="8" fill="#2a1616" stroke="#5a2c2c"/>
+      <text x="800" y="384" text-anchor="middle" fill="#f2624b" font-size="13">changeset.errors</text>
+      <text x="800" y="403" text-anchor="middle" fill="#9aa1b4" font-size="11.5">often <tspan font-family="monospace">[]</tspan> &mdash;</text>
+      <text x="800" y="419" text-anchor="middle" fill="#9aa1b4" font-size="11.5">nested errors don't bubble up</text>
+    </svg>
+    <p class="diagram-caption">
+      Draft-save (left, green) never validates <code>ingestion_field_selector</code> or most other
+      required fields &mdash; that's why bad data can sit for days unnoticed. Publish (right) runs the
+      strict validator, but its own top-level <code>changeset.errors</code> (bottom right, red) is
+      usually empty when the real problem is nested. <code>diagnose_ingestion/1</code> runs the same
+      strict path and prints the nested errors instead.
+    </p>
+  </div>
+
+  <h2 id="reference">Function reference</h2>
+
+  <div class="card">
+    <h3><code>diagnose_ingestion(ingestion_id)</code> <span class="tag ok">start here</span></h3>
+    <p>
+      Runs the exact validation the Publish button runs
+      (<code>Ingestion.changeset(%{}) |&gt; Ingestion.validate()</code>), then uses
+      <code>Ecto.Changeset.traverse_errors/2</code> to print every nested error instead of the
+      misleading flat list. Also runs <code>check_top_level_selector/1</code> and
+      <code>find_blank_ingestion_field_selectors/1</code> automatically and folds their output in.
+    </p>
+<pre><code>iex&gt; Andi.Scripts.PublishDiagnostics.diagnose_ingestion("f4822954-1c0d-482e-9208-f45f5620c5a2")
+Ingestion f4822954-1c0d-482e-9208-f45f5620c5a2 (rtd_CV_ATMS_QA_WZDX_2)
+  valid?: false
+  Nested validation errors:
+  errors: %{schema: [%{ingestion_field_selector: ["is required"]}, ...]}
+  topLevelSelector: nil/empty -- whole payload will be treated as one record. OK.
+  17 schema field(s) missing ingestion_field_selector:
+    - features (id=...)
+    - road_event_feed_info (id=...)
+    - road_event_feed_info.data_sources.contact_name (id=...)
+    ...</code></pre>
+  </div>
+
+  <div class="card">
+    <h3><code>diagnose_dataset(dataset_id)</code></h3>
+    <p>
+      Same idea, against the Dataset's own publish path
+      (<code>Dataset.changeset/2 |&gt; validate_unique_system_name/1</code>). Use this for
+      datasets that aren't <code>sourceType: "ingest"</code>, or to sanity-check a target dataset
+      independently of its ingestion.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><code>check_top_level_selector(ingestion_id)</code></h3>
+    <p>
+      Flags a <code>topLevelSelector</code> that's syntactically valid JSONPath but semantically
+      a no-op &mdash; e.g. the literal two characters <code>""</code> instead of a truly empty/nil
+      value. <code>Jaxon.Path.parse/1</code> accepts it silently; <code>Reaper.Decoder.Json</code>
+      then matches zero keys against it, so extraction returns 0 records every cycle with
+      <strong>no error anywhere in the pipeline</strong> &mdash; just an <code>END_OF_DATA</code>
+      sentinel on repeat. This was bug&nbsp;#1 in the f4822954 incident.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><code>find_blank_ingestion_field_selectors(ingestion_id)</code></h3>
+    <p>
+      Recursively walks the schema tree (including nested <code>subSchema</code>) and lists every
+      field whose <code>ingestion_field_selector</code> is <code>nil</code> or <code>""</code>. This
+      value is required to publish, but ANDI's Ingestion schema editor currently has
+      <strong>no UI control that can ever set it</strong> &mdash; see
+      <a href="#gap">the gap diagram below</a>. This was bug&nbsp;#2 in the f4822954 incident.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3><code>fix_blank_ingestion_field_selectors(ingestion_id, dry_run: false)</code> <span class="tag warn">mutates data</span></h3>
+    <p>
+      Sets every blank <code>ingestion_field_selector</code> to that field's own <code>name</code>
+      &mdash; the same thing the Dataset editor's "Sync Ingestion Field" checkbox would have done,
+      had that control been reachable for ingestion-scoped schemas. Defaults to a dry run
+      (prints what it <em>would</em> change); pass <code>dry_run: false</code> to persist.
+    </p>
+    <div class="callout">
+      This is only semantically correct when the payload's JSON keys match your schema field
+      names 1:1 (true for the WZDX case, and for most flat mappings). It is <em>not</em> a
+      universal fix &mdash; <code>ingestion_field_selector</code> is the real extraction key
+      Valkyrie uses to pull each field's value out of the incoming record
+      (<code>apps/valkyrie/lib/valkyrie.ex:30-32</code>), so double check it matches your actual
+      source payload before trusting it blindly.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><code>check_wire_schema(ingestion_id)</code> / <code>check_wire_schema_for_dataset(dataset_id)</code></h3>
+    <p>
+      Prints three numbers side by side instead of just flagging the question below:
+    </p>
+    <ol>
+      <li><strong>Postgres, unstripped</strong> (<code>Ingestions.get/1</code>) &mdash; the actual
+        source of truth <code>Ingestion.validate/1</code> checks at publish time.</li>
+      <li><strong>would-publish-now</strong> (<code>andi_ingestion_to_smrt_ingestion/1</code>) &mdash;
+        what today's conversion code would put on the wire if republished right now. This line
+        will read <code>MISSING</code> for <em>every</em> ingestion, always, because
+        <code>drop_fields_from_dictionary_item/1</code> deletes the key unconditionally &mdash;
+        it doesn't check whether Postgres was good first. Don't read this line in isolation; it's
+        printed to make the stripping visible, not to judge data health.</li>
+      <li><strong>live Brook view</strong> (<code>IngestionStore.get/1</code>) &mdash; ANDI's own
+        view of the last event that was <em>actually</em> published and consumed. This is what
+        Reaper / Alchemist / Valkyrie / Forklift are running on right now.</li>
+    </ol>
+    <p>The comparison that actually matters is <strong>line 1 vs. line 3</strong> &mdash; Postgres
+      today vs. the live artifact:</p>
+<pre><code>iex&gt; Andi.Scripts.PublishDiagnostics.check_wire_schema("f4822954-1c0d-482e-9208-f45f5620c5a2")
+Ingestion f4822954-1c0d-482e-9208-f45f5620c5a2
+  Postgres, unstripped (Ingestions.get/1): ingestion_field_selector MISSING/blank on 17/17 field(s)
+  would-publish-now (andi_ingestion_to_smrt_ingestion/1): ingestion_field_selector MISSING/blank on 17/17 field(s)
+  live Brook view (IngestionStore.get/1): nothing published yet</code></pre>
+    <ul>
+      <li><strong>Postgres present, live view present</strong> &mdash; healthy. Republishing would
+        succeed (modulo other validation) and, once the "is required" gate is removed, would keep
+        working via Valkyrie's <code>name</code>-default fallback exactly as it does today.</li>
+      <li><strong>Postgres MISSING, live view present</strong> &mdash; the pipeline is only working
+        because it's still running on an old event published before Postgres went blank (or before
+        <code>ingestion_field_selector</code> existed at all). Nothing is broken today, but
+        <strong>Publish will fail right now</strong> for this record, with no error visible in the
+        UI, for exactly the reason this whole document exists. This is the case a Redis flush gets
+        blamed for &mdash; it isn't the cause, but recovery work after one is often what first
+        forces someone to re-open and re-save a record that hasn't been touched in years.</li>
+      <li><strong>Postgres MISSING, live view also MISSING/never published</strong> &mdash; a fresh
+        record that has never made it through Publish, or one published after the required-field
+        gate was already removed.</li>
+    </ul>
+  </div>
+
+  <table>
+    <thead><tr><th>Function</th><th>Mutates data?</th><th>Use when&hellip;</th></tr></thead>
+    <tbody>
+      <tr><td><code>diagnose_ingestion/1</code></td><td>No</td><td>Publish fails and the UI shows nothing useful</td></tr>
+      <tr><td><code>diagnose_dataset/1</code></td><td>No</td><td>A dataset (not ingestion) fails to publish</td></tr>
+      <tr><td><code>check_top_level_selector/1</code></td><td>No</td><td>Extraction silently returns 0 records every cycle</td></tr>
+      <tr><td><code>find_blank_ingestion_field_selectors/1</code></td><td>No</td><td>You want the exact list of fields blocking publish</td></tr>
+      <tr><td><code>fix_blank_ingestion_field_selectors/2</code></td><td><strong>Yes</strong>, unless <code>dry_run: true</code> (default)</td><td>You've confirmed field name == payload key</td></tr>
+      <tr><td><code>check_wire_schema/1</code></td><td>No</td><td>Deciding whether it's safe to relax the required-field gate</td></tr>
+      <tr><td><code>check_wire_schema_for_dataset/1</code></td><td>No</td><td>Same, for a dataset's own publish path</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="gap">The "Ingestion Field" UI gap</h2>
+  <p>
+    <code>ingestion_field_selector</code> is required to publish an ingestion, but tracing every
+    path a schema field can take through ANDI shows the Ingestion editor has no way to ever set
+    it. The Dataset editor and the JSON API both work; the Ingestion editor's own UI does not.
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 920 400" width="100%" role="img" aria-label="Ingestion field selector gap comparison across three UI paths">
+      <defs>
+        <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#8892a6"/>
+        </marker>
+      </defs>
+
+      <!-- column headers -->
+      <text x="150" y="30" text-anchor="middle" fill="#e4e7ef" font-size="15" font-weight="600">Dataset editor</text>
+      <text x="460" y="30" text-anchor="middle" fill="#e4e7ef" font-size="15" font-weight="600">Ingestion editor</text>
+      <text x="770" y="30" text-anchor="middle" fill="#e4e7ef" font-size="15" font-weight="600">JSON API</text>
+
+      <!-- entry points -->
+      <rect x="40" y="50" width="220" height="50" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="150" y="80" text-anchor="middle" fill="#e4e7ef" font-size="12.5">"+ Add Field" / file upload</text>
+
+      <rect x="350" y="50" width="220" height="50" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="460" y="80" text-anchor="middle" fill="#e4e7ef" font-size="12.5">"+ Add Field" / file upload</text>
+
+      <rect x="660" y="50" width="220" height="50" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="770" y="80" text-anchor="middle" fill="#e4e7ef" font-size="12.5">POST /api/v1/ingestion</text>
+
+      <line x1="150" y1="100" x2="150" y2="135" stroke="#3a3f52" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="460" y1="100" x2="460" y2="135" stroke="#3a3f52" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="770" y1="100" x2="770" y2="135" stroke="#3a3f52" stroke-width="2" marker-end="url(#arrow2)"/>
+
+      <!-- sets selector? -->
+      <rect x="40" y="135" width="220" height="56" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="150" y="159" text-anchor="middle" fill="#4fd18b" font-size="13">sets ingestion_field_selector</text>
+      <text x="150" y="177" text-anchor="middle" fill="#9aa1b4" font-size="11">= field name, automatically</text>
+
+      <rect x="350" y="135" width="220" height="56" rx="8" fill="#2a1616" stroke="#5a2c2c"/>
+      <text x="460" y="159" text-anchor="middle" fill="#f2624b" font-size="13">never sets it</text>
+      <text x="460" y="177" text-anchor="middle" fill="#9aa1b4" font-size="11">add_field_editor.ex &amp; form_schema.ex</text>
+
+      <rect x="660" y="135" width="220" height="56" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="770" y="159" text-anchor="middle" fill="#4fd18b" font-size="13">caller must supply it</text>
+      <text x="770" y="177" text-anchor="middle" fill="#9aa1b4" font-size="11">or create/publish is rejected</text>
+
+      <line x1="150" y1="191" x2="150" y2="226" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="460" y1="191" x2="460" y2="226" stroke="#5a2c2c" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="770" y1="191" x2="770" y2="226" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrow2)"/>
+
+      <!-- can you fix it by hand? -->
+      <rect x="40" y="226" width="220" height="56" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="150" y="250" text-anchor="middle" fill="#4fd18b" font-size="13">"Ingestion Field" box visible</text>
+      <text x="150" y="268" text-anchor="middle" fill="#9aa1b4" font-size="11">field_editor.ex:74, dataset_or_ingestion == :dataset</text>
+
+      <rect x="350" y="226" width="220" height="56" rx="8" fill="#2a1616" stroke="#5a2c2c"/>
+      <text x="460" y="250" text-anchor="middle" fill="#f2624b" font-size="13">box never rendered</text>
+      <text x="460" y="268" text-anchor="middle" fill="#9aa1b4" font-size="11">same gate, dataset_or_ingestion == :ingestion</text>
+
+      <rect x="660" y="226" width="220" height="56" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="770" y="250" text-anchor="middle" fill="#9aa1b4" font-size="13">n/a &mdash; no interactive form</text>
+
+      <line x1="150" y1="282" x2="150" y2="317" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="460" y1="282" x2="460" y2="317" stroke="#5a2c2c" stroke-width="2" marker-end="url(#arrow2)"/>
+      <line x1="770" y1="282" x2="770" y2="317" stroke="#2c4a37" stroke-width="2" marker-end="url(#arrow2)"/>
+
+      <!-- publish outcome -->
+      <rect x="40" y="317" width="220" height="56" rx="8" fill="#0f2a1c" stroke="#2c4a37" stroke-width="2"/>
+      <text x="150" y="350" text-anchor="middle" fill="#4fd18b" font-size="14" font-weight="600">Publish succeeds</text>
+
+      <rect x="350" y="317" width="220" height="56" rx="8" fill="#2a1414" stroke="#f2624b" stroke-width="2"/>
+      <text x="460" y="350" text-anchor="middle" fill="#f2624b" font-size="14" font-weight="600">Publish fails, silently</text>
+
+      <rect x="660" y="317" width="220" height="56" rx="8" fill="#0f2a1c" stroke="#2c4a37" stroke-width="2"/>
+      <text x="770" y="350" text-anchor="middle" fill="#4fd18b" font-size="14" font-weight="600">Publish succeeds</text>
+    </svg>
+    <p class="diagram-caption">
+      Same required field, three different paths. Only the middle column &mdash; ANDI's own
+      Ingestion editor &mdash; can never produce a valid value through the UI. This is why a
+      production user publishing via script/API, or via the Dataset editor, never sees this;
+      you were the first to build this ingestion's schema by hand in the Ingestion editor.
+    </p>
+  </div>
+
+  <div class="callout good">
+    <strong>Confirmed:</strong> both publish-time conversions
+    (<code>InputConverter.andi_ingestion_to_smrt_ingestion/1</code> and
+    <code>convert_andi_technical/1</code>) strip <code>ingestion_field_selector</code> out of the
+    schema entirely before it's ever put on the wire as a <code>SmartCity.Ingestion</code> /
+    <code>SmartCity.Dataset</code> event &mdash; the "would-publish-now" line of
+    <code>check_wire_schema/1</code> reads <code>MISSING</code> for 100% of every production
+    ingestion tested, with no exceptions, which is exactly what unconditional stripping predicts.
+  </div>
+  <p>
+    What's still per-record, not yet a blanket fact: running the original two-line version of
+    <code>check_wire_schema/1</code> against seven production ingestions (all 12&ndash;36 fields
+    each, all published over roughly the last two years) showed every one of them with a complete,
+    correct <code>ingestion_field_selector</code> in the live Brook view &mdash; meaning the running
+    pipeline for all seven is fine. That result alone doesn't say whether <em>Postgres</em> is also
+    still fine for those same seven (the old two-line version couldn't distinguish that, which is
+    why the three-line version above exists now). Run
+    <code>find_blank_ingestion_field_selectors/1</code> or the updated
+    <code>check_wire_schema/1</code> against a record before editing/republishing it &mdash; if
+    Postgres line comes back blank, Publish will fail today with the same silent
+    <code>changeset.errors: []</code> symptom as the original incident, regardless of how long the
+    record has been published and working.
+  </p>
+
+  <h2 id="case-study">Case study walkthrough</h2>
+  <p>Applying the tools above to <code>f4822954-1c0d-482e-9208-f45f5620c5a2</code> end to end:</p>
+  <ol>
+    <li>
+      Pipeline logs showed extraction running clean every 5 minutes, but Forklift aborting
+      migration every cycle: <code>reason No data found to migrate</code>.
+    </li>
+    <li>
+      Pulling the raw Kafka messages off <code>validated-c852c698-...</code> showed every single
+      one was <code>{"payload":"END_OF_DATA", ...}</code> &mdash; no real record ever made it that
+      far.
+    </li>
+    <li>
+      <code>check_top_level_selector/1</code> would have caught this immediately: the ingestion's
+      <code>topLevelSelector</code> was the literal string <code>""</code>, a syntactically valid
+      but semantically empty JSONPath, so <code>Reaper.Decoder.Json</code> matched zero records
+      every cycle. Fixed by clearing the field to a genuinely empty value.
+    </li>
+    <li>
+      Attempting to republish then failed with
+      <code>Ingestion Publish Error: Changeset validation found errors in ingestion: []</code> in
+      the ANDI logs &mdash; the misleading empty-list symptom described above.
+    </li>
+    <li>
+      <code>diagnose_ingestion/1</code> (or manually, <code>Ecto.Changeset.traverse_errors/2</code>)
+      surfaced the real problem: all 17 schema fields were missing
+      <code>ingestion_field_selector</code>.
+    </li>
+    <li>
+      <code>find_blank_ingestion_field_selectors/1</code> confirmed the exact list and count;
+      <code>fix_blank_ingestion_field_selectors/1</code> (dry run) confirmed the planned fix before
+      running it with <code>dry_run: false</code>.
+    </li>
+  </ol>
+
+  <h2 id="caveats">Caveats &amp; open questions</h2>
+  <ul>
+    <li>
+      <strong>Flat <code>changeset.errors</code> is not trustworthy.</strong> Always read nested
+      errors via <code>traverse_errors/2</code> (which <code>diagnose_ingestion/1</code> and
+      <code>diagnose_dataset/1</code> do for you) &mdash; the flat list is frequently <code>[]</code>
+      even when the changeset is invalid, because <code>cast_assoc</code> errors live on child
+      changesets.
+    </li>
+    <li>
+      <strong><code>check_top_level_selector/1</code> is a heuristic</strong>, not a full
+      simulation of extraction. It flags values that are entirely quote characters
+      (<code>~r/^"+$/</code>); it does not run the selector against real sample data.
+    </li>
+    <li>
+      <strong><code>fix_blank_ingestion_field_selectors/2</code> assumes name == payload key.</strong>
+      Verify against a real sample payload before running with <code>dry_run: false</code> on an
+      ingestion whose schema field names don't match the source JSON/XML keys.
+    </li>
+    <li>
+      <strong><code>check_wire_schema/1</code> tells you what's true right now, not what's always
+      been true.</strong> A record that currently shows Postgres and the live Brook view agreeing
+      could still have been republished recently for unrelated reasons, which would reset the live
+      view to match Postgres's current (possibly already-blank) state. A single check is a
+      snapshot, not a guarantee of what the field looked like historically.
+    </li>
+    <li>
+      <strong>None of this is caused by a Redis flush, even though recovering from one is often
+      what surfaces it.</strong> The required-field list is a hardcoded module attribute
+      (<code>@required_fields</code> in <code>data_dictionary.ex</code>), not read from Redis or
+      any runtime config &mdash; a flush can't change what gets validated. What a Redis flush
+      <em>does</em> do is wipe Brook's view-state cache, which then gets silently rebuilt by
+      replaying ANDI's own Kafka event history; the reconstructed view looks identical to before
+      the flush because nothing about the underlying data changed. The real trigger is usually
+      that someone opens and re-saves a record for the first time in years as part of that
+      recovery work, and that's the first time it hits today's stricter validator.
+    </li>
+  </ul>
+
+  <footer>
+    Generated from the troubleshooting session for <code>ingestion_id = f4822954-1c0d-482e-9208-f45f5620c5a2</code>
+    (dataset <code>mdot__rtd_dataset_20260702</code>), week of 2026-07-09.
+    Diagnostics module: <code>apps/andi/lib/andi/scripts/publish_diagnostics.ex</code>.
+  </footer>
+
+</main>
+</body>
+</html>

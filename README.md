@@ -80,6 +80,138 @@ Patch version increments should introduce no breaking changes to the existing pu
 Minor version increments may require chart changes to function properly. These changes should be reviewed and charts should be adjusted accordingly before updating.
 Major version increments likely introduce wide-spread or structural changes that require many configuration changes. 
 
+## Building Individual Microservices with Make (OTP23)
+
+`build_pods/Makefile` provides a target per microservice that wraps `scripts/build-local.sh`.
+Run it from the **project root**:
+
+```bash
+# Build a single app (image stays local)
+make -f build_pods/Makefile discovery_api
+
+# Build and push to quay.io/urbanos
+make -f build_pods/Makefile discovery_api PUSH=1
+
+# PUSH can also be set as an environment variable
+PUSH=1 make -f build_pods/Makefile forklift
+```
+
+Available targets: `alchemist`, `andi`, `discovery_api`, `forklift`, `reaper`, `valkyrie`
+
+`PUSH=1` passes `--push` to `build-local.sh`. Any non-empty value works (`PUSH=true`, `PUSH=yes`, etc.).
+Log into quay.io before pushing:
+```bash
+~/bin/podman login quay.io
+```
+
+## Local Build with Podman (OTP23)
+
+The GitHub Actions pipelines for this repository target Ubuntu 20.04, which has been deprecated and
+may produce broken or unavailable runners. As a workaround, `scripts/build-local.sh` provides an
+equivalent local build using [Podman](https://podman.io/) instead of Docker.
+
+### Prerequisites
+
+- Podman available at `~/bin/podman` (version 3.4+ recommended)
+- Internet access to pull `docker.io/hexpm/elixir:1.10.4-erlang-23.2.7.5-alpine-3.16.0` on first run
+- A `quay.io` account with push access to `quay.io/urbanos` (for publishing)
+
+### How it works
+
+The script mirrors the two-stage build used by CI:
+
+1. **Base image** — builds `smartcitiesdata:build` from the root `Dockerfile`. This image contains
+   the full monorepo source tree, all Elixir/OTP23 dependencies fetched, and the Alpine SDK and
+   Node.js toolchain needed to compile assets. It is reused across all app builds in a session.
+
+2. **App image** — for each target app, runs `MIX_ENV=prod mix distillery.release` inside the base
+   image and packages the compiled release into a minimal Alpine runtime image, then tags it as
+   both `smartcitiesdata/<app>:<version>` and `quay.io/urbanos/<app>:<version>`.
+
+### Usage
+
+```bash
+# Build all apps with recent local changes (andi, discovery_api, forklift, reaper, valkyrie)
+scripts/build-local.sh
+
+# Build specific apps only
+scripts/build-local.sh discovery_api forklift
+
+# Build and push to quay.io/urbanos
+scripts/build-local.sh --push discovery_api
+
+# Force-rebuild the base image (needed after mix.lock or shared dependency changes)
+scripts/build-local.sh --rebuild-base
+
+# Full release: rebuild base and push all changed apps
+scripts/build-local.sh --rebuild-base --push
+```
+
+Log into quay.io before using `--push`:
+```bash
+~/bin/podman login quay.io
+```
+
+### Available flags
+
+| Flag | Description |
+|------|-------------|
+| `--rebuild-base` | Force rebuild of `smartcitiesdata:build` even if it already exists |
+| `--push` | Push each built image to `quay.io/urbanos` |
+| `--no-cache` | Pass `--no-cache` to all podman build invocations |
+
+### Apps that can be built
+
+Any app under `apps/` that has a `Dockerfile`:
+`alchemist`, `andi`, `discovery_api`, `discovery_streams`, `estuary`, `flair`,
+`forklift`, `raptor`, `reaper`, `valkyrie`
+
+Each app's image version is read automatically from its `mix.exs`.
+
+### Listing locally built images
+
+```bash
+# Show the base builder and all locally built app images
+~/bin/podman images | grep smartcitiesdata
+
+# Show the quay.io-tagged copies ready to push
+~/bin/podman images | grep quay.io/urbanos
+```
+
+Example output after building `discovery_api`:
+```
+quay.io/urbanos/discovery_api           1.3.19   b140299f2f56  ...  254 MB
+localhost/smartcitiesdata/discovery_api 1.3.19   b140299f2f56  ...  254 MB
+localhost/smartcitiesdata               build    81a0c54d7004  ...  459 MB
+```
+
+The `localhost/smartcitiesdata:build` entry is the shared base builder image.
+The `localhost/smartcitiesdata/<app>:<version>` and `quay.io/urbanos/<app>:<version>` entries
+are the same image ID with two tags — the quay.io tag is what `--push` uploads.
+
+### Image versioning
+
+Each app's image is tagged with the version declared in `version:` inside its `mix.exs`. For
+example, `apps/discovery_api/mix.exs` contains:
+
+```elixir
+version: "1.3.19",
+```
+
+To release a new version, increment that field before running `build-local.sh`:
+
+```bash
+# Edit the version in the relevant app's mix.exs, e.g.:
+#   version: "1.3.20",
+vi apps/discovery_api/mix.exs
+
+# Then build and push — the new tag is picked up automatically
+scripts/build-local.sh --push discovery_api
+```
+
+Versioning follows `<major>.<minor>.<patch>` semantics consistent with the rest of the project
+(see [Version History and Retention](#version-history-and-retention) below).
+
 # License
 Released under [Apache 2 license](https://github.com/UrbanOS-Public/smartcitiesdata/blob/master/LICENSE).
 # Contributions
