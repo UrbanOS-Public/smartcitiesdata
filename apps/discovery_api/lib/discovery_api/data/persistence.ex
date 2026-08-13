@@ -2,6 +2,9 @@ defmodule DiscoveryApi.Data.Persistence do
   @moduledoc """
   Module for communicating with Redis to persist and retrieve dataset information
   """
+
+  @scan_count 500
+
   def get_all(key_string, reject_nil \\ false) do
     key_string
     |> get_keys()
@@ -31,8 +34,17 @@ defmodule DiscoveryApi.Data.Persistence do
     Redix.command(:redix, ["DEL", key_string])
   end
 
+  # Uses SCAN instead of KEYS: KEYS blocks Redis for the duration of a full
+  # keyspace scan, while SCAN walks the keyspace incrementally via a cursor.
   def get_keys(key_string) do
-    Redix.command!(:redix, ["KEYS", key_string])
+    scan_keys(key_string, "0", [])
+  end
+
+  defp scan_keys(pattern, cursor, acc) do
+    case Redix.command!(:redix, ["SCAN", cursor, "MATCH", pattern, "COUNT", @scan_count]) do
+      ["0", keys] -> acc ++ keys
+      [next_cursor, keys] -> scan_keys(pattern, next_cursor, acc ++ keys)
+    end
   end
 
   def get_many(keys, reject_nil \\ false)

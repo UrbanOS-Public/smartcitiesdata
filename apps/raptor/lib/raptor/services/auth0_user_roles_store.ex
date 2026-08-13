@@ -13,15 +13,9 @@ defmodule Raptor.Services.Auth0UserRoleStore do
   """
   @spec get_roles_by_user_id(String.t()) :: list(map())
   def get_roles_by_user_id(user_id) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> user_id]) do
-      [] ->
-        []
-
-      keys ->
-        keys
-        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> Enum.map(&from_json/1)
-        |> Enum.at(0)
+    case Redix.command!(@redix, ["GET", @namespace <> user_id]) do
+      nil -> []
+      roles_json -> from_json(roles_json)
     end
   end
 

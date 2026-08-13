@@ -52,7 +52,10 @@ defmodule DiscoveryApi.Data.PersistenceTest do
 
   describe "get_all/2" do
     test "doesnt filter out nils by default" do
-      allow(Redix.command!(:redix, ["KEYS", any()]), return: ["key", "keyb"])
+      allow(Redix.command!(:redix, ["SCAN", "0", "MATCH", any(), "COUNT", 500]),
+        return: ["0", ["key", "keyb"]]
+      )
+
       allow(Redix.command!(:redix, ["MGET" | any()]), return: [~s|{"item": 1}|, nil, ~s|{"item": 2}|])
 
       actual = Persistence.get_all("redis_key") |> Enum.map(&safe_json_decode/1)
@@ -61,12 +64,37 @@ defmodule DiscoveryApi.Data.PersistenceTest do
     end
 
     test "can filter out nils" do
-      allow(Redix.command!(:redix, ["KEYS", any()]), return: ["key", "keyb"])
+      allow(Redix.command!(:redix, ["SCAN", "0", "MATCH", any(), "COUNT", 500]),
+        return: ["0", ["key", "keyb"]]
+      )
+
       allow(Redix.command!(:redix, ["MGET" | any()]), return: [~s|{"item": 1}|, nil, ~s|{"item": 2}|])
 
       actual = Persistence.get_all("redis_key", true) |> Enum.map(&safe_json_decode/1)
 
       assert actual == [%{item: 1}, %{item: 2}]
+    end
+  end
+
+  describe "get_keys/1" do
+    test "returns matching keys found on a single scan page" do
+      allow(Redix.command!(:redix, ["SCAN", "0", "MATCH", "redis_key*", "COUNT", 500]),
+        return: ["0", ["redis_key1", "redis_key2"]]
+      )
+
+      assert Persistence.get_keys("redis_key*") == ["redis_key1", "redis_key2"]
+    end
+
+    test "follows the cursor across multiple scan pages and accumulates keys" do
+      allow(Redix.command!(:redix, ["SCAN", "0", "MATCH", "redis_key*", "COUNT", 500]),
+        return: ["17", ["redis_key1"]]
+      )
+
+      allow(Redix.command!(:redix, ["SCAN", "17", "MATCH", "redis_key*", "COUNT", 500]),
+        return: ["0", ["redis_key2"]]
+      )
+
+      assert Persistence.get_keys("redis_key*") == ["redis_key1", "redis_key2"]
     end
   end
 

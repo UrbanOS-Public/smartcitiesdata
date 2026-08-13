@@ -9,7 +9,9 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
 
   describe "get_all/0" do
     test "returns empty list when no dataset access group relations in redis" do
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: [])
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500]),
+        return: ["0", []]
+      )
 
       actualRelations = DatasetAccessGroupRelationStore.get_all()
 
@@ -22,7 +24,9 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
         "raptor:dataset_access_group_relation:dataset_id1:access_group_id1"
       ]
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: keys)
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500]),
+        return: ["0", keys]
+      )
 
       allow(Redix.command!(@redix, ["MGET" | keys]),
         return: [
@@ -50,7 +54,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
       dataset_id = "picard"
       access_group_id = "enterprise"
       key = "#{dataset_id}:#{access_group_id}"
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]), return: [])
+      allow(Redix.command!(@redix, ["GET", @namespace <> key]), return: nil)
 
       actualRelation = DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
 
@@ -62,15 +66,8 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
       access_group_id = "enterprise"
       key = "#{dataset_id}:#{access_group_id}"
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
-        return: ["raptor:dataset_access_group_relation:picard:enterprise"]
-      )
-
-      allow(
-        Redix.command!(@redix, ["MGET", "raptor:dataset_access_group_relation:picard:enterprise"]),
-        return: [
-          "{\"dataset_id\":\"picard\",\"access_group_id\":\"enterprise\"}"
-        ]
+      allow(Redix.command!(@redix, ["GET", @namespace <> key]),
+        return: "{\"dataset_id\":\"picard\",\"access_group_id\":\"enterprise\"}"
       )
 
       expected_relation = %DatasetAccessGroupRelation{
@@ -81,24 +78,6 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
       actual_relation = DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
 
       assert expected_relation == actual_relation
-    end
-
-    test "an empty map is returned when there are multiple entries in redis matching the dataset id and access group id" do
-      dataset_id = "picard"
-      access_group_id = "enterprise"
-
-      keys = [
-        "raptor:dataset_access_group_relation:picard:enterprise",
-        "raptor:dataset_access_group_relation:picard:enterprise"
-      ]
-
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "#{dataset_id}:#{access_group_id}"]),
-        return: keys
-      )
-
-      actual_relation = DatasetAccessGroupRelationStore.get(dataset_id, access_group_id)
-
-      assert %{} == actual_relation
     end
   end
 

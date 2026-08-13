@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forklift &amp; Trino: Nested Timestamp Caveats</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-border: #2a2e3a;
+    --text: #e4e7ef;
+    --muted: #9aa1b4;
+    --accent: #5aa9ff;
+    --ok: #4fd18b;
+    --warn: #f2b84b;
+    --bad: #f2624b;
+    --code-bg: #10131a;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.35rem;
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  h3 { font-size: 1.05rem; color: var(--accent); margin-top: 1.75rem; }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); margin-top: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-right: 0.4rem;
+  }
+  .tag.gap { background: rgba(242, 98, 75, 0.15); color: var(--bad); border: 1px solid rgba(242,98,75,0.4); }
+  .tag.ok { background: rgba(79, 209, 139, 0.15); color: var(--ok); border: 1px solid rgba(79,209,139,0.4); }
+  .tag.warn { background: rgba(242, 184, 75, 0.15); color: var(--warn); border: 1px solid rgba(242,184,75,0.4); }
+
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.87rem;
+  }
+  code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: #cfe8ff; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: #cfe8ff;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { white-space: nowrap; }
+
+  .diagram-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .diagram-caption { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+
+  .callout {
+    border-left: 3px solid var(--warn);
+    background: rgba(242, 184, 75, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.1rem 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: rgba(242, 98, 75, 0.08); }
+  .callout.good { border-left-color: var(--ok); background: rgba(79, 209, 139, 0.08); }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 1rem;
+  }
+
+  svg text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .toc {
+    columns: 2;
+    font-size: 0.92rem;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .status-dot {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+  }
+  .status-dot.ruled-out { background: var(--bad); }
+  .status-dot.confirmed { background: var(--ok); }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Forklift &amp; Trino: Nested Timestamp Caveats</h1>
+  <p class="subtitle">
+    Why <code>mdot__prune_test_2</code> never migrated from its <code>__json</code> staging table into
+    the queryable main table &mdash; and why the same <code>"timestamp"</code> schema type works fine
+    elsewhere. Found while troubleshooting
+    <code>dataset_id = e4afd220-6842-434b-bf55-b4f4ed01043b</code>,
+    <code>ingestion_id = d336978f-2285-43dc-8e7b-f106e6b3b681</code>, week of 2026-07-16.
+  </p>
+  <p class="subtitle">
+    This page documents <strong>two independent timestamp-handling bugs</strong> found on this same
+    dataset in separate investigations &mdash; a nested-column parsing failure (Problem&nbsp;1, below)
+    and a 32-bit integer overflow on an unrelated field (Problem&nbsp;2, found 2026-08-07) &mdash; plus
+    a production-wide audit (2026-08-11) for datasets exposed to the same class of risk as Problem&nbsp;2.
+  </p>
+
+  <nav class="card">
+    <strong>Contents</strong>
+    <div class="toc">
+      <p><a href="#why">Problem 1: Why this exists</a></p>
+      <p><a href="#symptom">The symptom</a></p>
+      <p><a href="#ruled-out">What we ruled out first</a></p>
+      <p><a href="#root-cause">The actual root cause</a></p>
+      <p><a href="#nesting">Why one dataset works and the other doesn't</a></p>
+      <p><a href="#data-loss">A separate, serious finding: silent permanent data loss</a></p>
+      <p><a href="#fix">The fix we're applying</a></p>
+      <p><a href="#caveats">Caveats &amp; open questions</a></p>
+      <p><a href="#overflow-problem">Problem 2: int32 overflow on modified.date</a></p>
+      <p><a href="#prod-audit">Production audit: who else is exposed</a></p>
+    </div>
+  </nav>
+
+  <h2 id="why">Why this exists</h2>
+  <p>
+    A dev dataset (<code>mdot__prune_test_2</code>, an MDOT ESS/RWIS environmental sensor feed) looked
+    broken end to end: querying it via discovery-api returned nothing useful. The underlying cause
+    turned out to be a one-line serialization bug that only bites when a <code>"timestamp"</code>-typed
+    schema field is nested inside a repeated struct (<code>array(row(...))</code>) rather than sitting
+    at the top level of the record &mdash; and it fails <strong>silently</strong>, with no retry and no
+    alert, until the data is quietly deleted by a retention job a week later. This document is the
+    condensed trail so the next person who hits <code>HIVE_CURSOR_ERROR</code> on a migration doesn't
+    have to re-walk all of it.
+  </p>
+
+  <h2 id="symptom">The symptom</h2>
+  <p>
+    Every single extraction cycle for this dataset (~every 5 minutes, 100% of attempts, across
+    multiple days) failed identically in Forklift's <code>DataMigration.compact/3</code>:
+  </p>
+  <pre><code>[error] Error migrating records for dataset e4afd220-6842-434b-bf55-b4f4ed01043b: mdot__prune_test_2,
+ingestion: d336978f-2285-43dc-8e7b-f106e6b3b681, extract: 1784745001
+%Prestige.Error{
+  code: 16777217,
+  name: "HIVE_CURSOR_ERROR",
+  type: "EXTERNAL",
+  message: "Failed to read file at s3a://presto-hive-storage/hive-s3/mdot__prune_test_2__json/
+            _extraction_start_time=1784745001/_ingestion_id=d336978f-.../1784745144--....gz"
+}</code></pre>
+  <p>
+    Reproduced live via an interactive <code>PrestigeHelper.execute_query/1</code> call days later,
+    byte-for-byte identical &mdash; confirming this is deterministic, not a transient blip.
+  </p>
+
+  <h2 id="ruled-out">What we ruled out first</h2>
+  <p>
+    <code>HIVE_CURSOR_ERROR</code> is a generic wrapper Trino uses for almost any failure while reading
+    a file's contents, so the investigation spent most of its time eliminating plausible causes before
+    landing on the real one.
+  </p>
+  <table>
+    <thead><tr><th>Hypothesis</th><th>Status</th><th>How it was eliminated</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Corrupt / truncated gzip upload</td>
+        <td><span class="status-dot ruled-out"></span>Ruled out</td>
+        <td>Pulled the exact failing objects via <code>mc cp</code> (S3 API, not raw backend disk);
+          <code>gzip -t</code> passed clean on every file, and every JSON line parsed correctly.</td>
+      </tr>
+      <tr>
+        <td>Raw MinIO backend bytes looked like garbage</td>
+        <td><span class="status-dot ruled-out"></span>Explained, not a bug</td>
+        <td>Reading <code>part.1</code> directly off the MinIO backend filesystem showed non-gzip
+          magic bytes &mdash; but that's consistent with server-side encryption at rest. The same
+          object read through the S3 API decompressed fine, confirming this was expected ciphertext,
+          not corruption.</td>
+      </tr>
+      <tr>
+        <td>Cross-Kafka-partition write/compact race</td>
+        <td><span class="status-dot ruled-out"></span>Ruled out</td>
+        <td><code>kafka-topics.sh --describe</code> confirmed <code>PartitionCount: 1</code> for this
+          dataset's input topic &mdash; only one Elsa consumer process, strictly sequential, no
+          concurrency possible on Forklift's side.</td>
+      </tr>
+      <tr>
+        <td>Stale/crashed Trino worker process</td>
+        <td><span class="status-dot ruled-out"></span>Ruled out</td>
+        <td>Restarted the Trino worker pod entirely; the identical <code>HIVE_CURSOR_ERROR</code>
+          reproduced on the brand-new process at the same ~5&nbsp;minute cadence.</td>
+      </tr>
+      <tr>
+        <td>Field type inconsistency in the JSON (e.g. string vs. number flip-flopping)</td>
+        <td><span class="status-dot ruled-out"></span>Ruled out</td>
+        <td>Scripted a check across every record for <code>length</code>, <code>angle</code>,
+          <code>essSensors</code>, <code>status.sensorStatus</code>, etc. &mdash; all internally
+          consistent, nullable but never type-conflicting.</td>
+      </tr>
+      <tr>
+        <td>Nested <code>sensorStatus</code> list containing a bare string
+          (the sibling dataset's actual dead-letter bug)</td>
+        <td><span class="status-dot ruled-out"></span>Ruled out</td>
+        <td>Confirmed every <code>sensorStatus</code> array element was a proper object across 1,336
+          samples &mdash; that failure mode belongs to a different dataset
+          (<code>74f4bcfa-...</code>) sharing the same ingestion envelope, and dead-letters separately
+          at the Valkyrie schema-validation stage.</td>
+      </tr>
+      <tr>
+        <td><strong><code>sensorStatus[].dateTime</code> format mismatch against its declared
+          Trino/Hive column type</strong></td>
+        <td><span class="status-dot confirmed"></span>Confirmed root cause</td>
+        <td>See below.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="root-cause">The actual root cause</h2>
+  <p>
+    <code>show create table mdot__prune_test_2__json</code> declares
+    <code>status.sensorstatus[].datetime</code> as <code>timestamp(3)</code>. But the value Forklift
+    actually writes into the JSON file is a space-separated string with
+    <strong>no fractional seconds at all</strong>:
+  </p>
+  <pre><code>"dateTime": "2026-07-20 15:22:00"</code></pre>
+  <p>
+    That's produced deliberately &mdash; not a stray formatting accident &mdash; by
+    <code>apps/pipeline/lib/pipeline/writer/s3_writer/s3_safe_json.ex:28-30</code>:
+  </p>
+  <pre><code>defp format_data(value, %{type: "timestamp"}) do
+  Timex.parse!(value, "{ISO:Extended}") |&gt; Timex.format!("{ISOdate} {h24}:{m}:{s}")
+end</code></pre>
+  <p>
+    The source value arrives as proper ISO-8601 (parsing requires that), and this function
+    deliberately re-emits it without a <code>T</code> separator and without milliseconds. That's
+    consistent with a real product requirement &mdash; the Michigan implementation is understood to
+    have asked for sub-second precision to be dropped &mdash; not a bug in intent. The problem is that
+    this reformatted value then gets read back by Trino's Hive JSON connector into a declared
+    <code>timestamp(3)</code> column, and for this specific nested usage, that parse fails on every
+    single row.
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 940 300" width="100%" role="img" aria-label="Write and read path for the timestamp field, showing where the mismatch occurs">
+      <defs>
+        <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#5aa9ff"/>
+        </marker>
+        <marker id="a1red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#f2624b"/>
+        </marker>
+      </defs>
+
+      <rect x="20" y="30" width="200" height="60" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="120" y="55" text-anchor="middle" fill="#e4e7ef" font-size="13">MDOT ESS feed</text>
+      <text x="120" y="74" text-anchor="middle" fill="#9aa1b4" font-size="11">dateTime: ISO-8601, with ms</text>
+
+      <line x1="220" y1="60" x2="270" y2="60" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="270" y="30" width="230" height="60" rx="8" fill="#2a2013" stroke="#5a4522"/>
+      <text x="385" y="52" text-anchor="middle" fill="#e4e7ef" font-size="13">S3SafeJson.format_data/2</text>
+      <text x="385" y="71" text-anchor="middle" fill="#9aa1b4" font-size="11">type: "timestamp" branch</text>
+
+      <line x1="500" y1="60" x2="550" y2="60" stroke="#5a4522" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="550" y="30" width="230" height="60" rx="8" fill="#2a2013" stroke="#5a4522"/>
+      <text x="665" y="52" text-anchor="middle" fill="#e4e7ef" font-size="13">"2026-07-20 15:22:00"</text>
+      <text x="665" y="71" text-anchor="middle" fill="#9aa1b4" font-size="11">space-separated, no ms &mdash; intentional</text>
+
+      <line x1="665" y1="90" x2="665" y2="130" stroke="#5a4522" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="550" y="130" width="230" height="60" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="665" y="152" text-anchor="middle" fill="#e4e7ef" font-size="13">written to __json .gz on S3</text>
+      <text x="665" y="171" text-anchor="middle" fill="#9aa1b4" font-size="11">gzip valid, JSON valid &mdash; confirmed</text>
+
+      <line x1="665" y1="190" x2="665" y2="230" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1red)"/>
+
+      <rect x="500" y="230" width="330" height="60" rx="8" fill="#2a1616" stroke="#f2624b" stroke-width="2"/>
+      <text x="665" y="253" text-anchor="middle" fill="#f2624b" font-size="13" font-weight="600">Trino reads column as timestamp(3)</text>
+      <text x="665" y="272" text-anchor="middle" fill="#f2624b" font-size="11">parse fails &rarr; HIVE_CURSOR_ERROR, every row, every cycle</text>
+
+      <rect x="20" y="230" width="420" height="60" rx="8" fill="#16241d" stroke="#2c4a37"/>
+      <text x="230" y="253" text-anchor="middle" fill="#4fd18b" font-size="13">Compare: same transform, top-level column</text>
+      <text x="230" y="272" text-anchor="middle" fill="#9aa1b4" font-size="11">mdot__gist_truck_parking_static.timestamp &mdash; reads fine</text>
+    </svg>
+    <p class="diagram-caption">
+      The reformat step is identical for every dataset using <code>type: "timestamp"</code>. The
+      failure only shows up for this dataset's specific column shape &mdash; see below.
+    </p>
+  </div>
+
+  <h2 id="nesting">Why one dataset works and the other doesn't</h2>
+  <p>
+    <code>s3_safe_json.ex</code> is shared code &mdash; every dataset with a <code>"timestamp"</code>
+    field goes through the exact same reformatting. If the reformatted string itself were universally
+    unparsable by Trino, <em>every</em> dataset using this type would be broken. It isn't. Directly
+    comparing the two tables' DDL:
+  </p>
+  <table>
+    <thead><tr><th></th><th><code>mdot__gist_truck_parking_static__json</code> (works)</th><th><code>mdot__prune_test_2__json</code> (broken)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Column shape</td>
+        <td><code>timestamp timestamp(3)</code> &mdash; top-level scalar</td>
+        <td><code>status.sensorstatus[].datetime timestamp(3)</code> &mdash; three levels deep, inside <code>array(row(...))</code></td>
+      </tr>
+      <tr>
+        <td>Migrates successfully today?</td>
+        <td><span class="tag ok">yes</span> zero errors in the log, same ~5 min cadence</td>
+        <td><span class="tag gap">no</span> 100% failure rate, every cycle</td>
+      </tr>
+      <tr>
+        <td>Goes through <code>S3SafeJson.format_data/2</code>?</td>
+        <td>Yes, identical code path</td>
+        <td>Yes, identical code path</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Since the write-side transform is identical either way, the most likely explanation is that
+    Trino's Hive JSON connector applies timestamp parsing differently (or less leniently) for a field
+    nested inside a repeated struct than for a plain top-level column. This has not been isolated with
+    a controlled test (e.g. a minimal reproduction table with just a nested timestamp column) &mdash;
+    see <a href="#caveats">caveats</a>.
+  </p>
+
+  <div class="callout good">
+    <strong>Implication:</strong> <code>s3_safe_json.ex</code> does not need to change. It's working
+    correctly for the shape of data it was presumably designed and tested against (top-level
+    timestamps), and touching shared serialization code to fix one nested-field edge case risks
+    regressing every dataset that currently works fine. The fix belongs in this one dataset's schema,
+    not in shared platform code.
+  </div>
+
+  <h2 id="data-loss">A separate, serious finding: silent permanent data loss</h2>
+  <p>
+    Independent of root cause, tracing what happens <em>after</em> a migration failure turned up a
+    second, more general problem worth fixing regardless of this specific dataset:
+  </p>
+  <div class="card">
+    <h3>No retry, then a 7-day silent purge</h3>
+    <p>
+      <code>Forklift.Jobs.DataMigration.compact/3</code> has no retry on failure &mdash; it logs the
+      error, marks status <code>:error</code>, and never revisits that specific
+      <code>(ingestion_id, extraction_start_time)</code> again
+      (<code>apps/forklift/lib/forklift/jobs/data_migration.ex:65-75</code>). Meanwhile,
+      <code>Forklift.Jobs.PartitionedCompaction.remove_stale_data_from_json_table/1</code> runs daily
+      and unconditionally deletes any <code>__json</code> row older than 7 days, purely by age
+      (<code>apps/forklift/lib/forklift/jobs/partitioned_compaction.ex:91-96</code>) &mdash; with no
+      check for whether that data was ever successfully migrated.
+    </p>
+    <div class="callout bad">
+      Net effect: any migration failure, whatever the cause, is not a delay &mdash; it's a countdown.
+      After 7 days the never-migrated data is deleted from staging with no distinct log line and no
+      alert distinguishing it from routine cleanup of already-migrated rows.
+    </div>
+  </div>
+
+  <h2 id="fix">The fix we're applying</h2>
+  <p>Scoped to this one dataset, lowest blast radius:</p>
+  <ol>
+    <li>In ANDI's Data Dictionary editor, change <code>dateTime</code>'s field type from
+      <code>timestamp</code> to <code>string</code>. This routes the value through
+      <code>S3SafeJson</code>'s catch-all clause (<code>s3_safe_json.ex:59-61</code>) instead of the
+      timestamp branch &mdash; no parsing, no reformatting, written through byte-for-byte.</li>
+    <li>Drop the existing <code>mdot__prune_test_2__json</code> and <code>mdot__prune_test_2</code>
+      tables. Forklift's <code>dataset_update</code> handler only creates tables with
+      <code>CREATE TABLE IF NOT EXISTS</code>
+      (<code>apps/forklift/lib/forklift/event/event_handler.ex:75-104</code>) &mdash; it has no
+      ALTER-TABLE path, so an existing table's column type will not change just by republishing.</li>
+    <li>Click Publish in ANDI <em>after</em> the drop, so the resulting <code>dataset_update</code>
+      event finds the tables missing and recreates them with the corrected schema.</li>
+  </ol>
+  <p>
+    This is destructive to whatever data currently sits in both tables (the small amount that ever
+    migrated, plus whatever's stuck in staging) &mdash; acceptable for a test dataset, and each
+    <code>DROP TABLE</code> was run deliberately by hand rather than automated.
+  </p>
+
+  <h2 id="caveats">Caveats &amp; open questions</h2>
+  <ul>
+    <li>
+      <strong>The nesting-depth theory is a strong structural inference, not a proven mechanism.</strong>
+      We compared two real tables and found a clean correlation (nested fails, top-level works), but
+      never isolated it with a minimal repro table containing only a nested timestamp column. If
+      Trino's actual behavior turns out to be something else nesting-adjacent (e.g. array-vs-row
+      handling generally, not timestamps specifically), this document's explanation would need
+      revising.
+    </li>
+    <li>
+      <strong>The dropped-sub-second-precision behavior in <code>s3_safe_json.ex</code> is believed
+      intentional</strong> (Michigan implementation request), based on context from the engineer
+      investigating, not a code comment or design doc found in-repo. Worth confirming with whoever
+      owns that requirement before anyone is tempted to "fix" the format string globally.
+    </li>
+    <li>
+      <strong>The no-retry / 7-day-purge risk is not specific to timestamps at all.</strong> Any
+      dataset that hits <em>any</em> persistent migration failure &mdash; this bug, a future one, or
+      an entirely unrelated cause &mdash; will silently and permanently lose the affected data on the
+      same 7-day clock. That's a standing platform gap independent of this fix, not addressed by
+      changing this one dataset's schema.
+    </li>
+    <li>
+      <strong>Getting the real Trino-side nested exception proved to be a dead end via logs.</strong>
+      Both the coordinator's <code>QueryMonitor</code> summary line and a live interactive
+      reproduction returned identical, terse <code>HIVE_CURSOR_ERROR</code> structs with no deeper
+      cause chain. If this class of failure recurs, DEBUG-level logging for
+      <code>io.trino.plugin.hive</code> (config change + restart) is the only path found so far to a
+      genuine nested <code>IOException</code>/parse-error message.
+    </li>
+    <li>
+      <strong>Resolution not yet verified end-to-end.</strong> The schema edit / table drop / republish
+      sequence above was planned and about to be executed at the time this document was written;
+      confirm the next few extraction cycles actually migrate cleanly before considering this closed.
+    </li>
+  </ul>
+
+  <h2 id="overflow-problem">Problem 2: int32 overflow on <code>modified.date</code></h2>
+  <p>
+    A second, unrelated bug on the <strong>same dataset</strong> (<code>mdot__prune_test_2</code>),
+    found in a later investigation on 2026-08-07. It shares the generic
+    <code>HIVE_CURSOR_ERROR</code> symptom with Problem&nbsp;1 above, and both are legitimately
+    "timestamp-like field mishandled by Hive/Trino" &mdash; but the mechanism, the field, and the fix
+    are entirely different. This is <em>not</em> a continuation or correction of Problem&nbsp;1; treat
+    them as two separate defects that happened to land on the same dataset.
+  </p>
+  <table>
+    <thead><tr><th></th><th>Problem 1 (above)</th><th>Problem 2 (this section)</th></tr></thead>
+    <tbody>
+      <tr><td>Field</td><td><code>status.sensorstatus[].datetime</code></td><td><code>modified.date</code></td></tr>
+      <tr><td>Declared type</td><td><code>timestamp(3)</code></td><td><code>integer</code></td></tr>
+      <tr><td>Mechanism</td><td>Nested (<code>array(row(...))</code>) timestamp column can't parse the
+        no-milliseconds string format Forklift writes for top-level timestamps</td>
+        <td>Hive 32-bit <code>integer</code> column overflows on a 13-digit millisecond-epoch value</td></tr>
+      <tr><td>Found</td><td>Week of 2026-07-16</td><td>2026-08-07</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card">
+    <h3>Root cause</h3>
+    <p>
+      <code>data_dictionary</code> row <code>dcd2178c-6950-4a0f-a477-44239ff9c9cc</code>
+      (<code>modified &gt; date</code>, ingestion <code>d336978f-2285-43dc-8e7b-f106e6b3b681</code>,
+      "ATMSQA ESS 4.0") is typed <code>integer</code> &mdash; a Hive 32-bit <code>int</code>, max
+      &plusmn;2.147 billion. The real source values are millisecond-epoch timestamps:
+    </p>
+    <pre><code>"modified": {"date": 1777987738000, "user": "NguyenD5"}</code></pre>
+    <p>
+      1,777,987,738,000 overflows a 32-bit int on every single record. The working sibling dataset
+      <code>mdot__ess_test</code> (<code>74f4bcfa-2f53-4136-a5be-d9b987ea42f6</code>, same ingestion)
+      declares the identical field <code>float</code> instead, and reads fine.
+    </p>
+  </div>
+
+  <div class="callout good">
+    <strong>Precision check:</strong> traced schema type <code>"float"</code> through
+    <code>apps/pipeline/lib/pipeline/writer/table_writer/statement/create.ex</code> (the
+    <code>@field_type_map</code> that drives <code>CREATE TABLE</code> DDL, lines 6&ndash;16) &mdash;
+    it maps to Trino/Hive <strong><code>double</code></strong> (64-bit), not single-precision
+    <code>real</code>. A double exactly represents integers up to 2<sup>53</sup> (&asymp;9 quadrillion),
+    so retyping <code>date</code> as <code>float</code> is precision-safe for this 13-digit value, not
+    merely overflow-safe. <code>"long"</code> (&rarr; <code>bigint</code>) would be the more
+    semantically honest type for an epoch integer, but isn't required for correctness here.
+  </div>
+
+  <div class="card">
+    <h3>The fix</h3>
+    <pre><code>update data_dictionary set type = 'float' where id = 'dcd2178c-6950-4a0f-a477-44239ff9c9cc';</code></pre>
+    <p>
+      Followed by the same drop/republish mechanics as Problem 1 above (Forklift's
+      <code>dataset_update</code> handler is <code>CREATE TABLE IF NOT EXISTS</code> only, so an
+      existing table's column type won't change just by republishing): drop
+      <code>mdot__prune_test_2__json</code> and <code>mdot__prune_test_2</code>, then publish in ANDI
+      to recreate both with the corrected schema.
+    </p>
+    <div class="callout warn">
+      <strong>Status:</strong> as of 2026-08-07 this fix had been diagnosed and identified against a
+      local restored DB snapshot, but had <em>not yet been applied</em> to the live cluster. Verify
+      current status before assuming this is resolved.
+    </div>
+  </div>
+
+  <h2 id="prod-audit">Production audit: who else is exposed</h2>
+  <p>
+    2026-08-11: queried the two restored production Postgres snapshots
+    (<code>andi_prod_20260227</code>, <code>andi_prod_20260729</code>) to check whether the
+    Problem&nbsp;2 overflow class exists anywhere else. <code>mdot__prune_test_2</code> and
+    <code>mdot__ess_test</code> are QA/dev-org (<code>mdot</code>) datasets and aren't present in
+    either production snapshot, so this audit covers the real production
+    <code>michigan_department_of_transportation</code> org (12 datasets, 8 ingestions in the most
+    recent snapshot).
+  </p>
+
+  <div class="callout bad">
+    <strong>Finding:</strong> no production dataset currently has the Problem&nbsp;2 bug &mdash; but
+    four production ingestions share the exact same overflow-prone field shape, and are one schema
+    edit away from reproducing it on real data.
+  </div>
+
+  <table>
+    <thead><tr><th>Ingestion</th><th>Target dataset(s) (<code>systemName</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>ATMS DMS</td><td><code>dynamic_message_signs</code>, <code>dms_message</code></td></tr>
+      <tr><td>ATMS Parking</td><td><code>truck_parking_dynamic</code>, <code>atms_parking</code></td></tr>
+      <tr><td>ATMS Parking TPIMS Static</td><td><code>truck_parking_static</code></td></tr>
+      <tr><td>ATMS Prod Events</td><td><code>atms_events_for_cv</code></td></tr>
+    </tbody>
+  </table>
+  <p>
+    Each declares a <code>modified</code> (and, for ATMS Prod Events, also <code>created</code>) field
+    as opaque <code>type: "map"</code> in <code>data_dictionary</code>, with <strong>no expanded
+    sub-fields</strong>. Because the map is never expanded, Hive never attempts to cast the nested
+    <code>date</code> value as a 32-bit int, so the overflow never triggers today. This is
+    <strong>accidental protection, not a deliberate fix</strong>: <code>prune_test_2</code>'s QA
+    ingestion ("ATMSQA ESS 4.0") hit the bug specifically because someone expanded that same
+    <code>modified</code> map into typed sub-fields via ANDI and typed <code>date</code> as
+    <code>integer</code>. The raw source shape
+    (<code>"modified": {"date": &lt;epoch-ms&gt;, "user": "..."}</code>) is confirmed shared across
+    this whole MDOT ATMS API family, so expanding <code>modified</code>/<code>created</code> on any of
+    the four ingestions above and typing the nested <code>date</code> field <code>integer</code> would
+    reproduce this exact crash on production data.
+  </p>
+
+  <div class="card">
+    <h3>No standard convention for date/time fields in production</h3>
+    <p>
+      Neither prod snapshot uses the schema system's own <code>"timestamp"</code>, <code>"date"</code>,
+      or <code>"long"</code> types at all. The only <code>data_dictionary</code> types in active
+      production use are <code>boolean, float, integer, json, list, map, string</code>. Date/time
+      values are represented three different, uncoordinated ways:
+    </p>
+    <table>
+      <thead><tr><th>Convention</th><th>Where</th></tr></thead>
+      <tbody>
+        <tr><td>Opaque <code>map</code>, never expanded</td><td>ATMS family (all four ingestions above)</td></tr>
+        <tr><td>Free-text <code>string</code>, ISO datetime</td><td><code>XML Incident From Mi Drive</code>: <code>actdatetime</code>, <code>enddatetime</code>, <code>startdatetime</code></td></tr>
+        <tr><td><code>float</code> (Trino <code>double</code>)</td><td><code>Dynamic Message Sign Status.timestamp</code> &mdash; the only expanded numeric timestamp field found in prod</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <strong>Recommendation, not yet acted on:</strong> if <code>modified</code>/<code>created</code> is
+    ever expanded on any of the four ATMS ingestions above, the nested epoch sub-field must be typed
+    <code>float</code> or <code>long</code> &mdash; never <code>integer</code>. Worth considering as a
+    standing rule for this API family, and as a candidate for a schema-validation lint in ANDI (flag
+    <code>integer</code> type when a field's sample value exceeds &asymp;2.1 billion) rather than
+    relying on nobody expanding these maps.
+  </div>
+
+  <footer>
+    Problem 1 generated from the troubleshooting session for
+    <code>dataset_id = e4afd220-6842-434b-bf55-b4f4ed01043b</code>
+    (<code>mdot__prune_test_2</code>), ingestion <code>d336978f-2285-43dc-8e7b-f106e6b3b681</code>,
+    2026-07-16 through 2026-07-23. Problem 2 and the production audit added 2026-08-07 and 2026-08-11
+    respectively, from separate troubleshooting sessions on the same dataset.
+  </footer>
+
+</main>
+</body>
+</html>

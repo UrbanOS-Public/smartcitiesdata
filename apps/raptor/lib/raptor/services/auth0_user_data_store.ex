@@ -13,14 +13,9 @@ defmodule Raptor.Services.Auth0UserDataStore do
   """
   @spec get_user_by_api_key(String.t()) :: list(map())
   def get_user_by_api_key(api_key) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> api_key]) do
-      [] ->
-        []
-
-      keys ->
-        keys
-        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> Enum.map(&from_json/1)
+    case Redix.command!(@redix, ["GET", @namespace <> api_key]) do
+      nil -> []
+      user_json -> [from_json(user_json)]
     end
   end
 

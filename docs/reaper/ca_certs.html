@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reaper &amp; ANDI: Trusting an Internal CA Certificate</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-border: #2a2e3a;
+    --text: #e4e7ef;
+    --muted: #9aa1b4;
+    --accent: #5aa9ff;
+    --ok: #4fd18b;
+    --warn: #f2b84b;
+    --bad: #f2624b;
+    --code-bg: #10131a;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.35rem;
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  h3 { font-size: 1.05rem; color: var(--accent); margin-top: 1.75rem; }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); margin-top: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-right: 0.4rem;
+  }
+  .tag.gap { background: rgba(242, 98, 75, 0.15); color: var(--bad); border: 1px solid rgba(242,98,75,0.4); }
+  .tag.ok { background: rgba(79, 209, 139, 0.15); color: var(--ok); border: 1px solid rgba(79,209,139,0.4); }
+  .tag.warn { background: rgba(242, 184, 75, 0.15); color: var(--warn); border: 1px solid rgba(242,184,75,0.4); }
+
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.87rem;
+  }
+  code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: #cfe8ff; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: #cfe8ff;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { white-space: nowrap; }
+
+  .diagram-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .diagram-caption { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+
+  .callout {
+    border-left: 3px solid var(--warn);
+    background: rgba(242, 184, 75, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.1rem 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: rgba(242, 98, 75, 0.08); }
+  .callout.good { border-left-color: var(--ok); background: rgba(79, 209, 139, 0.08); }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 1rem;
+  }
+
+  .toc {
+    columns: 2;
+    font-size: 0.92rem;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .status-dot {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+  }
+  .status-dot.todo { background: var(--warn); }
+  .status-dot.done { background: var(--ok); }
+
+  svg text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Reaper &amp; ANDI: Trusting an Internal CA Certificate</h1>
+  <p class="subtitle">
+    How to make Reaper's real ingestion fetch and ANDI's "test" button trust an internal/private
+    CA (e.g. a state agency's own certificate authority) &mdash; not just the public CAs each HTTP
+    library ships with. Written while investigating a <code>mdotatms.state.mi.us</code> ingestion
+    that worked via <code>wget</code> but failed from both ANDI and Reaper, 2026-08-05.
+  </p>
+
+  <nav class="card">
+    <strong>Contents</strong>
+    <div class="toc">
+      <p><a href="#why">Why this exists</a></p>
+      <p><a href="#insight">The core insight: three different trust stores</a></p>
+      <p><a href="#bundle">How the consolidated bundle is built</a></p>
+      <p><a href="#changes">What changed</a></p>
+      <p><a href="#diagram">Trust bundle flow</a></p>
+      <p><a href="#todo">What's still needed</a></p>
+      <p><a href="#verify">How to verify</a></p>
+      <p><a href="#caveats">Caveats &amp; open questions</a></p>
+    </div>
+  </nav>
+
+  <h2 id="why">Why this exists</h2>
+  <p>
+    A reaper ingestion against a Michigan DOT ATMS endpoint worked perfectly via <code>wget</code>
+    from the reaper node, but failed both when tested from ANDI's ingestion "test" button and when
+    Reaper ran it for real on schedule. ANDI's UI gave no useful error at all &mdash; every failure
+    collapses into a generic <code>"Could not complete request"</code> string
+    (<code>apps/andi/lib/andi/services/url_test.ex:24</code>).
+  </p>
+  <p>
+    Manually driving Reaper's actual HTTP client (<code>Reaper.Http.Downloader.download/3</code>) from
+    an IEx remote console with the same URL and headers <strong>succeeded</strong> &mdash; clean
+    <code>200</code>, valid TLS handshake &mdash; which ruled out the URL/headers/auth themselves as the
+    problem. That, combined with the "works via wget, not via our Elixir HTTP clients" symptom, pointed
+    at the trust store each client uses to validate the server's certificate chain.
+  </p>
+
+  <h2 id="insight">The core insight: three different trust stores</h2>
+  <p>
+    <code>wget</code>, Reaper, and ANDI don't actually share one "the OS trusts this cert or it
+    doesn't" answer &mdash; each uses a <em>different</em> certificate bundle by default:
+  </p>
+  <table>
+    <thead><tr><th>Client</th><th>HTTP stack</th><th>Default trust bundle</th><th>Reads the OS bundle?</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>wget</code></td>
+        <td>system OpenSSL/GnuTLS</td>
+        <td><code>/etc/ssl/certs/ca-certificates.crt</code> (the OS bundle)</td>
+        <td><span class="tag ok">yes</span> always</td>
+      </tr>
+      <tr>
+        <td>Reaper's real extraction</td>
+        <td><a href="https://github.com/elixir-mint/mint">Mint</a>, used directly in
+          <code>Reaper.Http.Downloader.connect/2</code></td>
+        <td>the <code>castore</code> hex package's own vendored Mozilla bundle
+          (<code>CAStore.file_path()</code>)</td>
+        <td><span class="tag gap">no</span> unless explicitly told to</td>
+      </tr>
+      <tr>
+        <td>ANDI's "test" button</td>
+        <td>Tesla + Hackney adapter (<code>apps/andi/lib/andi/services/url_test.ex</code>)</td>
+        <td>Hackney's own vendored <code>certifi</code> bundle</td>
+        <td><span class="tag gap">no</span> unless explicitly told to</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout bad">
+    Erlang's <code>:ssl</code> application (which both Mint and Hackney sit on top of) does
+    <strong>not</strong> fall back to the OS trust store. Both libraries depend on their own
+    vendored CA bundle specifically <em>because</em> Erlang won't read
+    <code>/etc/ssl/certs</code> automatically &mdash; you have to pass <code>cacertfile</code> or
+    <code>cacerts</code> explicitly. Any CA that's trusted at the OS level (added via
+    <code>update-ca-certificates</code>) is invisible to Reaper and ANDI until they're told where
+    to look.
+  </div>
+
+  <h2 id="bundle">How the consolidated bundle is built</h2>
+  <p>
+    <code>/etc/ssl/certs/ca-certificates.crt</code> on Debian/Alpine is not one certificate &mdash;
+    it's a <strong>generated, consolidated bundle</strong>. <code>apk add ca-certificates</code>
+    installs the full standard/Mozilla CA set; anything dropped into
+    <code>/usr/local/share/ca-certificates/</code> and followed by running
+    <code>update-ca-certificates</code> gets merged into that same file, alongside the standard set
+    &mdash; it does not replace it.
+  </p>
+  <p>
+    The root <code>Dockerfile</code> already does exactly this for Amazon RDS's root CA:
+  </p>
+  <pre><code>RUN curl -L \
+    -o /usr/local/share/ca-certificates/rds-ca-2019-root.crt \
+    https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem \
+    &amp;&amp; update-ca-certificates</code></pre>
+  <p>Verified empirically against the actual build image while investigating this:</p>
+  <div class="card">
+    <h3>148 certificates already in the bundle</h3>
+    <pre><code>$ podman run --rm smartcitiesdata:build \
+    sh -c 'grep -c "BEGIN CERTIFICATE" /etc/ssl/certs/ca-certificates.crt'
+148</code></pre>
+    <p>...and the RDS root CA sits right alongside the 148 standard ones, not in place of them:</p>
+    <pre><code>subject=C = US, O = Amazon, CN = Amazon Root CA 1
+subject=C = US, O = Amazon, CN = Amazon Root CA 2
+subject=C = US, L = Seattle, ST = Washington, O = "Amazon Web Services, Inc.",
+        OU = Amazon RDS, CN = Amazon RDS Root 2019 CA</code></pre>
+  </div>
+  <div class="callout good">
+    <strong>Implication:</strong> adding an internal CA the same way (via
+    <code>update-ca-certificates</code>) does not narrow trust down to just that one cert. It joins
+    the full standard public CA set plus RDS. Pointing Mint/Hackney at that single consolidated
+    file therefore trusts <em>everything the OS trusts, plus the addition</em> &mdash; not a
+    single-cert allowlist.
+  </div>
+
+  <h2 id="changes">What changed</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>apps/reaper/lib/reaper/http/downloader.ex</code></td>
+        <td><code>connect/2</code> now passes <code>cacertfile: System.get_env("CA_CERTFILE_PATH")</code>
+          to Mint's <code>transport_opts</code> when the env var is set, falling back to Mint's own
+          CAStore default when it isn't (e.g. local dev without the file).</td>
+      </tr>
+      <tr>
+        <td><code>apps/andi/lib/andi/services/url_test.ex</code></td>
+        <td>The test-button's Tesla/Hackney <code>HEAD</code> request now passes the same path
+          through as <code>ssl_options: [cacertfile: ...]</code> via Hackney's adapter opts, same
+          fallback behavior.</td>
+      </tr>
+      <tr>
+        <td><code>apps/reaper/Dockerfile</code></td>
+        <td>Added <code>ENV CA_CERTFILE_PATH /etc/ssl/certs/ca-certificates.crt</code> and
+          <code>COPY --from=builder ${CA_CERTFILE_PATH} ${CA_CERTFILE_PATH}</code> &mdash; the same
+          pattern <code>apps/andi/Dockerfile</code> already had for its Postgres TLS config, but
+          reaper's image was missing entirely.</td>
+      </tr>
+      <tr>
+        <td>root <code>Dockerfile</code></td>
+        <td>Added a clearly marked comment showing exactly where/how to add the internal CA cert,
+          right after the existing RDS cert block.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="diagram">Trust bundle flow</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 960 460" width="100%" role="img" aria-label="Flow diagram showing how public CAs, the RDS root cert, and a future internal CA are merged into one bundle file and consumed by Reaper and ANDI">
+      <defs>
+        <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#5aa9ff"/>
+        </marker>
+        <marker id="a1warn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#f2b84b"/>
+        </marker>
+      </defs>
+
+      <!-- Sources -->
+      <rect x="20" y="20" width="220" height="50" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="130" y="41" text-anchor="middle" fill="#e4e7ef" font-size="12">apk add ca-certificates</text>
+      <text x="130" y="58" text-anchor="middle" fill="#9aa1b4" font-size="11">148 standard/Mozilla CAs</text>
+
+      <rect x="270" y="20" width="220" height="50" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="380" y="41" text-anchor="middle" fill="#e4e7ef" font-size="12">curl + RDS root CA</text>
+      <text x="380" y="58" text-anchor="middle" fill="#9aa1b4" font-size="11">already merged in today</text>
+
+      <rect x="520" y="20" width="240" height="50" rx="8" fill="#2a2013" stroke="#f2b84b" stroke-width="2"/>
+      <text x="640" y="41" text-anchor="middle" fill="#f2b84b" font-size="12" font-weight="600">[TODO] Internal CA cert</text>
+      <text x="640" y="58" text-anchor="middle" fill="#e4c98a" font-size="11">State of Michigan &mdash; not yet obtained</text>
+
+      <!-- convergence lines -->
+      <line x1="130" y1="70" x2="400" y2="120" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+      <line x1="380" y1="70" x2="400" y2="120" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+      <line x1="640" y1="70" x2="420" y2="120" stroke="#f2b84b" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#a1warn)"/>
+
+      <!-- update-ca-certificates -->
+      <rect x="330" y="120" width="230" height="55" rx="8" fill="#1a2230" stroke="#3a3f52"/>
+      <text x="445" y="143" text-anchor="middle" fill="#e4e7ef" font-size="12">update-ca-certificates</text>
+      <text x="445" y="161" text-anchor="middle" fill="#9aa1b4" font-size="11">merges, doesn't replace</text>
+
+      <line x1="445" y1="175" x2="445" y2="215" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <!-- consolidated bundle -->
+      <rect x="280" y="215" width="330" height="55" rx="8" fill="#16241d" stroke="#4fd18b" stroke-width="2"/>
+      <text x="445" y="238" text-anchor="middle" fill="#4fd18b" font-size="12" font-weight="600">/etc/ssl/certs/ca-certificates.crt</text>
+      <text x="445" y="256" text-anchor="middle" fill="#9aa1b4" font-size="11">one consolidated file, built once in smartcitiesdata:build</text>
+
+      <!-- fan out to two images -->
+      <line x1="380" y1="270" x2="220" y2="320" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+      <line x1="510" y1="270" x2="700" y2="320" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="60" y="320" width="320" height="55" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="220" y="343" text-anchor="middle" fill="#e4e7ef" font-size="12">reaper image: COPY --from=builder</text>
+      <text x="220" y="361" text-anchor="middle" fill="#9aa1b4" font-size="11">apps/reaper/Dockerfile (newly added)</text>
+
+      <rect x="580" y="320" width="320" height="55" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="740" y="343" text-anchor="middle" fill="#e4e7ef" font-size="12">andi image: COPY --from=builder</text>
+      <text x="740" y="361" text-anchor="middle" fill="#9aa1b4" font-size="11">apps/andi/Dockerfile (already existed)</text>
+
+      <line x1="220" y1="375" x2="220" y2="410" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+      <line x1="740" y1="375" x2="740" y2="410" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="40" y="410" width="360" height="40" rx="8" fill="#10131a" stroke="#2a2e3a"/>
+      <text x="220" y="435" text-anchor="middle" fill="#cfe8ff" font-size="11">Reaper.Http.Downloader.connect/2 &rarr; Mint cacertfile</text>
+
+      <rect x="560" y="410" width="360" height="40" rx="8" fill="#10131a" stroke="#2a2e3a"/>
+      <text x="740" y="435" text-anchor="middle" fill="#cfe8ff" font-size="11">Andi.Services.UrlTest.test/2 &rarr; Hackney ssl_options</text>
+    </svg>
+    <p class="diagram-caption">
+      Dashed amber line: the piece that doesn't exist yet. Everything else in this diagram is
+      already wired up and tested.
+    </p>
+  </div>
+
+  <h2 id="todo">What's still needed</h2>
+  <div class="card">
+    <h3><span class="status-dot todo"></span>Obtain the actual certificate</h3>
+    <p>
+      The State of Michigan's internal CA certificate (the <strong>issuing CA</strong>, not the
+      MDOT ATMS server's own leaf/site certificate) still needs to be obtained from state IT. Not
+      done yet &mdash; this document exists so the code/Dockerfile side is ready the moment it is.
+    </p>
+  </div>
+  <div class="card">
+    <h3><span class="status-dot todo"></span>Add it to the root Dockerfile</h3>
+    <p>A placeholder is already left at the right spot in the root <code>Dockerfile</code>:</p>
+    <pre><code># TODO: State of Michigan internal CA cert (for reaper ingestion sources like
+# mdotatms.state.mi.us that chain to an internal/private CA). Once the .crt
+# file is obtained, add it here the same way as the RDS cert above:
+#
+#   COPY path/to/state-of-michigan-ca.crt /usr/local/share/ca-certificates/
+#   RUN update-ca-certificates</code></pre>
+  </div>
+  <div class="card">
+    <h3><span class="status-dot done"></span>No further code changes needed</h3>
+    <p>
+      Both <code>Reaper.Http.Downloader</code> and <code>Andi.Services.UrlTest</code> already read
+      <code>CA_CERTFILE_PATH</code> and pass it through. Once the cert is added to the Dockerfile
+      and the base image + reaper + andi are rebuilt, it takes effect automatically.
+    </p>
+  </div>
+
+  <h2 id="verify">How to verify</h2>
+  <p>After rebuilding, confirm the new cert actually landed in the consolidated bundle:</p>
+  <pre><code>podman run --rm smartcitiesdata:build sh -c \
+  'grep -c "BEGIN CERTIFICATE" /etc/ssl/certs/ca-certificates.crt'
+# should be 149, not 148
+
+podman run --rm smartcitiesdata:build sh -c \
+  'openssl crl2pkcs7 -nocrl -certfile /etc/ssl/certs/ca-certificates.crt 2>/dev/null \
+   | openssl pkcs7 -print_certs -noout 2>/dev/null | grep -i michigan'
+# should show the new CA's subject/issuer lines</code></pre>
+  <p>Then confirm the real ingestion succeeds end to end, e.g. from a reaper remote console:</p>
+  <pre><code>Reaper.IngestionDiagnostic.run("the-ingestion-id")</code></pre>
+
+  <h2 id="caveats">Caveats &amp; open questions</h2>
+  <ul>
+    <li>
+      <strong>Must be the issuing CA certificate, not the server's leaf certificate.</strong>
+      <code>update-ca-certificates</code> is designed to extend the trust store with CAs, not
+      individual site certs &mdash; double-check what state IT actually hands over.
+    </li>
+    <li>
+      <strong>This is a build-time (baked into the image) mechanism, not a runtime one.</strong> Any
+      future change to the internal cert (renewal, rotation) requires a rebuild and redeploy of the
+      base image plus reaper and andi &mdash; there's no ConfigMap/Secret-mounted alternative wired
+      up here. That tradeoff was chosen deliberately (baked-in, matching the existing RDS-cert
+      pattern) rather than a runtime-mounted cert, which would need cluster-side setup.
+    </li>
+    <li>
+      <strong>Only covers Reaper's real extraction and ANDI's test button.</strong> Other HTTP call
+      sites in the platform (e.g. discovery_api's outbound calls, if any exist) were not audited as
+      part of this change and would need the same <code>CA_CERTFILE_PATH</code> wiring if they ever
+      need to reach an internal endpoint.
+    </li>
+    <li>
+      <strong>Not yet proven to be the actual root cause.</strong> TLS/certificate verification was
+      the leading hypothesis for why Reaper's real extraction failed while <code>wget</code>
+      succeeded, based on Mint's strict defaults and the vendored-bundle mismatch described above
+      &mdash; but this was not confirmed against the real MDOT ATMS certificate chain before this
+      document was written. Confirm with <code>Reaper.IngestionDiagnostic.run/1</code> (see
+      <a href="#verify">above</a>) once the cert is in place.
+    </li>
+  </ul>
+
+  <footer>
+    Written while investigating a <code>mdotatms.state.mi.us</code> ingestion failure, 2026-08-05.
+    See also <code>apps/reaper/lib/reaper/ingestion_diagnostic.ex</code> (per-step ingestion
+    diagnostic tool) and <code>apps/reaper/lib/reaper/vault_token_debugger.ex</code> (the existing
+    debug-tool convention this follows).
+  </footer>
+
+</main>
+</body>
+</html>

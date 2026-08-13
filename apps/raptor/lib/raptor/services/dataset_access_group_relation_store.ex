@@ -4,6 +4,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   """
   require Logger
   alias Raptor.Schemas.DatasetAccessGroupRelation
+  alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:dataset_access_group_relation:"
   @redix Raptor.Application.redis_client()
@@ -13,7 +14,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   """
   @spec get_all() :: list(map())
   def get_all() do
-    case Redix.command!(@redix, ["KEYS", @namespace <> "*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> "*") do
       [] ->
         []
 
@@ -29,7 +30,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   """
   @spec get_all_by_dataset(String.t()) :: list(map())
   def get_all_by_dataset(dataset_id) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> dataset_id <> ":*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> dataset_id <> ":*") do
       [] ->
         []
 
@@ -47,10 +48,9 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   @spec get(String.t(), String.t()) :: map()
   def get(dataset_id, access_group_id) do
     key = "#{dataset_id}:#{access_group_id}"
-    matching_entries = Redix.command!(@redix, ["KEYS", @namespace <> key])
 
-    case length(matching_entries) do
-      0 ->
+    case Redix.command!(@redix, ["GET", @namespace <> key]) do
+      nil ->
         Logger.warn(
           "No dataset access group relations exist with dataset_id #{dataset_id} and access_group_id #{
             access_group_id
@@ -59,16 +59,8 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
 
         %{}
 
-      1 ->
-        assoc_key = matching_entries |> List.first()
-        Redix.command!(@redix, ["MGET", assoc_key]) |> Enum.map(&from_json/1) |> List.first()
-
-      _ ->
-        Logger.warn(
-          "Multiple dataset-access_group relations match #{dataset_id}:#{access_group_id}. Cannot continue."
-        )
-
-        %{}
+      assoc_json ->
+        from_json(assoc_json)
     end
   end
 

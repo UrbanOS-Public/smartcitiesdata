@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Enabling Trino Hive-Connector DEBUG Logging</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-border: #2a2e3a;
+    --text: #e4e7ef;
+    --muted: #9aa1b4;
+    --accent: #5aa9ff;
+    --ok: #4fd18b;
+    --warn: #f2b84b;
+    --bad: #f2624b;
+    --code-bg: #10131a;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  h1 { font-size: 1.9rem; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.35rem;
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  h3 { font-size: 1.05rem; color: var(--accent); margin-top: 1.75rem; }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); margin-top: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    margin-right: 0.4rem;
+  }
+  .tag.gap { background: rgba(242, 98, 75, 0.15); color: var(--bad); border: 1px solid rgba(242,98,75,0.4); }
+  .tag.ok { background: rgba(79, 209, 139, 0.15); color: var(--ok); border: 1px solid rgba(79,209,139,0.4); }
+  .tag.warn { background: rgba(242, 184, 75, 0.15); color: var(--warn); border: 1px solid rgba(242,184,75,0.4); }
+
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.87rem;
+  }
+  code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: #cfe8ff; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: #cfe8ff;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .card h3 { margin-top: 0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { white-space: nowrap; }
+
+  .diagram-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .diagram-caption { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+
+  .callout {
+    border-left: 3px solid var(--warn);
+    background: rgba(242, 184, 75, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.1rem 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: rgba(242, 98, 75, 0.08); }
+  .callout.good { border-left-color: var(--ok); background: rgba(79, 209, 139, 0.08); }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 1rem;
+  }
+
+  svg text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .toc {
+    columns: 2;
+    font-size: 0.92rem;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+  }
+  .steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 2.6rem;
+    margin: 1.1rem 0;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    background: rgba(90, 169, 255, 0.15);
+    border: 1px solid rgba(90, 169, 255, 0.4);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <h1>Enabling Trino Hive-Connector DEBUG Logging</h1>
+  <p class="subtitle">
+    How to get the real nested exception behind a generic <code>HIVE_CURSOR_ERROR</code>, once
+    file-level inspection has been exhausted and come up clean. Written after
+    <code>mdot__prune_test_2</code> (<code>dataset_id = e4afd220-6842-434b-bf55-b4f4ed01043b</code>)
+    kept failing migration on 2026-07-30, well after its nested-timestamp fix, with three
+    freshly-pulled <code>.gz</code> files all passing gzip integrity, JSON validity, internal
+    type-consistency, and schema-shape checks.
+  </p>
+
+  <nav class="card">
+    <strong>Contents</strong>
+    <div class="toc">
+      <p><a href="#why">Why this is necessary</a></p>
+      <p><a href="#swallowed">What's being swallowed today</a></p>
+      <p><a href="#locate">Locating the logging config</a></p>
+      <p><a href="#procedure">The procedure</a></p>
+      <p><a href="#reproduce">Reproducing on demand</a></p>
+      <p><a href="#read">Reading the DEBUG output</a></p>
+      <p><a href="#revert">Reverting</a></p>
+      <p><a href="#caveats">Caveats</a></p>
+    </div>
+  </nav>
+
+  <h2 id="why">Why this is necessary</h2>
+  <p>
+    <code>HIVE_CURSOR_ERROR</code> is Trino's generic wrapper for "something went wrong while
+    reading this file's contents" &mdash; it is deliberately uninformative on its own. Every attempt
+    to get more detail from the <em>client</em> side of the connection came back with the exact same
+    terse struct, whether captured from the application log (<code>Logger.error(inspect(error))</code>)
+    or reproduced live via an interactive <code>Prestige</code> query:
+  </p>
+  <pre><code>%Prestige.Error{
+  code: 16777217,
+  name: "HIVE_CURSOR_ERROR",
+  type: "EXTERNAL",
+  message: "Failed to read file at s3a://presto-hive-storage/hive-s3/..."
+}</code></pre>
+  <p>
+    That is <strong>all</strong> the Trino client/server protocol carries back for this error class
+    &mdash; not a limitation of how it was captured. Meanwhile, direct inspection of the failing
+    files themselves (gzip integrity, JSON parse, per-field type consistency, schema-shape diff
+    against the live DDL) came back clean on every check across three separately-pulled files. There
+    is nothing further to learn by looking at the file from the outside. The only remaining place the
+    real cause can be seen is the nested exception Trino's Hive connector catches and discards before
+    re-throwing the generic wrapper &mdash; which only appears in the connector's own internal logging,
+    normally suppressed below INFO level.
+  </p>
+
+  <h2 id="swallowed">What's being swallowed today</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 940 320" width="100%" role="img" aria-label="Diagram showing the real exception being caught and replaced by a generic error before reaching the client">
+      <defs>
+        <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#5aa9ff"/>
+        </marker>
+        <marker id="a1red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#f2624b"/>
+        </marker>
+        <marker id="a1green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#4fd18b"/>
+        </marker>
+      </defs>
+
+      <rect x="20" y="30" width="200" height="56" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="120" y="53" text-anchor="middle" fill="#e4e7ef" font-size="13">.gz file on S3/MinIO</text>
+      <text x="120" y="71" text-anchor="middle" fill="#9aa1b4" font-size="11">already confirmed valid</text>
+
+      <line x1="220" y1="58" x2="270" y2="58" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="270" y="30" width="230" height="56" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="385" y="53" text-anchor="middle" fill="#e4e7ef" font-size="13">Hive connector, on a worker</text>
+      <text x="385" y="71" text-anchor="middle" fill="#9aa1b4" font-size="11">LinePageSource.getNextPage</text>
+
+      <line x1="500" y1="58" x2="550" y2="58" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="550" y="30" width="230" height="56" rx="8" fill="#2a1616" stroke="#f2624b" stroke-width="2"/>
+      <text x="665" y="53" text-anchor="middle" fill="#f2624b" font-size="13" font-weight="600">real exception thrown here</text>
+      <text x="665" y="71" text-anchor="middle" fill="#9aa1b4" font-size="11">unknown until DEBUG is on</text>
+
+      <line x1="665" y1="86" x2="665" y2="130" stroke="#3a3f52" stroke-width="2" marker-end="url(#a1)"/>
+
+      <rect x="500" y="130" width="330" height="56" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="665" y="153" text-anchor="middle" fill="#e4e7ef" font-size="13">caught, wrapped, re-thrown</text>
+      <text x="665" y="171" text-anchor="middle" fill="#9aa1b4" font-size="11">as HIVE_CURSOR_ERROR / type: EXTERNAL</text>
+
+      <line x1="665" y1="186" x2="665" y2="220" stroke="#3a3f52" stroke-width="2"/>
+      <path d="M665,220 L400,220 L400,255" fill="none" stroke="#f2624b" stroke-width="2" marker-end="url(#a1red)"/>
+      <path d="M665,220 L830,220 L830,255" fill="none" stroke="#4fd18b" stroke-width="2" marker-end="url(#a1green)"/>
+      <text x="500" y="212" fill="#9aa1b4" font-size="12">INFO level (today)</text>
+      <text x="760" y="212" fill="#9aa1b4" font-size="12">DEBUG level (this doc)</text>
+
+      <rect x="260" y="255" width="280" height="56" rx="8" fill="#2a1414" stroke="#f2624b" stroke-width="2"/>
+      <text x="400" y="278" text-anchor="middle" fill="#f2624b" font-size="13" font-weight="600">Client only ever sees this</text>
+      <text x="400" y="296" text-anchor="middle" fill="#9aa1b4" font-size="11">same terse struct, every capture method tried</text>
+
+      <rect x="690" y="255" width="230" height="56" rx="8" fill="#0f2a1c" stroke="#4fd18b" stroke-width="2"/>
+      <text x="805" y="278" text-anchor="middle" fill="#4fd18b" font-size="13" font-weight="600">Full nested exception</text>
+      <text x="805" y="296" text-anchor="middle" fill="#9aa1b4" font-size="11">printed to the worker's own log</text>
+    </svg>
+    <p class="diagram-caption">
+      The real cause is thrown and caught entirely inside the Hive connector, on whichever worker
+      executes the split. At INFO level (Trino's default) that detail never leaves the connector.
+      Raising the connector's own log level to DEBUG is what makes it visible.
+    </p>
+  </div>
+
+  <h2 id="locate">Locating the logging config</h2>
+  <p>
+    Trino (built on Airlift) reads its logger levels from <code>etc/log.properties</code> at process
+    start. The setting needed is:
+  </p>
+  <pre><code>io.trino.plugin.hive=DEBUG</code></pre>
+  <div class="callout">
+    <strong>Check this before editing anything:</strong> whether <code>log.properties</code> is
+    baked into the pod's image or mounted from a ConfigMap determines whether an in-place edit
+    survives a restart.
+    <pre><code>kubectl describe pod &lt;trino-coordinator-pod&gt; -n mdot-ride-&lt;env&gt;-ns
+kubectl describe pod &lt;trino-worker-pod&gt;      -n mdot-ride-&lt;env&gt;-ns</code></pre>
+    Look under <code>Volumes</code>/<code>Mounts</code> for anything referencing
+    <code>log.properties</code> or a Trino config ConfigMap.
+    <ul>
+      <li><strong>ConfigMap-mounted:</strong> edit the ConfigMap itself
+        (<code>kubectl edit configmap &lt;name&gt; -n &lt;ns&gt;</code>), then restart the pod(s) so
+        they remount the updated file. An in-place <code>kubectl exec</code> edit would be silently
+        discarded on the next restart.</li>
+      <li><strong>Baked into the image:</strong> an in-place edit via <code>kubectl exec</code> is
+        the only option short of a Helm values change; it will not survive a pod restart, so the
+        DEBUG window only lasts until something else causes the pod to cycle.</li>
+    </ul>
+  </div>
+
+  <h2 id="procedure">The procedure</h2>
+  <ol class="steps">
+    <li>
+      <strong>Edit the config on both the coordinator and the worker.</strong> This dataset's split
+      read happens on a worker, but enabling on both avoids guessing which node handles it if the
+      cluster ever has more than one worker.
+      <pre><code>kubectl exec -it &lt;trino-worker-pod&gt; -n mdot-ride-&lt;env&gt;-ns -- sh -c \
+  'echo "io.trino.plugin.hive=DEBUG" &gt;&gt; /etc/trino/log.properties'</code></pre>
+      (Adjust the path if <code>kubectl describe pod</code> showed a different mount point.)
+    </li>
+    <li>
+      <strong>Restart the process so the new level takes effect.</strong> Trino reads
+      <code>log.properties</code> at bootstrap only &mdash; there is no live-reload for this file.
+      If the config is ConfigMap-backed, make the ConfigMap edit first, then:
+      <pre><code>kubectl delete pod &lt;trino-worker-pod&gt; -n mdot-ride-&lt;env&gt;-ns
+kubectl delete pod &lt;trino-coordinator-pod&gt; -n mdot-ride-&lt;env&gt;-ns</code></pre>
+      Wait for both to report <code>Running</code> again before proceeding.
+    </li>
+    <li>
+      <strong>Start tailing the worker's log <em>before</em> triggering the failure</strong>, so
+      nothing is missed:
+      <pre><code>kubectl logs -f &lt;trino-worker-pod&gt; -n mdot-ride-&lt;env&gt;-ns &gt; worker_debug.log &amp;</code></pre>
+    </li>
+    <li>
+      <strong>Reproduce the failure</strong> &mdash; see <a href="#reproduce">below</a> for the exact
+      one-liner rather than waiting for the next 5-minute extraction cycle.
+    </li>
+    <li>
+      <strong>Stop the tail and search the capture</strong> for the query ID or the file path from
+      the resulting <code>Prestige.Error</code> &mdash; see <a href="#read">Reading the DEBUG
+      output</a>.
+    </li>
+    <li>
+      <strong><a href="#revert">Revert</a></strong> the logging level once the nested exception has
+      been captured.
+    </li>
+  </ol>
+
+  <h2 id="reproduce">Reproducing on demand</h2>
+  <p>
+    No need to wait for the next scheduled extraction cycle. The failing data is already sitting in
+    the <code>__json</code> staging table (that's the whole problem &mdash; it never migrates out),
+    so the exact same read Forklift's <code>DataMigration.compact/3</code> performs can be run
+    directly from a live Forklift console, the same way it was used throughout this investigation:
+  </p>
+  <pre><code>kubectl exec -it &lt;forklift-pod&gt; -n mdot-ride-&lt;env&gt;-ns -- bin/forklift remote</code></pre>
+  <pre><code>iex&gt; Pipeline.Writer.TableWriter.Helper.PrestigeHelper.execute_query(
+...&gt;   "select * from mdot__prune_test_2__json " &lt;&gt;
+...&gt;   "where _ingestion_id = 'd336978f-2285-43dc-8e7b-f106e6b3b681' " &lt;&gt;
+...&gt;   "and _extraction_start_time = 1785110401"
+...&gt; )</code></pre>
+  <p>
+    Swap in the ingestion id / extraction time from whichever fresh
+    <code>Error migrating records for dataset ...</code> line is most recent (or from
+    <code>scripts/diagnose_ingestion.py</code>'s <code>forklift_migration_error</code> category
+    output). This is read-only &mdash; no <code>insert</code>/<code>delete</code> side effects,
+    unlike the real migration statement &mdash; and it hits the identical file, so it reproduces the
+    identical failure on demand.
+  </p>
+
+  <h2 id="read">Reading the DEBUG output</h2>
+  <div class="callout warn">
+    <strong>Expect a lot more volume.</strong> <code>io.trino.plugin.hive=DEBUG</code> is chatty
+    across every query the cluster runs, not just the one being reproduced. Don't try to read the
+    tail as a stream &mdash; capture to a file and search it after triggering the reproduction query.
+  </div>
+  <p>Once the query above has been run, search the capture for the exact file path from its result:</p>
+  <pre><code>grep -A 40 "1785110435--576460752242861759.gz" worker_debug.log</code></pre>
+  <p>
+    Look for the first <code>Caused by:</code> line in that block &mdash; that's the actual
+    underlying exception (a JSON type-coercion failure, a truncated-read/EOF, a splittability
+    complaint about the non-splittable gzip format, or something not yet guessed at) that
+    <code>HIVE_CURSOR_ERROR</code> has been hiding since day one of this investigation.
+  </p>
+  <table>
+    <thead><tr><th>What the <code>Caused by:</code> line names</th><th>What it would mean</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>A JSON/Jackson parse or type-coercion exception, naming a specific column</td>
+        <td>A field still doesn't match its declared column type &mdash; back to schema/DDL
+          inspection, but now pointed at the exact field instead of guessing.</td>
+      </tr>
+      <tr>
+        <td><code>EOFException</code> / unexpected end of stream</td>
+        <td>The file is being truncated mid-read despite passing <code>gzip -t</code> standalone
+          &mdash; points at a streaming/range-read problem on Trino's side, not the file's own
+          integrity.</td>
+      </tr>
+      <tr>
+        <td>Something about split boundaries / non-splittable compression</td>
+        <td>Points at how Trino is chunking reads of a large non-splittable gzip file, independent
+          of this dataset's content entirely.</td>
+      </tr>
+      <tr>
+        <td>An S3/MinIO connection-level exception (timeout, reset, precondition failed)</td>
+        <td>Storage-layer, not data-layer &mdash; revives the read-after-write consistency theory
+          from earlier in this investigation, now with real evidence instead of speculation.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="revert">Reverting</h2>
+  <p>
+    Remove the <code>io.trino.plugin.hive=DEBUG</code> line (from the ConfigMap if that's where it
+    was added) and restart both pods again. Hive-connector DEBUG logging is verbose enough that
+    leaving it on materially inflates log volume across every dataset the cluster serves, not just
+    this one &mdash; it should not be left enabled once the nested exception has been captured.
+  </p>
+
+  <h2 id="caveats">Caveats</h2>
+  <ul>
+    <li>
+      <strong>Exact config paths are unverified for this cluster.</strong>
+      <code>/etc/trino/log.properties</code> is the conventional location for the official Trino
+      Docker image, but this repo has no Helm chart or manifest for the Trino deployment itself to
+      confirm it &mdash; <code>kubectl describe pod</code> first, as in
+      <a href="#locate">Locating the logging config</a>, rather than assuming the path below is
+      correct.
+    </li>
+    <li>
+      <strong>This assumes the failure reproduces deterministically</strong>, which every capture so
+      far supports (100% failure rate, same file, same error, across multiple days) &mdash; but if
+      the underlying cause ever turns out to be a race or timing-dependent, a single reproduction
+      attempt while DEBUG is on might not trigger it.
+    </li>
+    <li>
+      <strong>Restarting the worker does not fix the bug</strong>, confirmed earlier in this
+      investigation (identical <code>HIVE_CURSOR_ERROR</code> reproduced on a brand-new worker pod at
+      the same cadence). Restarting here is purely to load the new log level, not an attempted fix.
+    </li>
+    <li>
+      <strong>This is a diagnostic step, not a resolution.</strong> Whatever the nested exception
+      says still needs to be traced back to a concrete fix (a schema field, a Trino/connector
+      setting, or a storage-layer issue) once it's known.
+    </li>
+  </ul>
+
+  <footer>
+    Written for the ongoing <code>mdot__prune_test_2</code> investigation
+    (<code>dataset_id = e4afd220-6842-434b-bf55-b4f4ed01043b</code>,
+    <code>ingestion_id = d336978f-2285-43dc-8e7b-f106e6b3b681</code>), after the nested-timestamp
+    fix from 2026-07-23 proved necessary but not sufficient, and three fresh files pulled on
+    2026-07-27 all passed every content-level check. See also
+    <code>docs/forklift/timestamp_caveats.html</code> for the earlier findings.
+  </footer>
+
+</main>
+</body>
+</html>

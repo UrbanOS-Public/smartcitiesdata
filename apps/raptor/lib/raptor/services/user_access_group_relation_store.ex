@@ -4,6 +4,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   """
   require Logger
   alias Raptor.Schemas.UserAccessGroupRelation
+  alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:user_access_group_relation:"
   @redix Raptor.Application.redis_client()
@@ -13,7 +14,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   """
   @spec get_all() :: list(map())
   def get_all() do
-    case Redix.command!(@redix, ["KEYS", @namespace <> "*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> "*") do
       [] ->
         []
 
@@ -29,7 +30,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   """
   @spec get_all_by_user(String.t()) :: list(map())
   def get_all_by_user(user_id) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> user_id <> ":*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> user_id <> ":*") do
       [] ->
         []
 
@@ -47,10 +48,9 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   @spec get(String.t(), String.t()) :: map()
   def get(user_id, access_group_id) do
     key = "#{user_id}:#{access_group_id}"
-    matching_entries = Redix.command!(@redix, ["KEYS", @namespace <> key])
 
-    case length(matching_entries) do
-      0 ->
+    case Redix.command!(@redix, ["GET", @namespace <> key]) do
+      nil ->
         Logger.warn(
           "No user access group relations exist with user_id #{user_id} and access_group_id #{
             access_group_id
@@ -59,16 +59,8 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
 
         %{}
 
-      1 ->
-        assoc_key = matching_entries |> List.first()
-        Redix.command!(@redix, ["MGET", assoc_key]) |> Enum.map(&from_json/1) |> List.first()
-
-      _ ->
-        Logger.warn(
-          "Multiple user-access_group relations match #{user_id}:#{access_group_id}. Cannot continue."
-        )
-
-        %{}
+      assoc_json ->
+        from_json(assoc_json)
     end
   end
 

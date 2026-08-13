@@ -4,6 +4,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   require Logger
   alias Raptor.Schemas.UserOrgAssoc
+  alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:user_org_assoc:"
   @redix Raptor.Application.redis_client()
@@ -13,7 +14,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   @spec get_all() :: list(map())
   def get_all() do
-    case Redix.command!(@redix, ["KEYS", @namespace <> "*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> "*") do
       [] ->
         []
 
@@ -29,7 +30,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   @spec get_all_by_user(String.t()) :: list(map())
   def get_all_by_user(user_id) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> user_id <> ":*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> user_id <> ":*") do
       [] ->
         []
 
@@ -47,20 +48,14 @@ defmodule Raptor.Services.UserOrgAssocStore do
   @spec get(String.t(), String.t()) :: map()
   def get(user_id, org_id) do
     key = "#{user_id}:#{org_id}"
-    matching_entries = Redix.command!(@redix, ["KEYS", @namespace <> key])
 
-    case length(matching_entries) do
-      0 ->
+    case Redix.command!(@redix, ["GET", @namespace <> key]) do
+      nil ->
         Logger.warn("No user org associations exist with user_id #{user_id} and org_id #{org_id}")
         %{}
 
-      1 ->
-        assoc_key = matching_entries |> List.first()
-        Redix.command!(@redix, ["MGET", assoc_key]) |> Enum.map(&from_json/1) |> List.first()
-
-      _ ->
-        Logger.warn("Multiple user-org associations match #{user_id}:#{org_id}. Cannot continue.")
-        %{}
+      assoc_json ->
+        from_json(assoc_json)
     end
   end
 

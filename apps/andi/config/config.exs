@@ -34,7 +34,7 @@ config :andi,
   dataset_name_max_length: 75,
   org_name_max_length: 40
 
-config :tesla, adapter: Tesla.Adapter.Hackney, recv_timeout: 120_000
+config :tesla, adapter: {Tesla.Adapter.Hackney, recv_timeout: 120_000, connect_timeout: 30_000}
 
 config :andi, ecto_repos: [Andi.Repo]
 

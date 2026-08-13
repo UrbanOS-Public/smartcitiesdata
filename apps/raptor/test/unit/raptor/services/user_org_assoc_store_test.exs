@@ -9,7 +9,9 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
   describe "get_all/0" do
     test "returns empty list when no datasets in redis" do
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: [])
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500]),
+        return: ["0", []]
+      )
 
       actualDatasets = UserOrgAssocStore.get_all()
 
@@ -18,7 +20,10 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
     test "returns list of user-org associations when they exist in redis" do
       keys = ["raptor:user_org_assoc:user_id:org_id", "raptor:user_org_assoc:user_id1:org_id1"]
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "*"]), return: keys)
+
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500]),
+        return: ["0", keys]
+      )
 
       allow(Redix.command!(@redix, ["MGET" | keys]),
         return: [
@@ -43,7 +48,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       user_id = "picard"
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]), return: [])
+      allow(Redix.command!(@redix, ["GET", @namespace <> key]), return: nil)
 
       actualDataset = UserOrgAssocStore.get(user_id, org_id)
 
@@ -55,14 +60,8 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
-        return: ["raptor:user_org_assoc:picard:enterprise"]
-      )
-
-      allow(Redix.command!(@redix, ["MGET", "raptor:user_org_assoc:picard:enterprise"]),
-        return: [
-          "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
-        ]
+      allow(Redix.command!(@redix, ["GET", @namespace <> key]),
+        return: "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
       )
 
       expected_dataset = %UserOrgAssoc{
@@ -75,29 +74,16 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
       assert expected_dataset == actualDataset
     end
-
-    test "an empty map is returned when there are multiple entries in redis matching the user id and org id" do
-      user_id = "picard"
-      org_id = "enterprise"
-
-      keys = [
-        "raptor:user_org_assoc:picard:enterprise",
-        "raptor:user_org_assoc:picard:enterprise"
-      ]
-
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> "#{user_id}:#{org_id}"]), return: keys)
-
-      actualDatasets = UserOrgAssocStore.get(user_id, org_id)
-
-      assert %{} == actualDatasets
-    end
   end
 
   describe "get_all_by_user/1" do
     test "an empty array is returned when there are no entries in redis matching the userId" do
       user_id = "picard"
       key = "#{user_id}:*"
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]), return: [])
+
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> key, "COUNT", 500]),
+        return: ["0", []]
+      )
 
       response = UserOrgAssocStore.get_all_by_user(user_id)
 
@@ -108,8 +94,8 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       user_id = "picard"
       key = "#{user_id}:*"
 
-      allow(Redix.command!(@redix, ["KEYS", @namespace <> key]),
-        return: ["raptor:user_org_assoc:picard:enterprise"]
+      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> key, "COUNT", 500]),
+        return: ["0", ["raptor:user_org_assoc:picard:enterprise"]]
       )
 
       allow(Redix.command!(@redix, ["MGET", "raptor:user_org_assoc:picard:enterprise"]),
