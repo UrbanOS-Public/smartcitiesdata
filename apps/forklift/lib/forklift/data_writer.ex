@@ -233,9 +233,21 @@ defmodule Forklift.DataWriter do
   end
 
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
-    {expected_message_count, _} =
-      Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"])
-      |> Integer.parse()
+    expected_message_count =
+      case Redix.command!(:redix, ["GET", "#{ingestion_id}" <> "#{extract_time}"]) do
+        nil ->
+          Logger.warn(
+            "No cached expected message count for ingestion #{ingestion_id} at #{extract_time}; defaulting to actual count #{
+              actual_message_count
+            }"
+          )
+
+          actual_message_count
+
+        count_string ->
+          {count, _} = Integer.parse(count_string)
+          count
+      end
 
     %{
       ingestion_id: ingestion_id,
