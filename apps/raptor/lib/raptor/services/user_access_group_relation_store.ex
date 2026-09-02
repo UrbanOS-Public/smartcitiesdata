@@ -7,6 +7,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:user_access_group_relation:"
+  @index_namespace "raptor:user_access_group_relation:index:"
   @redix Raptor.Application.redis_client()
 
   @doc """
@@ -30,16 +31,7 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   """
   @spec get_all_by_user(String.t()) :: list(map())
   def get_all_by_user(user_id) do
-    case RedisKeyScanner.scan(@redix, @namespace <> user_id <> ":*") do
-      [] ->
-        []
-
-      keys ->
-        keys
-        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> Enum.map(&from_json/1)
-        |> Enum.map(fn relation -> relation.access_group_id end)
-    end
+    Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id])
   end
 
   @doc """
@@ -78,6 +70,12 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
     |> (fn assoc_json ->
           Redix.command!(@redix, ["SET", @namespace <> key, assoc_json])
         end).()
+
+    Redix.command!(@redix, [
+      "SADD",
+      @index_namespace <> user_access_group_relation.user_id,
+      user_access_group_relation.access_group_id
+    ])
   end
 
   @doc """
@@ -88,6 +86,12 @@ defmodule Raptor.Services.UserAccessGroupRelationStore do
   def delete(%UserAccessGroupRelation{} = user_access_group_relation) do
     key = "#{user_access_group_relation.user_id}:#{user_access_group_relation.access_group_id}"
     Redix.command!(@redix, ["DEL", @namespace <> key])
+
+    Redix.command!(@redix, [
+      "SREM",
+      @index_namespace <> user_access_group_relation.user_id,
+      user_access_group_relation.access_group_id
+    ])
   end
 
   defp from_json(json_string) do

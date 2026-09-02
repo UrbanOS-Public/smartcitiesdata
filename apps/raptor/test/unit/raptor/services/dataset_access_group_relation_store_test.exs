@@ -5,7 +5,31 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
   alias Raptor.Schemas.DatasetAccessGroupRelation
 
   @namespace "raptor:dataset_access_group_relation:"
+  @index_namespace "raptor:dataset_access_group_relation:index:"
   @redix Raptor.Application.redis_client()
+
+  describe "get_all_by_dataset/1" do
+    test "returns empty list when no index entries exist in redis" do
+      dataset_id = "picard"
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> dataset_id]), return: [])
+
+      actualRelations = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
+
+      assert [] == actualRelations
+    end
+
+    test "returns list of access_group_ids from the index when they exist in redis" do
+      dataset_id = "picard"
+
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> dataset_id]),
+        return: ["enterprise"]
+      )
+
+      actualRelations = DatasetAccessGroupRelationStore.get_all_by_dataset(dataset_id)
+
+      assert ["enterprise"] == actualRelations
+    end
+  end
 
   describe "get_all/0" do
     test "returns empty list when no dataset access group relations in redis" do
@@ -103,6 +127,11 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
         return: :ok
       )
 
+      allow(
+        Redix.command!(@redix, ["SADD", @index_namespace <> dataset_id, access_group_id]),
+        return: 1
+      )
+
       DatasetAccessGroupRelationStore.persist(dataset_access_group_relation)
 
       assert_called(
@@ -111,6 +140,10 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
           @namespace <> "#{dataset_id}:#{access_group_id}",
           dataset_access_group_relation_json
         ])
+      )
+
+      assert_called(
+        Redix.command!(@redix, ["SADD", @index_namespace <> dataset_id, access_group_id])
       )
     end
   end
@@ -129,10 +162,19 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStoreTest do
         return: :ok
       )
 
+      allow(
+        Redix.command!(@redix, ["SREM", @index_namespace <> dataset_id, access_group_id]),
+        return: 1
+      )
+
       DatasetAccessGroupRelationStore.delete(datasetAccessGroupRelation)
 
       assert_called(
         Redix.command!(@redix, ["DEL", @namespace <> "#{dataset_id}:#{access_group_id}"])
+      )
+
+      assert_called(
+        Redix.command!(@redix, ["SREM", @index_namespace <> dataset_id, access_group_id])
       )
     end
   end

@@ -5,7 +5,31 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
   alias Raptor.Schemas.UserAccessGroupRelation
 
   @namespace "raptor:user_access_group_relation:"
+  @index_namespace "raptor:user_access_group_relation:index:"
   @redix Raptor.Application.redis_client()
+
+  describe "get_all_by_user/1" do
+    test "returns empty list when no index entries exist in redis" do
+      user_id = "picard"
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id]), return: [])
+
+      actualRelations = UserAccessGroupRelationStore.get_all_by_user(user_id)
+
+      assert [] == actualRelations
+    end
+
+    test "returns list of access_group_ids from the index when they exist in redis" do
+      user_id = "picard"
+
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id]),
+        return: ["enterprise", "voyager"]
+      )
+
+      actualRelations = UserAccessGroupRelationStore.get_all_by_user(user_id)
+
+      assert ["enterprise", "voyager"] == actualRelations
+    end
+  end
 
   describe "get_all/0" do
     test "returns empty list when no user access group relations in redis" do
@@ -100,6 +124,11 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
         return: :ok
       )
 
+      allow(
+        Redix.command!(@redix, ["SADD", @index_namespace <> user_id, access_group_id]),
+        return: 1
+      )
+
       UserAccessGroupRelationStore.persist(user_access_group_relation)
 
       assert_called(
@@ -108,6 +137,10 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
           @namespace <> "#{user_id}:#{access_group_id}",
           user_access_group_relation_json
         ])
+      )
+
+      assert_called(
+        Redix.command!(@redix, ["SADD", @index_namespace <> user_id, access_group_id])
       )
     end
   end
@@ -126,10 +159,19 @@ defmodule Raptor.Services.UserAccessGroupRelationStoreTest do
         return: :ok
       )
 
+      allow(
+        Redix.command!(@redix, ["SREM", @index_namespace <> user_id, access_group_id]),
+        return: 1
+      )
+
       UserAccessGroupRelationStore.delete(userAccessGroupRelation)
 
       assert_called(
         Redix.command!(@redix, ["DEL", @namespace <> "#{user_id}:#{access_group_id}"])
+      )
+
+      assert_called(
+        Redix.command!(@redix, ["SREM", @index_namespace <> user_id, access_group_id])
       )
     end
   end

@@ -7,6 +7,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:dataset_access_group_relation:"
+  @index_namespace "raptor:dataset_access_group_relation:index:"
   @redix Raptor.Application.redis_client()
 
   @doc """
@@ -30,16 +31,7 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
   """
   @spec get_all_by_dataset(String.t()) :: list(map())
   def get_all_by_dataset(dataset_id) do
-    case RedisKeyScanner.scan(@redix, @namespace <> dataset_id <> ":*") do
-      [] ->
-        []
-
-      keys ->
-        keys
-        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> Enum.map(&from_json/1)
-        |> Enum.map(fn relation -> relation.access_group_id end)
-    end
+    Redix.command!(@redix, ["SMEMBERS", @index_namespace <> dataset_id])
   end
 
   @doc """
@@ -81,6 +73,12 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
     |> (fn assoc_json ->
           Redix.command!(@redix, ["SET", @namespace <> key, assoc_json])
         end).()
+
+    Redix.command!(@redix, [
+      "SADD",
+      @index_namespace <> dataset_access_group_relation.dataset_id,
+      dataset_access_group_relation.access_group_id
+    ])
   end
 
   @doc """
@@ -95,6 +93,12 @@ defmodule Raptor.Services.DatasetAccessGroupRelationStore do
       }"
 
     Redix.command!(@redix, ["DEL", @namespace <> key])
+
+    Redix.command!(@redix, [
+      "SREM",
+      @index_namespace <> dataset_access_group_relation.dataset_id,
+      dataset_access_group_relation.access_group_id
+    ])
   end
 
   defp from_json(json_string) do

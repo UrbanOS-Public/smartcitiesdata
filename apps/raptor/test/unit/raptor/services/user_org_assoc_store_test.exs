@@ -5,6 +5,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   alias Raptor.Schemas.UserOrgAssoc
 
   @namespace "raptor:user_org_assoc:"
+  @index_namespace "raptor:user_org_assoc:index:"
   @redix Raptor.Application.redis_client()
 
   describe "get_all/0" do
@@ -79,11 +80,8 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   describe "get_all_by_user/1" do
     test "an empty array is returned when there are no entries in redis matching the userId" do
       user_id = "picard"
-      key = "#{user_id}:*"
 
-      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> key, "COUNT", 500]),
-        return: ["0", []]
-      )
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id]), return: [])
 
       response = UserOrgAssocStore.get_all_by_user(user_id)
 
@@ -92,16 +90,9 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
     test "a Raptor user org assoc is returned when there is one entry in redis matching the user id " do
       user_id = "picard"
-      key = "#{user_id}:*"
 
-      allow(Redix.command!(@redix, ["SCAN", "0", "MATCH", @namespace <> key, "COUNT", 500]),
-        return: ["0", ["raptor:user_org_assoc:picard:enterprise"]]
-      )
-
-      allow(Redix.command!(@redix, ["MGET", "raptor:user_org_assoc:picard:enterprise"]),
-        return: [
-          "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
-        ]
+      allow(Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id]),
+        return: ["enterprise"]
       )
 
       actual_response = UserOrgAssocStore.get_all_by_user(user_id)
@@ -129,11 +120,18 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
         return: :ok
       )
 
+      allow(
+        Redix.command!(@redix, ["SADD", @index_namespace <> user_id, org_id]),
+        return: 1
+      )
+
       UserOrgAssocStore.persist(userOrgAssoc)
 
       assert_called(
         Redix.command!(@redix, ["SET", @namespace <> "#{user_id}:#{org_id}", user_org_assoc_json])
       )
+
+      assert_called(Redix.command!(@redix, ["SADD", @index_namespace <> user_id, org_id]))
     end
   end
 
@@ -143,9 +141,16 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       org_id = "enterprise"
       userOrgAssoc = %UserOrgAssoc{user_id: "picard", email: nil, org_id: "enterprise"}
       allow(Redix.command!(@redix, ["DEL", @namespace <> "#{user_id}:#{org_id}"]), return: :ok)
+
+      allow(
+        Redix.command!(@redix, ["SREM", @index_namespace <> user_id, org_id]),
+        return: 1
+      )
+
       UserOrgAssocStore.delete(userOrgAssoc)
 
       assert_called(Redix.command!(@redix, ["DEL", @namespace <> "#{user_id}:#{org_id}"]))
+      assert_called(Redix.command!(@redix, ["SREM", @index_namespace <> user_id, org_id]))
     end
   end
 end

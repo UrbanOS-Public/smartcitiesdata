@@ -28,6 +28,8 @@ Other apps under `apps/*` are internal libraries. They don't need to be tagged o
 8.  **Push the Commit and Tag**: `git push origin <branch>` then `git push origin $microservice@$version`.
 9.  **Create a GitHub Release** from that tag. This is what triggers `.github/workflows/release.yml`, which builds and publishes the Docker image for the app.
 
+    **IMPORTANT — if building locally/manually instead** (e.g. via `scripts/build-local.sh` while GitHub Actions CI is unavailable): always pass `--rebuild-base`. The script reuses the cached `smartcitiesdata:build` base image by default instead of rebuilding it, and that base image is where the umbrella source actually gets compiled from — a stale one silently bakes an old app version/code into the release even though the resulting container gets tagged with your new version. This is *especially* likely to bite you, and should be treated as mandatory, if it's been several days or more since the base image (or any project image) was last built — check with `podman images smartcitiesdata:build` (or `docker images`) and compare its `CREATED` age before assuming a cached build is safe to reuse.
+
 ## Post-Release Steps
 
 10. **Verify**: Confirm the GitHub Actions release workflow succeeded and the new image was published (Docker Hub / Quay).
