@@ -12,7 +12,9 @@ defmodule Reaper.DataExtract.ExtractStep do
   @secret_retriever Application.compile_env(:reaper, :secret_retriever, Reaper.SecretRetriever)
 
   def execute_extract_steps(ingestion, steps) do
-    Enum.reduce(steps, %{}, fn step, acc ->
+    steps
+    |> Enum.sort_by(&(Map.get(&1, :sequence) || Map.get(&1, "sequence") || 0))
+    |> Enum.reduce(%{}, fn step, acc ->
       step = AtomicMap.convert(step, underscore: false)
       execute_extract_step(ingestion, step, acc)
     end)

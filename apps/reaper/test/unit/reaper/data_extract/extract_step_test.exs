@@ -447,6 +447,35 @@ defmodule Reaper.DataExtract.ExtractStepTest do
                  currentDate: "2020-08-31 2:03"
                }
     end
+
+    test "executes steps in :sequence order, not list order", %{ingestion: ingestion} do
+      expect(TimexMock, :now, 2, fn -> DateTime.from_naive!(~N[2020-08-31 13:26:08.003], "Etc/UTC") end)
+
+      # Listed out of sequence order (sequence: 2 first, sequence: 1 second). Both
+      # write to the same destination key, so whichever one actually executes last
+      # determines the final value -- if steps ran in list order instead of
+      # :sequence order, the sequence: 1 step ("{YYYY}") would run last and this
+      # would assert "2020" instead of "08".
+      steps = [
+        %{
+          type: "date",
+          sequence: 2,
+          context: %{destination: "currentDate", deltaTimeUnit: nil, deltaTimeValue: nil, format: "{0M}"},
+          assigns: %{}
+        },
+        %{
+          type: "date",
+          sequence: 1,
+          context: %{destination: "currentDate", deltaTimeUnit: nil, deltaTimeValue: nil, format: "{YYYY}"},
+          assigns: %{}
+        }
+      ]
+
+      assert ExtractStep.execute_extract_steps(ingestion, steps) ==
+               %{
+                 currentDate: "08"
+               }
+    end
   end
 
   describe "execute_extract_steps/2 secret" do
