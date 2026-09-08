@@ -255,6 +255,23 @@ defmodule ValkyrieTest do
       assert expected == Valkyrie.standardize_data(dataset, payload)
     end
 
+    test "passes through a map-type field that has no subSchema" do
+      dataset =
+        TDG.create_dataset(
+          id: "ds1",
+          technical: %{
+            schema: [
+              %{name: "name", type: "string", ingestion_field_selector: "name"},
+              %{name: "metadata", type: "map", ingestion_field_selector: "metadata"}
+            ]
+          }
+        )
+
+      payload = %{"name" => "Pete", "metadata" => %{"anything" => "goes", "nested" => %{"a" => 1}}}
+
+      assert {:ok, ^payload} = Valkyrie.standardize_data(dataset, payload)
+    end
+
     test "validates that specified map is a map" do
       sub_schema = [
         %{name: "name", type: "string", ingestion_field_selector: "name"}
