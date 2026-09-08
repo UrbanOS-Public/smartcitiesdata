@@ -6,6 +6,7 @@ defmodule DiscoveryApi.Data.QueryTest do
   use Placebo
 
   alias SmartCity.TestDataGenerator, as: TDG
+  alias SmartCity.TestDataGenerator.Payload
   alias DiscoveryApi.Test.Helper
   alias DiscoveryApi.Data.Model
 
@@ -31,7 +32,8 @@ defmodule DiscoveryApi.Data.QueryTest do
         technical: %{
           private: false,
           orgId: organization.id,
-          orgName: organization.orgName
+          orgName: organization.orgName,
+          schema: Payload.get_schema(:basic)
         }
       })
 
@@ -49,7 +51,8 @@ defmodule DiscoveryApi.Data.QueryTest do
         technical: %{
           private: false,
           orgId: organization.id,
-          orgName: organization.orgName
+          orgName: organization.orgName,
+          schema: [%{name: "feature", type: "string", ingestion_field_selector: "feature"}]
         }
       })
 
