@@ -52,8 +52,7 @@ defmodule Andi.Scripts.PublishDiagnostics do
         :not_found
 
       andi_dataset ->
-        changeset =
-          Datasets.full_validation_changeset_for_publish(%Dataset{}, StructTools.to_map(andi_dataset))
+        changeset = Datasets.full_validation_changeset_for_publish(%Dataset{}, StructTools.to_map(andi_dataset))
 
         IO.puts("Dataset #{dataset_id} (#{andi_dataset.business.dataTitle})")
         IO.puts("  valid?: #{changeset.valid?}")

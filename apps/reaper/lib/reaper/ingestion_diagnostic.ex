@@ -84,8 +84,7 @@ defmodule Reaper.IngestionDiagnostic do
     IO.puts("  action:  #{step.context.action}")
     IO.puts("  headers: #{inspect(headers)}")
 
-    output_file =
-      DataSlurper.slurp(url, ingestion.id, headers, step.context.protocol, step.context.action, body)
+    output_file = DataSlurper.slurp(url, ingestion.id, headers, step.context.protocol, step.context.action, body)
 
     Map.put(step.assigns, :output_file, output_file)
   end
