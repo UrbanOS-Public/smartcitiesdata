@@ -5,8 +5,10 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   require Logger
   alias Raptor.Schemas.UserOrgAssoc
+  alias Raptor.Services.RedisKeyScanner
 
   @namespace "raptor:user_org_assoc:"
+  @index_namespace "raptor:user_org_assoc:index:"
   @redix Raptor.Application.redis_client()
 
   @doc """
@@ -14,7 +16,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   @spec get_all() :: list(map())
   def get_all() do
-    case Redix.command!(@redix, ["KEYS", @namespace <> "*"]) do
+    case RedisKeyScanner.scan(@redix, @namespace <> "*") do
       [] ->
         []
 
@@ -30,16 +32,7 @@ defmodule Raptor.Services.UserOrgAssocStore do
   """
   @spec get_all_by_user(String.t()) :: list(map())
   def get_all_by_user(user_id) do
-    case Redix.command!(@redix, ["KEYS", @namespace <> user_id <> ":*"]) do
-      [] ->
-        []
-
-      keys ->
-        keys
-        |> (fn keys -> Redix.command!(@redix, ["MGET" | keys]) end).()
-        |> Enum.map(&from_json/1)
-        |> Enum.map(fn relation -> relation.org_id end)
-    end
+    Redix.command!(@redix, ["SMEMBERS", @index_namespace <> user_id])
   end
 
   @doc """
@@ -48,20 +41,14 @@ defmodule Raptor.Services.UserOrgAssocStore do
   @spec get(String.t(), String.t()) :: map()
   def get(user_id, org_id) do
     key = "#{user_id}:#{org_id}"
-    matching_entries = Redix.command!(@redix, ["KEYS", @namespace <> key])
 
-    case length(matching_entries) do
-      0 ->
+    case Redix.command!(@redix, ["GET", @namespace <> key]) do
+      nil ->
         Logger.warn("No user org associations exist with user_id #{user_id} and org_id #{org_id}")
         %{}
 
-      1 ->
-        assoc_key = matching_entries |> List.first()
-        Redix.command!(@redix, ["MGET", assoc_key]) |> Enum.map(&from_json/1) |> List.first()
-
-      _ ->
-        Logger.warn("Multiple user-org associations match #{user_id}:#{org_id}. Cannot continue.")
-        %{}
+      assoc_json ->
+        from_json(assoc_json)
     end
   end
 
@@ -78,6 +65,12 @@ defmodule Raptor.Services.UserOrgAssocStore do
     |> (fn assoc_json ->
           Redix.command!(@redix, ["SET", @namespace <> key, assoc_json])
         end).()
+
+    Redix.command!(@redix, [
+      "SADD",
+      @index_namespace <> user_org_assoc.user_id,
+      user_org_assoc.org_id
+    ])
   end
 
   @doc """
@@ -87,6 +80,12 @@ defmodule Raptor.Services.UserOrgAssocStore do
   def delete(%UserOrgAssoc{} = user_org_assoc) do
     key = "#{user_org_assoc.user_id}:#{user_org_assoc.org_id}"
     Redix.command!(@redix, ["DEL", @namespace <> key])
+
+    Redix.command!(@redix, [
+      "SREM",
+      @index_namespace <> user_org_assoc.user_id,
+      user_org_assoc.org_id
+    ])
   end
 
   defp from_json(json_string) do

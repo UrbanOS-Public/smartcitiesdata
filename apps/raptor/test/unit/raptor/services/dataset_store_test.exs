@@ -9,7 +9,8 @@ defmodule Raptor.Services.DatasetStoreTest do
 
   describe "get_all/0" do
     test "returns empty list when no datasets in redis" do
-      with_mock Redix, command!: fn _, _ -> [] end do
+      with_mock Redix,
+        command!: fn _, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500] -> ["0", []] end do
         actualDatasets = DatasetStore.get_all()
         assert [] == actualDatasets
       end
@@ -35,8 +36,8 @@ defmodule Raptor.Services.DatasetStoreTest do
 
       with_mock Redix,
         command!: fn
-          _, ["KEYS", @namespace <> "*"] ->
-            keys
+          _, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500] ->
+            ["0", keys]
 
           _, ["MGET" | ^keys] ->
             [
@@ -54,7 +55,7 @@ defmodule Raptor.Services.DatasetStoreTest do
     test "an empty map is returned when there are no entries in redis matching the system name" do
       system_name = "system__name"
 
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> ^system_name] -> [] end do
+      with_mock Redix, command!: fn _, ["GET", @namespace <> ^system_name] -> nil end do
         actualDataset = DatasetStore.get(system_name)
         assert %{} == actualDataset
       end
@@ -62,7 +63,6 @@ defmodule Raptor.Services.DatasetStoreTest do
 
     test "a Raptor dataset is returned when there is one entry in redis matching the system name" do
       system_name = "system__name"
-      key = "raptor:datasets:system__name"
 
       expected_dataset = %Dataset{
         dataset_id: "1",
@@ -72,27 +72,11 @@ defmodule Raptor.Services.DatasetStoreTest do
       }
 
       with_mock Redix,
-        command!: fn
-          _, ["KEYS", @namespace <> ^system_name] ->
-            [key]
-
-          _, ["MGET", ^key] ->
-            [
-              "{\"dataset_id\":\"1\",\"is_private\":false,\"org_id\":\"system\",\"system_name\":\"system__name\"}"
-            ]
+        command!: fn _, ["GET", @namespace <> ^system_name] ->
+          "{\"dataset_id\":\"1\",\"is_private\":false,\"org_id\":\"system\",\"system_name\":\"system__name\"}"
         end do
         actualDataset = DatasetStore.get(system_name)
         assert expected_dataset == actualDataset
-      end
-    end
-
-    test "an empty map is returned when there are multiple entries in redis matching the system name" do
-      system_name = "system__name"
-      keys = ["raptor:datasets:system__name", "raptor:datasets:system__name1"]
-
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> ^system_name] -> keys end do
-        actualDatasets = DatasetStore.get(system_name)
-        assert %{} == actualDatasets
       end
     end
   end

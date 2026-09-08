@@ -5,11 +5,13 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   alias Raptor.Schemas.UserOrgAssoc
 
   @namespace "raptor:user_org_assoc:"
+  @index_namespace "raptor:user_org_assoc:index:"
   @redix Raptor.Application.redis_client()
 
   describe "get_all/0" do
     test "returns empty list when no datasets in redis" do
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> "*"] -> [] end do
+      with_mock Redix,
+        command!: fn _, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500] -> ["0", []] end do
         actualDatasets = UserOrgAssocStore.get_all()
         assert [] == actualDatasets
       end
@@ -25,8 +27,8 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
       with_mock Redix,
         command!: fn
-          _, ["KEYS", @namespace <> "*"] ->
-            keys
+          _, ["SCAN", "0", "MATCH", @namespace <> "*", "COUNT", 500] ->
+            ["0", keys]
 
           _, ["MGET" | ^keys] ->
             [
@@ -46,7 +48,7 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
 
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> ^key] -> [] end do
+      with_mock Redix, command!: fn _, ["GET", @namespace <> ^key] -> nil end do
         actualDataset = UserOrgAssocStore.get(user_id, org_id)
         assert %{} == actualDataset
       end
@@ -56,7 +58,6 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       user_id = "picard"
       org_id = "enterprise"
       key = "#{user_id}:#{org_id}"
-      redis_key = "raptor:user_org_assoc:picard:enterprise"
 
       expected_dataset = %UserOrgAssoc{
         user_id: "picard",
@@ -65,33 +66,11 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       }
 
       with_mock Redix,
-        command!: fn
-          _, ["KEYS", @namespace <> ^key] ->
-            [redis_key]
-
-          _, ["MGET", ^redis_key] ->
-            [
-              "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
-            ]
+        command!: fn _, ["GET", @namespace <> ^key] ->
+          "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
         end do
         actualDataset = UserOrgAssocStore.get(user_id, org_id)
         assert expected_dataset == actualDataset
-      end
-    end
-
-    test "an empty map is returned when there are multiple entries in redis matching the user id and org id" do
-      user_id = "picard"
-      org_id = "enterprise"
-      key = "#{user_id}:#{org_id}"
-
-      keys = [
-        "raptor:user_org_assoc:picard:enterprise",
-        "raptor:user_org_assoc:picard:enterprise"
-      ]
-
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> ^key] -> keys end do
-        actualDatasets = UserOrgAssocStore.get(user_id, org_id)
-        assert %{} == actualDatasets
       end
     end
   end
@@ -99,9 +78,9 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
   describe "get_all_by_user/1" do
     test "an empty array is returned when there are no entries in redis matching the userId" do
       user_id = "picard"
-      key = "#{user_id}:*"
 
-      with_mock Redix, command!: fn _, ["KEYS", @namespace <> ^key] -> [] end do
+      with_mock Redix,
+        command!: fn _, ["SMEMBERS", @index_namespace <> ^user_id] -> [] end do
         response = UserOrgAssocStore.get_all_by_user(user_id)
         assert [] == response
       end
@@ -109,19 +88,9 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
 
     test "a Raptor user org assoc is returned when there is one entry in redis matching the user id " do
       user_id = "picard"
-      key = "#{user_id}:*"
-      redis_key = "raptor:user_org_assoc:picard:enterprise"
 
       with_mock Redix,
-        command!: fn
-          _, ["KEYS", @namespace <> ^key] ->
-            [redis_key]
-
-          _, ["MGET", ^redis_key] ->
-            [
-              "{\"user_id\":\"picard\",\"org_id\":\"enterprise\",\"email\":\"jeanluc@starfleet.com\"}"
-            ]
-        end do
+        command!: fn _, ["SMEMBERS", @index_namespace <> ^user_id] -> ["enterprise"] end do
         actual_response = UserOrgAssocStore.get_all_by_user(user_id)
         assert actual_response == ["enterprise"]
       end
@@ -143,10 +112,16 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
         "{\"email\":\"jeanluc@starfleet.com\",\"org_id\":\"enterprise\",\"user_id\":\"picard\"}"
 
       redis_key = @namespace <> "#{user_id}:#{org_id}"
+      index_key = @index_namespace <> user_id
 
-      with_mock Redix, command!: fn _, ["SET", ^redis_key, ^user_org_assoc_json] -> :ok end do
+      with_mock Redix,
+        command!: fn
+          _, ["SET", ^redis_key, ^user_org_assoc_json] -> :ok
+          _, ["SADD", ^index_key, ^org_id] -> 1
+        end do
         UserOrgAssocStore.persist(userOrgAssoc)
         assert called(Redix.command!(@redix, ["SET", redis_key, user_org_assoc_json]))
+        assert called(Redix.command!(@redix, ["SADD", index_key, org_id]))
       end
     end
   end
@@ -158,10 +133,16 @@ defmodule Raptor.Services.UserOrgAssocStoreTest do
       userOrgAssoc = %UserOrgAssoc{user_id: "picard", email: nil, org_id: "enterprise"}
 
       redis_key = @namespace <> "#{user_id}:#{org_id}"
+      index_key = @index_namespace <> user_id
 
-      with_mock Redix, command!: fn _, ["DEL", ^redis_key] -> :ok end do
+      with_mock Redix,
+        command!: fn
+          _, ["DEL", ^redis_key] -> :ok
+          _, ["SREM", ^index_key, ^org_id] -> 1
+        end do
         UserOrgAssocStore.delete(userOrgAssoc)
         assert called(Redix.command!(@redix, ["DEL", redis_key]))
+        assert called(Redix.command!(@redix, ["SREM", index_key, org_id]))
       end
     end
   end
