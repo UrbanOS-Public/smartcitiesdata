@@ -164,6 +164,18 @@ defmodule RaptorServiceTest do
 
       assert RaptorService.get_user_id_from_api_key(raptor_url, api_key) == {:ok, user_id}
     end
+
+    test "URL-encodes an api key containing spaces or other reserved URL characters" do
+      raptor_url = "raptor_url"
+      api_key = "i will havr to find this"
+
+      expect(HTTPoison.BaseMock, :get, fn url ->
+        assert url == "#{raptor_url}/getUserIdFromApiKey?api_key=#{URI.encode_www_form(api_key)}"
+        {:ok, %HTTPoison.Response{body: "{\"message\":\"invalid\"}", status_code: 401}}
+      end)
+
+      assert RaptorService.get_user_id_from_api_key(raptor_url, api_key) == {:error, "invalid", 401}
+    end
   end
 
   describe "check_auth0_role/2" do

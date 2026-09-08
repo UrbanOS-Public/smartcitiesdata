@@ -95,11 +95,18 @@ defmodule RaptorService do
 
       {:ok, %{body: body, status_code: status_code}} when status_code == 401 ->
         error_reason = Jason.decode!(body)["message"]
-        Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
+
+        Logger.error(
+          "Raptor failed while attempting to validate api key \"#{api_key}\" with error: #{error_reason}"
+        )
+
         {:error, error_reason, status_code}
 
       error ->
-        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(error)}")
+        Logger.error(
+          "Raptor encountered an unknown error while attempting to validate api key \"#{api_key}\": #{inspect(error)}"
+        )
+
         Logger.error("RAPTOR_URL was: #{raptor_url}")
         {:error, "Internal Server Error", 500}
     end
@@ -112,25 +119,32 @@ defmodule RaptorService do
 
       {:ok, %{body: body, status_code: status_code}} ->
         error_reason = Jason.decode!(body)["message"]
-        Logger.error("Raptor failed while attempting to validate api key with error: #{error_reason}")
+
+        Logger.error(
+          "Raptor failed while attempting to validate api key \"#{api_key}\" with error: #{error_reason}"
+        )
+
         {:error, error_reason, status_code}
 
       error ->
-        Logger.error("Raptor encountered an unknown error while attempting to validate api key: #{inspect(error)}")
+        Logger.error(
+          "Raptor encountered an unknown error while attempting to validate api key \"#{api_key}\": #{inspect(error)}"
+        )
+
         {:error, "Internal Server Error", 500}
     end
   end
 
   defp url_for_api_key_regeneration(raptor_url, user_id) do
-    "#{raptor_url}/regenerateApiKey?user_id=#{user_id}"
+    "#{raptor_url}/regenerateApiKey?user_id=#{URI.encode_www_form(user_id)}"
   end
 
   defp url_for_api_key_validation(raptor_url, api_key) do
-    "#{raptor_url}/getUserIdFromApiKey?api_key=#{api_key}"
+    "#{raptor_url}/getUserIdFromApiKey?api_key=#{URI.encode_www_form(api_key)}"
   end
 
   defp url_for_checking_role(raptor_url, api_key, role) do
-    "#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}"
+    "#{raptor_url}/checkRole?api_key=#{URI.encode_www_form(api_key)}&role=#{URI.encode_www_form(role)}"
   end
 
   defp list_url_with_api_key_params(raptor_url, nil) do
@@ -138,7 +152,7 @@ defmodule RaptorService do
   end
 
   defp list_url_with_api_key_params(raptor_url, api_key) do
-    "#{raptor_url}/listAccessGroups?api_key=#{api_key}"
+    "#{raptor_url}/listAccessGroups?api_key=#{URI.encode_www_form(api_key)}"
   end
 
   defp list_url_with_user_params(raptor_url, nil) do
@@ -146,7 +160,7 @@ defmodule RaptorService do
   end
 
   defp list_url_with_user_params(raptor_url, user_id) do
-    "#{raptor_url}/listAccessGroups?user_id=#{user_id}"
+    "#{raptor_url}/listAccessGroups?user_id=#{URI.encode_www_form(user_id)}"
   end
 
   defp list_url_with_dataset_params(raptor_url, nil) do
@@ -154,7 +168,7 @@ defmodule RaptorService do
   end
 
   defp list_url_with_dataset_params(raptor_url, dataset_id) do
-    "#{raptor_url}/listAccessGroups?dataset_id=#{dataset_id}"
+    "#{raptor_url}/listAccessGroups?dataset_id=#{URI.encode_www_form(dataset_id)}"
   end
 
   defp raptor_url_with_params(raptor_url, nil, nil) do
@@ -162,15 +176,15 @@ defmodule RaptorService do
   end
 
   defp raptor_url_with_params(raptor_url, api_key, nil) do
-    "#{raptor_url}/authorize?apiKey=#{api_key}"
+    "#{raptor_url}/authorize?apiKey=#{URI.encode_www_form(api_key)}"
   end
 
   defp raptor_url_with_params(raptor_url, nil, system_name) do
-    "#{raptor_url}/authorize?systemName=#{system_name}"
+    "#{raptor_url}/authorize?systemName=#{URI.encode_www_form(system_name)}"
   end
 
   defp raptor_url_with_params(raptor_url, api_key, system_name) do
-    "#{raptor_url}/authorize?apiKey=#{api_key}&systemName=#{system_name}"
+    "#{raptor_url}/authorize?apiKey=#{URI.encode_www_form(api_key)}&systemName=#{URI.encode_www_form(system_name)}"
   end
 
   defp raptor_url_with_user_params(raptor_url, nil, nil) do
@@ -178,15 +192,15 @@ defmodule RaptorService do
   end
 
   defp raptor_url_with_user_params(raptor_url, user_id, nil) do
-    "#{raptor_url}/authorize?auth0_user=#{user_id}"
+    "#{raptor_url}/authorize?auth0_user=#{URI.encode_www_form(user_id)}"
   end
 
   defp raptor_url_with_user_params(raptor_url, nil, system_name) do
-    "#{raptor_url}/authorize?systemName=#{system_name}"
+    "#{raptor_url}/authorize?systemName=#{URI.encode_www_form(system_name)}"
   end
 
   defp raptor_url_with_user_params(raptor_url, user_id, system_name) do
-    "#{raptor_url}/authorize?auth0_user=#{user_id}&systemName=#{system_name}"
+    "#{raptor_url}/authorize?auth0_user=#{URI.encode_www_form(user_id)}&systemName=#{URI.encode_www_form(system_name)}"
   end
 
   defp get_user_id_from_response_body(response_body) do
