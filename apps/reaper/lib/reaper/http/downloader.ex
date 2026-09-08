@@ -122,6 +122,7 @@ defmodule Reaper.Http.Downloader do
     scheme = String.to_atom(uri.scheme)
     connect_timeout = Keyword.get(opts, :connect_timeout, 30_000)
     protocol = format_protocol(Keyword.get(opts, :protocol, nil))
+    transport_opts = [timeout: connect_timeout] ++ cacertfile_opts()
 
     Logger.info(
       "HTTP Downloader connecting: scheme=#{scheme}, host=#{uri.host}, port=#{uri.port}, " <>
@@ -132,11 +133,11 @@ defmodule Reaper.Http.Downloader do
     result =
       case protocol do
         nil ->
-          @mint_http.connect(scheme, uri.host, uri.port, transport_opts: [timeout: connect_timeout])
+          @mint_http.connect(scheme, uri.host, uri.port, transport_opts: transport_opts)
 
         protocol ->
           @mint_http.connect(scheme, uri.host, uri.port,
-            transport_opts: [timeout: connect_timeout],
+            transport_opts: transport_opts,
             protocols: protocol
           )
       end
@@ -155,6 +156,17 @@ defmodule Reaper.Http.Downloader do
         )
 
         {:error, error}
+    end
+  end
+
+  # Uses the image's system CA bundle (kept up to date via `update-ca-certificates`
+  # in the Dockerfile, alongside any internal/private CAs added there) instead of
+  # Mint's own vendored CAStore bundle, when CA_CERTFILE_PATH is present. Falls
+  # back to Mint's default (CAStore) when unset, e.g. in local dev.
+  defp cacertfile_opts do
+    case System.get_env("CA_CERTFILE_PATH") do
+      path when is_binary(path) and path != "" -> [cacertfile: path]
+      _ -> []
     end
   end
 
