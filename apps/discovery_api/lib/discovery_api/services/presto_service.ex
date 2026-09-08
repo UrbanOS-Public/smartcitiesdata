@@ -211,14 +211,12 @@ defmodule DiscoveryApi.Services.PrestoService do
   end
 
   defp add_casing_based_on_schema(columns, schema) do
-    schema_columns_within_columns =
-      Enum.map(schema, fn col -> Map.get(col, :name) end)
-      |> Enum.filter(fn s_col -> Enum.any?(columns, fn col -> col == String.downcase(s_col) end) end)
-
-    columns_without_schema_columns =
-      Enum.filter(columns, fn col -> not Enum.any?(schema_columns_within_columns, fn s_col -> String.downcase(s_col) == col end) end)
-
-    schema_columns_within_columns ++ columns_without_schema_columns
+    Enum.map(columns, fn col ->
+      case Enum.find(schema, fn s_col -> col == String.downcase(Map.get(s_col, :name)) end) do
+        nil -> col
+        matched_schema_col -> Map.get(matched_schema_col, :name)
+      end
+    end)
   end
 
   def format_select_statement_from_schema(schema) do
