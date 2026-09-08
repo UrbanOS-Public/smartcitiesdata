@@ -2081,4 +2081,124 @@ defmodule Forklift.DataWriterTest do
       extraction_start_time: extract_start
     )
   end
+
+  test "should not raise when the cached expected message count key is missing in redis" do
+    ingestion_id = "missing-redis-key"
+    extract_start = 1_662_175_490
+
+    dataset =
+      TDG.create_dataset(%{
+        technical: %{systemName: "some_system_name"}
+      })
+
+    end_of_data =
+      TDG.create_data(
+        dataset_id: dataset.id,
+        payload: end_of_data()
+      )
+
+    fake_data = [TDG.create_data(%{}), end_of_data]
+
+    stub(LocalMockBrook, :handle_event, fn _ -> :ok end)
+    stub(LocalMockDataMigration, :compact, fn _, _, _ -> {:ok, dataset.id} end)
+
+    # Intentionally do not SET the redis key for this ingestion/extract_start pair
+    # (and explicitly DEL it in case a prior test left it set), simulating a
+    # missing/expired cache entry -- GET must return nil.
+    redis_key = "#{ingestion_id}#{extract_start}"
+
+    case Process.whereis(:redix) do
+      nil ->
+        :ok
+
+      _pid ->
+        try do
+          Redix.command!(:redix, ["DEL", redis_key])
+        rescue
+          Redix.ConnectionError -> :ok
+          _ -> :ok
+        end
+    end
+
+    stub(MockRedix, :command!, fn _, cmd ->
+      case cmd do
+        ["GET", _] -> nil
+        ["SET", _, _] -> "OK"
+        ["KEYS", _] -> []
+        ["EXPIRE", _, _] -> "1"
+        _ -> "1"
+      end
+    end)
+
+    :meck.new(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, [:passthrough])
+
+    :meck.expect(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, :count_query, fn _query ->
+      {:ok, 1}
+    end)
+
+    :meck.expect(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, :count, fn _ -> {:ok, 1} end)
+
+    :meck.expect(Pipeline.Writer.TableWriter.Helper.PrestigeHelper, :execute_query, fn query ->
+      cond do
+        String.contains?(query, "show create table") ->
+          {:ok,
+           %Prestige.Result{
+             columns: [
+               Prestige.ColumnDefinition.new(%{"name" => "Create Table", "typeSignature" => %{"rawType" => "varchar"}})
+             ],
+             rows: [["CREATE TABLE test_table (id int, os_partition varchar)"]],
+             presto_headers: []
+           }}
+
+        true ->
+          {:ok, %Prestige.Result{columns: [], rows: [], presto_headers: []}}
+      end
+    end)
+
+    :meck.new(PrestigeMock, [:non_strict])
+    :meck.expect(PrestigeMock, :new_session, fn _ -> :connection end)
+
+    :meck.expect(PrestigeMock, :execute, fn _, _ ->
+      {:ok, %Prestige.Result{columns: [], rows: [], presto_headers: []}}
+    end)
+
+    :meck.new(Forklift.Jobs.DataMigration, [:passthrough])
+
+    :meck.expect(Forklift.Jobs.DataMigration, :compact, fn ^dataset, ^ingestion_id, ^extract_start ->
+      {:ok, dataset.id}
+    end)
+
+    on_exit(fn ->
+      try do
+        :meck.unload(PrestigeMock)
+      catch
+        :error, {:not_mocked, _} -> :ok
+      end
+
+      try do
+        :meck.unload(Pipeline.Writer.TableWriter.Helper.PrestigeHelper)
+      catch
+        :error, {:not_mocked, _} -> :ok
+      end
+
+      try do
+        :meck.unload(Forklift.Jobs.DataMigration)
+      catch
+        :error, {:not_mocked, _} -> :ok
+      end
+
+      :meck.unload()
+    end)
+
+    stub(MockTable, :write, fn _data, _params -> :ok end)
+
+    # The regression under test: prior to the nil-Redis-key guard, the
+    # ["GET", redis_key] cache miss above crashed Integer.parse/1 with a
+    # FunctionClauseError here instead of falling back to actual_message_count.
+    DataWriter.write(fake_data,
+      dataset: dataset,
+      ingestion_id: ingestion_id,
+      extraction_start_time: extract_start
+    )
+  end
 end

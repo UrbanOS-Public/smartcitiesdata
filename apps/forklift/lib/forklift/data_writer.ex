@@ -230,20 +230,30 @@ defmodule Forklift.DataWriter do
   defp create_ingestion_complete_data(dataset_id, ingestion_id, actual_message_count, extract_time) do
     redis_key = "#{ingestion_id}#{extract_time}"
 
-    {expected_message_count, _} =
+    expected_message_count =
       case Process.whereis(:redix) do
         nil ->
-          "1"
+          actual_message_count
 
         _pid ->
           try do
-            Redix.command!(:redix, ["GET", redis_key])
+            case Redix.command!(:redix, ["GET", redis_key]) do
+              nil ->
+                Logger.warn(
+                  "No cached expected message count for ingestion #{ingestion_id} at #{extract_time}; defaulting to actual count #{actual_message_count}"
+                )
+
+                actual_message_count
+
+              count_string ->
+                {count, _} = Integer.parse(count_string)
+                count
+            end
           rescue
-            Redix.ConnectionError -> "1"
-            _ -> "1"
+            Redix.ConnectionError -> actual_message_count
+            _ -> actual_message_count
           end
       end
-      |> Integer.parse()
 
     %{
       ingestion_id: ingestion_id,
