@@ -5,7 +5,7 @@ defmodule Raptor.MixProject do
     [
       app: :raptor,
       compilers: [:phoenix] ++ Mix.compilers(),
-      version: "25.0.4",
+      version: "25.3.6",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
