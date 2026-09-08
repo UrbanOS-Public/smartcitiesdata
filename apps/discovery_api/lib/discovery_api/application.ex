@@ -72,6 +72,7 @@ defmodule DiscoveryApi.Application do
       [
         {Phoenix.PubSub, [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2]},
         DiscoveryApi.Data.SystemNameCache,
+        DiscoveryApi.Stats.QueryStats,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
         ecto_repo(),

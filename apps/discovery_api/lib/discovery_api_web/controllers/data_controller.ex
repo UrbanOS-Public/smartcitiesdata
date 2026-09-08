@@ -2,7 +2,7 @@ defmodule DiscoveryApiWeb.DataController do
   use DiscoveryApiWeb, :controller
   use Properties, otp_app: :discovery_api
 
-  alias DiscoveryApi.Services.PrestoService
+  alias DiscoveryApi.Services.{PrestoService, QueryCache}
   alias DiscoveryApiWeb.Plugs.{GetModel, Restrictor, RecordMetrics}
   alias DiscoveryApiWeb.DataView
   alias DiscoveryApiWeb.Utilities.QueryAccessUtils
@@ -72,6 +72,18 @@ defmodule DiscoveryApiWeb.DataController do
   end
 
   def query(conn, params) do
+    query_start_ms = System.monotonic_time(:millisecond)
+    conn = assign(conn, :query_start_ms, query_start_ms)
+    do_query(conn, params, query_start_ms)
+  end
+
+  # query_start_ms is threaded through as a function argument (bound at entry, not
+  # inside this function's body) rather than read back out of conn.assigns in the
+  # rescue clause below -- def/2's implicit try wraps the whole function body, so a
+  # variable/assign set inside that body (including conn.assigns) is invisible to its
+  # own rescue clause and would raise a KeyError there instead of reporting the
+  # original Prestige error.
+  defp do_query(conn, params, query_start_ms) do
     format = get_format(conn)
     dataset_name = conn.assigns.model.systemName
     dataset_id = conn.assigns.model.id
@@ -80,15 +92,27 @@ defmodule DiscoveryApiWeb.DataController do
     session = DiscoveryApi.prestige_opts() |> @prestige_impl.new_session()
     api_key = Plug.Conn.get_req_header(conn, "api_key")
 
-    with {:ok, columns} <- @presto_service_impl.get_column_names(session, dataset_name, Map.get(params, "columns")),
+    with {:ok, columns} <- @presto_service_impl.get_column_names_from_schema(schema, Map.get(params, "columns")),
          {:ok, query} <- @presto_service_impl.build_query(params, dataset_name, columns, schema),
          {:ok, affected_models} <- QueryAccessUtils.get_affected_models(query),
-         true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key) do
+         true <- QueryAccessUtils.user_is_authorized?(affected_models, current_user, api_key),
+         {:ok, rows, _} <-
+           QueryCache.fetch_or_execute(query, fn ->
+             fetched =
+               session
+               |> @prestige_impl.stream!(query)
+               |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
+               |> Enum.to_list()
+
+             {:ok, fetched}
+           end) do
+      caller_id = List.first(api_key) || "anonymous"
+      Task.start(fn -> DiscoveryApi.Stats.QueryStats.record_caller(caller_id) end)
+
       data_stream =
-        session
-        |> @prestige_impl.stream!(query)
-        |> Stream.flat_map(&@prestige_result_impl.as_maps/1)
+        rows
         |> map_schema?(schema, format)
+        |> DiscoveryApi.Stats.QueryStats.wrap_stream(query)
 
       rendered_data_stream =
         DataView.render_as_stream(:data, format, %{stream: data_stream, columns: columns, dataset_name: dataset_name, schema: schema})
@@ -96,11 +120,19 @@ defmodule DiscoveryApiWeb.DataController do
       resp_as_stream(conn, rendered_data_stream, format, dataset_id)
     else
       {:error, error} ->
+        duration_ms = System.monotonic_time(:millisecond) - query_start_ms
+        Task.start(fn -> DiscoveryApi.Stats.QueryStats.record("failed:#{conn.assigns.model.systemName}", duration_ms) end)
         render_error(conn, 404, error)
 
       _ ->
         render_error(conn, 400, "Bad Request")
     end
+  rescue
+    error in [Prestige.Error, Prestige.ConnectionError] ->
+      duration_ms = System.monotonic_time(:millisecond) - query_start_ms
+      Task.start(fn -> DiscoveryApi.Stats.QueryStats.record("failed:#{conn.assigns.model.systemName}", duration_ms) end)
+      Logger.error("Query endpoint error for dataset #{conn.assigns.model.systemName}: #{inspect(error)}")
+      render_error(conn, 400, "Bad Request")
   end
 
   defp map_schema?(data, schema, format) do

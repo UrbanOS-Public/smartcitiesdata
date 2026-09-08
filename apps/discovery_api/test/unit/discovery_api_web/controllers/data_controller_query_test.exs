@@ -16,6 +16,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     stub(PrestoServiceMock, :is_select_statement?, fn _query -> true end)
     stub(PrestoServiceMock, :get_affected_tables, fn _arg1, _arg2 -> {:ok, []} end)
     stub(PrestoServiceMock, :get_column_names, fn _session, _dataset_name, _columns -> {:ok, ["id", "name"]} end)
+    stub(PrestoServiceMock, :get_column_names_from_schema, fn _schema, _columns -> {:ok, ["id", "name"]} end)
     stub(PrestoServiceMock, :build_query, fn _params, _dataset_name, _columns, _schema -> {:ok, "SELECT id, name FROM #{@system_name}"} end)
     stub(ModelAccessUtilsMock, :has_access?, fn _arg1, _arg2 -> true end)
     stub(MetricsServiceMock, :record_api_hit, fn _type, _dataset_id -> :ok end)
@@ -79,6 +80,7 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
     end)
 
     stub(RedixMock, :command!, fn _arg1, _arg2 -> :does_not_matter end)
+    stub(RedixMock, :command, fn _arg1, _arg2 -> {:ok, nil} end)
 
     :ok
   end
@@ -199,10 +201,12 @@ defmodule DiscoveryApiWeb.DataController.QueryTest do
           nil
       end)
 
-      # Override the PrestoService mock to return an error for non-existent table
-      stub(PrestoServiceMock, :get_column_names, fn _session, "coda__no_exist", _columns ->
-        {:error, "Table coda__no_exist does not exist"}
-      end)
+      # get_column_names_from_schema (unlike the old get_column_names) can never fail on
+      # its own -- it just reads the schema, no Presto round-trip. The "table does not
+      # exist" check now happens in QueryAccessUtils.get_affected_models/1's
+      # valid_tables? comparison, so simulate that: the query references a table that
+      # doesn't match any known model.
+      stub(PrestoServiceMock, :get_affected_tables, fn _session, _statement -> {:ok, ["coda__no_exist"]} end)
 
       stub(PrestigeMock, :query!, fn :connection, _query ->
         %Prestige.Result{columns: :doesnt_matter, presto_headers: :doesnt_matter, rows: []}

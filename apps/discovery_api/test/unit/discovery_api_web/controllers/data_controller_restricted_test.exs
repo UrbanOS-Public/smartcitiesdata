@@ -58,6 +58,8 @@ defmodule DiscoveryApiWeb.DataController.RestrictedTest do
     stub(ModelMock, :get, fn _dataset_id -> model end)
     stub(ModelMock, :get_all, fn -> [model] end)
     stub(PrestoServiceMock, :get_column_names, fn _a, _b, _c -> {:ok, ["id", "name"]} end)
+    stub(PrestoServiceMock, :get_column_names_from_schema, fn _schema, _columns -> {:ok, ["id", "name"]} end)
+    stub(RedixMock, :command, fn _arg1, _arg2 -> {:ok, nil} end)
     stub(PrestoServiceMock, :preview_columns, fn _schema -> ["id", "name"] end)
     stub(PrestoServiceMock, :preview, fn _session, @system_name, _schema -> [[1, "Joe"], [2, "Robby"]] end)
     stub(PrestoServiceMock, :build_query, fn _a, _b, _c, _d -> {:ok, "select * from #{@system_name}"} end)

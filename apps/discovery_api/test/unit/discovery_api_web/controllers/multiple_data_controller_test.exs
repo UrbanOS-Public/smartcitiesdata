@@ -59,6 +59,9 @@ defmodule DiscoveryApiWeb.MultipleDataControllerTest do
 
     stub(@model, :get_all, fn -> datasets end)
 
+    # QueryCache (used by MultipleDataController.query/2) reads/writes Redis
+    stub(RedixMock, :command, fn _arg1, _arg2 -> {:ok, nil} end)
+
     # Mock Brook.Event since it's called directly without dependency injection
     try do
       :meck.unload(Brook.Event)

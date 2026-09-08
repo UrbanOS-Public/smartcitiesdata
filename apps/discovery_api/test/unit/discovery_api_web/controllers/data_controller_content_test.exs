@@ -91,6 +91,13 @@ defmodule DiscoveryApiWeb.DataController.ContentTest do
 
       # PrestoService mocks - these need to be comprehensive for both controllers
       stub(PrestoServiceMock, :get_column_names, fn _arg1, _arg2, _arg3 -> {:ok, ["feature"]} end)
+
+      stub(PrestoServiceMock, :get_column_names_from_schema, fn schema, columns ->
+        DiscoveryApi.Services.PrestoService.get_column_names_from_schema(schema, columns)
+      end)
+
+      # QueryCache (used by DataController.query/2) reads/writes Redis
+      stub(RedixMock, :command, fn _arg1, _arg2 -> {:ok, nil} end)
       stub(PrestoServiceMock, :preview_columns, fn _arg -> ["feature"] end)
 
       stub(PrestoServiceMock, :preview, fn _session, system_name, _schema ->
