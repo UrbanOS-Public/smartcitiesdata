@@ -60,5 +60,45 @@ defmodule Reaper.SecretRetrieverTest do
       :meck.unload(File)
       :meck.unload(Vault)
     end
+
+    test "returns error without contacting Vault when SECRETS_ENDPOINT is unset", values do
+      original = Application.get_env(:reaper, :secrets_endpoint)
+      Application.put_env(:reaper, :secrets_endpoint, nil)
+      on_exit(fn -> Application.put_env(:reaper, :secrets_endpoint, original) end)
+
+      :meck.new(File, [:unstick])
+      :meck.expect(File, :read, fn "/var/run/secrets/kubernetes.io/serviceaccount/token" -> {:ok, values.jwt} end)
+
+      :meck.new(Vault, [:non_strict])
+      :meck.expect(Vault, :new, fn _ -> raise "Vault.new/1 should not be called when SECRETS_ENDPOINT is unset" end)
+
+      assert capture_log(fn ->
+               assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
+                        {:error, :retrieve_credential_failed}
+             end) =~ "SECRETS_ENDPOINT environment variable is not set or empty"
+
+      :meck.unload(File)
+      :meck.unload(Vault)
+    end
+
+    test "returns error without contacting Vault when SECRETS_ENDPOINT is empty", values do
+      original = Application.get_env(:reaper, :secrets_endpoint)
+      Application.put_env(:reaper, :secrets_endpoint, "")
+      on_exit(fn -> Application.put_env(:reaper, :secrets_endpoint, original) end)
+
+      :meck.new(File, [:unstick])
+      :meck.expect(File, :read, fn "/var/run/secrets/kubernetes.io/serviceaccount/token" -> {:ok, values.jwt} end)
+
+      :meck.new(Vault, [:non_strict])
+      :meck.expect(Vault, :new, fn _ -> raise "Vault.new/1 should not be called when SECRETS_ENDPOINT is empty" end)
+
+      assert capture_log(fn ->
+               assert SecretRetriever.retrieve_ingestion_credentials(values.ingestion_id) ==
+                        {:error, :retrieve_credential_failed}
+             end) =~ "SECRETS_ENDPOINT environment variable is not set or empty"
+
+      :meck.unload(File)
+      :meck.unload(Vault)
+    end
   end
 end

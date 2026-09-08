@@ -40,13 +40,17 @@ defmodule Reaper.SecretRetriever do
     endpoint = secrets_endpoint()
     Logger.info("Attempting to connect to Vault at: #{inspect(endpoint)}")
 
-    Vault.new(
-      engine: Vault.Engine.KVV1,
-      auth: Vault.Auth.Kubernetes,
-      host: endpoint,
-      token_expires_at: set_login_ttl(20, :second)
-    )
-    |> Vault.auth(%{role: "reaper-role", jwt: token})
+    if is_nil(endpoint) or endpoint == "" do
+      {:error, "SECRETS_ENDPOINT environment variable is not set or empty"}
+    else
+      Vault.new(
+        engine: Vault.Engine.KVV1,
+        auth: Vault.Auth.Kubernetes,
+        host: endpoint,
+        token_expires_at: set_login_ttl(20, :second)
+      )
+      |> Vault.auth(%{role: "reaper-role", jwt: token})
+    end
   end
 
   defp set_login_ttl(time, interval), do: NaiveDateTime.utc_now() |> NaiveDateTime.add(time, interval)
