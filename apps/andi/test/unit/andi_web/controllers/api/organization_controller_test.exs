@@ -395,8 +395,8 @@ defmodule AndiWeb.API.OrganizationControllerTest do
     end
 
     test "returns a 400 if the organization doesn't exist", %{conn: conn, users: users} do
-      # Set up :meck for Andi.Schemas.User and OrgStore
-      modules = [Andi.Schemas.User, OrgStore]
+      # Set up :meck for Andi.Schemas.User, OrgStore, and Organizations
+      modules = [Andi.Schemas.User, OrgStore, Organizations]
 
       Enum.each(modules, fn module ->
         try do
@@ -414,6 +414,7 @@ defmodule AndiWeb.API.OrganizationControllerTest do
 
       :meck.expect(Andi.Schemas.User, :get_by_subject_id, fn _ -> %{subject_id: "N/A", email: "example.com"} end)
       :meck.expect(OrgStore, :get, fn _ -> {:ok, nil} end)
+      :meck.expect(Organizations, :get, fn _ -> nil end)
 
       org_id = 111
 

@@ -100,7 +100,7 @@ defmodule AndiWeb.EditOrganizationLiveView do
 
     org_exists =
       case Andi.Services.OrgStore.get(org.id) do
-        {:ok, nil} -> false
+        {:ok, nil} -> Organizations.has_datasets?(org.id)
         _ -> true
       end
 

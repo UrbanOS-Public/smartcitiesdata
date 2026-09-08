@@ -348,11 +348,53 @@ defmodule AndiWeb.API.IngestionControllerTest do
       :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
       :meck.expect(DatasetStore, :get, fn "nonexistent_dataset" -> {:ok, nil} end)
 
+      try do
+        :meck.new(Andi.InputSchemas.Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(Andi.InputSchemas.Datasets, :get, fn "nonexistent_dataset" -> nil end)
+
       conn = put(conn, @route, ingestion_without_id)
       body = json_response(conn, 400)
       assert "Target dataset does not exist" =~ Map.get(body, "errors")
 
       :meck.unload(IngestionStore)
+      :meck.unload(Andi.InputSchemas.Datasets)
+    end
+
+    test "PUT /api/ targetDatasets falls back to Postgres when the DatasetStore (Redis) has no record",
+         %{conn: conn} do
+      smrt_ingestion = TDG.create_ingestion(%{targetDatasets: ["dataset_in_postgres_only"]})
+      {_, ingestion_without_id} = smrt_ingestion |> struct_to_map_with_string_keys() |> Map.pop("id")
+
+      try do
+        :meck.new(IngestionStore, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(IngestionStore, :get, fn _ -> {:ok, nil} end)
+      :meck.expect(Brook.Event, :send, fn @instance_name, _, _, _ -> :ok end)
+      :meck.expect(DatasetStore, :get, fn "dataset_in_postgres_only" -> {:ok, nil} end)
+
+      try do
+        :meck.new(Andi.InputSchemas.Datasets, [:passthrough])
+      catch
+        :error, {:already_started, _} -> :ok
+      end
+
+      :meck.expect(Andi.InputSchemas.Datasets, :get, fn "dataset_in_postgres_only" ->
+        %{submission_status: :published}
+      end)
+
+      conn = put(conn, @route, ingestion_without_id)
+
+      response(conn, 201)
+
+      :meck.unload(IngestionStore)
+      :meck.unload(Andi.InputSchemas.Datasets)
     end
 
     test "PUT /api/ fail validation when datasetStore fails", %{conn: conn} do

@@ -28,6 +28,7 @@ defmodule Andi.InputSchemas.Ingestions do
       )
 
     Repo.all(query)
+    |> Repo.preload(:transformations)
   end
 
   def create(dataset_ids) do

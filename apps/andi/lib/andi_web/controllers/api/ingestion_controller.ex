@@ -11,6 +11,7 @@ defmodule AndiWeb.API.IngestionController do
   alias SmartCity.Ingestion
   alias Andi.Services.IngestionStore
   alias Andi.Services.DatasetStore
+  alias Andi.InputSchemas.Datasets
   alias Andi.InputSchemas.InputConverter
 
   access_levels(
@@ -87,9 +88,20 @@ defmodule AndiWeb.API.IngestionController do
 
   defp dataset_exists?(id) do
     case DatasetStore.get(id) do
-      {:ok, nil} -> {:ok, false}
+      {:ok, nil} -> {:ok, dataset_exists_in_postgres?(id)}
       {:ok, _dataset} -> {:ok, true}
       {:error, error} -> {:error, error}
+    end
+  end
+
+  # Falls back to Postgres so ingestion validation still works after a Redis key
+  # reset, where a published dataset exists in Postgres but hasn't yet been
+  # resynced to Redis. Only published datasets count, matching DatasetStore's
+  # existing semantics (only published datasets are event-sourced into Redis).
+  defp dataset_exists_in_postgres?(id) do
+    case Datasets.get(id) do
+      %{submission_status: :published} -> true
+      _ -> false
     end
   end
 

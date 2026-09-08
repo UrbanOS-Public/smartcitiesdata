@@ -81,12 +81,30 @@ defmodule Andi.Harvest.HarvesterTest do
 
       # Set up expectations for this test
       :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
-      :meck.expect(OrgStore, :get_all, fn -> [org_1] end)
+      :meck.expect(OrgStore, :get_all, fn -> {:ok, [org_1]} end)
 
       Harvester.start_harvesting()
 
       # Verify no calls were made (org has nil dataJsonUrl)
       assert :meck.num_calls(Brook.Event, :send, 4) == 0
+    end
+
+    test "start_harvesting/0 falls back to Postgres when the OrgStore (Redis) has no orgs" do
+      andi_org = %Andi.InputSchemas.Organization{
+        id: "95254592-d611-4bcb-9478-7fa248f4118d",
+        orgTitle: "Awesome Title",
+        orgName: "awesome_title",
+        description: "a description",
+        dataJsonUrl: "http://www.google.com"
+      }
+
+      :meck.expect(Brook.Event, :send, fn @instance_name, dataset_harvest_start(), :andi, _ -> :ok end)
+      :meck.expect(OrgStore, :get_all, fn -> {:ok, []} end)
+      :meck.expect(Organizations, :get_all, fn -> [andi_org] end)
+
+      Harvester.start_harvesting()
+
+      assert :meck.num_calls(Brook.Event, :send, 4) == 1
     end
 
     test "get_data_json/1", %{data_json: data_json, bypass: bypass} do

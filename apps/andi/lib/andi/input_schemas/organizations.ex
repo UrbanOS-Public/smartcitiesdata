@@ -4,6 +4,7 @@ defmodule Andi.InputSchemas.Organizations do
   alias Andi.Repo
   alias Ecto.Changeset
   alias Andi.InputSchemas.Datasets.HarvestedDatasets
+  alias Andi.InputSchemas.Datasets.Technical
   alias Andi.InputSchemas.Organization
   alias Andi.InputSchemas.StructTools
 
@@ -14,6 +15,16 @@ defmodule Andi.InputSchemas.Organizations do
   def get(id), do: Repo.get(Organization, id)
 
   def get_all(), do: Repo.all(Organization)
+
+  @doc """
+  Whether any dataset in Postgres references this org, used as a proxy for
+  "this org has previously been published" when the Redis-backed OrgStore
+  has no record of it (e.g. after a Redis key reset).
+  """
+  def has_datasets?(org_id) do
+    from(technical in Technical, where: technical.orgId == ^org_id)
+    |> Repo.exists?()
+  end
 
   def get_harvested_dataset(dataset_id) do
     Repo.get_by(HarvestedDatasets, datasetId: dataset_id)

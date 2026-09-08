@@ -9,6 +9,7 @@ defmodule Andi.Harvest.Harvester do
 
   alias Andi.Harvest.DataJsonDatasetMapper
   alias Andi.InputSchemas.Organizations
+  alias Andi.InputSchemas.InputConverter
   alias Andi.Services.OrgStore
   alias Andi.Services.DatasetStore
 
@@ -35,14 +36,37 @@ defmodule Andi.Harvest.Harvester do
 
   def start_harvesting() do
     case OrgStore.get_all() do
-      {:ok, orgs} ->
+      {:ok, orgs} when orgs != [] ->
         orgs
         |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
         |> Enum.each(fn org -> Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org) end)
 
       _ ->
-        Logger.info("No Orgs with data JSON to harvest")
+        # Falls back to Postgres so scheduled harvesting still runs after a Redis
+        # key reset, where orgs exist in Postgres but haven't yet been resynced to Redis.
+        harvestable_orgs_from_postgres()
+        |> Enum.each(fn org -> Brook.Event.send(@instance_name, dataset_harvest_start(), :andi, org) end)
     end
+  end
+
+  defp harvestable_orgs_from_postgres() do
+    orgs =
+      Organizations.get_all()
+      |> Enum.filter(fn org -> org.dataJsonUrl != nil end)
+      |> Enum.reduce([], fn andi_org, acc ->
+        case InputConverter.andi_org_to_smrt_org(andi_org) do
+          {:ok, smrt_org} ->
+            [smrt_org | acc]
+
+          {:error, reason} ->
+            Logger.error("start_harvesting: failed to convert org #{andi_org.id}: #{inspect(reason)}")
+            acc
+        end
+      end)
+
+    if orgs == [], do: Logger.info("No Orgs with data JSON to harvest")
+
+    orgs
   end
 
   def get_data_json("") do

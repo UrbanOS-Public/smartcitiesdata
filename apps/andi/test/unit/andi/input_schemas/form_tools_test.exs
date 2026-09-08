@@ -4,6 +4,7 @@ defmodule AndiWeb.Helpers.FormToolsTest do
   alias SmartCity.TestDataGenerator, as: TDG
   alias AndiWeb.Helpers.FormTools
   alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
 
   @moduletag timeout: 5000
 
@@ -199,6 +200,95 @@ defmodule AndiWeb.Helpers.FormToolsTest do
         :meck.unload(OrgStore)
       catch
         _, _ -> :ok
+      end
+    end
+
+    test "falls back to Postgres when org is not in Redis (Redis miss after key reset)" do
+      pg_org = %Andi.InputSchemas.Organization{
+        id: "existing_org_id",
+        orgTitle: "Postgres Org Title",
+        orgName: "postgres_org_name"
+      }
+
+      for module <- [OrgStore, Organizations] do
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end
+
+      :meck.expect(OrgStore, :get, fn _ -> {:ok, nil} end)
+      :meck.expect(Organizations, :get, fn _ -> pg_org end)
+
+      current_form_data = %{
+        "orgTitle" => "",
+        "dataName" => "my_dataset",
+        "orgName" => "",
+        "orgId" => "existing_org_id"
+      }
+
+      new_form_data = FormTools.adjust_org_name(current_form_data)
+
+      assert %{
+               "orgTitle" => "Postgres Org Title",
+               "orgName" => "postgres_org_name",
+               "orgId" => "existing_org_id",
+               "systemName" => "postgres_org_name__my_dataset"
+             } = new_form_data
+
+      for module <- [OrgStore, Organizations] do
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+      end
+    end
+
+    test "clears org fields when org is missing from both Redis and Postgres" do
+      for module <- [OrgStore, Organizations] do
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
+
+        try do
+          :meck.new(module, [:passthrough])
+        catch
+          :error, {:already_started, _} -> :ok
+        end
+      end
+
+      :meck.expect(OrgStore, :get, fn _ -> {:ok, nil} end)
+      :meck.expect(Organizations, :get, fn _ -> nil end)
+
+      current_form_data = %{
+        "orgTitle" => "Some Title",
+        "dataName" => "my_dataset",
+        "orgName" => "some_org",
+        "orgId" => "nonexistent_org_id"
+      }
+
+      new_form_data = FormTools.adjust_org_name(current_form_data)
+
+      assert new_form_data["orgTitle"] == ""
+      assert new_form_data["orgName"] == ""
+      assert new_form_data["systemName"] == ""
+
+      for module <- [OrgStore, Organizations] do
+        try do
+          :meck.unload(module)
+        catch
+          _, _ -> :ok
+        end
       end
     end
   end

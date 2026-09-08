@@ -9,6 +9,7 @@ defmodule AndiWeb.OrganizationLiveView do
   alias AndiWeb.OrganizationLiveView.Table
   alias Andi.InputSchemas.Organizations
   alias Andi.InputSchemas.Organization
+  alias Andi.Scripts.ResendEvents
 
   access_levels(render: [:private])
 
@@ -20,8 +21,19 @@ defmodule AndiWeb.OrganizationLiveView do
         <div class="organizations-index">
           <div class="organizations-index__header">
             <h1 class="organizations-index__title">All Organizations</h1>
-            <button type="button" class="btn btn--primary  btn--action" phx-click="add-organization">+ Add Organization</button>
+            <div class="organizations-index__header-actions">
+              <button type="button" class="btn btn--secondary btn--action" phx-click="resync-orgs" <%= if @resync_status == :running, do: "disabled" %>>
+                <%= if @resync_status == :running, do: "Syncing...", else: "Resync Orgs to Redis" %>
+              </button>
+              <button type="button" class="btn btn--primary  btn--action" phx-click="add-organization">+ Add Organization</button>
+            </div>
           </div>
+          <%= if @resync_status == :done do %>
+            <div class="resync-status resync-status--success">Orgs successfully resynced to Redis.</div>
+          <% end %>
+          <%= if @resync_status == :error do %>
+            <div class="resync-status resync-status--error">Resync encountered errors — check server logs.</div>
+          <% end %>
           <hr class="organizations-line">
 
           <div class="organizations-index__search">
@@ -58,7 +70,8 @@ defmodule AndiWeb.OrganizationLiveView do
        search_text: nil,
        order: {"org_title", "asc"},
        params: %{},
-       is_curator: is_curator
+       is_curator: is_curator,
+       resync_status: nil
      )}
   end
 
@@ -100,6 +113,28 @@ defmodule AndiWeb.OrganizationLiveView do
     new_org = Organizations.create()
 
     {:noreply, push_redirect(socket, to: "/organizations/#{new_org.id}")}
+  end
+
+  def handle_event("resync-orgs", _, socket) do
+    caller = self()
+
+    Task.start(fn ->
+      try do
+        ResendEvents.resend_org_events()
+        send(caller, {:resync_result, :done})
+      rescue
+        e ->
+          require Logger
+          Logger.error("resync-orgs failed: #{inspect(e)}")
+          send(caller, {:resync_result, :error})
+      end
+    end)
+
+    {:noreply, assign(socket, resync_status: :running)}
+  end
+
+  def handle_info({:resync_result, status}, socket) do
+    {:noreply, assign(socket, resync_status: status)}
   end
 
   defp filter_on_search_change(search_value, socket) do

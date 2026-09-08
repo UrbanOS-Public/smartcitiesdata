@@ -4,7 +4,7 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   curator versions of the metadata form.
   """
   alias AndiWeb.Views.Options
-  alias Andi.Services.OrgStore
+  alias Andi.InputSchemas.Organizations
   alias Andi.Schemas.User
 
   def map_to_dropdown_options(options) do
@@ -20,7 +20,7 @@ defmodule AndiWeb.Helpers.MetadataFormHelpers do
   def get_level_of_access_options, do: map_to_dropdown_options(Options.level_of_access())
   def get_rating_options(), do: map_to_dropdown_options(Options.ratings())
   def get_source_type_options(), do: map_to_dropdown_options(Options.source_type())
-  def get_org_options(), do: Options.organizations(OrgStore.get_all())
+  def get_org_options(), do: Options.organizations(Organizations.get_all())
   def get_owner_options(), do: Options.users(User.get_all())
 
   def get_source_format_options(source_type) when source_type in ["remote", "host"] do
