@@ -114,7 +114,7 @@ defmodule DiscoveryApi.Scripts.QueryDiagnostic do
 
       Enum.each(in_ets_not_redis, fn id ->
         model = Map.get(ets_models, id)
-        IO.puts("  #{yellow(id)} — #{model && model.systemName || "?"}")
+        IO.puts("  #{yellow(id)} — #{(model && model.systemName) || "?"}")
       end)
 
       recommend([
@@ -170,8 +170,7 @@ defmodule DiscoveryApi.Scripts.QueryDiagnostic do
 
       {:ok, model} ->
         pass("Brook ETS has model: systemName=#{model.systemName}")
-        %{state | dataset_id: dataset_id, system_name: model.systemName,
-          org_id: get_in(model, [:organizationDetails, :id])}
+        %{state | dataset_id: dataset_id, system_name: model.systemName, org_id: get_in(model, [:organizationDetails, :id])}
 
       {:error, reason} ->
         fail("Brook.ViewState.get error: #{inspect(reason)}")
@@ -196,8 +195,7 @@ defmodule DiscoveryApi.Scripts.QueryDiagnostic do
 
       {dataset_id, model} ->
         pass("Found in Brook ETS: id=#{dataset_id}")
-        %{state | dataset_id: dataset_id, system_name: model.systemName,
-          org_id: get_in(model, [:organizationDetails, :id])}
+        %{state | dataset_id: dataset_id, system_name: model.systemName, org_id: get_in(model, [:organizationDetails, :id])}
     end
   end
 
@@ -304,6 +302,7 @@ defmodule DiscoveryApi.Scripts.QueryDiagnostic do
         |> Prestige.Result.as_maps()
 
       pass("Trino query succeeded — #{length(rows)} row(s)")
+
       if rows != [] do
         info("Result: #{inspect(hd(rows))}")
       end

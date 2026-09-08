@@ -53,8 +53,7 @@ config :mime, :types, %{
 config :discovery_api,
   user_visualization_limit: 1_000
 
-config :discovery_api, :query_cache,
-  max_rows: 50_000
+config :discovery_api, :query_cache, max_rows: 50_000
 
 config :elastix,
   json_codec: Jason,
