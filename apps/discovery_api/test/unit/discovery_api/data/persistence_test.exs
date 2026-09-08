@@ -55,7 +55,7 @@ defmodule DiscoveryApi.Data.PersistenceTest do
   describe "get_all/2" do
     test "doesnt filter out nils by default" do
       stub(RedixMock, :command!, fn
-        :redix, ["KEYS", "redis_key"] -> ["key", "keyb"]
+        :redix, ["SCAN", "0", "MATCH", "redis_key", "COUNT", 500] -> ["0", ["key", "keyb"]]
         :redix, ["MGET", "key", "keyb"] -> [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
       end)
 
@@ -66,13 +66,32 @@ defmodule DiscoveryApi.Data.PersistenceTest do
 
     test "can filter out nils" do
       stub(RedixMock, :command!, fn
-        :redix, ["KEYS", "redis_key"] -> ["key", "keyb"]
+        :redix, ["SCAN", "0", "MATCH", "redis_key", "COUNT", 500] -> ["0", ["key", "keyb"]]
         :redix, ["MGET", "key", "keyb"] -> [~s|{"item": 1}|, nil, ~s|{"item": 2}|]
       end)
 
       actual = Persistence.get_all("redis_key", true) |> Enum.map(&safe_json_decode/1)
 
       assert actual == [%{item: 1}, %{item: 2}]
+    end
+  end
+
+  describe "get_keys/1" do
+    test "returns matching keys found on a single scan page" do
+      stub(RedixMock, :command!, fn
+        :redix, ["SCAN", "0", "MATCH", "redis_key*", "COUNT", 500] -> ["0", ["redis_key1", "redis_key2"]]
+      end)
+
+      assert Persistence.get_keys("redis_key*") == ["redis_key1", "redis_key2"]
+    end
+
+    test "follows the cursor across multiple scan pages and accumulates keys" do
+      stub(RedixMock, :command!, fn
+        :redix, ["SCAN", "0", "MATCH", "redis_key*", "COUNT", 500] -> ["17", ["redis_key1"]]
+        :redix, ["SCAN", "17", "MATCH", "redis_key*", "COUNT", 500] -> ["0", ["redis_key2"]]
+      end)
+
+      assert Persistence.get_keys("redis_key*") == ["redis_key1", "redis_key2"]
     end
   end
 
