@@ -1,6 +1,6 @@
 # alchemist Release Notes
 
-## 0.2.57 (pending release — not yet tagged)
+## 23.2.18
 - Added support for multiple datasets per ingestion
 - Added event logging for transformation start/completion and validation steps, with improved error handling and logging levels
 - Fixed a schema case-sensitivity bug and null-type handling in the Constant transform
