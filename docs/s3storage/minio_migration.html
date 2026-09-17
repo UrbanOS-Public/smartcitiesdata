@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MinIO &rarr; Self-Hosted S3 Migration Plan</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel-2: #1c2029;
+    --panel-border: #2a2e3a;
+    --text: #e4e7ef;
+    --muted: #9aa1b4;
+    --accent: #5aa9ff;
+    --accent-dim: rgba(90, 169, 255, 0.15);
+    --ok: #4fd18b;
+    --warn: #f2b84b;
+    --bad: #f2624b;
+    --purple: #b58aff;
+    --code-bg: #10131a;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 6rem;
+  }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.4rem;
+    margin-top: 3.2rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--panel-border);
+    scroll-margin-top: 1rem;
+  }
+  h3 { font-size: 1.05rem; color: var(--accent); margin-top: 1.9rem; scroll-margin-top: 1rem; }
+  h4 { font-size: 0.95rem; color: var(--text); margin-top: 1.3rem; }
+  p, li { color: var(--text); }
+  .subtitle { color: var(--muted); margin-top: 0.4rem; max-width: 860px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; margin: 0.9rem 0 1.6rem; align-items: center; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .tag.gap { background: rgba(242, 98, 75, 0.15); color: var(--bad); border: 1px solid rgba(242,98,75,0.4); }
+  .tag.ok { background: rgba(79, 209, 139, 0.15); color: var(--ok); border: 1px solid rgba(79,209,139,0.4); }
+  .tag.warn { background: rgba(242, 184, 75, 0.15); color: var(--warn); border: 1px solid rgba(242,184,75,0.4); }
+  .tag.info { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(90,169,255,0.4); }
+  .tag.purple { background: rgba(181, 138, 255, 0.15); color: var(--purple); border: 1px solid rgba(181,138,255,0.4); }
+  .tag.muted { background: rgba(154,161,180,0.12); color: var(--muted); border: 1px solid rgba(154,161,180,0.35); }
+
+  code, pre {
+    font-family: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 0.86rem;
+  }
+  code { background: var(--code-bg); padding: 0.12rem 0.35rem; border-radius: 4px; color: #cfe8ff; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    color: #cfe8ff;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    margin: 1.2rem 0;
+  }
+  .card h3, .card h4 { margin-top: 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--panel-border);
+    vertical-align: top;
+  }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+
+  .diagram-wrap {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  .diagram-caption { color: var(--muted); font-size: 0.85rem; margin-top: 0.6rem; text-align: center; }
+
+  .callout {
+    border-left: 3px solid var(--warn);
+    background: rgba(242, 184, 75, 0.08);
+    padding: 0.85rem 1.1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.1rem 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: rgba(242, 98, 75, 0.08); }
+  .callout.good { border-left-color: var(--ok); background: rgba(79, 209, 139, 0.08); }
+  .callout.info { border-left-color: var(--accent); background: rgba(90, 169, 255, 0.08); }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout strong.label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.3rem; }
+
+  footer {
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 4rem;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 1rem;
+  }
+
+  svg text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; }
+
+  .toc {
+    columns: 2;
+    font-size: 0.92rem;
+  }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  @media (max-width: 700px) { .toc { columns: 1; } }
+
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 2.6rem;
+    margin: 1.1rem 0;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 1.8rem; height: 1.8rem;
+    border-radius: 50%;
+    background: rgba(90, 169, 255, 0.15);
+    border: 1px solid rgba(90, 169, 255, 0.4);
+    color: var(--accent);
+    font-weight: 600; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Phase timeline */
+  .phase-list { list-style: none; padding: 0; margin: 1.5rem 0; }
+  .phase {
+    display: grid;
+    grid-template-columns: 3.2rem 1fr;
+    gap: 0 1.1rem;
+    margin-bottom: 0.4rem;
+  }
+  .phase-marker {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .phase-num {
+    width: 2.6rem; height: 2.6rem; border-radius: 50%;
+    background: var(--panel-2); border: 2px solid var(--accent);
+    color: var(--accent); font-weight: 700; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .phase-line { width: 2px; flex: 1; background: var(--panel-border); margin-top: 0.2rem; min-height: 1.4rem; }
+  .phase:last-child .phase-line { display: none; }
+  .phase-body {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem 1.3rem;
+    margin-bottom: 1.6rem;
+  }
+  .phase-body h3 { margin-top: 0; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .phase-meta { color: var(--muted); font-size: 0.85rem; margin: 0.2rem 0 0.8rem; }
+  .phase-body ul { margin: 0.4rem 0; padding-left: 1.3rem; }
+  .phase-body li { margin: 0.25rem 0; }
+  .exit { margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px dashed var(--panel-border); }
+  .exit strong { color: var(--ok); }
+
+  details {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    margin: 0.9rem 0;
+    padding: 0.2rem 1.2rem 0.9rem;
+  }
+  details[open] { padding-bottom: 1rem; }
+  summary {
+    cursor: pointer;
+    padding: 0.9rem 0;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+";
+    color: var(--accent);
+    font-size: 1.3rem;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+  details[open] summary::after { content: "\2212"; }
+  summary .sum-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { position: relative; padding-left: 1.6rem; margin: 0.4rem 0; }
+  .checklist li::before {
+    content: "\2610";
+    position: absolute; left: 0; top: 0;
+    color: var(--muted);
+  }
+
+  .badge-row { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.4rem 0 0.8rem; }
+
+  .path { color: #cfe8ff; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 0.85rem; }
+
+  #top-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 0.6rem 1.5rem;
+    font-size: 0.82rem;
+    display: flex; gap: 1.2rem; flex-wrap: wrap;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #top-nav a { color: var(--muted); text-decoration: none; }
+  #top-nav a:hover { color: var(--accent); }
+
+  @media print {
+    #top-nav { display: none; }
+    body { background: #fff; color: #111; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="top-nav">
+  <a href="#drivers">Drivers</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#inventory">Inventory</a>
+  <a href="#buckets">Buckets</a>
+  <a href="#requirements">Engine requirements</a>
+  <a href="#baseline">Baseline &amp; benchmarking</a>
+  <a href="#decisions">Open decisions</a>
+  <a href="#phases">Migration phases</a>
+  <a href="#changes">Code changes</a>
+  <a href="#testing">Testing</a>
+  <a href="#rollback">Rollback</a>
+  <a href="#risks">Risks</a>
+  <a href="#timeline">Timeline</a>
+</nav>
+
+<main>
+
+  <h1>MinIO &rarr; Self-Hosted S3 Migration Plan</h1>
+  <p class="subtitle">
+    A plan for moving <strong>smartcitiesdata</strong> (UrbanOS / RIDE) off the in-cluster MinIO
+    Operator tenant and onto a self-hosted, S3-API-compatible object store running
+    <strong>outside</strong> the OpenShift cluster &mdash; covering both consumers of the object
+    store found in this repository: the Elixir applications (<code>ExAws</code>/<code>ExAws.S3</code>)
+    and Trino's native Hive-connector S3 filesystem.
+  </p>
+  <div class="meta-row">
+    <span class="tag info">Status: Draft</span>
+    <span class="tag muted">Author: Rob Seward</span>
+    <span class="tag muted">Date: 2026-09-14</span>
+    <span class="tag muted">Branch: 2026-otp23</span>
+    <span class="tag warn">Scope: app repo + openshift-deploy repo</span>
+  </div>
+
+  <div class="callout info">
+    <strong class="label">Scope note</strong>
+    <p>
+      This repository (<code>smartcitiesdata</code>) only owns application-level object-storage
+      configuration. The actual MinIO/Kubernetes deployment manifests (the
+      <code>minio_tenant_chart</code> Helm chart, MinIO Operator subscription, PVCs, and Trino/Hive
+      Helm values) live in the separate <code>UrbanOS-Public/openshift-deploy</code> repository.
+      This plan is written from the <code>smartcitiesdata</code> side but calls out every place
+      work is also required in <code>openshift-deploy</code>.
+    </p>
+  </div>
+
+  <h2 id="drivers">1. Why now</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4><span class="tag bad">Forcing issue</span></h4>
+      <p>
+        MinIO is currently deployed via the <strong>MinIO Operator</strong> through OpenShift's
+        OperatorHub marketplace. That distribution path is being removed starting with
+        OpenShift 4.16+, and MinIO's own post-AGPLv3-relicensing options are either the paid
+        <strong>AIStor</strong> product or a community-maintained, self-managed Operator/Helm
+        deployment with no vendor support path on OpenShift going forward.
+      </p>
+    </div>
+    <div class="card">
+      <h4><span class="tag warn">Secondary drivers</span></h4>
+      <ul>
+        <li>Moving the store outside the cluster removes a large, stateful workload (PVC-backed
+          MinIO tenant pods) from OpenShift capacity planning and upgrade risk &mdash; the same
+          class of risk that already caused a cluster-upgrade-triggered crash loop for other
+          in-cluster stateful/operator-managed components on 2026-08-31.</li>
+        <li>Decouples object-storage availability from OpenShift cluster maintenance windows
+          (node drains, operator upgrades) &mdash; today, an in-cluster MinIO outage takes down
+          ingestion (Forklift writes), Trino/Hive query serving, and hosted-file upload/download
+          simultaneously.</li>
+        <li>Opens the door to a storage engine chosen for operational fit (e.g. erasure-coded
+          replication, easier off-cluster backup/DR) rather than "whatever OperatorHub still
+          offers."</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="architecture">2. Current architecture</h2>
+  <p>
+    The critical fact driving this whole plan: <strong>there are two independent S3 clients</strong>
+    talking to the same MinIO tenant today, configured completely separately, and both must be
+    repointed. Missing either one produces a partial, confusing migration (e.g. ingestion writes
+    succeed against the new engine but Trino still reads the old one).
+  </p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1020 460" width="100%" role="img" aria-label="Diagram of current MinIO architecture showing two independent S3 clients: ExAws in the Elixir apps, and Trino's native Hive connector, both pointing at the same in-cluster MinIO tenant">
+      <defs>
+        <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#5aa9ff"/>
+        </marker>
+        <marker id="arrGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#4fd18b"/>
+        </marker>
+        <marker id="arrPurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L8,3 L0,6 Z" fill="#b58aff"/>
+        </marker>
+      </defs>
+
+      <!-- cluster boundary -->
+      <rect x="10" y="10" width="1000" height="440" rx="14" fill="none" stroke="#3a3f52" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="30" y="34" fill="#9aa1b4" font-size="12">OpenShift cluster (mdot-ride-*-ns)</text>
+
+      <!-- Andi -->
+      <rect x="40" y="60" width="150" height="58" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="115" y="84" text-anchor="middle" fill="#e4e7ef" font-size="13">Andi</text>
+      <text x="115" y="102" text-anchor="middle" fill="#9aa1b4" font-size="10">presigned PUT/GET</text>
+
+      <!-- Reaper -->
+      <rect x="40" y="140" width="150" height="58" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="115" y="164" text-anchor="middle" fill="#e4e7ef" font-size="13">Reaper</text>
+      <text x="115" y="182" text-anchor="middle" fill="#9aa1b4" font-size="10">DataSlurper.S3 (read)</text>
+
+      <!-- Forklift/Pipeline -->
+      <rect x="40" y="220" width="150" height="58" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="115" y="244" text-anchor="middle" fill="#e4e7ef" font-size="13">Forklift</text>
+      <text x="115" y="262" text-anchor="middle" fill="#9aa1b4" font-size="10">via Pipeline.Writer.S3Writer</text>
+
+      <!-- Discovery API -->
+      <rect x="40" y="300" width="150" height="58" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="115" y="324" text-anchor="middle" fill="#e4e7ef" font-size="13">Discovery API</text>
+      <text x="115" y="342" text-anchor="middle" fill="#9aa1b4" font-size="10">ObjectStorageService (read)</text>
+
+      <!-- ExAws box -->
+      <rect x="260" y="80" width="200" height="220" rx="10" fill="#151822" stroke="#5aa9ff" stroke-width="1.5"/>
+      <text x="360" y="104" text-anchor="middle" fill="#5aa9ff" font-size="13" font-weight="600">Client #1: ExAws</text>
+      <text x="360" y="122" text-anchor="middle" fill="#9aa1b4" font-size="10">config :ex_aws / :ex_aws, :s3</text>
+      <text x="360" y="138" text-anchor="middle" fill="#9aa1b4" font-size="10">per-app runtime.exs</text>
+      <text x="360" y="160" text-anchor="middle" fill="#9aa1b4" font-size="10">S3_HOST_NAME / S3_PORT</text>
+      <text x="360" y="176" text-anchor="middle" fill="#9aa1b4" font-size="10">AWS_ACCESS_KEY_ID / SECRET</text>
+      <text x="360" y="192" text-anchor="middle" fill="#9aa1b4" font-size="10">HOSTED_FILE_BUCKET</text>
+      <text x="360" y="208" text-anchor="middle" fill="#9aa1b4" font-size="10">S3_WRITER_BUCKET</text>
+      <text x="360" y="230" text-anchor="middle" fill="#f2b84b" font-size="10">path-style addressing</text>
+      <text x="360" y="246" text-anchor="middle" fill="#f2b84b" font-size="10">SigV4 presigned URLs</text>
+
+      <line x1="190" y1="89" x2="260" y2="140" stroke="#5aa9ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="190" y1="169" x2="260" y2="169" stroke="#5aa9ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="190" y1="249" x2="260" y2="200" stroke="#5aa9ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="190" y1="329" x2="260" y2="230" stroke="#5aa9ff" stroke-width="2" marker-end="url(#arr)"/>
+
+      <!-- Trino / Hive box -->
+      <rect x="260" y="330" width="200" height="110" rx="10" fill="#151822" stroke="#b58aff" stroke-width="1.5"/>
+      <text x="360" y="354" text-anchor="middle" fill="#b58aff" font-size="13" font-weight="600">Client #2: Trino/Hive</text>
+      <text x="360" y="372" text-anchor="middle" fill="#9aa1b4" font-size="10">hive.properties</text>
+      <text x="360" y="392" text-anchor="middle" fill="#9aa1b4" font-size="10">fs.native-s3.enabled=true</text>
+      <text x="360" y="408" text-anchor="middle" fill="#9aa1b4" font-size="10">s3.endpoint / access &amp; secret key</text>
+      <text x="360" y="424" text-anchor="middle" fill="#f2b84b" font-size="10">s3.path-style-access=true</text>
+
+      <rect x="40" y="380" width="150" height="46" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="115" y="408" text-anchor="middle" fill="#e4e7ef" font-size="12">Trino coordinator + workers, Hive metastore</text>
+      <line x1="190" y1="403" x2="260" y2="390" stroke="#b58aff" stroke-width="2" marker-end="url(#arrPurple)"/>
+
+      <!-- MinIO -->
+      <rect x="720" y="180" width="240" height="120" rx="12" fill="#1a1d27" stroke="#4fd18b" stroke-width="1.5"/>
+      <text x="840" y="210" text-anchor="middle" fill="#4fd18b" font-size="15" font-weight="700">MinIO tenant</text>
+      <text x="840" y="230" text-anchor="middle" fill="#9aa1b4" font-size="11">MinIO Operator (OperatorHub)</text>
+      <text x="840" y="248" text-anchor="middle" fill="#9aa1b4" font-size="11">bucket: presto-hive-storage</text>
+      <text x="840" y="264" text-anchor="middle" fill="#9aa1b4" font-size="11">bucket: hosted-dataset-files</text>
+      <text x="840" y="284" text-anchor="middle" fill="#f2624b" font-size="11">deployed in-cluster, PVC-backed</text>
+
+      <line x1="460" y1="190" x2="720" y2="220" stroke="#5aa9ff" stroke-width="2" marker-end="url(#arr)"/>
+      <line x1="460" y1="385" x2="720" y2="260" stroke="#b58aff" stroke-width="2" marker-end="url(#arrPurple)"/>
+
+      <!-- browser -->
+      <rect x="720" y="60" width="240" height="60" rx="8" fill="#1a1d27" stroke="#3a3f52"/>
+      <text x="840" y="86" text-anchor="middle" fill="#e4e7ef" font-size="12">Curator's browser</text>
+      <text x="840" y="104" text-anchor="middle" fill="#9aa1b4" font-size="10">PUT/GET via presigned URL</text>
+      <line x1="840" y1="120" x2="840" y2="180" stroke="#4fd18b" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrGreen)"/>
+      <text x="880" y="150" fill="#4fd18b" font-size="9">direct, bypasses Andi</text>
+    </svg>
+    <p class="diagram-caption">
+      Two independent S3 clients (blue = Elixir <code>ExAws</code>, purple = Trino's native Hive
+      S3 filesystem) both point at one in-cluster MinIO tenant. A browser also talks to MinIO
+      <em>directly</em> via presigned URLs, bypassing Andi entirely for the actual byte transfer.
+    </p>
+  </div>
+
+  <p>
+    No app in this repo uses a MinIO-proprietary client or API &mdash; every access path goes
+    through the generic <code>ExAws</code>/<code>ExAws.S3</code> library (Elixir side) or Trino's
+    generic native-S3 Hive filesystem (query side), both pointed at MinIO purely via endpoint/host
+    override. <strong>This is good news</strong>: any S3-compatible engine that supports path-style
+    addressing, SigV4 request signing/presigned URLs, multipart upload, and
+    <code>ListObjectsV2</code> should be a drop-in replacement at the protocol level.
+  </p>
+
+  <h2 id="inventory">3. Inventory of touchpoints</h2>
+  <p>Everything below was found by searching this repository; expand each category for the full detail.</p>
+
+  <details open>
+    <summary>Dependencies <span class="sum-tags"><span class="tag muted">5 apps</span></span></summary>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>App</th><th>Declares</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>andi</code></td><td><code>ex_aws</code>, <code>ex_aws_s3</code> (git fork), <code>hackney</code></td><td>Presigned URL upload/download UI flows</td></tr>
+          <tr><td><code>discovery_api</code></td><td><code>ex_aws</code>, <code>ex_aws_s3</code> (same fork), <code>sweet_xml</code>, <code>hackney</code></td><td>Comment in <code>mix.exs</code>: "allows us to stream files off of S3 through memory"</td></tr>
+          <tr><td><code>pipeline</code></td><td><code>ex_aws</code>, <code>ex_aws_s3</code> (same fork), <code>ex_aws_sts</code>, <code>configparser_ex</code>, <code>sweet_xml</code></td><td>Home of <code>Pipeline.Writer.S3Writer</code>, the data-lake writer</td></tr>
+          <tr><td><code>reaper</code></td><td><code>ex_aws</code>, <code>ex_aws_s3</code> (same fork), <code>hackney</code></td><td><code>Reaper.DataSlurper.S3</code> read path</td></tr>
+          <tr><td><code>forklift</code></td><td>none directly &mdash; inherits via <code>{:pipeline, in_umbrella: true}</code></td><td>Still carries its own <code>config :ex_aws</code> blocks since OTP app config is global</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      All four apps pin <code>ex_aws_s3</code> to the <strong>same forked git commit</strong>
+      (<code>6b9fdac73b62dee14bffb939965742f2576f2a7b</code> of <code>ex-aws/ex_aws_s3</code>) via
+      <code>mix.lock</code>. <code>ex_aws 2.3.2</code>, <code>ex_aws_sts 2.3.0</code>, and
+      <code>hackney 1.18.2</code> are resolved umbrella-wide.
+    </p>
+  </details>
+
+  <details>
+    <summary>Application config (<code>config/*.exs</code>, <code>runtime.exs</code>) <span class="sum-tags"><span class="tag warn">env vars</span></span></summary>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>App</th><th>File</th><th>Key settings</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="2"><code>andi</code></td><td><code>config/integration.exs</code>, <code>config/test.exs</code></td><td><code>hosted_bucket: "trino-hive-storage"</code>; MinIO block (scheme <code>http://</code>, host <code>localhost</code>, port <code>9000</code>, creds <code>minioadmin</code>)</td></tr>
+          <tr><td><code>runtime.exs</code></td><td><code>HOSTED_FILE_BUCKET</code>, <code>HOSTED_FILE_REGION</code> env vars; conditional <code>S3_HOST_NAME</code>/<code>S3_PORT</code> override block</td></tr>
+          <tr><td rowspan="2"><code>discovery_api</code></td><td><code>config/integration.exs</code>, <code>config/config.exs</code></td><td><code>hosted_bucket</code>/<code>hosted_region</code>; own HMAC <code>presign_key</code> (unrelated to S3 presign) for its own download links</td></tr>
+          <tr><td><code>runtime.exs</code></td><td><code>HOSTED_FILE_BUCKET</code>, <code>HOSTED_FILE_REGION</code>, <code>PRESIGN_KEY</code> (required); same conditional <code>S3_HOST_NAME</code>/<code>S3_PORT</code> pattern</td></tr>
+          <tr><td rowspan="3"><code>forklift</code></td><td><code>config/config.exs</code></td><td><code>table_writer: Pipeline.Writer.S3Writer</code></td></tr>
+          <tr><td><code>config/integration.exs</code>, <code>config/performance.exs</code></td><td><code>s3_writer_bucket: "trino-hive-storage"</code>; MinIO block; optional <code>ExAws.STS.AuthCache.AssumeRoleCredentialsAdapter</code></td></tr>
+          <tr><td><code>runtime.exs</code></td><td><code>S3_WRITER_BUCKET</code>; <code>AWS_REGION</code> (default <code>us-west-2</code>); conditional <code>AWS_ACCESS_KEY_ID</code>/<code>S3_HOST_NAME</code> override</td></tr>
+          <tr><td><code>pipeline</code></td><td><code>config/integration.exs</code></td><td>MinIO block only (library app, no prod runtime config)</td></tr>
+          <tr><td rowspan="2"><code>reaper</code></td><td><code>config/integration.exs</code>, <code>config/test.exs</code></td><td><code>hosted_file_bucket: "trino-hive-storage"</code> (integration) / <code>"hosted-dataset-files"</code> (unit test)</td></tr>
+          <tr><td><code>runtime.exs</code></td><td><code>HOSTED_FILE_BUCKET</code> (required, default <code>"hosted-dataset-files"</code>); <code>AWS_REGION</code>; <strong>no</strong> <code>S3_HOST_NAME</code> override block here, unlike andi/discovery_api/forklift &mdash; a gap worth closing during migration</td></tr>
+          <tr><td><code>alchemist</code>, <code>valkyrie</code></td><td><code>config/test.exs</code></td><td>Vestigial <code>hosted_file_bucket</code>/<code>ex_aws</code> region config with no corresponding <code>ExAws.S3</code> calls in <code>lib</code> &mdash; dead config, safe to ignore or clean up</td></tr>
+          <tr><td><code>discovery_streams</code></td><td><code>config/config.exs</code>, <code>prod.exs</code></td><td>Vestigial <code>config :ex_aws, region: ...</code> &mdash; no S3 usage in lib</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Production env vars in play today:</strong>
+      <code>HOSTED_FILE_BUCKET</code>, <code>HOSTED_FILE_REGION</code>, <code>PRESIGN_KEY</code>,
+      <code>S3_WRITER_BUCKET</code>, <code>S3_HOST_NAME</code>, <code>S3_PORT</code>,
+      <code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_REGION</code>.
+    </p>
+  </details>
+
+  <details>
+    <summary>Application code paths <span class="sum-tags"><span class="tag muted">9 modules</span></span></summary>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Module / file</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td><span class="path">apps/pipeline/lib/pipeline/writer/s3_writer.ex</span></td><td>Primary data-lake writer. Gzips ingested records, uploads to <code>hive-s3/#{table}/[partition/]&lt;ts&gt;-&lt;unique&gt;.gz</code> via <code>S3.Upload.stream_file |&gt; S3.upload |&gt; ExAws.request()</code>. Also issues the Trino <code>CREATE TABLE</code>/compaction statements pointing at the S3 location.</td></tr>
+          <tr><td><span class="path">apps/pipeline/lib/pipeline/writer/s3_writer/compaction.ex</span></td><td>Trino-side JSON&rarr;ORC compaction SQL against the S3-backed Hive tables.</td></tr>
+          <tr><td><span class="path">apps/pipeline/lib/pipeline/writer/s3_writer/s3_safe_json.ex</span></td><td>NDJSON escaping/formatting for rows before they are written to S3 (see prior timestamp-precision incident docs).</td></tr>
+          <tr><td><span class="path">apps/forklift/lib/forklift/data_writer.ex</span></td><td>Orchestrates ingestion writes; resolves <code>s3_writer_bucket</code> and delegates to <code>Pipeline.Writer.S3Writer</code>.</td></tr>
+          <tr><td><span class="path">apps/reaper/lib/reaper/data_slurper/s3.ex</span></td><td>Read path for <code>s3://bucket/key</code> source URLs (host-type datasets and the <code>"s3"</code> extract-step type); supports a custom <code>x-scos-amzn-s3-region</code> header.</td></tr>
+          <tr><td><span class="path">apps/reaper/lib/reaper/data_extract/extract_step.ex</span></td><td>Routes user-configured <code>"s3"</code> extract steps into the slurper above.</td></tr>
+          <tr><td><span class="path">apps/discovery_api/lib/discovery_api/services/object_storage_service.ex</span></td><td>Hosted-file read path: <code>ExAws.S3.download_file/3 |&gt; ExAws.stream!</code>; <code>list_objects</code> to probe for a file extension.</td></tr>
+          <tr><td><span class="path">apps/discovery_api/lib/discovery_api_web/controllers/data_download_controller.ex</span></td><td>Keys hosted files as <code>"#{orgName}/#{datasetName}"</code>; auth is HMAC/private-flag based, not S3 ACLs.</td></tr>
+          <tr><td><span class="path">apps/andi/lib/andi_web/controllers/edit_controller.ex</span></td><td><code>ExAws.S3.presigned_url(:get, ...)</code> for curator sample-file downloads.</td></tr>
+          <tr><td><span class="path">apps/andi/lib/andi_web/live/public_submissions_live_view/upload_data_dictionary.ex</span></td><td><code>ExAws.S3.presigned_url(:put, ...)</code> &mdash; browser then PUTs the file bytes <strong>directly</strong> to the object store, bypassing Andi.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Key naming conventions in use:</strong></p>
+    <ul>
+      <li>Data lake: <code>hive-s3/#{table}/[&lt;partition_key&gt;=&lt;value&gt;/...]/&lt;unix_ts&gt;-&lt;unique_int&gt;.gz</code></li>
+      <li>Hosted sample files (Andi): <code>samples/#{dataset_id}/#{file_name}</code></li>
+      <li>Hosted downloadable files (Discovery API): <code>#{orgName}/#{datasetName}.#{extension}</code></li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>Infra / local dev / CI <span class="sum-tags"><span class="tag bad">no k8s manifests in this repo</span></span></summary>
+    <p>
+      There is no <code>k8s/</code>, <code>helm/</code>, <code>charts/</code>, <code>deploy/</code>,
+      or <code>terraform/</code> directory in <code>smartcitiesdata</code>. Production MinIO
+      deployment (the <code>minio_tenant_chart</code> Helm chart via the MinIO Operator on
+      OperatorHub) lives in <code>UrbanOS-Public/openshift-deploy</code>. Within this repo, MinIO
+      only appears in local/CI <strong>docker-compose</strong> fixtures:
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>File(s)</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td><span class="path">apps/andi/docker-compose.yml</span>, <span class="path">apps/reaper/docker-compose.yml</span></td><td><code>minio</code> service + an <code>init</code> container running <code>test/integration/setup.sh</code></td></tr>
+          <tr><td><span class="path">apps/{forklift,pipeline,discovery_api,e2e}/**/docker-compose*.yml</span></td><td>Same <code>minio</code> service, plus Hive metastore + Trino/Presto wired via <code>S3_HOST</code>/<code>S3_PORT</code>/<code>S3_ACCESS_KEY</code>/<code>S3_BUCKET_NAME=trino-hive-storage</code></td></tr>
+          <tr><td><span class="path">apps/*/test/integration/setup.sh</span></td><td class="tag-cell"><span class="tag bad">MinIO-specific trick</span> Pre-creates <code>/minio/trino-hive-storage</code> as a plain directory on the shared docker volume before MinIO starts &mdash; MinIO's filesystem backend treats top-level directories as buckets. <strong>This will not work against a generic S3-compatible engine</strong> and must be replaced with a real bucket-creation call (<code>mc mb</code> / API).</td></tr>
+          <tr><td><span class="path">apps/*/test/integration/hive.properties</span></td><td>Trino Hive connector config: <code>fs.native-s3.enabled=true</code>, <code>s3.aws-access-key/secret-key=minioadmin</code>, <code>s3.path-style-access=true</code>, <code>s3.endpoint=http://minio:9000</code>. Independent of the Elixir <code>ExAws</code> config &mdash; must be repointed separately.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Production context (from operational notes already in this checkout)</summary>
+    <ul>
+      <li>Production data-lake bucket is <code>presto-hive-storage</code> &mdash; differs from the
+        <code>trino-hive-storage</code> name used everywhere in dev/test/CI. This should be
+        reconciled/documented as part of the migration, not carried forward as a silent trap.</li>
+      <li>Forklift's production env: <code>S3_HOST_NAME=minio</code>, <code>S3_WRITER_BUCKET=presto-hive-storage</code>, <code>S3_PORT=80</code>.</li>
+      <li>MinIO is deployed via the Operator as a "tenant" in the <code>mdot-ride-*-ns</code> namespaces; a <code>minio-client</code> (<code>mc</code>) debug pod and a MinIO console are used operationally today for spot-checking objects (e.g. pulling raw <code>.gz</code> files during the <code>prune_test_2</code> <code>HIVE_CURSOR_ERROR</code> investigation).</li>
+      <li>There is real outage precedent for the network path to the object store: Forklift has previously logged
+        <code>ExAws: HTTP ERROR: :connect_timeout ... https://s3.us-east-2.amazonaws.com/presto-hive-storage/...</code>
+        &mdash; note the AWS S3 fallback endpoint appearing instead of the MinIO host, which suggests
+        <code>ex_aws</code>'s host-override config was not honored in that failure path. This must be
+        understood and closed off before relying on an external, off-cluster endpoint (a fallback to
+        public AWS S3 for internal traffic would be a silent data-loss/security bug).</li>
+    </ul>
+  </details>
+
+  <h2 id="buckets">4. Bucket topology today</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Logical bucket</th><th>Purpose</th><th>Consumers</th><th>Dev/test name</th><th>Prod name</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Data lake</strong></td>
+          <td>Hive/Trino table storage &mdash; raw ingested JSON + compacted ORC data</td>
+          <td>Forklift (write) &rarr; Trino/Hive metastore (read, via native S3 filesystem, <strong>not</strong> ExAws)</td>
+          <td><code>trino-hive-storage</code></td>
+          <td><code>presto-hive-storage</code></td>
+        </tr>
+        <tr>
+          <td><strong>Hosted files</strong></td>
+          <td>User-uploaded dataset sample/full files for "host" source-type datasets</td>
+          <td>Andi (presigned PUT/GET), Discovery API (read/stream), Reaper (read, host ingestion)</td>
+          <td><code>hosted-dataset-files</code> (unit tests) / coincidentally reuses <code>trino-hive-storage</code> in integration fixtures</td>
+          <td><code>HOSTED_FILE_BUCKET</code> env var &mdash; no in-code default in andi/discovery_api; must be confirmed against the live cluster</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <strong class="label">Action needed before migration</strong>
+    <p>
+      Confirm, against the live production/QA clusters (not just this repo), the exact current
+      values of <code>HOSTED_FILE_BUCKET</code>, <code>S3_WRITER_BUCKET</code>, and whether hosted
+      files and data-lake data are genuinely two separate buckets in production or share one. This
+      plan assumes they are logically distinct and should be migrated as two independent bucket
+      copies with independent cutover verification.
+    </p>
+  </div>
+
+  <h2 id="requirements">5. Requirements for the replacement engine</h2>
+  <p>Whatever self-hosted, S3-compatible engine is chosen (candidates: standalone/self-managed MinIO
+  without the Operator, Ceph RGW, SeaweedFS, Garage, MinIO AIStor, etc.), it must satisfy every row
+  below &mdash; each is exercised somewhere in this codebase today.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Capability</th><th>Why it's required</th><th>Verify by</th></tr></thead>
+      <tbody>
+        <tr><td>Path-style addressing (<code>http(s)://host/bucket/key</code>)</td><td>Hardcoded in every <code>hive.properties</code> (<code>s3.path-style-access=true</code>) and in every <code>ex_aws, :s3</code> host-override block</td><td><code>mc</code>/<code>curl</code> smoke test against the new endpoint before touching app config</td></tr>
+        <tr><td>SigV4 request signing</td><td><code>ExAws</code> signs every request with SigV4; region string is currently hardcoded to <code>"local"</code> for MinIO</td><td>Confirm the new engine's SigV4 implementation accepts an arbitrary/region-agnostic region string, or plan to set a real region consistently everywhere</td></tr>
+        <tr><td>SigV4 presigned URLs (GET and PUT)</td><td><code>andi</code>'s <code>edit_controller.ex</code> (GET) and <code>upload_data_dictionary.ex</code> (PUT) hand presigned URLs directly to the browser</td><td>End-to-end manual test: curator downloads a sample, public submitter uploads a file, through the actual UI against the new engine</td></tr>
+        <tr><td>Multipart upload</td><td><code>ExAws.S3.Upload.stream_file</code> in <code>s3_writer.ex</code> uses streaming/multipart semantics for larger objects</td><td>Ingest a large dataset in a staging environment and confirm the object lands intact</td></tr>
+        <tr><td><code>ListObjectsV2</code> with prefix</td><td><code>ObjectStorageService.extension_available_for_file?/2</code> lists by prefix to probe file extensions</td><td>Unit/integration test against the new engine</td></tr>
+        <tr><td>Trino native-S3 filesystem compatibility</td><td>Trino's Hive connector talks to the bucket directly for every query &mdash; this is the highest-volume, latency-sensitive consumer</td><td>Run representative Trino queries against a copy of production-scale data on the new engine and compare latency/throughput to current MinIO</td></tr>
+        <tr><td>TLS support (and a trusted or explicitly-trusted CA)</td><td>Store is moving <strong>outside</strong> the cluster network boundary &mdash; plaintext HTTP is not acceptable across that boundary</td><td>Confirm cert chain trust from every pod (Elixir apps <em>and</em> Trino workers) and from any browser doing presigned-URL PUT/GET</td></tr>
+        <tr><td>Sufficient throughput/latency over the new network path</td><td>Object store is no longer on the pod network &mdash; every Trino table scan and every Forklift write now crosses whatever link connects the cluster to the external host</td><td>Load test with production-representative query and ingestion volume before cutover; this is the single biggest performance-risk item in this plan</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="baseline">6. Pre-migration baseline &amp; synthetic benchmarking</h2>
+  <p>
+    The risk register (Section 12) names network-path latency/throughput to an out-of-cluster
+    store as the single highest-impact risk to this migration, and Phase 5's per-environment exit
+    criteria already require "Trino query latency within an agreed tolerance of the pre-migration
+    baseline." Neither of those is checkable unless a real baseline exists. This section defines
+    what to capture <em>before</em> any endpoint is touched, and a synthetic benchmark tool for
+    generating apples-to-apples numbers against both the current in-cluster MinIO tenant and the
+    candidate replacement engine.
+  </p>
+
+  <h3>6.1 What to baseline, and where it comes from</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>Why it matters</th><th>How to capture it</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Trino query latency (p50/p95/p99) for a fixed canary query set</td>
+          <td>The most direct, RIDE-user-visible signal of migration impact &mdash; this is the
+            number Phase 5's exit criteria actually compares against</td>
+          <td>See 6.2</td>
+        </tr>
+        <tr>
+          <td>Trino query throughput / concurrency ceiling</td>
+          <td>Object-store latency can look fine at low concurrency and then become the limiting
+            factor once real worker parallelism kicks in during a table scan</td>
+          <td>Run the canary set at increasing concurrency (Section 6.2) and note where the
+            latency curve knees upward</td>
+        </tr>
+        <tr>
+          <td>Forklift ingestion throughput (objects/sec, MB/sec)</td>
+          <td>Second-highest-volume consumer of the store; a regression here shows up as ingestion
+            backlog, not a query complaint</td>
+          <td>Synthetic benchmark (6.3) sized/shaped like real <code>.gz</code> partition writes,
+            plus wall-clock timing already loggable around <code>ExAws.request()</code> in
+            <span class="path">s3_writer.ex</span></td>
+        </tr>
+        <tr>
+          <td>Raw S3 operation latency: PUT / GET / LIST / multipart</td>
+          <td>Isolates "is the object store itself slower" from "is Trino, the network, or the
+            app slower" &mdash; without this, a query-latency regression at cutover is
+            unattributable</td>
+          <td>Synthetic benchmark (6.3), run from the same network vantage point as the
+            application pods</td>
+        </tr>
+        <tr>
+          <td>Object-store server-side metrics (requests/sec, bytes in/out, error rate)</td>
+          <td>Corroborates client-side numbers and catches server-side bottlenecks (disk, erasure
+            coding overhead, connection limits) invisible from the client</td>
+          <td>MinIO Operator already exposes Prometheus metrics for the current tenant; confirm
+            the candidate engine exposes an equivalent before Phase 0 sign-off</td>
+        </tr>
+        <tr>
+          <td>Network path RTT/bandwidth, cluster &rarr; candidate engine's future location</td>
+          <td>Separates "the network link" from "the engine" as the cause of any regression seen
+            after cutover</td>
+          <td>A simple <code>iperf3</code>/<code>ping</code> baseline, plus the synthetic
+            benchmark's small-object PUT/GET latency as a real-protocol cross-check</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <strong class="label">Timing</strong>
+    <p>
+      Capture this baseline against the <strong>current, in-cluster MinIO tenant</strong> during
+      Phase 0, before any application config changes from Phase 2 land, and repeat it against the
+      candidate engine (standalone) in the same phase. Both numbers are needed to separate "this
+      engine is inherently faster/slower" from "this environment changed."
+    </p>
+  </div>
+
+  <h3>6.2 Trino query performance monitoring</h3>
+  <p>
+    Pick a small, fixed set of "canary" queries that represent RIDE's actual discovery-api-driven
+    access patterns &mdash; at minimum one full-table scan, one filtered/partition-pruned scan,
+    one join, and one aggregation, against tables of realistic production size (not empty QA
+    fixtures). Pull the shapes from Trino's own query history if it's retained, rather than
+    guessing.
+  </p>
+  <ul class="checklist">
+    <li>Run the canary set on a schedule (e.g. hourly) starting in Phase 0, continuing unchanged
+      through Phase 3&ndash;5, so there is a continuous time series rather than a single
+      before/after snapshot &mdash; a step change is much easier to attribute to a specific
+      phase's config change that way.</li>
+    <li>Pull <code>elapsed_time</code>, <code>queued_time</code>, and <code>peak_memory</code> per
+      query from Trino's <code>system.runtime.queries</code> table (or an event-listener plugin,
+      if one is already wired up) rather than timing from the client side, to exclude client/network
+      overhead unrelated to the object store.</li>
+      <li>Tag every recorded run with environment, timestamp, and which object-store engine/endpoint
+      was active at that time &mdash; without that tag the time series can't be sliced by phase.</li>
+    <li>If Trino JMX metrics are already scraped into an existing Grafana/Prometheus setup, prefer
+      adding a panel there over standing up new bespoke storage &mdash; reuse whatever the team
+      already trusts for other latency baselines.</li>
+  </ul>
+
+  <h3>6.3 Synthetic S3 benchmark script</h3>
+  <p>
+    The canary queries in 6.2 measure the full stack (Trino + network + object store) but can't by
+    themselves say <em>which</em> layer regressed. A small, protocol-level benchmark that talks
+    directly to whichever engine is under test &mdash; the same way <code>ExAws</code> and Trino's
+    native-S3 filesystem do &mdash; closes that gap and produces numbers that are directly
+    comparable between MinIO and the candidate engine because it's the same client code hitting
+    both.
+  </p>
+  <div class="grid-2">
+    <div class="card">
+      <h4>What it exercises</h4>
+      <ul>
+        <li>PUT/GET across a size range that spans real usage: small (~4&ndash;256&nbsp;KB, hosted
+          sample metadata), medium (~8&nbsp;MB, typical ingested partition <code>.gz</code>), and
+          large (~64&nbsp;MB+, to trigger multipart) objects</li>
+        <li><code>ListObjectsV2</code> under a prefix, mirroring
+          <code>ObjectStorageService.extension_available_for_file?/2</code> and Hive metastore
+          location listing</li>
+        <li>Concurrency sweeps (1 / 4 / 16 simultaneous clients) to approximate simultaneous
+          Forklift writers and parallel Trino worker reads, not just single-threaded latency</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>What it records</h4>
+      <ul>
+        <li>Per operation: mean/p50/p95/p99/max latency in ms, sample count, object size,
+          concurrency level, a free-text <code>label</code> (e.g. <code>minio-incluster</code> vs.
+          <code>candidate-external</code>), and a timestamp</li>
+        <li>Appended as JSON Lines so before/after/candidate runs land in one file and diff cleanly
+          without a database</li>
+      </ul>
+    </div>
+  </div>
+  <p>
+    Implemented with <code>boto3</code> rather than shelling out to the <code>mc</code> CLI already
+    used operationally in this environment (per the production-context notes in Section 3) &mdash;
+    <code>boto3</code> avoids per-invocation process-spawn overhead that would skew latency
+    measurements at the sub-10ms end, while still speaking plain S3 protocol against either engine.
+    <code>mc</code> (or <code>mc support perf</code>, where the candidate engine's distribution
+    supports it) remains a fine quick sanity check using the same debug pods ops already has in
+    place, just not the source of the recorded comparison numbers.
+  </p>
+  <details>
+    <summary>s3_bench.py <span class="sum-tags"><span class="tag muted">boto3, stdlib only otherwise</span></span></summary>
+    <pre><code>#!/usr/bin/env python3
+"""Synthetic S3 benchmark for MinIO vs. candidate-engine comparison.
+
+Run once per engine under test, with a distinct --label, from the same
+network vantage point (e.g. a throwaway pod in the same namespace as the
+apps). Results append as JSON Lines to --out for later before/after diffing.
+
+Example:
+  python3 s3_bench.py --endpoint http://minio:9000 --bucket bench-scratch \
+      --access-key minioadmin --secret-key minioadmin \
+      --label minio-incluster --sizes 4KB,256KB,8MB,64MB \
+      --concurrency 1,4,16 --iterations 20 --out results.jsonl
+
+  python3 s3_bench.py --endpoint https://candidate.example.internal --bucket bench-scratch \
+      --access-key ... --secret-key ... \
+      --label candidate-external --sizes 4KB,256KB,8MB,64MB \
+      --concurrency 1,4,16 --iterations 20 --out results.jsonl
+"""
+import argparse
+import json
+import os
+import statistics
+import time
+import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import boto3
+from botocore.config import Config
+
+SIZE_UNITS = {"KB": 1024, "MB": 1024 ** 2, "GB": 1024 ** 3}
+
+
+def parse_size(s):
+    s = s.strip().upper()
+    for unit, mult in SIZE_UNITS.items():
+        if s.endswith(unit):
+            return int(float(s[: -len(unit)]) * mult)
+    return int(s)
+
+
+def make_client(endpoint, access_key, secret_key, region):
+    return boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name=region,
+        # path-style + SigV4 to match every ex_aws/Trino config in this repo
+        config=Config(s3={"addressing_style": "path"}, signature_version="s3v4"),
+    )
+
+
+def timed(fn):
+    start = time.perf_counter()
+    fn()
+    return time.perf_counter() - start
+
+
+def bench_put_get(client, bucket, size, iterations):
+    # Real ingestion writes stream via multipart above a threshold (see
+    # Pipeline.Writer.S3Writer / ExAws.S3.Upload.stream_file); for sizes
+    # above ~8-16MB, swap put_object for client.upload_fileobj(..., Config=
+    # boto3.s3.transfer.TransferConfig(multipart_threshold=8*1024*1024))
+    # to exercise the same code path this benchmark is standing in for.
+    payload = os.urandom(size)
+    keys, put_times, get_times = [], [], []
+    for _ in range(iterations):
+        key = f"bench/{uuid.uuid4()}.bin"
+        keys.append(key)
+        put_times.append(timed(lambda k=key: client.put_object(Bucket=bucket, Key=k, Body=payload)))
+    for key in keys:
+        get_times.append(timed(lambda k=key: client.get_object(Bucket=bucket, Key=k)["Body"].read()))
+    for key in keys:
+        client.delete_object(Bucket=bucket, Key=key)
+    return put_times, get_times
+
+
+def bench_list(client, bucket, prefix, iterations):
+    times = []
+    paginator = client.get_paginator("list_objects_v2")
+    for _ in range(iterations):
+        times.append(timed(lambda: list(paginator.paginate(Bucket=bucket, Prefix=prefix))))
+    return times
+
+
+def pctl(values, p):
+    if not values:
+        return None
+    s = sorted(values)
+    return s[int(round((p / 100) * (len(s) - 1)))]
+
+
+def summarize(op, label, size, concurrency, samples_sec):
+    ms = [s * 1000 for s in samples_sec]
+    return {
+        "op": op, "label": label, "size_bytes": size, "concurrency": concurrency,
+        "n": len(ms), "mean_ms": statistics.mean(ms) if ms else None,
+        "p50_ms": pctl(ms, 50), "p95_ms": pctl(ms, 95), "p99_ms": pctl(ms, 99),
+        "max_ms": max(ms) if ms else None, "ts": time.time(),
+    }
+
+
+def run(args):
+    client = make_client(args.endpoint, args.access_key, args.secret_key, args.region)
+    results = []
+    for size_str in args.sizes.split(","):
+        size = parse_size(size_str)
+        for conc in (int(c) for c in args.concurrency.split(",")):
+            per_worker = max(1, args.iterations // conc)
+            with ThreadPoolExecutor(max_workers=conc) as pool:
+                futures = [pool.submit(bench_put_get, client, args.bucket, size, per_worker)
+                           for _ in range(conc)]
+                puts, gets = [], []
+                for f in as_completed(futures):
+                    p, g = f.result()
+                    puts += p
+                    gets += g
+            results.append(summarize("PUT", args.label, size, conc, puts))
+            results.append(summarize("GET", args.label, size, conc, gets))
+            print(f"[{args.label}] size={size_str} conc={conc} "
+                  f"PUT p50={results[-2]['p50_ms']:.1f}ms GET p50={results[-1]['p50_ms']:.1f}ms")
+    results.append(summarize("LIST", args.label, 0, 1,
+                              bench_list(client, args.bucket, "bench/", args.iterations)))
+    with open(args.out, "a") as fh:
+        for r in results:
+            fh.write(json.dumps(r) + "\n")
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--endpoint", required=True)
+    ap.add_argument("--bucket", required=True)
+    ap.add_argument("--access-key", required=True)
+    ap.add_argument("--secret-key", required=True)
+    ap.add_argument("--region", default="local")
+    ap.add_argument("--label", required=True, help="e.g. minio-incluster, candidate-external")
+    ap.add_argument("--sizes", default="4KB,256KB,8MB,64MB")
+    ap.add_argument("--concurrency", default="1,4,16")
+    ap.add_argument("--iterations", type=int, default=20)
+    ap.add_argument("--out", default="s3_bench_results.jsonl")
+    run(ap.parse_args())
+</code></pre>
+  </details>
+  <p><strong>Run cadence:</strong></p>
+  <ul class="checklist">
+    <li>Phase 0: once against the current in-cluster MinIO tenant, and once against the candidate
+      engine standalone &mdash; this pair <em>is</em> the baseline referenced everywhere else in
+      this plan.</li>
+    <li>Phase 5, per environment: once immediately before cutover (<code>label</code> tagged with
+      the environment) and once after the monitoring window, from the same vantage point, to
+      confirm the live cutover matches the Phase 0 candidate-engine numbers rather than showing a
+      new, network- or load-specific regression.</li>
+  </ul>
+
+  <h2 id="decisions">7. Open decisions (need stakeholder input before Phase 1)</h2>
+  <div class="grid-2">
+    <div class="callout info">
+      <strong class="label">Which engine?</strong>
+      <p>Self-managed MinIO (no Operator, plain Helm/systemd, avoids the OperatorHub removal without a data-model or client-code change) vs. a different engine (Ceph RGW, SeaweedFS, Garage) vs. MinIO AIStor (paid). This choice does not change anything in this repo's code &mdash; only endpoint/credentials/region config &mdash; but it drives infra work in <code>openshift-deploy</code> and the network-path decision below.</p>
+    </div>
+    <div class="callout info">
+      <strong class="label">Where does "outside the cluster" mean, physically?</strong>
+      <p>Same on-prem network, reachable by private IP/VPN with no new firewall rules? Or a genuinely separate network requiring new egress rules, mTLS, or a NAT/proxy? This determines whether the connect-timeout failure mode already seen in production (falling back to public <code>s3.us-east-2.amazonaws.com</code>) needs to be root-caused and fixed <em>before</em> cutover, since it would be far more dangerous once "the real endpoint" is off-cluster.</p>
+    </div>
+    <div class="callout info">
+      <strong class="label">One bucket-pair per environment, or shared?</strong>
+      <p>Recommend keeping the existing per-environment isolation (dev/QA/prod each with their own data-lake and hosted-files buckets) rather than consolidating, to avoid a cross-environment blast radius during cutover.</p>
+    </div>
+    <div class="callout info">
+      <strong class="label">Credential management</strong>
+      <p>Today's access/secret keys are static (<code>minioadmin</code> in dev; Vault-sourced in prod per <code>reaper-role</code> patterns seen elsewhere in this environment). Confirm whether the new engine should be wired into the same Vault path convention, and whether STS/AssumeRole (already an optional dependency via <code>ex_aws_sts</code>, referenced in <code>forklift</code>'s <code>performance.exs</code>) should be adopted more broadly rather than long-lived static keys.</p>
+    </div>
+  </div>
+
+  <h2 id="phases">8. Migration phases</h2>
+
+  <ul class="phase-list">
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">0</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Engine selection &amp; standalone validation <span class="tag info">Infra-led</span></h3>
+        <p class="phase-meta">Owner: infra/platform &middot; Repo: openshift-deploy (+ standalone test harness)</p>
+        <ul>
+          <li>Resolve the open decisions in Section 7.</li>
+          <li>Stand up a single instance of the candidate engine (outside the cluster, or in a
+            throwaway sandbox) and run the capability checklist from Section 5 against it directly
+            with <code>mc</code>/<code>awscli</code>, independent of this codebase.</li>
+          <li>Root-cause the existing <code>connect_timeout</code>/AWS-fallback behavior seen in
+            production Forklift logs so it can't recur silently against the new external endpoint.</li>
+          <li>Run the Section 6 baseline capture and synthetic benchmark (<code>s3_bench.py</code>)
+            against the current in-cluster MinIO tenant, and again against the candidate engine
+            standalone &mdash; this pair of runs becomes the numbers every later phase's exit
+            criteria are compared against.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> engine chosen; path-style, SigV4 presign, multipart, and TLS all verified with raw CLI tools; network path from cluster to new endpoint decided and reachable; Section 6 baseline captured for both the current MinIO tenant and the candidate engine.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">1</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Local dev &amp; CI parity <span class="tag ok">This repo</span></h3>
+        <p class="phase-meta">Owner: app team &middot; Repo: smartcitiesdata</p>
+        <ul>
+          <li>Replace the <code>minio</code> service in every <code>docker-compose.yml</code>
+            listed in Section 3 with the chosen engine's image (or point at a shared dev instance
+            of it), keeping the same service name (<code>minio</code>) initially to minimize diff
+            noise, or rename deliberately in one pass &mdash; pick one and apply consistently.</li>
+          <li>Replace the directory-<code>mkdir</code> bucket-bootstrap trick in every
+            <span class="path">test/integration/setup.sh</span> with an explicit bucket-creation
+            call (<code>mc mb</code> or equivalent), since that trick is MinIO-filesystem-specific.</li>
+          <li>Update every <span class="path">test/integration/hive.properties</span> file's
+            <code>s3.endpoint</code> (and credentials, if the new engine uses different defaults)
+            to match the new local service.</li>
+          <li>Run the full existing integration test suites for <code>andi</code>, <code>reaper</code>,
+            <code>discovery_api</code>, <code>forklift</code>, <code>pipeline</code>, and <code>e2e</code>
+            unmodified against the new local engine &mdash; these already exercise the S3 write,
+            read, presigned-URL, and Trino-query paths and are the cheapest signal available.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> all five apps' integration test suites and the e2e suite pass locally/in CI against the new engine, with zero application code changes required beyond config.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">2</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Application-layer config generalization <span class="tag ok">This repo</span></h3>
+        <p class="phase-meta">Owner: app team &middot; Repo: smartcitiesdata</p>
+        <ul>
+          <li>Add the same conditional <code>S3_HOST_NAME</code>/<code>S3_PORT</code> override
+            block to <code>reaper</code>'s <code>runtime.exs</code> that already exists in
+            <code>andi</code>, <code>discovery_api</code>, and <code>forklift</code> &mdash; today
+            it is the one app missing it, which would otherwise force reaper to fall back to
+            default AWS S3 endpoint resolution.</li>
+          <li>Add an explicit TLS scheme (<code>https://</code>) and real region support to the
+            override blocks &mdash; the current MinIO-era blocks hardcode <code>scheme: "http://"</code>
+            and <code>region: "local"</code>, both of which need re-examination once the store is
+            off-cluster and (per Section 5) TLS is required.</li>
+          <li>Reconcile the <code>trino-hive-storage</code> (dev/test) vs. <code>presto-hive-storage</code>
+            (prod) naming split &mdash; either document it explicitly as intentional or standardize it,
+            so the migration doesn't inherit a naming footgun.</li>
+          <li>Add a startup-time assertion/log line in each app confirming which S3 endpoint it
+            resolved to, to make future connectivity incidents (like the AWS-fallback one) instantly
+            diagnosable from application logs rather than requiring log archaeology.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> config change reviewed and merged; no behavior change in current (MinIO) environments, since the new override values are still MinIO's until Phase 5.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">3</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Trino / Hive connector repoint <span class="tag purple">Infra-led</span></h3>
+        <p class="phase-meta">Owner: infra/platform &middot; Repo: openshift-deploy</p>
+        <ul>
+          <li>Update the production/QA equivalents of <code>hive.properties</code> (Hive connector
+            catalog config, wherever it's templated in <code>openshift-deploy</code>) with the new
+            <code>s3.endpoint</code>, credentials, and TLS settings.</li>
+          <li>Confirm Hive metastore's own S3 access (it validates table locations independently of
+            worker query execution) is repointed too.</li>
+          <li>This is a separate change surface from Phase 2 and can, in principle, proceed in
+            parallel with it once Phase 0/1 validation is complete &mdash; but should be
+            <strong>sequenced together</strong> at actual cutover time (Phase 5) so Trino and the
+            Elixir apps are never pointed at two different buckets simultaneously.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> a QA Trino cluster successfully queries data written to the new engine by a QA Forklift pointed at the same new bucket.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">4</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Historical data migration <span class="tag purple">Infra-led</span></h3>
+        <p class="phase-meta">Owner: infra/platform, with app-team validation</p>
+        <ul>
+          <li>Bulk-copy existing bucket contents (data lake + hosted files) from MinIO to the new
+            engine using <code>mc mirror</code> or <code>rclone sync</code>, run once for the bulk
+            transfer and then repeatedly (delta-only) up to the cutover window to minimize the final
+            gap.</li>
+          <li>Validate the copy with object counts and checksums (e.g. <code>mc diff</code>) per
+            bucket, not just "the copy command exited 0."</li>
+          <li>Decide per environment whether a brief write-freeze (pause Forklift, pause hosted-file
+            uploads) is acceptable for the final delta-sync, or whether a short dual-write window is
+            needed instead &mdash; recommend a write-freeze given the relatively small blast radius
+            (Forklift can be scaled to 0 replicas cleanly, as already done operationally for other
+            incidents) versus the complexity of dual-write correctness.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> new engine holds a verified, complete, up-to-date copy of each environment's buckets, with a documented "as of" timestamp for the final sync.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">5</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Staged cutover: Dev &rarr; QA &rarr; Prod <span class="tag warn">Joint</span></h3>
+        <p class="phase-meta">Owner: app team + infra, one environment at a time</p>
+        <ol>
+          <li>Scale Forklift (and any hosted-file upload entry points) to 0 in the target environment.</li>
+          <li>Run the final delta sync from Phase 4.</li>
+          <li>Flip <code>S3_HOST_NAME</code>/<code>S3_PORT</code>/credentials env vars for
+            <code>andi</code>, <code>discovery_api</code>, <code>forklift</code>, and <code>reaper</code>
+            in that environment, plus the Trino/Hive connector config from Phase 3.</li>
+          <li>Restart the affected pods; scale Forklift back up.</li>
+          <li>Run the smoke-test checklist and the post-cutover synthetic benchmark/canary-query comparison from Section 10 against that environment specifically.</li>
+          <li>Hold for a monitoring window (recommend at least one full ingestion cycle plus a
+            business day of discovery-api query traffic) before proceeding to the next environment.</li>
+        </ol>
+        <div class="exit"><strong>Exit criteria per environment:</strong> smoke tests pass, Trino canary-query and synthetic-benchmark latency are within an agreed tolerance of the Section 6 pre-migration baseline for this environment, no elevated error rate in Forklift/Reaper/Discovery API logs over the monitoring window.</div>
+      </div>
+    </li>
+
+    <li class="phase">
+      <div class="phase-marker"><div class="phase-num">6</div><div class="phase-line"></div></div>
+      <div class="phase-body">
+        <h3>Decommission old MinIO tenant <span class="tag purple">Infra-led</span></h3>
+        <p class="phase-meta">Owner: infra/platform &middot; Repo: openshift-deploy</p>
+        <ul>
+          <li>Keep the old in-cluster MinIO tenant running, read-only if possible, for an agreed
+            retention window (recommend 2&ndash;4 weeks) after prod cutover, purely as a rollback source.</li>
+          <li>Remove the MinIO Operator subscription, tenant CRs, and PVCs from
+            <code>openshift-deploy</code> once the retention window has passed without a rollback.</li>
+        </ul>
+        <div class="exit"><strong>Exit criteria:</strong> old MinIO tenant fully removed; only the new engine is referenced anywhere in cluster config.</div>
+      </div>
+    </li>
+
+  </ul>
+
+  <h2 id="changes">9. Concrete code change checklist (this repo)</h2>
+  <p>Everything here is config-only &mdash; the inventory in Section 3 found no MinIO-proprietary
+  API usage, so no <code>.ex</code> source changes are expected in the S3 client call sites
+  themselves. If the chosen engine turns out to have a divergent quirk (e.g. a stricter
+  <code>ListObjectsV2</code> implementation), that would be the exception to revisit.</p>
+
+  <details>
+    <summary>Files to change per app <span class="sum-tags"><span class="tag ok">config only</span></span></summary>
+    <ul class="checklist">
+      <li><span class="path">apps/andi/config/runtime.exs</span> &mdash; endpoint/TLS/region override block</li>
+      <li><span class="path">apps/andi/docker-compose.yml</span>, <span class="path">apps/andi/test/integration/setup.sh</span></li>
+      <li><span class="path">apps/discovery_api/config/runtime.exs</span> &mdash; endpoint/TLS/region override block</li>
+      <li><span class="path">apps/discovery_api/test/integration/docker-compose.yaml</span>, <span class="path">.../hive.properties</span></li>
+      <li><span class="path">apps/forklift/config/runtime.exs</span> &mdash; endpoint/TLS/region override block</li>
+      <li><span class="path">apps/forklift/docker-compose.yml</span>, <span class="path">apps/forklift/test/integration/setup.sh</span>, <span class="path">.../hive.properties</span></li>
+      <li><span class="path">apps/reaper/config/runtime.exs</span> &mdash; <strong>add</strong> the missing override block (currently absent)</li>
+      <li><span class="path">apps/reaper/docker-compose.yml</span>, <span class="path">apps/reaper/test/integration/setup.sh</span></li>
+      <li><span class="path">apps/pipeline/config/integration.exs</span>, <span class="path">apps/pipeline/docker-compose.yml</span>, <span class="path">.../hive.properties</span></li>
+      <li><span class="path">apps/e2e/test/docker-compose.yml</span>, <span class="path">.../hive.properties</span></li>
+      <li>Optional cleanup: remove vestigial <code>ex_aws</code>/<code>hosted_file_bucket</code> config from <code>alchemist</code>, <code>valkyrie</code>, <code>discovery_streams</code> test config while touching adjacent files &mdash; not required for the migration to function.</li>
+    </ul>
+  </details>
+
+  <h2 id="testing">10. Testing &amp; validation plan</h2>
+  <div class="grid-3">
+    <div class="card">
+      <h4><span class="tag ok">Automated</span></h4>
+      <ul>
+        <li>Existing integration suites (andi, reaper, discovery_api, forklift, pipeline) run unmodified against the new engine in CI/local docker-compose.</li>
+        <li>e2e suite, which already wires together reaper &rarr; forklift &rarr; trino &rarr; discovery_api against a shared MinIO instance today.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="tag warn">Manual smoke tests, per environment at cutover</span></h4>
+      <ul class="checklist">
+        <li>Andi: upload a sample file via the public-submissions flow (exercises presigned PUT)</li>
+        <li>Andi: download a previously-uploaded sample (exercises presigned GET)</li>
+        <li>Reaper: run a host-type and an <code>"s3"</code>-extract-step ingestion end to end</li>
+        <li>Forklift: confirm a fresh ingestion compacts into its main Trino table</li>
+        <li>Discovery API: download a hosted file end to end through <code>/download</code></li>
+        <li>Discovery API/Trino: run a representative query and compare latency to the pre-migration baseline</li>
+        <li>Run <code>s3_bench.py</code> (Section 6.3) against the environment with the same
+          <code>--label</code> convention used at Phase 0, and diff against that phase's baseline
+          run before signing off on the environment</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4><span class="tag bad">Load / soak</span></h4>
+      <ul>
+        <li>Ingest at normal production cadence for at least one full day against the new engine in QA before touching prod.</li>
+        <li>Replay a sample of real discovery-api query volume against QA Trino pointed at the new engine to validate the network-path latency assumption from Section 5.</li>
+        <li>Keep the Section 6.2 canary-query schedule running unmodified through the soak window
+          so the continuous time series covers it, not just discrete before/after points.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="rollback">11. Rollback plan</h2>
+  <div class="callout good">
+    <strong class="label">Per-environment rollback (Phase 5)</strong>
+    <p>
+      Because the old MinIO tenant is kept running (read-only, if supported) through the retention
+      window in Phase 6, rollback for any single environment is: scale the affected pods to 0,
+      revert the env vars/config from Phase 2/3 back to the MinIO endpoint, restart. Any data
+      written to the new engine <em>after</em> cutover but before a rollback decision would need to
+      be re-synced back to MinIO (reverse <code>mc mirror</code>) before resuming against the old
+      endpoint, to avoid data loss for that window.
+    </p>
+  </div>
+  <div class="callout bad">
+    <strong class="label">Point of no return</strong>
+    <p>
+      Once Phase 6 decommissions the old MinIO tenant, rollback is no longer possible without a
+      restore from backup. Do not proceed to Phase 6 until the full retention window has passed
+      with no issues observed in production.
+    </p>
+  </div>
+
+  <h2 id="risks">12. Risk register</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Network latency/throughput to an out-of-cluster store degrades Trino query performance (highest-volume consumer)</td>
+          <td><span class="tag warn">Medium</span></td>
+          <td><span class="tag bad">High</span></td>
+          <td>Section 6 baseline + <code>s3_bench.py</code> comparison at Phase 0 and per Phase 5 environment, with production-representative data volume, before prod cutover; keep old MinIO warm as an immediate rollback path</td>
+        </tr>
+        <tr>
+          <td>ExAws silently falls back to public AWS S3 endpoints when host-override config isn't honored (already observed in prod logs)</td>
+          <td><span class="tag warn">Medium</span></td>
+          <td><span class="tag bad">High</span></td>
+          <td>Root-cause in Phase 0; add explicit startup-time endpoint logging in Phase 2 so this is immediately visible, not discovered via a connect-timeout incident</td>
+        </tr>
+        <tr>
+          <td>Firewall/egress rules block cluster&rarr;external traffic to the new endpoint</td>
+          <td><span class="tag warn">Medium</span></td>
+          <td><span class="tag bad">High</span></td>
+          <td>Validate network path explicitly in Phase 0 before any application config changes</td>
+        </tr>
+        <tr>
+          <td>Presigned URLs fail for browser clients if the new endpoint's hostname/TLS cert isn't reachable/trusted from outside the cluster</td>
+          <td><span class="tag ok">Low-Medium</span></td>
+          <td><span class="tag warn">Medium</span></td>
+          <td>Manual smoke test of both presigned PUT and GET flows from an actual browser, not just from a pod, before each environment's cutover</td>
+        </tr>
+        <tr>
+          <td>Reaper's missing <code>S3_HOST_NAME</code> override block causes it to silently keep talking to a stale/default endpoint after other apps have cut over</td>
+          <td><span class="tag warn">Medium</span></td>
+          <td><span class="tag warn">Medium</span></td>
+          <td>Explicitly listed as a required Phase 2 change; verified in the reaper smoke test in Phase 5</td>
+        </tr>
+        <tr>
+          <td><code>trino-hive-storage</code>/<code>presto-hive-storage</code> naming inconsistency causes a config change to target the wrong bucket in one environment</td>
+          <td><span class="tag warn">Medium</span></td>
+          <td><span class="tag warn">Medium</span></td>
+          <td>Explicit reconciliation/documentation step in Phase 2; per-environment bucket name double-checked before every cutover</td>
+        </tr>
+        <tr>
+          <td>Credential handling regresses (e.g. static long-lived keys stored less securely once outside the cluster's existing secret path)</td>
+          <td><span class="tag ok">Low</span></td>
+          <td><span class="tag bad">High</span></td>
+          <td>Resolve as part of the Section 7 "credential management" decision before Phase 2; prefer Vault-issued/rotatable credentials over static ones</td>
+        </tr>
+        <tr>
+          <td>Bucket-bootstrap trick in CI (<code>mkdir</code>-as-bucket) silently breaks local dev for other engineers</td>
+          <td><span class="tag bad">High (certain, if unaddressed)</span></td>
+          <td><span class="tag ok">Low</span></td>
+          <td>Explicit Phase 1 task to replace with real bucket-creation calls; caught immediately by CI</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="timeline">13. Suggested timeline</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Phase</th><th>Suggested duration</th><th>Can overlap with</th></tr></thead>
+      <tbody>
+        <tr><td>0 &mdash; Engine selection &amp; validation</td><td>1&ndash;2 weeks</td><td>&mdash;</td></tr>
+        <tr><td>1 &mdash; Local dev/CI parity</td><td>3&ndash;5 days</td><td>Phase 0 (final days)</td></tr>
+        <tr><td>2 &mdash; App config generalization</td><td>2&ndash;3 days</td><td>Phase 1</td></tr>
+        <tr><td>3 &mdash; Trino/Hive repoint (infra)</td><td>3&ndash;5 days</td><td>Phase 1/2</td></tr>
+        <tr><td>4 &mdash; Historical data migration</td><td>Ongoing bulk copy + 1 day final delta per environment</td><td>Phases 1&ndash;3</td></tr>
+        <tr><td>5 &mdash; Staged cutover (dev &rarr; QA &rarr; prod)</td><td>1 environment per week, minimum</td><td>&mdash;</td></tr>
+        <tr><td>6 &mdash; Decommission old MinIO</td><td>2&ndash;4 week retention window, then 1 day of work</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <strong class="label">Sequencing note</strong>
+    <p>
+      Dev and QA cutovers de-risk the plan cheaply; do not compress the prod monitoring window
+      after QA succeeds. This environment has a documented history (see operational notes) of
+      instability cascading across Redis, Trino, and ingestion simultaneously when a shared
+      dependency changes underneath it &mdash; the object store is exactly that kind of shared
+      dependency, touched by every app in the platform.
+    </p>
+  </div>
+
+  <footer>
+    Written for <code>smartcitiesdata</code> (branch <code>2026-otp23</code>) on 2026-09-14,
+    based on a full-repository inventory of MinIO/S3 usage. Infra-side manifests referenced here
+    (MinIO Operator, Trino/Hive Helm values) live in <code>UrbanOS-Public/openshift-deploy</code>
+    and are out of scope for this repository's changes but are called out wherever this plan
+    depends on them.
+  </footer>
+
+</main>
+</body>
+</html>
