@@ -4,7 +4,7 @@ defmodule RaptorServiceTest do
 
   describe "is_authorized/2" do
     test "returns true if authorized in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"is_authorized\":true}"}}
       )
 
@@ -12,7 +12,7 @@ defmodule RaptorServiceTest do
     end
 
     test "returns false if unauthorized in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"is_authorized\":false}"}}
       )
 
@@ -22,7 +22,7 @@ defmodule RaptorServiceTest do
 
   describe "is_authorized_by_user_id/2" do
     test "returns true if authorized in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"is_authorized\":true}"}}
       )
 
@@ -30,7 +30,7 @@ defmodule RaptorServiceTest do
     end
 
     test "returns false if unauthorized in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"is_authorized\":false}"}}
       )
 
@@ -39,7 +39,7 @@ defmodule RaptorServiceTest do
   end
 
   describe "regenerate_api_key_for_user/2" do
-    allow(HTTPoison.patch(any(), any()),
+    allow(HTTPoison.patch(any(), any(), any(), any()),
         return: {:ok, %{body: "{\"apiKey\": \"testApiKey\"}", status_code: 200}}
       )
 
@@ -47,7 +47,7 @@ defmodule RaptorServiceTest do
   end
 
   describe "regenerate_api_key_for_user/2 returns error when status code is >= 400" do
-    allow(HTTPoison.patch(any(), any()),
+    allow(HTTPoison.patch(any(), any(), any(), any()),
         return: {:ok, %{body: "errorBody", status_code: 400}}
       )
 
@@ -56,7 +56,7 @@ defmodule RaptorServiceTest do
 
   describe "list_access_groups_by_user/2" do
     test "returns a list of authorized access groups in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"], \"organizations\": []}"}}
       )
 
@@ -64,7 +64,7 @@ defmodule RaptorServiceTest do
     end
 
     test "returns an empty list if there are no access groups authorized for the given user" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[], \"organizations\": []}"}}
       )
 
@@ -74,7 +74,7 @@ defmodule RaptorServiceTest do
 
   describe "list_access_groups_by_dataset/2" do
     test "returns a list of authorized access groups in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"]}"}}
       )
 
@@ -82,7 +82,7 @@ defmodule RaptorServiceTest do
     end
 
     test "returns an empty list if there are no access groups authorized for the given dataset" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[]}"}}
       )
 
@@ -92,7 +92,7 @@ defmodule RaptorServiceTest do
 
   describe "list_access_groups_by_api_key/2" do
     test "returns a list of authorized access groups in Raptor" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[\"group1\", \"group2\"], \"organizations\": []}"}}
       )
 
@@ -100,7 +100,7 @@ defmodule RaptorServiceTest do
     end
 
     test "returns an empty list if there are no access groups authorized for the given dataset" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"access_groups\":[], \"organizations\":[]}"}}
       )
 
@@ -110,7 +110,7 @@ defmodule RaptorServiceTest do
 
   describe "get_user_id_from_api_key/2" do
     test "returns 500 Internal Server Error when raptor returns unexpected error" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
           return: {:error, %{body: "errorBody", status_code: 500}}
         )
 
@@ -120,7 +120,7 @@ defmodule RaptorServiceTest do
     test "returns given error when raptor returns 401" do
       errorMessage = "errorMessage"
 
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
           return: {:ok, %{body: "{\"message\":\"#{errorMessage}\"}", status_code: 401}}
         )
 
@@ -132,7 +132,7 @@ defmodule RaptorServiceTest do
       api_key = "validApiKey"
       user_id = "validUserId"
 
-      allow(HTTPoison.get("#{raptor_url}/getUserIdFromApiKey?api_key=#{api_key}"),
+      allow(HTTPoison.get("#{raptor_url}/getUserIdFromApiKey?api_key=#{api_key}", any(), any()),
           return: {:ok, %{body: "{\"user_id\":\"#{user_id}\"}", status_code: 200}}
         )
 
@@ -145,7 +145,9 @@ defmodule RaptorServiceTest do
 
       allow(
         HTTPoison.get(
-          "#{raptor_url}/getUserIdFromApiKey?api_key=#{URI.encode_www_form(api_key)}"
+          "#{raptor_url}/getUserIdFromApiKey?api_key=#{URI.encode_www_form(api_key)}",
+          any(),
+          any()
         ),
         return: {:ok, %{body: "{\"message\":\"invalid\"}", status_code: 401}}
       )
@@ -156,7 +158,7 @@ defmodule RaptorServiceTest do
 
   describe "check_auth0_role/2" do
     test "returns 500 Internal Server Error when raptor returns unexpected error" do
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:error, %{body: "errorBody", status_code: 500}}
       )
 
@@ -166,7 +168,7 @@ defmodule RaptorServiceTest do
     test "returns given error when raptor returns 401" do
       errorMessage = "errorMessage"
 
-      allow(HTTPoison.get(any()),
+      allow(HTTPoison.get(any(), any(), any()),
         return: {:ok, %{body: "{\"message\":\"#{errorMessage}\"}", status_code: 401}}
       )
 
@@ -179,7 +181,7 @@ defmodule RaptorServiceTest do
       user_id = "validUserId"
       role = "validRole"
 
-      allow(HTTPoison.get("#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}"),
+      allow(HTTPoison.get("#{raptor_url}/checkRole?api_key=#{api_key}&role=#{role}", any(), any()),
         return: {:ok, %{body: "{\"has_role\":true}", status_code: 200}}
       )
 

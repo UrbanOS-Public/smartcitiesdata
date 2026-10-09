@@ -3,6 +3,7 @@ defmodule DiscoveryApi.Data.Model do
   utilities to persist and load discovery data models
   """
 
+  alias DiscoveryApi.Data.ModelCache
   alias DiscoveryApi.Data.Persistence
 
   @instance_name DiscoveryApi.instance_name()
@@ -95,11 +96,13 @@ defmodule DiscoveryApi.Data.Model do
   end
 
   def get_all() do
-    {:ok, models} = Brook.ViewState.get_all(@instance_name, @collection)
+    ModelCache.get_all(fn ->
+      {:ok, models} = Brook.ViewState.get_all(@instance_name, @collection)
 
-    models
-    |> Map.values()
-    |> add_system_attributes()
+      models
+      |> Map.values()
+      |> add_system_attributes()
+    end)
   end
 
   def get_all(ids) do
@@ -116,6 +119,7 @@ defmodule DiscoveryApi.Data.Model do
     Persistence.delete("#{@queries_key}:#{id}")
 
     Brook.ViewState.delete(@collection, id)
+    ModelCache.invalidate()
   end
 
   def get_completeness({id, completeness}) do

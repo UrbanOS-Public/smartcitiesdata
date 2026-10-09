@@ -19,6 +19,8 @@ defmodule DiscoveryApi.Application do
       [
         {Phoenix.PubSub, [name: DiscoveryApi.PubSub, adapter: Phoenix.PubSub.PG2]},
         DiscoveryApi.Data.SystemNameCache,
+        DiscoveryApi.Data.ModelCache,
+        RaptorService.pool_child_spec(),
         DiscoveryApi.Stats.QueryStats,
         DiscoveryApiWeb.Plugs.ResponseCache,
         redis(),
@@ -28,7 +30,8 @@ defmodule DiscoveryApi.Application do
         cache_populator(),
         supervisor(DiscoveryApiWeb.Endpoint, []),
         DiscoveryApi.Quantum.Scheduler,
-        DiscoveryApi.Data.TableInfoCache
+        DiscoveryApi.Data.TableInfoCache,
+        DiscoveryApi.Instrumentation.MemoryReporter
       ]
       |> TelemetryEvent.config_init_server(@instance_name)
       |> List.flatten()

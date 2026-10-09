@@ -2,8 +2,51 @@ defmodule RaptorService do
   use Properties, otp_app: :raptor_service
   require Logger
 
+  # Deliberately short: this is an internal, low-latency authorization lookup,
+  # not a bulk data transfer - previously these calls passed no timeout at all
+  # and silently ran on HTTPoison/hackney's own default (recv_timeout ~5s),
+  # which held a connection (and the calling process) open for the full 5s on
+  # every failure instead of failing fast. These are intentionally shorter
+  # than that default, and are not related to the unconnected `httpoison_options`
+  # config under `:elastix` (that's the Elasticsearch client, a different library).
+  getter(:connect_timeout_ms, generic: true, default: 2_000)
+  getter(:recv_timeout_ms, generic: true, default: 3_000)
+  getter(:pool_max_connections, generic: true, default: 25)
+
+  # A dedicated, bounded pool for Raptor calls specifically, separate from
+  # hackney's shared default pool used by other HTTP clients in the same VM
+  # (Elasticsearch, S3, etc). This bounds the blast radius of a degraded
+  # Raptor to at most pool_max_connections() held connections, each capped at
+  # connect_timeout_ms()/recv_timeout_ms() - so a sustained period of Raptor
+  # failures can only ever hold a small, constant, fully-reclaimable amount of
+  # memory, and nothing lingers once Raptor recovers or the pool's own
+  # checkout timeout fires.
+  @pool_name :raptor_http_pool
+
+  @doc """
+  Child spec for the dedicated Raptor connection pool, meant to be started
+  once at application boot (see DiscoveryApi.Application) so the bounded pool
+  exists deterministically before the first request, rather than being
+  lazily created on first use with hackney's own (larger, unbounded-timeout)
+  defaults.
+  """
+  def pool_child_spec do
+    :hackney_pool.child_spec(@pool_name, max_connections: pool_max_connections(), timeout: connect_timeout_ms())
+  end
+
+  # Carries the pool's sizing/timeout directly on every request (not just at
+  # pool-start time) so any caller gets the same bounded, fail-fast behavior
+  # even if it happens to be the one that lazily creates the pool.
+  defp request_options do
+    [
+      timeout: connect_timeout_ms(),
+      recv_timeout: recv_timeout_ms(),
+      hackney: [pool: @pool_name, max_connections: pool_max_connections(), timeout: connect_timeout_ms()]
+    ]
+  end
+
   def list_groups_by_user(raptor_url, user_id) do
-    case HTTPoison.get(list_url_with_user_params(raptor_url, user_id)) do
+    case HTTPoison.get(list_url_with_user_params(raptor_url, user_id), [], request_options()) do
       {:ok, %{body: body}} ->
         {:ok, groups} = Jason.decode(body)
         %{
@@ -19,7 +62,7 @@ defmodule RaptorService do
   end
 
   def list_access_groups_by_dataset(raptor_url, dataset_id) do
-    case HTTPoison.get(list_url_with_dataset_params(raptor_url, dataset_id)) do
+    case HTTPoison.get(list_url_with_dataset_params(raptor_url, dataset_id), [], request_options()) do
       {:ok, %{body: body}} ->
         {:ok, access_groups} = Jason.decode(body)
         %{ access_groups: access_groups["access_groups"] }
@@ -31,7 +74,7 @@ defmodule RaptorService do
   end
 
   def list_groups_by_api_key(raptor_url, api_key) do
-    case HTTPoison.get(list_url_with_api_key_params(raptor_url, api_key)) do
+    case HTTPoison.get(list_url_with_api_key_params(raptor_url, api_key), [], request_options()) do
       {:ok, %{body: body}} ->
         {:ok, groups} = Jason.decode(body)
         %{
@@ -47,7 +90,7 @@ defmodule RaptorService do
 
 
   def is_authorized(raptor_url, api_key, system_name) do
-    case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name)) do
+    case HTTPoison.get(raptor_url_with_params(raptor_url, api_key, system_name), [], request_options()) do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
@@ -59,7 +102,7 @@ defmodule RaptorService do
   end
 
   def is_authorized_by_user_id(raptor_url, user_id, system_name) do
-    case HTTPoison.get(raptor_url_with_user_params(raptor_url, user_id, system_name)) do
+    case HTTPoison.get(raptor_url_with_user_params(raptor_url, user_id, system_name), [], request_options()) do
       {:ok, %{body: body}} ->
         {:ok, is_authorized} = Jason.decode(body)
         is_authorized["is_authorized"]
@@ -71,7 +114,7 @@ defmodule RaptorService do
   end
 
   def regenerate_api_key_for_user(raptor_url, user_id) do
-    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), '') do
+    case HTTPoison.patch(url_for_api_key_regeneration(raptor_url, user_id), '', [], request_options()) do
       {:ok, %{body: body, status_code: status_code}} ->
         if (status_code >= 400) do
           {:error, body}
@@ -86,7 +129,7 @@ defmodule RaptorService do
   end
 
   def get_user_id_from_api_key(raptor_url, api_key) do
-    case HTTPoison.get(url_for_api_key_validation(raptor_url, api_key)) do
+    case HTTPoison.get(url_for_api_key_validation(raptor_url, api_key), [], request_options()) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, get_user_id_from_response_body(body)}
 
@@ -109,7 +152,7 @@ defmodule RaptorService do
   end
 
   def check_auth0_role(raptor_url, api_key, role) do
-    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role)) do
+    case HTTPoison.get(url_for_checking_role(raptor_url, api_key, role), [], request_options()) do
       {:ok, %{body: body, status_code: status_code}} when status_code in 200..399 ->
         {:ok, Jason.decode!(body)["has_role"]}
 
