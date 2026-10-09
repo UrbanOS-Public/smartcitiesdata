@@ -72,13 +72,41 @@ mix test.e2e
 * [A glossary of terms and technologies](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Glossary)
 * [Starting All of the Microservices](https://github.com/UrbanOS-Public/smartcitiesdata/wiki/Run)
 # Version History and Retention
-Each microservice is released independently and can be found here in the [Releases](https://github.com/UrbanOS-Public/smartcitiesdata/releases) section.  All releases will be kept indefinitely.
+Each microservice is released independently; see `docs/$microservice/RELEASE.md` for its changelog
+and the Tagging Policy below for how releases are recorded in git. All releases will be kept
+indefinitely.
 
 Versioning conforms to the standard versioning pattern of <major>.<minor>.<patch>, for example 3.0.1. 3 being major, 0 being minor, and 1 being patch.
 
 Patch version increments should introduce no breaking changes to the existing public chart. Docker images/Elixir apps are able to be updated in-place with no changes needed.
 Minor version increments may require chart changes to function properly. These changes should be reviewed and charts should be adjusted accordingly before updating.
 Major version increments likely introduce wide-spread or structural changes that require many configuration changes. 
+
+## Tagging Policy
+
+This repo is a Mix umbrella with ten independently-versioned, independently-deployed microservices
+sharing one git history (see `docs/release/CHECKLIST.md`). Decided 2026-10: **each release still gets
+a lightweight git tag (`$microservice@$version`, e.g. `discovery_api@23.3.22`), but releases are not
+driven off that tag.**
+
+- **What the tag is for**: provenance only — a permanent, unambiguous pointer from a version number to
+  the exact commit that produced it (`git show $microservice@$version`), and the anchor the *next*
+  release's changelog diffs from (`git log <last-tag>..HEAD -- apps/$microservice`). Nothing else reads
+  it or depends on it.
+- **What it is *not* for**: triggering a build. `.github/workflows/release.yml` fires on a GitHub
+  Release being created from a tag, but that CI path has been effectively dormant for a long time —
+  `scripts/build-local.sh` exists specifically because the GitHub Actions runners it targets
+  (Ubuntu 20.04) are deprecated. Builds are made and pushed locally via `build-local.sh`/the
+  `build_pods/Makefile` targets, independent of tagging.
+- **Why not go further and tag-then-build-off-the-tag properly**: that's genuinely how most projects
+  do it, but it wasn't worth reinstating here. Per-app tags in a shared history are already a bit
+  noisy (a bare `git describe` on this repo is close to meaningless), and most apps — `discovery_api`
+  included, whose last tag before this policy was `discovery_api@1.3.11`, years and dozens of releases
+  ago — had already stopped being tagged in practice with no apparent ill effect. Formalizing "tag for
+  provenance, build separately" matches how the project actually runs rather than reviving a CI path
+  nobody is maintaining.
+- **Minimum bar**: every version bump that ships (per `docs/release/CHECKLIST.md`) gets a tag. Don't
+  move or force-push an existing tag — cut a new patch version instead.
 
 ## Building Individual Microservices with Make (OTP23)
 
