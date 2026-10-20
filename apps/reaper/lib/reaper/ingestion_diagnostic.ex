@@ -22,6 +22,18 @@ defmodule Reaper.IngestionDiagnostic do
   alias Reaper.UrlBuilder
   alias Reaper.DataSlurper
 
+  # Known byte thresholds downstream processing is sensitive to, smallest (most
+  # restrictive) first, so a download that trips several reports against the one
+  # that actually bites first.
+  @known_limits [
+    {900_000,
+     "Reaper.DataExtract.LoadStage's batch_size_in_bytes default - a single record this size " <>
+       "forces every record in the cycle onto its own isolated Kafka send instead of being " <>
+       "batched with its siblings (apps/reaper/lib/reaper/data_extract/load_stage.ex)"},
+    {1_048_576,
+     "brod_producer's max_batch_size default (1 MiB) - deps/brod/src/brod_producer.erl"}
+  ]
+
   @doc """
   Runs every extract step for the given ingestion id in sequence order,
   stopping at the first failure and printing the full exception and
@@ -87,6 +99,7 @@ defmodule Reaper.IngestionDiagnostic do
     output_file =
       DataSlurper.slurp(url, ingestion.id, headers, step.context.protocol, step.context.action, body)
 
+    check_download_size(output_file)
     Map.put(step.assigns, :output_file, output_file)
   end
 
@@ -101,6 +114,7 @@ defmodule Reaper.IngestionDiagnostic do
     IO.puts("  headers: #{inspect(headers)}")
 
     output_file = DataSlurper.slurp(url, ingestion.id, headers)
+    check_download_size(output_file)
     Map.put(step.assigns, :output_file, output_file)
   end
 
@@ -109,6 +123,7 @@ defmodule Reaper.IngestionDiagnostic do
     IO.puts("  url: #{url}")
 
     output_file = DataSlurper.slurp(url, ingestion.id)
+    check_download_size(output_file)
     Map.put(step.assigns, :output_file, output_file)
   end
 
@@ -165,6 +180,32 @@ defmodule Reaper.IngestionDiagnostic do
   defp run_step(_ingestion, %{type: unsupported}) do
     raise "Unsupported extract step type: #{inspect(unsupported)}"
   end
+
+  defp check_download_size({:file, filename}) do
+    case File.stat(filename) do
+      {:ok, %File.Stat{size: size}} ->
+        IO.puts("  download size: #{format_bytes(size)}")
+
+        @known_limits
+        |> Enum.filter(fn {limit, _description} -> size > limit end)
+        |> Enum.each(fn {limit, description} ->
+          IO.puts(
+            "  ⚠ WARNING: download (#{format_bytes(size)}) exceeds #{format_bytes(limit)} - #{description}"
+          )
+        end)
+
+      {:error, reason} ->
+        IO.puts("  (could not stat downloaded file to check its size: #{inspect(reason)})")
+    end
+  end
+
+  defp check_download_size(_output_file), do: :ok
+
+  defp format_bytes(bytes) when bytes >= 1_048_576,
+    do: "#{Float.round(bytes / 1_048_576, 2)} MiB (#{bytes} bytes)"
+
+  defp format_bytes(bytes) when bytes >= 1_024, do: "#{Float.round(bytes / 1_024, 1)} KiB (#{bytes} bytes)"
+  defp format_bytes(bytes), do: "#{bytes} bytes"
 
   defp evaluate_body_and_headers(step) do
     body = process_body(step.context.body, step.assigns)

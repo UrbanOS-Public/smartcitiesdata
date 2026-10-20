@@ -1,5 +1,8 @@
 # reaper Release Notes
 
+## 23.0.48 (pending release — not yet tagged)
+- Reaper.IngestionDiagnostic now reports the downloaded file size for each extract step and warns when it's large enough to risk degrading Kafka batching (crossing the 900KB per-record batch threshold or brod's 1MiB max batch size) — helps explain throughput drops on a given ingestion
+
 ## 23.0.47 (pending release — not yet tagged)
 - Fixed ingestion downloads failing with certificate errors against internal/private HTTPS endpoints, by trusting the image's system CA bundle instead of the client's built-in default
 - Added internal diagnostic tooling to step through a failing ingestion's extract steps and surface the real underlying error, instead of a generic "unable to process step" message
