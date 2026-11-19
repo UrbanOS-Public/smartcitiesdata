@@ -1,5 +1,8 @@
 # reaper Release Notes
 
+## 23.0.49 (pending release — not yet tagged)
+- Added trust for the State of Michigan's internal CA chain, fixing TLS `unknown_ca` failures on ingestion sources that chain to it (e.g. `mdotatms.state.mi.us`, `mdotjboss.state.mi.us`)
+
 ## 23.0.48 (pending release — not yet tagged)
 - Reaper.IngestionDiagnostic now reports the downloaded file size for each extract step and warns when it's large enough to risk degrading Kafka batching (crossing the 900KB per-record batch threshold or brod's 1MiB max batch size) — helps explain throughput drops on a given ingestion
 
