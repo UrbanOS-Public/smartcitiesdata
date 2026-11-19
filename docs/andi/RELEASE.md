@@ -1,5 +1,8 @@
 # andi Release Notes
 
+## 23.7.15 (pending release — not yet tagged)
+- Added trust for the State of Michigan's internal CA chain, fixing TLS `unknown_ca` failures on dataset/ingestion source "Test" checks against hosts that chain to it (e.g. `mdotatms.state.mi.us`, `mdotjboss.state.mi.us`)
+
 ## 23.7.14 (pending release — not yet tagged)
 - Fixed the dataset/ingestion source "Test" button failing with certificate errors against internal/private HTTPS endpoints, by trusting the image's system CA bundle instead of a hardcoded default
 - Added a 30-second connect timeout to outbound HTTP requests so a hung or unreachable host no longer stalls a URL test indefinitely
